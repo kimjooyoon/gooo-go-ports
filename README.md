@@ -112,7 +112,7 @@ HTTP 서버, UTF 인코딩 패키지, Go time 패키지 전체의 이식은 아�
 
 ## 실행하기
 
-[브라우저 데모](https://kimjooyoon.github.io/gooo-go-ports/)는 설치 없이 19개 함수를
+[브라우저 데모](https://kimjooyoon.github.io/gooo-go-ports/)는 설치 없이 21개 함수를
 실행합니다. 실제 Gooo importing 예제를 고정 컴파일러로 생성하고, 생성된 Go를
 한 글자도 수정하지 않은 채 WebAssembly로 빌드합니다. 입력·출력 경계의 Go bridge는
 정수 범위 검사와 직렬화만 맡습니다. 임의 Gooo 소스를 브라우저에서 컴파일하지는 않습니다.
