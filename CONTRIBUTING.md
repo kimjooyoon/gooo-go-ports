@@ -6,16 +6,22 @@
 ## Report a problem
 
 Use the [problem report form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml)
-for a page that will not load, a failed first install, or an unexpected function result.
+for a page that will not load, a failed first install, or an unexpected function or text-inspection result.
 Include the page URL or command, what you saw, and your browser/operating system if known.
 For a function result, include its name, exact integer inputs, and the result you expected.
 If the demo works, **Copy link to this input** can help reproduce the input; it does not
-include the result. A shared link, version, or build metadata is optional, so loading
-failures can be reported too. GitHub lets you review the report before submitting it.
+include the result. For a completed text inspection, **Download inspection JSON** provides
+an optional file with the exact original text, results, and program identity. Review it
+before sharing: the issue and any supplied text or files will be public. Opening the form
+does not attach your input or submit anything; choose what to include and review it on GitHub.
+A shared link, inspection report, version, or build metadata is optional. For a loading
+failure, the page URL and visible error are enough.
 
 처음 설치하거나 데모를 여는 단계에서 막혀도 같은 양식으로 제보할 수 있습니다.
 한국어·영어 모두 괜찮습니다. 페이지 주소 또는 실행 명령, 실제 오류나 결과를 적어 주세요.
 버전을 알면 릴리스 이름이나 리비전을 덧붙이고, 공유 링크는 데모가 동작할 때만 넣으면 됩니다.
+텍스트 검사 JSON은 원래 입력 전체를 포함하므로 내용을 확인한 뒤 공개해도 되는 자료만
+선택해서 첨부해 주세요. 보고서 없이 페이지 주소와 오류만 제보해도 됩니다.
 
 ## 포트에 기여하기
 

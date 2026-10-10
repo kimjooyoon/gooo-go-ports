@@ -1,17 +1,18 @@
 name: Loading, setup, or function problem
-description: Report a failed first run or an unexpected result in the demo or native ports.
+description: Report a failed first run or an unexpected result in the demos, text inspector, or native ports.
 body:
   - type: markdown
     attributes:
       value: |
-        Describe where you got stuck. A working demo, shared input link, or build metadata is not required.
-        English and Korean reports are welcome. Review any pasted logs before submitting this public report.
+        Describe where you got stuck. A working demo, shared input link, inspection report, or build metadata is not required.
+        English and Korean reports are welcome. Inspection JSON contains the exact original text. Review any text, files, or logs you choose to share before submitting this public issue. Nothing is attached or submitted automatically.
   - type: dropdown
     id: entry-point
     attributes:
       label: Where did you try it?
       options:
         - Public browser demo
+        - Unicode text inspector
         - Downloaded browser demo
         - Native setup, verification, or replay
         - Another path
@@ -21,7 +22,7 @@ body:
     id: steps
     attributes:
       label: Page URL or command and steps
-      description: Include the function and exact input if you reached that point. For a loading failure, the page address is enough.
+      description: For a function result, include its name and exact input if you reached that point. For a text inspection, describe your steps and include only input you choose to make public. For a loading failure, the page address is enough.
     validations:
       required: true
   - type: textarea
@@ -44,5 +45,5 @@ body:
   - type: textarea
     id: supporting-details
     attributes:
-      label: Shared input link or additional details (optional)
-      description: If the demo works, use Copy link to this input. The link records inputs, so include the actual result above. Logs and build metadata are optional.
+      label: Shared input link, inspection report, or additional details (optional)
+      description: The function demo offers Copy link to this input; include its actual result above. A completed text inspection offers Download inspection JSON, which includes the exact original text and results. Review any file before sharing it publicly. Logs and build metadata are optional.
