@@ -74,11 +74,11 @@ discussing policy-review and incident-reproduction work, with no live model API,
 real export or production-security claim. Its cases are separate from the port
 compatibility counts. The guide includes a focused request for workflow feedback.
 
-For a fixed snapshot, download [experimental release v0.1.0-preview.2](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.2).
-It includes separate source, native execution/replay evidence, and standalone browser
-archives, with licenses, provenance, and checksums. Downloads do not require a GitHub
-login. The release page explains which archive to choose and how to verify it;
-the live demo and main branch can be newer than this snapshot.
+For a fixed snapshot, choose an [experimental release](https://github.com/kimjooyoon/gooo-go-ports/releases).
+Each release page lists its included tools and separate source, execution/replay
+evidence, and standalone browser archives, with licenses, provenance, and checksums.
+Downloads do not require a GitHub login. Follow that version's download and verification
+instructions; the live demo and main branch can be newer than the chosen snapshot.
 
 If loading or running fails, [report a problem](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml)
 with the page URL or command and what happened. A working demo or shared input link
@@ -410,7 +410,7 @@ Dispatch 계약과 입력 타입·소스 연결을 확인합니다.
 [시간 간격 포트·소비 앱 추가 관측](evidence/duration-20261010.json),
 [공백 포트·소비 앱 추가 관측](evidence/whitespace-20261010.json),
 [사각형 포트·소비 앱 추가 관측](evidence/image-rectangles-20261011.json),
-[v0.1.0-preview.2의 전체 실행·재실행 기록](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.2)을
+[릴리스별 실행·재실행 기록](https://github.com/kimjooyoon/gooo-go-ports/releases)을
 참고하세요. 릴리스 기록은 해당 버전에 고정되어 있으며, 이후 변경의 기록은 각 GitHub
 Actions 실행에서 확인할 수 있습니다.
 
