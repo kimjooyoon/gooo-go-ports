@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Run 13 Gooo ports of Go HTTP, Unicode, and byte functions in your browser. Inspect exact inputs, results, and pinned source evidence.">
+  <meta name="description" content="Run 15 Gooo ports of Go HTTP, Unicode, byte, and color functions in your browser. Inspect exact inputs, results, and pinned source evidence.">
   <meta name="theme-color" content="#f5f3eb">
   <title>Try real Gooo ports</title>
   <link rel="stylesheet" href="./style.css">
@@ -25,7 +25,7 @@
         <div>
           <p class="eyebrow">THE GO PORTS LAB / EXPERIMENTAL</p>
           <h1 id="page-title">Try real Gooo ports<span class="title-dot">.</span></h1>
-          <p class="intro-copy">A status code, a Unicode code point, or a byte.<br class="desktop-break"> Put one in. See what the Gooo function returns.</p>
+          <p class="intro-copy">A status code, a Unicode code point, a byte, or color channels.<br class="desktop-break"> Enter an input. See what the Gooo function returns.</p>
         </div>
         <div class="runtime-note">
           <div id="runtime-status" class="runtime-status" role="status"><span class="status-dot" aria-hidden="true"></span><span id="runtime-message">Loading WebAssembly…</span></div>
@@ -41,8 +41,9 @@
             <button type="button" class="scenario active" data-scenario="http" aria-pressed="true"><span class="scenario-number">01</span> HTTP</button>
             <button type="button" class="scenario" data-scenario="unicode" aria-pressed="false"><span class="scenario-number">02</span> Unicode</button>
             <button type="button" class="scenario" data-scenario="bytes" aria-pressed="false"><span class="scenario-number">03</span> Bytes</button>
+            <button type="button" class="scenario" data-scenario="colors" aria-pressed="false"><span class="scenario-number">04</span> Colors</button>
           </div>
-          <span class="function-count">13 functions · actual compiled code</span>
+          <span class="function-count">15 functions · actual compiled code</span>
         </div>
 
         <div class="workbench-body">
@@ -73,18 +74,30 @@
                   <option value="bits.OnesCount8">bits.OnesCount8</option>
                   <option value="bits.Reverse8">bits.Reverse8</option>
                 </optgroup>
+                <optgroup label="Colors">
+                  <option value="color.RGBToCMYK">color.RGBToCMYK</option>
+                  <option value="color.CMYKToRGB">color.CMYKToRGB</option>
+                </optgroup>
               </select>
             </div>
             <p id="function-description" class="field-description">Look up the standard description of an HTTP status code.</p>
 
-            <div class="input-fields">
-              <div class="input-field">
+            <div id="input-fields" class="input-fields">
+              <div id="first-field" class="input-field">
                 <label id="first-label" for="first-input">Status code</label>
                 <input id="first-input" name="first" type="text" inputmode="numeric" value="404" autocomplete="off" spellcheck="false" aria-describedby="input-domain input-help">
               </div>
               <div id="second-field" class="input-field" hidden>
-                <label for="second-input">Low surrogate</label>
-                <input id="second-input" name="second" type="text" inputmode="numeric" value="56832" autocomplete="off" spellcheck="false" aria-describedby="input-domain input-help">
+                <label id="second-label" for="second-input">Low surrogate</label>
+                <input id="second-input" name="second" type="text" inputmode="numeric" value="56832" disabled autocomplete="off" spellcheck="false" aria-describedby="input-domain input-help">
+              </div>
+              <div id="third-field" class="input-field" hidden>
+                <label id="third-label" for="third-input">Blue</label>
+                <input id="third-input" name="third" type="text" inputmode="numeric" value="0" disabled autocomplete="off" spellcheck="false" aria-describedby="input-domain input-help">
+              </div>
+              <div id="fourth-field" class="input-field" hidden>
+                <label id="fourth-label" for="fourth-input">Black</label>
+                <input id="fourth-input" name="fourth" type="text" inputmode="numeric" value="0" disabled autocomplete="off" spellcheck="false" aria-describedby="input-domain input-help">
               </div>
             </div>
             <p id="input-domain" class="domain">Input domain <code>int64</code></p>
@@ -134,7 +147,7 @@
           <p class="eyebrow">WHAT YOU ARE RUNNING</p>
           <h2>A fixed set of real functions.</h2>
           <p>The calculations are written in Gooo and compiled ahead of time. This demo runs those functions; it does not compile arbitrary Gooo source.</p>
-          <p>These are selected function ports, not complete HTTP or Unicode packages. Passing finite reference cases is evidence for those cases, not a proof of full compatibility.</p>
+          <p>These are selected function ports, not complete HTTP, Unicode, byte, or color packages. Passing finite reference cases is evidence for those cases, not a proof of full compatibility.</p>
           <a class="text-link" href="https://github.com/kimjooyoon/meta-ontology-go">Explore the Gooo language <span aria-hidden="true">↗</span></a>
         </div>
         <div class="provenance-card">
@@ -146,7 +159,7 @@
             <div><dt>Go toolchain</dt><dd id="go-version"></dd></div>
             <div><dt>Port revision</dt><dd><a id="revision-link"></a></dd></div>
           </dl>
-          <div class="evidence-links"><a href="./generated.go">Generated Go ↗</a><a href="./execution.json">Build execution record ↗</a><a href="./metadata.json">Hashes &amp; metadata ↗</a></div>
+          <div class="evidence-links"><a href="./generated.go">Generated Go ↗</a><a href="./execution.json">First build execution record ↗</a><a href="./evidence-index.json">All build execution records ↗</a><a href="./metadata.json">Hashes &amp; metadata ↗</a></div>
           <p class="evidence-note">Build records describe the published artifact. The check button above records a fresh observation in your browser.</p>
           <p class="evidence-note">For a fixed snapshot, <a href="https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.1">download experimental v0.1.0-preview.1</a>: source, native evidence, and a standalone browser demo. This page may use a newer revision.</p>
         </div>

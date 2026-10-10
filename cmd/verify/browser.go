@@ -16,13 +16,13 @@ type browserOutput struct {
 
 type browserCase struct {
 	Operation string        `json:"operation"`
-	Inputs    [2]string     `json:"inputs"`
+	Inputs    []string      `json:"inputs"`
 	Expected  browserOutput `json:"expected"`
 }
 
 type browserRejection struct {
-	Operation string    `json:"operation"`
-	Inputs    [2]string `json:"inputs"`
+	Operation string   `json:"operation"`
+	Inputs    []string `json:"inputs"`
 }
 
 type browserFixtures struct {
@@ -60,7 +60,7 @@ func writeBrowserFixtures(path string, suites []suite, lock upstream) error {
 }
 
 func makeBrowserFixtures(suites []suite, lock upstream) (browserFixtures, error) {
-	result := browserFixtures{Schema: "gooo/browser-fixtures/v1", GoVersion: lock.GoVersion,
+	result := browserFixtures{Schema: "gooo/browser-fixtures/v2", GoVersion: lock.GoVersion,
 		CompilerRevision: lock.CompilerRevision, GoSourceSHA: lock.SourceSHA}
 	for _, s := range suites {
 		var prefix string
@@ -94,14 +94,53 @@ func makeBrowserFixtures(suites []suite, lock upstream) (browserFixtures, error)
 		result.Cases = append(result.Cases, row)
 	}
 	result.Rejections = browserRejections()
+	colors, err := colorCorpus()
+	if err != nil {
+		return browserFixtures{}, err
+	}
+	for _, suite := range colors.Suites {
+		if suite.Package != "go/image/color" {
+			continue
+		}
+		for _, c := range suite.Cases {
+			operation := "color." + suite.Activity
+			inputs := make([]string, len(c.Inputs))
+			valid := true
+			for i, value := range c.Inputs {
+				n, ok := value.(int64)
+				if !ok {
+					return browserFixtures{}, fmt.Errorf("color input is not int64")
+				}
+				inputs[i] = strconv.FormatInt(n, 10)
+				valid = valid && n >= 0 && n <= 255
+			}
+			if !valid {
+				result.Rejections = append(result.Rejections, browserRejection{operation, inputs})
+				continue // Domain rejection is not Go reference equivalence.
+			}
+			row, err := browserRow(operation, c)
+			if err != nil {
+				return browserFixtures{}, err
+			}
+			result.Cases = append(result.Cases, row)
+		}
+	}
+	result.Rejections = append(result.Rejections, colorBrowserRejections()...)
 	return result, nil
 }
 
 func browserRow(operation string, c testCase) (browserCase, error) {
-	row := browserCase{Operation: operation, Inputs: [2]string{"0", "0"}}
+	row := browserCase{Operation: operation, Inputs: []string{"0", "0"}}
 	arity := 1
-	if operation == "utf16.DecodeRune" {
+	switch operation {
+	case "utf16.DecodeRune":
 		arity = 2
+	case "color.RGBToCMYK":
+		arity = 3
+		row.Inputs = make([]string, 3)
+	case "color.CMYKToRGB":
+		arity = 4
+		row.Inputs = make([]string, 4)
 	}
 	if len(c.Inputs) != arity {
 		return browserCase{}, fmt.Errorf("invalid browser fixture input arity: %s", operation)
@@ -110,6 +149,9 @@ func browserRow(operation string, c testCase) (browserCase, error) {
 		n, ok := input.(int64)
 		if !ok {
 			return browserCase{}, fmt.Errorf("browser fixture input must be int64: %s", operation)
+		}
+		if arity >= 3 && (n < 0 || n > 255) {
+			return browserCase{}, fmt.Errorf("color reference input outside byte domain")
 		}
 		row.Inputs[i] = strconv.FormatInt(n, 10)
 	}
@@ -134,6 +176,30 @@ func browserRow(operation string, c testCase) (browserCase, error) {
 			return browserCase{}, fmt.Errorf("expected Boolean oracle output")
 		}
 		row.Expected = browserOutput{"boolean", value}
+	case "color.RGBToCMYK", "color.CMYKToRGB":
+		keys := []string{"cyan", "magenta", "yellow", "black"}
+		kind := "cmyk"
+		if operation == "color.CMYKToRGB" {
+			keys = []string{"red", "green", "blue"}
+			kind = "rgb"
+		}
+		channels, ok := expected.(map[string]any)
+		if !ok || len(channels) != len(keys) {
+			return browserCase{}, fmt.Errorf("expected named color oracle output")
+		}
+		value := map[string]string{}
+		for _, key := range keys {
+			text, err := browserInteger(channels[key])
+			if err != nil {
+				return browserCase{}, err
+			}
+			n, err := strconv.ParseInt(text, 10, 64)
+			if err != nil || n < 0 || n > 255 {
+				return browserCase{}, fmt.Errorf("color oracle output outside byte domain")
+			}
+			value[key] = text
+		}
+		row.Expected = browserOutput{kind, value}
 	case "utf16.EncodeRune":
 		pair, ok := expected.(map[string]any)
 		if !ok || len(pair) != 2 {
@@ -173,25 +239,54 @@ func browserInteger(value any) (string, error) {
 }
 
 func browserRejections() []browserRejection {
-	result := []browserRejection{{"unknown.Operation", [2]string{"0", "0"}}}
+	result := []browserRejection{{"unknown.Operation", []string{"0", "0"}}}
 	for _, raw := range []string{"", " 1", "1 ", "+1", "01", "-0", "1.0", "1e2", "0x10", "NaN", "9223372036854775808", "-9223372036854775809"} {
-		result = append(result, browserRejection{"http.StatusText", [2]string{raw, "0"}})
+		result = append(result, browserRejection{"http.StatusText", []string{raw, "0"}})
 	}
 	for _, operation := range []string{"utf8.ValidRune", "utf8.RuneLen", "utf16.IsSurrogate", "utf16.RuneLen", "utf16.DecodeRune", "utf16.EncodeRune"} {
 		for _, raw := range []string{"-2147483649", "2147483648"} {
-			result = append(result, browserRejection{operation, [2]string{raw, "0"}})
+			result = append(result, browserRejection{operation, []string{raw, "0"}})
 			if operation == "utf16.DecodeRune" {
-				result = append(result, browserRejection{operation, [2]string{"0", raw}})
+				result = append(result, browserRejection{operation, []string{"0", raw}})
 			}
 		}
 	}
 	for _, operation := range []string{"utf8.RuneStart", "bits.Len8", "bits.LeadingZeros8", "bits.TrailingZeros8", "bits.OnesCount8", "bits.Reverse8"} {
 		for _, raw := range []string{"-1", "256"} {
-			result = append(result, browserRejection{operation, [2]string{raw, "0"}})
+			result = append(result, browserRejection{operation, []string{raw, "0"}})
 		}
 	}
 	for _, operation := range []string{"http.StatusText", "utf8.ValidRune", "utf8.RuneLen", "utf8.RuneStart", "utf16.IsSurrogate", "utf16.RuneLen", "utf16.EncodeRune", "bits.Len8", "bits.LeadingZeros8", "bits.TrailingZeros8", "bits.OnesCount8", "bits.Reverse8"} {
-		result = append(result, browserRejection{operation, [2]string{"0", "1"}})
+		result = append(result, browserRejection{operation, []string{"0", "1"}})
+	}
+	return result
+}
+
+// Exercise canonical syntax and every channel position independently of the
+// native out-of-domain sentinel cases. Wrong arity must not reach the program.
+func colorBrowserRejections() []browserRejection {
+	var result []browserRejection
+	for _, item := range []struct {
+		operation string
+		arity     int
+	}{{"color.RGBToCMYK", 3}, {"color.CMYKToRGB", 4}} {
+		for position := 0; position < item.arity; position++ {
+			for _, invalid := range []string{"", " 1", "+1", "01", "-0", "1.0", "1e2", "NaN"} {
+				inputs := []string{"12", "34", "56", "78"}[:item.arity]
+				inputs[position] = invalid
+				result = append(result, browserRejection{item.operation, inputs})
+			}
+		}
+		for n := 0; n <= item.arity+1; n++ {
+			if n == item.arity {
+				continue
+			}
+			inputs := make([]string, n)
+			for i := range inputs {
+				inputs[i] = "0"
+			}
+			result = append(result, browserRejection{item.operation, inputs})
+		}
 	}
 	return result
 }

@@ -30,6 +30,12 @@
       ]
     },
     {
+      "path": "go/image/color",
+      "sources": [
+        "ports/image/color.gooo"
+      ]
+    },
+    {
       "path": "app/browser-demo",
       "sources": [
         "examples/browser-demo/main.gooo"

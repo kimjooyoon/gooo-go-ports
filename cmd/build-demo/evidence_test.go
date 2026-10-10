@@ -10,7 +10,7 @@ import (
 
 // These small synthetic receipts test evidence consistency, not native execution.
 // The formatting is deliberately preserved so the extraction test detects edits.
-const generatedFixture = "package main\n\n// Preserve whitespace and UTF-8: 한글  \nfunc GoooComposedActivity0(input0 string, input1, input2 int64) int64 { return input1 }\n\n"
+const generatedFixture = "package main\n\n// Preserve whitespace and UTF-8: 한글  \nfunc GoooComposedActivity0(input0 string, input1, input2, input3, input4 int64) int64 { return input1 }\n\n"
 
 func evidenceFixture(t *testing.T) ([]byte, lockfile, map[string]string) {
 	t.Helper()
@@ -30,17 +30,19 @@ func evidenceFixture(t *testing.T) ([]byte, lockfile, map[string]string) {
 	rows := []any{}
 	traces := []any{}
 	for i, n := range []int64{9007199254740993, 1} {
-		output := map[string]any{"text": "", "value": n, "flag": false, "high": int64(0), "low": int64(0)}
+		output := map[string]any{"text": "", "first": n, "flag": false, "second": int64(0), "third": int64(0), "fourth": int64(0)}
 		rows = append(rows, map[string]any{
-			"inputs":   map[string]any{key + ".input0": "fixture.Identity", key + ".input1": n, key + ".input2": -n},
+			"inputs":   map[string]any{key + ".input0": "fixture.Identity", key + ".input1": n, key + ".input2": -n, key + ".input3": int64(0), key + ".input4": int64(255)},
 			"expected": map[string]any{key: output},
 		})
 		traces = append(traces, map[string]any{"case_index": i, "deliveries": []any{map[string]any{
-			"activity_id": "gooo://go-ports/examples/browser-demo/dispatch",
+			"activity_id": "gooo://go-ports/examples/browser-demo/dispatch/v2",
 			"inputs": []any{
 				map[string]any{"port": "input0", "entity_id": "gooo://std/text", "value": "fixture.Identity"},
 				map[string]any{"port": "input1", "entity_id": "gooo://std/integer", "value": n},
 				map[string]any{"port": "input2", "entity_id": "gooo://std/integer", "value": -n},
+				map[string]any{"port": "input3", "entity_id": "gooo://std/integer", "value": int64(0)},
+				map[string]any{"port": "input4", "entity_id": "gooo://std/integer", "value": int64(255)},
 			},
 			"actual": output, "expected": output, "passed": true,
 		}}})
@@ -61,10 +63,10 @@ func evidenceFixture(t *testing.T) ([]byte, lockfile, map[string]string) {
 			"filename": pkg.source, "source_digest": "sha256:" + sources[pkg.source],
 		}}}
 		if pkg.path == "app/browser-demo" {
-			entry["exports"] = []any{map[string]any{"name": "Reply", "kind": "entity", "id": "gooo://go-ports/examples/browser-demo/reply"}, map[string]any{
-				"name": "Dispatch", "kind": "activity", "id": "gooo://go-ports/examples/browser-demo/dispatch",
-				"input_types": []string{"gooo://std/text", "gooo://std/integer", "gooo://std/integer"},
-				"output_type": "gooo://go-ports/examples/browser-demo/reply",
+			entry["exports"] = []any{map[string]any{"name": "Reply", "kind": "entity", "id": "gooo://go-ports/examples/browser-demo/reply/v2"}, map[string]any{
+				"name": "Dispatch", "kind": "activity", "id": "gooo://go-ports/examples/browser-demo/dispatch/v2",
+				"input_types": []string{"gooo://std/text", "gooo://std/integer", "gooo://std/integer", "gooo://std/integer", "gooo://std/integer"},
+				"output_type": "gooo://go-ports/examples/browser-demo/reply/v2",
 			}}
 		}
 		packages = append(packages, entry)
@@ -80,7 +82,7 @@ func evidenceFixture(t *testing.T) ([]byte, lockfile, map[string]string) {
 			},
 			"composition": map[string]any{"stage": "COMPLETE", "source": generatedFixture, "generated_sha256": generatedSHA,
 				"steps": []any{map[string]any{"generation": map[string]any{"report": map[string]any{
-					"activity_id": "gooo://go-ports/examples/browser-demo/dispatch",
+					"activity_id": "gooo://go-ports/examples/browser-demo/dispatch/v2",
 				}}}},
 			},
 			"runtime": map[string]any{

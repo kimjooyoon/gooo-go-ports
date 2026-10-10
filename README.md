@@ -12,14 +12,15 @@ Color ports and their consumer add separate reference and rejection cases, detai
 Other domains use finite boundary cases and samples. This is an independent experimental port,
 not a complete Go package implementation or an official Google/Go project.
 
-[Try the browser demo](https://kimjooyoon.github.io/gooo-go-ports/) to run 13 HTTP, Unicode, and byte functions
+[Try the browser demo](https://kimjooyoon.github.io/gooo-go-ports/) to run all 15 HTTP, Unicode, byte, and color functions
 without installing a compiler. It executes a precompiled Gooo program as WebAssembly;
 it is not an editor for compiling arbitrary source. The page includes the Gooo source,
 unmodified generated Go, execution receipts, and an optional reference-check button.
 Use **Copy link to this input** to share an exact function input. Opening a link runs
 it once in the recipient's browser when the compiled program matches; a changed program
 restores the inputs and waits for **Run function**. Links carry inputs, not trusted results.
-For color conversion, the native [RGB → CMYK → RGB inspector](examples/color-inspector/README.md)
+Enter three RGB or four CMYK channels (integers from 0 to 255) to see named output channels
+and an RGB preview. The native [RGB → CMYK → RGB inspector](examples/color-inspector/README.md)
 reports converted channels, recovered RGB values, and any integer round-trip differences.
 
 For a fixed snapshot, download [experimental release v0.1.0-preview.1](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.1).
@@ -65,19 +66,24 @@ HTTP 서버나 UTF 인코딩 패키지 전체의 이식은 아닙니다.
 
 ## 실행하기
 
-[브라우저 데모](https://kimjooyoon.github.io/gooo-go-ports/)는 설치 없이 13개 함수를
+[브라우저 데모](https://kimjooyoon.github.io/gooo-go-ports/)는 설치 없이 15개 함수를
 실행합니다. 실제 Gooo importing 예제를 고정 컴파일러로 생성하고, 생성된 Go를
 한 글자도 수정하지 않은 채 WebAssembly로 빌드합니다. 입력·출력 경계의 Go bridge는
 정수 범위 검사와 직렬화만 맡습니다. 임의 Gooo 소스를 브라우저에서 컴파일하지는 않습니다.
-HTTP 입력은 int64, rune 입력은 int32, byte 입력은 0..255로 제한하며 범위 밖 입력을 거부합니다.
+HTTP 입력은 int64, rune 입력은 int32, byte·색상 채널 입력은 0..255로 제한하며 범위 밖 입력을 거부합니다.
 JavaScript Number를 거치지 않고 십진수 문자열로 전달합니다.
+RGB는 3개, CMYK는 4개 채널을 각각 전달하며 채널을 하나의 정수에 묶거나 잘라내지 않습니다.
+결과에는 채널 이름과 정수 값이 표시됩니다. RGB 미리보기는 입력 또는 반환된 RGB를 보여주며
+색상 프로파일이나 프린터 출력 보정은 수행하지 않습니다.
 
 **Copy link to this input**으로 함수와 입력을 공유할 수 있습니다. 같은 프로그램이면
 받는 브라우저에서 한 번 실행하고, 프로그램이 달라졌으면 입력을 복원한 뒤 Run을 기다립니다.
 링크에는 입력 문자열, Wasm SHA-256, 원본 리비전만 담으며 결과를 저장하지 않습니다.
 README만 바뀌어도 Wasm이 같으면 실행할 수 있습니다. 잘못된 링크는 실행을 막고
 새 예제로 돌아갈 수 있게 표시합니다. 클립보드가 차단되면 복사할 링크를 화면에 보여줍니다.
-일반 `#workbench` 링크는 유지하며 공유 링크는 별도 `#gooo-share?v=1&...` 형식입니다.
+일반 `#workbench` 링크와 기존 13개 함수의 `#gooo-share?v=1&...` 링크를 유지합니다.
+색상 링크는 모든 채널을 담는 `v=2` 형식입니다. 이전 프로그램에서 만든 링크도 입력을 복원하지만,
+Wasm 해시가 달라졌으면 자동 실행하지 않습니다.
 
 데모를 소스부터 재현하려면 Git으로 받은 저장소에서 Go 1.27.2와 Node.js 22 이상을
 사용합니다. 브라우저 빌드는 Git 리비전을 기록하므로 `.git`이 없는 소스 압축본은
@@ -94,9 +100,16 @@ python3 -m http.server 8766 --bind 127.0.0.1 --directory out/browser/site
 
 마지막 명령은 Python 3가 필요하며, 실행 후 `http://127.0.0.1:8766`을 엽니다.
 다른 정적 HTTP 서버를 사용해도 됩니다. `--out` 디렉터리는 새 경로여야 합니다.
-브라우저 비교는 기존 원본 corpus의 함수 입력 3,135개와 정밀도 경계 2개를 재사용하고,
-잘못된 입력의 거부도 별도 검사합니다. 아래 native 소비 예제는 브라우저 집계에 포함하지 않습니다.
-HTTP·rune 검사는 유한 입력 관측이며 패키지 전체 호환성이나 성능을 보장하지 않습니다.
+브라우저 비교는 기존 함수 입력 3,135개와 정밀도 경계 2개를 보존하고 색상 원본 비교 1,300개를
+추가한 **4,437건**입니다. 잘못된 입력·채널 개수 등의 거부 **172건**은 별도 집계합니다.
+Node smoke 검사는 공유 입력 왕복 4,437건과 추가 호출 형태·타입 오류 27건도 검사하므로
+총 거부 검사는 **199건**입니다. 아래 native 소비 예제는 브라우저 집계에 포함하지 않습니다.
+HTTP·rune·색상 검사는 유한 입력 관측이며 패키지 전체 호환성이나 성능을 보장하지 않습니다.
+
+브라우저 생성용 사례 **97개**도 기대 결과와 함께 native 실행·저장된 프로그램 재실행을 검증합니다.
+입력 파일당 128개·32 KiB 제한을 지키도록 실제 JSON 바이트 크기로 나누며 사례를 생략하지 않습니다.
+배포물의 `evidence-index.json`에 모든 배치 입력·실행·재실행 파일과 해시가 있습니다.
+`execution.json`·`replay.json`은 첫 배치의 원본 바이트 별칭이며 전체 기록은 인덱스를 따릅니다.
 
 Go 1.27.2, Git, POSIX shell이 필요합니다. `go.mod`를 인식하는 Go 설치는 필요한
 도구 체인을 자동 선택할 수 있습니다. 저장소 루트에서 실행합니다.
@@ -152,8 +165,9 @@ mkdir -p out/demo
 
 네 번째 앱인 [색상 왕복 검사기](examples/color-inspector/README.md)는 RGB를 CMYK로
 변환하고 다시 RGB로 복원해 채널별 차이와 일치 여부를 보여줍니다. 두 색상 포트를
-Gooo에서 조합하며 원본의 전체 uint8 입력 범위를 유지합니다. 위 브라우저의 13함수와
-별도로 native에서 실행하며, 특정 색상 프로파일이나 프린터 보정은 수행하지 않습니다.
+Gooo에서 조합하며 원본의 전체 uint8 입력 범위를 유지합니다. 브라우저에서는 두 변환 함수를
+각각 실행할 수 있고, 이 왕복 소비 앱은 native에서 실행합니다. 특정 색상 프로파일이나
+프린터 보정은 수행하지 않습니다.
 
 ## 다른 Gooo 프로그램에서 가져오기
 

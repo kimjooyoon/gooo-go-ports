@@ -28,21 +28,24 @@ class Element {
   constructor() {
     this.value = ''; this.hidden = false; this.disabled = false; this.textContent = '';
     this.dataset = {}; this.children = []; this.listeners = new Map();
+    this.style = {}; this.attributes = {};
     this.firstChild = { textContent: '' }; this.classList = { toggle() {} };
   }
   addEventListener(name, fn) { this.listeners.set(name, fn); }
   emit(name) { return this.listeners.get(name)?.({ preventDefault() {} }); }
   replaceChildren(...children) { this.children = children; }
   append(...children) { this.children.push(...children); }
-  setAttribute() {}
+  setAttribute(name, value) { this.attributes[name] = value; }
   focus() { this.focused = true; }
   select() { this.selected = true; }
 }
-function app(fragment = '', clipboard = async () => {}) {
+const rgbOutput = { type: 'rgb', value: { red: '63', green: '128', blue: '192' } };
+const cmykOutput = { type: 'cmyk', value: { cyan: '170', magenta: '85', yellow: '0', black: '63' } };
+function app(fragment = '', clipboard = async () => {}, runtimeReply) {
   const elements = new Map();
   const get = id => { if (!elements.has(id)) elements.set(id, new Element()); return elements.get(id); };
   get('operation').value = 'http.StatusText'; get('first-input').value = '404'; get('second-input').value = '56832';
-  const scenarioButtons = ['http', 'unicode', 'bytes'].map(scenario => { const e = new Element(); e.dataset.scenario = scenario; return e; });
+  const scenarioButtons = ['http', 'unicode', 'bytes', 'colors'].map(scenario => { const e = new Element(); e.dataset.scenario = scenario; return e; });
   const events = new Map(), calls = [], copied = [];
   const metaGate = deferred(), wasmGate = deferred(), fixtureGate = deferred();
   let url = new URL('https://example.test/demo/' + fragment);
@@ -64,9 +67,10 @@ function app(fragment = '', clipboard = async () => {}) {
       constructor() { this.importObject = {}; }
       run() {
         context.goooReady = true;
-        context.goooRun = (operation, a, b) => {
-          calls.push([operation, a, b]);
-          return JSON.stringify({ ok: true, operation, inputs: [a, b], output: { type: 'text', value: 'runtime test result' } });
+        context.goooRun = (operation, ...inputs) => {
+          calls.push([operation, ...inputs]);
+          const output = operation === 'color.RGBToCMYK' ? cmykOutput : operation === 'color.CMYKToRGB' ? rgbOutput : { type: 'text', value: 'runtime test result' };
+          return JSON.stringify(runtimeReply ? runtimeReply(operation, inputs) : { ok: true, operation, inputs, output });
         };
         return new Promise(() => {});
       }
@@ -80,7 +84,7 @@ function app(fragment = '', clipboard = async () => {}) {
     async ready(value = metadata) { loadMeta(value); loadWasm(); await until(() => get('runtime-message').textContent === 'WebAssembly ready'); await new Promise(r => setTimeout(r, 0)); },
     hash(value) { url.hash = value; events.get('hashchange')(); },
     metaFail() { metaGate.resolve({ ok: false }); },
-    finishChecks() { fixtureGate.resolve({ ok: true, json: async () => ({ cases: [{ operation: 'bits.Reverse8', inputs: ['170', '0'], expected: { type: 'text', value: 'runtime test result' } }], rejections: [] }) }); }
+    finishChecks(fixtures = { schema: 'gooo/browser-fixtures/v2', cases: [{ operation: 'bits.Reverse8', inputs: ['170', '0'], expected: { type: 'text', value: 'runtime test result' } }], rejections: [] }) { fixtureGate.resolve({ ok: true, json: async () => fixtures }); }
   };
 }
 
@@ -194,4 +198,148 @@ test('late clipboard failure cannot restore a stale URL after inputs change', as
   clipboard.reject(new Error('denied')); await copying;
   assert.equal(a.get('share-fallback').hidden, true);
   assert.equal(a.get('share-status').hidden, true);
+});
+
+const inputNames = ['first', 'second', 'third', 'fourth'];
+const colorCases = [
+  { operation: 'color.RGBToCMYK', inputs: ['64', '128', '192'], labels: ['Red', 'Green', 'Blue'], output: cmykOutput },
+  { operation: 'color.CMYKToRGB', inputs: ['170', '85', '0', '63'], labels: ['Cyan', 'Magenta', 'Yellow', 'Black'], output: rgbOutput }
+];
+function select(a, operation) { a.get('operation').value = operation; a.get('operation').emit('change'); }
+function enter(a, inputs) { inputs.forEach((value, i) => { a.get(inputNames[i] + '-input').value = value; }); }
+
+test('v2 restores every labeled color channel, runs exact arity, and renders named string results', async () => {
+  for (const item of colorCases) {
+    const a = app(link({ operation: item.operation, inputs: item.inputs }));
+    inputNames.forEach((name, i) => {
+      assert.equal(a.get(name + '-input').value, item.inputs[i] || '0');
+      assert.equal(a.get(name + '-field').hidden, i >= item.inputs.length);
+      assert.equal(a.get(name + '-input').disabled, i >= item.inputs.length);
+      assert.equal(a.get(name + '-label').textContent, item.labels[i] || '');
+    });
+    await a.ready();
+    assert.deepEqual(a.calls, [[item.operation, ...item.inputs]]);
+    assert.equal(a.get('result-badge').textContent, 'EXECUTED');
+    assert.deepEqual(JSON.parse(a.get('raw-output').textContent).output, item.output);
+    const parts = a.get('result-content').children.find(e => e.className === 'pair-result').children;
+    assert.deepEqual(parts.map(e => e.children.map(c => c.textContent)), Object.entries(item.output.value));
+    a.hash(link({ operation: item.operation, inputs: item.inputs })); assert.equal(a.calls.length, 1);
+    select(a, 'http.StatusText'); a.get('run-form').emit('submit');
+    assert.deepEqual(a.calls[1], ['http.StatusText', '404', '0']);
+    assert.equal(a.get('third-field').hidden, true); assert.equal(a.get('fourth-field').hidden, true);
+    a.scenarioButtons[3].emit('click');
+    assert.equal(a.get('operation').value, 'color.RGBToCMYK');
+  }
+});
+
+test('v2 mismatched program restores all channels but requires manual Run', async () => {
+  for (const item of colorCases) {
+    const a = app(link({ operation: item.operation, inputs: item.inputs, wasm: 'f'.repeat(64) })); await a.ready();
+    assert.equal(a.calls.length, 0);
+    assert.match(a.get('share-status').textContent, /different version/);
+    a.get('run-form').emit('submit');
+    assert.deepEqual(a.calls, [[item.operation, ...item.inputs]]);
+  }
+});
+
+test('every color field rejects invalid input before execution and clears earlier results', async () => {
+  for (const item of colorCases) {
+    const a = app(); await a.ready(); select(a, item.operation);
+    a.get('run-form').emit('submit'); assert.equal(a.calls.length, 1);
+    for (let i = 0; i < item.inputs.length; i++) {
+      for (const invalid of ['-1', '256', '9007199254740993', '-0', '+1', '01', '1.0', '', ' 1']) {
+        enter(a, item.inputs); a.get(inputNames[i] + '-input').value = invalid;
+        a.get(inputNames[i] + '-input').emit('input'); a.get('run-form').emit('submit');
+        assert.equal(a.calls.length, 1, `${item.operation} channel ${i} accepted ${invalid}`);
+        assert.equal(a.get('result-badge').textContent, 'ERROR');
+        assert.equal(a.get('raw-result').hidden, true);
+        assert.equal(a.get('result-content').children.some(e => e.className === 'color-swatch'), false);
+      }
+    }
+    for (const bad of [link({ operation: item.operation, inputs: item.inputs }).replace('v=2', 'v=1'), link({ operation: item.operation, inputs: item.inputs }) + '&c=1', link({ operation: item.operation, inputs: item.inputs }).replace('c=' + item.inputs[2], 'c=256')]) {
+      a.hash(bad); a.get('run-form').emit('submit'); assert.equal(a.calls.length, 1);
+      assert.equal(a.get('run-button').disabled, true);
+    }
+  }
+});
+
+test('color result records require every named canonical byte string and the expected output kind', async () => {
+  for (const item of colorCases) {
+    let output = item.output;
+    const a = app('', undefined, (operation, inputs) => ({ ok: true, operation, inputs, output }));
+    await a.ready(); select(a, item.operation);
+    const invalidOutputs = [{ type: 'text', value: 'wrong kind' }, { ...item.output, value: null }, { ...item.output, value: [] }];
+    for (const key of Object.keys(item.output.value)) {
+      const missing = { ...item.output.value }; delete missing[key];
+      invalidOutputs.push({ ...item.output, value: missing });
+      for (const value of ['-1', '256', '00', '-0', '1.0', '1e2', '1\n', 0, null]) invalidOutputs.push({ ...item.output, value: { ...item.output.value, [key]: value } });
+    }
+    invalidOutputs.push({ ...item.output, value: { ...item.output.value, extra: '0' } });
+    for (const invalid of invalidOutputs) {
+      output = invalid; a.get('run-form').emit('submit');
+      assert.equal(a.get('result-badge').textContent, 'ERROR', JSON.stringify(invalid));
+      assert.equal(a.get('raw-result').hidden, true);
+    }
+    output = item.output; a.get('run-form').emit('submit'); assert.equal(a.get('result-badge').textContent, 'EXECUTED');
+  }
+});
+
+test('RGB previews use actual input or returned RGB, including black and white', async () => {
+  for (const value of ['0', '255']) {
+    for (const item of colorCases) {
+      const rgb = { red: value, green: value, blue: value };
+      const a = app('', undefined, (operation, inputs) => ({ ok: true, operation, inputs, output: operation === 'color.CMYKToRGB' ? { type: 'rgb', value: rgb } : cmykOutput }));
+      await a.ready(); select(a, item.operation);
+      // CMYK inputs deliberately differ from the mock's RGB result: the UI must not recalculate it.
+      enter(a, item.operation === 'color.RGBToCMYK' ? [value, value, value] : ['123', '45', '67', '89']);
+      a.get('run-form').emit('submit');
+      const swatch = a.get('result-content').children.find(e => e.className === 'color-swatch');
+      assert.equal(swatch.style.backgroundColor, `rgb(${value}, ${value}, ${value})`);
+      assert.equal(swatch.attributes.role, 'img');
+      assert.equal(swatch.attributes['aria-label'], `${item.operation === 'color.RGBToCMYK' ? 'Input' : 'Returned'} RGB: ${value}, ${value}, ${value}`);
+    }
+  }
+});
+
+test('v2 clipboard fallback preserves all channels and extra-field edits cancel stale work', async () => {
+  for (const item of colorCases) {
+    const gate = deferred(); const a = app(link({ operation: item.operation, inputs: item.inputs }), () => gate.promise);
+    const last = inputNames[item.inputs.length - 1] + '-input';
+    a.get(last).emit('input'); await a.ready(); assert.equal(a.calls.length, 0);
+    const copying = a.get('share-button').emit('click');
+    assert.deepEqual(share.parse(new URL(a.copied[0]).hash).inputs, item.inputs);
+    a.get(last).value = '1'; a.get(last).emit('input');
+    gate.reject(new Error('denied')); await copying;
+    assert.equal(a.get('share-fallback').hidden, true);
+    const b = app(link({ operation: item.operation, inputs: item.inputs }), async () => { throw new Error('denied'); }); await b.ready();
+    await b.get('share-button').emit('click');
+    assert.equal(b.get('share-fallback').hidden, false);
+    assert.deepEqual(share.parse(new URL(b.get('share-url').value).hash).inputs, item.inputs);
+    assert.equal(b.get('share-url').selected, true);
+  }
+});
+
+test('reference checks compare every color channel and pass intentional bad arities to the runtime', async () => {
+  for (const item of colorCases) {
+    const a = app('', undefined, (operation, inputs) => inputs.length === item.inputs.length
+      ? { ok: true, operation, inputs, output: item.output } : { ok: false, error: 'Invalid input count' });
+    await a.ready();
+    const mismatches = Object.keys(item.output.value).map(key => ({ ...item.output, value: { ...item.output.value, [key]: '1' } }));
+    const cases = [item.output, ...mismatches].map(expected => ({ operation: item.operation, inputs: item.inputs, expected }));
+    const checking = a.get('checks-button').emit('click');
+    const rejected = [[], ['0'], ['0', '0', '0', '0', '0']];
+    a.finishChecks({ schema: 'gooo/browser-fixtures/v2', cases, rejections: rejected.map(inputs => ({ operation: item.operation, inputs })) });
+    await checking;
+    assert.deepEqual(a.calls, [...cases.map(() => [item.operation, ...item.inputs]), ...rejected.map(inputs => [item.operation, ...inputs])]);
+    assert.ok(a.get('checks-status').textContent.startsWith(`1 / ${cases.length} reference cases matched. 3 / 3 invalid-input checks rejected`));
+    assert.match(a.get('checks-status').textContent, /First failure/);
+  }
+});
+
+test('positive color fixture cases cannot silently use the wrong arity', async () => {
+  const a = app(); await a.ready();
+  const checking = a.get('checks-button').emit('click');
+  a.finishChecks({ schema: 'gooo/browser-fixtures/v2', cases: [{ operation: 'color.RGBToCMYK', inputs: ['0', '0'], expected: cmykOutput }], rejections: [] });
+  await checking;
+  assert.equal(a.calls.length, 0); assert.match(a.get('checks-status').textContent, /incomplete/);
 });

@@ -134,30 +134,8 @@ func run() error {
 			}
 		}
 	}
-	raw, err := command(ctx, nil, "./.gooo", "package", "execute", "--json", "--cases", casesPath, manifest)
+	generated, evidence, err := executeBrowserBatches(ctx, site, lock, bindings)
 	if err != nil {
-		return err
-	}
-	executionPath := filepath.Join(site, "execution.json")
-	if err := write(executionPath, raw); err != nil {
-		return err
-	}
-	generated, err := inspectReceipt(raw, lock, bindings, "")
-	if err != nil {
-		return err
-	}
-	replay, err := command(ctx, nil, "./.gooo", "package", "replay", "--json", "--receipt", executionPath, "--cases", casesPath, manifest)
-	if err != nil {
-		return err
-	}
-	replayed, err := inspectReceipt(replay, lock, bindings, "sha256:"+digest(raw))
-	if err != nil {
-		return err
-	}
-	if replayed != generated {
-		return fmt.Errorf("replay changed generated source")
-	}
-	if err := write(filepath.Join(site, "replay.json"), replay); err != nil {
 		return err
 	}
 	// These bytes are copied exactly. Never edit a generated function or package clause.
@@ -182,7 +160,7 @@ func run() error {
 			return err
 		}
 	}
-	for _, name := range []string{"LICENSE", "NOTICE", "third_party/GO-LICENSE", "upstream.json", manifest, casesPath} {
+	for _, name := range []string{"LICENSE", "NOTICE", "third_party/GO-LICENSE", "upstream.json", manifest} {
 		if err := copyFile(name, filepath.Join(site, name)); err != nil {
 			return err
 		}
@@ -204,12 +182,20 @@ func run() error {
 		return err
 	}
 	metadata := map[string]any{
-		"schema": "gooo/browser-demo/v1", "compiler_revision": lock.CompilerRevision,
+		"schema": "gooo/browser-demo/v2", "compiler_revision": lock.CompilerRevision,
 		"compiler_version": lock.CompilerVersion, "go_version": lock.GoVersion,
 		"source_revision": strings.TrimSpace(string(revision)), "source_dirty": len(status) > 0,
 		"source_sha256": sources, "generated_sha256": digest([]byte(generated)),
-		"wasm_sha256": digest(wasm), "wasm_bytes": len(wasm), "execution_sha256": digest(raw),
+		"wasm_sha256": digest(wasm), "wasm_bytes": len(wasm), "execution_sha256": evidence.Batches[0].ExecutionSHA,
+		"native_cases": evidence.Cases, "native_batches": len(evidence.Batches),
+		"entry_id": browserDispatchID, "reply_entity_id": browserReplyID,
+		"input_entity_ids": browserInputEntities[:],
 	}
+	indexRaw, err := os.ReadFile(filepath.Join(site, "evidence-index.json"))
+	if err != nil {
+		return err
+	}
+	metadata["evidence_index_sha256"] = digest(indexRaw)
 	b, err := json.MarshalIndent(metadata, "", "  ")
 	if err != nil {
 		return err

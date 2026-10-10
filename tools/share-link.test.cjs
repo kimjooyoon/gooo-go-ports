@@ -200,3 +200,45 @@ test('state and fragment argument shapes are validated without coercion', () => 
   }
   for (const value of [null, undefined, 1, true, [], {}, new String(fragment())]) assert.throws(() => share.parse(value));
 });
+
+const colorOperations = [['color.RGBToCMYK', 3], ['color.CMYKToRGB', 4]];
+
+test('color links use v2 and preserve every channel in order', () => {
+  for (const [operation, count] of colorOperations) {
+    const inputs = ['1', '17', '128', '255'].slice(0, count);
+    accepts(operation, inputs);
+    const encoded = share.format(state({ operation, inputs }));
+    assert.equal(encoded, `#gooo-share?v=2&op=${operation}&a=1&b=17&c=128${count === 4 ? '&d=255' : ''}&wasm=${wasm}&rev=${revision}`);
+    const params = new URLSearchParams(encoded.split('?')[1]);
+    for (const [key, value] of params) {
+      const missing = new URLSearchParams(params); missing.delete(key);
+      assert.throws(() => share.parse('#gooo-share?' + missing));
+      assert.throws(() => share.parse(encoded + `&${key}=${value}`));
+    }
+    assert.throws(() => share.parse(encoded + (count === 3 ? '&d=0' : '&e=0')));
+    for (const suffix of ['&result=trusted', '&%63=128', '&extra=0']) assert.throws(() => share.parse(encoded + suffix));
+    for (const version of ['1', '0', '3', '02', '2.0', '']) assert.throws(() => share.parse(encoded.replace('v=2', 'v=' + version)));
+    for (let n = 0; n <= 5; n++) if (n !== count) rejects(operation, Array(n).fill('0'));
+    rejects(operation, new Array(count));
+  }
+});
+
+test('every color channel accepts the full byte range and rejects invalid spellings or types', () => {
+  for (const [operation, count] of colorOperations) {
+    for (let index = 0; index < count; index++) {
+      for (let channel = 0; channel <= 255; channel++) {
+        const inputs = Array(count).fill('0'); inputs[index] = String(channel);
+        accepts(operation, inputs);
+      }
+      for (const value of ['-1', '256', '9007199254740993', '9223372036854775807', '-9223372036854775808', '', '-0', '+0', '01', ' 1', '1 ', '1.0', '1e2', '0xff', '1\n', 0, 255n, null, undefined, new String('1')]) {
+        const inputs = Array(count).fill('0'); inputs[index] = value;
+        rejects(operation, inputs);
+        if (typeof value === 'string') {
+          const params = new URLSearchParams(share.format(state({ operation, inputs: Array(count).fill('0') })).split('?')[1]);
+          params.set(['a', 'b', 'c', 'd'][index], value);
+          assert.throws(() => share.parse('#gooo-share?' + params));
+        }
+      }
+    }
+  }
+});

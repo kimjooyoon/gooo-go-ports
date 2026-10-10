@@ -1146,3 +1146,29 @@ footer {
   }
 
 }
+
+/* Keep three and four channel labels readable at narrow widths. */
+.input-fields.color-inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr))
+}
+
+.color-swatch {
+  height: 64px;
+  border: 1px solid var(--muted);
+  border-radius: 6px;
+  margin-top: 20px
+}
+
+.swatch-caption {
+  margin: 7px 0 0;
+  font-size: 11px;
+  color: var(--muted)
+}
+
+@media (max-width: 620px) {
+  .scenario-options {
+    gap: 10px;
+    flex-wrap: wrap
+  }
+}

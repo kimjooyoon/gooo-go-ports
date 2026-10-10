@@ -15,9 +15,13 @@
     'bits.LeadingZeros8': { scenario: 'bytes', path: 'go/math/bits', source: 'ports/math/bits.gooo', label: 'Byte value', domain: 'byte · 0…255', example: '15', description: 'Count the zero bits before the first one in an 8-bit byte.', help: 'All eight positions count: a zero byte has 8 leading zeros.' },
     'bits.TrailingZeros8': { scenario: 'bytes', path: 'go/math/bits', source: 'ports/math/bits.gooo', label: 'Byte value', domain: 'byte · 0…255', example: '128', description: 'Count the zero bits after the last one in an 8-bit byte.', help: 'A zero byte has 8 trailing zeros.' },
     'bits.OnesCount8': { scenario: 'bytes', path: 'go/math/bits', source: 'ports/math/bits.gooo', label: 'Byte value', domain: 'byte · 0…255', example: '170', description: 'Count the one bits in the binary representation of a byte.', help: 'For example, decimal 170 is binary 10101010 and contains four one bits.' },
-    'bits.Reverse8': { scenario: 'bytes', path: 'go/math/bits', source: 'ports/math/bits.gooo', label: 'Byte value', domain: 'byte · 0…255', example: '170', description: 'Reverse the order of all eight bits in a byte.', help: 'Try decimal 170: binary 10101010 becomes 01010101.' }
+    'bits.Reverse8': { scenario: 'bytes', path: 'go/math/bits', source: 'ports/math/bits.gooo', label: 'Byte value', domain: 'byte · 0…255', example: '170', description: 'Reverse the order of all eight bits in a byte.', help: 'Try decimal 170: binary 10101010 becomes 01010101.' },
+    'color.RGBToCMYK': { scenario: 'colors', path: 'go/image/color', source: 'ports/image/color.gooo', labels: ['Red', 'Green', 'Blue'], examples: ['64', '128', '192'], output: 'cmyk', domain: 'byte channels · 0…255', description: 'Convert red, green, and blue channels to cyan, magenta, yellow, and black.', help: 'Each channel is a decimal integer from 0 to 255. Integer rounding can change a color on a round trip. This conversion does not use printer or ICC profiles.' },
+    'color.CMYKToRGB': { scenario: 'colors', path: 'go/image/color', source: 'ports/image/color.gooo', labels: ['Cyan', 'Magenta', 'Yellow', 'Black'], examples: ['170', '85', '0', '63'], output: 'rgb', domain: 'byte channels · 0…255', description: 'Convert cyan, magenta, yellow, and black channels to red, green, and blue.', help: 'Each channel is a decimal integer from 0 to 255. Integer rounding can change a color on a round trip. This conversion does not use printer or ICC profiles.' }
   };
-  const scenarios = { http: 'http.StatusText', unicode: 'utf16.EncodeRune', bytes: 'bits.Reverse8' };
+  const scenarios = { http: 'http.StatusText', unicode: 'utf16.EncodeRune', bytes: 'bits.Reverse8', colors: 'color.RGBToCMYK' };
+  const inputNames = ['first', 'second', 'third', 'fourth'];
+  const outputChannels = { rgb: ['red', 'green', 'blue'], cmyk: ['cyan', 'magenta', 'yellow', 'black'] };
   let ready = false;
   let busy = false;
   let checksRunning = false;
@@ -67,8 +71,7 @@
       sharedInput = window.GoooShare.parse(window.location.hash);
       if (sharedInput) {
         selectOperation(sharedInput.operation, false);
-        $('first-input').value = sharedInput.inputs[0];
-        $('second-input').value = sharedInput.inputs[1];
+        inputNames.forEach((name, i) => { $(`${name}-input`).value = sharedInput.inputs[i] || '0'; });
         sharedPending = true;
         shareNotice('Shared input loaded. Waiting for the program…');
         maybeRunSharedInput();
@@ -138,9 +141,15 @@
     const operation = operations[name];
     $('operation').value = name;
     $('function-description').textContent = operation.description;
-    $('first-label').textContent = operation.label;
-    $('second-field').hidden = !operation.second;
-    $('second-input').disabled = !operation.second;
+    const labels = operation.labels || (operation.second ? [operation.label, 'Low surrogate'] : [operation.label]);
+    const examples = operation.examples || [operation.example, operation.second || '0'];
+    inputNames.forEach((field, i) => {
+      $(`${field}-label`).textContent = labels[i] || '';
+      $(`${field}-field`).hidden = i >= labels.length;
+      $(`${field}-input`).disabled = i >= labels.length;
+      if (resetInput) $(`${field}-input`).value = examples[i] || '0';
+    });
+    $('input-fields').classList.toggle('color-inputs', !!operation.labels);
     $('input-domain').replaceChildren(document.createTextNode('Input domain '));
     const domain = document.createElement('code');
     domain.textContent = operation.domain;
@@ -152,10 +161,6 @@
         : '-2147483648 to 2147483647 for each input';
     $('input-help').textContent = operation.help;
     $('package-path').textContent = operation.path;
-    if (resetInput) {
-      $('first-input').value = operation.example;
-      $('second-input').value = operation.second || '0';
-    }
     document.querySelectorAll('[data-scenario]').forEach((button) => {
       const active = button.dataset.scenario === operation.scenario;
       button.classList.toggle('active', active);
@@ -165,8 +170,20 @@
     clearResult();
   }
 
+  function currentInputs(name) {
+    const operation = operations[name];
+    return operation.labels ? inputNames.slice(0, operation.labels.length).map(field => $(`${field}-input`).value)
+      : [$('first-input').value, operation.second ? $('second-input').value : '0'];
+  }
+
   function validOutput(output) {
     if (!output || typeof output !== 'object') return false;
+    if (Object.hasOwn(outputChannels, output.type)) {
+      const keys = outputChannels[output.type];
+      return output.value && typeof output.value === 'object' && !Array.isArray(output.value) &&
+        Object.keys(output.value).sort().join(',') === [...keys].sort().join(',') &&
+        keys.every(key => typeof output.value[key] === 'string' && /^(?:0|[1-9][0-9]{0,2})$/.test(output.value[key]) && BigInt(output.value[key]) <= 255n);
+    }
     if (output.type === 'text') return typeof output.value === 'string';
     if (output.type === 'integer') return typeof output.value === 'string' && /^-?\d+$/.test(output.value);
     if (output.type === 'boolean') return typeof output.value === 'boolean';
@@ -180,6 +197,7 @@
 
   function sameOutput(actual, expected) {
     if (!validOutput(actual) || !validOutput(expected) || actual.type !== expected.type) return false;
+    if (Object.hasOwn(outputChannels, actual.type)) return outputChannels[actual.type].every(key => actual.value[key] === expected.value[key]);
     return actual.type === 'pair'
       ? actual.value.high === expected.value.high && actual.value.low === expected.value.low
       : actual.value === expected.value;
@@ -187,12 +205,13 @@
 
   function invoke(operation, inputs) {
     if (!ready || typeof window.goooRun !== 'function') throw new Error('The WebAssembly runtime is not ready. Try reloading the page.');
-    const raw = window.goooRun(operation, inputs[0], inputs[1] === undefined ? '0' : inputs[1]);
+    const raw = window.goooRun(operation, ...inputs);
     if (typeof raw !== 'string') throw new Error('The runtime returned an unexpected response.');
     let result;
     try { result = JSON.parse(raw); } catch { throw new Error('The runtime returned invalid JSON.'); }
     if (!result || typeof result.ok !== 'boolean') throw new Error('The runtime response is missing its status.');
-    if (result.ok && (result.operation !== operation || !sameInputs(result.inputs, inputs) || !validOutput(result.output))) {
+    if (result.ok && (result.operation !== operation || !sameInputs(result.inputs, inputs) || !validOutput(result.output) ||
+        (Object.hasOwn(operations, operation) && operations[operation].output && result.output.type !== operations[operation].output))) {
       throw new Error('The runtime result did not match the requested function, inputs, or output format.');
     }
     if (!result.ok && (typeof result.error !== 'string' || !result.error)) throw new Error('The runtime returned an invalid error response.');
@@ -223,10 +242,10 @@
     type.className = 'result-type';
     type.textContent = output.type === 'pair' ? 'SURROGATE PAIR' : output.type;
     area.append(type);
-    if (output.type === 'pair') {
+    if (output.type === 'pair' || Object.hasOwn(outputChannels, output.type)) {
       const pair = document.createElement('div');
       pair.className = 'pair-result';
-      for (const key of ['high', 'low']) {
+      for (const key of outputChannels[output.type] || ['high', 'low']) {
         const part = document.createElement('div');
         part.className = 'pair-part';
         const label = document.createElement('span');
@@ -245,8 +264,23 @@
     }
     const note = document.createElement('p');
     note.className = 'result-detail';
-    note.textContent = output.value === '' ? 'Empty string · this status code has no registered description.' : 'Returned by the compiled Gooo function.';
+    note.textContent = Object.hasOwn(outputChannels, output.type)
+      ? 'Returned by the compiled Gooo function. Integer rounding can change channel values when converting back.'
+      : output.value === '' ? 'Empty string · this status code has no registered description.' : 'Returned by the compiled Gooo function.';
     area.append(note);
+    if (result.operation === 'color.RGBToCMYK' || result.operation === 'color.CMYKToRGB') {
+      const rgb = result.operation === 'color.RGBToCMYK' ? result.inputs : outputChannels.rgb.map(key => output.value[key]);
+      const caption = `${result.operation === 'color.RGBToCMYK' ? 'Input' : 'Returned'} RGB: ${rgb.join(', ')}`;
+      const swatch = document.createElement('div');
+      swatch.className = 'color-swatch';
+      swatch.style.backgroundColor = `rgb(${rgb.join(', ')})`;
+      swatch.setAttribute('role', 'img');
+      swatch.setAttribute('aria-label', caption);
+      const preview = document.createElement('p');
+      preview.className = 'swatch-caption';
+      preview.textContent = caption;
+      area.append(swatch, preview);
+    }
     $('raw-output').textContent = JSON.stringify(result, null, 2);
     $('raw-result').hidden = false;
   }
@@ -255,7 +289,7 @@
     if (!ready || busy || checksRunning || shareBlocked) return false;
     clearResult();
     const name = $('operation').value;
-    const inputs = [$('first-input').value, operations[name].second ? $('second-input').value : '0'];
+    const inputs = currentInputs(name);
     busy = true;
     updateButtons();
     try {
@@ -285,7 +319,7 @@
     const generation = ++shareGeneration;
     try {
       const name = $('operation').value;
-      const inputs = [$('first-input').value, operations[name].second ? $('second-input').value : '0'];
+      const inputs = currentInputs(name);
       const url = new URL(window.location.href);
       url.hash = window.GoooShare.format({ operation: name, inputs, wasm: metadata.wasm_sha256, revision: metadata.source_revision });
       try {
@@ -305,8 +339,7 @@
   });
 
   $('operation').addEventListener('change', () => { forgetSharedInput(); selectOperation($('operation').value); });
-  $('first-input').addEventListener('input', () => { forgetSharedInput(); clearResult(); });
-  $('second-input').addEventListener('input', () => { forgetSharedInput(); clearResult(); });
+  inputNames.forEach(name => $(`${name}-input`).addEventListener('input', () => { forgetSharedInput(); clearResult(); }));
   document.querySelectorAll('[data-scenario]').forEach((button) => button.addEventListener('click', () => {
     forgetSharedInput(); selectOperation(scenarios[button.dataset.scenario]);
   }));
@@ -332,7 +365,7 @@
       const response = await fetch('./fixtures.json');
       if (!response.ok) throw new Error(`Reference cases could not be loaded (HTTP ${response.status}).`);
       const fixtures = await response.json();
-      if (!Array.isArray(fixtures.cases) || fixtures.cases.length === 0 || !Array.isArray(fixtures.rejections)) throw new Error('The fixture file has an unexpected format.');
+      if (!['gooo/browser-fixtures/v1', 'gooo/browser-fixtures/v2'].includes(fixtures.schema) || !Array.isArray(fixtures.cases) || fixtures.cases.length === 0 || !Array.isArray(fixtures.rejections)) throw new Error('The fixture file has an unexpected format.');
       const total = fixtures.cases.length + fixtures.rejections.length;
       progress.max = total;
       progress.value = 0;
@@ -343,7 +376,8 @@
         await new Promise((resolve) => window.setTimeout(resolve, 0));
       };
       for (const item of fixtures.cases) {
-        if (!item || typeof item.operation !== 'string' || !Array.isArray(item.inputs) || item.inputs.length !== 2 || item.inputs.some((input) => typeof input !== 'string') || !validOutput(item.expected)) throw new Error('A reference case has an unexpected format.');
+        if (!item || typeof item.operation !== 'string' || !validOutput(item.expected)) throw new Error('A reference case has an unexpected format.');
+        window.GoooShare.validateInputs(item.operation, item.inputs);
         try {
           const result = invoke(item.operation, item.inputs);
           if (result.ok && sameOutput(result.output, item.expected)) passed++;
@@ -353,7 +387,7 @@
         if (compared % 25 === 0) await tick();
       }
       for (const item of fixtures.rejections) {
-        if (!item || typeof item.operation !== 'string' || !Array.isArray(item.inputs) || item.inputs.length !== 2 || item.inputs.some((input) => typeof input !== 'string')) throw new Error('An invalid-input case has an unexpected format.');
+        if (!item || typeof item.operation !== 'string' || !Array.isArray(item.inputs) || item.inputs.some((input) => typeof input !== 'string')) throw new Error('An invalid-input case has an unexpected format.');
         try {
           const result = invoke(item.operation, item.inputs);
           if (!result.ok) rejected++;

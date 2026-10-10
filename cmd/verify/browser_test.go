@@ -20,7 +20,7 @@ func TestBrowserFixturesKeepOracleCoverageAndExactStrings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(doc.Cases) != 3137 || len(doc.Rejections) != 51 || doc.GoVersion != lock.GoVersion || doc.CompilerRevision != lock.CompilerRevision {
+	if len(doc.Cases) != 4437 || len(doc.Rejections) != 172 || doc.GoVersion != lock.GoVersion || doc.CompilerRevision != lock.CompilerRevision {
 		t.Fatalf("changed fixture scope: %d cases, %d rejections", len(doc.Cases), len(doc.Rejections))
 	}
 	counts := map[string]int{}
@@ -48,9 +48,10 @@ func TestBrowserFixturesKeepOracleCoverageAndExactStrings(t *testing.T) {
 			if _, ok := c.Expected.Value.(string); !ok {
 				t.Fatal("integer fixture would enter JavaScript as a number")
 			}
-		case "pair":
+		case "pair", "rgb", "cmyk":
 			pair, ok := c.Expected.Value.(map[string]string)
-			if !ok || len(pair) != 2 {
+			want := map[string]int{"pair": 2, "rgb": 3, "cmyk": 4}[c.Expected.Type]
+			if !ok || len(pair) != want {
 				t.Fatal("pair fixture lost string-valued integers")
 			}
 		case "text":
@@ -75,7 +76,7 @@ func TestBrowserFixturesKeepOracleCoverageAndExactStrings(t *testing.T) {
 			byteInputs[c.Operation][c.Inputs[0]] = true
 		}
 	}
-	if len(counts) != 13 || counts["http.StatusText"] != 627 || counts["utf16.DecodeRune"] != 164 || len(byteInputs) != 6 {
+	if len(counts) != 15 || counts["color.RGBToCMYK"] != 637 || counts["color.CMYKToRGB"] != 663 || counts["http.StatusText"] != 627 || counts["utf16.DecodeRune"] != 164 || len(byteInputs) != 6 {
 		t.Fatalf("wrong operation roster: %v", counts)
 	}
 	for operation, inputs := range byteInputs {
@@ -90,7 +91,7 @@ func TestBrowserFixturesKeepOracleCoverageAndExactStrings(t *testing.T) {
 	}
 	for _, c := range doc.Rejections {
 		calls := 0
-		raw := demobridge.Run(c.Operation, c.Inputs[0], c.Inputs[1], func(string, int64, int64) any { calls++; return nil })
+		raw := demobridge.Run(c.Operation, c.Inputs, func(string, int64, int64, int64, int64) any { calls++; return nil })
 		var result struct {
 			OK    bool   `json:"ok"`
 			Error string `json:"error"`
@@ -133,6 +134,11 @@ func TestBrowserRowRejectsMalformedOracleShapes(t *testing.T) {
 		{"utf16.DecodeRune", testCase{Inputs: []any{int64(0)}, Expected: int64(65533)}},
 		{"bits.Len8", testCase{Inputs: []any{int64(1)}, Expected: 1.5}},
 		{"utf16.EncodeRune", testCase{Inputs: []any{int64(0)}, Expected: map[string]any{"high": true, "low": 0}}},
+		{"color.RGBToCMYK", testCase{Inputs: []any{int64(0), int64(0), int64(256)}, Expected: map[string]int{"cyan": 0, "magenta": 0, "yellow": 0, "black": 0}}},
+		{"color.CMYKToRGB", testCase{Inputs: []any{int64(0), int64(0), int64(0)}, Expected: map[string]int{"red": 0, "green": 0, "blue": 0}}},
+		{"color.CMYKToRGB", testCase{Inputs: []any{int64(0), int64(0), int64(0), int64(0)}, Expected: map[string]any{"red": "255", "green": 255, "blue": 255}}},
+		{"color.RGBToCMYK", testCase{Inputs: []any{int64(0), int64(0), int64(0)}, Expected: map[string]int{"cyan": 0, "magenta": 0, "yellow": 0, "other": 255}}},
+		{"color.RGBToCMYK", testCase{Inputs: []any{int64(0), int64(0), int64(0)}, Expected: map[string]int{"cyan": 0, "magenta": 0, "yellow": 0, "black": 256}}},
 		{"unknown.Operation", testCase{Inputs: []any{int64(0)}, Expected: 0}},
 	} {
 		if _, err := browserRow(test.operation, test.row); err == nil {

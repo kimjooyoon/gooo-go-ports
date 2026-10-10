@@ -64,7 +64,7 @@ func TestInspectRejectsEntryIdentityTampering(t *testing.T) {
 			e.Result.Runtime.Traces[1].Deliveries[0].Inputs[2].Entity = "other"
 		},
 	}
-	for position := 0; position < 3; position++ {
+	for position := 0; position < 5; position++ {
 		for _, replacement := range []string{"", "gooo://std/boolean"} {
 			tests[fmt.Sprintf("export input%d entity %q", position, replacement)] = func(e *receipt) {
 				e.Result.Program.Image.Packages[1].Exports[1].InputTypes[position] = replacement

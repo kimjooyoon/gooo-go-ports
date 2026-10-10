@@ -12,27 +12,31 @@
     'utf16.IsSurrogate': 'rune', 'utf16.RuneLen': 'rune',
     'utf16.EncodeRune': 'rune', 'utf16.DecodeRune': 'pair',
     'bits.Len8': 'byte', 'bits.LeadingZeros8': 'byte', 'bits.TrailingZeros8': 'byte',
-    'bits.OnesCount8': 'byte', 'bits.Reverse8': 'byte'
+    'bits.OnesCount8': 'byte', 'bits.Reverse8': 'byte',
+    'color.RGBToCMYK': 'rgb', 'color.CMYKToRGB': 'cmyk'
   });
-  const required = ['v', 'op', 'a', 'b', 'wasm', 'rev'];
+  const channels = ['a', 'b', 'c', 'd'];
   const decimal = /^(?:0|[1-9][0-9]*|-[1-9][0-9]*)$/;
   const hash = /^[a-f0-9]{64}$/;
   const revision = /^[a-f0-9]{40}$/;
 
+  const arity = (operation) => domains[operation] === 'rgb' ? 3 : domains[operation] === 'cmyk' ? 4 : 2;
+
   function validateInputs(operation, inputs) {
     if (typeof operation !== 'string' || !Object.hasOwn(domains, operation)) throw new Error('This function is not supported.');
-    if (!Array.isArray(inputs) || inputs.length !== 2 || inputs.some(value => typeof value !== 'string')) {
-      throw new Error('The link must contain exactly two input strings.');
+    if (!Array.isArray(inputs) || inputs.length !== arity(operation)) {
+      throw new Error(`This function requires exactly ${arity(operation)} input strings.`);
     }
     const domain = domains[operation];
+    const byte = ['byte', 'rgb', 'cmyk'].includes(domain);
     for (const value of inputs) {
-      if (value.length > 20 || !decimal.test(value)) throw new Error('Use decimal integers without spaces, a plus sign, or leading zeros.');
+      if (typeof value !== 'string' || value.length > 20 || !decimal.test(value)) throw new Error('Use decimal integers without spaces, a plus sign, or leading zeros.');
       const integer = BigInt(value);
-      const minimum = domain === 'int64' ? -9223372036854775808n : domain === 'byte' ? 0n : -2147483648n;
-      const maximum = domain === 'int64' ? 9223372036854775807n : domain === 'byte' ? 255n : 2147483647n;
+      const minimum = domain === 'int64' ? -9223372036854775808n : byte ? 0n : -2147483648n;
+      const maximum = domain === 'int64' ? 9223372036854775807n : byte ? 255n : 2147483647n;
       if (integer < minimum || integer > maximum) throw new Error('An input is outside this function’s accepted range.');
     }
-    if (domain !== 'pair' && inputs[1] !== '0') throw new Error('This function accepts one input; its unused second value must be 0.');
+    if (!['pair', 'rgb', 'cmyk'].includes(domain) && inputs[1] !== '0') throw new Error('This function accepts one input; its unused second value must be 0.');
   }
 
   function validateState(state) {
@@ -49,14 +53,18 @@
     if (fragment.length > 1024) throw new Error('The shared link is too long.');
     if (!fragment.startsWith(prefix)) throw new Error('The shared-link format is not supported.');
     const values = new URLSearchParams(fragment.slice(prefix.length));
+    const operation = values.get('op');
+    if (!Object.hasOwn(domains, operation)) throw new Error('This function is not supported.');
+    const count = arity(operation);
+    if (values.get('v') !== (count === 2 ? '1' : '2')) throw new Error('This shared-link version is not supported for this function.');
+    const required = ['v', 'op', ...channels.slice(0, count), 'wasm', 'rev'];
     const seen = new Set();
     for (const [key] of values) {
       if (!required.includes(key) || seen.has(key)) throw new Error('The shared link has unknown or repeated fields.');
       seen.add(key);
     }
     if (seen.size !== required.length) throw new Error('The shared link is missing required fields.');
-    if (values.get('v') !== '1') throw new Error('This shared-link version is not supported.');
-    const state = { operation: values.get('op'), inputs: [values.get('a'), values.get('b')],
+    const state = { operation, inputs: channels.slice(0, count).map(key => values.get(key)),
       wasm: values.get('wasm'), revision: values.get('rev') };
     validateState(state);
     return state;
@@ -64,8 +72,11 @@
 
   function format(state) {
     validateState(state);
-    return prefix + new URLSearchParams({ v: '1', op: state.operation, a: state.inputs[0],
-      b: state.inputs[1], wasm: state.wasm, rev: state.revision }).toString();
+    const values = new URLSearchParams({ v: state.inputs.length === 2 ? '1' : '2', op: state.operation });
+    state.inputs.forEach((value, i) => values.append(channels[i], value));
+    values.append('wasm', state.wasm);
+    values.append('rev', state.revision);
+    return prefix + values.toString();
   }
 
   return Object.freeze({ parse, format, validateInputs });

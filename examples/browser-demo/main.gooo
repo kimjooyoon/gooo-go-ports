@@ -1,5 +1,5 @@
 // Browser-facing Gooo dispatcher. Calculations stay in the imported ports.
-// input0 selects an operation; input1 and input2 carry its integer arguments.
+// input0 selects an operation; input1 through input4 carry integer arguments.
 // The JS bridge checks Go-compatible byte/rune domains before calling this API.
 // Unused reply fields keep their zero values. Unknown operations return
 // text "UNKNOWN_OPERATION" with all other fields zero/false.
@@ -9,55 +9,65 @@ import http "go/net/http"
 import utf8 "go/unicode/utf8"
 import utf16 "go/unicode/utf16"
 import bits "go/math/bits"
+import color "go/image/color"
 
 entity Text id "gooo://std/text"
 entity Integer id "gooo://std/integer"
-entity Reply id "gooo://go-ports/examples/browser-demo/reply" fields {
-    field text id "gooo://go-ports/examples/browser-demo/reply/text" type string required one
-    field value id "gooo://go-ports/examples/browser-demo/reply/value" type integer required one
-    field flag id "gooo://go-ports/examples/browser-demo/reply/flag" type boolean required one
-    field high id "gooo://go-ports/examples/browser-demo/reply/high" type integer required one
-    field low id "gooo://go-ports/examples/browser-demo/reply/low" type integer required one
+entity Reply id "gooo://go-ports/examples/browser-demo/reply/v2" fields {
+    field text id "gooo://go-ports/examples/browser-demo/reply/v2/text" type string required one
+    field flag id "gooo://go-ports/examples/browser-demo/reply/v2/flag" type boolean required one
+    field first id "gooo://go-ports/examples/browser-demo/reply/v2/first" type integer required one
+    field second id "gooo://go-ports/examples/browser-demo/reply/v2/second" type integer required one
+    field third id "gooo://go-ports/examples/browser-demo/reply/v2/third" type integer required one
+    field fourth id "gooo://go-ports/examples/browser-demo/reply/v2/fourth" type integer required one
 }
 
-activity Dispatch(Text, Integer, Integer) -> Reply id "gooo://go-ports/examples/browser-demo/dispatch" computes `if input0 == "http.StatusText" {
-    return Reply{text: http.StatusText(input1), value: 0, flag: false, high: 0, low: 0}
+activity Dispatch(Text, Integer, Integer, Integer, Integer) -> Reply id "gooo://go-ports/examples/browser-demo/dispatch/v2" computes `if input0 == "http.StatusText" {
+    return Reply{text: http.StatusText(input1), flag: false, first: 0, second: 0, third: 0, fourth: 0}
 }
 if input0 == "utf8.ValidRune" {
-    return Reply{text: "", value: 0, flag: utf8.ValidRune(input1), high: 0, low: 0}
+    return Reply{text: "", flag: utf8.ValidRune(input1), first: 0, second: 0, third: 0, fourth: 0}
 }
 if input0 == "utf8.RuneLen" {
-    return Reply{text: "", value: utf8.RuneLen(input1), flag: false, high: 0, low: 0}
+    return Reply{text: "", flag: false, first: utf8.RuneLen(input1), second: 0, third: 0, fourth: 0}
 }
 if input0 == "utf8.RuneStart" {
-    return Reply{text: "", value: 0, flag: utf8.RuneStart(input1), high: 0, low: 0}
+    return Reply{text: "", flag: utf8.RuneStart(input1), first: 0, second: 0, third: 0, fourth: 0}
 }
 if input0 == "utf16.IsSurrogate" {
-    return Reply{text: "", value: 0, flag: utf16.IsSurrogate(input1), high: 0, low: 0}
+    return Reply{text: "", flag: utf16.IsSurrogate(input1), first: 0, second: 0, third: 0, fourth: 0}
 }
 if input0 == "utf16.RuneLen" {
-    return Reply{text: "", value: utf16.RuneLen(input1), flag: false, high: 0, low: 0}
+    return Reply{text: "", flag: false, first: utf16.RuneLen(input1), second: 0, third: 0, fourth: 0}
 }
 if input0 == "utf16.DecodeRune" {
-    return Reply{text: "", value: utf16.DecodeRune(input1, input2), flag: false, high: 0, low: 0}
+    return Reply{text: "", flag: false, first: utf16.DecodeRune(input1, input2), second: 0, third: 0, fourth: 0}
 }
 if input0 == "utf16.EncodeRune" {
     let pair = utf16.EncodeRune(input1)
-    return Reply{text: "", value: 0, flag: false, high: pair.high, low: pair.low}
+    return Reply{text: "", flag: false, first: pair.high, second: pair.low, third: 0, fourth: 0}
 }
 if input0 == "bits.Len8" {
-    return Reply{text: "", value: bits.Len8(input1), flag: false, high: 0, low: 0}
+    return Reply{text: "", flag: false, first: bits.Len8(input1), second: 0, third: 0, fourth: 0}
 }
 if input0 == "bits.LeadingZeros8" {
-    return Reply{text: "", value: bits.LeadingZeros8(input1), flag: false, high: 0, low: 0}
+    return Reply{text: "", flag: false, first: bits.LeadingZeros8(input1), second: 0, third: 0, fourth: 0}
 }
 if input0 == "bits.TrailingZeros8" {
-    return Reply{text: "", value: bits.TrailingZeros8(input1), flag: false, high: 0, low: 0}
+    return Reply{text: "", flag: false, first: bits.TrailingZeros8(input1), second: 0, third: 0, fourth: 0}
 }
 if input0 == "bits.OnesCount8" {
-    return Reply{text: "", value: bits.OnesCount8(input1), flag: false, high: 0, low: 0}
+    return Reply{text: "", flag: false, first: bits.OnesCount8(input1), second: 0, third: 0, fourth: 0}
 }
 if input0 == "bits.Reverse8" {
-    return Reply{text: "", value: bits.Reverse8(input1), flag: false, high: 0, low: 0}
+    return Reply{text: "", flag: false, first: bits.Reverse8(input1), second: 0, third: 0, fourth: 0}
 }
-return Reply{text: "UNKNOWN_OPERATION", value: 0, flag: false, high: 0, low: 0}`
+if input0 == "color.RGBToCMYK" {
+    let converted = color.RGBToCMYK(input1, input2, input3)
+    return Reply{text: "", flag: false, first: converted.cyan, second: converted.magenta, third: converted.yellow, fourth: converted.black}
+}
+if input0 == "color.CMYKToRGB" {
+    let converted = color.CMYKToRGB(input1, input2, input3, input4)
+    return Reply{text: "", flag: false, first: converted.red, second: converted.green, third: converted.blue, fourth: 0}
+}
+return Reply{text: "UNKNOWN_OPERATION", flag: false, first: 0, second: 0, third: 0, fourth: 0}`

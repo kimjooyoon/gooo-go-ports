@@ -11,10 +11,10 @@ import (
 )
 
 // Keep the browser's public entry contract independent of receipt claims.
-const browserDispatchID = "gooo://go-ports/examples/browser-demo/dispatch"
-const browserReplyID = "gooo://go-ports/examples/browser-demo/reply"
+const browserDispatchID = "gooo://go-ports/examples/browser-demo/dispatch/v2"
+const browserReplyID = "gooo://go-ports/examples/browser-demo/reply/v2"
 
-var browserInputEntities = [...]string{"gooo://std/text", "gooo://std/integer", "gooo://std/integer"}
+var browserInputEntities = [...]string{"gooo://std/text", "gooo://std/integer", "gooo://std/integer", "gooo://std/integer", "gooo://std/integer"}
 
 type receipt struct {
 	Schema         string `json:"schema"`
@@ -91,6 +91,10 @@ type receipt struct {
 }
 
 func inspectReceipt(raw []byte, lock lockfile, sources map[string]string, replayedFrom string) (string, error) {
+	return inspectBatchReceipt(raw, lock, sources, replayedFrom, casesPath)
+}
+
+func inspectBatchReceipt(raw []byte, lock lockfile, sources map[string]string, replayedFrom, caseFile string) (string, error) {
 	var e receipt
 	if err := json.Unmarshal(raw, &e); err != nil {
 		return "", err
@@ -125,7 +129,7 @@ func inspectReceipt(raw []byte, lock lockfile, sources map[string]string, replay
 			sourceOwners[filename] = pkg.Path
 		}
 	}
-	casesRaw, err := os.ReadFile(casesPath)
+	casesRaw, err := os.ReadFile(caseFile)
 	if err != nil {
 		return "", err
 	}
