@@ -1,0 +1,37 @@
+// Offline synthetic policy demonstration. Context values are fixture assertions,
+// not authentication, authoritative clock readings, or permission credentials.
+package policy
+namespace decision_policy_pilot
+entity Request id "gooo://decision-policy-pilot/request" fields {
+    field action id "gooo://decision-policy-pilot/request/action" type string required one
+    field tenant id "gooo://decision-policy-pilot/request/tenant" type string required one
+    field item_count id "gooo://decision-policy-pilot/request/item-count" type integer required one
+}
+entity Context id "gooo://decision-policy-pilot/context" fields {
+    field authenticated id "gooo://decision-policy-pilot/context/authenticated" type boolean required one
+    field tenant id "gooo://decision-policy-pilot/context/tenant" type string required one
+    field allowed_action id "gooo://decision-policy-pilot/context/allowed-action" type string required one
+    field item_limit id "gooo://decision-policy-pilot/context/item-limit" type integer required one
+    field now id "gooo://decision-policy-pilot/context/now" type integer required one
+    field expires_at id "gooo://decision-policy-pilot/context/expires-at" type integer required one
+}
+entity Choice id "gooo://decision-policy-pilot/choice" fields {
+    field status id "gooo://decision-policy-pilot/choice/status" type string required one
+    field choice id "gooo://decision-policy-pilot/choice/choice" type string required one
+}
+entity Outcome id "gooo://decision-policy-pilot/outcome" fields {
+    field allowed id "gooo://decision-policy-pilot/outcome/allowed" type boolean required one
+    field disposition id "gooo://decision-policy-pilot/outcome/disposition" type string required one
+    field reason id "gooo://decision-policy-pilot/outcome/reason" type string required one
+}
+activity Admit(Request, Context, Choice) -> Outcome id "gooo://decision-policy-pilot/admit" computes `if !input1.authenticated { return Outcome{allowed: false, disposition: "deny", reason: "unauthenticated"} }
+if input0.tenant == "" || input1.tenant == "" || input0.tenant != input1.tenant { return Outcome{allowed: false, disposition: "deny", reason: "tenant_mismatch"} }
+if input0.action != "export_records" || input0.action != input1.allowed_action { return Outcome{allowed: false, disposition: "deny", reason: "action_not_allowed"} }
+if input0.item_count <= 0 || input1.item_limit <= 0 { return Outcome{allowed: false, disposition: "deny", reason: "invalid_limit"} }
+if input0.item_count > input1.item_limit { return Outcome{allowed: false, disposition: "deny", reason: "limit_exceeded"} }
+if input1.expires_at <= input1.now { return Outcome{allowed: false, disposition: "deny", reason: "expired"} }
+if input2.status != "observed" { return Outcome{allowed: false, disposition: "review", reason: "provider_unavailable"} }
+if input2.choice != "allow" && input2.choice != "review" && input2.choice != "deny" { return Outcome{allowed: false, disposition: "deny", reason: "invalid_choice"} }
+if input2.choice == "deny" { return Outcome{allowed: false, disposition: "deny", reason: "model_denied"} }
+if input2.choice == "review" { return Outcome{allowed: false, disposition: "review", reason: "model_review"} }
+return Outcome{allowed: true, disposition: "allow", reason: "policy_satisfied"}`

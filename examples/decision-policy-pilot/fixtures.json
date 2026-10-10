@@ -1,0 +1,1300 @@
+[
+  {
+    "id": "allowed",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": true,
+      "disposition": "allow",
+      "reason": "policy_satisfied",
+      "spy_calls": 1
+    }
+  },
+  {
+    "id": "at-limit",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 10
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": true,
+      "disposition": "allow",
+      "reason": "policy_satisfied",
+      "spy_calls": 1
+    }
+  },
+  {
+    "id": "over-limit",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 11
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "limit_exceeded",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "unauthenticated",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": false,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "unauthenticated",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "different-tenant",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "beta",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "tenant_mismatch",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "empty-request-tenant",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "tenant_mismatch",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "empty-context-tenant",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "tenant_mismatch",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "wrong-action",
+    "input": {
+      "request": {
+        "action": "delete_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "action_not_allowed",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "context-action-mismatch",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "read_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "action_not_allowed",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "zero-count",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 0
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "invalid_limit",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "negative-count",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": -1
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "invalid_limit",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "zero-limit",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 0,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "invalid_limit",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "negative-limit",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": -1,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "invalid_limit",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "at-expiry",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 100
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "expired",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "expired",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 99
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "expired",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "provider-unavailable",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "unavailable",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "review",
+      "reason": "provider_unavailable",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "unknown-provider-status",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "unknown",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "review",
+      "reason": "provider_unavailable",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "model-review",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "review"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "review",
+      "reason": "model_review",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "model-deny",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "deny"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "model_denied",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "unknown-choice",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "ALLOW"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "invalid_choice",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "unauthenticated-precedence",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "beta",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": false,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "unavailable",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "unauthenticated",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "expiry-before-model-review",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 100
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "review"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "expired",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "int64-max-count-limit",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 9223372036854775807
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 9223372036854775807,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": true,
+      "disposition": "allow",
+      "reason": "policy_satisfied",
+      "spy_calls": 1
+    }
+  },
+  {
+    "id": "int64-min-count",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": -9223372036854775808
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "invalid_limit",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "int64-min-limit",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": -9223372036854775808,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "invalid_limit",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "over-2pow53-exact-limit",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 9007199254740993
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 9007199254740993,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": true,
+      "disposition": "allow",
+      "reason": "policy_satisfied",
+      "spy_calls": 1
+    }
+  },
+  {
+    "id": "over-2pow53-one-over",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 9007199254740993
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 9007199254740992,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "limit_exceeded",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "int64-max-time-before-expiry",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 9223372036854775806,
+        "expires_at": 9223372036854775807
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": true,
+      "disposition": "allow",
+      "reason": "policy_satisfied",
+      "spy_calls": 1
+    }
+  },
+  {
+    "id": "int64-max-time-expired",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 9223372036854775807,
+        "expires_at": 9223372036854775807
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "deny",
+      "reason": "expired",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "int64-min-time-before-expiry",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": -9223372036854775808,
+        "expires_at": -9223372036854775807
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": true,
+      "disposition": "allow",
+      "reason": "policy_satisfied",
+      "spy_calls": 1
+    }
+  },
+  {
+    "id": "unicode-tenant",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "합성-tenant",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "합성-tenant",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": true,
+      "disposition": "allow",
+      "reason": "policy_satisfied",
+      "spy_calls": 1
+    }
+  },
+  {
+    "id": "missing-request",
+    "input": {
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "missing-context",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "missing-decision",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "missing-count",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha"
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "null-request",
+    "input": {
+      "request": null,
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "null-authentication",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": null,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "boolean-count",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": true
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "fractional-count",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5.0
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "string-count",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": "5"
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "int64-overflow",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 9223372036854775808
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "int64-underflow",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": -9223372036854775809
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "extra-context-field",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200,
+        "admin": true
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "extra-envelope-field",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      },
+      "approved": true
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "nontext-choice",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "alpha",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": true
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "oversized-tenant",
+    "input": {
+      "request": {
+        "action": "export_records",
+        "tenant": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "item_count": 5
+      },
+      "context": {
+        "authenticated": true,
+        "tenant": "alpha",
+        "allowed_action": "export_records",
+        "item_limit": 10,
+        "now": 100,
+        "expires_at": 200
+      },
+      "decision": {
+        "status": "observed",
+        "choice": "allow"
+      }
+    },
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "duplicate-nested-tenant",
+    "raw_input": "{\"request\": {\"action\": \"export_records\", \"tenant\": \"alpha\", \"tenant\": \"beta\", \"item_count\": 5}, \"context\": {\"authenticated\": true, \"tenant\": \"alpha\", \"allowed_action\": \"export_records\", \"item_limit\": 10, \"now\": 100, \"expires_at\": 200}, \"decision\": {\"status\": \"observed\", \"choice\": \"allow\"}}",
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "duplicate-envelope-key",
+    "raw_input": "{\"request\": {\"action\": \"export_records\", \"tenant\": \"alpha\", \"item_count\": 5}, \"context\": {\"authenticated\": true, \"tenant\": \"alpha\", \"allowed_action\": \"export_records\", \"item_limit\": 10, \"now\": 100, \"expires_at\": 200}, \"decision\": {\"status\": \"observed\", \"choice\": \"allow\"},\"decision\":{\"status\":\"observed\",\"choice\":\"allow\"}}",
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  },
+  {
+    "id": "trailing-json",
+    "raw_input": "{\"request\": {\"action\": \"export_records\", \"tenant\": \"alpha\", \"item_count\": 5}, \"context\": {\"authenticated\": true, \"tenant\": \"alpha\", \"allowed_action\": \"export_records\", \"item_limit\": 10, \"now\": 100, \"expires_at\": 200}, \"decision\": {\"status\": \"observed\", \"choice\": \"allow\"}} {}",
+    "expected": {
+      "allowed": false,
+      "disposition": "reject",
+      "reason": "invalid_input",
+      "spy_calls": 0
+    }
+  }
+]

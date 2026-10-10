@@ -1,0 +1,5 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {"package_path": "pilot/policy", "activity": "Admit"},
+  "packages": [{"path": "pilot/policy", "sources": ["policy.gooo"]}]
+}

@@ -66,6 +66,14 @@ all four signed 64-bit coordinates, including reversed and empty rectangles. The
 Go `Min.X`, `Min.Y`, `Max.X`, `Max.Y` fields map to `min_x`, `min_y`, `max_x`, `max_y`;
 the port does not normalize them. These four operations are currently native only.
 
+The separate [offline decision-policy experiment](examples/decision-policy-pilot/README.md)
+applies explicit tenant, action, integer-limit and expiry rules to synthetic Choice
+proposals. It compares Gooo with an independently written Go policy and manual
+expectations, then counts calls to a mock operation. It is a small example for
+discussing policy-review and incident-reproduction work, with no live model API,
+real export or production-security claim. Its cases are separate from the port
+compatibility counts. The guide includes a focused request for workflow feedback.
+
 For a fixed snapshot, download [experimental release v0.1.0-preview.2](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.2).
 It includes separate source, native execution/replay evidence, and standalone browser
 archives, with licenses, provenance, and checksums. Downloads do not require a GitHub

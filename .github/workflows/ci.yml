@@ -339,6 +339,23 @@ jobs:
             crop-planner.workspace.json > out/crop-replay.json
           python3 tools/check-crop-example.py out/crop-example.json out/crop-replay.json
           python3 tools/check-rectangle-inputs.py out/rectangle-input-rejections
+      - name: Verify the offline decision-policy experiment
+        run: |
+          ./examples/decision-policy-pilot/run.sh
+          pilot_evidence=( "$PWD/examples/decision-policy-pilot/out"/run-* )
+          test "${#pilot_evidence[@]}" -eq 1
+          go -C examples/decision-policy-pilot vet ./...
+          PILOT_EVIDENCE="${pilot_evidence[0]}" \
+            go -C examples/decision-policy-pilot test -race -count=1 ./...
+          ./examples/decision-policy-pilot/run.sh --verify "${pilot_evidence[0]}"
+      - name: Upload offline policy experiment evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: decision-policy-pilot-evidence
+          path: examples/decision-policy-pilot/out/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Upload execution and diagnostic evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
