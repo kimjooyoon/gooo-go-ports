@@ -64,6 +64,10 @@ func run() error {
 			return fmt.Errorf("Go upstream source hash differs: %s", path)
 		}
 	}
+	suites, err := corpus()
+	if err != nil {
+		return err
+	}
 	root, err := filepath.Abs(*out)
 	if err != nil {
 		return err
@@ -120,7 +124,7 @@ func run() error {
 		}
 	}
 	reports := []observation{}
-	for _, s := range corpus() {
+	for _, s := range suites {
 		r := observation{Package: s.Package, Activity: s.Activity, Domain: s.Domain, Cases: len(s.Cases), ReplayEqual: true}
 		for start := 0; start < len(s.Cases); start += 128 {
 			end := min(start+128, len(s.Cases))
@@ -194,7 +198,7 @@ func run() error {
 	for _, r := range reports {
 		total += r.Cases
 	}
-	return save(filepath.Join(root, "summary.json"), map[string]any{"schema": "gooo/go-ports-differential/v1", "go_version": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH, "compiler_revision": lock.CompilerRevision, "source_sha256": sourceHashes, "ported_functions": 8, "consumer_programs": 1, "cases": total, "passed": total, "runs": reports, "scope": "Finite differential observations against pinned Go source, plus identical saved replay. RuneStart covers its entire byte domain; no claim of exhaustive equivalence for other domains or whole-package compatibility."})
+	return save(filepath.Join(root, "summary.json"), map[string]any{"schema": "gooo/go-ports-differential/v1", "go_version": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH, "compiler_revision": lock.CompilerRevision, "source_sha256": sourceHashes, "ported_functions": 13, "consumer_programs": 2, "cases": total, "passed": total, "runs": reports, "scope": "Finite differential observations against pinned Go source, plus identical saved replay. RuneStart and the five math/bits functions each cover all 256 byte values exactly once. Out-of-domain math/bits inputs are excluded; no claim of exhaustive equivalence for other domains or whole-package compatibility."})
 }
 func caseDocument(s suite) any {
 	rows := []any{}

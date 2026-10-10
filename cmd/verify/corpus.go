@@ -20,7 +20,7 @@ type suite struct {
 	Cases    []testCase `json:"cases"`
 }
 
-func corpus() []suite {
+func corpus() ([]suite, error) {
 	var all []suite
 	add := func(pkg, activity, domain string, inputs [][]any, oracle func([]any) any) {
 		s := suite{Package: pkg, Activity: activity, Domain: domain}
@@ -81,5 +81,9 @@ func corpus() []suite {
 		text := http.StatusText(int(n))
 		return map[string]any{"code": n, "text": text, "known": text != ""}
 	})
-	return all
+	byteSuites, err := mathBitsCorpus()
+	if err != nil {
+		return nil, err
+	}
+	return append(all, byteSuites...), nil
 }

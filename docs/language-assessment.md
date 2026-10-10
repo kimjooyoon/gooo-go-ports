@@ -8,7 +8,7 @@
 
 ## 이번에 옮기는 동작
 
-Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **8개 함수**를 Gooo 활동으로 표현한다.
+Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **13개 함수**를 Gooo 활동으로 표현한다.
 패키지 전체, HTTP 서버, 문자열 인코더 전체 또는 Go API와의 바이너리 호환을 주장하지 않는다.
 
 | 원본 | Gooo 원본 | 표현 방법과 호환 범위 |
@@ -18,6 +18,7 @@ Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **8개 함수**를 Gooo �
 | `unicode/utf8.RuneStart` | 같은 파일 | Go `byte` 범위인 0..255에서 연속 바이트 구간 128..191 제외. 범위 밖은 별도 확장 계약인 false |
 | `unicode/utf16.IsSurrogate`, `RuneLen` | [utf16.gooo](../ports/unicode/utf16.gooo) | 범위 비교로 서로게이트와 UTF-16 길이를 판별 |
 | `unicode/utf16.DecodeRune`, `EncodeRune` | 같은 파일 | 유효 범위를 먼저 검사한 뒤 곱셈·나눗셈·나머지로 두 10비트 성분 계산. EncodeRune의 두 결과는 `high`, `low` 레코드로 전달 |
+| `math/bits.Len8`, `LeadingZeros8`, `TrailingZeros8`, `OnesCount8`, `Reverse8` | [bits.gooo](../ports/math/bits.gooo) | 0..255를 먼저 검사한 뒤 비교와 정수 산술로 계산. 테이블·비트 연산·반복문을 쓰지 않으며 영역 밖은 -1이라는 별도 확장 계약 |
 
 Go의 `rune`은 int32이고 Gooo Integer는 int64다. 테스트에서 int64를 Go rune/byte로
 무조건 변환하면 잘림으로 잘못된 동등성 주장이 생긴다. 원본 입력 범위의 비교와 Gooo
@@ -27,11 +28,13 @@ Go의 `rune`은 int32이고 Gooo Integer는 int64다. 테스트에서 int64를 G
 원본은 Go의 [status.go](https://github.com/golang/go/blob/go1.27.2/src/net/http/status.go),
 [utf8.go](https://github.com/golang/go/blob/go1.27.2/src/unicode/utf8/utf8.go),
 [utf16.go](https://github.com/golang/go/blob/go1.27.2/src/unicode/utf16/utf16.go)다.
+`math/bits`는 같은 리비전의 `bits.go`, `bits_tables.go`, `make_tables.go`에 근거한다.
+테이블 값을 수동 복제하지 않고 길이 임계값과 8단계 산술 계산으로 표현한다.
 저작권 표기와 BSD 라이선스를 보존한다.
 
 ## 확인한 언어 기능
 
-위 8개 활동 모두 고정한 컴파일러의 `body-codegen --json`에서 `PASS`,
+첫 8개 활동과 추가한 `math/bits` 5개 활동은 고정한 컴파일러의 `body-codegen --json`에서 `PASS`,
 `route=preserve`를 반환했다. 정수·불리언·문자열 반환, 여러 입력, 조기 반환,
 지역 변수, 정수 나눗셈/나머지, 레코드 생성이 이번 소스의 생성 경로를 통과했다.
 이 관측은 코드 생성의 근거다. 원본 Go와 실제 출력이 같은지와 저장 재실행이 같은지는

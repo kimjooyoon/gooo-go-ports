@@ -1,0 +1,65 @@
+// Copyright 2017 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+// Adapted from Go 1.27.2 src/math/bits/bits.go, bits_tables.go and make_tables.go.
+// The upstream license is reproduced in third_party/GO-LICENSE.
+//
+// Go uint8 inputs are represented by Gooo Integer (int64).
+// Go int results and Reverse8's uint8 result also use Gooo Integer.
+// Compatibility is restricted to inputs 0..255; no narrowing conversion occurs.
+// Every activity returns -1 outside that domain as a Gooo extension contract.
+// The extension is separate from comparison with Go's uint8 functions.
+// Table lookups, loops and bit operations are replaced with bounded arithmetic.
+package bits
+namespace gooo_ports_math_bits
+
+entity Integer id "gooo://std/integer"
+
+// Minimum bits needed to represent the byte; zero needs zero bits.
+// The thresholds reproduce len8tab without indexing a table.
+activity Len8(Integer) -> Integer id "gooo://go/math/bits/Len8" computes `if input < 0 || input > 255 { return -1 }
+if input == 0 { return 0 }
+if input < 2 { return 1 }
+if input < 4 { return 2 }
+if input < 8 { return 3 }
+if input < 16 { return 4 }
+if input < 32 { return 5 }
+if input < 64 { return 6 }
+if input < 128 { return 7 }
+return 8`
+
+// Preserve Go's relation to Len8, including LeadingZeros8(0) == 8.
+// Guard before subtraction so the extension sentinel remains -1.
+activity LeadingZeros8(Integer) -> Integer id "gooo://go/math/bits/LeadingZeros8" computes `if input < 0 || input > 255 { return -1 }
+return 8 - Len8(input)`
+
+// The first non-zero remainder identifies the lowest set bit.
+// Zero is handled explicitly, as in the upstream ntz8 table generator.
+activity TrailingZeros8(Integer) -> Integer id "gooo://go/math/bits/TrailingZeros8" computes `if input < 0 || input > 255 { return -1 }
+if input == 0 { return 8 }
+if input % 2 != 0 { return 0 }
+if input % 4 != 0 { return 1 }
+if input % 8 != 0 { return 2 }
+if input % 16 != 0 { return 3 }
+if input % 32 != 0 { return 4 }
+if input % 64 != 0 { return 5 }
+if input % 128 != 0 { return 6 }
+return 7`
+
+// Sum the eight binary digits instead of indexing pop8tab.
+// Guarded non-negative division and remainder extract each digit exactly.
+activity OnesCount8(Integer) -> Integer id "gooo://go/math/bits/OnesCount8" computes `if input < 0 || input > 255 { return -1 }
+return input % 2 + input / 2 % 2 + input / 4 % 2 + input / 8 % 2 + input / 16 % 2 + input / 32 % 2 + input / 64 % 2 + input / 128 % 2`
+
+// Unroll the eight steps of the upstream rev8 table generator.
+// Doubling and adding the next binary digit replaces its shift/or expression.
+activity Reverse8(Integer) -> Integer id "gooo://go/math/bits/Reverse8" computes `if input < 0 || input > 255 { return -1 }
+let reversed = input % 2
+reversed = reversed + reversed + input / 2 % 2
+reversed = reversed + reversed + input / 4 % 2
+reversed = reversed + reversed + input / 8 % 2
+reversed = reversed + reversed + input / 16 % 2
+reversed = reversed + reversed + input / 32 % 2
+reversed = reversed + reversed + input / 64 % 2
+reversed = reversed + reversed + input / 128 % 2
+return reversed`

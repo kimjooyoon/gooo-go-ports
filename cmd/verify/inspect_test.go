@@ -86,13 +86,19 @@ func TestNumericComparisonPreservesInt64(t *testing.T) {
 	}
 }
 func TestCorpusDomainsAndCoverage(t *testing.T) {
-	all := corpus()
-	if len(all) != 9 {
-		t.Fatal("expected eight port functions and one consumer")
+	all, err := corpus()
+	if err != nil {
+		t.Fatal(err)
 	}
-	total := 0
+	if len(all) != 15 {
+		t.Fatal("expected thirteen port functions and two consumers")
+	}
+	total, originalTotal := 0, 0
 	for _, s := range all {
 		total += len(s.Cases)
+		if s.Package != "go/math/bits" && s.Package != "app/byte-summary" {
+			originalTotal += len(s.Cases)
+		}
 		for _, c := range s.Cases {
 			for _, v := range c.Inputs {
 				n := v.(int64)
@@ -117,7 +123,10 @@ func TestCorpusDomainsAndCoverage(t *testing.T) {
 			}
 		}
 	}
-	if total != 1861 {
+	if originalTotal != 1861 {
+		t.Fatalf("changed original corpus count: %d", originalTotal)
+	}
+	if total != 3147 {
 		t.Fatalf("changed corpus count: %d", total)
 	}
 }

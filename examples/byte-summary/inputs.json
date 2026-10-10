@@ -1,0 +1,11 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {"app/byte-summary:ByteSummary": 0},
+    {"app/byte-summary:ByteSummary": 1},
+    {"app/byte-summary:ByteSummary": 127},
+    {"app/byte-summary:ByteSummary": 128},
+    {"app/byte-summary:ByteSummary": 170},
+    {"app/byte-summary:ByteSummary": 255}
+  ]
+}

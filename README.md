@@ -1,7 +1,16 @@
 # Gooo Go Ports
 
+Go standard-library functions implemented in [Gooo](https://github.com/kimjooyoon/meta-ontology-go),
+with independent Go reference outputs and saved replay. The current scope is
+13 HTTP, Unicode, and 8-bit integer functions, plus two importing examples.
+Use Go 1.27.2, Git, and a POSIX shell: run `./tools/bootstrap.sh`, then
+`go run ./cmd/verify --out out/first` from this repository. The output directory must be new.
+The comparison covers 3,147 function-input cases; six byte-domain functions cover all 256 inputs.
+Other domains use finite boundary cases and samples. This is an independent experimental port,
+not a complete Go package implementation or an official Google/Go project.
+
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-첫 묶음은 Go 표준 라이브러리의 HTTP·Unicode 함수 8개입니다.
+현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수 함수 13개를 제공합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -18,10 +27,13 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | `go/unicode/utf8` | `RuneStart` | 0..255의 바이트가 continuation byte가 아닌지 판정. 전체 문자열 유효성 검사는 아님 |
 | `go/unicode/utf16` | `IsSurrogate`, `RuneLen` | 서로게이트 판정과 UTF-16 코드 단위 수 |
 | `go/unicode/utf16` | `DecodeRune`, `EncodeRune` | 서로게이트 쌍 변환. EncodeRune의 두 반환값은 `{high, low}` 레코드 |
+| `go/math/bits` | `Len8`, `LeadingZeros8`, `TrailingZeros8`, `OnesCount8`, `Reverse8` | 0..255 정수의 비트 길이, 앞·뒤 0 개수, 1 개수와 비트 순서 반전. 비교·산술로 구현 |
 
 원본의 `rune` 입력은 int32 범위를 Gooo Integer로 전달합니다. `byte` 호환 범위는
 0..255입니다. 묵시적으로 정수 폭을 줄이지 않습니다. `RuneStart`의 범위 밖 입력은
 Gooo 확장 동작으로 false를 반환하지만 원본과의 동등성 집계에는 넣지 않습니다.
+`go/math/bits`의 다섯 함수는 이 영역 밖에서 별도 확장 동작인 -1을 반환합니다.
+Go의 byte 변환처럼 입력을 잘라서 계산하지 않습니다. 0의 앞·뒤 0 개수는 원본과 같은 8입니다.
 `StatusText` 비교는 int가 64비트인 amd64·arm64에서 실행합니다.
 HTTP 서버나 UTF 인코딩 패키지 전체의 이식은 아닙니다.
 
@@ -61,6 +73,19 @@ mkdir -p out/demo
 예제의 `examples/inputs.json`을 편집하면 다른 상태 코드도 실행할 수 있습니다.
 새 모델이나 외부 추론 서비스가 필요하지 않습니다.
 
+두 번째 앱은 바이트의 비트 길이, 1 개수, 반전 값을 레코드로 돌려줍니다.
+
+```sh
+mkdir -p out/demo
+./.gooo package execute --json --inputs examples/byte-summary/inputs.json \
+  byte-summary.workspace.json > out/demo/byte-summary.json
+./.gooo package replay --json --receipt out/demo/byte-summary.json \
+  --inputs examples/byte-summary/inputs.json byte-summary.workspace.json > out/demo/byte-replay.json
+```
+
+입력 170의 결과는 `{"length":8,"ones":4,"reversed":85}`입니다.
+이 경로 역시 기대값 없는 입력 실행이며 위 원본 비교 검사와 별도로 사용할 수 있습니다.
+
 ## 다른 Gooo 프로그램에서 가져오기
 
 ```gooo
@@ -75,11 +100,12 @@ activity Valid(Integer) -> Boolean computes `return utf8.ValidRune(input)`
 원하는 포트 소스를 복사하거나 Git 리비전으로 고정하고, 사용하는 작업공간 명세에
 패키지 경로와 파일을 등록합니다. 전체 구성은 [gooo.workspace.json](gooo.workspace.json),
 실제 importing app은 [response.gooo](examples/response.gooo)에 있습니다.
+비트 연산을 가져오는 예제는 [ByteSummary](examples/byte-summary/main.gooo)입니다.
 현재 배포 단위는 Gooo 소스와 workspace 명세이며 Go의 패키지 관리자와는 별개입니다.
 
 ## 검증 범위
 
-고정된 Go 1.27.2 원본과 비교하는 입력은 **1,861건**입니다.
+고정된 Go 1.27.2 원본과 비교하는 입력은 **3,147건**입니다.
 
 | 대상 | 입력 수 | 구성 |
 | --- | ---: | --- |
@@ -89,17 +115,22 @@ activity Valid(Integer) -> Boolean computes `return utf8.ValidRune(input)`
 | UTF-16 IsSurrogate / RuneLen / EncodeRune | 각 162 | 같은 rune 경계값·표본 |
 | UTF-16 DecodeRune | 164 | 경계값 조합 100개와 유효 쌍 64개 |
 | HTTP importing app | 6 | 기존 상태 코드와 미등록 코드 |
+| math/bits 다섯 함수 | 각 256 | byte의 전체 영역, 함수마다 한 번씩 |
+| ByteSummary importing app | 6 | 0, 1, 127, 128, 170, 255의 길이·1 개수·비트 반전 레코드 |
 
-Gooo 실행 입력 상한에 맞춰 128건 이하로 나눈 20개 배치를 실행합니다.
+Gooo 실행 입력 상한에 맞춰 128건 이하로 나눈 31개 배치를 실행합니다.
 모든 기대값은 Gooo 구현과 별개인 Go 표준 함수로 계산합니다.
 검증 도구는 결과뿐 아니라 입력 순서, 원본 기대값, stable activity ID, 생성 코드 해시,
 컴파일러·Go 버전, workspace·입력 파일 해시, 저장 재실행 연결을 검사합니다.
 검사 도중 소스가 바뀌어도 처음 읽은 동일한 소스 스냅샷을 모든 배치에 사용합니다.
 잘못된 출력이나 변조된 실행 근거를 `PASS`로 오인하지 않는 회귀 테스트도 포함합니다.
 
-`RuneStart` 이외 함수의 모든 입력 영역을 증명한 것은 아닙니다.
+`RuneStart`와 `math/bits` 다섯 함수는 Go byte 영역을 전수 비교합니다.
+그 밖의 함수는 모든 입력을 검사한 것이 아닙니다. 여러 함수가 같은 정수 입력을 재사용하므로
+3,147은 전역적으로 서로 다른 정수 값의 개수가 아닙니다.
 별도 모델 학습, 성능 우위, 패키지 전체의 호환성은 검증 범위에 포함하지 않습니다.
-[첫 로컬 관측](evidence/initial.json)과 GitHub Actions의 전체 원본 artifact를 참고하세요.
+[첫 8개 함수의 관측](evidence/initial.json), [13개 함수의 관측](evidence/math-bits-20261010.json),
+GitHub Actions의 전체 원본 artifact를 참고하세요.
 
 ## 언어 개발로 돌려주는 자료
 

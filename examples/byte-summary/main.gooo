@@ -1,0 +1,14 @@
+// Consume three math/bits ports through actual Gooo package calls.
+// Inputs outside 0..255 yield -1 in each field, preserving the port contract.
+package byte_summary
+namespace gooo_ports_examples_byte_summary
+import bits "go/math/bits"
+
+entity Integer id "gooo://std/integer"
+entity ByteSummaryResult id "gooo://go-ports/examples/byte-summary" fields {
+    field length id "gooo://go-ports/examples/byte-summary/length" type integer required one
+    field ones id "gooo://go-ports/examples/byte-summary/ones" type integer required one
+    field reversed id "gooo://go-ports/examples/byte-summary/reversed" type integer required one
+}
+
+activity ByteSummary(Integer) -> ByteSummaryResult id "gooo://go-ports/examples/byte-summary/summarize" computes `return ByteSummaryResult{length: bits.Len8(input), ones: bits.OnesCount8(input), reversed: bits.Reverse8(input)}`

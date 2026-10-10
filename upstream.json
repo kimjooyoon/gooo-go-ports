@@ -10,6 +10,9 @@
     "src/net/http/status.go": "7633ca0ca545767f3db3d8960a96ee4ecd68fb39439c88b7c03efcb3d1786297",
     "src/unicode/utf8/utf8.go": "3c145ee25fd7631ebbc670fd1236e8c163ca30ae8913c796489efbf3f267ad54",
     "src/unicode/utf16/utf16.go": "6b8b3037015f41351d4a323513b57b8ac90caa69f69be31eaf02ca2a4632d0cd",
+    "src/math/bits/bits.go": "694e0114bda396589e8c993a3d7880a0b461da23ee64c272929a3a5b69c2acf2",
+    "src/math/bits/bits_tables.go": "c4cb4a05dab6d395d9d51720893a42f0a9d1cdf8a0c2383d87268e49acb73f7f",
+    "src/math/bits/make_tables.go": "dc21922114d16d59aa1fe303d5c6ba1e99229c06f3a56a3eff80e13616add2e4",
     "LICENSE": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
   },
   "ports": [
@@ -37,6 +40,21 @@
         "DecodeRune",
         "EncodeRune",
         "RuneLen"
+      ]
+    },
+    {
+      "source": "src/math/bits/bits.go",
+      "supporting_sources": [
+        "src/math/bits/bits_tables.go",
+        "src/math/bits/make_tables.go"
+      ],
+      "target": "ports/math/bits.gooo",
+      "symbols": [
+        "Len8",
+        "LeadingZeros8",
+        "TrailingZeros8",
+        "OnesCount8",
+        "Reverse8"
       ]
     }
   ]
