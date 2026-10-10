@@ -7,7 +7,7 @@
   'use strict';
   const prefix = '#gooo-share?';
   const domains = Object.freeze({
-    'http.StatusText': 'int64',
+    'http.StatusText': 'int64', 'unicode.IsSpace': 'rune',
     'time.Duration.Round': 'duration', 'time.Duration.Truncate': 'duration',
     'utf8.ValidRune': 'rune', 'utf8.RuneLen': 'rune', 'utf8.RuneStart': 'byte',
     'utf16.IsSurrogate': 'rune', 'utf16.RuneLen': 'rune',

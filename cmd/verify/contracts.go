@@ -19,6 +19,8 @@ type activityContract struct {
 func nativeActivityContracts() map[string]activityContract {
 	i := integerEntity
 	return map[string]activityContract{
+		"go/unicode:IsSpace":                  {"ports/unicode/space.gooo", "gooo://go/unicode/IsSpace", []string{i}},
+		"app/whitespace-inspector:Inspect":    {"examples/whitespace-inspector/main.gooo", "gooo://go-ports/examples/whitespace-inspector/inspect", []string{i}},
 		"go/time:DurationRound":               {"ports/time/duration.gooo", "gooo://go/time/Duration/Round", []string{i, i}},
 		"go/time:DurationTruncate":            {"ports/time/duration.gooo", "gooo://go/time/Duration/Truncate", []string{i, i}},
 		"app/duration-quantizer:Inspect":      {"examples/duration-quantizer/main.gooo", "gooo://go-ports/examples/duration-quantizer/inspect", []string{i, i}},
@@ -102,6 +104,7 @@ type workspaceExport struct {
 	Kind       string   `json:"kind"`
 	ID         string   `json:"id"`
 	InputTypes []string `json:"input_types"`
+	OutputType string   `json:"output_type,omitempty"`
 }
 type workspaceSource struct {
 	Filename string `json:"filename"`
@@ -155,6 +158,9 @@ func inspectWorkspace(image workspaceImage, s suite, contract activityContract, 
 			selected++
 			if export.Name != s.Activity || export.Kind != "activity" || export.ID != contract.ID || !reflect.DeepEqual(export.InputTypes, contract.InputEntities) {
 				return fmt.Errorf("selected workspace export contract")
+			}
+			if result := whitespaceResultContract(s); result.Entity != "" && export.OutputType != result.Entity {
+				return fmt.Errorf("selected workspace output type")
 			}
 		}
 	}

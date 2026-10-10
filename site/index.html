@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="./style.css">
   <script defer src="./wasm_exec.js"></script>
   <script defer src="./share.js"></script>
+  <script defer src="./codepoint.js"></script>
   <script defer src="./app.js"></script>
 </head>
 <body>
@@ -48,7 +49,7 @@
             <button type="button" class="scenario" data-scenario="colors" aria-pressed="false"><span class="scenario-number">04</span> Colors</button>
             <button type="button" class="scenario" data-scenario="duration" aria-pressed="false"><span class="scenario-number">05</span> Durations</button>
           </div>
-          <span class="function-count">18 functions · actual compiled code</span>
+          <span class="function-count">19 functions · actual compiled code</span>
         </div>
 
         <div class="workbench-body">
@@ -60,6 +61,9 @@
               <select id="operation" name="operation">
                 <optgroup label="HTTP">
                   <option value="http.StatusText">http.StatusText</option>
+                </optgroup>
+                <optgroup label="Unicode whitespace">
+                  <option value="unicode.IsSpace">unicode.IsSpace</option>
                 </optgroup>
                 <optgroup label="Unicode / UTF-8">
                   <option value="utf8.ValidRune">utf8.ValidRune</option>
@@ -104,6 +108,18 @@
                 <option value="unchanged">Zero multiple · original duration</option>
               </select>
             </div>
+            <div id="whitespace-presets-field" class="whitespace-presets" hidden>
+              <label for="whitespace-presets">Try a code point</label>
+              <select id="whitespace-presets">
+                <option value="">Choose an example…</option>
+                <option value="160">U+00A0 · non-breaking space</option>
+                <option value="133">U+0085 · next line</option>
+                <option value="8203">U+200B · zero-width space</option>
+                <option value="65279">U+FEFF · byte order mark</option>
+                <option value="9">U+0009 · tab</option>
+                <option value="12288">U+3000 · ideographic space</option>
+              </select>
+            </div>
             <div id="input-fields" class="input-fields">
               <div id="first-field" class="input-field">
                 <label id="first-label" for="first-input">Status code</label>
@@ -125,6 +141,12 @@
             <p id="input-domain" class="domain">Input domain <code>int64</code></p>
             <p id="input-range" class="input-range">-9223372036854775808 to 9223372036854775807</p>
             <p id="input-help" class="input-help">Use a decimal integer. Unknown status codes return an empty string.</p>
+            <div id="codepoint-helper" class="codepoint-helper" hidden>
+              <label for="codepoint-input">Or paste one code point</label>
+              <textarea id="codepoint-input" rows="1" disabled autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="codepoint-help codepoint-status"></textarea>
+              <p id="codepoint-help">Sets the decimal input above. Spaces are kept. Combining and joined sequences contain multiple code points; CRLF is rejected as two.</p>
+              <p id="codepoint-status" role="status" hidden></p>
+            </div>
             <div class="run-actions">
               <button id="run-button" class="primary-button" type="submit" disabled>Run function <span aria-hidden="true">→</span></button>
               <span class="keyboard-hint">or press Enter</span>

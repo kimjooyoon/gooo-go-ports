@@ -171,6 +171,29 @@ func makeBrowserFixtures(suites []suite, lock upstream) (browserFixtures, error)
 		}
 	}
 	result.Rejections = append(result.Rejections, durationBrowserRejections()...)
+	spaces, err := whitespaceCorpus()
+	if err != nil {
+		return browserFixtures{}, err
+	}
+	for _, c := range spaces.Suites[0].Cases {
+		if len(c.Inputs) != 1 {
+			return browserFixtures{}, fmt.Errorf("whitespace fixture must contain one input")
+		}
+		n, ok := c.Inputs[0].(int64)
+		if !ok {
+			return browserFixtures{}, fmt.Errorf("whitespace input is not int64")
+		}
+		if n < -1<<31 || n > 1<<31-1 {
+			result.Rejections = append(result.Rejections, browserRejection{"unicode.IsSpace", []string{strconv.FormatInt(n, 10), "0"}})
+			continue // Wider Gooo inputs are an extension, not Go-rune equivalence.
+		}
+		row, err := browserRow("unicode.IsSpace", c)
+		if err != nil {
+			return browserFixtures{}, err
+		}
+		result.Cases = append(result.Cases, row)
+	}
+	result.Rejections = append(result.Rejections, whitespaceBrowserRejections()...)
 	return result, nil
 }
 
@@ -198,6 +221,9 @@ func browserRow(operation string, c testCase) (browserCase, error) {
 		if (arity >= 3 || operation == "bits.RotateLeft8" && i == 0) && (n < 0 || n > 255) {
 			return browserCase{}, fmt.Errorf("reference input outside byte domain")
 		}
+		if operation == "unicode.IsSpace" && (n < -1<<31 || n > 1<<31-1) {
+			return browserCase{}, fmt.Errorf("reference input outside rune domain")
+		}
 		row.Inputs[i] = strconv.FormatInt(n, 10)
 	}
 	raw, err := json.Marshal(c.Expected)
@@ -215,7 +241,7 @@ func browserRow(operation string, c testCase) (browserCase, error) {
 			return browserCase{}, fmt.Errorf("expected text oracle output")
 		}
 		row.Expected = browserOutput{"text", value}
-	case "utf8.ValidRune", "utf8.RuneStart", "utf16.IsSurrogate":
+	case "utf8.ValidRune", "utf8.RuneStart", "utf16.IsSurrogate", "unicode.IsSpace":
 		value, ok := expected.(bool)
 		if !ok {
 			return browserCase{}, fmt.Errorf("expected Boolean oracle output")
@@ -382,6 +408,29 @@ func durationBrowserRejections() []browserRejection {
 			}
 			result = append(result, browserRejection{operation, inputs})
 		}
+	}
+	return result
+}
+
+// IsSpace uses the existing two-string unary ABI. Invalid syntax, surplus
+// arguments and an unused second argument are not Go-reference observations.
+func whitespaceBrowserRejections() []browserRejection {
+	var result []browserRejection
+	for _, raw := range []string{"", " ", "\t", "\r\n", " 1", "1 ", "+1", "01", "-0", "1.0", "1e2", "0x20", "NaN", "１２", "9223372036854775808", "-9223372036854775809"} {
+		result = append(result, browserRejection{"unicode.IsSpace", []string{raw, "0"}})
+	}
+	for _, raw := range []string{"1", "-1", "00", "-0", "+0", "", " ", "2147483648"} {
+		result = append(result, browserRejection{"unicode.IsSpace", []string{"160", raw}})
+	}
+	for n := 0; n <= 5; n++ {
+		if n == 2 {
+			continue
+		}
+		inputs := make([]string, n)
+		for i := range inputs {
+			inputs[i] = "0"
+		}
+		result = append(result, browserRejection{"unicode.IsSpace", inputs})
 	}
 	return result
 }

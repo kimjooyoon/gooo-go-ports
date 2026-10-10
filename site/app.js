@@ -4,6 +4,7 @@
   const $ = (id) => document.getElementById(id);
   const operations = {
     'http.StatusText': { scenario: 'http', path: 'go/net/http', source: 'ports/net/http.gooo', label: 'Status code', domain: 'int64', example: '404', description: 'Look up the standard description of an HTTP status code.', help: 'Use a decimal integer. Unknown status codes return an empty string.' },
+    'unicode.IsSpace': { scenario: 'unicode', path: 'go/unicode', source: 'ports/unicode/space.gooo', label: 'Code point (decimal)', domain: 'int32 rune', example: '160', output: 'boolean', description: 'Check one code point against Go’s Unicode White_Space property.', help: 'Go includes non-breaking space and next line, but excludes zero-width space and the byte order mark. This checks whitespace membership, not visibility. Negative values, surrogates and values above U+10FFFF return false within the signed 32-bit domain.' },
     'utf8.ValidRune': { scenario: 'unicode', path: 'go/unicode/utf8', source: 'ports/unicode/utf8.gooo', label: 'Code point', domain: 'int32 rune', example: '128512', description: 'Check whether a code point is a valid Unicode scalar value.', help: 'Use a decimal integer. Surrogates and values outside the Unicode scalar range are invalid.' },
     'utf8.RuneLen': { scenario: 'unicode', path: 'go/unicode/utf8', source: 'ports/unicode/utf8.gooo', label: 'Code point', domain: 'int32 rune', example: '128512', description: 'Find the UTF-8 byte length of one Unicode code point.', help: 'Returns 1–4 bytes for a valid scalar value, or −1 for an invalid code point.' },
     'utf8.RuneStart': { scenario: 'bytes', path: 'go/unicode/utf8', source: 'ports/unicode/utf8.gooo', label: 'Byte value', domain: 'byte · 0…255', example: '170', description: 'Check whether a byte is not a UTF-8 continuation byte.', help: 'This tests one byte. A true result does not validate a complete UTF-8 sequence.' },
@@ -27,6 +28,7 @@
     upper: ['9223372036854775807', '10'], lower: ['-9223372036854775808', '10'],
     precise: ['9007199254740993', '2'], unchanged: ['-9223372036854775808', '0']
   };
+  const whitespacePresets = new Set(['160', '133', '8203', '65279', '9', '12288']);
   const scenarios = { http: 'http.StatusText', unicode: 'utf16.EncodeRune', bytes: 'bits.Reverse8', colors: 'color.RGBToCMYK', duration: 'time.Duration.Round' };
   const inputNames = ['first', 'second', 'third', 'fourth'];
   const outputChannels = { rgb: ['red', 'green', 'blue'], cmyk: ['cyan', 'magenta', 'yellow', 'black'] };
@@ -41,6 +43,7 @@
   let shareBlocked = false;
   let lastFragment = null;
   let shareGeneration = 0;
+  let codePointError = '';
 
   function shareNotice(message, error = false) {
     $('share-status').textContent = message;
@@ -68,6 +71,7 @@
   function readSharedInput() {
     if (lastFragment === window.location.hash) return;
     lastFragment = window.location.hash;
+    resetCodePointHelper();
     shareGeneration++;
     sharedInput = null;
     sharedPending = false;
@@ -112,9 +116,9 @@
   }
 
   function updateButtons() {
-    $('run-button').disabled = !ready || busy || checksRunning || shareBlocked;
+    $('run-button').disabled = !ready || busy || checksRunning || shareBlocked || !!codePointError;
     $('checks-button').disabled = !ready || busy || checksRunning;
-    $('share-button').disabled = !ready || busy || checksRunning || shareBlocked || !metadata || !loadedWasmHash || loadedWasmHash !== metadata.wasm_sha256;
+    $('share-button').disabled = !ready || busy || checksRunning || shareBlocked || !!codePointError || !metadata || !loadedWasmHash || loadedWasmHash !== metadata.wasm_sha256;
     $('run-button').firstChild.textContent = busy ? 'Running… ' : 'Run function ';
     $('checks-button').firstChild.textContent = checksRunning ? 'Checking… ' : 'Run reference checks ';
   }
@@ -145,8 +149,47 @@
     link.hidden = false;
   }
 
+  function resetCodePointHelper() {
+    codePointError = '';
+    $('codepoint-input').value = '';
+    $('codepoint-input').setAttribute('aria-invalid', 'false');
+    $('codepoint-status').textContent = '';
+    $('codepoint-status').hidden = true;
+    $('codepoint-status').className = '';
+    $('whitespace-presets').value = '';
+  }
+
+  function useCodePoint(text) {
+    if ($('operation').value !== 'unicode.IsSpace') return;
+    forgetSharedInput();
+    clearResult();
+    resetCodePointHelper();
+    try {
+      const point = window.GoooCodePoint.fromText(text);
+      $('first-input').value = point.decimal;
+      // A textarea normalizes CR to LF. Keep CR only in the authoritative
+      // decimal field and explain it, rather than showing a changed character.
+      $('codepoint-input').value = point.carriageReturn ? '' : text;
+      $('codepoint-status').textContent = `${point.notation} · decimal ${point.decimal} is ready.` +
+        (point.carriageReturn ? ' Carriage return is kept as decimal 13; the paste box is cleared to avoid changing it to a line feed.' :
+          !point.scalar ? ' This lone surrogate is a Go rune value, not a Unicode scalar value.' : '');
+    } catch (error) {
+      codePointError = error.message;
+      $('codepoint-input').value = text;
+      $('codepoint-input').setAttribute('aria-invalid', 'true');
+      $('codepoint-status').className = 'error';
+      $('codepoint-status').textContent = `${codePointError} The decimal input is unchanged. Paste one code point, clear this box, or edit the decimal input to continue.`;
+    }
+    $('codepoint-status').hidden = false;
+    updateButtons();
+  }
+
   function selectOperation(name, resetInput = true) {
     const operation = operations[name];
+    resetCodePointHelper();
+    $('codepoint-helper').hidden = name !== 'unicode.IsSpace';
+    $('codepoint-input').disabled = name !== 'unicode.IsSpace';
+    $('whitespace-presets-field').hidden = name !== 'unicode.IsSpace';
     $('operation').value = name;
     $('function-description').textContent = operation.description;
     const labels = operation.labels || (operation.second ? [operation.label, operation.secondLabel || 'Low surrogate'] : [operation.label]);
@@ -183,6 +226,7 @@
     });
     setSourceLink();
     clearResult();
+    updateButtons();
   }
 
   function currentInputs(name) {
@@ -327,6 +371,7 @@
   function runCurrentInput() {
     if (!ready || busy || checksRunning || shareBlocked) return false;
     clearResult();
+    if (codePointError) { showError(codePointError); return false; }
     const name = $('operation').value;
     const inputs = currentInputs(name);
     busy = true;
@@ -385,8 +430,33 @@
     $('second-input').value = inputs[1];
     clearResult();
   });
+  $('whitespace-presets').addEventListener('change', () => {
+    const value = $('whitespace-presets').value;
+    if ($('operation').value !== 'unicode.IsSpace' || !whitespacePresets.has(value)) return;
+    forgetSharedInput();
+    resetCodePointHelper();
+    $('whitespace-presets').value = value;
+    $('first-input').value = value;
+    clearResult();
+    updateButtons();
+  });
+  $('codepoint-input').addEventListener('paste', (event) => {
+    // Read the complete raw clipboard string before textarea line-ending
+    // normalization. Never trim, normalize, or silently select its first point.
+    event.preventDefault();
+    useCodePoint(event.clipboardData?.getData('text/plain') ?? '');
+  });
+  $('codepoint-input').addEventListener('drop', (event) => {
+    event.preventDefault();
+    useCodePoint(event.dataTransfer?.getData('text/plain') ?? '');
+  });
+  $('codepoint-input').addEventListener('input', () => {
+    const text = $('codepoint-input').value;
+    if (text === '') { resetCodePointHelper(); forgetSharedInput(); clearResult(); }
+    else useCodePoint(text);
+  });
   $('operation').addEventListener('change', () => { forgetSharedInput(); selectOperation($('operation').value); });
-  inputNames.forEach(name => $(`${name}-input`).addEventListener('input', () => { forgetSharedInput(); clearResult(); }));
+  inputNames.forEach(name => $(`${name}-input`).addEventListener('input', () => { resetCodePointHelper(); forgetSharedInput(); clearResult(); }));
   document.querySelectorAll('[data-scenario]').forEach((button) => button.addEventListener('click', () => {
     forgetSharedInput(); selectOperation(scenarios[button.dataset.scenario]);
   }));

@@ -1,0 +1,18 @@
+// Copyright 2011 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+// Adapted from Go 1.27.2 src/unicode/graphic.go and tables.go (Unicode 17.0.0).
+// The upstream license is reproduced in third_party/GO-LICENSE.
+//
+// Go rune is signed int32, represented exactly by Gooo Integer (int64).
+// Outside-int32 values return false as an explicit extension, without narrowing.
+// These ranges expand the complete pinned White_Space property (25 runes),
+// including Go's Latin-1 special case. This is not Pattern_White_Space,
+// category Z, a JavaScript regular expression, or whole-string trimming.
+package unicode
+namespace gooo_ports_unicode
+entity Integer id "gooo://std/integer"
+entity Boolean id "gooo://std/boolean"
+
+activity IsSpace(Integer) -> Boolean id "gooo://go/unicode/IsSpace" computes `if input < -2147483648 || input > 2147483647 { return false }
+return (input >= 9 && input <= 13) || input == 32 || input == 133 || input == 160 || input == 5760 || (input >= 8192 && input <= 8202) || input == 8232 || input == 8233 || input == 8239 || input == 8287 || input == 12288`

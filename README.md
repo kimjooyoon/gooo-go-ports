@@ -4,7 +4,7 @@
 describing what programs should do and inspecting how they are built and run.
 This independent ecosystem project implements selected Go standard-library functions in Gooo,
 with independent Go reference outputs and saved replay. The current scope is
-18 HTTP, Unicode, 8-bit integer, color-conversion, and duration functions, six native importing examples,
+19 HTTP, Unicode, 8-bit integer, color-conversion, and duration functions, seven native importing examples,
 and an importing browser dispatcher.
 Use Go 1.27.2, Git, and a POSIX shell on macOS or Linux: run `./tools/bootstrap.sh`, then
 `go run ./cmd/verify --out out/first` from this repository. The output directory must be new.
@@ -14,7 +14,7 @@ Color ports and their consumer add separate reference and rejection cases, detai
 Other domains use finite boundary cases and samples. This is an independent experimental port,
 not a complete Go package implementation or an official Google/Go project.
 
-[Try the browser demo](https://kimjooyoon.github.io/gooo-go-ports/) to run all 18 HTTP, Unicode, byte, color, and duration functions
+[Try the browser demo](https://kimjooyoon.github.io/gooo-go-ports/) to run all 19 HTTP, Unicode, byte, color, and duration functions
 without installing a compiler. It executes a precompiled Gooo program as WebAssembly;
 it is not an editor for compiling arbitrary source. The page includes the Gooo source,
 unmodified generated Go, execution receipts, and an optional reference-check button.
@@ -31,6 +31,11 @@ Choose **time.Duration.Round** or **time.Duration.Truncate** to adjust an exact
 signed nanosecond duration to a chosen multiple. The native
 [duration quantizer](examples/duration-quantizer/README.md) returns both results
 and their adjustments. Zero or negative multiples preserve the original duration.
+Choose **unicode.IsSpace** to check whether one code point is whitespace according to
+Go and Unicode 17.0.0. Enter its numeric value or paste one code point without trimming.
+The native [whitespace inspector](examples/whitespace-inspector/README.md) also reports
+scalar validity, ASCII whitespace membership, and UTF-8/UTF-16 lengths.
+This classification does not determine whether a character is visible or safe.
 
 For a fixed snapshot, download [experimental release v0.1.0-preview.2](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.2).
 It includes separate source, native execution/replay evidence, and standalone browser
@@ -43,7 +48,7 @@ with the page URL or command and what happened. A working demo or shared input l
 is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수·색상 변환·시간 간격 함수 18개를 제공합니다.
+현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수·색상 변환·시간 간격 함수 19개를 제공합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -56,6 +61,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | Gooo 패키지 경로 | 함수 | 원본과의 대응 |
 | --- | --- | --- |
 | `go/net/http` | `StatusText` | Go의 상태 코드 62개와 설명. 미등록 코드는 빈 문자열 |
+| `go/unicode` | `IsSpace` | Unicode 17.0.0 White_Space 속성의 25개 코드 포인트 판정. 전체 signed int32 rune 입력 유지 |
 | `go/unicode/utf8` | `ValidRune`, `RuneLen` | Unicode 유효 코드 포인트 판정과 UTF-8 바이트 수 |
 | `go/unicode/utf8` | `RuneStart` | 0..255의 바이트가 continuation byte가 아닌지 판정. 전체 문자열 유효성 검사는 아님 |
 | `go/unicode/utf16` | `IsSurrogate`, `RuneLen` | 서로게이트 판정과 UTF-16 코드 단위 수 |
@@ -68,6 +74,10 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 원본의 `rune` 입력은 int32 범위를 Gooo Integer로 전달합니다. `byte` 호환 범위는
 0..255입니다. 묵시적으로 정수 폭을 줄이지 않습니다. `RuneStart`의 범위 밖 입력은
 Gooo 확장 동작으로 false를 반환하지만 원본과의 동등성 집계에는 넣지 않습니다.
+`IsSpace`도 int32 밖의 정수는 별도 확장 계약으로 false를 반환합니다. int32 안의 음수,
+서로게이트, Unicode 최댓값보다 큰 수는 원본 API 입력이며 결과는 false입니다.
+NEL(U+0085)은 공백이고 BOM(U+FEFF)·ZERO WIDTH SPACE(U+200B)는 공백이 아닙니다.
+JavaScript의 `\s`·`trim`과는 다른 판정이며, 보이지 않는 문자 전체를 탐지하지 않습니다.
 `go/math/bits`의 여섯 함수는 바이트 영역 밖에서 별도 확장 동작인 -1을 반환합니다.
 Go의 byte 변환처럼 입력을 잘라서 계산하지 않습니다. 0의 앞·뒤 0 개수는 원본과 같은 8입니다.
 색상 변환도 모든 채널을 먼저 검사하며 범위 밖에서는 레코드의 모든 성분을 -1로 반환합니다.
@@ -82,14 +92,15 @@ HTTP 서버, UTF 인코딩 패키지, Go time 패키지 전체의 이식은 아�
 
 ## 실행하기
 
-[브라우저 데모](https://kimjooyoon.github.io/gooo-go-ports/)는 설치 없이 18개 함수를
+[브라우저 데모](https://kimjooyoon.github.io/gooo-go-ports/)는 설치 없이 19개 함수를
 실행합니다. 실제 Gooo importing 예제를 고정 컴파일러로 생성하고, 생성된 Go를
 한 글자도 수정하지 않은 채 WebAssembly로 빌드합니다. 입력·출력 경계의 Go bridge는
 정수 범위 검사와 직렬화만 맡습니다. 임의 Gooo 소스를 브라우저에서 컴파일하지는 않습니다.
 HTTP 입력은 int64, rune 입력은 int32, byte·색상 채널 입력은 0..255로 제한하며 범위 밖 입력을 거부합니다.
 회전 수는 signed int64 전체 범위이며 음수는 오른쪽 회전입니다.
 시간 간격과 단위도 signed int64 나노초이며 0 이하 단위를 포함합니다.
-모든 정수 입력은 JavaScript Number를 거치지 않고 십진수 문자열로 전달합니다.
+숫자 입력란의 값은 JavaScript Number를 거치지 않고 십진수 문자열로 전달합니다.
+공백 붙여넣기 보조 입력은 정확히 한 코드 포인트를 숫자 입력란에 채우며, 공백 판정은 Gooo가 수행합니다.
 RGB는 3개, CMYK는 4개 채널을 각각 전달하며 채널을 하나의 정수에 묶거나 잘라내지 않습니다.
 결과에는 채널 이름과 정수 값이 표시됩니다. RGB 미리보기는 입력 또는 반환된 RGB를 보여주며
 색상 프로파일이나 프린터 출력 보정은 수행하지 않습니다.
@@ -120,13 +131,13 @@ python3 -m http.server 8766 --bind 127.0.0.1 --directory out/browser/site
 다른 정적 HTTP 서버를 사용해도 됩니다. `--out` 디렉터리는 새 경로여야 합니다.
 브라우저 비교는 기존 함수 입력 3,135개와 정밀도 경계 2개를 보존하고 색상 원본 비교 1,300개를
 추가한 4,437건과 회전 원본 비교 2,472건을 합친 6,909건을 보존합니다.
-시간 간격 두 함수에 각각 1,789건을 추가해 **10,487건**입니다.
-잘못된 입력·채널 개수 등의 거부 **301건**은 별도 집계합니다.
-Node smoke 검사는 공유 입력 왕복 10,487건과 추가 호출 형태·타입 오류 45건도 검사하므로
-총 거부 검사는 **346건**입니다. 아래 native 소비 예제는 브라우저 집계에 포함하지 않습니다.
+시간 간격 두 함수에 각각 1,789건을 더한 **10,487건**도 유지하고, `IsSpace` **506건**을
+추가해 **10,993건**입니다. 잘못된 입력·채널 개수 등의 거부 **338건**은 별도 집계합니다.
+Node smoke 검사는 공유 입력 왕복 10,993건과 추가 호출 형태·타입 오류 51건도 검사하므로
+총 거부 검사는 **389건**입니다. 아래 native 소비 예제는 브라우저 집계에 포함하지 않습니다.
 HTTP·rune·색상 검사는 유한 입력 관측이며 패키지 전체 호환성이나 성능을 보장하지 않습니다.
 
-브라우저 생성용 사례 **153개**도 기대 결과와 함께 native 실행·저장된 프로그램 재실행을 검증합니다.
+브라우저 생성용 사례 **193개**도 기대 결과와 함께 native 실행·저장된 프로그램 재실행을 검증합니다.
 입력 파일당 128개·32 KiB 제한을 지키도록 실제 JSON 바이트 크기로 나누며 사례를 생략하지 않습니다.
 배포물의 `evidence-index.json`에 모든 배치 입력·실행·재실행 파일과 해시가 있습니다.
 `execution.json`·`replay.json`은 첫 배치의 원본 바이트 별칭이며 전체 기록은 인덱스를 따릅니다.
@@ -225,6 +236,12 @@ Gooo에서 조합하며 원본의 전체 uint8 입력 범위를 유지합니다.
 두 Go Duration 메서드의 전체 int64 입력 범위를 보존하고, 시계나 외부 서비스를
 호출하지 않습니다. 브라우저에서는 각 함수를 별도로 실행하고 정확한 입력을 공유합니다.
 
+일곱 번째 앱인 [공백 검사기](examples/whitespace-inspector/README.md)는 하나의 정수를 받아
+Go rune 영역 여부, Unicode 스칼라 유효성, Go·ASCII 공백 여부, UTF-8 바이트 수와
+UTF-16 코드 단위 수를 반환합니다. `IsSpace`와 기존 UTF 포트를 Gooo에서 조합합니다.
+브라우저에는 단일 `IsSpace` 함수와 한 코드 포인트 붙여넣기 보조 입력을 제공합니다.
+문자열을 잘라내거나 정규화하지 않으며 여러 코드 포인트를 하나로 간주하지 않습니다.
+
 ## 다른 Gooo 프로그램에서 가져오기
 
 [새 프로젝트에서 포트 사용하기](docs/use-in-your-project.md)는 고정 소스를 받고
@@ -258,8 +275,9 @@ manifest 기준 상대 파일 경로를 등록합니다. import 자체가 패키
 원본 비교 **637건**·거부 **24건**을 추가합니다. 이 **5,510건**은 바뀌지 않습니다.
 바이트 회전 포트는 원본 비교 **2,472건**·거부 **36건**, 회전 소비 앱은 원본 비교 **672건**·
 거부 **36건**을 추가한 **8,726건**도 유지합니다. 시간 간격 두 포트의 원본 비교
-**3,578건**, 소비 앱 **1,789건**을 더해 전체 native 검사는 **14,093건**, 이식 함수는
-**18개**입니다. 시간 간격은 두 입력의 전체 int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
+**3,578건**, 소비 앱 **1,789건**을 더한 **14,093건**도 유지합니다. 공백 포트와 소비 앱은
+각각 원본 비교 **506건**·int32 밖 확장 **8건**을 추가해 전체 native 검사는 **15,121건**,
+이식 함수는 **19개**입니다. 시간 간격은 두 입력의 전체 int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
 기존 영역 밖 거부 사례는 Go 동등성 집계가 아닙니다.
 
 | 대상 | 입력 수 | 구성 |
@@ -281,13 +299,15 @@ manifest 기준 상대 파일 경로를 등록합니다. import 자체가 패키
 | Byte rotation Inspect consumer | 672 + 36 | 모든 byte의 1회전, 회전 수 경계·표본, 원상 복원·1비트 개수와 거부 계약 |
 | DurationRound / DurationTruncate | 각 1,789 | 작은 정수 격자, 두 int64 인수의 경계, 정확한 배수·중간값·포화 전후, 고정 표본 |
 | Duration quantizer Inspect consumer | 1,789 | 같은 원래 입력으로 반올림·절삭·변경량·나머지 레코드 비교 |
+| unicode.IsSpace | 506 + 8 | Latin-1 전체, 참인 25개 값과 이웃, 혼동하기 쉬운 문자·int32 경계·고정 표본, 별도 int32 밖 확장 |
+| Whitespace Inspect consumer | 506 + 8 | 같은 입력으로 rune 영역·스칼라·Go 및 ASCII 공백·UTF 길이 레코드 비교 |
 
-Gooo 실행 입력 상한에 맞춰 총 168개 배치를 실행합니다. 기존 112개 배치를 유지하고,
-시간 간격 포트 28개 배치(128건 이하), 소비 앱 28개 배치(64건 이하)를 추가합니다.
+Gooo 실행 입력 상한에 맞춰 총 182개 배치를 실행합니다. 기존 168개 배치를 유지하고,
+공백 포트·소비 앱의 14개 배치를 추가합니다.
 Unicode 앱과 색상 포트는 64건 이하, 색상 소비 앱은 32건 이하입니다.
 새 레코드 기대값도 들여쓴 JSON과 마지막 개행을 포함해 32KiB 한도를 검사합니다.
 원본 비교 기대값은 Gooo 구현과 별개인 Go 표준 함수로 계산합니다.
-Unicode·색상·회전 앱과 색상·회전 포트의 영역 밖 기대값은 명시한 false/-1 계약으로 따로 검사합니다.
+Unicode·색상·회전·공백 앱과 색상·회전·공백 포트의 영역 밖 기대값은 명시한 false/-1 계약으로 따로 검사합니다.
 검증 도구는 결과뿐 아니라 입력 순서, 원본 기대값, 함수·입력 타입 식별자,
 생성 코드 해시, 컴파일러·Go 버전, workspace·입력 파일 해시, 저장 재실행 연결을 검사합니다.
 함수 식별자는 실행 기록 밖의 [명시적 계약](cmd/verify/contracts.go)을 기준으로
@@ -311,6 +331,7 @@ Dispatch 계약과 입력 타입·소스 연결을 확인합니다.
 [색상 포트·소비 앱 추가 관측](evidence/color-ports-20261010.json),
 [바이트 회전 포트·소비 앱 추가 관측](evidence/byte-rotation-20261010.json),
 [시간 간격 포트·소비 앱 추가 관측](evidence/duration-20261010.json),
+[공백 포트·소비 앱 추가 관측](evidence/whitespace-20261010.json),
 [v0.1.0-preview.2의 전체 실행·재실행 기록](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.2)을
 참고하세요. 릴리스 기록은 해당 버전에 고정되어 있으며, 이후 변경의 기록은 각 GitHub
 Actions 실행에서 확인할 수 있습니다.

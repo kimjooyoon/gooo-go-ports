@@ -5,6 +5,7 @@
     {"path": "go/net/http", "sources": ["ports/net/http.gooo"]},
     {"path": "go/unicode/utf8", "sources": ["ports/unicode/utf8.gooo"]},
     {"path": "go/unicode/utf16", "sources": ["ports/unicode/utf16.gooo"]},
+    {"path": "go/unicode", "sources": ["ports/unicode/space.gooo"]},
     {"path": "go/math/bits", "sources": ["ports/math/bits.gooo"]},
     {"path": "go/image/color", "sources": ["ports/image/color.gooo"]},
     {"path": "go/time", "sources": ["ports/time/duration.gooo"]},
@@ -13,6 +14,7 @@
     {"path": "app/byte-rotation", "sources": ["examples/byte-rotation/main.gooo"]},
     {"path": "app/unicode-inspector", "sources": ["examples/unicode-inspector/main.gooo"]},
     {"path": "app/color-inspector", "sources": ["examples/color-inspector/main.gooo"]},
-    {"path": "app/duration-quantizer", "sources": ["examples/duration-quantizer/main.gooo"]}
+    {"path": "app/duration-quantizer", "sources": ["examples/duration-quantizer/main.gooo"]},
+    {"path": "app/whitespace-inspector", "sources": ["examples/whitespace-inspector/main.gooo"]}
   ]
 }

@@ -31,13 +31,17 @@ func allNativeSuites(t *testing.T) []suite {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return append(append(append(append(suites, unicode.Suites...), colors.Suites...), rotations.Suites...), durations.Suites...)
+	whitespace, err := whitespaceCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return append(append(append(append(append(suites, unicode.Suites...), colors.Suites...), rotations.Suites...), durations.Suites...), whitespace.Suites...)
 }
 
 func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 	contracts := nativeActivityContracts()
 	suites := allNativeSuites(t)
-	if len(contracts) != 25 || len(suites) != 25 {
+	if len(contracts) != 27 || len(suites) != 27 {
 		t.Fatal("contract/suite roster changed")
 	}
 	seen := map[string]bool{}
@@ -78,7 +82,7 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		}
 		total += len(s.Cases)
 	}
-	if total != 14093 {
+	if total != 15121 {
 		t.Fatalf("corpus changed: %d", total)
 	}
 	if _, err := contractFor(suite{Package: "go/net/http", Activity: "Unknown"}); err == nil {

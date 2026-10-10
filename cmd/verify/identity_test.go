@@ -43,6 +43,9 @@ func contractFixture(t *testing.T, s suite) ([]byte, suite, expectedIdentity) {
 		}
 	}
 	d.Expected, d.Actual = mustJSON(t, row.Expected), mustJSON(t, row.Expected)
+	for _, field := range whitespaceResultContract(s).Fields {
+		d.ActualFields = append(d.ActualFields, recordFieldValue{field.ID, field.Name, mustJSON(t, row.Expected.(map[string]any)[field.Name])})
+	}
 	raw = mustJSON(t, e)
 	if _, err := inspect(raw, s, false, identity); err != nil {
 		t.Fatalf("valid contract fixture %s:%s: %v", s.Package, s.Activity, err)

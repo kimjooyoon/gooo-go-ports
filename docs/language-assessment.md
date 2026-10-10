@@ -13,12 +13,13 @@
 
 ## 이번에 옮기는 동작
 
-Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **18개 함수**를 Gooo 활동으로 표현한다.
+Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **19개 함수**를 Gooo 활동으로 표현한다.
 패키지 전체, HTTP 서버, 문자열 인코더 전체 또는 Go API와의 바이너리 호환을 주장하지 않는다.
 
 | 원본 | Gooo 원본 | 표현 방법과 호환 범위 |
 | --- | --- | --- |
 | `net/http.StatusText` | [http.gooo](../ports/net/http.gooo) | 상태 코드별 텍스트를 `if`로 선택. 등록되지 않은 코드는 빈 문자열 |
+| `unicode.IsSpace` | [space.gooo](../ports/unicode/space.gooo) | Unicode 17.0.0 White_Space의 25개 값을 범위·동등 비교로 표현. 전체 signed int32 입력을 보존하고 int32 밖은 false 확장 계약 |
 | `unicode/utf8.ValidRune`, `RuneLen` | [utf8.gooo](../ports/unicode/utf8.gooo) | 코드 포인트 경계와 서로게이트 구간 비교. Go `rune` 입력 범위를 Integer로 전달 |
 | `unicode/utf8.RuneStart` | 같은 파일 | Go `byte` 범위인 0..255에서 연속 바이트 구간 128..191 제외. 범위 밖은 별도 확장 계약인 false |
 | `unicode/utf16.IsSurrogate`, `RuneLen` | [utf16.gooo](../ports/unicode/utf16.gooo) | 범위 비교로 서로게이트와 UTF-16 길이를 판별 |
@@ -61,6 +62,15 @@ Go의 `rune`은 int32이고 Gooo Integer는 int64다. 테스트에서 int64를 G
 전에 int64 경계를 검사해 원본의 포화 동작을 보존한다. 절삭은 부호 있는 나머지를
 제거해 0으로 향한다. [소비 예제](../examples/duration-quantizer/README.md)는 두 포트를
 함께 호출하고 변경량을 보여준다. 시계·타이머·날짜·기간 문자열 처리는 범위에 포함하지 않는다.
+
+`unicode.IsSpace`는 고정 Go 리비전의 [graphic.go](https://github.com/golang/go/blob/022c8636110ebac86a9b88724cda168ed713c21f/src/unicode/graphic.go),
+[letter.go](https://github.com/golang/go/blob/022c8636110ebac86a9b88724cda168ed713c21f/src/unicode/letter.go),
+[tables.go](https://github.com/golang/go/blob/022c8636110ebac86a9b88724cda168ed713c21f/src/unicode/tables.go)에 근거한다.
+Latin-1 특례와 Unicode 17.0.0 White_Space 테이블을 25개 값의 범위 비교로 펼쳤다.
+Go rune은 Unicode 스칼라로 제한된 타입이 아니므로 음수·서로게이트·U+10FFFF 초과 입력도
+int32 안이면 그대로 비교한다. NEL(U+0085)은 참, BOM(U+FEFF)·ZERO WIDTH SPACE(U+200B)는
+거짓이며 JavaScript `\s`나 `trim`으로 대체할 수 없다. [소비 예제](../examples/whitespace-inspector/README.md)는
+기존 UTF 포트를 가져와 스칼라 유효성·길이를 함께 반환한다. 전체 문자열 처리나 문자 가시성 판정은 포함하지 않는다.
 
 ## 확인한 언어 기능
 

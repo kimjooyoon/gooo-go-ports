@@ -42,6 +42,12 @@
       ]
     },
     {
+      "path": "go/unicode",
+      "sources": [
+        "ports/unicode/space.gooo"
+      ]
+    },
+    {
       "path": "app/browser-demo",
       "sources": [
         "examples/browser-demo/main.gooo"

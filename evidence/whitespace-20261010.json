@@ -1,0 +1,291 @@
+{
+  "cases": 15121,
+  "color_consumer_reference_cases": 637,
+  "color_consumer_rejection_cases": 24,
+  "color_port_reference_cases": 1300,
+  "color_port_rejection_cases": 56,
+  "compiler_revision": "366ee6ef8f9d2b9b57331dfd26b6f908c0289851",
+  "consumer_activities": 8,
+  "consumer_programs": 7,
+  "duration_consumer_reference_cases": 1789,
+  "duration_port_reference_cases": 3578,
+  "go_version": "go1.27.2",
+  "goarch": "arm64",
+  "goos": "darwin",
+  "legacy_cases": 3147,
+  "passed": 15121,
+  "ported_functions": 19,
+  "rotation_consumer_reference_cases": 672,
+  "rotation_consumer_rejection_cases": 36,
+  "rotation_port_reference_cases": 2472,
+  "rotation_port_rejection_cases": 36,
+  "runs": [
+    {
+      "package": "go/net/http",
+      "activity": "StatusText",
+      "domain": "int64; every integer -10..610 plus 4 outliers",
+      "cases": 625,
+      "batches": 5,
+      "passed": 625,
+      "replay_equal": true
+    },
+    {
+      "package": "go/unicode/utf8",
+      "activity": "ValidRune",
+      "domain": "int32 rune values; boundary corpus + deterministic PCG samples (17,29)",
+      "cases": 162,
+      "batches": 2,
+      "passed": 162,
+      "replay_equal": true
+    },
+    {
+      "package": "go/unicode/utf8",
+      "activity": "RuneLen",
+      "domain": "int32 rune values; boundary corpus + deterministic PCG samples (17,29)",
+      "cases": 162,
+      "batches": 2,
+      "passed": 162,
+      "replay_equal": true
+    },
+    {
+      "package": "go/unicode/utf8",
+      "activity": "RuneStart",
+      "domain": "all 256 byte values; this does not validate a complete UTF-8 sequence",
+      "cases": 256,
+      "batches": 2,
+      "passed": 256,
+      "replay_equal": true
+    },
+    {
+      "package": "go/unicode/utf16",
+      "activity": "IsSurrogate",
+      "domain": "int32 rune values; boundary corpus + deterministic PCG samples (17,29)",
+      "cases": 162,
+      "batches": 2,
+      "passed": 162,
+      "replay_equal": true
+    },
+    {
+      "package": "go/unicode/utf16",
+      "activity": "RuneLen",
+      "domain": "int32 rune values; boundary corpus + deterministic PCG samples (17,29)",
+      "cases": 162,
+      "batches": 2,
+      "passed": 162,
+      "replay_equal": true
+    },
+    {
+      "package": "go/unicode/utf16",
+      "activity": "EncodeRune",
+      "domain": "int32 rune values; boundary corpus + deterministic PCG samples (17,29)",
+      "cases": 162,
+      "batches": 2,
+      "passed": 162,
+      "replay_equal": true
+    },
+    {
+      "package": "go/unicode/utf16",
+      "activity": "DecodeRune",
+      "domain": "int32 rune pairs; boundary Cartesian grid and 64 valid surrogate pairs",
+      "cases": 164,
+      "batches": 2,
+      "passed": 164,
+      "replay_equal": true
+    },
+    {
+      "package": "app/response",
+      "activity": "Describe",
+      "domain": "importing consumer; known and unknown HTTP status codes",
+      "cases": 6,
+      "batches": 1,
+      "passed": 6,
+      "replay_equal": true
+    },
+    {
+      "package": "go/math/bits",
+      "activity": "Len8",
+      "domain": "all 256 uint8 values exactly once; out-of-domain Gooo inputs are excluded",
+      "cases": 256,
+      "batches": 2,
+      "passed": 256,
+      "replay_equal": true
+    },
+    {
+      "package": "go/math/bits",
+      "activity": "LeadingZeros8",
+      "domain": "all 256 uint8 values exactly once; out-of-domain Gooo inputs are excluded",
+      "cases": 256,
+      "batches": 2,
+      "passed": 256,
+      "replay_equal": true
+    },
+    {
+      "package": "go/math/bits",
+      "activity": "TrailingZeros8",
+      "domain": "all 256 uint8 values exactly once; out-of-domain Gooo inputs are excluded",
+      "cases": 256,
+      "batches": 2,
+      "passed": 256,
+      "replay_equal": true
+    },
+    {
+      "package": "go/math/bits",
+      "activity": "OnesCount8",
+      "domain": "all 256 uint8 values exactly once; out-of-domain Gooo inputs are excluded",
+      "cases": 256,
+      "batches": 2,
+      "passed": 256,
+      "replay_equal": true
+    },
+    {
+      "package": "go/math/bits",
+      "activity": "Reverse8",
+      "domain": "all 256 uint8 values exactly once; out-of-domain Gooo inputs are excluded",
+      "cases": 256,
+      "batches": 2,
+      "passed": 256,
+      "replay_equal": true
+    },
+    {
+      "package": "app/byte-summary",
+      "activity": "ByteSummary",
+      "domain": "importing consumer; uint8 inputs 0,1,127,128,170,255",
+      "cases": 6,
+      "batches": 1,
+      "passed": 6,
+      "replay_equal": true
+    },
+    {
+      "package": "app/unicode-inspector",
+      "activity": "InspectScalar",
+      "domain": "importing consumer; 164 int32 Go-reference cases plus 4 explicit out-of-int32 rejection cases (no narrowing)",
+      "cases": 168,
+      "batches": 3,
+      "passed": 168,
+      "replay_equal": true
+    },
+    {
+      "package": "app/unicode-inspector",
+      "activity": "InspectPair",
+      "domain": "importing consumer; 170 int32 Go-reference cases plus 8 explicit out-of-int32 rejection cases (no narrowing)",
+      "cases": 178,
+      "batches": 3,
+      "passed": 178,
+      "replay_equal": true
+    },
+    {
+      "package": "go/image/color",
+      "activity": "RGBToCMYK",
+      "domain": "uint8 tuples; 637 finite Go-reference cases (boundary grid, gray ramp, division edges, fixed PCG samples); 24 explicit out-of-byte rejection cases without narrowing",
+      "cases": 661,
+      "batches": 11,
+      "passed": 661,
+      "replay_equal": true
+    },
+    {
+      "package": "go/image/color",
+      "activity": "CMYKToRGB",
+      "domain": "uint8 tuples; 663 finite Go-reference cases (boundary grid, gray ramp, division edges, fixed PCG samples); 32 explicit out-of-byte rejection cases without narrowing",
+      "cases": 695,
+      "batches": 11,
+      "passed": 695,
+      "replay_equal": true
+    },
+    {
+      "package": "app/color-inspector",
+      "activity": "InspectRGB",
+      "domain": "uint8 tuples; 637 finite Go-reference cases (boundary grid, gray ramp, division edges, fixed PCG samples); 24 explicit out-of-byte rejection cases without narrowing",
+      "cases": 661,
+      "batches": 21,
+      "passed": 661,
+      "replay_equal": true
+    },
+    {
+      "package": "go/math/bits",
+      "activity": "RotateLeft8",
+      "domain": "uint8 x and signed 64-bit Go int k; 2472 Go-reference cases, including all 2048 pairs x=0..255 and k=0..7, named negative/large/int64 boundary rotations and fixed PCG samples; 36 explicit out-of-byte rejection cases; rotations serialized unchanged",
+      "cases": 2508,
+      "batches": 20,
+      "passed": 2508,
+      "replay_equal": true
+    },
+    {
+      "package": "app/byte-rotation",
+      "activity": "Inspect",
+      "domain": "importing consumer; 672 finite Go-reference cases covering every byte at k=1, named byte/rotation boundaries and fixed PCG samples; 36 explicit out-of-byte rejection cases; original rotations retained",
+      "cases": 708,
+      "batches": 12,
+      "passed": 708,
+      "replay_equal": true
+    },
+    {
+      "package": "go/time",
+      "activity": "DurationRound",
+      "domain": "signed int64 nanoseconds for both duration and quantum; 1789 finite Go-reference pairs covering a small grid, original int64 endpoints, nonpositive quanta, half thresholds, exact multiples, saturation transitions and fixed PCG samples; original inputs retained; no domain-rejection extension",
+      "cases": 1789,
+      "batches": 14,
+      "passed": 1789,
+      "replay_equal": true
+    },
+    {
+      "package": "go/time",
+      "activity": "DurationTruncate",
+      "domain": "signed int64 nanoseconds for both duration and quantum; 1789 finite Go-reference pairs covering a small grid, original int64 endpoints, nonpositive quanta, half thresholds, exact multiples, saturation transitions and fixed PCG samples; original inputs retained; no domain-rejection extension",
+      "cases": 1789,
+      "batches": 14,
+      "passed": 1789,
+      "replay_equal": true
+    },
+    {
+      "package": "app/duration-quantizer",
+      "activity": "Inspect",
+      "domain": "signed int64 nanoseconds for both duration and quantum; 1789 finite Go-reference pairs covering a small grid, original int64 endpoints, nonpositive quanta, half thresholds, exact multiples, saturation transitions and fixed PCG samples; original inputs retained; no domain-rejection extension",
+      "cases": 1789,
+      "batches": 28,
+      "passed": 1789,
+      "replay_equal": true
+    },
+    {
+      "package": "go/unicode",
+      "activity": "IsSpace",
+      "domain": "signed int32 rune; 506 Go-reference observations include all 256 Latin-1 values, all 25 pinned White_Space members and adjacent boundaries, nonspaces, invalid Unicode, int32 endpoints and fixed samples; 8 original int64 outside-int32 inputs test an explicit rejection extension without narrowing",
+      "cases": 514,
+      "batches": 5,
+      "passed": 514,
+      "replay_equal": true
+    },
+    {
+      "package": "app/whitespace-inspector",
+      "activity": "Inspect",
+      "domain": "signed int32 rune; 506 Go-reference observations include all 256 Latin-1 values, all 25 pinned White_Space members and adjacent boundaries, nonspaces, invalid Unicode, int32 endpoints and fixed samples; 8 original int64 outside-int32 inputs test an explicit rejection extension without narrowing",
+      "cases": 514,
+      "batches": 9,
+      "passed": 514,
+      "replay_equal": true
+    }
+  ],
+  "schema": "gooo/go-ports-differential/v1",
+  "scope": "Finite differential observations against pinned Go source, plus identical saved replay. The 14,093 existing cases are unchanged. Whitespace uses pinned Unicode 17.0.0 White_Space semantics over original signed int32 rune inputs; all 256 Latin-1 values and all 25 true property members are included, with other domains observed finitely. Outside-int32 false/-1 extensions are counted separately from Go-reference observations. Duration ports and their consumer preserve both signed int64 nanosecond inputs, including nonpositive quanta, and add finite Go-reference observations without domain-rejection extensions. Color and rotation port/consumer Go-reference cases and explicit out-of-byte rejection cases are counted separately. RuneStart and the five original unary math/bits functions each cover all 256 byte values exactly once, excluding out-of-domain inputs. RotateLeft8 covers all 2,048 byte/rotation pairs only for x=0..255 and k=0..7; other signed int64 rotations have finite boundary/sample observations with original inputs preserved. No claim of exhaustive equivalence for all rotations or other domains, input-independent execution time, whole-package compatibility, ICC color management, or printed appearance.",
+  "source_sha256": {
+    "examples/byte-rotation/main.gooo": "c07d4a306866802db7925d4056a9f96cffc793ec13b8ae7453939819b0be2da5",
+    "examples/byte-summary/main.gooo": "fd95823cec967d5fa9040efe31c9af396994288d8a5c555f715249a11fb94fbe",
+    "examples/color-inspector/main.gooo": "34f0ff23c1bea0f5d270acd4ee198e1b55bea615de11d557f3426e220537d734",
+    "examples/duration-quantizer/main.gooo": "39b42738500f2c8fab1f2595689136e74e746f48bef9fe114abcd237e5f78da4",
+    "examples/response.gooo": "c86eda08379d1cdbcd851c9399ebc13287ad04013f93f6a10175ddce0d827155",
+    "examples/unicode-inspector/main.gooo": "5a0ada1d4ee5498bff2909bdb4f45323bf12290e309175b9bd55611ab180e7b6",
+    "examples/whitespace-inspector/main.gooo": "9e2f5f075722b93e8462d5a2530fbd7eb8b78a2d067cee018494b344fc9877f2",
+    "ports/image/color.gooo": "4357789636044b9d451274f9b14a3ed322a251fea333e1c96644cd052fbd9b43",
+    "ports/math/bits.gooo": "33c1806376c6c0fd4eda86ce62f24994f42c4f5cc98243ce5e4af9a611a7010b",
+    "ports/net/http.gooo": "6245657e704a1fe249a45c8cb6040da54c5507188938db3c1bbded24a55592b2",
+    "ports/time/duration.gooo": "8351497e42ab00036fe8f78fc94caab3d5b5dc75a98cc37d85bff6b817c23ac8",
+    "ports/unicode/space.gooo": "0b1a2481378c12bc3d5d15be266f85d86f42bc6a370eea1fe1f6b4219d797ca2",
+    "ports/unicode/utf16.gooo": "885bc4b92c7a820c91429b4ddefe959ef06118092abff488e2700a43c2641e1b",
+    "ports/unicode/utf8.gooo": "def90e079bc265bfd6da7982115a07343e7e7726dee694a4332c44189f3004a2"
+  },
+  "unicode_reference_cases": 334,
+  "unicode_rejection_cases": 12,
+  "whitespace_consumer_reference_cases": 506,
+  "whitespace_consumer_rejection_cases": 8,
+  "whitespace_port_reference_cases": 506,
+  "whitespace_port_rejection_cases": 8
+}

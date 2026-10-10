@@ -7,6 +7,9 @@
   "compiler_revision": "366ee6ef8f9d2b9b57331dfd26b6f908c0289851",
   "compiler_version": "0.6.24-dev",
   "source_sha256": {
+    "src/unicode/graphic.go": "46a43107a87c88cf17a05a557e00dbf6b0f4bb53ebcd7d3035e02f1e67c428be",
+    "src/unicode/letter.go": "b35a6d259313cef88d07e9e4027b8bd72c60ae140418f5be2c41a2ecea6074fe",
+    "src/unicode/tables.go": "ac0e5d5d1b58ed4b02d7cb4a0085bdefbdb4f7aae6fadddbc9477f8463da8bd8",
     "src/time/time.go": "7d992810b162f65e02cea4d60fd0d90af59b3cafa2c8926ca08083d5c73451dc",
     "src/image/color/ycbcr.go": "7afc91f21cb8eb68027f54180a862137bdef26cfd59389ecb609c0f87923de0c",
     "src/net/http/status.go": "7633ca0ca545767f3db3d8960a96ee4ecd68fb39439c88b7c03efcb3d1786297",
@@ -18,6 +21,19 @@
     "LICENSE": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
   },
   "ports": [
+    {
+      "source": "src/unicode/graphic.go",
+      "supporting_sources": [
+        "src/unicode/letter.go",
+        "src/unicode/tables.go"
+      ],
+      "target": "ports/unicode/space.gooo",
+      "symbols": [
+        "IsSpace"
+      ],
+      "unicode_version": "17.0.0",
+      "api_mapping": "Signed int32 rune is represented exactly by Integer; outside-int32 Integer inputs return false as an explicit extension without narrowing."
+    },
     {
       "source": "src/time/time.go",
       "target": "ports/time/duration.gooo",

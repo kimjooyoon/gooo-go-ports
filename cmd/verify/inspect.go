@@ -66,9 +66,10 @@ type envelope struct {
 						Entity string          `json:"entity_id"`
 						Value  json.RawMessage `json:"value"`
 					} `json:"inputs,omitempty"`
-					Actual   json.RawMessage `json:"actual"`
-					Expected json.RawMessage `json:"expected"`
-					Passed   *bool           `json:"passed"`
+					Actual       json.RawMessage    `json:"actual"`
+					ActualFields []recordFieldValue `json:"actual_fields,omitempty"`
+					Expected     json.RawMessage    `json:"expected"`
+					Passed       *bool              `json:"passed"`
 				} `json:"deliveries"`
 			} `json:"traces"`
 		} `json:"runtime"`
@@ -142,6 +143,9 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 		}
 		if !equalValue(d.Expected, row.Expected) || !equalValue(d.Actual, row.Expected) || d.Passed == nil || !*d.Passed {
 			return fail(fmt.Sprintf("Go oracle mismatch at row %d: got %s; want %v", i, d.Actual, row.Expected))
+		}
+		if err := inspectWhitespaceFields(s, d.ActualFields, row.Expected); err != nil {
+			return fail(err.Error())
 		}
 	}
 	return checked{c.SHA, e.ReplayedFrom}, nil

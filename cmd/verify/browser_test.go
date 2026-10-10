@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"testing"
 	"time"
+	"unicode"
 
 	"github.com/kimjooyoon/gooo-go-ports/internal/demobridge"
 )
@@ -24,13 +25,13 @@ func TestBrowserFixturesKeepOracleCoverageAndExactStrings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(doc.Cases) != 10487 || len(doc.Rejections) != 301 || doc.GoVersion != lock.GoVersion || doc.CompilerRevision != lock.CompilerRevision {
+	if len(doc.Cases) != 10993 || len(doc.Rejections) != 338 || doc.GoVersion != lock.GoVersion || doc.CompilerRevision != lock.CompilerRevision {
 		t.Fatalf("changed fixture scope: %d cases, %d rejections", len(doc.Cases), len(doc.Rejections))
 	}
 	for _, legacy := range []struct {
 		rows any
 		hash string
-	}{{doc.Cases[:4437], "efee1148d79beea62eaa6bc73b6cb9abe531261fe26b8269ce8955a70acfe8bf"}, {doc.Rejections[:172], "4e0b4ec3682fd455ee1b2e38b21d0911b8c013100e16f69345327f8beafeebcf"}, {doc.Cases[:6909], "dddd7bc6165235e47ca9d36290403ed54b6d38090a65f3b07cc84996afb77de1"}, {doc.Rejections[:239], "9298851072ffd9c2f33330d53f1b6d5d9180ca3728f0408e3a304c215b245663"}} {
+	}{{doc.Cases[:4437], "efee1148d79beea62eaa6bc73b6cb9abe531261fe26b8269ce8955a70acfe8bf"}, {doc.Rejections[:172], "4e0b4ec3682fd455ee1b2e38b21d0911b8c013100e16f69345327f8beafeebcf"}, {doc.Cases[:6909], "dddd7bc6165235e47ca9d36290403ed54b6d38090a65f3b07cc84996afb77de1"}, {doc.Rejections[:239], "9298851072ffd9c2f33330d53f1b6d5d9180ca3728f0408e3a304c215b245663"}, {doc.Cases[:10487], "3f3048cce063e5f1d33205b8c3b5ea2d4e780efd2eed3a728b18fb9867704fbf"}, {doc.Rejections[:301], "83c087f80c93d1d4f085b7600e22a9c8754a85c6d729cabe7dd9fc606a3d70e0"}} {
 		raw, err := json.Marshal(legacy.rows)
 		if err != nil || fmt.Sprintf("%x", sha256.Sum256(raw)) != legacy.hash {
 			t.Fatal("the existing browser fixtures changed")
@@ -89,7 +90,7 @@ func TestBrowserFixturesKeepOracleCoverageAndExactStrings(t *testing.T) {
 			byteInputs[c.Operation][c.Inputs[0]] = true
 		}
 	}
-	if len(counts) != 18 || counts["time.Duration.Round"] != 1789 || counts["time.Duration.Truncate"] != 1789 || counts["bits.RotateLeft8"] != 2472 || counts["color.RGBToCMYK"] != 637 || counts["color.CMYKToRGB"] != 663 || counts["http.StatusText"] != 627 || counts["utf16.DecodeRune"] != 164 || len(byteInputs) != 6 {
+	if len(counts) != 19 || counts["unicode.IsSpace"] != 506 || counts["time.Duration.Round"] != 1789 || counts["time.Duration.Truncate"] != 1789 || counts["bits.RotateLeft8"] != 2472 || counts["color.RGBToCMYK"] != 637 || counts["color.CMYKToRGB"] != 663 || counts["http.StatusText"] != 627 || counts["utf16.DecodeRune"] != 164 || len(byteInputs) != 6 {
 		t.Fatalf("wrong operation roster: %v", counts)
 	}
 	for operation, inputs := range byteInputs {
@@ -157,6 +158,10 @@ func TestBrowserRowRejectsMalformedOracleShapes(t *testing.T) {
 		{"color.CMYKToRGB", testCase{Inputs: []any{int64(0), int64(0), int64(0), int64(0)}, Expected: map[string]any{"red": "255", "green": 255, "blue": 255}}},
 		{"color.RGBToCMYK", testCase{Inputs: []any{int64(0), int64(0), int64(0)}, Expected: map[string]int{"cyan": 0, "magenta": 0, "yellow": 0, "other": 255}}},
 		{"color.RGBToCMYK", testCase{Inputs: []any{int64(0), int64(0), int64(0)}, Expected: map[string]int{"cyan": 0, "magenta": 0, "yellow": 0, "black": 256}}},
+		{"unicode.IsSpace", testCase{Inputs: []any{int64(2147483648)}, Expected: false}},
+		{"unicode.IsSpace", testCase{Inputs: []any{int64(-2147483649)}, Expected: false}},
+		{"unicode.IsSpace", testCase{Inputs: []any{int64(160)}, Expected: "true"}},
+		{"unicode.IsSpace", testCase{Inputs: []any{int64(160), int64(0)}, Expected: true}},
 		{"unknown.Operation", testCase{Inputs: []any{int64(0)}, Expected: 0}},
 	} {
 		if _, err := browserRow(test.operation, test.row); err == nil {
@@ -276,6 +281,52 @@ func TestDurationBrowserFixturesUseGoAndPreserveBothExactInputs(t *testing.T) {
 					t.Fatalf("missing exact duration input%d %s", position, raw)
 				}
 			}
+		}
+	}
+}
+
+func TestWhitespaceBrowserFixturesKeepGoRuneDomainAndMembership(t *testing.T) {
+	suites, err := corpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	fixtures, err := makeBrowserFixtures(suites, upstream{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	seen := map[int64]bool{}
+	positive := 0
+	for _, row := range fixtures.Cases {
+		if row.Operation != "unicode.IsSpace" {
+			continue
+		}
+		if len(row.Inputs) != 2 || row.Inputs[1] != "0" {
+			t.Fatalf("changed unary browser ABI: %+v", row)
+		}
+		n, err := strconv.ParseInt(row.Inputs[0], 10, 32)
+		if err != nil || seen[n] {
+			t.Fatalf("narrowed or repeated input: %+v", row)
+		}
+		seen[n] = true
+		want := unicode.IsSpace(rune(n))
+		if row.Expected.Type != "boolean" || row.Expected.Value != want {
+			t.Fatalf("changed Go reference: %+v", row)
+		}
+		if want {
+			positive++
+		}
+	}
+	if len(seen) != 506 || positive != 25 {
+		t.Fatalf("changed coverage: %d cases, %d members", len(seen), positive)
+	}
+	for n := int64(0); n <= 255; n++ {
+		if !seen[n] {
+			t.Fatalf("missing Latin-1 value %d", n)
+		}
+	}
+	for _, n := range []int64{-2147483648, 2147483647, -1, 0xd800, 0xdfff, 0x110000, 0x200b, 0xfeff, 0x180e, 0x200e, 0x200f, 0x3000} {
+		if !seen[n] {
+			t.Fatalf("missing signed-rune or whitespace boundary %d", n)
 		}
 	}
 }

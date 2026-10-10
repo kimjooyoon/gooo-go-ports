@@ -49,7 +49,7 @@ func fixtureWorkspace(t *testing.T, s suite, sources map[string]sourceIdentity) 
 		t.Fatal(err)
 	}
 	return workspaceImage{Packages: []workspacePackage{{Path: s.Package,
-		Exports: []workspaceExport{{s.Activity, "activity", contract.ID, contract.InputEntities}},
+		Exports: []workspaceExport{{Name: s.Activity, Kind: "activity", ID: contract.ID, InputTypes: contract.InputEntities, OutputType: whitespaceResultContract(s).Entity}},
 		Sources: []workspaceSource{{contract.Source, sources[contract.Source].Digest}},
 	}}}
 }

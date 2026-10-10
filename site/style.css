@@ -1252,3 +1252,43 @@ footer {
   letter-spacing: -.4px;
   overflow-wrap: anywhere
 }
+
+.whitespace-presets {
+  margin: 18px 0
+}
+
+.whitespace-presets select {
+  font-size: 12px
+}
+
+.codepoint-helper {
+  padding: 13px;
+  margin: 0 0 20px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: #f8faf3
+}
+
+#codepoint-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  resize: vertical;
+  padding: 8px 10px;
+  border: 1px solid #bdc8bc;
+  background: var(--white);
+  color: var(--ink);
+  font: 20px/1.4 ui-monospace, SFMono-Regular, Consolas, monospace
+}
+
+#codepoint-help, #codepoint-status {
+  font-size: 11px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  margin: 8px 0 0;
+  color: var(--muted)
+}
+
+#codepoint-status.error {
+  color: var(--error)
+}

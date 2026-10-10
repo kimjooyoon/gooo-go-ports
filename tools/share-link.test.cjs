@@ -283,3 +283,24 @@ test('duration v1 links preserve both signed int64 values including nonpositive 
     assert.throws(() => share.parse(encoded + '&result=0'));
   }
 });
+
+test('IsSpace v1 links preserve the signed rune domain, including surrogate and non-scalar values', () => {
+  for (const input of ['-2147483648', '-1', '0', '9', '133', '160', '8203', '55296', '57343', '65279', '128512', '1114112', '2147483647']) {
+    const value = { operation: 'unicode.IsSpace', inputs: [input, '0'], wasm: 'a'.repeat(64), revision: 'b'.repeat(40) };
+    const fragment = share.format(value);
+    assert.ok(fragment.startsWith('#gooo-share?v=1&'));
+    assert.deepEqual(share.parse(fragment), value);
+  }
+  for (const input of ['-2147483649', '2147483648', '4294967328', '9007199254740993', ' 32', '+32', '032', '-0', '1e2']) {
+    assert.throws(() => share.validateInputs('unicode.IsSpace', [input, '0']));
+  }
+  for (const inputs of [[], ['32'], ['32', '1'], ['32', '00'], ['32', '0', '0']]) assert.throws(() => share.validateInputs('unicode.IsSpace', inputs));
+});
+
+test('single-codepoint decoding is exact UTF-16 decoding, not trimming or whitespace classification', () => {
+  const helper = require('../site/codepoint.js');
+  for (const [text, decimal, notation, scalar] of [[' ', '32', 'U+0020', true], ['\t', '9', 'U+0009', true], ['\r', '13', 'U+000D', true], ['\u0085', '133', 'U+0085', true], ['\u00a0', '160', 'U+00A0', true], ['\u200b', '8203', 'U+200B', true], ['\ufeff', '65279', 'U+FEFF', true], ['😀', '128512', 'U+1F600', true], ['\ud800', '55296', 'U+D800', false], ['\udfff', '57343', 'U+DFFF', false]]) {
+    assert.deepEqual(helper.fromText(text), { decimal, notation, scalar, carriageReturn: text === '\r' });
+  }
+  for (const text of ['', '  ', '\r\n', 'e\u0301', '👩‍💻', '🇰🇷', '\ud800x', '😀a', null, 32]) assert.throws(() => helper.fromText(text), /exactly one code point/);
+});

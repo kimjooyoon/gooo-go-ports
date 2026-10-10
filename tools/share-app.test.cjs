@@ -8,6 +8,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { webcrypto, createHash } = require('node:crypto');
 const share = require('../site/share.js');
+const codepoint = require('../site/codepoint.js');
 const source = fs.readFileSync(path.join(__dirname, '../site/app.js'), 'utf8');
 const bytes = Buffer.from('fixture program bytes for app scheduling tests');
 const wasm = createHash('sha256').update(bytes).digest('hex');
@@ -32,7 +33,7 @@ class Element {
     this.firstChild = { textContent: '' }; this.classList = { toggle() {} };
   }
   addEventListener(name, fn) { this.listeners.set(name, fn); }
-  emit(name) { return this.listeners.get(name)?.({ preventDefault() {} }); }
+  emit(name, event = {}) { return this.listeners.get(name)?.({ preventDefault() {}, ...event }); }
   replaceChildren(...children) { this.children = children; }
   append(...children) { this.children.push(...children); }
   setAttribute(name, value) { this.attributes[name] = value; }
@@ -50,7 +51,7 @@ function app(fragment = '', clipboard = async () => {}, runtimeReply) {
   const metaGate = deferred(), wasmGate = deferred(), fixtureGate = deferred();
   let url = new URL('https://example.test/demo/' + fragment);
   const context = {
-    URL, URLSearchParams, Uint8Array, Date, setTimeout, console, crypto: webcrypto, GoooShare: share,
+    URL, URLSearchParams, Uint8Array, Date, setTimeout, console, crypto: webcrypto, GoooShare: share, GoooCodePoint: codepoint,
     document: { getElementById: get, createElement: () => new Element(), createTextNode: text => ({ textContent: text }), querySelectorAll: () => scenarioButtons },
     location: { get href() { return url.href; }, get hash() { return url.hash; } },
     history: { replaceState(_state, _title, href) { url = new URL(href); } },
@@ -454,4 +455,125 @@ test('duration UI rejects malformed runtime results instead of displaying an imp
     assert.equal(a.get('result-badge').textContent, 'ERROR');
     assert.equal(a.get('raw-result').hidden, true);
   }
+});
+
+const spaceReply = (operation, inputs) => ({ ok: true, operation, inputs, output: { type: 'boolean', value: true } });
+function pastePoint(a, raw, kind = 'paste') {
+  let prevented = false;
+  const data = { getData(type) { assert.equal(type, 'text/plain'); return raw; } };
+  a.get('codepoint-input').emit(kind, { preventDefault() { prevented = true; }, [kind === 'paste' ? 'clipboardData' : 'dataTransfer']: data });
+  assert.equal(prevented, true, 'raw text reached textarea normalization');
+}
+
+test('code-point paste keeps spaces, NEL, BOM and supplementary pairs exact without classifying them in JS', async () => {
+  const points = [[' ', '32'], ['\t', '9'], ['\n', '10'], ['\u0085', '133'], ['\u00a0', '160'], ['\u200b', '8203'], ['\ufeff', '65279'], ['\u3000', '12288'], ['😀', '128512'], ['\ud800', '55296'], ['\udfff', '57343']];
+  for (const [raw, decimal] of points) {
+    // Deliberately return true even for BOM/ZWSP/surrogates. The UI must show
+    // only the compiled reply and never replace it with a JS whitespace test.
+    const a = app('', undefined, spaceReply); await a.ready(); select(a, 'unicode.IsSpace');
+    assert.equal(a.get('codepoint-helper').hidden, false);
+    assert.equal(a.get('codepoint-input').disabled, false);
+    pastePoint(a, raw);
+    assert.equal(a.get('first-input').value, decimal);
+    assert.equal(a.get('codepoint-input').value, raw);
+    assert.equal(a.get('run-button').disabled, false);
+    assert.match(a.get('codepoint-status').textContent, new RegExp('decimal ' + decimal));
+    assert.equal(a.calls.length, 0, 'input helper executed the function');
+    a.get('run-form').emit('submit');
+    assert.deepEqual(a.calls, [['unicode.IsSpace', decimal, '0']]);
+    assert.equal(JSON.parse(a.get('raw-output').textContent).output.value, true);
+    await a.get('share-button').emit('click');
+    assert.deepEqual(share.parse(new URL(a.copied[0]).hash).inputs, [decimal, '0']);
+  }
+});
+
+test('raw CRLF is rejected before textarea normalization; standalone CR remains decimal 13', async () => {
+  const a = app('', undefined, spaceReply); await a.ready(); select(a, 'unicode.IsSpace');
+  pastePoint(a, '\r');
+  assert.equal(a.get('first-input').value, '13');
+  assert.equal(a.get('codepoint-input').value, '');
+  assert.match(a.get('codepoint-status').textContent, /Carriage return.*decimal 13/);
+  a.get('run-form').emit('submit');
+  assert.deepEqual(a.calls, [['unicode.IsSpace', '13', '0']]);
+  for (const kind of ['paste', 'drop']) {
+    pastePoint(a, '\r\n', kind);
+    assert.equal(a.get('first-input').value, '13');
+    assert.equal(a.get('run-button').disabled, true);
+    assert.equal(a.get('share-button').disabled, true);
+    assert.match(a.get('codepoint-status').textContent, /exactly one.*CRLF/);
+    a.get('run-form').emit('submit');
+    assert.equal(a.calls.length, 1, 'invalid helper reused the prior canonical value');
+    assert.equal(a.get('raw-result').hidden, true);
+  }
+  a.get('first-input').value = '13'; a.get('first-input').emit('input');
+  a.get('run-form').emit('submit');
+  assert.deepEqual(a.calls[1], ['unicode.IsSpace', '13', '0']);
+  assert.equal(a.get('codepoint-status').hidden, true);
+});
+
+test('multiple code points never truncate or normalize to one; editing numeric input clears helper state', async () => {
+  const a = app('', undefined, spaceReply); await a.ready(); select(a, 'unicode.IsSpace');
+  for (const text of ['ab', '  ', 'e\u0301', '👩‍💻', '🇰🇷', ' \n', '\ud800x', '😀a']) {
+    pastePoint(a, text);
+    assert.equal(a.get('first-input').value, '160');
+    assert.equal(a.get('codepoint-input').attributes['aria-invalid'], 'true');
+    a.get('run-form').emit('submit');
+    await a.get('share-button').emit('click');
+    assert.equal(a.calls.length, 0); assert.equal(a.copied.length, 0);
+    assert.equal(a.get('result-badge').textContent, 'ERROR');
+  }
+  a.get('first-input').value = '65279'; a.get('first-input').emit('input');
+  assert.equal(a.get('codepoint-input').value, '');
+  assert.equal(a.get('run-button').disabled, false);
+  a.get('run-form').emit('submit');
+  assert.deepEqual(a.calls, [['unicode.IsSpace', '65279', '0']]);
+  a.get('codepoint-input').value = 'e\u0301'; a.get('codepoint-input').emit('input');
+  assert.equal(a.get('run-button').disabled, true);
+  a.get('codepoint-input').value = ''; a.get('codepoint-input').emit('input');
+  assert.equal(a.get('run-button').disabled, false);
+  assert.equal(a.get('first-input').value, '65279');
+});
+
+test('whitespace presets and helper edits replace canonical input and cancel pending shared auto-run', async () => {
+  for (const decimal of ['160', '133', '8203', '65279', '9', '12288']) {
+    const a = app(link({ operation: 'unicode.IsSpace', inputs: ['32', '0'] }), undefined, spaceReply);
+    a.get('whitespace-presets').value = decimal; a.get('whitespace-presets').emit('change');
+    await a.ready();
+    assert.equal(a.calls.length, 0);
+    assert.equal(a.get('first-input').value, decimal);
+    assert.equal(a.get('codepoint-input').value, '');
+    a.get('run-form').emit('submit');
+    assert.deepEqual(a.calls, [['unicode.IsSpace', decimal, '0']]);
+  }
+  const a = app(link({ operation: 'unicode.IsSpace', inputs: ['32', '0'] }), undefined, spaceReply);
+  pastePoint(a, '\u0085'); await a.ready();
+  assert.equal(a.calls.length, 0);
+  a.get('run-form').emit('submit'); assert.deepEqual(a.calls, [['unicode.IsSpace', '133', '0']]);
+});
+
+test('function changes and shared input replace stale helper content or errors', async () => {
+  const a = app('', undefined, spaceReply); await a.ready(); select(a, 'unicode.IsSpace');
+  pastePoint(a, '\u00a0'); select(a, 'utf8.ValidRune');
+  assert.equal(a.get('codepoint-helper').hidden, true); assert.equal(a.get('codepoint-input').disabled, true);
+  assert.equal(a.get('codepoint-input').value, '');
+  select(a, 'unicode.IsSpace'); pastePoint(a, 'ab');
+  a.hash(link({ operation: 'unicode.IsSpace', inputs: ['-2147483648', '0'] }));
+  assert.equal(a.get('codepoint-input').value, '');
+  assert.equal(a.get('codepoint-status').hidden, true);
+  assert.deepEqual(a.calls, [['unicode.IsSpace', '-2147483648', '0']]);
+  a.hash(link({ operation: 'unicode.IsSpace', inputs: ['2147483647', '0'], wasm: 'f'.repeat(64) }));
+  assert.equal(a.calls.length, 1); assert.equal(a.get('first-input').value, '2147483647');
+  a.get('run-form').emit('submit'); assert.deepEqual(a.calls[1], ['unicode.IsSpace', '2147483647', '0']);
+});
+
+test('IsSpace rejects out-of-int32, noncanonical numeric values and a wrong output kind', async () => {
+  const a = app('', undefined, spaceReply); await a.ready(); select(a, 'unicode.IsSpace');
+  for (const value of ['-2147483649', '2147483648', '4294967328', '9007199254740993', ' 32', '+32', '032', '-0', '1e2']) {
+    a.get('first-input').value = value; a.get('first-input').emit('input'); a.get('run-form').emit('submit');
+    assert.equal(a.get('result-badge').textContent, 'ERROR');
+  }
+  assert.equal(a.calls.length, 0);
+  const b = app(link({ operation: 'unicode.IsSpace', inputs: ['160', '0'] }), undefined,
+    (operation, inputs) => ({ ok: true, operation, inputs, output: { type: 'text', value: 'true' } }));
+  await b.ready(); assert.equal(b.get('result-badge').textContent, 'ERROR');
 });

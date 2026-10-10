@@ -6,6 +6,7 @@
 package browser_demo
 namespace gooo_ports_examples_browser_demo
 import http "go/net/http"
+import unicode "go/unicode"
 import utf8 "go/unicode/utf8"
 import utf16 "go/unicode/utf16"
 import bits "go/math/bits"
@@ -25,6 +26,9 @@ entity Reply id "gooo://go-ports/examples/browser-demo/reply/v2" fields {
 
 activity Dispatch(Text, Integer, Integer, Integer, Integer) -> Reply id "gooo://go-ports/examples/browser-demo/dispatch/v2" computes `if input0 == "http.StatusText" {
     return Reply{text: http.StatusText(input1), flag: false, first: 0, second: 0, third: 0, fourth: 0}
+}
+if input0 == "unicode.IsSpace" {
+    return Reply{text: "", flag: unicode.IsSpace(input1), first: 0, second: 0, third: 0, fourth: 0}
 }
 if input0 == "utf8.ValidRune" {
     return Reply{text: "", flag: utf8.ValidRune(input1), first: 0, second: 0, third: 0, fourth: 0}

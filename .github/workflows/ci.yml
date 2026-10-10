@@ -43,6 +43,7 @@ jobs:
           ./.gooo check ports/net/http.gooo
           ./.gooo check ports/unicode/utf8.gooo
           ./.gooo check ports/unicode/utf16.gooo
+          ./.gooo check ports/unicode/space.gooo
           ./.gooo check ports/math/bits.gooo
           ./.gooo check ports/image/color.gooo
           ./.gooo check ports/time/duration.gooo
@@ -54,16 +55,18 @@ jobs:
             .schema == "gooo/go-ports-differential/v1" and
             .go_version == "go1.27.2" and
             .compiler_revision == "366ee6ef8f9d2b9b57331dfd26b6f908c0289851" and
-            .ported_functions == 18 and .consumer_programs == 6 and .consumer_activities == 7 and
+            .ported_functions == 19 and .consumer_programs == 7 and .consumer_activities == 8 and
             .legacy_cases == 3147 and .unicode_reference_cases == 334 and .unicode_rejection_cases == 12 and
             .color_port_reference_cases == 1300 and .color_port_rejection_cases == 56 and
             .color_consumer_reference_cases == 637 and .color_consumer_rejection_cases == 24 and
             .rotation_port_reference_cases == 2472 and .rotation_port_rejection_cases == 36 and
             .rotation_consumer_reference_cases == 672 and .rotation_consumer_rejection_cases == 36 and
             .duration_port_reference_cases == 3578 and .duration_consumer_reference_cases == 1789 and
-            .cases == 14093 and .passed == 14093 and
-            (.runs | length) == 25 and
-            ([.runs[].cases] | add) == 14093 and ([.runs[].batches] | add) == 168 and
+            .whitespace_port_reference_cases == 506 and .whitespace_port_rejection_cases == 8 and
+            .whitespace_consumer_reference_cases == 506 and .whitespace_consumer_rejection_cases == 8 and
+            .cases == 15121 and .passed == 15121 and
+            (.runs | length) == 27 and
+            ([.runs[].cases] | add) == 15121 and ([.runs[].batches] | add) == 182 and
             all(.runs[]; .passed == .cases and .replay_equal == true)
           ' out/ci/summary.json
       - name: Execute and replay the input-only importing example
@@ -252,6 +255,73 @@ jobs:
               results.append([d["actual"] for d in deliveries])
           assert results[0] == results[1]
           PY
+      - name: Execute and replay the whitespace inspector input-only example
+        run: |
+          ./.gooo package execute --json --inputs examples/whitespace-inspector/inputs.json \
+            whitespace-inspector.workspace.json > out/whitespace-example.json
+          ./.gooo package replay --json --receipt out/whitespace-example.json \
+            --inputs examples/whitespace-inspector/inputs.json \
+            whitespace-inspector.workspace.json > out/whitespace-replay.json
+          # JSON integers, source bindings and semantic record fields remain exact.
+          python3 - <<'PYTHON'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          digest = lambda raw: "sha256:" + hashlib.sha256(raw).hexdigest()
+          fixture_bytes = Path("examples/whitespace-inspector/inputs.json").read_bytes()
+          fixture = json.loads(fixture_bytes)
+          manifest_bytes = Path("whitespace-inspector.workspace.json").read_bytes()
+          manifest = json.loads(manifest_bytes)
+          source_names = {p["path"]: p["sources"][0] for p in manifest["packages"]}
+          fields = ["in_rune_domain", "valid_scalar", "is_go_space", "is_ascii_space", "utf8_bytes", "utf16_units"]
+          entity = "gooo://go-ports/examples/whitespace-inspector/inspection"
+          lock = json.loads(Path("upstream.json").read_bytes())
+          original = Path("out/whitespace-example.json").read_bytes()
+          execution = json.loads(original)
+          replay = json.loads(Path("out/whitespace-replay.json").read_bytes())
+          assert replay["replayed_from_sha256"] == digest(original)
+          assert replay["result"]["replay"]["model_calls"] == 0
+          for receipt in (execution, replay):
+              assert receipt["schema"] == "gooo/workspace-body-execution-receipt/v1" and receipt["decision"] == "OBSERVED"
+              assert receipt["manifest_digest"] == digest(manifest_bytes) and receipt["inputs_digest"] == digest(fixture_bytes)
+              result = receipt["result"]
+              assert result["program"]["entry"]["package_path"] == "app/whitespace-inspector"
+              assert result["program"]["entry"]["activity"] == "Inspect"
+              packages = result["program"]["workspace_image"]["packages"]
+              assert len(packages) == 4 and {p["path"] for p in packages} == set(source_names)
+              for package in packages:
+                  filename = source_names[package["path"]]
+                  text = Path(filename).read_text()
+                  encoded = json.dumps(text, ensure_ascii=False).replace("&", "\\u0026").replace("<", "\\u003c").replace(">", "\\u003e").encode()
+                  assert len(package["sources"]) == 1
+                  assert package["sources"][0]["filename"] == filename
+                  assert package["sources"][0]["source_digest"] == digest(encoded)
+                  if package["path"] == "app/whitespace-inspector":
+                      export = [e for e in package["exports"] if e["name"] == "Inspect"]
+                      assert len(export) == 1 and export[0]["id"] == "gooo://go-ports/examples/whitespace-inspector/inspect"
+                      assert export[0]["input_types"] == ["gooo://std/integer"] and export[0]["output_type"] == entity
+              runtime, composition = result["runtime"], result["composition"]
+              assert runtime["stage"] == composition["stage"] == "COMPLETE" and runtime.get("failure") is None
+              assert runtime["producer_source_sha"] == lock["compiler_revision"]
+              assert runtime["go_version"].split()[:3] == ["go", "version", lock["go_version"]]
+              assert runtime["generated_sha256"] == composition["generated_sha256"] == digest(composition["source"].encode())
+              assert runtime["finite_total"] == runtime["finite_passed"] == runtime["model_calls"] == 0
+              assert runtime["projection_replayed"] and runtime["runtime_replayed"]
+              assert len(runtime["traces"]) == len(fixture["inputs"]) == 21
+              for index, (supplied, trace) in enumerate(zip(fixture["inputs"], runtime["traces"])):
+                  assert trace["case_index"] == index and len(trace["deliveries"]) == 1
+                  delivery = trace["deliveries"][0]
+                  assert delivery["activity_id"] == "gooo://go-ports/examples/whitespace-inspector/inspect"
+                  assert delivery["input"] == supplied["app/whitespace-inspector:Inspect"]
+                  actual = delivery["actual"]
+                  assert set(actual) == set(fields)
+                  assert all(type(actual[f]) is bool for f in fields[:4])
+                  assert all(type(actual[f]) is int for f in fields[4:])
+                  assert delivery["actual_fields"] == [{"id": entity + "/" + f.replace("_", "-"), "name": f, "value": actual[f]} for f in fields]
+          assert execution["result"]["runtime"]["traces"] == replay["result"]["runtime"]["traces"]
+          assert execution["result"]["composition"]["source"] == replay["result"]["composition"]["source"]
+          PYTHON
       - name: Upload execution and diagnostic evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

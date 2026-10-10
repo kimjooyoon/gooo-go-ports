@@ -1,0 +1,21 @@
+// Inspect one original Go rune, not a string. Wider integers are rejected
+// explicitly; they are never truncated into the signed int32 rune domain.
+package whitespace_inspector
+namespace gooo_ports_examples_whitespace_inspector
+import unicode "go/unicode"
+import utf8 "go/unicode/utf8"
+import utf16 "go/unicode/utf16"
+entity Integer id "gooo://std/integer"
+entity Inspection id "gooo://go-ports/examples/whitespace-inspector/inspection" fields {
+    field in_rune_domain id "gooo://go-ports/examples/whitespace-inspector/inspection/in-rune-domain" type boolean required one
+    field valid_scalar id "gooo://go-ports/examples/whitespace-inspector/inspection/valid-scalar" type boolean required one
+    field is_go_space id "gooo://go-ports/examples/whitespace-inspector/inspection/is-go-space" type boolean required one
+    field is_ascii_space id "gooo://go-ports/examples/whitespace-inspector/inspection/is-ascii-space" type boolean required one
+    field utf8_bytes id "gooo://go-ports/examples/whitespace-inspector/inspection/utf8-bytes" type integer required one
+    field utf16_units id "gooo://go-ports/examples/whitespace-inspector/inspection/utf16-units" type integer required one
+}
+activity Inspect(Integer) -> Inspection id "gooo://go-ports/examples/whitespace-inspector/inspect" computes `if input < -2147483648 || input > 2147483647 {
+    return Inspection{in_rune_domain: false, valid_scalar: false, is_go_space: false, is_ascii_space: false, utf8_bytes: -1, utf16_units: -1}
+}
+let space = unicode.IsSpace(input)
+return Inspection{in_rune_domain: true, valid_scalar: utf8.ValidRune(input), is_go_space: space, is_ascii_space: space && input >= 0 && input <= 127, utf8_bytes: utf8.RuneLen(input), utf16_units: utf16.RuneLen(input)}`

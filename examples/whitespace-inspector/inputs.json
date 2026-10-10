@@ -1,0 +1,68 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "app/whitespace-inspector:Inspect": 9
+    },
+    {
+      "app/whitespace-inspector:Inspect": 32
+    },
+    {
+      "app/whitespace-inspector:Inspect": 133
+    },
+    {
+      "app/whitespace-inspector:Inspect": 160
+    },
+    {
+      "app/whitespace-inspector:Inspect": 5760
+    },
+    {
+      "app/whitespace-inspector:Inspect": 8199
+    },
+    {
+      "app/whitespace-inspector:Inspect": 8239
+    },
+    {
+      "app/whitespace-inspector:Inspect": 12288
+    },
+    {
+      "app/whitespace-inspector:Inspect": 28
+    },
+    {
+      "app/whitespace-inspector:Inspect": 6158
+    },
+    {
+      "app/whitespace-inspector:Inspect": 8203
+    },
+    {
+      "app/whitespace-inspector:Inspect": 8206
+    },
+    {
+      "app/whitespace-inspector:Inspect": 8288
+    },
+    {
+      "app/whitespace-inspector:Inspect": 65279
+    },
+    {
+      "app/whitespace-inspector:Inspect": 65
+    },
+    {
+      "app/whitespace-inspector:Inspect": 128512
+    },
+    {
+      "app/whitespace-inspector:Inspect": 55296
+    },
+    {
+      "app/whitespace-inspector:Inspect": -2147483648
+    },
+    {
+      "app/whitespace-inspector:Inspect": 2147483647
+    },
+    {
+      "app/whitespace-inspector:Inspect": 2147483648
+    },
+    {
+      "app/whitespace-inspector:Inspect": 9223372036854775807
+    }
+  ]
+}
