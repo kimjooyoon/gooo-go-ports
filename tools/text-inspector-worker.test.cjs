@@ -141,7 +141,7 @@ test('Worker cancellation and later output failure never publish partial rows', 
   assert.equal(failed.messages.at(-1).type, 'error');
 });
 
-function runtimeScope() {
+function runtimeScope(run = fixedRun) {
   const bytes = new Uint8Array([0, 1, 2, 3]).buffer;
   const metadata = { schema: 'gooo/browser-demo/v2', wasm_sha256: createHash('sha256').update(Buffer.from(bytes)).digest('hex'),
     source_revision: identity.sourceRevision, wasm_bytes: 4,
@@ -151,9 +151,9 @@ function runtimeScope() {
   const scope = { crypto: webcrypto, fetch: async name => ({ ok: true, json: async () => metadata, arrayBuffer: async () => bytes }),
     importScripts: name => loaded.push(name), WebAssembly: { instantiate: async () => ({ instance: {} }) } };
   scope.Go = class { constructor() { this.importObject = {}; } run() {
-    scope.goooReady = true; scope.goooRun = fixedRun; return new Promise(() => {});
+    scope.goooReady = true; scope.goooRun = run; return new Promise(() => {});
   } };
-  return { scope, metadata, loaded };
+  return { scope, metadata, loaded, bytes };
 }
 
 test('Worker loader verifies the current v2 metadata, byte length and hash before executing Wasm', async () => {
@@ -169,6 +169,41 @@ test('Worker loader verifies the current v2 metadata, byte length and hash befor
   assert.deepEqual(loaded, ['./wasm_exec.js']);
   assert.equal(typeof runtime.run, 'function');
 });
+
+for (const staleResource of ['./metadata.json', './demo.wasm']) {
+  test(`Worker loader executes the current program when HTTP cache holds stale ${staleResource}`, async () => {
+    const calls = [];
+    const { scope, metadata, loaded, bytes } = runtimeScope((...args) => {
+      calls.push(args); return fixedRun(...args);
+    });
+    const staleBytes = new Uint8Array([4, 5, 6, 7, 8, 9, 10, 11]).buffer;
+    const staleMetadata = { ...clone(metadata), source_revision: 'c'.repeat(40),
+      wasm_bytes: staleBytes.byteLength,
+      wasm_sha256: createHash('sha256').update(Buffer.from(staleBytes)).digest('hex') };
+    // Only one resource is stale in each case. Default caching and no-cache
+    // revalidation can reuse old bytes when a static server's validators collide.
+    scope.fetch = async (name, options = {}) => {
+      const serveStale = name === staleResource && options.cache !== 'no-store';
+      if (name === './metadata.json') return { ok: true, json: async () => clone(serveStale ? staleMetadata : metadata) };
+      assert.equal(name, './demo.wasm');
+      return { ok: true, arrayBuffer: async () => serveStale ? staleBytes : bytes };
+    };
+    let instantiated = 0;
+    scope.WebAssembly.instantiate = async received => {
+      assert.deepEqual(new Uint8Array(received), new Uint8Array(bytes));
+      instantiated++;
+      return { instance: {} };
+    };
+
+    const runtime = await worker.loadBrowserRuntime(scope, () => {});
+    assert.deepEqual(runtime.identity, { wasmSha256: metadata.wasm_sha256, sourceRevision: metadata.source_revision });
+    assert.equal(instantiated, 1);
+    assert.deepEqual(loaded, ['./wasm_exec.js']);
+    const points = ['65', '160'];
+    assert.deepEqual(await worker.inspectPoints(points, runtime.run), points.map(row));
+    assert.deepEqual(calls, points.flatMap(point => protocol.OPERATIONS.map(operation => [operation, point, '0'])));
+  });
+}
 
 test('failed Worker load reports an error without becoming ready', async () => {
   const messages = [];

@@ -37,11 +37,12 @@
   }
 
   async function loadBrowserRuntime(scope, onFatal) {
-    const metadataResponse = await scope.fetch('./metadata.json');
+    // A local static server can reuse old Last-Modified validators after an archive upgrade.
+    const metadataResponse = await scope.fetch('./metadata.json', { cache: 'no-store' });
     if (!metadataResponse.ok) throw new Error('Program metadata could not be loaded.');
     const metadata = await metadataResponse.json();
     const identity = protocol.validateMetadata(metadata);
-    const wasmResponse = await scope.fetch('./demo.wasm');
+    const wasmResponse = await scope.fetch('./demo.wasm', { cache: 'no-store' });
     if (!wasmResponse.ok) throw new Error('The Gooo program could not be loaded.');
     const bytes = await wasmResponse.arrayBuffer();
     if (bytes.byteLength !== metadata.wasm_bytes) throw new Error('The Gooo program size does not match its metadata.');

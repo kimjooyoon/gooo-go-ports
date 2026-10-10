@@ -482,7 +482,7 @@
     let rejectionChecks = 0;
     const failures = [];
     try {
-      const response = await fetch('./fixtures.json');
+      const response = await fetch('./fixtures.json', { cache: 'no-store' });
       if (!response.ok) throw new Error(`Reference cases could not be loaded (HTTP ${response.status}).`);
       const fixtures = await response.json();
       if (!['gooo/browser-fixtures/v1', 'gooo/browser-fixtures/v2'].includes(fixtures.schema) || !Array.isArray(fixtures.cases) || fixtures.cases.length === 0 || !Array.isArray(fixtures.rejections)) throw new Error('The fixture file has an unexpected format.');
@@ -527,7 +527,8 @@
 
   async function loadMetadata() {
     try {
-      const response = await fetch('./metadata.json');
+      // Fixed archives can reuse timestamps at the same URL; request the current bytes.
+      const response = await fetch('./metadata.json', { cache: 'no-store' });
       if (!response.ok) throw new Error('Build metadata could not be loaded.');
       const data = await response.json();
       if (!data || !/^[a-f0-9]{40}$/.test(data.compiler_revision) || !/^[a-f0-9]{40}$/.test(data.source_revision) || !/^[a-f0-9]{64}$/.test(data.wasm_sha256) || typeof data.compiler_version !== 'string' || typeof data.go_version !== 'string') throw new Error('Build metadata is incomplete.');
@@ -554,7 +555,7 @@
       if (typeof WebAssembly === 'undefined') throw new Error('This browser does not support WebAssembly.');
       if (typeof window.Go !== 'function') throw new Error('The Go WebAssembly loader could not be loaded.');
       const go = new window.Go();
-      const response = await fetch('./demo.wasm');
+      const response = await fetch('./demo.wasm', { cache: 'no-store' });
       if (!response.ok) throw new Error(`The WebAssembly program could not be loaded (HTTP ${response.status}).`);
       const bytes = await response.arrayBuffer();
       if (globalThis.crypto && globalThis.crypto.subtle) {

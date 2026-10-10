@@ -115,6 +115,12 @@ each runtime response's operation, original input and output shape before using
 it. JavaScript decodes the input and displays or totals the returned values;
 the six per-item judgments come from compiled Gooo.
 
+The runtime requests program metadata and Wasm bytes without reusing the browser's
+HTTP cache. When serving downloaded snapshots locally, keep each version under a
+different directory URL. If you replace files at the same URL, reload while
+bypassing the cache to load the new HTML and scripts too. An inconsistent program
+and metadata still stops loading; the hash and size checks are not skipped.
+
 The existing native execution/replay evidence and browser reference corpus still
 cover the same ports. Additional application fixtures use numeric UTF-16 units
 and explicitly expected decoded positions, with the six reference outputs

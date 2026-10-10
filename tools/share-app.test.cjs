@@ -42,12 +42,12 @@ class Element {
 }
 const rgbOutput = { type: 'rgb', value: { red: '63', green: '128', blue: '192' } };
 const cmykOutput = { type: 'cmyk', value: { cyan: '170', magenta: '85', yellow: '0', black: '63' } };
-function app(fragment = '', clipboard = async () => {}, runtimeReply) {
+function app(fragment = '', clipboard = async () => {}, runtimeReply, fetchOverride) {
   const elements = new Map();
   const get = id => { if (!elements.has(id)) elements.set(id, new Element()); return elements.get(id); };
   get('operation').value = 'http.StatusText'; get('first-input').value = '404'; get('second-input').value = '56832';
   const scenarioButtons = ['http', 'unicode', 'bytes', 'colors', 'duration'].map(scenario => { const e = new Element(); e.dataset.scenario = scenario; return e; });
-  const events = new Map(), calls = [], copied = [];
+  const events = new Map(), calls = [], copied = [], instantiated = [];
   const metaGate = deferred(), wasmGate = deferred(), fixtureGate = deferred();
   let url = new URL('https://example.test/demo/' + fragment);
   const context = {
@@ -57,8 +57,9 @@ function app(fragment = '', clipboard = async () => {}, runtimeReply) {
     history: { replaceState(_state, _title, href) { url = new URL(href); } },
     addEventListener: (name, fn) => events.set(name, fn),
     navigator: { clipboard: { async writeText(value) { copied.push(value); return clipboard(value); } } },
-    WebAssembly: { async instantiate() { return { instance: {} }; } },
-    fetch: name => {
+    WebAssembly: { async instantiate(program) { instantiated.push(Buffer.from(program)); return { instance: {} }; } },
+    fetch: (name, options) => {
+      if (fetchOverride) return fetchOverride(name, options);
       if (name === './metadata.json') return metaGate.promise;
       if (name === './demo.wasm') return wasmGate.promise;
       if (name === './fixtures.json') return fixtureGate.promise;
@@ -81,13 +82,71 @@ function app(fragment = '', clipboard = async () => {}, runtimeReply) {
   vm.runInNewContext(source, context, { filename: 'site/app.js' });
   const loadMeta = (value = metadata) => metaGate.resolve({ ok: true, json: async () => value });
   const loadWasm = () => wasmGate.resolve({ ok: true, arrayBuffer: async () => bytes });
-  return { get, calls, copied, scenarioButtons, loadMeta, loadWasm,
+  return { get, calls, copied, instantiated, scenarioButtons, loadMeta, loadWasm,
     async ready(value = metadata) { loadMeta(value); loadWasm(); await until(() => get('runtime-message').textContent === 'WebAssembly ready'); await new Promise(r => setTimeout(r, 0)); },
     hash(value) { url.hash = value; events.get('hashchange')(); },
     metaFail() { metaGate.resolve({ ok: false }); },
     finishChecks(fixtures = { schema: 'gooo/browser-fixtures/v2', cases: [{ operation: 'bits.Reverse8', inputs: ['170', '0'], expected: { type: 'text', value: 'runtime test result' } }], rejections: [] }) { fixtureGate.resolve({ ok: true, json: async () => fixtures }); }
   };
 }
+
+// Model an archive replaced at the same URL: a normal cache lookup, including a
+// no-cache request whose validator still matches, can reuse the previous body.
+// Bypassing that stored response returns the current archive's asset instead.
+function archiveCache(current, stale) {
+  return async (name, options = {}) => {
+    assert.ok(Object.hasOwn(current, name), 'unexpected asset: ' + name);
+    const value = options.cache === 'no-store' || !Object.hasOwn(stale, name) ? current[name] : stale[name];
+    return { ok: true, json: async () => value, arrayBuffer: async () => value };
+  };
+}
+
+test('same-URL archive upgrades load current metadata and Wasm before executing and sharing an input', async () => {
+  const previousBytes = Buffer.from('previous archive program');
+  const previousMetadata = { ...metadata, source_revision: '3'.repeat(40),
+    wasm_sha256: createHash('sha256').update(previousBytes).digest('hex') };
+  const current = { './metadata.json': metadata, './demo.wasm': bytes };
+  // Check either independently cached asset; refreshing just one request must
+  // not hide a regression in the other request's cache handling.
+  for (const stale of [{ './metadata.json': previousMetadata }, { './demo.wasm': previousBytes }]) {
+    const a = app(link(), undefined, undefined, archiveCache(current, stale));
+    await a.ready();
+    assert.deepEqual(a.instantiated, [bytes]);
+    assert.equal(a.get('revision-link').textContent, revision.slice(0, 12));
+    assert.deepEqual(a.calls, [['http.StatusText', '9223372036854775807', '0']]);
+    assert.equal(a.get('result-badge').textContent, 'EXECUTED');
+    assert.equal(a.get('share-button').disabled, false);
+    await a.get('share-button').emit('click');
+    assert.deepEqual(share.parse(new URL(a.copied[0]).hash), {
+      operation: 'http.StatusText', inputs: ['9223372036854775807', '0'], wasm, revision
+    });
+  }
+});
+
+test('reference checks after a same-URL archive upgrade execute the current fixtures and rejection cases', async () => {
+  const runtimeReply = (operation, inputs) => inputs[0] === 'not-an-integer'
+    ? { ok: false, error: 'Invalid integer' }
+    : { ok: true, operation, inputs, output: { type: 'text', value: 'current result for ' + inputs[0] } };
+  const fixtures = { schema: 'gooo/browser-fixtures/v2', cases: ['404', '418'].map(input => ({
+    operation: 'http.StatusText', inputs: [input, '0'], expected: { type: 'text', value: 'current result for ' + input }
+  })), rejections: [{ operation: 'http.StatusText', inputs: ['not-an-integer', '0'] }] };
+  const staleFixtures = { schema: 'gooo/browser-fixtures/v2', cases: [{ operation: 'http.StatusText',
+    inputs: ['200', '0'], expected: { type: 'text', value: 'previous archive result' } }], rejections: [] };
+  const a = app('', undefined, runtimeReply, archiveCache({
+    './metadata.json': metadata, './demo.wasm': bytes, './fixtures.json': fixtures
+  }, { './fixtures.json': staleFixtures }));
+  await a.ready();
+  assert.equal(a.calls.length, 0);
+  await a.get('checks-button').emit('click');
+  assert.deepEqual(a.calls, [
+    ['http.StatusText', '404', '0'], ['http.StatusText', '418', '0'], ['http.StatusText', 'not-an-integer', '0']
+  ]);
+  assert.equal(a.get('checks-progress').max, 3);
+  assert.equal(a.get('checks-progress').value, 3);
+  assert.equal(a.get('checks-status').className, 'checks-status success');
+  assert.equal(a.get('checks-status').textContent,
+    '2 / 2 reference cases matched. 1 / 1 invalid-input checks rejected as expected. Run completed in this browser.');
+});
 
 test('same program executes exact shared inputs once with either readiness order', async () => {
   for (const first of ['metadata', 'runtime']) {
