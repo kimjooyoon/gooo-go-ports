@@ -1,0 +1,181 @@
+{
+  "schema": "gooo/finite-candidate-compatibility/v1",
+  "observed_date": "2026-10-10",
+  "status": "PASS",
+  "scope": "Finite compatibility observation; compiler pin not promoted or published; no general cross-version compatibility claim.",
+  "published_compiler_revision": "366ee6ef8f9d2b9b57331dfd26b6f908c0289851",
+  "candidate": {
+    "schema": "gooo/build-identity/v1",
+    "language": "gooo",
+    "version": "0.6.24-dev",
+    "status": "development",
+    "build_info_observed": true,
+    "go_version": "go1.27.2",
+    "module_version": "v0.0.0-20261010022518-92dc06b38f72",
+    "module": {
+      "path": "github.com/kimjooyoon/meta-ontology-go",
+      "version": "v0.0.0-20261010022518-92dc06b38f72"
+    },
+    "compiler_source_sha": "92dc06b38f72518443f8a90e5c98a645f0c756f1",
+    "source_status": "CLEAN_VCS",
+    "vcs_revision": "92dc06b38f72518443f8a90e5c98a645f0c756f1",
+    "vcs_modified": "false",
+    "decision_runtime": {
+      "module_path": "github.com/kimjooyoon/gooo-decision-runtime",
+      "version": "v0.2.28-experimental",
+      "replaced": false
+    },
+    "native_go_required": "go1.27.2"
+  },
+  "candidate_binary_sha256_darwin_arm64": "5139e6451c54c7518ac184b3cac8e6a28edd28075eedd4c9aea0202d05d39379",
+  "baseline_ports_revision": "e650b7900d29b5590d4f3daebba1f2d88b519c52",
+  "baseline_ci": "https://github.com/kimjooyoon/gooo-go-ports/actions/runs/38015259565",
+  "baseline_public_receipts": "https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.1",
+  "candidate_ports_revision": "dc0694203c9749ffb5d710f8803579731ad39f2e",
+  "baseline_to_candidate_ports_changes": [
+    ".github/ISSUE_TEMPLATE/problem.yml",
+    "CONTRIBUTING.md",
+    "README.md",
+    "site/index.html"
+  ],
+  "isolated_override": {
+    "tracked_changed_files": [
+      "upstream.json"
+    ],
+    "diff": "diff --git a/upstream.json b/upstream.json\nindex be38154..02cc011 100644\n--- a/upstream.json\n+++ b/upstream.json\n@@ -4,7 +4,7 @@\n   \"go_repository\": \"https://github.com/golang/go\",\n   \"go_revision\": \"022c8636110ebac86a9b88724cda168ed713c21f\",\n   \"compiler_repository\": \"https://github.com/kimjooyoon/meta-ontology-go\",\n-  \"compiler_revision\": \"366ee6ef8f9d2b9b57331dfd26b6f908c0289851\",\n+  \"compiler_revision\": \"92dc06b38f72518443f8a90e5c98a645f0c756f1\",\n   \"compiler_version\": \"0.6.24-dev\",\n   \"source_sha256\": {\n     \"src/image/color/ycbcr.go\": \"7afc91f21cb8eb68027f54180a862137bdef26cfd59389ecb609c0f87923de0c\",\n",
+    "ports_source_dirty": true,
+    "compiler_checkout_clean": true
+  },
+  "published_compiler_and_lock_unchanged": true,
+  "native": {
+    "cases": 5510,
+    "batches": 80,
+    "suites": 20,
+    "cases_manifests_source_bytes_identical": true,
+    "source_files_per_suite_union": [
+      "examples/byte-summary/main.gooo",
+      "examples/color-inspector/main.gooo",
+      "examples/response.gooo",
+      "examples/unicode-inspector/main.gooo",
+      "ports/image/color.gooo",
+      "ports/math/bits.gooo",
+      "ports/net/http.gooo",
+      "ports/unicode/utf16.gooo",
+      "ports/unicode/utf8.gooo"
+    ],
+    "generated_go_and_full_traces_identical_to_ci": true,
+    "saved_replay_traces_and_receipt_sha_links_valid": true,
+    "ci_receipt_changed_field_paths": [
+      ".manifest",
+      ".replayed_from_sha256",
+      ".result.composition.elapsed_ns",
+      ".result.composition.steps[*].generation.report.compiler_source_sha",
+      ".result.composition.steps[*].generation.report.completeness_receipt.dimensions[*].evidence[*]",
+      ".result.composition.steps[*].generation.report.completeness_receipt.scope.compiler_source_sha",
+      ".result.composition.steps[*].generation.report.completeness_receipt.scope.execution_environment",
+      ".result.replay.prior_result_sha256",
+      ".result.runtime.build.peak_rss_bytes",
+      ".result.runtime.build.system_ns",
+      ".result.runtime.build.timing.deadline_remaining_ns",
+      ".result.runtime.build.timing.start_ns",
+      ".result.runtime.build.timing.wait_ns",
+      ".result.runtime.build.user_ns",
+      ".result.runtime.build.wall_ns",
+      ".result.runtime.composition_sha256",
+      ".result.runtime.elapsed_ns",
+      ".result.runtime.executable_sha256",
+      ".result.runtime.go_tool_sha256",
+      ".result.runtime.go_version",
+      ".result.runtime.producer_module.version",
+      ".result.runtime.producer_source_sha",
+      ".result.runtime.runs[*].peak_rss_bytes",
+      ".result.runtime.runs[*].system_ns",
+      ".result.runtime.runs[*].timing.deadline_remaining_ns",
+      ".result.runtime.runs[*].timing.start_ns",
+      ".result.runtime.runs[*].timing.wait_ns",
+      ".result.runtime.runs[*].user_ns",
+      ".result.runtime.runs[*].wall_ns",
+      ".result.runtime.toolchain.peak_rss_bytes",
+      ".result.runtime.toolchain.stdout_sha256",
+      ".result.runtime.toolchain.system_ns",
+      ".result.runtime.toolchain.timing.deadline_remaining_ns",
+      ".result.runtime.toolchain.timing.start_ns",
+      ".result.runtime.toolchain.timing.wait_ns",
+      ".result.runtime.toolchain.user_ns",
+      ".result.runtime.toolchain.wall_ns"
+    ],
+    "ci_program_changed_field_paths": []
+  },
+  "browser": {
+    "smoke": {
+      "schema": "gooo/browser-smoke/v1",
+      "cases": 3137,
+      "shared_inputs": 3137,
+      "rejected": 55,
+      "wasm_sha256": "c92b36d164c0b63ef352419f0c4e9057bca881f6cbd7ba4302f89febb407e83d",
+      "status": "PASS"
+    },
+    "generated_go_and_wasm_bytes_identical": true,
+    "fixture_cases_and_rejections_identical": true,
+    "fixture_changed_field_paths": [
+      ".compiler_revision"
+    ],
+    "metadata_changed_field_paths": [
+      ".compiler_revision",
+      ".execution_sha256",
+      ".source_dirty",
+      ".source_revision"
+    ],
+    "metadata": {
+      "compiler_revision": "92dc06b38f72518443f8a90e5c98a645f0c756f1",
+      "compiler_version": "0.6.24-dev",
+      "execution_sha256": "2a125cdce9dfaaf9fa81b64bccf0520f8205d4c207b94e060fc6a4228d4a100d",
+      "generated_sha256": "d72cd3ad2d206e34952045a90f5c605cca8ad1da51eae13dd4cdb91ac10f3f0c",
+      "go_version": "go1.27.2",
+      "schema": "gooo/browser-demo/v1",
+      "source_dirty": true,
+      "source_revision": "dc0694203c9749ffb5d710f8803579731ad39f2e",
+      "source_sha256": {
+        "examples/browser-demo/main.gooo": "8b996884fe57b29bc66ff994f0103fcaebc931049f87772e903172a78be22722",
+        "ports/math/bits.gooo": "e5f85644a98dfe1b78d9cf784334d15d62e1cfed03974c77fefa278ca9874e54",
+        "ports/net/http.gooo": "6245657e704a1fe249a45c8cb6040da54c5507188938db3c1bbded24a55592b2",
+        "ports/unicode/utf16.gooo": "885bc4b92c7a820c91429b4ddefe959ef06118092abff488e2700a43c2641e1b",
+        "ports/unicode/utf8.gooo": "def90e079bc265bfd6da7982115a07343e7e7726dee694a4332c44189f3004a2"
+      },
+      "wasm_bytes": 4455841,
+      "wasm_sha256": "c92b36d164c0b63ef352419f0c4e9057bca881f6cbd7ba4302f89febb407e83d"
+    }
+  },
+  "unsupported_probes": "probe\tcheck_exit\tbody_codegen_exit\tdiagnostic\nloop\t0\t1\tunsupported activity statement *ast.ForStmt\nbyte-index\t0\t1\tunsupported activity expression *ast.IndexExpr\nbitwise\t0\t1\tunsupported binary operator &\n",
+  "cross_compiler_replay": {
+    "cases": 64,
+    "decision": "PASS",
+    "recorded_producer": "366ee6ef8f9d2b9b57331dfd26b6f908c0289851",
+    "replayed_producer": "92dc06b38f72518443f8a90e5c98a645f0c756f1",
+    "full_traces_and_generated_go_identical": true,
+    "replayed_from_sha256": "sha256:6fb810c1323b232f8c755e9f95a57ab9fb4ccc53bc202b7f85f0a227f547ce0d",
+    "original_receipt_bytes_preserved": true
+  },
+  "other_checks": {
+    "gofmt-check": {
+      "exit_code": 0,
+      "formatted": true
+    },
+    "race": {
+      "exit_code": 0
+    },
+    "vet": {
+      "exit_code": 0
+    }
+  },
+  "independent_review": {
+    "status": "PASS",
+    "receipts_read": 160,
+    "cases_recounted": 5510,
+    "full_report_sha256": "0cb7b36519a5f84b303108a5b9185d0056c9d9b59dd9798c45c7262b2b6538fa",
+    "scope": "Read-only independent comparison of saved outputs, identities, source bytes, manifests, replay links and exact integer oracle values. Not an independent compiler/test reexecution."
+  },
+  "evidence_publication": "This is a derived observation summary. Candidate compatibility raw receipts and local audit logs are not bundled here. Baseline full receipts are in the linked release. Use compatibility.md to reproduce the candidate run; environment, timing and producer fields will differ.",
+  "checks_scope": "Ports gofmt/vet/race and native/browser/probes ran with unchanged validators; the engine test suite was not run. Cross-compiler replay observed only RGBToCMYK batch000 (64 cases).",
+  "evidence_limits": "Full traces were compared with exact JSON integers. Environment, timing, producer, execution hashes and provenance differences remain explicit. No published source/compiler pin changed."
+}

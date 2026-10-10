@@ -1,0 +1,11 @@
+{
+  "native_behavior_signature_sha256": "e32ff25f38bd09d7e142a1460ba9aa0c442a99e28ec2c99c096e9a448610607b",
+  "signature_definition": "sha256 of compact sorted-key UTF-8 JSON, ensure_ascii=False, mapping each relative batch directory to raw cases/manifest/source/generated-Go SHA256 and canonical program/full-traces SHA256. Timing, host and producer provenance are not in this behavior signature; they remain in the original receipts and identity records.",
+  "candidate_binary_darwin_arm64_sha256": "5139e6451c54c7518ac184b3cac8e6a28edd28075eedd4c9aea0202d05d39379",
+  "browser_generated_go_sha256": "d72cd3ad2d206e34952045a90f5c605cca8ad1da51eae13dd4cdb91ac10f3f0c",
+  "browser_wasm_sha256": "c92b36d164c0b63ef352419f0c4e9057bca881f6cbd7ba4302f89febb407e83d",
+  "released_native_evidence_tar_gz_sha256": "5dd3955d990e76da0bcbf861536bfa580f84cc7e64258009202dda0c463d107f",
+  "released_browser_demo_tar_gz_sha256": "f0c4bc43b921f3007ae61834a9b1640d5947c771b6b1ed49a1bc23b47cf5c001",
+  "cross_compiler_original_receipt_sha256": "6fb810c1323b232f8c755e9f95a57ab9fb4ccc53bc202b7f85f0a227f547ce0d",
+  "cross_compiler_new_receipt_sha256": "40b6b6ced4eeb3f0fc9b4d11b4002334312bc47af64994c916c8c3d34fe9a042"
+}

@@ -1,0 +1,44 @@
+package main
+
+import (
+	"encoding/json"
+	"os"
+)
+
+type Observation struct {
+	Input         int64 `json:"input"`
+	Expected      int64 `json:"expected"`
+	Outside       bool  `json:"outside"`
+	Inside        bool  `json:"inside"`
+	OutsideReject int64 `json:"outside_reject"`
+	InsideAccept  int64 `json:"inside_accept"`
+}
+
+func main() {
+	var inputs []int64
+	if err := json.NewDecoder(os.Stdin).Decode(&inputs); err != nil {
+		panic(err)
+	}
+	rows := make([]Observation, len(inputs))
+	for i, input := range inputs {
+		// Compare in int64 before any conversion: no clipping, wrapping, or narrowing.
+		outside := input < 0 || input > 255
+		inside := input >= 0 && input <= 255
+		expected := int64(-1)
+		if inside {
+			expected = input
+		}
+		outsideReject := input
+		if outside {
+			outsideReject = -1
+		}
+		insideAccept := int64(-1)
+		if inside {
+			insideAccept = input
+		}
+		rows[i] = Observation{input, expected, outside, inside, outsideReject, insideAccept}
+	}
+	if err := json.NewEncoder(os.Stdout).Encode(rows); err != nil {
+		panic(err)
+	}
+}

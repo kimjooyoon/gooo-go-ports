@@ -1,0 +1,25 @@
+package main
+
+import (
+	"encoding/json"
+	"os"
+)
+
+func main() {
+	var inputs []int64
+	if err := json.NewDecoder(os.Stdin).Decode(&inputs); err != nil {
+		panic(err)
+	}
+	type row struct {
+		Input     int64 `json:"input"`
+		Actual    int64 `json:"actual"`
+		Condition bool  `json:"condition"`
+	}
+	rows := make([]row, len(inputs))
+	for i, input := range inputs {
+		rows[i] = row{input, GoooComposedActivity0(input), ObservedCondition(input)}
+	}
+	if err := json.NewEncoder(os.Stdout).Encode(rows); err != nil {
+		panic(err)
+	}
+}

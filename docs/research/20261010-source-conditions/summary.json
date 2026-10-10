@@ -1,0 +1,171 @@
+{
+  "status": "PASS",
+  "engine_revision": "92dc06b38f72518443f8a90e5c98a645f0c756f1",
+  "candidate_build_identity": {
+    "schema": "gooo/build-identity/v1",
+    "language": "gooo",
+    "version": "0.6.24-dev",
+    "status": "development",
+    "build_info_observed": true,
+    "go_version": "go1.27.2",
+    "module_version": "v0.0.0-20261010022518-92dc06b38f72",
+    "module": {
+      "path": "github.com/kimjooyoon/meta-ontology-go",
+      "version": "v0.0.0-20261010022518-92dc06b38f72"
+    },
+    "compiler_source_sha": "92dc06b38f72518443f8a90e5c98a645f0c756f1",
+    "source_status": "CLEAN_VCS",
+    "vcs_revision": "92dc06b38f72518443f8a90e5c98a645f0c756f1",
+    "vcs_modified": "false",
+    "decision_runtime": {
+      "module_path": "github.com/kimjooyoon/gooo-decision-runtime",
+      "version": "v0.2.28-experimental",
+      "replaced": false
+    },
+    "native_go_required": "go1.27.2"
+  },
+  "published_build_identity": {
+    "schema": "gooo/build-identity/v1",
+    "language": "gooo",
+    "version": "0.6.24-dev",
+    "status": "development",
+    "build_info_observed": true,
+    "go_version": "go1.27.2",
+    "module_version": "v0.0.0-20261009231605-366ee6ef8f9d",
+    "module": {
+      "path": "github.com/kimjooyoon/meta-ontology-go",
+      "version": "v0.0.0-20261009231605-366ee6ef8f9d"
+    },
+    "compiler_source_sha": "366ee6ef8f9d2b9b57331dfd26b6f908c0289851",
+    "source_status": "CLEAN_VCS",
+    "vcs_revision": "366ee6ef8f9d2b9b57331dfd26b6f908c0289851",
+    "vcs_modified": "false",
+    "decision_runtime": {
+      "module_path": "github.com/kimjooyoon/gooo-decision-runtime",
+      "version": "v0.2.26-experimental",
+      "replaced": false
+    },
+    "native_go_required": "go1.27.2"
+  },
+  "source_pair_diff": "Only the 13 condition_case declarations differ.",
+  "oracle_inputs": 268,
+  "all_byte_values": 256,
+  "invalid_inputs": 12,
+  "source_case_overlap": 13,
+  "construction_case_overlap": 4,
+  "arms": {
+    "baseline": {
+      "selected_mask": 1,
+      "choices": {
+        "outside-branch": "layout_forward",
+        "predicate": "reference_second"
+      },
+      "source_sha256": "sha256:8eb499b51375b6cea6987b15815ad0b9850dc241722d5053145b593e36a94d9a",
+      "selected_source_sha256": "sha256:e6958392a2d2ae2228f6b478d943cc73694e872fe124554a41b2540e6a6017f0",
+      "generated_go_sha256": "sha256:595e596c00611883347c9e5923213f7c1ae0f35eba3161046ad130b945d2381f",
+      "construction_receipt_sha256": "sha256:f37277e854cc368154b51ff34a20d55a33ec78c11353af2f735f2b7cda307b1a",
+      "evaluation_runs": [
+        {
+          "label": "baseline-fresh",
+          "cases": 128,
+          "native_process_runs": 2,
+          "replayed": false
+        },
+        {
+          "label": "baseline-replay-0",
+          "cases": 128,
+          "native_process_runs": 2,
+          "replayed": true
+        },
+        {
+          "label": "baseline-replay-1",
+          "cases": 128,
+          "native_process_runs": 2,
+          "replayed": true
+        },
+        {
+          "label": "baseline-replay-2",
+          "cases": 12,
+          "native_process_runs": 2,
+          "replayed": true
+        }
+      ],
+      "unique_replayed_inputs": 268,
+      "unique_independently_observed_inputs": 268,
+      "independent_output_matches": 268,
+      "independent_outside_condition_matches": 0,
+      "source_condition_cases": 0,
+      "model_calls": 0
+    },
+    "constrained": {
+      "selected_mask": 2,
+      "choices": {
+        "outside-branch": "layout_reverse",
+        "predicate": "reference_first"
+      },
+      "source_sha256": "sha256:a5f3191b1bfe8876f19c1d27a6e08ba6420d2c139e8a25e26ba62bd352cbb390",
+      "selected_source_sha256": "sha256:7a96f05ce66dafe6cbdf8e1853a4bfb275997fe6cbc6694c4e4e1d669a74acb5",
+      "generated_go_sha256": "sha256:a7c2094ff37f7e8ff2119bcbb493f1604e985a763002fbeb64da01265836f452",
+      "construction_receipt_sha256": "sha256:4ef70eeaeae8c8c258401a2e05fa0ee0e0495faf1e60699b4bef49198c7e4864",
+      "evaluation_runs": [
+        {
+          "label": "constrained-fresh",
+          "cases": 128,
+          "native_process_runs": 2,
+          "replayed": false
+        },
+        {
+          "label": "constrained-replay-0",
+          "cases": 128,
+          "native_process_runs": 2,
+          "replayed": true
+        },
+        {
+          "label": "constrained-replay-1",
+          "cases": 128,
+          "native_process_runs": 2,
+          "replayed": true
+        },
+        {
+          "label": "constrained-replay-2",
+          "cases": 12,
+          "native_process_runs": 2,
+          "replayed": true
+        }
+      ],
+      "unique_replayed_inputs": 268,
+      "unique_independently_observed_inputs": 268,
+      "independent_output_matches": 268,
+      "independent_outside_condition_matches": 268,
+      "source_condition_cases": 13,
+      "model_calls": 0
+    }
+  },
+  "output_equivalence_observed": 268,
+  "opposite_conditions_observed": 268,
+  "constrained_rejected_output_equivalent_mask": 1,
+  "constrained_rejected_mask_output_cases_passed": 13,
+  "constrained_rejected_mask_condition_cases_failed": 13,
+  "published_syntax_probe": {
+    "exit_code": 1,
+    "diagnostic": "unknown assembly field condition_case",
+    "raw_stderr_sha256": "sha256:15ad8f30e46d2c5b95d7ca5afb238dfb607a60fa774f8cfcab0978973d20500c"
+  },
+  "limits": {
+    "source_cases_max": 128,
+    "source_condition_cases_max": 128,
+    "caller_cases_per_file_max": 128,
+    "caller_case_file_bytes_max": 32768,
+    "source_choices_max": 16,
+    "attempts_max": 64,
+    "used_choices": 2,
+    "used_declared_combinations": 4,
+    "used_attempt_budget": 4,
+    "evaluation_batch_sizes": [
+      128,
+      128,
+      12
+    ]
+  },
+  "scope": "Deliberately constructed finite ambiguity. A useful byte-domain sentinel guard research example; not a new standard-library port, general correctness proof, compiler bug, model understanding, or performance result. Native receipts and generated-Go AST observer checked independently against a Go int64 oracle. No source/engine/pin changes."
+}

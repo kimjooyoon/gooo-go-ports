@@ -239,6 +239,7 @@ Actions 실행에서 확인할 수 있습니다.
 - [다음 이식 로드맵](docs/roadmap.md): 문자열 순회, hex, google/uuid의 선행 조건
 - [기여 방법](CONTRIBUTING.md): 원본 추적과 동작 비교를 포함한 이식 절차
 - [경계 재현](probes/README.md): 컴파일러 개선에 사용할 최소 예제
+- [바이트 입력 조건 실험](docs/research/20261010-source-conditions/README.md): 개발 컴파일러에서 같은 최종 출력과 다른 내부 조건을 구분한 재현 자료. 기본 컴파일러와 15개 포트 집계는 유지합니다.
 
 ## 원본과 라이선스
 
