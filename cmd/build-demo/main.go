@@ -64,7 +64,12 @@ func run() error {
 		return err
 	}
 	// Isolate generated Go from the parent repository's native ./... checks.
-	module := fmt.Sprintf("module github.com/kimjooyoon/gooo-go-ports/browserbuild\n\ngo %s\n\nrequire github.com/kimjooyoon/gooo-go-ports v0.0.0\nreplace github.com/kimjooyoon/gooo-go-ports => %q\n", strings.TrimPrefix(lock.GoVersion, "go"), root)
+	parent, err := filepath.Rel(dir, root)
+	if err != nil {
+		return err
+	}
+	// Absolute replacement paths survive -trimpath in Go build information.
+	module := fmt.Sprintf("module github.com/kimjooyoon/gooo-go-ports/browserbuild\n\ngo %s\n\nrequire github.com/kimjooyoon/gooo-go-ports v0.0.0\nreplace github.com/kimjooyoon/gooo-go-ports => %q\n", strings.TrimPrefix(lock.GoVersion, "go"), filepath.ToSlash(parent))
 	if err := write(filepath.Join(dir, "go.mod"), []byte(module)); err != nil {
 		return err
 	}
