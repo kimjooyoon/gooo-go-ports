@@ -25,7 +25,13 @@ func TestColorReceiptInputAndRecordTampering(t *testing.T) {
 			s.Cases = []testCase{{Inputs: inputs, Expected: want}}
 			original.Result.Program.Entry.Package = s.Package
 			original.Result.Program.Entry.Activity = s.Activity
-			id := "gooo://test/color-evidence"
+			contract, err := contractFor(s)
+			if err != nil {
+				t.Fatal(err)
+			}
+			identity.Sources = fixtureSources(t, s)
+			original.Result.Program.Image = fixtureWorkspace(t, s, identity.Sources)
+			id := contract.ID
 			original.Result.Composition.Steps[0].Generation.Report.ID = id
 			delivery := &original.Result.Runtime.Traces[0].Deliveries[0]
 			delivery.ID = id

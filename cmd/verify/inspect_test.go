@@ -6,7 +6,8 @@ import (
 	"testing"
 )
 
-// Reduced from an actual pinned-compiler receipt. Only inspector fields remain.
+// Reduced receipt structure with a small synthetic generated source. This
+// tests evidence consistency, not execution of that synthetic source.
 func fixture(t *testing.T) ([]byte, suite, expectedIdentity) {
 	t.Helper()
 	raw, err := os.ReadFile("testdata/minimal-receipt.json")
@@ -19,7 +20,38 @@ func fixture(t *testing.T) ([]byte, suite, expectedIdentity) {
 	}
 	s := suite{Package: "go/unicode/utf16", Activity: "DecodeRune", Cases: []testCase{{Inputs: []any{int64(-1), int64(-1)}, Expected: int64(65533)}}}
 	identity := expectedIdentity{CompilerRevision: "366ee6ef8f9d2b9b57331dfd26b6f908c0289851", GoVersion: "go1.27.2", ManifestDigest: e.ManifestDigest, CasesDigest: e.CasesDigest}
+	identity.Sources = fixtureSources(t, s)
 	return raw, s, identity
+}
+
+// Expected sources are read from the repository, independently of the receipt.
+func fixtureSources(t *testing.T, s suite) map[string]sourceIdentity {
+	t.Helper()
+	contract, err := contractFor(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, err := os.ReadFile("../../" + contract.Source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sources, err := snapshotSourceIdentities([]sourcePackage{{s.Package, []string{contract.Source}}}, map[string][]byte{contract.Source: raw})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return sources
+}
+
+func fixtureWorkspace(t *testing.T, s suite, sources map[string]sourceIdentity) workspaceImage {
+	t.Helper()
+	contract, err := contractFor(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return workspaceImage{Packages: []workspacePackage{{Path: s.Package,
+		Exports: []workspaceExport{{s.Activity, "activity", contract.ID, contract.InputEntities}},
+		Sources: []workspaceSource{{contract.Source, sources[contract.Source].Digest}},
+	}}}
 }
 func TestInspectRejectsMisleadingEvidence(t *testing.T) {
 	raw, s, identity := fixture(t)

@@ -9,10 +9,37 @@
         "package_path": "go/unicode/utf16",
         "activity": "DecodeRune",
         "lowered_name": "GoooPackage3ActivityDecodeRune"
+      },
+      "workspace_image": {
+        "packages": [
+          {
+            "path": "go/unicode/utf16",
+            "sources": [
+              {
+                "filename": "ports/unicode/utf16.gooo",
+                "source_digest": "sha256:949060a2b21cee3aedbb3a958a86023656046154b4ab8270e0b86a52e14a192b",
+                "semantic_digest": "sha256:0a172ebf3b19fbc65c7fee5a798c3334f45caf1925e157a2572214810fdad43b",
+                "declarations": 7
+              }
+            ],
+            "exports": [
+              {
+                "name": "DecodeRune",
+                "kind": "activity",
+                "id": "gooo://go/unicode/utf16/DecodeRune",
+                "input_types": [
+                  "gooo://std/integer",
+                  "gooo://std/integer"
+                ],
+                "output_type": "gooo://std/integer"
+              }
+            ]
+          }
+        ]
       }
     },
     "composition": {
-      "generated_sha256": "sha256:acdaa128e0b60166e814772090e8898cb5ecc413bc841d6c95c4a4b97be2d2c2",
+      "generated_sha256": "sha256:b10191e2eadbbbf4bc60f8ca8003988131d658a77c656025d1504f8740d97301",
       "steps": [
         {
           "generation": {
@@ -21,14 +48,15 @@
             }
           }
         }
-      ]
+      ],
+      "source": "package main\n\nfunc Fixture(input0, input1 int64) int64 { return 65533 }\n"
     },
     "runtime": {
       "schema": "gooo/body-composition-runtime/v1",
       "stage": "COMPLETE",
       "producer_source_sha": "366ee6ef8f9d2b9b57331dfd26b6f908c0289851",
       "go_version": "go version go1.27.2 darwin/arm64",
-      "generated_sha256": "sha256:acdaa128e0b60166e814772090e8898cb5ecc413bc841d6c95c4a4b97be2d2c2",
+      "generated_sha256": "sha256:b10191e2eadbbbf4bc60f8ca8003988131d658a77c656025d1504f8740d97301",
       "model_calls": 0,
       "finite_passed": 1,
       "finite_total": 1,

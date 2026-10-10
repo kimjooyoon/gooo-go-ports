@@ -122,10 +122,7 @@ func run() error {
 	if err = readJSON("gooo.workspace.json", &manifest); err != nil {
 		return err
 	}
-	var packages []struct {
-		Path    string   `json:"path"`
-		Sources []string `json:"sources"`
-	}
+	var packages []sourcePackage
 	if err = json.Unmarshal(manifest["packages"], &packages); err != nil {
 		return err
 	}
@@ -143,6 +140,10 @@ func run() error {
 			sourceHashes[source] = hex.EncodeToString(sum[:])
 			sources = append(sources, source)
 		}
+	}
+	sourceIdentities, err := snapshotSourceIdentities(packages, sourceBytes)
+	if err != nil {
+		return err
 	}
 	reports := []observation{}
 	for _, s := range suites {
@@ -193,7 +194,7 @@ func run() error {
 			if err != nil {
 				return err
 			}
-			identity := expectedIdentity{CompilerRevision: lock.CompilerRevision, GoVersion: lock.GoVersion, ManifestDigest: "sha256:" + manifestSHA, CasesDigest: "sha256:" + casesSHA}
+			identity := expectedIdentity{CompilerRevision: lock.CompilerRevision, GoVersion: lock.GoVersion, ManifestDigest: "sha256:" + manifestSHA, CasesDigest: "sha256:" + casesSHA, Sources: sourceIdentities}
 			receipt := filepath.Join(dir, "execution.json")
 			raw, err = execute(ctx, *compiler, receipt, "package", "execute", "--json", "--cases", cases, workspace)
 			if err != nil {

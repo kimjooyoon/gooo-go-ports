@@ -22,7 +22,7 @@ func evidenceFixture(t *testing.T) ([]byte, lockfile, map[string]string) {
 		"ports/math/bits.gooo":            digest(testJSON(t, "package bits\n")),
 		"examples/browser-demo/main.gooo": digest(testJSON(t, "package browser_demo\n")),
 	}
-	manifestRaw := []byte(`{"schema":"gooo/package-workspace-manifest/v1","entry":{"package_path":"app/browser-demo","activity":"Dispatch"},"packages":[]}`)
+	manifestRaw := []byte(`{"schema":"gooo/package-workspace-manifest/v1","entry":{"package_path":"app/browser-demo","activity":"Dispatch"},"packages":[{"path":"go/math/bits","sources":["ports/math/bits.gooo"]},{"path":"app/browser-demo","sources":["examples/browser-demo/main.gooo"]}]}`)
 	if err := os.WriteFile(manifest, manifestRaw, 0644); err != nil {
 		t.Fatal(err)
 	}
@@ -38,9 +38,9 @@ func evidenceFixture(t *testing.T) ([]byte, lockfile, map[string]string) {
 		traces = append(traces, map[string]any{"case_index": i, "deliveries": []any{map[string]any{
 			"activity_id": "gooo://go-ports/examples/browser-demo/dispatch",
 			"inputs": []any{
-				map[string]any{"port": "input0", "value": "fixture.Identity"},
-				map[string]any{"port": "input1", "value": n},
-				map[string]any{"port": "input2", "value": -n},
+				map[string]any{"port": "input0", "entity_id": "gooo://std/text", "value": "fixture.Identity"},
+				map[string]any{"port": "input1", "entity_id": "gooo://std/integer", "value": n},
+				map[string]any{"port": "input2", "entity_id": "gooo://std/integer", "value": -n},
 			},
 			"actual": output, "expected": output, "passed": true,
 		}}})
@@ -52,9 +52,22 @@ func evidenceFixture(t *testing.T) ([]byte, lockfile, map[string]string) {
 	if err := os.WriteFile(casesPath, casesRaw, 0644); err != nil {
 		t.Fatal(err)
 	}
-	roster := []any{}
-	for _, name := range []string{"ports/math/bits.gooo", "examples/browser-demo/main.gooo"} {
-		roster = append(roster, map[string]any{"filename": name, "source_digest": "sha256:" + sources[name]})
+	packages := []any{}
+	for _, pkg := range []struct{ path, source string }{
+		{"go/math/bits", "ports/math/bits.gooo"},
+		{"app/browser-demo", "examples/browser-demo/main.gooo"},
+	} {
+		entry := map[string]any{"path": pkg.path, "sources": []any{map[string]any{
+			"filename": pkg.source, "source_digest": "sha256:" + sources[pkg.source],
+		}}}
+		if pkg.path == "app/browser-demo" {
+			entry["exports"] = []any{map[string]any{"name": "Reply", "kind": "entity", "id": "gooo://go-ports/examples/browser-demo/reply"}, map[string]any{
+				"name": "Dispatch", "kind": "activity", "id": "gooo://go-ports/examples/browser-demo/dispatch",
+				"input_types": []string{"gooo://std/text", "gooo://std/integer", "gooo://std/integer"},
+				"output_type": "gooo://go-ports/examples/browser-demo/reply",
+			}}
+		}
+		packages = append(packages, entry)
 	}
 	generatedSHA := "sha256:" + digest([]byte(generatedFixture))
 	raw := testJSON(t, map[string]any{
@@ -63,9 +76,13 @@ func evidenceFixture(t *testing.T) ([]byte, lockfile, map[string]string) {
 		"result": map[string]any{
 			"program": map[string]any{
 				"entry":           map[string]any{"package_path": "app/browser-demo", "activity": "Dispatch"},
-				"workspace_image": map[string]any{"packages": []any{map[string]any{"sources": roster}}},
+				"workspace_image": map[string]any{"packages": packages},
 			},
-			"composition": map[string]any{"stage": "COMPLETE", "source": generatedFixture, "generated_sha256": generatedSHA},
+			"composition": map[string]any{"stage": "COMPLETE", "source": generatedFixture, "generated_sha256": generatedSHA,
+				"steps": []any{map[string]any{"generation": map[string]any{"report": map[string]any{
+					"activity_id": "gooo://go-ports/examples/browser-demo/dispatch",
+				}}}},
+			},
 			"runtime": map[string]any{
 				"stage": "COMPLETE", "producer_source_sha": lock.CompilerRevision, "go_version": "go version go1.27.2 darwin/arm64",
 				"generated_sha256": generatedSHA, "model_calls": 0, "finite_passed": len(rows), "finite_total": len(rows),
@@ -129,7 +146,7 @@ func TestInspectRejectsTamperedEvidence(t *testing.T) {
 		},
 		"source filename": func(e *receipt) { e.Result.Program.Image.Packages[0].Sources[0].Filename = "another.gooo" },
 		"missing source": func(e *receipt) {
-			e.Result.Program.Image.Packages[0].Sources = e.Result.Program.Image.Packages[0].Sources[:1]
+			e.Result.Program.Image.Packages[0].Sources = nil
 		},
 		"duplicate source": func(e *receipt) {
 			p := &e.Result.Program.Image.Packages[0]

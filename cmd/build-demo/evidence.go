@@ -10,6 +10,12 @@ import (
 	"strings"
 )
 
+// Keep the browser's public entry contract independent of receipt claims.
+const browserDispatchID = "gooo://go-ports/examples/browser-demo/dispatch"
+const browserReplyID = "gooo://go-ports/examples/browser-demo/reply"
+
+var browserInputEntities = [...]string{"gooo://std/text", "gooo://std/integer", "gooo://std/integer"}
+
 type receipt struct {
 	Schema         string `json:"schema"`
 	Decision       string `json:"decision"`
@@ -25,6 +31,14 @@ type receipt struct {
 			} `json:"entry"`
 			Image struct {
 				Packages []struct {
+					Path    string `json:"path"`
+					Exports []struct {
+						Name       string   `json:"name"`
+						Kind       string   `json:"kind"`
+						ID         string   `json:"id"`
+						InputTypes []string `json:"input_types"`
+						OutputType string   `json:"output_type"`
+					} `json:"exports"`
 					Sources []struct {
 						Filename string `json:"filename"`
 						Digest   string `json:"source_digest"`
@@ -36,6 +50,13 @@ type receipt struct {
 			Stage  string `json:"stage"`
 			Source string `json:"source"`
 			Digest string `json:"generated_sha256"`
+			Steps  []struct {
+				Generation struct {
+					Report struct {
+						ID string `json:"activity_id"`
+					} `json:"report"`
+				} `json:"generation"`
+			} `json:"steps"`
 		} `json:"composition"`
 		Replay *struct {
 			ModelCalls *int `json:"model_calls"`
@@ -56,8 +77,9 @@ type receipt struct {
 				Deliveries []struct {
 					ID     string `json:"activity_id"`
 					Inputs []struct {
-						Port  string          `json:"port"`
-						Value json.RawMessage `json:"value"`
+						Port   string          `json:"port"`
+						Entity string          `json:"entity_id"`
+						Value  json.RawMessage `json:"value"`
 					} `json:"inputs"`
 					Actual   json.RawMessage `json:"actual"`
 					Expected json.RawMessage `json:"expected"`
@@ -79,6 +101,29 @@ func inspectReceipt(raw []byte, lock lockfile, sources map[string]string, replay
 	manifestRaw, err := os.ReadFile(manifest)
 	if err != nil {
 		return "", err
+	}
+	var workspace struct {
+		Packages []struct {
+			Path    string   `json:"path"`
+			Sources []string `json:"sources"`
+		} `json:"packages"`
+	}
+	if err := json.Unmarshal(manifestRaw, &workspace); err != nil {
+		return "", err
+	}
+	expectedPackages := map[string]bool{}
+	sourceOwners := map[string]string{}
+	for _, pkg := range workspace.Packages {
+		if pkg.Path == "" || expectedPackages[pkg.Path] {
+			return fail("manifest package roster")
+		}
+		expectedPackages[pkg.Path] = true
+		for _, filename := range pkg.Sources {
+			if _, exists := sourceOwners[filename]; exists {
+				return fail("duplicate manifest source")
+			}
+			sourceOwners[filename] = pkg.Path
+		}
 	}
 	casesRaw, err := os.ReadFile(casesPath)
 	if err != nil {
@@ -105,9 +150,31 @@ func inspectReceipt(raw []byte, lock lockfile, sources map[string]string, replay
 	if p.Entry.Package != "app/browser-demo" || p.Entry.Activity != "Dispatch" {
 		return fail("entry")
 	}
+	entryPackages, entryExports := 0, 0
+	seenPackages := map[string]bool{}
 	seen := map[string]string{}
 	for _, pkg := range p.Image.Packages {
+		if !expectedPackages[pkg.Path] || seenPackages[pkg.Path] {
+			return fail("workspace package roster")
+		}
+		seenPackages[pkg.Path] = true
+		if pkg.Path == "app/browser-demo" {
+			entryPackages++
+			for _, exported := range pkg.Exports {
+				if exported.Name != "Dispatch" && exported.ID != browserDispatchID {
+					continue
+				}
+				entryExports++
+				if exported.Name != "Dispatch" || exported.Kind != "activity" || exported.ID != browserDispatchID ||
+					!reflect.DeepEqual(exported.InputTypes, browserInputEntities[:]) || exported.OutputType != browserReplyID {
+					return fail("entry export identity or signature")
+				}
+			}
+		}
 		for _, source := range pkg.Sources {
+			if sourceOwners[source.Filename] != pkg.Path {
+				return fail("source package binding")
+			}
 			if _, exists := seen[source.Filename]; exists {
 				return fail("duplicate source")
 			}
@@ -117,8 +184,17 @@ func inspectReceipt(raw []byte, lock lockfile, sources map[string]string, replay
 			seen[source.Filename] = strings.TrimPrefix(source.Digest, "sha256:")
 		}
 	}
+	if len(seenPackages) != len(expectedPackages) {
+		return fail("missing workspace package")
+	}
+	if entryPackages != 1 || entryExports != 1 {
+		return fail("missing or duplicate entry export")
+	}
 	if !reflect.DeepEqual(seen, sources) {
 		return fail("source binding")
+	}
+	if len(c.Steps) != 1 || c.Steps[0].Generation.Report.ID != browserDispatchID {
+		return fail("generation activity identity")
 	}
 	if c.Stage != "COMPLETE" || c.Source == "" || c.Digest != "sha256:"+digest([]byte(c.Source)) || r.Digest != c.Digest {
 		return fail("generated source digest")
@@ -146,13 +222,13 @@ func inspectReceipt(raw []byte, lock lockfile, sources map[string]string, replay
 		}
 		d := t.Deliveries[0]
 		row := fixture.Cases[i]
-		if d.ID != "gooo://go-ports/examples/browser-demo/dispatch" || len(d.Inputs) != 3 || !d.Passed {
+		if d.ID != browserDispatchID || len(d.Inputs) != len(browserInputEntities) || !d.Passed {
 			return fail("delivery identity")
 		}
 		for j, in := range d.Inputs {
 			port := fmt.Sprintf("input%d", j)
-			if in.Port != port || !sameJSON(in.Value, row.Inputs["app/browser-demo:Dispatch."+port]) {
-				return fail("input value or order")
+			if in.Port != port || in.Entity != browserInputEntities[j] || !sameJSON(in.Value, row.Inputs["app/browser-demo:Dispatch."+port]) {
+				return fail("input entity, value or order")
 			}
 		}
 		want := row.Expected["app/browser-demo:Dispatch"]
