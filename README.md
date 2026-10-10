@@ -22,6 +22,16 @@ restores the inputs and waits for **Run function**. Links carry inputs, not trus
 For color conversion, the native [RGB → CMYK → RGB inspector](examples/color-inspector/README.md)
 reports converted channels, recovered RGB values, and any integer round-trip differences.
 
+For a fixed snapshot, download [experimental release v0.1.0-preview.1](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.1).
+It includes separate source, native execution/replay evidence, and standalone browser
+archives, with licenses, provenance, and checksums. Downloads do not require a GitHub
+login. The release page explains which archive to choose and how to verify it;
+the live demo and main branch can be newer than this snapshot.
+
+If loading or running fails, [report a problem](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml)
+with the page URL or command and what happened. A working demo or shared input link
+is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
+
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
 현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수·색상 변환 함수 15개를 제공합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
@@ -69,7 +79,10 @@ README만 바뀌어도 Wasm이 같으면 실행할 수 있습니다. 잘못된 �
 새 예제로 돌아갈 수 있게 표시합니다. 클립보드가 차단되면 복사할 링크를 화면에 보여줍니다.
 일반 `#workbench` 링크는 유지하며 공유 링크는 별도 `#gooo-share?v=1&...` 형식입니다.
 
-데모를 재현하려면 Go 1.27.2와 Node.js 22 이상을 사용합니다.
+데모를 소스부터 재현하려면 Git으로 받은 저장소에서 Go 1.27.2와 Node.js 22 이상을
+사용합니다. 브라우저 빌드는 Git 리비전을 기록하므로 `.git`이 없는 소스 압축본은
+이 절차에 사용할 수 없습니다. 배포된 browser-demo 압축본은 안의 README에 따라
+`site/`를 HTTP로 제공하면 되며 컴파일러 설치는 필요하지 않습니다.
 
 ```sh
 ./tools/bootstrap.sh
@@ -208,7 +221,9 @@ Dispatch 계약과 입력 타입·소스 연결을 확인합니다.
 [첫 8개 함수의 관측](evidence/initial.json), [13개 함수의 관측](evidence/math-bits-20261010.json),
 [Unicode 소비 앱 추가 관측](evidence/unicode-inspector-20261010.json),
 [색상 포트·소비 앱 추가 관측](evidence/color-ports-20261010.json),
-GitHub Actions의 전체 원본 artifact를 참고하세요.
+[v0.1.0-preview.1의 전체 실행·재실행 기록](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.1)을
+참고하세요. 릴리스 기록은 해당 버전에 고정되어 있으며, 이후 변경의 기록은 각 GitHub
+Actions 실행에서 확인할 수 있습니다.
 
 ## 언어 개발로 돌려주는 자료
 

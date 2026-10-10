@@ -3,6 +3,22 @@
 이 저장소는 원본 Go 프로그램의 동작을 읽고 Gooo로 표현하는 작업장입니다.
 언어 컴파일러의 구현과는 별도로, 실제 이용자 관점의 입력·결과·제약을 축적합니다.
 
+## Report a problem
+
+Use the [problem report form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml)
+for a page that will not load, a failed first install, or an unexpected function result.
+Include the page URL or command, what you saw, and your browser/operating system if known.
+For a function result, include its name, exact integer inputs, and the result you expected.
+If the demo works, **Copy link to this input** can help reproduce the input; it does not
+include the result. A shared link, version, or build metadata is optional, so loading
+failures can be reported too. GitHub lets you review the report before submitting it.
+
+처음 설치하거나 데모를 여는 단계에서 막혀도 같은 양식으로 제보할 수 있습니다.
+한국어·영어 모두 괜찮습니다. 페이지 주소 또는 실행 명령, 실제 오류나 결과를 적어 주세요.
+버전을 알면 릴리스 이름이나 리비전을 덧붙이고, 공유 링크는 데모가 동작할 때만 넣으면 됩니다.
+
+## 포트에 기여하기
+
 1. 원본 저장소와 파일, 커밋, 함수, 라이선스를 기록합니다. 원본을 복사하거나 변형하면
    해당 저작권과 라이선스를 보존합니다. 각 프로젝트의 라이선스를 개별 확인합니다.
 2. `ports/`에 Gooo 계산을 구현하고 고유한 stable ID를 부여합니다.

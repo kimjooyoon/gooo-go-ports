@@ -1,0 +1,48 @@
+name: Loading, setup, or function problem
+description: Report a failed first run or an unexpected result in the demo or native ports.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe where you got stuck. A working demo, shared input link, or build metadata is not required.
+        English and Korean reports are welcome. Review any pasted logs before submitting this public report.
+  - type: dropdown
+    id: entry-point
+    attributes:
+      label: Where did you try it?
+      options:
+        - Public browser demo
+        - Downloaded browser demo
+        - Native setup, verification, or replay
+        - Another path
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Page URL or command and steps
+      description: Include the function and exact input if you reached that point. For a loading failure, the page address is enough.
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: What happened, and what did you expect?
+      description: Copy the visible error or actual result. Say what you expected if you know; a screenshot is also useful.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and operating system, if known
+      description: For a native run, include your Go version if available.
+  - type: input
+    id: version
+    attributes:
+      label: Release version or port revision, if known
+      description: The archive name or the demo's Port revision can help. Leave this blank if loading failed.
+  - type: textarea
+    id: supporting-details
+    attributes:
+      label: Shared input link or additional details (optional)
+      description: If the demo works, use Copy link to this input. The link records inputs, so include the actual result above. Logs and build metadata are optional.
