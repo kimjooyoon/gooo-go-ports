@@ -1,0 +1,63 @@
+// Browser-facing Gooo dispatcher. Calculations stay in the imported ports.
+// input0 selects an operation; input1 and input2 carry its integer arguments.
+// The JS bridge checks Go-compatible byte/rune domains before calling this API.
+// Unused reply fields keep their zero values. Unknown operations return
+// text "UNKNOWN_OPERATION" with all other fields zero/false.
+package browser_demo
+namespace gooo_ports_examples_browser_demo
+import http "go/net/http"
+import utf8 "go/unicode/utf8"
+import utf16 "go/unicode/utf16"
+import bits "go/math/bits"
+
+entity Text id "gooo://std/text"
+entity Integer id "gooo://std/integer"
+entity Reply id "gooo://go-ports/examples/browser-demo/reply" fields {
+    field text id "gooo://go-ports/examples/browser-demo/reply/text" type string required one
+    field value id "gooo://go-ports/examples/browser-demo/reply/value" type integer required one
+    field flag id "gooo://go-ports/examples/browser-demo/reply/flag" type boolean required one
+    field high id "gooo://go-ports/examples/browser-demo/reply/high" type integer required one
+    field low id "gooo://go-ports/examples/browser-demo/reply/low" type integer required one
+}
+
+activity Dispatch(Text, Integer, Integer) -> Reply id "gooo://go-ports/examples/browser-demo/dispatch" computes `if input0 == "http.StatusText" {
+    return Reply{text: http.StatusText(input1), value: 0, flag: false, high: 0, low: 0}
+}
+if input0 == "utf8.ValidRune" {
+    return Reply{text: "", value: 0, flag: utf8.ValidRune(input1), high: 0, low: 0}
+}
+if input0 == "utf8.RuneLen" {
+    return Reply{text: "", value: utf8.RuneLen(input1), flag: false, high: 0, low: 0}
+}
+if input0 == "utf8.RuneStart" {
+    return Reply{text: "", value: 0, flag: utf8.RuneStart(input1), high: 0, low: 0}
+}
+if input0 == "utf16.IsSurrogate" {
+    return Reply{text: "", value: 0, flag: utf16.IsSurrogate(input1), high: 0, low: 0}
+}
+if input0 == "utf16.RuneLen" {
+    return Reply{text: "", value: utf16.RuneLen(input1), flag: false, high: 0, low: 0}
+}
+if input0 == "utf16.DecodeRune" {
+    return Reply{text: "", value: utf16.DecodeRune(input1, input2), flag: false, high: 0, low: 0}
+}
+if input0 == "utf16.EncodeRune" {
+    let pair = utf16.EncodeRune(input1)
+    return Reply{text: "", value: 0, flag: false, high: pair.high, low: pair.low}
+}
+if input0 == "bits.Len8" {
+    return Reply{text: "", value: bits.Len8(input1), flag: false, high: 0, low: 0}
+}
+if input0 == "bits.LeadingZeros8" {
+    return Reply{text: "", value: bits.LeadingZeros8(input1), flag: false, high: 0, low: 0}
+}
+if input0 == "bits.TrailingZeros8" {
+    return Reply{text: "", value: bits.TrailingZeros8(input1), flag: false, high: 0, low: 0}
+}
+if input0 == "bits.OnesCount8" {
+    return Reply{text: "", value: bits.OnesCount8(input1), flag: false, high: 0, low: 0}
+}
+if input0 == "bits.Reverse8" {
+    return Reply{text: "", value: bits.Reverse8(input1), flag: false, high: 0, low: 0}
+}
+return Reply{text: "UNKNOWN_OPERATION", value: 0, flag: false, high: 0, low: 0}`

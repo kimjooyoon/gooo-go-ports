@@ -41,9 +41,10 @@ func main() {
 func run() error {
 	compiler := flag.String("compiler", "./.gooo", "pinned compiler executable")
 	out := flag.String("out", "", "new evidence directory (must not exist)")
+	browser := flag.String("browser-fixtures", "", "write independent browser oracle fixtures to a new JSON file")
 	flag.Parse()
-	if *out == "" {
-		return fmt.Errorf("provide --out for a new evidence directory")
+	if *out != "" && *browser != "" {
+		return fmt.Errorf("choose either --out or --browser-fixtures")
 	}
 	var lock upstream
 	if err := readJSON("upstream.json", &lock); err != nil {
@@ -67,6 +68,12 @@ func run() error {
 	suites, err := corpus()
 	if err != nil {
 		return err
+	}
+	if *browser != "" {
+		return writeBrowserFixtures(*browser, suites, lock)
+	}
+	if *out == "" {
+		return fmt.Errorf("provide --out for a new evidence directory")
 	}
 	root, err := filepath.Abs(*out)
 	if err != nil {

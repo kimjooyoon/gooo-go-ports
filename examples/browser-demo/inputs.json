@@ -1,0 +1,35 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "app/browser-demo:Dispatch.input0": "http.StatusText",
+      "app/browser-demo:Dispatch.input1": 404,
+      "app/browser-demo:Dispatch.input2": 0
+    },
+    {
+      "app/browser-demo:Dispatch.input0": "utf8.ValidRune",
+      "app/browser-demo:Dispatch.input1": 128512,
+      "app/browser-demo:Dispatch.input2": 0
+    },
+    {
+      "app/browser-demo:Dispatch.input0": "utf16.DecodeRune",
+      "app/browser-demo:Dispatch.input1": 55357,
+      "app/browser-demo:Dispatch.input2": 56832
+    },
+    {
+      "app/browser-demo:Dispatch.input0": "utf16.EncodeRune",
+      "app/browser-demo:Dispatch.input1": 128512,
+      "app/browser-demo:Dispatch.input2": 0
+    },
+    {
+      "app/browser-demo:Dispatch.input0": "bits.LeadingZeros8",
+      "app/browser-demo:Dispatch.input1": 0,
+      "app/browser-demo:Dispatch.input2": 0
+    },
+    {
+      "app/browser-demo:Dispatch.input0": "bits.Reverse8",
+      "app/browser-demo:Dispatch.input1": 170,
+      "app/browser-demo:Dispatch.input2": 0
+    }
+  ]
+}

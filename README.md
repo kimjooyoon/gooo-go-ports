@@ -2,12 +2,18 @@
 
 Go standard-library functions implemented in [Gooo](https://github.com/kimjooyoon/meta-ontology-go),
 with independent Go reference outputs and saved replay. The current scope is
-13 HTTP, Unicode, and 8-bit integer functions, plus two importing examples.
+13 HTTP, Unicode, and 8-bit integer functions, two native importing examples,
+and an importing browser dispatcher.
 Use Go 1.27.2, Git, and a POSIX shell: run `./tools/bootstrap.sh`, then
 `go run ./cmd/verify --out out/first` from this repository. The output directory must be new.
 The comparison covers 3,147 function-input cases; six byte-domain functions cover all 256 inputs.
 Other domains use finite boundary cases and samples. This is an independent experimental port,
 not a complete Go package implementation or an official Google/Go project.
+
+[Try the browser demo](https://kimjooyoon.github.io/gooo-go-ports/) to run all 13 functions
+without installing a compiler. It executes a precompiled Gooo program as WebAssembly;
+it is not an editor for compiling arbitrary source. The page includes the Gooo source,
+unmodified generated Go, execution receipts, and an optional reference-check button.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
 현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수 함수 13개를 제공합니다.
@@ -38,6 +44,28 @@ Go의 byte 변환처럼 입력을 잘라서 계산하지 않습니다. 0의 앞�
 HTTP 서버나 UTF 인코딩 패키지 전체의 이식은 아닙니다.
 
 ## 실행하기
+
+[브라우저 데모](https://kimjooyoon.github.io/gooo-go-ports/)는 설치 없이 13개 함수를
+실행합니다. 실제 Gooo importing 예제를 고정 컴파일러로 생성하고, 생성된 Go를
+한 글자도 수정하지 않은 채 WebAssembly로 빌드합니다. 입력·출력 경계의 Go bridge는
+정수 범위 검사와 직렬화만 맡습니다. 임의 Gooo 소스를 브라우저에서 컴파일하지는 않습니다.
+HTTP 입력은 int64, rune 입력은 int32, byte 입력은 0..255로 제한하며 범위 밖 입력을 거부합니다.
+JavaScript Number를 거치지 않고 십진수 문자열로 전달합니다.
+
+데모를 재현하려면 Go 1.27.2와 Node.js 22 이상을 사용합니다.
+
+```sh
+./tools/bootstrap.sh
+go run ./cmd/build-demo --out out/browser
+node tools/browser-smoke.cjs out/browser/site
+python3 -m http.server 8766 --bind 127.0.0.1 --directory out/browser/site
+```
+
+마지막 명령은 Python 3가 필요하며, 실행 후 `http://127.0.0.1:8766`을 엽니다.
+다른 정적 HTTP 서버를 사용해도 됩니다. `--out` 디렉터리는 새 경로여야 합니다.
+브라우저 비교는 기존 원본 corpus의 함수 입력 3,135개와 정밀도 경계 2개를 재사용하고,
+잘못된 입력의 거부도 별도 검사합니다. native 소비 예제 12개는 브라우저 집계에 포함하지 않습니다.
+HTTP·rune 검사는 유한 입력 관측이며 패키지 전체 호환성이나 성능을 보장하지 않습니다.
 
 Go 1.27.2, Git, POSIX shell이 필요합니다. `go.mod`를 인식하는 Go 설치는 필요한
 도구 체인을 자동 선택할 수 있습니다. 저장소 루트에서 실행합니다.
