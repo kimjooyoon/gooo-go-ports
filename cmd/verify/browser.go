@@ -126,6 +126,30 @@ func makeBrowserFixtures(suites []suite, lock upstream) (browserFixtures, error)
 		}
 	}
 	result.Rejections = append(result.Rejections, colorBrowserRejections()...)
+	rotations, err := rotationCorpus()
+	if err != nil {
+		return browserFixtures{}, err
+	}
+	for _, c := range rotations.Suites[0].Cases {
+		x, ok := c.Inputs[0].(int64)
+		if !ok {
+			return browserFixtures{}, fmt.Errorf("rotation input is not int64")
+		}
+		if x < 0 || x > 255 {
+			k, ok := c.Inputs[1].(int64)
+			if !ok {
+				return browserFixtures{}, fmt.Errorf("rotation count is not int64")
+			}
+			result.Rejections = append(result.Rejections, browserRejection{"bits.RotateLeft8", []string{strconv.FormatInt(x, 10), strconv.FormatInt(k, 10)}})
+			continue // The Gooo sentinel is not a Go byte-domain observation.
+		}
+		row, err := browserRow("bits.RotateLeft8", c)
+		if err != nil {
+			return browserFixtures{}, err
+		}
+		result.Cases = append(result.Cases, row)
+	}
+	result.Rejections = append(result.Rejections, rotationBrowserRejections()...)
 	return result, nil
 }
 
@@ -133,7 +157,7 @@ func browserRow(operation string, c testCase) (browserCase, error) {
 	row := browserCase{Operation: operation, Inputs: []string{"0", "0"}}
 	arity := 1
 	switch operation {
-	case "utf16.DecodeRune":
+	case "utf16.DecodeRune", "bits.RotateLeft8":
 		arity = 2
 	case "color.RGBToCMYK":
 		arity = 3
@@ -150,8 +174,8 @@ func browserRow(operation string, c testCase) (browserCase, error) {
 		if !ok {
 			return browserCase{}, fmt.Errorf("browser fixture input must be int64: %s", operation)
 		}
-		if arity >= 3 && (n < 0 || n > 255) {
-			return browserCase{}, fmt.Errorf("color reference input outside byte domain")
+		if (arity >= 3 || operation == "bits.RotateLeft8" && i == 0) && (n < 0 || n > 255) {
+			return browserCase{}, fmt.Errorf("reference input outside byte domain")
 		}
 		row.Inputs[i] = strconv.FormatInt(n, 10)
 	}
@@ -214,7 +238,7 @@ func browserRow(operation string, c testCase) (browserCase, error) {
 			return browserCase{}, err
 		}
 		row.Expected = browserOutput{"pair", map[string]string{"high": high, "low": low}}
-	case "utf8.RuneLen", "utf16.RuneLen", "utf16.DecodeRune", "bits.Len8", "bits.LeadingZeros8", "bits.TrailingZeros8", "bits.OnesCount8", "bits.Reverse8":
+	case "utf8.RuneLen", "utf16.RuneLen", "utf16.DecodeRune", "bits.Len8", "bits.LeadingZeros8", "bits.TrailingZeros8", "bits.OnesCount8", "bits.Reverse8", "bits.RotateLeft8":
 		value, err := browserInteger(expected)
 		if err != nil {
 			return browserCase{}, err
@@ -287,6 +311,30 @@ func colorBrowserRejections() []browserRejection {
 			}
 			result = append(result, browserRejection{item.operation, inputs})
 		}
+	}
+	return result
+}
+
+// Rotation has two unlike domains: a byte and a signed 64-bit count. Preserve
+// canonical spellings and wrong arities separately from native byte rejections.
+func rotationBrowserRejections() []browserRejection {
+	var result []browserRejection
+	for position := 0; position < 2; position++ {
+		for _, raw := range []string{"", " 1", "1 ", "+1", "01", "-0", "1.0", "1e2", "0xff", "NaN", "１２", "9223372036854775808", "-9223372036854775809"} {
+			inputs := []string{"129", "1"}
+			inputs[position] = raw
+			result = append(result, browserRejection{"bits.RotateLeft8", inputs})
+		}
+	}
+	for n := 0; n <= 5; n++ {
+		if n == 2 {
+			continue
+		}
+		inputs := make([]string, n)
+		for i := range inputs {
+			inputs[i] = "0"
+		}
+		result = append(result, browserRejection{"bits.RotateLeft8", inputs})
 	}
 	return result
 }

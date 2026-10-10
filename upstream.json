@@ -60,7 +60,8 @@
         "LeadingZeros8",
         "TrailingZeros8",
         "OnesCount8",
-        "Reverse8"
+        "Reverse8",
+        "RotateLeft8"
       ]
     }
   ]

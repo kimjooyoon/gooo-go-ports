@@ -1,7 +1,10 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
+	"math/bits"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -20,8 +23,17 @@ func TestBrowserFixturesKeepOracleCoverageAndExactStrings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(doc.Cases) != 4437 || len(doc.Rejections) != 172 || doc.GoVersion != lock.GoVersion || doc.CompilerRevision != lock.CompilerRevision {
+	if len(doc.Cases) != 6909 || len(doc.Rejections) != 239 || doc.GoVersion != lock.GoVersion || doc.CompilerRevision != lock.CompilerRevision {
 		t.Fatalf("changed fixture scope: %d cases, %d rejections", len(doc.Cases), len(doc.Rejections))
+	}
+	for _, legacy := range []struct {
+		rows any
+		hash string
+	}{{doc.Cases[:4437], "efee1148d79beea62eaa6bc73b6cb9abe531261fe26b8269ce8955a70acfe8bf"}, {doc.Rejections[:172], "4e0b4ec3682fd455ee1b2e38b21d0911b8c013100e16f69345327f8beafeebcf"}} {
+		raw, err := json.Marshal(legacy.rows)
+		if err != nil || fmt.Sprintf("%x", sha256.Sum256(raw)) != legacy.hash {
+			t.Fatal("the existing 15-function browser fixtures changed")
+		}
 	}
 	counts := map[string]int{}
 	byteInputs := map[string]map[string]bool{}
@@ -65,7 +77,7 @@ func TestBrowserFixturesKeepOracleCoverageAndExactStrings(t *testing.T) {
 		default:
 			t.Fatal("unknown fixture output type")
 		}
-		if c.Operation == "utf8.RuneStart" || len(c.Operation) > 5 && c.Operation[:5] == "bits." {
+		if c.Operation == "utf8.RuneStart" || len(c.Operation) > 5 && c.Operation[:5] == "bits." && c.Operation != "bits.RotateLeft8" {
 			if byteInputs[c.Operation] == nil {
 				byteInputs[c.Operation] = map[string]bool{}
 			}
@@ -76,7 +88,7 @@ func TestBrowserFixturesKeepOracleCoverageAndExactStrings(t *testing.T) {
 			byteInputs[c.Operation][c.Inputs[0]] = true
 		}
 	}
-	if len(counts) != 15 || counts["color.RGBToCMYK"] != 637 || counts["color.CMYKToRGB"] != 663 || counts["http.StatusText"] != 627 || counts["utf16.DecodeRune"] != 164 || len(byteInputs) != 6 {
+	if len(counts) != 16 || counts["bits.RotateLeft8"] != 2472 || counts["color.RGBToCMYK"] != 637 || counts["color.CMYKToRGB"] != 663 || counts["http.StatusText"] != 627 || counts["utf16.DecodeRune"] != 164 || len(byteInputs) != 6 {
 		t.Fatalf("wrong operation roster: %v", counts)
 	}
 	for operation, inputs := range byteInputs {
@@ -132,6 +144,8 @@ func TestBrowserRowRejectsMalformedOracleShapes(t *testing.T) {
 		{"http.StatusText", testCase{Inputs: []any{float64(404)}, Expected: "Not Found"}},
 		{"http.StatusText", testCase{Inputs: []any{int64(404), int64(0)}, Expected: "Not Found"}},
 		{"utf16.DecodeRune", testCase{Inputs: []any{int64(0)}, Expected: int64(65533)}},
+		{"bits.RotateLeft8", testCase{Inputs: []any{int64(256), int64(0)}, Expected: 0}},
+		{"bits.RotateLeft8", testCase{Inputs: []any{int64(1)}, Expected: 1}},
 		{"bits.Len8", testCase{Inputs: []any{int64(1)}, Expected: 1.5}},
 		{"utf16.EncodeRune", testCase{Inputs: []any{int64(0)}, Expected: map[string]any{"high": true, "low": 0}}},
 		{"color.RGBToCMYK", testCase{Inputs: []any{int64(0), int64(0), int64(256)}, Expected: map[string]int{"cyan": 0, "magenta": 0, "yellow": 0, "black": 0}}},
@@ -143,6 +157,53 @@ func TestBrowserRowRejectsMalformedOracleShapes(t *testing.T) {
 	} {
 		if _, err := browserRow(test.operation, test.row); err == nil {
 			t.Fatalf("accepted malformed browser oracle: %+v", test)
+		}
+	}
+}
+
+func TestRotationBrowserFixturesKeepGridAndExactCounts(t *testing.T) {
+	suites, err := corpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	fixtures, err := makeBrowserFixtures(suites, upstream{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	grid := map[[2]int64]bool{}
+	extremes := map[string]bool{"-9223372036854775808": false, "9223372036854775807": false, "-9007199254740993": false, "9007199254740992": false, "9007199254740993": false}
+	for _, row := range fixtures.Cases {
+		if row.Operation != "bits.RotateLeft8" {
+			continue
+		}
+		x, err := strconv.ParseInt(row.Inputs[0], 10, 64)
+		if err != nil || x < 0 || x > 255 {
+			t.Fatalf("rotation byte domain changed: %+v", row)
+		}
+		k, err := strconv.ParseInt(row.Inputs[1], 10, 64)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if row.Expected.Type != "integer" || row.Expected.Value != strconv.Itoa(int(bits.RotateLeft8(uint8(x), int(k)))) {
+			t.Fatalf("rotation Go reference changed: %+v", row)
+		}
+		if k >= 0 && k < 8 {
+			key := [2]int64{x, k}
+			if grid[key] {
+				t.Fatal("duplicate normalized rotation pair")
+			}
+			grid[key] = true
+		}
+		if _, ok := extremes[row.Inputs[1]]; ok {
+			extremes[row.Inputs[1]] = true
+		}
+	}
+	if len(grid) != 256*8 {
+		t.Fatalf("missing normalized pairs: %d", len(grid))
+	}
+	for input, found := range extremes {
+		if !found {
+			t.Fatalf("missing exact rotation count %s", input)
 		}
 	}
 }

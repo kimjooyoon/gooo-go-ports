@@ -1,0 +1,8 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {"package_path": "app/byte-rotation", "activity": "Inspect"},
+  "packages": [
+    {"path": "go/math/bits", "sources": ["ports/math/bits.gooo"]},
+    {"path": "app/byte-rotation", "sources": ["examples/byte-rotation/main.gooo"]}
+  ]
+}

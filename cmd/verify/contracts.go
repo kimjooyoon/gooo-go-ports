@@ -31,6 +31,8 @@ func nativeActivityContracts() map[string]activityContract {
 		"go/math/bits:LeadingZeros8":          {"ports/math/bits.gooo", "gooo://go/math/bits/LeadingZeros8", []string{i}},
 		"go/math/bits:TrailingZeros8":         {"ports/math/bits.gooo", "gooo://go/math/bits/TrailingZeros8", []string{i}},
 		"go/math/bits:OnesCount8":             {"ports/math/bits.gooo", "gooo://go/math/bits/OnesCount8", []string{i}},
+		"go/math/bits:RotateLeft8":            {"ports/math/bits.gooo", "gooo://go/math/bits/RotateLeft8", []string{i, i}},
+		"app/byte-rotation:Inspect":           {"examples/byte-rotation/main.gooo", "gooo://go-ports/examples/byte-rotation/inspect", []string{i, i}},
 		"go/math/bits:Reverse8":               {"ports/math/bits.gooo", "gooo://go/math/bits/Reverse8", []string{i}},
 		"go/image/color:RGBToCMYK":            {"ports/image/color.gooo", "gooo://go/image/color/RGBToCMYK", []string{i, i, i}},
 		"go/image/color:CMYKToRGB":            {"ports/image/color.gooo", "gooo://go/image/color/CMYKToRGB", []string{i, i, i, i}},

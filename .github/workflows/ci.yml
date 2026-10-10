@@ -52,13 +52,15 @@ jobs:
             .schema == "gooo/go-ports-differential/v1" and
             .go_version == "go1.27.2" and
             .compiler_revision == "366ee6ef8f9d2b9b57331dfd26b6f908c0289851" and
-            .ported_functions == 15 and .consumer_programs == 4 and .consumer_activities == 5 and
+            .ported_functions == 16 and .consumer_programs == 5 and .consumer_activities == 6 and
             .legacy_cases == 3147 and .unicode_reference_cases == 334 and .unicode_rejection_cases == 12 and
             .color_port_reference_cases == 1300 and .color_port_rejection_cases == 56 and
             .color_consumer_reference_cases == 637 and .color_consumer_rejection_cases == 24 and
-            .cases == 5510 and .passed == 5510 and
-            (.runs | length) == 20 and
-            ([.runs[].cases] | add) == 5510 and ([.runs[].batches] | add) == 80 and
+            .rotation_port_reference_cases == 2472 and .rotation_port_rejection_cases == 36 and
+            .rotation_consumer_reference_cases == 672 and .rotation_consumer_rejection_cases == 36 and
+            .cases == 8726 and .passed == 8726 and
+            (.runs | length) == 22 and
+            ([.runs[].cases] | add) == 8726 and ([.runs[].batches] | add) == 112 and
             all(.runs[]; .passed == .cases and .replay_equal == true)
           ' out/ci/summary.json
       - name: Execute and replay the input-only importing example
@@ -107,6 +109,47 @@ jobs:
             ([.[0].result.runtime.traces[].deliveries[] | {input, inputs, actual}] ==
              [.[1].result.runtime.traces[].deliveries[] | {input, inputs, actual}])
           ' out/byte-example.json out/byte-replay.json
+      - name: Execute and replay the byte-rotation input-only example
+        run: |
+          ./.gooo package execute --json --inputs examples/byte-rotation/inputs.json \
+            byte-rotation.workspace.json > out/rotation-example.json
+          ./.gooo package replay --json --receipt out/rotation-example.json \
+            --inputs examples/byte-rotation/inputs.json \
+            byte-rotation.workspace.json > out/rotation-replay.json
+          jq -e --slurpfile fixture examples/byte-rotation/inputs.json '
+            .decision == "OBSERVED" and
+            .result.runtime.finite_total == 0 and .result.runtime.finite_passed == 0 and
+            .result.runtime.projection_replayed == true and .result.runtime.runtime_replayed == true and
+            .result.runtime.model_calls == 0 and
+            (.result.runtime.traces | length) == ($fixture[0].inputs | length)
+          ' out/rotation-example.json out/rotation-replay.json
+          jq -e '.result.replay.model_calls == 0 and (.replayed_from_sha256 | startswith("sha256:"))' \
+            out/rotation-replay.json
+          # Python preserves every integer, including rotations outside JSON's binary64-safe range.
+          python3 - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          fixture = json.loads(Path("examples/byte-rotation/inputs.json").read_bytes())
+          execution_bytes = Path("out/rotation-example.json").read_bytes()
+          execution = json.loads(execution_bytes)
+          replay = json.loads(Path("out/rotation-replay.json").read_bytes())
+          assert replay["replayed_from_sha256"] == "sha256:" + hashlib.sha256(execution_bytes).hexdigest()
+          assert execution["result"]["composition"]["generated_sha256"] == replay["result"]["composition"]["generated_sha256"]
+          deliveries = lambda receipt: [d for t in receipt["result"]["runtime"]["traces"] for d in t["deliveries"]]
+          actual = deliveries(execution)
+          repeated = deliveries(replay)
+          assert len(actual) == len(repeated) == len(fixture["inputs"])
+          for supplied, observed, rerun in zip(fixture["inputs"], actual, repeated):
+              expected_inputs = [
+                  {"port": "input0", "entity_id": "gooo://std/integer", "value": supplied["app/byte-rotation:Inspect.input0"]},
+                  {"port": "input1", "entity_id": "gooo://std/integer", "value": supplied["app/byte-rotation:Inspect.input1"]},
+              ]
+              assert observed["activity_id"] == rerun["activity_id"] == "gooo://go-ports/examples/byte-rotation/inspect"
+              assert observed["inputs"] == rerun["inputs"] == expected_inputs
+              assert observed["actual"] == rerun["actual"]
+          PY
       - name: Execute and replay Unicode inspector input-only examples
         run: |
           for kind in scalar pair; do

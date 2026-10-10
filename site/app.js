@@ -16,6 +16,7 @@
     'bits.TrailingZeros8': { scenario: 'bytes', path: 'go/math/bits', source: 'ports/math/bits.gooo', label: 'Byte value', domain: 'byte · 0…255', example: '128', description: 'Count the zero bits after the last one in an 8-bit byte.', help: 'A zero byte has 8 trailing zeros.' },
     'bits.OnesCount8': { scenario: 'bytes', path: 'go/math/bits', source: 'ports/math/bits.gooo', label: 'Byte value', domain: 'byte · 0…255', example: '170', description: 'Count the one bits in the binary representation of a byte.', help: 'For example, decimal 170 is binary 10101010 and contains four one bits.' },
     'bits.Reverse8': { scenario: 'bytes', path: 'go/math/bits', source: 'ports/math/bits.gooo', label: 'Byte value', domain: 'byte · 0…255', example: '170', description: 'Reverse the order of all eight bits in a byte.', help: 'Try decimal 170: binary 10101010 becomes 01010101.' },
+    'bits.RotateLeft8': { scenario: 'bytes', path: 'go/math/bits', source: 'ports/math/bits.gooo', label: 'Byte value', domain: 'byte and int64 rotation', example: '129', second: '1', secondLabel: 'Rotation count', output: 'integer', description: 'Rotate all eight bits in a byte, wrapping bits around the ends.', help: 'Positive counts rotate left; negative counts rotate right. The pattern repeats every 8 steps. The full signed 64-bit count is preserved exactly. Execution time may vary with the input.' },
     'color.RGBToCMYK': { scenario: 'colors', path: 'go/image/color', source: 'ports/image/color.gooo', labels: ['Red', 'Green', 'Blue'], examples: ['64', '128', '192'], output: 'cmyk', domain: 'byte channels · 0…255', description: 'Convert red, green, and blue channels to cyan, magenta, yellow, and black.', help: 'Each channel is a decimal integer from 0 to 255. Integer rounding can change a color on a round trip. This conversion does not use printer or ICC profiles.' },
     'color.CMYKToRGB': { scenario: 'colors', path: 'go/image/color', source: 'ports/image/color.gooo', labels: ['Cyan', 'Magenta', 'Yellow', 'Black'], examples: ['170', '85', '0', '63'], output: 'rgb', domain: 'byte channels · 0…255', description: 'Convert cyan, magenta, yellow, and black channels to red, green, and blue.', help: 'Each channel is a decimal integer from 0 to 255. Integer rounding can change a color on a round trip. This conversion does not use printer or ICC profiles.' }
   };
@@ -141,7 +142,7 @@
     const operation = operations[name];
     $('operation').value = name;
     $('function-description').textContent = operation.description;
-    const labels = operation.labels || (operation.second ? [operation.label, 'Low surrogate'] : [operation.label]);
+    const labels = operation.labels || (operation.second ? [operation.label, operation.secondLabel || 'Low surrogate'] : [operation.label]);
     const examples = operation.examples || [operation.example, operation.second || '0'];
     inputNames.forEach((field, i) => {
       $(`${field}-label`).textContent = labels[i] || '';
@@ -150,11 +151,14 @@
       if (resetInput) $(`${field}-input`).value = examples[i] || '0';
     });
     $('input-fields').classList.toggle('color-inputs', !!operation.labels);
+    $('input-fields').classList.toggle('rotation-inputs', name === 'bits.RotateLeft8');
     $('input-domain').replaceChildren(document.createTextNode('Input domain '));
     const domain = document.createElement('code');
     domain.textContent = operation.domain;
     $('input-domain').append(domain);
-    $('input-range').textContent = operation.domain.startsWith('byte')
+    $('input-range').textContent = name === 'bits.RotateLeft8'
+      ? 'Byte: 0 to 255. Rotation count: -9223372036854775808 to 9223372036854775807.'
+      : operation.domain.startsWith('byte')
       ? '0 to 255; values outside this range are rejected.'
       : name === 'http.StatusText'
         ? '-9223372036854775808 to 9223372036854775807'
@@ -215,6 +219,10 @@
       throw new Error('The runtime result did not match the requested function, inputs, or output format.');
     }
     if (!result.ok && (typeof result.error !== 'string' || !result.error)) throw new Error('The runtime returned an invalid error response.');
+    if (result.ok && operation === 'bits.RotateLeft8' &&
+        (!/^(?:0|[1-9][0-9]{0,2})$/.test(result.output.value) || BigInt(result.output.value) > 255n)) {
+      throw new Error('The runtime returned an invalid byte.');
+    }
     return result;
   }
 
@@ -280,6 +288,21 @@
       preview.className = 'swatch-caption';
       preview.textContent = caption;
       area.append(swatch, preview);
+    }
+    if (result.operation === 'bits.RotateLeft8') {
+      const preview = document.createElement('div');
+      preview.className = 'bit-preview';
+      for (const [label, decimal] of [['Before', result.inputs[0]], ['After', output.value]]) {
+        // This only formats verified byte values; the rotation is computed by Gooo.
+        const row = document.createElement('p');
+        const caption = document.createElement('span');
+        caption.textContent = label;
+        const binary = document.createElement('code');
+        binary.textContent = BigInt(decimal).toString(2).padStart(8, '0');
+        row.append(caption, binary);
+        preview.append(row);
+      }
+      area.append(preview);
     }
     $('raw-output').textContent = JSON.stringify(result, null, 2);
     $('raw-result').hidden = false;

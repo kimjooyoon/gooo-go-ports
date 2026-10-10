@@ -2,17 +2,17 @@
 
 Go standard-library functions implemented in [Gooo](https://github.com/kimjooyoon/meta-ontology-go),
 with independent Go reference outputs and saved replay. The current scope is
-15 HTTP, Unicode, 8-bit integer, and color-conversion functions, four native importing examples,
+16 HTTP, Unicode, 8-bit integer, and color-conversion functions, five native importing examples,
 and an importing browser dispatcher.
 Use Go 1.27.2, Git, and a POSIX shell: run `./tools/bootstrap.sh`, then
 `go run ./cmd/verify --out out/first` from this repository. The output directory must be new.
 The original 3,147-case corpus is unchanged. A Unicode inspector adds 334 Go-reference
-cases and 12 explicit domain-rejection cases; six byte-domain functions cover all 256 inputs.
+cases and 12 explicit domain-rejection cases; six unary byte-domain functions cover all 256 inputs.
 Color ports and their consumer add separate reference and rejection cases, detailed below.
 Other domains use finite boundary cases and samples. This is an independent experimental port,
 not a complete Go package implementation or an official Google/Go project.
 
-[Try the browser demo](https://kimjooyoon.github.io/gooo-go-ports/) to run all 15 HTTP, Unicode, byte, and color functions
+[Try the browser demo](https://kimjooyoon.github.io/gooo-go-ports/) to run all 16 HTTP, Unicode, byte, and color functions
 without installing a compiler. It executes a precompiled Gooo program as WebAssembly;
 it is not an editor for compiling arbitrary source. The page includes the Gooo source,
 unmodified generated Go, execution receipts, and an optional reference-check button.
@@ -22,6 +22,9 @@ restores the inputs and waits for **Run function**. Links carry inputs, not trus
 Enter three RGB or four CMYK channels (integers from 0 to 255) to see named output channels
 and an RGB preview. The native [RGB → CMYK → RGB inspector](examples/color-inspector/README.md)
 reports converted channels, recovered RGB values, and any integer round-trip differences.
+Choose **bits.RotateLeft8** to enter a byte and a signed rotation count and see the
+eight bits before and after. The native [byte rotation inspector](examples/byte-rotation/README.md)
+also restores the byte and checks its one-bit count.
 
 For a fixed snapshot, download [experimental release v0.1.0-preview.1](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.1).
 It includes separate source, native execution/replay evidence, and standalone browser
@@ -34,7 +37,7 @@ with the page URL or command and what happened. A working demo or shared input l
 is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수·색상 변환 함수 15개를 제공합니다.
+현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수·색상 변환 함수 16개를 제공합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -52,25 +55,29 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | `go/unicode/utf16` | `IsSurrogate`, `RuneLen` | 서로게이트 판정과 UTF-16 코드 단위 수 |
 | `go/unicode/utf16` | `DecodeRune`, `EncodeRune` | 서로게이트 쌍 변환. EncodeRune의 두 반환값은 `{high, low}` 레코드 |
 | `go/math/bits` | `Len8`, `LeadingZeros8`, `TrailingZeros8`, `OnesCount8`, `Reverse8` | 0..255 정수의 비트 길이, 앞·뒤 0 개수, 1 개수와 비트 순서 반전. 비교·산술로 구현 |
+| `go/math/bits` | `RotateLeft8` | 바이트와 signed int64 회전 수를 받아 왼쪽 회전. 음수는 오른쪽 회전이며 반환값은 0..255 |
 | `go/image/color` | `RGBToCMYK`, `CMYKToRGB` | 각 채널 0..255의 RGB 3성분·CMYK 4성분 변환. 다중 반환은 `CMYK`·`RGB` 레코드 |
 
 원본의 `rune` 입력은 int32 범위를 Gooo Integer로 전달합니다. `byte` 호환 범위는
 0..255입니다. 묵시적으로 정수 폭을 줄이지 않습니다. `RuneStart`의 범위 밖 입력은
 Gooo 확장 동작으로 false를 반환하지만 원본과의 동등성 집계에는 넣지 않습니다.
-`go/math/bits`의 다섯 함수는 이 영역 밖에서 별도 확장 동작인 -1을 반환합니다.
+`go/math/bits`의 여섯 함수는 바이트 영역 밖에서 별도 확장 동작인 -1을 반환합니다.
 Go의 byte 변환처럼 입력을 잘라서 계산하지 않습니다. 0의 앞·뒤 0 개수는 원본과 같은 8입니다.
 색상 변환도 모든 채널을 먼저 검사하며 범위 밖에서는 레코드의 모든 성분을 -1로 반환합니다.
 원본의 정수 나눗셈 순서를 유지하므로 왕복 변환이 원래 RGB와 항상 같은 것은 아닙니다.
-`StatusText` 비교는 int가 64비트인 amd64·arm64에서 실행합니다.
+`StatusText`와 `RotateLeft8`의 Go int 입력 비교는 int가 64비트인 amd64·arm64에서 실행합니다.
+회전 수는 int64 전체를 보존하며, 나머지를 먼저 계산해 최솟값의 부호 반전을 피합니다.
+원본 RotateLeft8의 입력에 무관한 실행시간 보장은 분기·산술로 구현한 포트에 계승하지 않습니다.
 HTTP 서버나 UTF 인코딩 패키지 전체의 이식은 아닙니다.
 
 ## 실행하기
 
-[브라우저 데모](https://kimjooyoon.github.io/gooo-go-ports/)는 설치 없이 15개 함수를
+[브라우저 데모](https://kimjooyoon.github.io/gooo-go-ports/)는 설치 없이 16개 함수를
 실행합니다. 실제 Gooo importing 예제를 고정 컴파일러로 생성하고, 생성된 Go를
 한 글자도 수정하지 않은 채 WebAssembly로 빌드합니다. 입력·출력 경계의 Go bridge는
 정수 범위 검사와 직렬화만 맡습니다. 임의 Gooo 소스를 브라우저에서 컴파일하지는 않습니다.
 HTTP 입력은 int64, rune 입력은 int32, byte·색상 채널 입력은 0..255로 제한하며 범위 밖 입력을 거부합니다.
+회전 수는 signed int64 전체 범위이며 음수는 오른쪽 회전입니다.
 JavaScript Number를 거치지 않고 십진수 문자열로 전달합니다.
 RGB는 3개, CMYK는 4개 채널을 각각 전달하며 채널을 하나의 정수에 묶거나 잘라내지 않습니다.
 결과에는 채널 이름과 정수 값이 표시됩니다. RGB 미리보기는 입력 또는 반환된 RGB를 보여주며
@@ -101,12 +108,13 @@ python3 -m http.server 8766 --bind 127.0.0.1 --directory out/browser/site
 마지막 명령은 Python 3가 필요하며, 실행 후 `http://127.0.0.1:8766`을 엽니다.
 다른 정적 HTTP 서버를 사용해도 됩니다. `--out` 디렉터리는 새 경로여야 합니다.
 브라우저 비교는 기존 함수 입력 3,135개와 정밀도 경계 2개를 보존하고 색상 원본 비교 1,300개를
-추가한 **4,437건**입니다. 잘못된 입력·채널 개수 등의 거부 **172건**은 별도 집계합니다.
-Node smoke 검사는 공유 입력 왕복 4,437건과 추가 호출 형태·타입 오류 27건도 검사하므로
-총 거부 검사는 **199건**입니다. 아래 native 소비 예제는 브라우저 집계에 포함하지 않습니다.
+추가한 4,437건을 보존합니다. 회전 원본 비교 2,472건을 더해 **6,909건**입니다.
+잘못된 입력·채널 개수 등의 거부 **239건**은 별도 집계합니다.
+Node smoke 검사는 공유 입력 왕복 6,909건과 추가 호출 형태·타입 오류 33건도 검사하므로
+총 거부 검사는 **272건**입니다. 아래 native 소비 예제는 브라우저 집계에 포함하지 않습니다.
 HTTP·rune·색상 검사는 유한 입력 관측이며 패키지 전체 호환성이나 성능을 보장하지 않습니다.
 
-브라우저 생성용 사례 **97개**도 기대 결과와 함께 native 실행·저장된 프로그램 재실행을 검증합니다.
+브라우저 생성용 사례 **121개**도 기대 결과와 함께 native 실행·저장된 프로그램 재실행을 검증합니다.
 입력 파일당 128개·32 KiB 제한을 지키도록 실제 JSON 바이트 크기로 나누며 사례를 생략하지 않습니다.
 배포물의 `evidence-index.json`에 모든 배치 입력·실행·재실행 파일과 해시가 있습니다.
 `execution.json`·`replay.json`은 첫 배치의 원본 바이트 별칭이며 전체 기록은 인덱스를 따릅니다.
@@ -169,6 +177,11 @@ Gooo에서 조합하며 원본의 전체 uint8 입력 범위를 유지합니다.
 각각 실행할 수 있고, 이 왕복 소비 앱은 native에서 실행합니다. 특정 색상 프로파일이나
 프린터 보정은 수행하지 않습니다.
 
+다섯 번째 앱인 [바이트 회전 검사기](examples/byte-rotation/README.md)는 바이트와 회전 수를
+받아 회전 결과, 원상 복원 값과 전후 1비트 개수를 돌려줍니다. 최소 int64의 회전 수도
+그대로 입력받으며, byte로 잘라내거나 원래 회전 수를 부호 반전하지 않습니다.
+브라우저에서는 단일 회전 함수를 실행하고 입력·출력의 8비트를 비교할 수 있습니다.
+
 ## 다른 Gooo 프로그램에서 가져오기
 
 [새 프로젝트에서 포트 사용하기](docs/use-in-your-project.md)는 고정 소스를 받고
@@ -189,7 +202,8 @@ upstream 기록과 원본 주석을 함께 보존합니다. 사용하는 작업�
 manifest 기준 상대 파일 경로를 등록합니다. import 자체가 패키지를 내려받지는 않습니다.
 전체 구성은 [gooo.workspace.json](gooo.workspace.json),
 실제 importing app은 [response.gooo](examples/response.gooo)에 있습니다.
-비트 연산을 가져오는 예제는 [ByteSummary](examples/byte-summary/main.gooo)입니다.
+비트 연산을 가져오는 예제는 [ByteSummary](examples/byte-summary/main.gooo)와
+회전 수를 함께 받는 [Byte rotation inspector](examples/byte-rotation/README.md)입니다.
 색상 변환 조합은 [Color inspector](examples/color-inspector/main.gooo)와
 [color-inspector.workspace.json](color-inspector.workspace.json)에 있습니다.
 현재 배포 단위는 Gooo 소스와 workspace 명세이며 Go의 패키지 관리자와는 별개입니다.
@@ -198,8 +212,10 @@ manifest 기준 상대 파일 경로를 등록합니다. import 자체가 패키
 
 기존 **3,147건**과 Unicode 소비 앱의 Go 원본 비교 **334건**·영역 밖 거부 **12건**을
 그대로 유지합니다. 색상 포트는 원본 비교 **1,300건**·거부 **56건**, 색상 소비 앱은
-원본 비교 **637건**·거부 **24건**을 추가합니다. 전체 native 검사는 **5,510건**이며
-이식 함수는 15개입니다. 각 영역 밖 거부 사례는 Go 동등성 집계가 아닙니다.
+원본 비교 **637건**·거부 **24건**을 추가합니다. 이 **5,510건**은 바뀌지 않습니다.
+바이트 회전 포트는 원본 비교 **2,472건**·거부 **36건**, 회전 소비 앱은 원본 비교 **672건**·
+거부 **36건**을 추가해 전체 native 검사는 **8,726건**, 이식 함수는 **16개**입니다.
+각 영역 밖 거부 사례는 Go 동등성 집계가 아닙니다.
 
 | 대상 | 입력 수 | 구성 |
 | --- | ---: | --- |
@@ -216,12 +232,15 @@ manifest 기준 상대 파일 경로를 등록합니다. import 자체가 패키
 | Color RGBToCMYK | 637 + 24 | RGB 경계·회색·최댓값 동률·정수 나눗셈·고정 표본, 각 입력 위치의 별도 거부 |
 | Color CMYKToRGB | 663 + 32 | CMYK 경계·정수 나눗셈·고정 표본, 각 입력 위치의 별도 거부 |
 | Color InspectRGB consumer | 637 + 24 | RGB→CMYK→RGB 결과·채널 차이·일치 여부, 범위 밖 거부 |
+| bits.RotateLeft8 | 2,472 + 36 | 256바이트 × 8회전 2,048쌍, 원래 회전 수의 음수·int64 경계·표본, 별도 바이트 영역 밖 거부 |
+| Byte rotation Inspect consumer | 672 + 36 | 모든 byte의 1회전, 회전 수 경계·표본, 원상 복원·1비트 개수와 거부 계약 |
 
-Gooo 실행 입력 상한에 맞춰 총 80개 배치를 실행합니다. 기존 31개 배치는 128건 이하,
-Unicode 앱 6개와 색상 포트 22개 배치는 64건 이하, 색상 소비 앱 21개 배치는 32건 이하입니다.
+Gooo 실행 입력 상한에 맞춰 총 112개 배치를 실행합니다. 기존 80개 배치를 유지하고,
+회전 포트 20개 배치(128건 이하), 회전 앱 12개 배치(64건 이하)를 추가합니다.
+Unicode 앱과 색상 포트는 64건 이하, 색상 소비 앱은 32건 이하입니다.
 새 레코드 기대값도 들여쓴 JSON과 마지막 개행을 포함해 32KiB 한도를 검사합니다.
 원본 비교 기대값은 Gooo 구현과 별개인 Go 표준 함수로 계산합니다.
-Unicode·색상 앱과 색상 포트의 영역 밖 기대값은 명시한 false/-1 계약으로 따로 검사합니다.
+Unicode·색상·회전 앱과 색상·회전 포트의 영역 밖 기대값은 명시한 false/-1 계약으로 따로 검사합니다.
 검증 도구는 결과뿐 아니라 입력 순서, 원본 기대값, 함수·입력 타입 식별자,
 생성 코드 해시, 컴파일러·Go 버전, workspace·입력 파일 해시, 저장 재실행 연결을 검사합니다.
 함수 식별자는 실행 기록 밖의 [명시적 계약](cmd/verify/contracts.go)을 기준으로
@@ -234,13 +253,16 @@ Dispatch 계약과 입력 타입·소스 연결을 확인합니다.
 보고서·선언·실행 결과의 식별자를 함께 바꾸거나 입력 타입·소스 소속을 바꾼 기록을
 거부하는 회귀 테스트도 포함합니다.
 
-`RuneStart`와 `math/bits` 다섯 함수는 Go byte 영역을 전수 비교합니다.
+`RuneStart`와 `math/bits`의 기존 단일 입력 다섯 함수는 Go byte 영역을 전수 비교합니다.
+`RotateLeft8`의 전수 비교는 byte × 회전 수 0..7의 2,048쌍입니다. 원래 signed int64
+회전 수 전체를 실행한 것은 아니며, 나머지는 음수·양 끝·큰 정수 경계와 고정 표본입니다.
 그 밖의 함수는 모든 입력을 검사한 것이 아닙니다. 여러 함수가 같은 정수 입력을 재사용하므로
 이 사례 수는 전역적으로 서로 다른 정수 값의 개수가 아닙니다.
 별도 모델 학습, 성능 우위, 패키지 전체의 호환성은 검증 범위에 포함하지 않습니다.
 [첫 8개 함수의 관측](evidence/initial.json), [13개 함수의 관측](evidence/math-bits-20261010.json),
 [Unicode 소비 앱 추가 관측](evidence/unicode-inspector-20261010.json),
 [색상 포트·소비 앱 추가 관측](evidence/color-ports-20261010.json),
+[바이트 회전 포트·소비 앱 추가 관측](evidence/byte-rotation-20261010.json),
 [v0.1.0-preview.1의 전체 실행·재실행 기록](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.1)을
 참고하세요. 릴리스 기록은 해당 버전에 고정되어 있으며, 이후 변경의 기록은 각 GitHub
 Actions 실행에서 확인할 수 있습니다.
@@ -259,7 +281,7 @@ Actions 실행에서 확인할 수 있습니다.
 - [다음 이식 로드맵](docs/roadmap.md): 문자열 순회, hex, google/uuid의 선행 조건
 - [기여 방법](CONTRIBUTING.md): 원본 추적과 동작 비교를 포함한 이식 절차
 - [경계 재현](probes/README.md): 컴파일러 개선에 사용할 최소 예제
-- [바이트 입력 조건 실험](docs/research/20261010-source-conditions/README.md): 개발 컴파일러에서 같은 최종 출력과 다른 내부 조건을 구분한 재현 자료. 기본 컴파일러와 15개 포트 집계는 유지합니다.
+- [바이트 입력 조건 실험](docs/research/20261010-source-conditions/README.md): 개발 컴파일러에서 같은 최종 출력과 다른 내부 조건을 구분한 재현 자료. 이 실험 자체는 기본 컴파일러 핀이나 포트 수를 늘리지 않습니다.
 
 ## 원본과 라이선스
 

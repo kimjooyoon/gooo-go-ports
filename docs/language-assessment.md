@@ -13,7 +13,7 @@
 
 ## 이번에 옮기는 동작
 
-Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **15개 함수**를 Gooo 활동으로 표현한다.
+Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **16개 함수**를 Gooo 활동으로 표현한다.
 패키지 전체, HTTP 서버, 문자열 인코더 전체 또는 Go API와의 바이너리 호환을 주장하지 않는다.
 
 | 원본 | Gooo 원본 | 표현 방법과 호환 범위 |
@@ -24,12 +24,19 @@ Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **15개 함수**를 Gooo 
 | `unicode/utf16.IsSurrogate`, `RuneLen` | [utf16.gooo](../ports/unicode/utf16.gooo) | 범위 비교로 서로게이트와 UTF-16 길이를 판별 |
 | `unicode/utf16.DecodeRune`, `EncodeRune` | 같은 파일 | 유효 범위를 먼저 검사한 뒤 곱셈·나눗셈·나머지로 두 10비트 성분 계산. EncodeRune의 두 결과는 `high`, `low` 레코드로 전달 |
 | `math/bits.Len8`, `LeadingZeros8`, `TrailingZeros8`, `OnesCount8`, `Reverse8` | [bits.gooo](../ports/math/bits.gooo) | 0..255를 먼저 검사한 뒤 비교와 정수 산술로 계산. 테이블·비트 연산·반복문을 쓰지 않으며 영역 밖은 -1이라는 별도 확장 계약 |
+| `math/bits.RotateLeft8` | 같은 파일 | byte 0..255와 원래 signed int64 회전 수. 회전 수의 나머지를 먼저 구해 overflow 없이 산술로 순환 이동. 원본의 입력에 무관한 실행시간 보장은 계승하지 않음 |
 | `image/color.RGBToCMYK`, `CMYKToRGB` | [color.gooo](../ports/image/color.gooo) | 원래 uint8 3/4성분의 전체 범위를 검사한 뒤 정수 변환. 결과는 이름 있는 `CMYK`·`RGB` 레코드이며 영역 밖은 모든 성분 -1 |
 
 Go의 `rune`은 int32이고 Gooo Integer는 int64다. 테스트에서 int64를 Go rune/byte로
 무조건 변환하면 잘림으로 잘못된 동등성 주장이 생긴다. 원본 입력 범위의 비교와 Gooo
 확장 입력의 계약을 나눈다. 반환 레코드는 다중 반환값을 표현하는 명시적 API 변경이다.
 비트 연산의 산술 변환도 검사한 비음수 구간에서만 적용한다.
+
+`RotateLeft8`은 회전 수 `k % 8`의 음수 결과에만 8을 더한다. 원래 `k`를 부호 반전하거나
+8을 더하지 않아 int64 양 끝을 보존한다. 정규화된 회전이 0이면 원래 바이트를 반환하고,
+나머지는 2..128의 배수 선택과 나눗셈·나머지로 계산한다. 최대 중간 곱은 32,640이다.
+[소비 예제](../examples/byte-rotation/README.md)는 반대 방향으로 복원하고 1비트 개수를 비교한다.
+범위 밖 바이트를 -1로 반환하는 확장 계약은 Go 원본 비교와 분리한다.
 
 색상 변환은 검정색의 나눗셈 0을 먼저 처리한다. CMYK→RGB의 최대 중간 곱은
 `65535² = 4294836225`이므로 Gooo int64에서 overflow가 없다. 마지막 비음수 `>>8`은

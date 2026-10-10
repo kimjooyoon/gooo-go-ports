@@ -34,6 +34,8 @@ func lookup(name string) (operation, bool) {
 		return operation{0, 255, 2, 1, "boolean"}, true
 	case "bits.Len8", "bits.LeadingZeros8", "bits.TrailingZeros8", "bits.OnesCount8", "bits.Reverse8":
 		return operation{0, 255, 2, 1, "integer"}, true
+	case "bits.RotateLeft8":
+		return operation{minInt, maxInt, 2, 2, "integer"}, true
 	case "color.RGBToCMYK":
 		return operation{0, 255, 3, 3, "cmyk"}, true
 	case "color.CMYKToRGB":
@@ -83,7 +85,11 @@ func Run(name string, inputs []string, compute func(string, int64, int64, int64,
 			return failure("the unused second input must be exactly 0")
 		}
 		n, err := decimal(raw)
-		if err != nil || n < op.minimum || n > op.maximum {
+		minimum, maximum := op.minimum, op.maximum
+		if name == "bits.RotateLeft8" && i == 0 {
+			minimum, maximum = 0, 255
+		}
+		if err != nil || n < minimum || n > maximum {
 			return failure(fmt.Sprintf("input %d is outside the operation's decimal integer domain", i+1))
 		}
 		values[i] = n
@@ -103,6 +109,12 @@ func Run(name string, inputs []string, compute func(string, int64, int64, int64,
 	switch op.output {
 	case "integer":
 		value = fields["first"].(json.Number).String()
+		if name == "bits.RotateLeft8" {
+			n, err := decimal(value.(string))
+			if err != nil || n < 0 || n > 255 {
+				return failure("compiled program returned an invalid byte")
+			}
+		}
 	case "boolean":
 		value = fields["flag"]
 	case "pair":

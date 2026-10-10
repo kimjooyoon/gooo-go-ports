@@ -9,6 +9,7 @@
     {"path": "go/image/color", "sources": ["ports/image/color.gooo"]},
     {"path": "app/response", "sources": ["examples/response.gooo"]},
     {"path": "app/byte-summary", "sources": ["examples/byte-summary/main.gooo"]},
+    {"path": "app/byte-rotation", "sources": ["examples/byte-rotation/main.gooo"]},
     {"path": "app/unicode-inspector", "sources": ["examples/unicode-inspector/main.gooo"]},
     {"path": "app/color-inspector", "sources": ["examples/color-inspector/main.gooo"]}
   ]

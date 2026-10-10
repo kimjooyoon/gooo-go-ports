@@ -162,7 +162,7 @@ mkdir out
 Input-only records report `decision: "OBSERVED"`. They contain actual values at
 `result.runtime.traces[].deliveries[].actual`; they do not claim to have passed
 Go-reference comparisons. These seven inputs are a usage example and do not add
-to this repository's 5,510-case differential verification count. The replay's
+to the pinned snapshot's 5,510-case differential verification count. The replay's
 `replayed_from_sha256` identifies the original execution receipt bytes.
 
 You can edit `inputs.json` and replay the saved program on the new inputs. If you

@@ -1,0 +1,17 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {"app/byte-rotation:Inspect.input0": 0, "app/byte-rotation:Inspect.input1": 0},
+    {"app/byte-rotation:Inspect.input0": 1, "app/byte-rotation:Inspect.input1": 1},
+    {"app/byte-rotation:Inspect.input0": 128, "app/byte-rotation:Inspect.input1": 1},
+    {"app/byte-rotation:Inspect.input0": 129, "app/byte-rotation:Inspect.input1": -1},
+    {"app/byte-rotation:Inspect.input0": 170, "app/byte-rotation:Inspect.input1": 8},
+    {"app/byte-rotation:Inspect.input0": 85, "app/byte-rotation:Inspect.input1": -9},
+    {"app/byte-rotation:Inspect.input0": 255, "app/byte-rotation:Inspect.input1": 9223372036854775807},
+    {"app/byte-rotation:Inspect.input0": 129, "app/byte-rotation:Inspect.input1": -9223372036854775808},
+    {"app/byte-rotation:Inspect.input0": 129, "app/byte-rotation:Inspect.input1": -9223372036854775807},
+    {"app/byte-rotation:Inspect.input0": 129, "app/byte-rotation:Inspect.input1": 9007199254740993},
+    {"app/byte-rotation:Inspect.input0": -1, "app/byte-rotation:Inspect.input1": 0},
+    {"app/byte-rotation:Inspect.input0": 256, "app/byte-rotation:Inspect.input1": -9223372036854775808}
+  ]
+}

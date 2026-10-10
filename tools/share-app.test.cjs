@@ -343,3 +343,50 @@ test('positive color fixture cases cannot silently use the wrong arity', async (
   await checking;
   assert.equal(a.calls.length, 0); assert.match(a.get('checks-status').textContent, /incomplete/);
 });
+
+test('rotation UI preserves an extreme signed count and shows only the returned byte', async () => {
+  const operation = 'bits.RotateLeft8';
+  for (const count of ['-9223372036854775808', '-1', '9007199254740992', '9007199254740993', '9223372036854775807']) {
+    const a = app(link({ operation, inputs: ['129', count] }), undefined,
+      (operation, inputs) => ({ ok: true, operation, inputs, output: { type: 'integer', value: '217' } }));
+    await a.ready();
+    assert.deepEqual(a.calls, [[operation, '129', count]]);
+    assert.equal(a.get('first-label').textContent, 'Byte value');
+    assert.equal(a.get('second-label').textContent, 'Rotation count');
+    assert.equal(a.get('second-field').hidden, false);
+    assert.equal(a.get('second-input').disabled, false);
+    assert.equal(a.get('second-input').value, count);
+    assert.match(a.get('input-range').textContent, /Byte: 0 to 255/);
+    assert.match(a.get('input-range').textContent, /-9223372036854775808 to 9223372036854775807/);
+    const preview = a.get('result-content').children.find(child => child.className === 'bit-preview');
+    assert.ok(preview);
+    assert.equal(preview.children[0].children[1].textContent, '10000001');
+    assert.equal(preview.children[1].children[1].textContent, '11011001');
+    await a.get('share-button').emit('click');
+    assert.deepEqual(share.parse(new URL(a.copied[0]).hash).inputs, ['129', count]);
+  }
+});
+
+test('rotation UI rejects invalid bytes and counts without invoking the runtime', async () => {
+  const a = app();
+  await a.ready();
+  a.get('operation').value = 'bits.RotateLeft8'; a.get('operation').emit('change');
+  for (const inputs of [['-1', '0'], ['256', '0'], ['129', '9223372036854775808'], ['129', '-9223372036854775809'], ['129', '01'], ['129', '-0']]) {
+    a.get('first-input').value = inputs[0]; a.get('second-input').value = inputs[1];
+    a.get('run-form').emit('submit');
+    assert.equal(a.get('result-badge').textContent, 'ERROR');
+    assert.equal(a.get('raw-result').hidden, true);
+  }
+  assert.equal(a.calls.length, 0);
+});
+
+test('rotation binary preview rejects malformed and out-of-byte runtime results', async () => {
+  for (const value of ['-1', '256', '01', '1.0', '9007199254740993']) {
+    const a = app(link({ operation: 'bits.RotateLeft8', inputs: ['129', '1'] }), undefined,
+      (operation, inputs) => ({ ok: true, operation, inputs, output: { type: 'integer', value } }));
+    await a.ready();
+    assert.equal(a.get('result-badge').textContent, 'ERROR');
+    assert.equal(a.get('raw-result').hidden, true);
+    assert.ok(!a.get('result-content').children.some(child => child.className === 'bit-preview'));
+  }
+});

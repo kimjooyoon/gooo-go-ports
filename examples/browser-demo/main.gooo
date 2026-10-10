@@ -62,6 +62,9 @@ if input0 == "bits.OnesCount8" {
 if input0 == "bits.Reverse8" {
     return Reply{text: "", flag: false, first: bits.Reverse8(input1), second: 0, third: 0, fourth: 0}
 }
+if input0 == "bits.RotateLeft8" {
+    return Reply{text: "", flag: false, first: bits.RotateLeft8(input1, input2), second: 0, third: 0, fourth: 0}
+}
 if input0 == "color.RGBToCMYK" {
     let converted = color.RGBToCMYK(input1, input2, input3)
     return Reply{text: "", flag: false, first: converted.cyan, second: converted.magenta, third: converted.yellow, fourth: converted.black}

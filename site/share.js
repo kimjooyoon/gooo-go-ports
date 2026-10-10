@@ -12,7 +12,7 @@
     'utf16.IsSurrogate': 'rune', 'utf16.RuneLen': 'rune',
     'utf16.EncodeRune': 'rune', 'utf16.DecodeRune': 'pair',
     'bits.Len8': 'byte', 'bits.LeadingZeros8': 'byte', 'bits.TrailingZeros8': 'byte',
-    'bits.OnesCount8': 'byte', 'bits.Reverse8': 'byte',
+    'bits.OnesCount8': 'byte', 'bits.Reverse8': 'byte', 'bits.RotateLeft8': 'rotation',
     'color.RGBToCMYK': 'rgb', 'color.CMYKToRGB': 'cmyk'
   });
   const channels = ['a', 'b', 'c', 'd'];
@@ -28,15 +28,16 @@
       throw new Error(`This function requires exactly ${arity(operation)} input strings.`);
     }
     const domain = domains[operation];
-    const byte = ['byte', 'rgb', 'cmyk'].includes(domain);
-    for (const value of inputs) {
+    for (const [index, value] of inputs.entries()) {
+      const byte = ['byte', 'rgb', 'cmyk'].includes(domain) || (domain === 'rotation' && index === 0);
+      const int64 = domain === 'int64' || (domain === 'rotation' && index === 1);
       if (typeof value !== 'string' || value.length > 20 || !decimal.test(value)) throw new Error('Use decimal integers without spaces, a plus sign, or leading zeros.');
       const integer = BigInt(value);
-      const minimum = domain === 'int64' ? -9223372036854775808n : byte ? 0n : -2147483648n;
-      const maximum = domain === 'int64' ? 9223372036854775807n : byte ? 255n : 2147483647n;
+      const minimum = int64 ? -9223372036854775808n : byte ? 0n : -2147483648n;
+      const maximum = int64 ? 9223372036854775807n : byte ? 255n : 2147483647n;
       if (integer < minimum || integer > maximum) throw new Error('An input is outside this function’s accepted range.');
     }
-    if (!['pair', 'rgb', 'cmyk'].includes(domain) && inputs[1] !== '0') throw new Error('This function accepts one input; its unused second value must be 0.');
+    if (!['pair', 'rgb', 'cmyk', 'rotation'].includes(domain) && inputs[1] !== '0') throw new Error('This function accepts one input; its unused second value must be 0.');
   }
 
   function validateState(state) {

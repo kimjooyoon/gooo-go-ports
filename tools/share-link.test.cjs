@@ -242,3 +242,23 @@ test('every color channel accepts the full byte range and rejects invalid spelli
     }
   }
 });
+
+test('rotation v1 links keep byte and signed int64 count domains separate', () => {
+  const operation = 'bits.RotateLeft8';
+  const counts = ['-9223372036854775808', '-9223372036854775807', '-9007199254740993', '-9007199254740992', '-9', '-8', '-1', '0', '1', '7', '8', '9', '9007199254740992', '9007199254740993', '9223372036854775806', '9223372036854775807'];
+  for (let x = 0; x <= 255; x++) for (const k of counts) accepts(operation, [String(x), k]);
+  for (const value of ['-1', '256', '-256', '257', '9007199254740993', '-9223372036854775808', '9223372036854775807']) rejects(operation, [value, '1']);
+  for (const position of [0, 1]) {
+    for (const value of ['', '-0', '+1', '01', ' 1', '1 ', '1.0', '1e2', '0xff', 'NaN', '１２', '9223372036854775808', '-9223372036854775809', 0, 255n, null, undefined]) {
+      const inputs = ['129', '1']; inputs[position] = value;
+      rejects(operation, inputs);
+    }
+  }
+  for (let n = 0; n <= 5; n++) if (n !== 2) rejects(operation, Array(n).fill('0'));
+  rejects(operation, new Array(2));
+  const a = share.format(state({ operation, inputs: ['129', '9007199254740992'] }));
+  const b = share.format(state({ operation, inputs: ['129', '9007199254740993'] }));
+  assert.notEqual(a, b);
+  assert.match(a, /^#gooo-share\?v=1&/);
+  assert.throws(() => share.parse(a.replace('v=1', 'v=2')));
+});

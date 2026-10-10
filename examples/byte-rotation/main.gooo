@@ -1,0 +1,25 @@
+// Rotate one byte, restore it, and inspect its preserved set-bit count.
+// Every signed int64 rotation is accepted without narrowing or negation.
+// This example does not claim input-independent execution time.
+package byte_rotation
+namespace gooo_ports_examples_byte_rotation
+import bits "go/math/bits"
+
+entity Integer id "gooo://std/integer"
+entity Inspection id "gooo://go-ports/examples/byte-rotation/inspection" fields {
+    field in_byte_domain id "gooo://go-ports/examples/byte-rotation/inspection/in-byte-domain" type boolean required one
+    field normalized_rotation id "gooo://go-ports/examples/byte-rotation/inspection/normalized-rotation" type integer required one
+    field rotated id "gooo://go-ports/examples/byte-rotation/inspection/rotated" type integer required one
+    field restored id "gooo://go-ports/examples/byte-rotation/inspection/restored" type integer required one
+    field ones_before id "gooo://go-ports/examples/byte-rotation/inspection/ones-before" type integer required one
+    field ones_after id "gooo://go-ports/examples/byte-rotation/inspection/ones-after" type integer required one
+}
+
+activity Inspect(Integer, Integer) -> Inspection id "gooo://go-ports/examples/byte-rotation/inspect" computes `if input0 < 0 || input0 > 255 {
+    return Inspection{in_byte_domain: false, normalized_rotation: -1, rotated: -1, restored: -1, ones_before: -1, ones_after: -1}
+}
+let rotation = input1 % 8
+if rotation < 0 { rotation = rotation + 8 }
+let rotated = bits.RotateLeft8(input0, input1)
+let restored = bits.RotateLeft8(rotated, 8 - rotation)
+return Inspection{in_byte_domain: true, normalized_rotation: rotation, rotated: rotated, restored: restored, ones_before: bits.OnesCount8(input0), ones_after: bits.OnesCount8(rotated)}`

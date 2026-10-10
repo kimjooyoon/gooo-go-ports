@@ -5,9 +5,10 @@
 // The upstream license is reproduced in third_party/GO-LICENSE.
 //
 // Go uint8 inputs are represented by Gooo Integer (int64).
-// Go int results and Reverse8's uint8 result also use Gooo Integer.
-// Compatibility is restricted to inputs 0..255; no narrowing conversion occurs.
-// Every activity returns -1 outside that domain as a Gooo extension contract.
+// Go int results and uint8 results also use Gooo Integer.
+// Byte arguments are restricted to 0..255; no narrowing conversion occurs.
+// RotateLeft8 also accepts the full signed int64 rotation domain of Go's
+// 64-bit int. Every activity returns -1 for an invalid byte as a Gooo extension.
 // The extension is separate from comparison with Go's uint8 functions.
 // Table lookups, loops and bit operations are replaced with bounded arithmetic.
 package bits
@@ -63,3 +64,20 @@ reversed = reversed + reversed + input / 32 % 2
 reversed = reversed + reversed + input / 64 % 2
 reversed = reversed + reversed + input / 128 % 2
 return reversed`
+
+// Normalize before doing arithmetic so MinInt64 remains a valid rotation.
+// A left rotation by s moves the high s bits into the low s positions.
+// x*p is at most 32640, and 256/p is always a positive integer.
+// This branch-based port does not inherit Go's input-independent runtime claim.
+activity RotateLeft8(Integer, Integer) -> Integer id "gooo://go/math/bits/RotateLeft8" computes `if input0 < 0 || input0 > 255 { return -1 }
+let rotation = input1 % 8
+if rotation < 0 { rotation = rotation + 8 }
+if rotation == 0 { return input0 }
+let factor = 2
+if rotation == 2 { factor = 4 }
+if rotation == 3 { factor = 8 }
+if rotation == 4 { factor = 16 }
+if rotation == 5 { factor = 32 }
+if rotation == 6 { factor = 64 }
+if rotation == 7 { factor = 128 }
+return input0 * factor % 256 + input0 / (256 / factor)`
