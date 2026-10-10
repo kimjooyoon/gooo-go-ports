@@ -1,0 +1,8 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {"package_path": "app/color-inspector", "activity": "InspectRGB"},
+  "packages": [
+    {"path": "go/image/color", "sources": ["ports/image/color.gooo"]},
+    {"path": "app/color-inspector", "sources": ["examples/color-inspector/main.gooo"]}
+  ]
+}

@@ -43,6 +43,7 @@ jobs:
           ./.gooo check ports/unicode/utf8.gooo
           ./.gooo check ports/unicode/utf16.gooo
           ./.gooo check ports/math/bits.gooo
+          ./.gooo check ports/image/color.gooo
           sh tools/probe.sh --out out/probes
       - name: Compare the ports with Go and replay every batch
         run: |
@@ -51,11 +52,13 @@ jobs:
             .schema == "gooo/go-ports-differential/v1" and
             .go_version == "go1.27.2" and
             .compiler_revision == "366ee6ef8f9d2b9b57331dfd26b6f908c0289851" and
-            .ported_functions == 13 and .consumer_programs == 3 and .consumer_activities == 4 and
+            .ported_functions == 15 and .consumer_programs == 4 and .consumer_activities == 5 and
             .legacy_cases == 3147 and .unicode_reference_cases == 334 and .unicode_rejection_cases == 12 and
-            .cases == 3493 and .passed == 3493 and
-            (.runs | length) == 17 and
-            ([.runs[].cases] | add) == 3493 and
+            .color_port_reference_cases == 1300 and .color_port_rejection_cases == 56 and
+            .color_consumer_reference_cases == 637 and .color_consumer_rejection_cases == 24 and
+            .cases == 5510 and .passed == 5510 and
+            (.runs | length) == 20 and
+            ([.runs[].cases] | add) == 5510 and ([.runs[].batches] | add) == 80 and
             all(.runs[]; .passed == .cases and .replay_equal == true)
           ' out/ci/summary.json
       - name: Execute and replay the input-only importing example
@@ -127,6 +130,27 @@ jobs:
                [.[1].result.runtime.traces[].deliveries[] | {input, inputs, actual}])
             ' "out/unicode-${kind}.json" "out/unicode-${kind}-replay.json"
           done
+      - name: Execute and replay the color inspector input-only example
+        run: |
+          ./.gooo package execute --json --inputs examples/color-inspector/inputs.json \
+            color-inspector.workspace.json > out/color-example.json
+          ./.gooo package replay --json --receipt out/color-example.json \
+            --inputs examples/color-inspector/inputs.json \
+            color-inspector.workspace.json > out/color-replay.json
+          jq -e --slurpfile fixture examples/color-inspector/inputs.json '
+            .decision == "OBSERVED" and
+            .result.runtime.finite_total == 0 and .result.runtime.finite_passed == 0 and
+            .result.runtime.projection_replayed == true and .result.runtime.runtime_replayed == true and
+            .result.runtime.model_calls == 0 and
+            (.result.runtime.traces | length) == ($fixture[0].inputs | length)
+          ' out/color-example.json out/color-replay.json
+          jq -e '.result.replay.model_calls == 0 and (.replayed_from_sha256 | startswith("sha256:"))' \
+            out/color-replay.json
+          jq -s -e '
+            .[0].result.composition.generated_sha256 == .[1].result.composition.generated_sha256 and
+            ([.[0].result.runtime.traces[].deliveries[] | {input, inputs, actual}] ==
+             [.[1].result.runtime.traces[].deliveries[] | {input, inputs, actual}])
+          ' out/color-example.json out/color-replay.json
       - name: Upload execution and diagnostic evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

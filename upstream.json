@@ -7,6 +7,7 @@
   "compiler_revision": "366ee6ef8f9d2b9b57331dfd26b6f908c0289851",
   "compiler_version": "0.6.24-dev",
   "source_sha256": {
+    "src/image/color/ycbcr.go": "7afc91f21cb8eb68027f54180a862137bdef26cfd59389ecb609c0f87923de0c",
     "src/net/http/status.go": "7633ca0ca545767f3db3d8960a96ee4ecd68fb39439c88b7c03efcb3d1786297",
     "src/unicode/utf8/utf8.go": "3c145ee25fd7631ebbc670fd1236e8c163ca30ae8913c796489efbf3f267ad54",
     "src/unicode/utf16/utf16.go": "6b8b3037015f41351d4a323513b57b8ac90caa69f69be31eaf02ca2a4632d0cd",
@@ -16,6 +17,11 @@
     "LICENSE": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
   },
   "ports": [
+    {
+      "source": "src/image/color/ycbcr.go",
+      "target": "ports/image/color.gooo",
+      "symbols": ["RGBToCMYK", "CMYKToRGB"]
+    },
     {
       "source": "src/net/http/status.go",
       "target": "ports/net/http.gooo",

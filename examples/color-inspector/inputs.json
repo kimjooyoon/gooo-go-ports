@@ -1,0 +1,17 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {"app/color-inspector:InspectRGB.input0": 0, "app/color-inspector:InspectRGB.input1": 0, "app/color-inspector:InspectRGB.input2": 0},
+    {"app/color-inspector:InspectRGB.input0": 255, "app/color-inspector:InspectRGB.input1": 255, "app/color-inspector:InspectRGB.input2": 255},
+    {"app/color-inspector:InspectRGB.input0": 255, "app/color-inspector:InspectRGB.input1": 0, "app/color-inspector:InspectRGB.input2": 0},
+    {"app/color-inspector:InspectRGB.input0": 0, "app/color-inspector:InspectRGB.input1": 255, "app/color-inspector:InspectRGB.input2": 0},
+    {"app/color-inspector:InspectRGB.input0": 0, "app/color-inspector:InspectRGB.input1": 0, "app/color-inspector:InspectRGB.input2": 255},
+    {"app/color-inspector:InspectRGB.input0": 128, "app/color-inspector:InspectRGB.input1": 128, "app/color-inspector:InspectRGB.input2": 128},
+    {"app/color-inspector:InspectRGB.input0": 128, "app/color-inspector:InspectRGB.input1": 64, "app/color-inspector:InspectRGB.input2": 32},
+    {"app/color-inspector:InspectRGB.input0": 142, "app/color-inspector:InspectRGB.input1": 83, "app/color-inspector:InspectRGB.input2": 202},
+    {"app/color-inspector:InspectRGB.input0": 202, "app/color-inspector:InspectRGB.input1": 142, "app/color-inspector:InspectRGB.input2": 83},
+    {"app/color-inspector:InspectRGB.input0": -1, "app/color-inspector:InspectRGB.input1": 0, "app/color-inspector:InspectRGB.input2": 0},
+    {"app/color-inspector:InspectRGB.input0": 0, "app/color-inspector:InspectRGB.input1": 256, "app/color-inspector:InspectRGB.input2": 0},
+    {"app/color-inspector:InspectRGB.input0": 0, "app/color-inspector:InspectRGB.input1": 0, "app/color-inspector:InspectRGB.input2": 9223372036854775807}
+  ]
+}

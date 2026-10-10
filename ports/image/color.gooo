@@ -1,0 +1,40 @@
+// Copyright 2011 The Go Authors. All rights reserved.
+// BSD 3-Clause: see LICENSE and third_party/GO-LICENSE.
+// Adapted from Go 1.27.2 src/image/color/ycbcr.go, revision
+// 022c8636110ebac86a9b88724cda168ed713c21f.
+// Source SHA-256: 7afc91f21cb8eb68027f54180a862137bdef26cfd59389ecb609c0f87923de0c.
+// Integer inputs preserve the full uint8 domain 0..255 without narrowing.
+// Multiple Go results become records. Invalid inputs return all -1 fields,
+// a separate Gooo extension contract. Nonnegative >>8 becomes division by 256.
+package color
+namespace gooo_ports_image_color
+entity Integer id "gooo://std/integer"
+entity RGB id "gooo://go/image/color/rgb" fields {
+    field red id "gooo://go/image/color/rgb/red" type integer required one
+    field green id "gooo://go/image/color/rgb/green" type integer required one
+    field blue id "gooo://go/image/color/rgb/blue" type integer required one
+}
+entity CMYK id "gooo://go/image/color/cmyk" fields {
+    field cyan id "gooo://go/image/color/cmyk/cyan" type integer required one
+    field magenta id "gooo://go/image/color/cmyk/magenta" type integer required one
+    field yellow id "gooo://go/image/color/cmyk/yellow" type integer required one
+    field black id "gooo://go/image/color/cmyk/black" type integer required one
+}
+
+activity RGBToCMYK(Integer, Integer, Integer) -> CMYK id "gooo://go/image/color/RGBToCMYK" computes `if input0 < 0 || input0 > 255 || input1 < 0 || input1 > 255 || input2 < 0 || input2 > 255 {
+    return CMYK{cyan: -1, magenta: -1, yellow: -1, black: -1}
+}
+let white = input0
+if white < input1 { white = input1 }
+if white < input2 { white = input2 }
+if white == 0 { return CMYK{cyan: 0, magenta: 0, yellow: 0, black: 255} }
+return CMYK{cyan: (white - input0) * 255 / white, magenta: (white - input1) * 255 / white, yellow: (white - input2) * 255 / white, black: 255 - white}`
+
+activity CMYKToRGB(Integer, Integer, Integer, Integer) -> RGB id "gooo://go/image/color/CMYKToRGB" computes `if input0 < 0 || input0 > 255 || input1 < 0 || input1 > 255 || input2 < 0 || input2 > 255 || input3 < 0 || input3 > 255 {
+    return RGB{red: -1, green: -1, blue: -1}
+}
+let white = 65535 - input3 * 257
+let red = (65535 - input0 * 257) * white / 65535
+let green = (65535 - input1 * 257) * white / 65535
+let blue = (65535 - input2 * 257) * white / 65535
+return RGB{red: red / 256, green: green / 256, blue: blue / 256}`

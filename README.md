@@ -2,25 +2,28 @@
 
 Go standard-library functions implemented in [Gooo](https://github.com/kimjooyoon/meta-ontology-go),
 with independent Go reference outputs and saved replay. The current scope is
-13 HTTP, Unicode, and 8-bit integer functions, three native importing examples,
+15 HTTP, Unicode, 8-bit integer, and color-conversion functions, four native importing examples,
 and an importing browser dispatcher.
 Use Go 1.27.2, Git, and a POSIX shell: run `./tools/bootstrap.sh`, then
 `go run ./cmd/verify --out out/first` from this repository. The output directory must be new.
 The original 3,147-case corpus is unchanged. A Unicode inspector adds 334 Go-reference
 cases and 12 explicit domain-rejection cases; six byte-domain functions cover all 256 inputs.
+Color ports and their consumer add separate reference and rejection cases, detailed below.
 Other domains use finite boundary cases and samples. This is an independent experimental port,
 not a complete Go package implementation or an official Google/Go project.
 
-[Try the browser demo](https://kimjooyoon.github.io/gooo-go-ports/) to run all 13 functions
+[Try the browser demo](https://kimjooyoon.github.io/gooo-go-ports/) to run 13 HTTP, Unicode, and byte functions
 without installing a compiler. It executes a precompiled Gooo program as WebAssembly;
 it is not an editor for compiling arbitrary source. The page includes the Gooo source,
 unmodified generated Go, execution receipts, and an optional reference-check button.
 Use **Copy link to this input** to share an exact function input. Opening a link runs
 it once in the recipient's browser when the compiled program matches; a changed program
 restores the inputs and waits for **Run function**. Links carry inputs, not trusted results.
+For color conversion, the native [RGB → CMYK → RGB inspector](examples/color-inspector/README.md)
+reports converted channels, recovered RGB values, and any integer round-trip differences.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수 함수 13개를 제공합니다.
+현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수·색상 변환 함수 15개를 제공합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -38,12 +41,15 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | `go/unicode/utf16` | `IsSurrogate`, `RuneLen` | 서로게이트 판정과 UTF-16 코드 단위 수 |
 | `go/unicode/utf16` | `DecodeRune`, `EncodeRune` | 서로게이트 쌍 변환. EncodeRune의 두 반환값은 `{high, low}` 레코드 |
 | `go/math/bits` | `Len8`, `LeadingZeros8`, `TrailingZeros8`, `OnesCount8`, `Reverse8` | 0..255 정수의 비트 길이, 앞·뒤 0 개수, 1 개수와 비트 순서 반전. 비교·산술로 구현 |
+| `go/image/color` | `RGBToCMYK`, `CMYKToRGB` | 각 채널 0..255의 RGB 3성분·CMYK 4성분 변환. 다중 반환은 `CMYK`·`RGB` 레코드 |
 
 원본의 `rune` 입력은 int32 범위를 Gooo Integer로 전달합니다. `byte` 호환 범위는
 0..255입니다. 묵시적으로 정수 폭을 줄이지 않습니다. `RuneStart`의 범위 밖 입력은
 Gooo 확장 동작으로 false를 반환하지만 원본과의 동등성 집계에는 넣지 않습니다.
 `go/math/bits`의 다섯 함수는 이 영역 밖에서 별도 확장 동작인 -1을 반환합니다.
 Go의 byte 변환처럼 입력을 잘라서 계산하지 않습니다. 0의 앞·뒤 0 개수는 원본과 같은 8입니다.
+색상 변환도 모든 채널을 먼저 검사하며 범위 밖에서는 레코드의 모든 성분을 -1로 반환합니다.
+원본의 정수 나눗셈 순서를 유지하므로 왕복 변환이 원래 RGB와 항상 같은 것은 아닙니다.
 `StatusText` 비교는 int가 64비트인 amd64·arm64에서 실행합니다.
 HTTP 서버나 UTF 인코딩 패키지 전체의 이식은 아닙니다.
 
@@ -131,6 +137,11 @@ mkdir -p out/demo
 잘못된 입력쌍의 대체 결과를 구분하고, 정상 BMP 문자에서 `EncodeRune`이 반환하는
 `65533/65533`을 잘못된 문자로 판정하지 않습니다. 실행 명령과 결과 필드는 예제 문서에 있습니다.
 
+네 번째 앱인 [색상 왕복 검사기](examples/color-inspector/README.md)는 RGB를 CMYK로
+변환하고 다시 RGB로 복원해 채널별 차이와 일치 여부를 보여줍니다. 두 색상 포트를
+Gooo에서 조합하며 원본의 전체 uint8 입력 범위를 유지합니다. 위 브라우저의 13함수와
+별도로 native에서 실행하며, 특정 색상 프로파일이나 프린터 보정은 수행하지 않습니다.
+
 ## 다른 Gooo 프로그램에서 가져오기
 
 ```gooo
@@ -146,13 +157,16 @@ activity Valid(Integer) -> Boolean computes `return utf8.ValidRune(input)`
 패키지 경로와 파일을 등록합니다. 전체 구성은 [gooo.workspace.json](gooo.workspace.json),
 실제 importing app은 [response.gooo](examples/response.gooo)에 있습니다.
 비트 연산을 가져오는 예제는 [ByteSummary](examples/byte-summary/main.gooo)입니다.
+색상 변환 조합은 [Color inspector](examples/color-inspector/main.gooo)와
+[color-inspector.workspace.json](color-inspector.workspace.json)에 있습니다.
 현재 배포 단위는 Gooo 소스와 workspace 명세이며 Go의 패키지 관리자와는 별개입니다.
 
 ## 검증 범위
 
-기존 **3,147건**을 그대로 유지하고 Unicode 소비 앱의 Go 원본 비교 **334건**과
-int32 영역 밖 입력 거부 **12건**을 추가했습니다. 전체 native 검사는 **3,493건**이며,
-이식 함수는 여전히 13개입니다. 영역 밖 12건은 Go 동등성 집계가 아닙니다.
+기존 **3,147건**과 Unicode 소비 앱의 Go 원본 비교 **334건**·영역 밖 거부 **12건**을
+그대로 유지합니다. 색상 포트는 원본 비교 **1,300건**·거부 **56건**, 색상 소비 앱은
+원본 비교 **637건**·거부 **24건**을 추가합니다. 전체 native 검사는 **5,510건**이며
+이식 함수는 15개입니다. 각 영역 밖 거부 사례는 Go 동등성 집계가 아닙니다.
 
 | 대상 | 입력 수 | 구성 |
 | --- | ---: | --- |
@@ -166,12 +180,17 @@ int32 영역 밖 입력 거부 **12건**을 추가했습니다. 전체 native �
 | ByteSummary importing app | 6 | 0, 1, 127, 128, 170, 255의 길이·1 개수·비트 반전 레코드 |
 | Unicode InspectScalar consumer | 164 + 4 | 기존 rune 162개, A·U+1F600, 별도 int32 영역 밖 거부 4개 |
 | Unicode InspectPair consumer | 170 + 8 | 기존 pair 164개, 대체 문자·U+1F600·잘림 경계 6개, 양쪽 인수의 영역 밖 거부 8개 |
+| Color RGBToCMYK | 637 + 24 | RGB 경계·회색·최댓값 동률·정수 나눗셈·고정 표본, 각 입력 위치의 별도 거부 |
+| Color CMYKToRGB | 663 + 32 | CMYK 경계·정수 나눗셈·고정 표본, 각 입력 위치의 별도 거부 |
+| Color InspectRGB consumer | 637 + 24 | RGB→CMYK→RGB 결과·채널 차이·일치 여부, 범위 밖 거부 |
 
-Gooo 실행 입력 상한에 맞춰 총 37개 배치를 실행합니다. 기존 31개 배치는 128건 이하,
-Unicode 앱 6개 배치는 레코드 기대값의 32KiB JSON 한도에 맞춰 64건 이하입니다.
+Gooo 실행 입력 상한에 맞춰 총 80개 배치를 실행합니다. 기존 31개 배치는 128건 이하,
+Unicode 앱 6개와 색상 포트 22개 배치는 64건 이하, 색상 소비 앱 21개 배치는 32건 이하입니다.
+새 레코드 기대값도 들여쓴 JSON과 마지막 개행을 포함해 32KiB 한도를 검사합니다.
 원본 비교 기대값은 Gooo 구현과 별개인 Go 표준 함수로 계산합니다.
-Unicode 앱의 영역 밖 거부 기대값은 명시한 false/-1 계약으로 따로 검사합니다.
-검증 도구는 결과뿐 아니라 입력 순서, 원본 기대값, stable activity ID, 생성 코드 해시,
+Unicode·색상 앱과 색상 포트의 영역 밖 기대값은 명시한 false/-1 계약으로 따로 검사합니다.
+검증 도구는 결과뿐 아니라 입력 순서, 원본 기대값, 생성 보고서와 실행 전달의 activity ID 일치,
+생성 코드 해시,
 컴파일러·Go 버전, workspace·입력 파일 해시, 저장 재실행 연결을 검사합니다.
 검사 도중 소스가 바뀌어도 처음 읽은 동일한 소스 스냅샷을 모든 배치에 사용합니다.
 잘못된 출력이나 변조된 실행 근거를 `PASS`로 오인하지 않는 회귀 테스트도 포함합니다.
@@ -182,6 +201,7 @@ Unicode 앱의 영역 밖 거부 기대값은 명시한 false/-1 계약으로 �
 별도 모델 학습, 성능 우위, 패키지 전체의 호환성은 검증 범위에 포함하지 않습니다.
 [첫 8개 함수의 관측](evidence/initial.json), [13개 함수의 관측](evidence/math-bits-20261010.json),
 [Unicode 소비 앱 추가 관측](evidence/unicode-inspector-20261010.json),
+[색상 포트·소비 앱 추가 관측](evidence/color-ports-20261010.json),
 GitHub Actions의 전체 원본 artifact를 참고하세요.
 
 ## 언어 개발로 돌려주는 자료

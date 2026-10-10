@@ -81,6 +81,11 @@ func run() error {
 		legacyCases += len(s.Cases)
 	}
 	suites = append(suites, inspector.Suites...)
+	colors, err := colorCorpus()
+	if err != nil {
+		return err
+	}
+	suites = append(suites, colors.Suites...)
 	if *out == "" {
 		return fmt.Errorf("provide --out for a new evidence directory")
 	}
@@ -145,6 +150,12 @@ func run() error {
 		batchSize := 128
 		if s.Package == "app/unicode-inspector" {
 			batchSize = unicodeInspectorBatchSize
+		}
+		if s.Package == "go/image/color" {
+			batchSize = colorPortBatchSize
+		}
+		if s.Package == "app/color-inspector" {
+			batchSize = colorInspectorBatchSize
 		}
 		for start := 0; start < len(s.Cases); start += batchSize {
 			end := min(start+batchSize, len(s.Cases))
@@ -221,10 +232,12 @@ func run() error {
 	return save(filepath.Join(root, "summary.json"), map[string]any{
 		"schema": "gooo/go-ports-differential/v1", "go_version": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH,
 		"compiler_revision": lock.CompilerRevision, "source_sha256": sourceHashes,
-		"ported_functions": 13, "consumer_programs": 3, "consumer_activities": 4,
+		"ported_functions": 15, "consumer_programs": 4, "consumer_activities": 5,
 		"legacy_cases": legacyCases, "unicode_reference_cases": inspector.ReferenceCases, "unicode_rejection_cases": inspector.RejectionCases,
+		"color_port_reference_cases": colors.PortReferenceCases, "color_port_rejection_cases": colors.PortRejectionCases,
+		"color_consumer_reference_cases": colors.ConsumerReferenceCases, "color_consumer_rejection_cases": colors.ConsumerRejectionCases,
 		"cases": total, "passed": total, "runs": reports,
-		"scope": "Finite differential observations against pinned Go source, plus identical saved replay. The legacy corpus is unchanged; Unicode inspector reference cases and explicit out-of-int32 rejection cases are counted separately. RuneStart and the five math/bits functions each cover all 256 byte values exactly once. Out-of-domain math/bits inputs are excluded; no claim of exhaustive equivalence for other domains or whole-package compatibility.",
+		"scope": "Finite differential observations against pinned Go source, plus identical saved replay. The 3,147 legacy and 346 Unicode inspector cases are unchanged. Color port and consumer Go-reference cases and explicit out-of-byte rejection cases are counted separately. RuneStart and the five math/bits functions each cover all 256 byte values exactly once. Out-of-domain math/bits inputs are excluded; no claim of exhaustive equivalence for other domains, whole-package compatibility, ICC color management, or printed appearance.",
 	})
 }
 func caseDocument(s suite) any {

@@ -2,7 +2,7 @@ Gooo Go Ports
 Copyright 2026 Gooo Go Ports contributors.
 
 Ported Go standard-library algorithms and HTTP status mappings:
-Copyright 2009, 2010, 2017 The Go Authors. All rights reserved.
+Copyright 2009, 2010, 2011, 2017 The Go Authors. All rights reserved.
 Licensed under the BSD 3-Clause terms reproduced in LICENSE and third_party/GO-LICENSE.
 Exact original files, revision, hashes and corresponding Gooo functions are in upstream.json.
 The Go and Google projects do not endorse this independent experimental port.

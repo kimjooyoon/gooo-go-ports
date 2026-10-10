@@ -1,0 +1,27 @@
+// Inspect the pinned Go conversions and their integer round-trip differences.
+// This is not an ICC profile transform or a prediction of printed appearance.
+package color_inspector
+namespace gooo_ports_examples_color_inspector
+import color "go/image/color"
+entity Integer id "gooo://std/integer"
+entity Inspection id "gooo://go-ports/examples/color-inspector/inspection" fields {
+    field in_byte_domain id "gooo://go-ports/examples/color-inspector/inspection/in-byte-domain" type boolean required one
+    field cyan id "gooo://go-ports/examples/color-inspector/inspection/cyan" type integer required one
+    field magenta id "gooo://go-ports/examples/color-inspector/inspection/magenta" type integer required one
+    field yellow id "gooo://go-ports/examples/color-inspector/inspection/yellow" type integer required one
+    field black id "gooo://go-ports/examples/color-inspector/inspection/black" type integer required one
+    field red id "gooo://go-ports/examples/color-inspector/inspection/red" type integer required one
+    field green id "gooo://go-ports/examples/color-inspector/inspection/green" type integer required one
+    field blue id "gooo://go-ports/examples/color-inspector/inspection/blue" type integer required one
+    field red_delta id "gooo://go-ports/examples/color-inspector/inspection/red-delta" type integer required one
+    field green_delta id "gooo://go-ports/examples/color-inspector/inspection/green-delta" type integer required one
+    field blue_delta id "gooo://go-ports/examples/color-inspector/inspection/blue-delta" type integer required one
+    field exact id "gooo://go-ports/examples/color-inspector/inspection/exact" type boolean required one
+}
+
+activity InspectRGB(Integer, Integer, Integer) -> Inspection id "gooo://go-ports/examples/color-inspector/inspect-rgb" computes `if input0 < 0 || input0 > 255 || input1 < 0 || input1 > 255 || input2 < 0 || input2 > 255 {
+    return Inspection{in_byte_domain: false, cyan: -1, magenta: -1, yellow: -1, black: -1, red: -1, green: -1, blue: -1, red_delta: -1, green_delta: -1, blue_delta: -1, exact: false}
+}
+let cmyk = color.RGBToCMYK(input0, input1, input2)
+let rgb = color.CMYKToRGB(cmyk.cyan, cmyk.magenta, cmyk.yellow, cmyk.black)
+return Inspection{in_byte_domain: true, cyan: cmyk.cyan, magenta: cmyk.magenta, yellow: cmyk.yellow, black: cmyk.black, red: rgb.red, green: rgb.green, blue: rgb.blue, red_delta: rgb.red - input0, green_delta: rgb.green - input1, blue_delta: rgb.blue - input2, exact: rgb.red == input0 && rgb.green == input1 && rgb.blue == input2}`
