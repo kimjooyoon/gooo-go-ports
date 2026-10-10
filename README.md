@@ -43,6 +43,8 @@ each code point's original UTF-16 position, scalar validity, Go whitespace
 membership, and UTF-8 / UTF-16 encoding lengths. CR and LF remain separate;
 combining and joined sequences are shown as their constituent code points.
 The browser decodes the received UTF-16 text and displays the Gooo results.
+Download a completed inspection as JSON to retain the exact input, returned
+values and program version for a bug report or test case.
 This is a browser application using existing ports, not a new Gooo string API.
 See [input handling, limits, and verification](docs/text-inspector.md).
 

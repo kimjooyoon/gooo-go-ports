@@ -3,12 +3,15 @@
   const $ = id => document.getElementById(id);
   const input = window.GoooTextInput;
   const protocol = window.GoooTextInspectorProtocol;
+  const reports = window.GoooTextInspectionReport;
   let worker = null;
   let binding = null;
   let decoded = null;
   let job = null;
   let nextId = 0;
   let loadTimeout = null;
+  let completedInspection = null;
+  const downloadUrls = new Map();
 
   function clearLoadTimeout() {
     if (loadTimeout !== null) window.clearTimeout(loadTimeout);
@@ -19,9 +22,20 @@
     $('text-run').disabled = !binding || !decoded || !!job;
     $('text-cancel').hidden = !job;
     $('text-run').firstChild.textContent = job ? 'Inspecting… ' : 'Inspect text ';
+    const canDownload = !!completedInspection && !job && !!binding && completedInspection.snapshot === decoded;
+    $('text-download-controls').hidden = !canDownload;
+    $('text-download').hidden = !canDownload;
+    $('text-download').disabled = !canDownload;
   }
 
   function clearResults(message = 'Not inspected.') {
+    completedInspection = null;
+    $('text-download-controls').hidden = true;
+    $('text-download').hidden = true;
+    $('text-download').disabled = true;
+    $('text-download-status').hidden = true;
+    $('text-download-status').textContent = '';
+    $('text-download-status').className = 'text-download-status';
     $('text-rows').replaceChildren();
     $('text-table-wrap').hidden = true;
     $('text-summary').textContent = '';
@@ -98,8 +112,10 @@
             } else {
               const rows = protocol.validateResult(message, job.request);
               const snapshot = job.snapshot;
+              const program = Object.freeze({ wasmSha256: job.request.wasmSha256, sourceRevision: job.request.sourceRevision });
               job = null;
               showResults(snapshot, rows);
+              completedInspection = Object.freeze({ snapshot, rows, binding: program });
               updateButtons();
             }
           } else if (message.type === 'error') {
@@ -240,6 +256,54 @@
     $('text-progress-bar').hidden = true;
     $('text-result-error').hidden = true;
   }
+
+  function revokeDownload(url) {
+    if (!downloadUrls.has(url)) return;
+    const timer = downloadUrls.get(url);
+    if (timer !== null) window.clearTimeout(timer);
+    downloadUrls.delete(url);
+    window.URL.revokeObjectURL(url);
+  }
+
+  $('text-download').addEventListener('click', () => {
+    if ($('text-download').disabled || !completedInspection || job || !binding || completedInspection.snapshot !== decoded) return;
+    const completed = completedInspection;
+    let url = null;
+    let link = null;
+    let requested = false;
+    $('text-download-status').textContent = '';
+    $('text-download-status').hidden = true;
+    $('text-download-status').className = 'text-download-status';
+    try {
+      const report = reports.create(completed.snapshot, completed.rows, completed.binding);
+      const blob = new Blob([reports.serialize(report)], { type: 'application/json;charset=utf-8' });
+      url = window.URL.createObjectURL(blob);
+      downloadUrls.set(url, null);
+      link = document.createElement('a');
+      link.href = url;
+      link.download = 'gooo-text-inspection.json';
+      link.hidden = true;
+      document.body.append(link);
+      link.click();
+      requested = true;
+      $('text-download-status').textContent = 'Download requested. Check your browser’s downloads for gooo-text-inspection.json.';
+    } catch {
+      $('text-download-status').className = 'text-download-status error';
+      $('text-download-status').textContent = 'The JSON download could not be started. Your inspection results are still shown. Try again.';
+    } finally {
+      if (link) link.remove();
+      if (url !== null) {
+        // Leave a successful object URL alive for the browser to start reading
+        // it. Failed starts release immediately; pagehide releases any remainder.
+        if (requested) downloadUrls.set(url, window.setTimeout(() => revokeDownload(url), 1000));
+        else revokeDownload(url);
+      }
+      $('text-download-status').hidden = false;
+    }
+  });
+  window.addEventListener('pagehide', () => {
+    for (const url of [...downloadUrls.keys()]) revokeDownload(url);
+  });
 
   $('text-form').addEventListener('submit', event => {
     event.preventDefault();

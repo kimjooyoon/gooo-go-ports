@@ -56,6 +56,48 @@ URL. It examines the string supplied by the browser; it cannot reconstruct
 changes an originating app or clipboard already made, or diagnose the original
 file's invalid UTF-8 bytes.
 
+## Save an inspection for a bug report or test case
+
+After an inspection completes, use **Download inspection JSON** to save
+`gooo-text-inspection.json`. The file contains the captured input, returned
+results and program identity. Creating the download stays in the browser;
+sharing the saved file is a separate action you control.
+
+The report uses schema `gooo/text-inspection-report/v1` and identifies itself as
+a `browser-observation`. It records a completed use of the browser application.
+It is unsigned and does not carry a native compiler execution receipt or a
+Go-reference comparison result.
+
+- `input.utf16Units` is the original sequence of numeric UTF-16 code units.
+  This representation preserves CR, LF, NUL and lone surrogates exactly.
+- `input.escapedJson` is a quoted JSON string with one `\uXXXX` escape per
+  original code unit. Its decoded field value can be pasted into JSON string
+  mode to recreate the same captured input.
+- `rows` retain each code point, zero-based offset, original width and all four
+  Gooo results. Encoding lengths remain decimal strings, including `"-1"`.
+- `totals` keep the received unit and code-point counts. Both encoding totals
+  are `null` when any scalar or returned length is invalid; empty text has zero
+  totals.
+- `program.wasmSha256` and `program.sourceRevision` identify the program used
+  for the observation.
+
+For example, with `jq` installed, this prints the field value ready to paste
+into JSON string mode:
+
+```sh
+jq -r '.input.escapedJson' gooo-text-inspection.json
+```
+
+Decode the outer report JSON once before taking that field: copying its raw
+serialized value, including its outer JSON quoting, would add another layer
+of escapes. Numeric `utf16Units` are the canonical original input for programs
+that consume the report.
+
+Downloading is available only for a completed current result. Changing the
+input, starting a new inspection, cancelling or encountering a runtime error
+removes the downloadable result. Previously downloaded files remain on your
+device. A file download error can be retried without rerunning the inspection.
+
 ## How the application is checked
 
 The Worker checks the program bytes against the bundled Wasm hash and checks
@@ -82,4 +124,6 @@ node tools/text-inspector-smoke.cjs out/browser-text/site
 The output directory must be new. Use the repository's pinned Go 1.27.2.
 Browser tests also cover raw paste handling, rejected oversized inputs, malformed
 runtime responses, input replacement during execution, and failed runs clearing
-old results. These are finite observations, not whole-library compatibility.
+old results. Report checks reconstruct every original input, compare every
+exported row with the independent Go fixtures, and reject incomplete or
+misbound results. These are finite observations, not whole-library compatibility.

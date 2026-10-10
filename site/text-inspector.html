@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./text-inspector.css">
   <script defer src="./text-inspector-protocol.js"></script>
   <script defer src="./text-input.js"></script>
+  <script defer src="./text-inspection-report.js"></script>
   <script defer src="./text-inspector.js"></script>
 </head>
 <body class="text-inspector-page">
@@ -75,6 +76,11 @@
         <progress id="text-progress-bar" value="0" max="1" hidden aria-label="Text inspection progress"></progress>
         <p id="text-result-error" class="text-error" role="alert" hidden></p>
         <p id="text-summary" class="text-summary" hidden></p>
+        <div id="text-download-controls" class="text-download-controls" hidden>
+          <button id="text-download" class="secondary-button" type="button" disabled hidden aria-describedby="text-download-help">Download inspection JSON</button>
+          <p id="text-download-help" class="text-help">Includes the inspected input, results and program version. This is an unsigned browser observation, not a native compiler execution receipt.</p>
+          <p id="text-download-status" class="text-download-status" role="status" hidden></p>
+        </div>
         <div id="text-table-wrap" hidden>
           <table class="text-table">
             <caption>One row per UTF-16-decoded code point, including unpaired surrogate values. Combining marks and joined sequences have multiple rows.</caption>
