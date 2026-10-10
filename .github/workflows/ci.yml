@@ -154,6 +154,7 @@ jobs:
           node-version: '22'
       - name: Build the actual Gooo composition for the browser
         run: |
+          node --test tools/share-link.test.cjs tools/share-app.test.cjs
           sh tools/bootstrap.sh
           go run ./cmd/build-demo --out out/browser
           node tools/browser-smoke.cjs out/browser/site | tee out/browser/smoke.json

@@ -10,6 +10,7 @@ const hash = name => createHash('sha256').update(fs.readFileSync(path.join(dir, 
 require(path.join(dir, 'wasm_exec.js'));
 (async () => {
   const metadata = read('metadata.json');
+  const sharing = require(path.join(dir, 'share.js'));
   assert.equal(hash('demo.wasm'), metadata.wasm_sha256);
   assert.equal(hash('generated.go'), metadata.generated_sha256);
   assert.equal(hash('execution.json'), metadata.execution_sha256);
@@ -21,7 +22,11 @@ require(path.join(dir, 'wasm_exec.js'));
   assert.equal(globalThis.goooReady, true);
   const fixture = read('fixtures.json');
   for (const row of fixture.cases) {
-    const actual = JSON.parse(globalThis.goooRun(row.operation, ...row.inputs));
+    const shared = sharing.parse(sharing.format({ operation: row.operation, inputs: row.inputs,
+      wasm: metadata.wasm_sha256, revision: metadata.source_revision }));
+    assert.equal(shared.operation, row.operation);
+    assert.deepEqual(shared.inputs, row.inputs);
+    const actual = JSON.parse(globalThis.goooRun(shared.operation, ...shared.inputs));
     assert.equal(actual.ok, true, JSON.stringify(row));
     assert.equal(actual.operation, row.operation);
     assert.deepEqual(actual.inputs, row.inputs);
@@ -34,6 +39,7 @@ require(path.join(dir, 'wasm_exec.js'));
     assert.equal(JSON.parse(globalThis.goooRun(...args)).ok, false);
   }
   console.log(JSON.stringify({schema:'gooo/browser-smoke/v1', cases:fixture.cases.length,
-    rejected:fixture.rejections.length + 4, wasm_sha256:metadata.wasm_sha256, status:'PASS'}));
+    shared_inputs:fixture.cases.length, rejected:fixture.rejections.length + 4,
+    wasm_sha256:metadata.wasm_sha256, status:'PASS'}));
   process.exit(0);
 })().catch(error => { console.error(error); process.exit(1); });

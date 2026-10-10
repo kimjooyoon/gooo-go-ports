@@ -424,6 +424,46 @@ input {
   color: var(--muted)
 }
 
+.share-actions {
+  margin-top: 14px
+}
+
+.share-actions .text-button {
+  font-size: 11px
+}
+
+.share-status {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--green);
+  padding: 10px 12px;
+  background: #e7f0e4;
+  border-radius: 4px
+}
+
+.share-status.error {
+  color: var(--error);
+  background: #f6eae1
+}
+
+.share-reset {
+  margin: 0 0 18px
+}
+
+#share-fallback {
+  margin-top: 12px
+}
+
+#share-url {
+  width: 100%;
+  resize: vertical;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  font: 11px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace
+}
+
 .result-panel {
   padding: 29px 31px 22px;
   background: linear-gradient(145deg, #f8faf3, #f0f4ec);

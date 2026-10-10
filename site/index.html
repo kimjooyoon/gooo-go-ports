@@ -8,6 +8,7 @@
   <title>Try real Gooo ports</title>
   <link rel="stylesheet" href="./style.css">
   <script defer src="./wasm_exec.js"></script>
+  <script defer src="./share.js"></script>
   <script defer src="./app.js"></script>
 </head>
 <body>
@@ -45,6 +46,8 @@
 
         <div class="workbench-body">
           <form id="run-form" class="controls" novalidate>
+            <p id="share-status" class="share-status" role="status" hidden></p>
+            <button id="share-reset" class="text-button share-reset" type="button" hidden>Start with an example</button>
             <label for="operation">Function</label>
             <div class="select-wrap">
               <select id="operation" name="operation">
@@ -89,6 +92,13 @@
             <div class="run-actions">
               <button id="run-button" class="primary-button" type="submit" disabled>Run function <span aria-hidden="true">→</span></button>
               <span class="keyboard-hint">or press Enter</span>
+            </div>
+            <div class="share-actions">
+              <button id="share-button" class="text-button" type="button" disabled>Copy link to this input</button>
+              <div id="share-fallback" hidden>
+                <label for="share-url">Copy this link</label>
+                <textarea id="share-url" rows="3" readonly spellcheck="false"></textarea>
+              </div>
             </div>
           </form>
 

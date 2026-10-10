@@ -22,6 +22,77 @@
   let busy = false;
   let checksRunning = false;
   let metadata = null;
+  let metadataSettled = false;
+  let loadedWasmHash = null;
+  let sharedInput = null;
+  let sharedPending = false;
+  let shareBlocked = false;
+  let lastFragment = null;
+  let shareGeneration = 0;
+
+  function shareNotice(message, error = false) {
+    $('share-status').textContent = message;
+    $('share-status').hidden = !message;
+    $('share-status').className = `share-status${error ? ' error' : ''}`;
+  }
+
+  function forgetSharedInput() {
+    shareGeneration++;
+    sharedInput = null;
+    sharedPending = false;
+    shareBlocked = false;
+    $('share-reset').hidden = true;
+    $('share-fallback').hidden = true;
+    shareNotice('');
+    if (window.location.hash.startsWith('#gooo-share')) {
+      const url = new URL(window.location.href);
+      url.hash = '';
+      window.history.replaceState(null, '', url.href);
+    }
+    lastFragment = window.location.hash;
+    updateButtons();
+  }
+
+  function readSharedInput() {
+    if (lastFragment === window.location.hash) return;
+    lastFragment = window.location.hash;
+    shareGeneration++;
+    sharedInput = null;
+    sharedPending = false;
+    shareBlocked = false;
+    $('share-reset').hidden = true;
+    $('share-fallback').hidden = true;
+    shareNotice('');
+    try {
+      sharedInput = window.GoooShare.parse(window.location.hash);
+      if (sharedInput) {
+        selectOperation(sharedInput.operation, false);
+        $('first-input').value = sharedInput.inputs[0];
+        $('second-input').value = sharedInput.inputs[1];
+        sharedPending = true;
+        shareNotice('Shared input loaded. Waiting for the program…');
+        maybeRunSharedInput();
+      }
+    } catch (error) {
+      shareBlocked = true;
+      clearResult();
+      shareNotice(`This shared input cannot be opened. ${error.message}`, true);
+      $('share-reset').hidden = false;
+    }
+    updateButtons();
+  }
+
+  function maybeRunSharedInput() {
+    if (!sharedPending || !ready || !metadataSettled || busy || checksRunning) return;
+    sharedPending = false; // Consume this request before invoking any program.
+    if (!metadata || !loadedWasmHash || loadedWasmHash !== metadata.wasm_sha256) {
+      shareNotice('The shared input is ready, but this program’s version could not be verified. Press Run function to use the current program.');
+    } else if (sharedInput.wasm !== loadedWasmHash) {
+      shareNotice('This link used a different version of the program. Your inputs are ready; press Run function to use the current version.');
+    } else if (runCurrentInput()) {
+      shareNotice('Shared input ran in this browser.');
+    }
+  }
 
   function setRuntime(message, state) {
     $('runtime-message').textContent = message;
@@ -30,8 +101,9 @@
   }
 
   function updateButtons() {
-    $('run-button').disabled = !ready || busy || checksRunning;
+    $('run-button').disabled = !ready || busy || checksRunning || shareBlocked;
     $('checks-button').disabled = !ready || busy || checksRunning;
+    $('share-button').disabled = !ready || busy || checksRunning || shareBlocked || !metadata || !loadedWasmHash || loadedWasmHash !== metadata.wasm_sha256;
     $('run-button').firstChild.textContent = busy ? 'Running… ' : 'Run function ';
     $('checks-button').firstChild.textContent = checksRunning ? 'Checking… ' : 'Run reference checks ';
   }
@@ -179,30 +251,67 @@
     $('raw-result').hidden = false;
   }
 
-  $('run-form').addEventListener('submit', (event) => {
-    event.preventDefault();
-    if (!ready || busy || checksRunning) return;
+  function runCurrentInput() {
+    if (!ready || busy || checksRunning || shareBlocked) return false;
     clearResult();
     const name = $('operation').value;
     const inputs = [$('first-input').value, operations[name].second ? $('second-input').value : '0'];
-    if (inputs.some((value) => !/^(?:0|[1-9][0-9]*|-[1-9][0-9]*)$/.test(value))) {
-      showError('Enter a decimal integer, such as 0, -1, or 404. Do not add spaces, a plus sign, or leading zeros. Use 0 rather than -0.');
-      return;
-    }
     busy = true;
     updateButtons();
     try {
+      window.GoooShare.validateInputs(name, inputs);
       const result = invoke(name, inputs);
       if (!result.ok) showError(result.error);
       else showResult(result);
+      return result.ok;
     } catch (error) { showError(error.message); }
     finally { busy = false; updateButtons(); }
+    return false;
+  }
+
+  $('run-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    sharedPending = false;
+    if (runCurrentInput() && sharedInput) {
+      shareNotice(loadedWasmHash && sharedInput.wasm !== loadedWasmHash
+        ? 'Shared input ran with the current program. This link originally used a different version.'
+        : 'Shared input ran with the current program.');
+    }
   });
 
-  $('operation').addEventListener('change', () => selectOperation($('operation').value));
-  $('first-input').addEventListener('input', clearResult);
-  $('second-input').addEventListener('input', clearResult);
-  document.querySelectorAll('[data-scenario]').forEach((button) => button.addEventListener('click', () => selectOperation(scenarios[button.dataset.scenario])));
+  $('share-button').addEventListener('click', async () => {
+    if ($('share-button').disabled) return;
+    $('share-fallback').hidden = true;
+    const generation = ++shareGeneration;
+    try {
+      const name = $('operation').value;
+      const inputs = [$('first-input').value, operations[name].second ? $('second-input').value : '0'];
+      const url = new URL(window.location.href);
+      url.hash = window.GoooShare.format({ operation: name, inputs, wasm: metadata.wasm_sha256, revision: metadata.source_revision });
+      try {
+        if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') throw new Error('Clipboard unavailable');
+        await navigator.clipboard.writeText(url.href);
+        if (generation !== shareGeneration) return;
+        shareNotice('Link copied. It opens this input in the recipient’s browser.');
+      } catch {
+        if (generation !== shareGeneration) return;
+        $('share-url').value = url.href;
+        $('share-fallback').hidden = false;
+        $('share-url').focus();
+        $('share-url').select();
+        shareNotice('Copy the selected link below to share this input.');
+      }
+    } catch (error) { shareNotice(`This input cannot be shared. ${error.message}`, true); }
+  });
+
+  $('operation').addEventListener('change', () => { forgetSharedInput(); selectOperation($('operation').value); });
+  $('first-input').addEventListener('input', () => { forgetSharedInput(); clearResult(); });
+  $('second-input').addEventListener('input', () => { forgetSharedInput(); clearResult(); });
+  document.querySelectorAll('[data-scenario]').forEach((button) => button.addEventListener('click', () => {
+    forgetSharedInput(); selectOperation(scenarios[button.dataset.scenario]);
+  }));
+  $('share-reset').addEventListener('click', () => { forgetSharedInput(); selectOperation(scenarios.http); });
+  window.addEventListener('hashchange', readSharedInput);
   $('reload-button').addEventListener('click', () => window.location.reload());
 
   $('checks-button').addEventListener('click', async () => {
@@ -259,7 +368,7 @@
     } catch (error) {
       status.className = 'checks-status error';
       status.textContent = `${error.message} Completed: ${passed} / ${compared} reference matches; ${rejected} / ${rejectionChecks} expected rejections. The check run is incomplete.`;
-    } finally { checksRunning = false; updateButtons(); }
+    } finally { checksRunning = false; updateButtons(); maybeRunSharedInput(); }
   });
 
   async function loadMetadata() {
@@ -267,7 +376,7 @@
       const response = await fetch('./metadata.json');
       if (!response.ok) throw new Error('Build metadata could not be loaded.');
       const data = await response.json();
-      if (!data || !/^[a-f0-9]{40}$/.test(data.compiler_revision) || !/^[a-f0-9]{40}$/.test(data.source_revision) || typeof data.compiler_version !== 'string' || typeof data.go_version !== 'string') throw new Error('Build metadata is incomplete.');
+      if (!data || !/^[a-f0-9]{40}$/.test(data.compiler_revision) || !/^[a-f0-9]{40}$/.test(data.source_revision) || !/^[a-f0-9]{64}$/.test(data.wasm_sha256) || typeof data.compiler_version !== 'string' || typeof data.go_version !== 'string') throw new Error('Build metadata is incomplete.');
       metadata = data;
       $('compiler-link').textContent = `${data.compiler_version} · ${data.compiler_revision.slice(0, 8)}`;
       $('compiler-link').href = `https://github.com/kimjooyoon/meta-ontology-go/tree/${data.compiler_revision}`;
@@ -279,6 +388,10 @@
       setSourceLink();
     } catch (error) {
       $('metadata-status').textContent = `${error.message} The downloadable evidence links remain below.`;
+    } finally {
+      metadataSettled = true;
+      updateButtons();
+      maybeRunSharedInput();
     }
   }
 
@@ -289,11 +402,12 @@
       const go = new window.Go();
       const response = await fetch('./demo.wasm');
       if (!response.ok) throw new Error(`The WebAssembly program could not be loaded (HTTP ${response.status}).`);
-      let loaded;
-      if (typeof WebAssembly.instantiateStreaming === 'function') {
-        try { loaded = await WebAssembly.instantiateStreaming(response.clone(), go.importObject); }
-        catch { loaded = await WebAssembly.instantiate(await response.arrayBuffer(), go.importObject); }
-      } else { loaded = await WebAssembly.instantiate(await response.arrayBuffer(), go.importObject); }
+      const bytes = await response.arrayBuffer();
+      if (globalThis.crypto && globalThis.crypto.subtle) {
+        const digest = await globalThis.crypto.subtle.digest('SHA-256', bytes);
+        loadedWasmHash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+      }
+      const loaded = await WebAssembly.instantiate(bytes, go.importObject);
       let runtimeError = null;
       Promise.resolve(go.run(loaded.instance)).then(() => {
         runtimeError = new Error('The WebAssembly runtime stopped. Reload to try again.');
@@ -316,6 +430,7 @@
       ready = true;
       updateButtons();
       setRuntime('WebAssembly ready', 'ready');
+      maybeRunSharedInput();
     } catch (error) {
       ready = false;
       updateButtons();
@@ -323,6 +438,7 @@
     }
   }
 
+  readSharedInput();
   loadMetadata();
   loadRuntime();
 })();

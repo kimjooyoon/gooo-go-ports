@@ -177,7 +177,7 @@ func run() error {
 	if err := copyFile(filepath.Join(runtime.GOROOT(), "lib/wasm/wasm_exec.js"), filepath.Join(site, "wasm_exec.js")); err != nil {
 		return err
 	}
-	for _, name := range []string{"index.html", "app.js", "style.css"} {
+	for _, name := range []string{"index.html", "app.js", "share.js", "style.css"} {
 		if err := copyFile(filepath.Join("site", name), filepath.Join(site, name)); err != nil {
 			return err
 		}

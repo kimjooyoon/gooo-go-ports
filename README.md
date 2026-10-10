@@ -15,6 +15,9 @@ not a complete Go package implementation or an official Google/Go project.
 without installing a compiler. It executes a precompiled Gooo program as WebAssembly;
 it is not an editor for compiling arbitrary source. The page includes the Gooo source,
 unmodified generated Go, execution receipts, and an optional reference-check button.
+Use **Copy link to this input** to share an exact function input. Opening a link runs
+it once in the recipient's browser when the compiled program matches; a changed program
+restores the inputs and waits for **Run function**. Links carry inputs, not trusted results.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
 현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수 함수 13개를 제공합니다.
@@ -53,12 +56,20 @@ HTTP 서버나 UTF 인코딩 패키지 전체의 이식은 아닙니다.
 HTTP 입력은 int64, rune 입력은 int32, byte 입력은 0..255로 제한하며 범위 밖 입력을 거부합니다.
 JavaScript Number를 거치지 않고 십진수 문자열로 전달합니다.
 
+**Copy link to this input**으로 함수와 입력을 공유할 수 있습니다. 같은 프로그램이면
+받는 브라우저에서 한 번 실행하고, 프로그램이 달라졌으면 입력을 복원한 뒤 Run을 기다립니다.
+링크에는 입력 문자열, Wasm SHA-256, 원본 리비전만 담으며 결과를 저장하지 않습니다.
+README만 바뀌어도 Wasm이 같으면 실행할 수 있습니다. 잘못된 링크는 실행을 막고
+새 예제로 돌아갈 수 있게 표시합니다. 클립보드가 차단되면 복사할 링크를 화면에 보여줍니다.
+일반 `#workbench` 링크는 유지하며 공유 링크는 별도 `#gooo-share?v=1&...` 형식입니다.
+
 데모를 재현하려면 Go 1.27.2와 Node.js 22 이상을 사용합니다.
 
 ```sh
 ./tools/bootstrap.sh
 go run ./cmd/build-demo --out out/browser
 node tools/browser-smoke.cjs out/browser/site
+node --test tools/share-link.test.cjs tools/share-app.test.cjs
 python3 -m http.server 8766 --bind 127.0.0.1 --directory out/browser/site
 ```
 
