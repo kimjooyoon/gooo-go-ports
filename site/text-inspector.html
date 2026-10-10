@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Inspect pasted text one Unicode code point at a time using compiled Gooo ports of Go’s whitespace and UTF encoding functions.">
+  <meta name="theme-color" content="#f5f3eb">
+  <title>Unicode text inspector — Gooo ports</title>
+  <link rel="canonical" href="https://kimjooyoon.github.io/gooo-go-ports/text-inspector.html">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./text-inspector.css">
+  <script defer src="./text-inspector-protocol.js"></script>
+  <script defer src="./text-input.js"></script>
+  <script defer src="./text-inspector.js"></script>
+</head>
+<body class="text-inspector-page">
+  <a class="skip-link" href="#text-form">Skip to text input</a>
+  <div class="page-shell">
+    <header class="masthead">
+      <a class="wordmark" href="https://github.com/kimjooyoon/meta-ontology-go" aria-label="Gooo language on GitHub">gooo<span class="wordmark-dot" aria-hidden="true">.</span></a>
+      <span class="masthead-caption">The Go ports lab / experimental</span>
+      <nav class="repository-links" aria-label="Related pages">
+        <a class="text-link" href="./">Function demo</a>
+        <a class="text-link" href="https://github.com/kimjooyoon/meta-ontology-go">Gooo language ↗</a>
+      </nav>
+    </header>
+    <main>
+      <section class="text-intro" aria-labelledby="text-title">
+        <p class="eyebrow">UNICODE / COMPILED GOOO</p>
+        <h1 id="text-title">What’s in this text?</h1>
+        <p>Paste a short piece of text to inspect each code point’s Go whitespace membership and encoding lengths.</p>
+        <p class="text-runtime" id="text-runtime" role="status">Loading the WebAssembly worker…</p>
+        <button id="text-retry" class="text-button" type="button" hidden>Retry loading</button>
+      </section>
+
+      <section class="text-workbench" aria-label="Text input and exact preview">
+        <form id="text-form" novalidate>
+          <label for="text-mode">Input format</label>
+          <select id="text-mode">
+            <option value="text">Text</option>
+            <option value="json">JSON string — explicit escapes</option>
+          </select>
+          <label id="text-capture-label" for="text-capture">Type or paste text</label>
+          <textarea id="text-capture" rows="4" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="text-capture-help text-limits text-input-status" placeholder="Paste text here, or try an example below"></textarea>
+          <p id="text-capture-help" class="text-help">Pasting or dropping replaces the whole input and clears this box. Typing afterward starts a new input. Typed line breaks follow the browser’s editor behavior.</p>
+          <p id="text-limits" class="text-help">This browser view accepts up to 256 decoded items and 512 UTF-16 code units. Longer input is rejected in full. These are interface limits, not limits of the underlying functions.</p>
+          <p id="text-json-limit" class="text-help" hidden>Use one JSON string with double quotes, for example <code>"A\r\n\uD800"</code>. JSON notation is limited to 4,096 characters before decoding.</p>
+          <div class="text-presets" role="group" aria-label="Text examples">
+            <button type="button" data-text-preset="mixed">Spaces + CRLF + emoji</button>
+            <button type="button" data-text-preset="boundaries">NEL + BOM</button>
+            <button type="button" data-text-preset="combined">Combining + joined text</button>
+            <button type="button" data-text-preset="surrogates">Lone surrogates (JSON)</button>
+          </div>
+          <div class="text-actions">
+            <button id="text-run" class="primary-button" type="submit" disabled>Inspect text <span aria-hidden="true">→</span></button>
+            <button id="text-clear" class="text-button" type="button">Clear</button>
+            <button id="text-cancel" class="text-button" type="button" hidden>Cancel inspection</button>
+          </div>
+          <p id="text-input-status" class="text-input-status" role="status">Enter text or choose an example.</p>
+        </form>
+        <section class="text-snapshot" aria-labelledby="text-preview-title">
+          <h2 id="text-preview-title">Exact input preview</h2>
+          <p class="text-help">Each <code>\uXXXX</code> represents one received UTF-16 code unit. A valid surrogate pair becomes one result row; CR and LF remain separate rows.</p>
+          <pre id="text-preview" tabindex="0" aria-label="Input as escaped UTF-16 code units">No input yet.</pre>
+          <p id="text-source" class="text-help">This view reads the text delivered by your browser. A source app or clipboard may have transformed it before delivery.</p>
+          <p class="text-help">Inspection happens locally. Your text is not put in a URL, sent to a server, or saved in browser storage.</p>
+        </section>
+      </section>
+
+      <section class="text-results" aria-labelledby="text-results-title">
+        <div class="text-results-heading">
+          <h2 id="text-results-title">Code point results</h2>
+          <p id="text-progress" role="status">Not inspected.</p>
+        </div>
+        <progress id="text-progress-bar" value="0" max="1" hidden aria-label="Text inspection progress"></progress>
+        <p id="text-result-error" class="text-error" role="alert" hidden></p>
+        <p id="text-summary" class="text-summary" hidden></p>
+        <div id="text-table-wrap" hidden>
+          <table class="text-table">
+            <caption>One row per UTF-16-decoded code point, including unpaired surrogate values. Combining marks and joined sequences have multiple rows.</caption>
+            <thead><tr>
+              <th scope="col">Item / UTF-16 offset</th>
+              <th scope="col">Received code units</th>
+              <th scope="col">Code point</th>
+              <th scope="col">Valid scalar</th>
+              <th scope="col">Go White_Space</th>
+              <th scope="col">UTF-8 bytes</th>
+              <th scope="col">UTF-16 encoded units</th>
+            </tr></thead>
+            <tbody id="text-rows"></tbody>
+          </table>
+        </div>
+        <p class="text-help">Offsets start at zero in the received UTF-16 sequence. Encoding lengths come from Go’s RuneLen functions: <code>−1</code> means the value cannot be encoded as a Unicode scalar. A lone surrogate occupies one received code unit but has encoding length <code>−1</code>.</p>
+        <p class="text-help">Go White_Space membership does not describe how a character looks. This view reports code points, not user-perceived character boundaries.</p>
+      </section>
+      <section class="text-method" aria-labelledby="text-method-title">
+        <h2 id="text-method-title">Four Gooo calls for each row.</h2>
+        <p>The browser decodes its UTF-16 input and passes each decimal value to the existing compiled <code>utf8.ValidRune</code>, <code>unicode.IsSpace</code>, <code>utf8.RuneLen</code> and <code>utf16.RuneLen</code> ports. A dedicated worker runs the same WebAssembly program as the <a href="./">function demo</a>. No arbitrary text is passed to a Gooo string-processing function.</p>
+        <p id="text-program" class="text-help">Program identity will appear after loading.</p>
+      </section>
+    </main>
+    <footer><span>Gooo / Go ports lab</span><a href="https://github.com/kimjooyoon/gooo-go-ports">Read the port source ↗</a></footer>
+  </div>
+</body>
+</html>

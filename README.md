@@ -37,6 +37,15 @@ The native [whitespace inspector](examples/whitespace-inspector/README.md) also 
 scalar validity, ASCII whitespace membership, and UTF-8/UTF-16 lengths.
 This classification does not determine whether a character is visible or safe.
 
+The [Unicode text inspector](https://kimjooyoon.github.io/gooo-go-ports/text-inspector.html)
+combines four existing compiled Gooo functions for a whole pasted input. It shows
+each code point's original UTF-16 position, scalar validity, Go whitespace
+membership, and UTF-8 / UTF-16 encoding lengths. CR and LF remain separate;
+combining and joined sequences are shown as their constituent code points.
+The browser decodes the received UTF-16 text and displays the Gooo results.
+This is a browser application using existing ports, not a new Gooo string API.
+See [input handling, limits, and verification](docs/text-inspector.md).
+
 For a fixed snapshot, download [experimental release v0.1.0-preview.2](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.2).
 It includes separate source, native execution/replay evidence, and standalone browser
 archives, with licenses, provenance, and checksums. Downloads do not require a GitHub

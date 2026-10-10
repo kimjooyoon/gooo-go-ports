@@ -155,7 +155,7 @@ func run() error {
 	if err := copyFile(filepath.Join(runtime.GOROOT(), "lib/wasm/wasm_exec.js"), filepath.Join(site, "wasm_exec.js")); err != nil {
 		return err
 	}
-	for _, name := range []string{"index.html", "app.js", "share.js", "codepoint.js", "style.css"} {
+	for _, name := range []string{"index.html", "app.js", "share.js", "codepoint.js", "style.css", "text-inspector.html", "text-inspector.js", "text-inspector.css", "text-input.js", "text-inspector-worker.js", "text-inspector-protocol.js"} {
 		if err := copyFile(filepath.Join("site", name), filepath.Join(site, name)); err != nil {
 			return err
 		}
@@ -166,6 +166,10 @@ func run() error {
 		}
 	}
 	_, err = command(ctx, nil, "go", "run", "./cmd/verify", "--browser-fixtures", filepath.Join(site, "fixtures.json"))
+	if err != nil {
+		return err
+	}
+	_, err = command(ctx, nil, "go", "run", "./cmd/text-inspector-fixtures", "--out", filepath.Join(site, "text-inspector-fixtures.json"))
 	if err != nil {
 		return err
 	}

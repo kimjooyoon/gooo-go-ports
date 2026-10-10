@@ -349,10 +349,11 @@ jobs:
           node-version: '22'
       - name: Build the actual Gooo composition for the browser
         run: |
-          node --test tools/share-link.test.cjs tools/share-app.test.cjs
+          node --test tools/*.test.cjs
           sh tools/bootstrap.sh
           go run ./cmd/build-demo --out out/browser
           node tools/browser-smoke.cjs out/browser/site | tee out/browser/smoke.json
+          node tools/text-inspector-smoke.cjs out/browser/site | tee out/browser/text-inspector-smoke.json
         shell: bash --noprofile --norc -e -o pipefail {0}
       - name: Preserve the tested site and provenance
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
