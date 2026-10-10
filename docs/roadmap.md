@@ -16,6 +16,7 @@
 | 2c | `math/bits.RotateLeft8`와 [바이트 회전 검사 앱](../examples/byte-rotation/README.md) | byte × signed int64 입력 보존, 정규화된 2,048쌍과 원래 회전 수의 경계·표본 비교, 복원·1비트 개수 확인, 브라우저 입력·공유 |
 | 2d | `time.Duration.Round`·`Truncate`와 [시간 간격 조정 앱](../examples/duration-quantizer/README.md) | 원래 두 signed int64 나노초 입력 보존, 음수 중간값·0 이하 단위·포화 경계·큰 정수의 독립 Go 비교와 저장 재실행, 브라우저의 정확한 입력·공유 |
 | 2e | `unicode.IsSpace`와 [공백 검사 앱](../examples/whitespace-inspector/README.md) | Unicode 17.0.0 White_Space 25개 값, Latin-1 전체·이웃·signed int32 경계·표본의 독립 Go 비교, 별도 int32 밖 계약과 저장 재실행. 브라우저 한 코드 포인트 입력에서 NEL·BOM 및 여러 코드 포인트 구분 |
+| 2f | `unicode.IsLetter`·`IsDigit`와 [식별자 문자 분류](../examples/identifier-rune/README.md) | Unicode 17.0.0 전체 범위·stride를 고정 원본에서 재생성, 실제 importing과 저장 재실행, 수정 없는 생성 Go로 0..U+10FFFF 전수 비교. int32 나머지는 별도 유한 검사 |
 | 3 | `strings.Index`/`Count`, UTF-8 순회 등 반복이 필요한 문자열 함수 조사 | `for`/`range`, 바이트 읽기, 루프 종료·입력 제한의 재현. Text 슬라이싱 지원만으로 문자열 전체 지원을 선언하지 않음 |
 | 4 | `encoding/hex`의 제한된 인코딩·디코딩부터 바이트 패키지 확장 | byte 배열/슬라이스, 출력 구성, 잘못된 문자와 길이에 대한 오류 계약, 비트 연산 또는 검증된 산술 표현 |
 | 5 | Google의 `google/uuid` 파싱·표시·버전/variant 부분 이식 | 원본 형식별 입력과 오류를 보존하고 16바이트 값을 표현할 타입, 반복, 인덱싱, hex 처리가 확보될 것 |

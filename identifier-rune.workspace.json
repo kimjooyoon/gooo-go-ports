@@ -1,0 +1,8 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {"package_path": "app/identifier-rune", "activity": "Classify"},
+  "packages": [
+    {"path": "go/unicode", "sources": ["ports/unicode/space.gooo", "ports/unicode/classification.gooo"]},
+    {"path": "app/identifier-rune", "sources": ["examples/identifier-rune/main.gooo"]}
+  ]
+}

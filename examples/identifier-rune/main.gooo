@@ -1,0 +1,19 @@
+// Classify one original rune for Go's lexical identifier character rules.
+// This does not validate a whole identifier, keywords, normalization or safety.
+package identifier_rune
+namespace gooo_ports_examples_identifier_rune
+import unicode "go/unicode"
+entity Integer id "gooo://std/integer"
+entity Classification id "gooo://go-ports/examples/identifier-rune/classification" fields {
+    field in_rune_domain id "gooo://go-ports/examples/identifier-rune/classification/in-rune-domain" type boolean required one
+    field can_start id "gooo://go-ports/examples/identifier-rune/classification/can-start" type boolean required one
+    field can_continue id "gooo://go-ports/examples/identifier-rune/classification/can-continue" type boolean required one
+    field is_decimal_digit id "gooo://go-ports/examples/identifier-rune/classification/is-decimal-digit" type boolean required one
+}
+activity Classify(Integer) -> Classification id "gooo://go-ports/examples/identifier-rune/classify" computes `if input < -2147483648 || input > 2147483647 {
+    return Classification{in_rune_domain: false, can_start: false, can_continue: false, is_decimal_digit: false}
+}
+let letter = unicode.IsLetter(input)
+let digit = unicode.IsDigit(input)
+let start = input == 95 || letter
+return Classification{in_rune_domain: true, can_start: start, can_continue: start || digit, is_decimal_digit: digit}`

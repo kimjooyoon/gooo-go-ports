@@ -102,6 +102,11 @@ func run() error {
 		return err
 	}
 	suites = append(suites, whitespace.Suites...)
+	classification, err := classificationCorpus()
+	if err != nil {
+		return err
+	}
+	suites = append(suites, classification.Suites...)
 	if *out == "" {
 		return fmt.Errorf("provide --out for a new evidence directory")
 	}
@@ -189,8 +194,14 @@ func run() error {
 		if s.Package == "go/unicode" {
 			batchSize = whitespacePortBatchSize
 		}
+		if s.Package == "go/unicode" && (s.Activity == "IsLetter" || s.Activity == "IsDigit") {
+			batchSize = classificationPortBatchSize
+		}
 		if s.Package == "app/whitespace-inspector" {
 			batchSize = whitespaceInspectorBatchSize
+		}
+		if s.Package == "app/identifier-rune" {
+			batchSize = classificationConsumerBatchSize
 		}
 		for start := 0; start < len(s.Cases); start += batchSize {
 			end := min(start+batchSize, len(s.Cases))
@@ -267,7 +278,7 @@ func run() error {
 	return save(filepath.Join(root, "summary.json"), map[string]any{
 		"schema": "gooo/go-ports-differential/v1", "go_version": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH,
 		"compiler_revision": lock.CompilerRevision, "source_sha256": sourceHashes,
-		"ported_functions": 19, "consumer_programs": 7, "consumer_activities": 8,
+		"ported_functions": 21, "consumer_programs": 8, "consumer_activities": 9,
 		"legacy_cases": legacyCases, "unicode_reference_cases": inspector.ReferenceCases, "unicode_rejection_cases": inspector.RejectionCases,
 		"color_port_reference_cases": colors.PortReferenceCases, "color_port_rejection_cases": colors.PortRejectionCases,
 		"color_consumer_reference_cases": colors.ConsumerReferenceCases, "color_consumer_rejection_cases": colors.ConsumerRejectionCases,
@@ -276,8 +287,10 @@ func run() error {
 		"duration_port_reference_cases": durations.PortReferenceCases, "duration_consumer_reference_cases": durations.ConsumerReferenceCases,
 		"whitespace_port_reference_cases": whitespace.PortReferenceCases, "whitespace_port_rejection_cases": whitespace.PortRejectionCases,
 		"whitespace_consumer_reference_cases": whitespace.ConsumerReferenceCases, "whitespace_consumer_rejection_cases": whitespace.ConsumerRejectionCases,
+		"classification_port_reference_cases": classification.PortReferenceCases, "classification_port_rejection_cases": classification.PortRejectionCases,
+		"classification_consumer_reference_cases": classification.ConsumerReferenceCases, "classification_consumer_rejection_cases": classification.ConsumerRejectionCases,
 		"cases": total, "passed": total, "runs": reports,
-		"scope": "Finite differential observations against pinned Go source, plus identical saved replay. The 14,093 existing cases are unchanged. Whitespace uses pinned Unicode 17.0.0 White_Space semantics over original signed int32 rune inputs; all 256 Latin-1 values and all 25 true property members are included, with other domains observed finitely. Outside-int32 false/-1 extensions are counted separately from Go-reference observations. Duration ports and their consumer preserve both signed int64 nanosecond inputs, including nonpositive quanta, and add finite Go-reference observations without domain-rejection extensions. Color and rotation port/consumer Go-reference cases and explicit out-of-byte rejection cases are counted separately. RuneStart and the five original unary math/bits functions each cover all 256 byte values exactly once, excluding out-of-domain inputs. RotateLeft8 covers all 2,048 byte/rotation pairs only for x=0..255 and k=0..7; other signed int64 rotations have finite boundary/sample observations with original inputs preserved. No claim of exhaustive equivalence for all rotations or other domains, input-independent execution time, whole-package compatibility, ICC color management, or printed appearance.",
+		"scope": "Finite differential observations against pinned Go source, plus identical saved replay. The 15,121 existing cases are unchanged. Classification adds complete pinned Letter and Digit table semantics over original signed int32 rune inputs, observed here only through finite range boundaries, stride holes, Latin-1 and deterministic samples. A separate check-unicode command exhaustively checks 0..0x10FFFF using the unmodified generated Go; its counts are not included in these receipt batches. Whitespace uses pinned Unicode 17.0.0 White_Space semantics over original signed int32 rune inputs; all 256 Latin-1 values and all 25 true property members are included, with other domains observed finitely. Outside-int32 false/-1 extensions are counted separately from Go-reference observations. Duration ports and their consumer preserve both signed int64 nanosecond inputs, including nonpositive quanta, and add finite Go-reference observations without domain-rejection extensions. Color and rotation port/consumer Go-reference cases and explicit out-of-byte rejection cases are counted separately. RuneStart and the five original unary math/bits functions each cover all 256 byte values exactly once, excluding out-of-domain inputs. RotateLeft8 covers all 2,048 byte/rotation pairs only for x=0..255 and k=0..7; other signed int64 rotations have finite boundary/sample observations with original inputs preserved. No claim of exhaustive equivalence for all rotations or other domains, input-independent execution time, whole-package compatibility, ICC color management, or printed appearance.",
 	})
 }
 func caseDocument(s suite) any {

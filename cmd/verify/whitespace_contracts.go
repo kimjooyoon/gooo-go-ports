@@ -22,8 +22,14 @@ type resultContract struct {
 // bind the record's semantic field IDs, order and values to independent Go output.
 func whitespaceResultContract(s suite) resultContract {
 	switch s.Package + ":" + s.Activity {
-	case "go/unicode:IsSpace":
+	case "go/unicode:IsSpace", "go/unicode:IsLetter", "go/unicode:IsDigit":
 		return resultContract{Entity: "gooo://std/boolean"}
+	case "app/identifier-rune:Classify":
+		const entity = "gooo://go-ports/examples/identifier-rune/classification"
+		return resultContract{Entity: entity, Fields: []recordFieldContract{
+			{"in_rune_domain", entity + "/in-rune-domain"}, {"can_start", entity + "/can-start"},
+			{"can_continue", entity + "/can-continue"}, {"is_decimal_digit", entity + "/is-decimal-digit"},
+		}}
 	case "app/whitespace-inspector:Inspect":
 		const entity = "gooo://go-ports/examples/whitespace-inspector/inspection"
 		return resultContract{Entity: entity, Fields: []recordFieldContract{

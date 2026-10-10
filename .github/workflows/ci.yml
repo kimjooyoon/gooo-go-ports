@@ -27,6 +27,8 @@ jobs:
           go vet ./...
           go test -race ./...
           python3 tools/bootstrap.test.py
+      - name: Check pinned Unicode table generation
+        run: go run ./cmd/gen-unicode --check
       - name: Build and identify the pinned compiler from a clean checkout
         run: |
           mkdir -p out
@@ -55,7 +57,7 @@ jobs:
             .schema == "gooo/go-ports-differential/v1" and
             .go_version == "go1.27.2" and
             .compiler_revision == "366ee6ef8f9d2b9b57331dfd26b6f908c0289851" and
-            .ported_functions == 19 and .consumer_programs == 7 and .consumer_activities == 8 and
+            .ported_functions == 21 and .consumer_programs == 8 and .consumer_activities == 9 and
             .legacy_cases == 3147 and .unicode_reference_cases == 334 and .unicode_rejection_cases == 12 and
             .color_port_reference_cases == 1300 and .color_port_rejection_cases == 56 and
             .color_consumer_reference_cases == 637 and .color_consumer_rejection_cases == 24 and
@@ -64,11 +66,15 @@ jobs:
             .duration_port_reference_cases == 3578 and .duration_consumer_reference_cases == 1789 and
             .whitespace_port_reference_cases == 506 and .whitespace_port_rejection_cases == 8 and
             .whitespace_consumer_reference_cases == 506 and .whitespace_consumer_rejection_cases == 8 and
-            .cases == 15121 and .passed == 15121 and
-            (.runs | length) == 27 and
-            ([.runs[].cases] | add) == 15121 and ([.runs[].batches] | add) == 182 and
+            .classification_port_reference_cases == 5043 and .classification_port_rejection_cases == 24 and
+            .classification_consumer_reference_cases == 4570 and .classification_consumer_rejection_cases == 12 and
+            .cases == 24770 and .passed == 24770 and
+            (.runs | length) == 30 and
+            ([.runs[].cases] | add) == 24770 and ([.runs[].batches] | add) == 295 and
             all(.runs[]; .passed == .cases and .replay_equal == true)
           ' out/ci/summary.json
+      - name: Exhaustively compare generated Unicode classifications
+        run: go run ./cmd/check-unicode --out out/unicode-exhaustive
       - name: Execute and replay the input-only importing example
         run: |
           ./.gooo package execute --json --inputs examples/inputs.json \

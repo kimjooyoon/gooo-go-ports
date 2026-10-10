@@ -1,0 +1,68 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "app/identifier-rune:Classify": 65
+    },
+    {
+      "app/identifier-rune:Classify": 95
+    },
+    {
+      "app/identifier-rune:Classify": 49
+    },
+    {
+      "app/identifier-rune:Classify": 233
+    },
+    {
+      "app/identifier-rune:Classify": 768
+    },
+    {
+      "app/identifier-rune:Classify": 178
+    },
+    {
+      "app/identifier-rune:Classify": 188
+    },
+    {
+      "app/identifier-rune:Classify": 8551
+    },
+    {
+      "app/identifier-rune:Classify": 1633
+    },
+    {
+      "app/identifier-rune:Classify": 44032
+    },
+    {
+      "app/identifier-rune:Classify": 66560
+    },
+    {
+      "app/identifier-rune:Classify": 120782
+    },
+    {
+      "app/identifier-rune:Classify": 917760
+    },
+    {
+      "app/identifier-rune:Classify": 128512
+    },
+    {
+      "app/identifier-rune:Classify": 55296
+    },
+    {
+      "app/identifier-rune:Classify": -1
+    },
+    {
+      "app/identifier-rune:Classify": 1114112
+    },
+    {
+      "app/identifier-rune:Classify": -2147483648
+    },
+    {
+      "app/identifier-rune:Classify": 2147483647
+    },
+    {
+      "app/identifier-rune:Classify": 4294967361
+    },
+    {
+      "app/identifier-rune:Classify": 9223372036854775807
+    }
+  ]
+}

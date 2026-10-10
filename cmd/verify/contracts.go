@@ -19,6 +19,9 @@ type activityContract struct {
 func nativeActivityContracts() map[string]activityContract {
 	i := integerEntity
 	return map[string]activityContract{
+		"go/unicode:IsLetter":                 {"ports/unicode/classification.gooo", "gooo://go/unicode/IsLetter", []string{i}},
+		"go/unicode:IsDigit":                  {"ports/unicode/classification.gooo", "gooo://go/unicode/IsDigit", []string{i}},
+		"app/identifier-rune:Classify":        {"examples/identifier-rune/main.gooo", "gooo://go-ports/examples/identifier-rune/classify", []string{i}},
 		"go/unicode:IsSpace":                  {"ports/unicode/space.gooo", "gooo://go/unicode/IsSpace", []string{i}},
 		"app/whitespace-inspector:Inspect":    {"examples/whitespace-inspector/main.gooo", "gooo://go-ports/examples/whitespace-inspector/inspect", []string{i}},
 		"go/time:DurationRound":               {"ports/time/duration.gooo", "gooo://go/time/Duration/Round", []string{i, i}},

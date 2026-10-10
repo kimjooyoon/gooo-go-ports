@@ -1,0 +1,58 @@
+package main
+
+import (
+    "encoding/json"
+    "os"
+    "runtime"
+    "testing"
+    "unicode"
+)
+
+// This separate test calls the unchanged composition's functions. Go owns only
+// the independent oracle and observation counters, never the ported behavior.
+func TestExhaustiveUnicode(t *testing.T) {
+    if runtime.Version() != "go1.27.2" || unicode.Version != "17.0.0" {
+        t.Fatal("wrong oracle identity")
+    }
+    check := func(x int64) {
+        t.Helper()
+        domain := x >= -2147483648 && x <= 2147483647
+        letter, digit := false, false
+        if domain {
+            letter, digit = unicode.IsLetter(rune(x)), unicode.IsDigit(rune(x))
+        }
+        if got := {{.Letter}}(x); got != letter { t.Fatalf("IsLetter(%d) = %v, want %v", x, got, letter) }
+        if got := {{.Digit}}(x); got != digit { t.Fatalf("IsDigit(%d) = %v, want %v", x, got, digit) }
+        start := domain && (x == 95 || letter)
+        result := {{.Entry}}(x)
+        if result.{{.InRuneDomain}} != domain || result.{{.CanStart}} != start || result.{{.CanContinue}} != (start || digit) || result.{{.IsDecimalDigit}} != digit {
+            t.Fatalf("Classify(%d) = %+v; want domain=%v start=%v continue=%v digit=%v", x, result, domain, start, start || digit, digit)
+        }
+    }
+    unicodeInputs := 0
+    for x := int64(0); x <= int64(unicode.MaxRune); x++ { check(x); unicodeInputs++ }
+    // These preserve original int32 values. They do not cover all other runes.
+    outside := []int64{-2147483648, -2147483647, -65536, -1, 1114112, 1114113, 2147483646, 2147483647}
+    for _, x := range outside { check(x) }
+    // Explicit Integer extensions: do not narrow these inputs to Go rune.
+    extensions := []int64{-9223372036854775807-1, -4294967231, -2147483649, 2147483648, 4294967296, 4294967361, 9223372036854775806, 9223372036854775807}
+    for _, x := range extensions { check(x) }
+    report := map[string]any{
+        "schema": "gooo/unicode-exhaustive-native/v1",
+        "go_version": runtime.Version(), "unicode_version": unicode.Version,
+        "unicode_range_inputs": unicodeInputs,
+        "exhaustive_port_comparisons": unicodeInputs * 2,
+        "exhaustive_consumer_field_comparisons": unicodeInputs * 4,
+        "outside_unicode_range_int32_samples": len(outside),
+        "outside_unicode_range_port_comparisons": len(outside) * 2,
+        "outside_unicode_range_consumer_field_comparisons": len(outside) * 4,
+        "outside_int32_extension_samples": len(extensions),
+        "extension_port_observations": len(extensions) * 2,
+        "extension_consumer_field_observations": len(extensions) * 4,
+        "mismatches": 0,
+    }
+    path := os.Getenv("CHECK_UNICODE_REPORT")
+    if path == "" { t.Fatal("CHECK_UNICODE_REPORT is required") }
+    raw, err := json.MarshalIndent(report, "", "  "); if err != nil { t.Fatal(err) }
+    if err := os.WriteFile(path, append(raw, '\n'), 0644); err != nil { t.Fatal(err) }
+}

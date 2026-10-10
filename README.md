@@ -4,7 +4,7 @@
 describing what programs should do and inspecting how they are built and run.
 This independent ecosystem project implements selected Go standard-library functions in Gooo,
 with independent Go reference outputs and saved replay. The current scope is
-19 HTTP, Unicode, 8-bit integer, color-conversion, and duration functions, seven native importing examples,
+21 HTTP, Unicode, 8-bit integer, color-conversion, and duration functions, eight native importing examples,
 and an importing browser dispatcher.
 Use Go 1.27.2, Git, and a POSIX shell on macOS or Linux: run `./tools/bootstrap.sh`, then
 `go run ./cmd/verify --out out/first` from this repository. The output directory must be new.
@@ -14,7 +14,7 @@ Color ports and their consumer add separate reference and rejection cases, detai
 Other domains use finite boundary cases and samples. This is an independent experimental port,
 not a complete Go package implementation or an official Google/Go project.
 
-[Try the browser demo](https://kimjooyoon.github.io/gooo-go-ports/) to run all 19 HTTP, Unicode, byte, color, and duration functions
+[Try the browser demo](https://kimjooyoon.github.io/gooo-go-ports/) to run 19 HTTP, Unicode, byte, color, and duration functions
 without installing a compiler. It executes a precompiled Gooo program as WebAssembly;
 it is not an editor for compiling arbitrary source. The page includes the Gooo source,
 unmodified generated Go, execution receipts, and an optional reference-check button.
@@ -48,6 +48,12 @@ values and program version for a bug report or test case.
 This is a browser application using existing ports, not a new Gooo string API.
 See [input handling, limits, and verification](docs/text-inspector.md).
 
+The native [identifier character classifier](examples/identifier-rune/README.md) adds
+complete Unicode `IsLetter` and `IsDigit` ports. It distinguishes letters, decimal
+digits and underscore for one identifier character. A reproducible generator
+preserves every pinned range and stride; these two ports are available in native
+Gooo workspaces. The browser dispatcher continues to expose its existing 19 functions.
+
 For a fixed snapshot, download [experimental release v0.1.0-preview.2](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.2).
 It includes separate source, native execution/replay evidence, and standalone browser
 archives, with licenses, provenance, and checksums. Downloads do not require a GitHub
@@ -59,7 +65,7 @@ with the page URL or command and what happened. A working demo or shared input l
 is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수·색상 변환·시간 간격 함수 19개를 제공합니다.
+현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수·색상 변환·시간 간격 함수 21개를 제공합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -72,6 +78,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | Gooo 패키지 경로 | 함수 | 원본과의 대응 |
 | --- | --- | --- |
 | `go/net/http` | `StatusText` | Go의 상태 코드 62개와 설명. 미등록 코드는 빈 문자열 |
+| `go/unicode` | `IsLetter`, `IsDigit` | Unicode 17.0.0 전체 Letter(L)·decimal digit(Nd) 범위와 stride 보존. 원본 표에서 결정적으로 Gooo 분기 생성 |
 | `go/unicode` | `IsSpace` | Unicode 17.0.0 White_Space 속성의 25개 코드 포인트 판정. 전체 signed int32 rune 입력 유지 |
 | `go/unicode/utf8` | `ValidRune`, `RuneLen` | Unicode 유효 코드 포인트 판정과 UTF-8 바이트 수 |
 | `go/unicode/utf8` | `RuneStart` | 0..255의 바이트가 continuation byte가 아닌지 판정. 전체 문자열 유효성 검사는 아님 |
@@ -85,7 +92,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 원본의 `rune` 입력은 int32 범위를 Gooo Integer로 전달합니다. `byte` 호환 범위는
 0..255입니다. 묵시적으로 정수 폭을 줄이지 않습니다. `RuneStart`의 범위 밖 입력은
 Gooo 확장 동작으로 false를 반환하지만 원본과의 동등성 집계에는 넣지 않습니다.
-`IsSpace`도 int32 밖의 정수는 별도 확장 계약으로 false를 반환합니다. int32 안의 음수,
+`IsSpace`, `IsLetter`, `IsDigit`도 int32 밖의 정수는 별도 확장 계약으로 false를 반환합니다. int32 안의 음수,
 서로게이트, Unicode 최댓값보다 큰 수는 원본 API 입력이며 결과는 false입니다.
 NEL(U+0085)은 공백이고 BOM(U+FEFF)·ZERO WIDTH SPACE(U+200B)는 공백이 아닙니다.
 JavaScript의 `\s`·`trim`과는 다른 판정이며, 보이지 않는 문자 전체를 탐지하지 않습니다.
@@ -287,8 +294,9 @@ manifest 기준 상대 파일 경로를 등록합니다. import 자체가 패키
 바이트 회전 포트는 원본 비교 **2,472건**·거부 **36건**, 회전 소비 앱은 원본 비교 **672건**·
 거부 **36건**을 추가한 **8,726건**도 유지합니다. 시간 간격 두 포트의 원본 비교
 **3,578건**, 소비 앱 **1,789건**을 더한 **14,093건**도 유지합니다. 공백 포트와 소비 앱은
-각각 원본 비교 **506건**·int32 밖 확장 **8건**을 추가해 전체 native 검사는 **15,121건**,
-이식 함수는 **19개**입니다. 시간 간격은 두 입력의 전체 int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
+각각 원본 비교 **506건**·int32 밖 확장 **8건**을 추가한 **15,121건**도 유지합니다.
+문자·숫자 분류 두 포트는 원본 비교 **5,043건**·int32 밖 확장 **24건**, 식별자 문자 소비 앱은
+원본 비교 **4,570건**·확장 **12건**을 추가해 전체 native 검사는 **24,770건**, 이식 함수는 **21개**입니다. 시간 간격은 두 입력의 전체 int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
 기존 영역 밖 거부 사례는 Go 동등성 집계가 아닙니다.
 
 | 대상 | 입력 수 | 구성 |
@@ -312,9 +320,19 @@ manifest 기준 상대 파일 경로를 등록합니다. import 자체가 패키
 | Duration quantizer Inspect consumer | 1,789 | 같은 원래 입력으로 반올림·절삭·변경량·나머지 레코드 비교 |
 | unicode.IsSpace | 506 + 8 | Latin-1 전체, 참인 25개 값과 이웃, 혼동하기 쉬운 문자·int32 경계·고정 표본, 별도 int32 밖 확장 |
 | Whitespace Inspect consumer | 506 + 8 | 같은 입력으로 rune 영역·스칼라·Go 및 ASCII 공백·UTF 길이 레코드 비교 |
+| unicode.IsLetter | 4,128 + 12 | Latin-1 전체·647범위의 양끝·이웃·stride 멤버와 구멍·원래 int32 경계·표본, 별도 확장 |
+| unicode.IsDigit | 915 + 12 | Latin-1 전체·72범위의 양끝·이웃·Nd와 다른 숫자 구분·경계·표본, 별도 확장 |
+| Identifier rune Classify consumer | 4,570 + 12 | 두 포트 입력 합집합으로 식별자 시작·계속 문자·decimal digit과 rune 영역 레코드 비교 |
 
-Gooo 실행 입력 상한에 맞춰 총 182개 배치를 실행합니다. 기존 168개 배치를 유지하고,
-공백 포트·소비 앱의 14개 배치를 추가합니다.
+별도 `go run ./cmd/check-unicode --out out/unicode-exhaustive`는 실제 importing 프로그램의
+수정하지 않은 생성 Go를 빌드해 **0..U+10FFFF의 1,114,112개 입력**에서 두 분류 함수를
+**2,228,224번** Go 원본과 비교하고 소비 레코드도 검사합니다. 이 수치는 위 native 영수증
+집계에 합산하지 않습니다. signed int32 나머지 구간과 int32 밖 확장은 유한 경계 검사이며,
+signed int32 전체 전수 검사 또는 전체 Unicode 패키지 호환성을 주장하지 않습니다.
+재생성 방법과 API 의미는 [식별자 문자 예제](examples/identifier-rune/README.md)에 있습니다.
+
+Gooo 실행 입력 상한에 맞춰 총 **295개 배치**를 실행합니다. 기존 182개 배치를 유지하고,
+문자·숫자 분류와 식별자 문자 소비 앱의 113개 배치를 추가합니다.
 Unicode 앱과 색상 포트는 64건 이하, 색상 소비 앱은 32건 이하입니다.
 새 레코드 기대값도 들여쓴 JSON과 마지막 개행을 포함해 32KiB 한도를 검사합니다.
 원본 비교 기대값은 Gooo 구현과 별개인 Go 표준 함수로 계산합니다.

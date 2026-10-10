@@ -35,13 +35,17 @@ func allNativeSuites(t *testing.T) []suite {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return append(append(append(append(append(suites, unicode.Suites...), colors.Suites...), rotations.Suites...), durations.Suites...), whitespace.Suites...)
+	classification, err := classificationCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return append(append(append(append(append(append(suites, unicode.Suites...), colors.Suites...), rotations.Suites...), durations.Suites...), whitespace.Suites...), classification.Suites...)
 }
 
 func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 	contracts := nativeActivityContracts()
 	suites := allNativeSuites(t)
-	if len(contracts) != 27 || len(suites) != 27 {
+	if len(contracts) != 30 || len(suites) != 30 {
 		t.Fatal("contract/suite roster changed")
 	}
 	seen := map[string]bool{}
@@ -70,8 +74,15 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 			t.Fatal("contract arity differs from source", key)
 		}
 		for i, input := range inputs {
-			// These native activities all declare the same Integer ID.
-			if strings.TrimSpace(input) != "Integer" || contract.InputEntities[i] != integerEntity || !strings.Contains(string(source), `entity Integer id "`+integerEntity+`"`) {
+			// Generated classifications share the package's reviewed entity declarations.
+			declarations := source
+			if contract.Source == "ports/unicode/classification.gooo" {
+				declarations, err = os.ReadFile("../../ports/unicode/space.gooo")
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			if strings.TrimSpace(input) != "Integer" || contract.InputEntities[i] != integerEntity || !strings.Contains(string(declarations), `entity Integer id "`+integerEntity+`"`) {
 				t.Fatal("contract input entity differs from source", key)
 			}
 		}
@@ -82,7 +93,12 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		}
 		total += len(s.Cases)
 	}
-	if total != 15121 {
+	classification, err := classificationCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	added := classification.PortReferenceCases + classification.PortRejectionCases + classification.ConsumerReferenceCases + classification.ConsumerRejectionCases
+	if total != 15121+added {
 		t.Fatalf("corpus changed: %d", total)
 	}
 	if _, err := contractFor(suite{Package: "go/net/http", Activity: "Unknown"}); err == nil {
