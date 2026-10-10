@@ -1,0 +1,12 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {"app/unicode-inspector:InspectScalar": 65},
+    {"app/unicode-inspector:InspectScalar": 65533},
+    {"app/unicode-inspector:InspectScalar": 65535},
+    {"app/unicode-inspector:InspectScalar": 128512},
+    {"app/unicode-inspector:InspectScalar": 55296},
+    {"app/unicode-inspector:InspectScalar": 1114112},
+    {"app/unicode-inspector:InspectScalar": 2147483648}
+  ]
+}

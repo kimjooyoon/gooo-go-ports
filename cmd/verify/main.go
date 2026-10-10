@@ -72,6 +72,15 @@ func run() error {
 	if *browser != "" {
 		return writeBrowserFixtures(*browser, suites, lock)
 	}
+	inspector, err := unicodeInspectorCorpus(suites)
+	if err != nil {
+		return err
+	}
+	legacyCases := 0
+	for _, s := range suites {
+		legacyCases += len(s.Cases)
+	}
+	suites = append(suites, inspector.Suites...)
 	if *out == "" {
 		return fmt.Errorf("provide --out for a new evidence directory")
 	}
@@ -133,8 +142,12 @@ func run() error {
 	reports := []observation{}
 	for _, s := range suites {
 		r := observation{Package: s.Package, Activity: s.Activity, Domain: s.Domain, Cases: len(s.Cases), ReplayEqual: true}
-		for start := 0; start < len(s.Cases); start += 128 {
-			end := min(start+128, len(s.Cases))
+		batchSize := 128
+		if s.Package == "app/unicode-inspector" {
+			batchSize = unicodeInspectorBatchSize
+		}
+		for start := 0; start < len(s.Cases); start += batchSize {
+			end := min(start+batchSize, len(s.Cases))
 			batch := s
 			batch.Cases = s.Cases[start:end]
 			dir := filepath.Join(root, strings.ReplaceAll(s.Package, "/", "-")+"-"+s.Activity, fmt.Sprintf("%03d", r.Batches))
@@ -205,7 +218,14 @@ func run() error {
 	for _, r := range reports {
 		total += r.Cases
 	}
-	return save(filepath.Join(root, "summary.json"), map[string]any{"schema": "gooo/go-ports-differential/v1", "go_version": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH, "compiler_revision": lock.CompilerRevision, "source_sha256": sourceHashes, "ported_functions": 13, "consumer_programs": 2, "cases": total, "passed": total, "runs": reports, "scope": "Finite differential observations against pinned Go source, plus identical saved replay. RuneStart and the five math/bits functions each cover all 256 byte values exactly once. Out-of-domain math/bits inputs are excluded; no claim of exhaustive equivalence for other domains or whole-package compatibility."})
+	return save(filepath.Join(root, "summary.json"), map[string]any{
+		"schema": "gooo/go-ports-differential/v1", "go_version": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH,
+		"compiler_revision": lock.CompilerRevision, "source_sha256": sourceHashes,
+		"ported_functions": 13, "consumer_programs": 3, "consumer_activities": 4,
+		"legacy_cases": legacyCases, "unicode_reference_cases": inspector.ReferenceCases, "unicode_rejection_cases": inspector.RejectionCases,
+		"cases": total, "passed": total, "runs": reports,
+		"scope": "Finite differential observations against pinned Go source, plus identical saved replay. The legacy corpus is unchanged; Unicode inspector reference cases and explicit out-of-int32 rejection cases are counted separately. RuneStart and the five math/bits functions each cover all 256 byte values exactly once. Out-of-domain math/bits inputs are excluded; no claim of exhaustive equivalence for other domains or whole-package compatibility.",
+	})
 }
 func caseDocument(s suite) any {
 	rows := []any{}

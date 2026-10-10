@@ -1,0 +1,11 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {"app/unicode-inspector:InspectPair.input0": 55357, "app/unicode-inspector:InspectPair.input1": 56832},
+    {"app/unicode-inspector:InspectPair.input0": 65533, "app/unicode-inspector:InspectPair.input1": 65533},
+    {"app/unicode-inspector:InspectPair.input0": 56320, "app/unicode-inspector:InspectPair.input1": 55296},
+    {"app/unicode-inspector:InspectPair.input0": 55296, "app/unicode-inspector:InspectPair.input1": 56319},
+    {"app/unicode-inspector:InspectPair.input0": 120832, "app/unicode-inspector:InspectPair.input1": 56320},
+    {"app/unicode-inspector:InspectPair.input0": 55296, "app/unicode-inspector:InspectPair.input1": 2147483648}
+  ]
+}

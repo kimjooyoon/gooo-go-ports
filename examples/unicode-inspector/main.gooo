@@ -1,0 +1,40 @@
+// A consumer of the existing utf8 and utf16 ports, not another port.
+// Integer inputs must fit Go rune (int32); wider inputs return false/-1 fields.
+// EncodeRune's raw pair is not an encoding of BMP characters.
+package unicode_inspector
+namespace gooo_ports_examples_unicode_inspector
+import utf8 "go/unicode/utf8"
+import utf16 "go/unicode/utf16"
+
+entity Integer id "gooo://std/integer"
+entity ScalarInspection id "gooo://go-ports/examples/unicode-inspector/scalar" fields {
+    field in_rune_domain id "gooo://go-ports/examples/unicode-inspector/scalar/in-rune-domain" type boolean required one
+    field valid_scalar id "gooo://go-ports/examples/unicode-inspector/scalar/valid-scalar" type boolean required one
+    field is_surrogate id "gooo://go-ports/examples/unicode-inspector/scalar/is-surrogate" type boolean required one
+    field utf8_bytes id "gooo://go-ports/examples/unicode-inspector/scalar/utf8-bytes" type integer required one
+    field utf16_units id "gooo://go-ports/examples/unicode-inspector/scalar/utf16-units" type integer required one
+    field needs_pair id "gooo://go-ports/examples/unicode-inspector/scalar/needs-pair" type boolean required one
+    field high id "gooo://go-ports/examples/unicode-inspector/scalar/high" type integer required one
+    field low id "gooo://go-ports/examples/unicode-inspector/scalar/low" type integer required one
+}
+entity PairInspection id "gooo://go-ports/examples/unicode-inspector/pair" fields {
+    field in_rune_domain id "gooo://go-ports/examples/unicode-inspector/pair/in-rune-domain" type boolean required one
+    field valid_pair id "gooo://go-ports/examples/unicode-inspector/pair/valid-pair" type boolean required one
+    field decoded_scalar id "gooo://go-ports/examples/unicode-inspector/pair/decoded-scalar" type integer required one
+    field decoded_utf8_bytes id "gooo://go-ports/examples/unicode-inspector/pair/decoded-utf8-bytes" type integer required one
+    field decoded_utf16_units id "gooo://go-ports/examples/unicode-inspector/pair/decoded-utf16-units" type integer required one
+}
+
+activity InspectScalar(Integer) -> ScalarInspection id "gooo://go-ports/examples/unicode-inspector/inspect-scalar" computes `if input < -2147483648 || input > 2147483647 {
+    return ScalarInspection{in_rune_domain: false, valid_scalar: false, is_surrogate: false, utf8_bytes: -1, utf16_units: -1, needs_pair: false, high: -1, low: -1}
+}
+let pair = utf16.EncodeRune(input)
+let units = utf16.RuneLen(input)
+return ScalarInspection{in_rune_domain: true, valid_scalar: utf8.ValidRune(input), is_surrogate: utf16.IsSurrogate(input), utf8_bytes: utf8.RuneLen(input), utf16_units: units, needs_pair: units == 2, high: pair.high, low: pair.low}`
+
+activity InspectPair(Integer, Integer) -> PairInspection id "gooo://go-ports/examples/unicode-inspector/inspect-pair" computes `if input0 < -2147483648 || input0 > 2147483647 || input1 < -2147483648 || input1 > 2147483647 {
+    return PairInspection{in_rune_domain: false, valid_pair: false, decoded_scalar: -1, decoded_utf8_bytes: -1, decoded_utf16_units: -1}
+}
+let valid = input0 >= 55296 && input0 <= 56319 && input1 >= 56320 && input1 <= 57343
+let decoded = utf16.DecodeRune(input0, input1)
+return PairInspection{in_rune_domain: true, valid_pair: valid, decoded_scalar: decoded, decoded_utf8_bytes: utf8.RuneLen(decoded), decoded_utf16_units: utf16.RuneLen(decoded)}`

@@ -1,0 +1,9 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {"package_path": "app/unicode-inspector", "activity": "InspectScalar"},
+  "packages": [
+    {"path": "go/unicode/utf8", "sources": ["ports/unicode/utf8.gooo"]},
+    {"path": "go/unicode/utf16", "sources": ["ports/unicode/utf16.gooo"]},
+    {"path": "app/unicode-inspector", "sources": ["examples/unicode-inspector/main.gooo"]}
+  ]
+}

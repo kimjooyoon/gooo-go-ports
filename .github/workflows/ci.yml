@@ -51,10 +51,11 @@ jobs:
             .schema == "gooo/go-ports-differential/v1" and
             .go_version == "go1.27.2" and
             .compiler_revision == "366ee6ef8f9d2b9b57331dfd26b6f908c0289851" and
-            .ported_functions == 13 and .consumer_programs == 2 and
-            .cases == 3147 and .passed == 3147 and
-            (.runs | length) == 15 and
-            ([.runs[].cases] | add) == 3147 and
+            .ported_functions == 13 and .consumer_programs == 3 and .consumer_activities == 4 and
+            .legacy_cases == 3147 and .unicode_reference_cases == 334 and .unicode_rejection_cases == 12 and
+            .cases == 3493 and .passed == 3493 and
+            (.runs | length) == 17 and
+            ([.runs[].cases] | add) == 3493 and
             all(.runs[]; .passed == .cases and .replay_equal == true)
           ' out/ci/summary.json
       - name: Execute and replay the input-only importing example
@@ -103,6 +104,29 @@ jobs:
             ([.[0].result.runtime.traces[].deliveries[] | {input, inputs, actual}] ==
              [.[1].result.runtime.traces[].deliveries[] | {input, inputs, actual}])
           ' out/byte-example.json out/byte-replay.json
+      - name: Execute and replay Unicode inspector input-only examples
+        run: |
+          for kind in scalar pair; do
+            inputs="examples/unicode-inspector/${kind}-inputs.json"
+            ./.gooo package execute --json --inputs "$inputs" \
+              "unicode-${kind}.workspace.json" > "out/unicode-${kind}.json"
+            ./.gooo package replay --json --receipt "out/unicode-${kind}.json" \
+              --inputs "$inputs" "unicode-${kind}.workspace.json" > "out/unicode-${kind}-replay.json"
+            jq -e --slurpfile fixture "$inputs" '
+              .decision == "OBSERVED" and
+              .result.runtime.finite_total == 0 and .result.runtime.finite_passed == 0 and
+              .result.runtime.projection_replayed == true and .result.runtime.runtime_replayed == true and
+              .result.runtime.model_calls == 0 and
+              (.result.runtime.traces | length) == ($fixture[0].inputs | length)
+            ' "out/unicode-${kind}.json" "out/unicode-${kind}-replay.json"
+            jq -e '.result.replay.model_calls == 0 and (.replayed_from_sha256 | startswith("sha256:"))' \
+              "out/unicode-${kind}-replay.json"
+            jq -s -e '
+              .[0].result.composition.generated_sha256 == .[1].result.composition.generated_sha256 and
+              ([.[0].result.runtime.traces[].deliveries[] | {input, inputs, actual}] ==
+               [.[1].result.runtime.traces[].deliveries[] | {input, inputs, actual}])
+            ' "out/unicode-${kind}.json" "out/unicode-${kind}-replay.json"
+          done
       - name: Upload execution and diagnostic evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

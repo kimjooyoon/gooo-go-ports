@@ -2,11 +2,12 @@
 
 Go standard-library functions implemented in [Gooo](https://github.com/kimjooyoon/meta-ontology-go),
 with independent Go reference outputs and saved replay. The current scope is
-13 HTTP, Unicode, and 8-bit integer functions, two native importing examples,
+13 HTTP, Unicode, and 8-bit integer functions, three native importing examples,
 and an importing browser dispatcher.
 Use Go 1.27.2, Git, and a POSIX shell: run `./tools/bootstrap.sh`, then
 `go run ./cmd/verify --out out/first` from this repository. The output directory must be new.
-The comparison covers 3,147 function-input cases; six byte-domain functions cover all 256 inputs.
+The original 3,147-case corpus is unchanged. A Unicode inspector adds 334 Go-reference
+cases and 12 explicit domain-rejection cases; six byte-domain functions cover all 256 inputs.
 Other domains use finite boundary cases and samples. This is an independent experimental port,
 not a complete Go package implementation or an official Google/Go project.
 
@@ -64,7 +65,7 @@ python3 -m http.server 8766 --bind 127.0.0.1 --directory out/browser/site
 마지막 명령은 Python 3가 필요하며, 실행 후 `http://127.0.0.1:8766`을 엽니다.
 다른 정적 HTTP 서버를 사용해도 됩니다. `--out` 디렉터리는 새 경로여야 합니다.
 브라우저 비교는 기존 원본 corpus의 함수 입력 3,135개와 정밀도 경계 2개를 재사용하고,
-잘못된 입력의 거부도 별도 검사합니다. native 소비 예제 12개는 브라우저 집계에 포함하지 않습니다.
+잘못된 입력의 거부도 별도 검사합니다. 아래 native 소비 예제는 브라우저 집계에 포함하지 않습니다.
 HTTP·rune 검사는 유한 입력 관측이며 패키지 전체 호환성이나 성능을 보장하지 않습니다.
 
 Go 1.27.2, Git, POSIX shell이 필요합니다. `go.mod`를 인식하는 Go 설치는 필요한
@@ -114,6 +115,11 @@ mkdir -p out/demo
 입력 170의 결과는 `{"length":8,"ones":4,"reversed":85}`입니다.
 이 경로 역시 기대값 없는 입력 실행이며 위 원본 비교 검사와 별도로 사용할 수 있습니다.
 
+세 번째 앱인 [Unicode inspector](examples/unicode-inspector/README.md)는 기존 UTF-8·UTF-16
+포트를 함께 사용해 코드 포인트와 서로게이트 쌍을 진단합니다. 유효한 U+FFFD 문자와
+잘못된 입력쌍의 대체 결과를 구분하고, 정상 BMP 문자에서 `EncodeRune`이 반환하는
+`65533/65533`을 잘못된 문자로 판정하지 않습니다. 실행 명령과 결과 필드는 예제 문서에 있습니다.
+
 ## 다른 Gooo 프로그램에서 가져오기
 
 ```gooo
@@ -133,7 +139,9 @@ activity Valid(Integer) -> Boolean computes `return utf8.ValidRune(input)`
 
 ## 검증 범위
 
-고정된 Go 1.27.2 원본과 비교하는 입력은 **3,147건**입니다.
+기존 **3,147건**을 그대로 유지하고 Unicode 소비 앱의 Go 원본 비교 **334건**과
+int32 영역 밖 입력 거부 **12건**을 추가했습니다. 전체 native 검사는 **3,493건**이며,
+이식 함수는 여전히 13개입니다. 영역 밖 12건은 Go 동등성 집계가 아닙니다.
 
 | 대상 | 입력 수 | 구성 |
 | --- | ---: | --- |
@@ -145,9 +153,13 @@ activity Valid(Integer) -> Boolean computes `return utf8.ValidRune(input)`
 | HTTP importing app | 6 | 기존 상태 코드와 미등록 코드 |
 | math/bits 다섯 함수 | 각 256 | byte의 전체 영역, 함수마다 한 번씩 |
 | ByteSummary importing app | 6 | 0, 1, 127, 128, 170, 255의 길이·1 개수·비트 반전 레코드 |
+| Unicode InspectScalar consumer | 164 + 4 | 기존 rune 162개, A·U+1F600, 별도 int32 영역 밖 거부 4개 |
+| Unicode InspectPair consumer | 170 + 8 | 기존 pair 164개, 대체 문자·U+1F600·잘림 경계 6개, 양쪽 인수의 영역 밖 거부 8개 |
 
-Gooo 실행 입력 상한에 맞춰 128건 이하로 나눈 31개 배치를 실행합니다.
-모든 기대값은 Gooo 구현과 별개인 Go 표준 함수로 계산합니다.
+Gooo 실행 입력 상한에 맞춰 총 37개 배치를 실행합니다. 기존 31개 배치는 128건 이하,
+Unicode 앱 6개 배치는 레코드 기대값의 32KiB JSON 한도에 맞춰 64건 이하입니다.
+원본 비교 기대값은 Gooo 구현과 별개인 Go 표준 함수로 계산합니다.
+Unicode 앱의 영역 밖 거부 기대값은 명시한 false/-1 계약으로 따로 검사합니다.
 검증 도구는 결과뿐 아니라 입력 순서, 원본 기대값, stable activity ID, 생성 코드 해시,
 컴파일러·Go 버전, workspace·입력 파일 해시, 저장 재실행 연결을 검사합니다.
 검사 도중 소스가 바뀌어도 처음 읽은 동일한 소스 스냅샷을 모든 배치에 사용합니다.
@@ -155,9 +167,10 @@ Gooo 실행 입력 상한에 맞춰 128건 이하로 나눈 31개 배치를 실�
 
 `RuneStart`와 `math/bits` 다섯 함수는 Go byte 영역을 전수 비교합니다.
 그 밖의 함수는 모든 입력을 검사한 것이 아닙니다. 여러 함수가 같은 정수 입력을 재사용하므로
-3,147은 전역적으로 서로 다른 정수 값의 개수가 아닙니다.
+이 사례 수는 전역적으로 서로 다른 정수 값의 개수가 아닙니다.
 별도 모델 학습, 성능 우위, 패키지 전체의 호환성은 검증 범위에 포함하지 않습니다.
 [첫 8개 함수의 관측](evidence/initial.json), [13개 함수의 관측](evidence/math-bits-20261010.json),
+[Unicode 소비 앱 추가 관측](evidence/unicode-inspector-20261010.json),
 GitHub Actions의 전체 원본 artifact를 참고하세요.
 
 ## 언어 개발로 돌려주는 자료
