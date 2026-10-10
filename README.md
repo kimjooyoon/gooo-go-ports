@@ -64,7 +64,14 @@ The native [crop planner](examples/crop-planner/README.md) imports the rectangle
 package and clips a requested region to image bounds. Rectangle records preserve
 all four signed 64-bit coordinates, including reversed and empty rectangles. The
 Go `Min.X`, `Min.Y`, `Max.X`, `Max.Y` fields map to `min_x`, `min_y`, `max_x`, `max_y`;
-the port does not normalize them. These four operations are currently native only.
+the port does not normalize them. Try the same importing program in the
+[browser crop planner](https://kimjooyoon.github.io/gooo-go-ports/crop-planner.html):
+enter bounds and a requested region to get exact intersection coordinates and
+whether the result contains pixels. It preserves reversed and empty inputs,
+exclusive maximum edges, and the full signed 64-bit coordinate range. It does
+not load or modify image files. This separate browser program composes the
+existing `RectangleIntersect` and `RectangleEmpty` ports; it adds no new port
+and leaves the 21-function demo's input and shared-link formats unchanged.
 
 The separate [offline decision-policy experiment](examples/decision-policy-pilot/README.md)
 applies explicit tenant, action, integer-limit and expiry rules to synthetic Choice
@@ -166,6 +173,7 @@ Wasm 해시가 달라졌으면 자동 실행하지 않습니다.
 ./tools/bootstrap.sh
 go run ./cmd/build-demo --out out/browser
 node tools/browser-smoke.cjs out/browser/site
+node tools/crop-browser-smoke.cjs out/browser/site
 node --test tools/share-link.test.cjs tools/share-app.test.cjs
 python3 -m http.server 8766 --bind 127.0.0.1 --directory out/browser/site
 ```
@@ -183,6 +191,12 @@ python3 -m http.server 8766 --bind 127.0.0.1 --directory out/browser/site
 Node smoke 검사는 공유 입력 왕복 16,036건과 추가 호출 형태·타입 오류 63건도 검사하므로
 총 거부 검사는 **483건**입니다. 아래 native 소비 예제는 브라우저 집계에 포함하지 않습니다.
 HTTP·rune·색상 검사는 유한 입력 관측이며 패키지 전체 호환성이나 성능을 보장하지 않습니다.
+
+별도 `crop-planner.html`은 기존 crop 소비 프로그램을 `crop/crop.wasm`으로 실행합니다.
+좌표는 브라우저와 Wasm 사이에서 십진 문자열로 전달하므로 JavaScript의 안전한 정수
+범위를 넘어도 원본 값을 보존합니다. `crop/` 아래에 이 프로그램의 생성 Go, 실행·재실행
+기록, 독립 Go 비교 입력과 빌드 메타데이터가 있습니다. crop smoke 결과는 기존
+16,036건 비교 및 483건 거부 집계와 분리합니다.
 
 브라우저 생성용 사례 **261개**도 기대 결과와 함께 native 실행·저장된 프로그램 재실행을 검증합니다.
 입력 파일당 128개·32 KiB 제한을 지키도록 실제 JSON 바이트 크기로 나누며 사례를 생략하지 않습니다.

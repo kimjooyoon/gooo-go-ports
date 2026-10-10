@@ -1,5 +1,5 @@
 name: Loading, setup, or function problem
-description: Report a failed first run or an unexpected result in the demos, text inspector, or native ports.
+description: Report a failed first run or an unexpected result in the demos, text inspector, crop planner, or native ports.
 body:
   - type: markdown
     attributes:
@@ -13,6 +13,7 @@ body:
       options:
         - Public browser demo
         - Unicode text inspector
+        - Rectangle crop planner
         - Downloaded browser demo
         - Native setup, verification, or replay
         - Another path

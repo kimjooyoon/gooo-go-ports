@@ -4,6 +4,22 @@ A native Gooo example that intersects a requested crop with supplied bounds and
 reports whether the intersection contains pixels. It returns exact coordinates;
 it does not load, crop, or resize an image file.
 
+[Try the browser crop planner](https://kimjooyoon.github.io/gooo-go-ports/crop-planner.html)
+without installing a compiler. It runs this same importing program as a separate
+precompiled WebAssembly module. Enter the two original rectangles using decimal
+integers; coordinates remain exact through the full signed 64-bit range.
+The page includes edge-touching, reversed, empty, negative and precision-boundary
+examples. Editing an input clears the previous result; press **Plan crop** to run
+the new values.
+
+The browser adapter parses eight canonical decimal strings into the two records
+and returns the four coordinates as strings with a Boolean `has_pixels`.
+Intersection and empty-region decisions remain in Gooo. The bridge does not use
+Go's `image` package; independent build-time comparison fixtures do.
+The page links the exact generated Go, original native execution/replay and
+fixture files under `crop/`. These build records describe the compiled artifact,
+while pressing **Plan crop** creates a new local browser observation.
+
 [Gooo 소스](crop_planner.gooo)는 `go/image`의 `RectangleIntersect`와
 `RectangleEmpty`를 가져옵니다. 교집합과 빈 영역 판정은 Gooo에서 수행하며,
 좌표를 더하거나 빼지 않습니다.

@@ -1,0 +1,38 @@
+package main
+
+import (
+	"syscall/js"
+
+	"github.com/kimjooyoon/gooo-go-ports/internal/cropbridge"
+)
+
+func main() {
+	compute := js.FuncOf(func(_ js.Value, args []js.Value) (result any) {
+		// syscall/js.Type itself can panic for unsupported JS types such as
+		// BigInt. Keep that failure inside the callback, before Run is reached.
+		defer func() {
+			if recover() != nil {
+				result = cropbridge.Failure("invalid browser argument")
+			}
+		}()
+		if len(args) != 8 {
+			return cropbridge.Failure("expected exactly eight decimal input strings")
+		}
+		inputs := make([]string, len(args))
+		for i, arg := range args {
+			if arg.Type() != js.TypeString {
+				return cropbridge.Failure("all coordinates must be strings")
+			}
+			inputs[i] = arg.String()
+		}
+		return cropbridge.Run(inputs, func(a, b cropbridge.Rectangle) any {
+			// Names are inserted from the verified stable record/field identities.
+			first := __RECTANGLE__{__MIN_X__: a.MinX, __MIN_Y__: a.MinY, __MAX_X__: a.MaxX, __MAX_Y__: a.MaxY}
+			second := __RECTANGLE__{__MIN_X__: b.MinX, __MIN_Y__: b.MinY, __MAX_X__: b.MaxX, __MAX_Y__: b.MaxY}
+			return GoooComposedActivity0(first, second)
+		})
+	})
+	js.Global().Set("goooCrop", compute)
+	js.Global().Set("goooCropReady", true)
+	select {}
+}

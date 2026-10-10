@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Intersect a requested crop with supplied bounds using compiled Gooo. Preserve exact signed 64-bit coordinates, including empty and reversed rectangles.">
+  <meta name="theme-color" content="#f5f3eb">
+  <title>Rectangle crop planner — Gooo ports</title>
+  <link rel="canonical" href="https://kimjooyoon.github.io/gooo-go-ports/crop-planner.html">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./crop-planner.css">
+  <script defer src="./wasm_exec.js"></script>
+  <script defer src="./crop-planner-protocol.js"></script>
+  <script defer src="./crop-planner.js"></script>
+</head>
+<body class="crop-planner-page">
+  <a class="skip-link" href="#crop-form">Skip to crop coordinates</a>
+  <div class="page-shell">
+    <header class="masthead">
+      <a class="wordmark" href="https://github.com/kimjooyoon/meta-ontology-go" aria-label="Gooo language on GitHub">gooo<span class="wordmark-dot" aria-hidden="true">.</span></a>
+      <span class="masthead-caption">The Go ports lab / experimental</span>
+      <nav class="repository-links" aria-label="Related pages">
+        <a class="text-link" href="./">Function demo</a>
+        <a class="text-link" href="./text-inspector.html">Text inspector</a>
+        <a class="text-link" href="https://github.com/kimjooyoon/meta-ontology-go">Gooo language ↗</a>
+      </nav>
+    </header>
+    <main>
+      <section class="crop-intro" aria-labelledby="crop-title">
+        <p class="eyebrow">RECTANGLES / COMPILED GOOO</p>
+        <h1 id="crop-title">Where does this crop land?</h1>
+        <p>Find the part of a requested crop that falls inside your bounds. Keep exact coordinates, even beyond JavaScript’s safe integer range.</p>
+        <p class="crop-help">A coordinate calculation only: no image is uploaded, cropped or resized. Coordinates stay in this browser and are not saved.</p>
+        <p id="crop-runtime" class="crop-runtime" role="status">Loading the WebAssembly program…</p>
+        <button id="crop-retry" class="text-button" type="button" hidden>Retry loading</button>
+        <p class="crop-problem"><a class="text-link" href="https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml">Report a problem <span aria-hidden="true">↗</span></a></p>
+        <noscript><p class="crop-error">JavaScript is needed to run this example. The <a href="https://github.com/kimjooyoon/gooo-go-ports/tree/main/examples/crop-planner">native example and instructions</a> are available on GitHub.</p></noscript>
+      </section>
+
+      <section class="crop-workbench" aria-label="Crop input and result">
+        <form id="crop-form" novalidate>
+          <label class="crop-preset-label" for="crop-preset">Try an example</label>
+          <select id="crop-preset">
+            <option value="partial">Partly outside the bounds</option>
+            <option value="edge">Touching the right edge</option>
+            <option value="reversedCrop">Reversed requested crop</option>
+            <option value="reversedBounds">Reversed bounds</option>
+            <option value="empty">Zero width away from the origin</option>
+            <option value="negative">Negative coordinates</option>
+            <option value="precise">Exact coordinates beyond ±2⁵³</option>
+            <option value="maximum">Near the int64 maximum</option>
+            <option value="minimum">Near the int64 minimum</option>
+            <option value="" disabled>Custom coordinates</option>
+          </select>
+          <div class="crop-rectangles">
+            <fieldset>
+              <legend>Bounds</legend>
+              <p class="crop-help">The region the crop must fit inside.</p>
+              <div class="crop-coordinate-grid">
+                <div><label for="bounds-min-x">min_x</label><input id="bounds-min-x" type="text" inputmode="text" value="0" autocomplete="off" spellcheck="false" aria-describedby="crop-domain crop-semantics crop-input-status"></div>
+                <div><label for="bounds-min-y">min_y</label><input id="bounds-min-y" type="text" inputmode="text" value="0" autocomplete="off" spellcheck="false" aria-describedby="crop-domain crop-semantics crop-input-status"></div>
+                <div><label for="bounds-max-x">max_x</label><input id="bounds-max-x" type="text" inputmode="text" value="640" autocomplete="off" spellcheck="false" aria-describedby="crop-domain crop-semantics crop-input-status"></div>
+                <div><label for="bounds-max-y">max_y</label><input id="bounds-max-y" type="text" inputmode="text" value="480" autocomplete="off" spellcheck="false" aria-describedby="crop-domain crop-semantics crop-input-status"></div>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Requested crop</legend>
+              <p class="crop-help">The region you want to keep.</p>
+              <div class="crop-coordinate-grid">
+                <div><label for="crop-min-x">min_x</label><input id="crop-min-x" type="text" inputmode="text" value="-20" autocomplete="off" spellcheck="false" aria-describedby="crop-domain crop-semantics crop-input-status"></div>
+                <div><label for="crop-min-y">min_y</label><input id="crop-min-y" type="text" inputmode="text" value="40" autocomplete="off" spellcheck="false" aria-describedby="crop-domain crop-semantics crop-input-status"></div>
+                <div><label for="crop-max-x">max_x</label><input id="crop-max-x" type="text" inputmode="text" value="200" autocomplete="off" spellcheck="false" aria-describedby="crop-domain crop-semantics crop-input-status"></div>
+                <div><label for="crop-max-y">max_y</label><input id="crop-max-y" type="text" inputmode="text" value="550" autocomplete="off" spellcheck="false" aria-describedby="crop-domain crop-semantics crop-input-status"></div>
+              </div>
+            </fieldset>
+          </div>
+          <p id="crop-domain" class="crop-help">Each coordinate is an integer from <code>-9223372036854775808</code> to <code>9223372036854775807</code>. Enter decimal digits, with a minus sign for negative values.</p>
+          <p id="crop-semantics" class="crop-help">Minimum edges are included; maximum edges are excluded. Reversed or zero-size rectangles are empty. Touching an edge alone does not create an overlap.</p>
+          <button id="crop-run" class="primary-button" type="submit" disabled>Plan crop <span aria-hidden="true">→</span></button>
+          <p id="crop-input-status" class="crop-input-status" role="status">Choose an example or edit the coordinates, then plan the crop.</p>
+        </form>
+
+        <section class="crop-result" aria-labelledby="crop-result-title">
+          <div class="crop-result-heading"><h2 id="crop-result-title">Intersection</h2><span id="crop-result-badge" class="result-badge">NOT RUN</span></div>
+          <p id="crop-result-status" class="crop-result-status" role="status">Your exact result will appear here.</p>
+          <p id="crop-error" class="crop-error" role="alert" hidden></p>
+          <div id="crop-result-values" hidden>
+            <dl class="crop-output-grid">
+              <div><dt>min_x</dt><dd id="result-min-x"></dd></div>
+              <div><dt>min_y</dt><dd id="result-min-y"></dd></div>
+              <div><dt>max_x</dt><dd id="result-max-x"></dd></div>
+              <div><dt>max_y</dt><dd id="result-max-y"></dd></div>
+            </dl>
+            <p class="crop-pixels"><code>has_pixels</code><strong id="result-has-pixels"></strong></p>
+          </div>
+          <p class="crop-help">An empty intersection returns all four coordinates as <code>0</code> and <code>has_pixels: false</code>, even when the input is away from the origin.</p>
+          <p class="crop-help"><code>has_pixels</code> describes geometry. It does not check image data, available memory or an image library’s size limits.</p>
+          <details id="crop-raw-result" class="crop-details" hidden>
+            <summary>Inspect the returned JSON</summary>
+            <p class="crop-help">Coordinate strings preserve the exact integers. This is a browser result, not a native compiler execution receipt.</p>
+            <pre id="crop-raw-output" tabindex="0"></pre>
+          </details>
+        </section>
+      </section>
+
+      <section class="crop-method" aria-labelledby="crop-method-title">
+        <h2 id="crop-method-title">A Gooo program you can reuse.</h2>
+        <p>The same <code>CropPlan</code> consumer used by the native example calls the Gooo <code>RectangleIntersect</code> and <code>RectangleEmpty</code> ports. The browser passes your original coordinates to the compiled program.</p>
+        <p><a id="crop-native-guide" class="text-link" href="https://github.com/kimjooyoon/gooo-go-ports/tree/main/examples/crop-planner">Use the native example ↗</a></p>
+        <details class="crop-details">
+          <summary>Program source and build evidence</summary>
+          <p class="crop-help">The WebAssembly bytes must match the SHA-256 hash in this build’s metadata before execution is enabled. Build receipts and Go reference cases are separate from your browser result.</p>
+          <p id="crop-program" class="crop-help">Program identity will appear after loading.</p>
+          <p id="crop-program-hash" class="crop-help"></p>
+          <ul class="crop-evidence">
+            <li><a id="crop-source-link" href="./crop/source/examples/crop-planner/crop_planner.gooo">CropPlan source</a></li>
+            <li><a id="crop-port-link" href="./crop/source/ports/image/geometry.gooo">Rectangle port source</a></li>
+            <li><a href="./crop/generated.go">Generated Go</a></li>
+            <li><a href="./crop/metadata.json">Build metadata</a></li>
+            <li><a href="./crop/execution.json">Native execution receipt</a></li>
+            <li><a href="./crop/replay.json">Saved replay receipt</a></li>
+            <li><a href="./crop/fixtures.json">Go reference cases</a></li>
+          </ul>
+        </details>
+      </section>
+    </main>
+    <footer><span>Gooo / Go ports lab</span><a href="https://github.com/kimjooyoon/gooo-go-ports">Read the port source ↗</a></footer>
+  </div>
+</body>
+</html>

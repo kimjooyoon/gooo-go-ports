@@ -1,0 +1,50 @@
+.crop-intro { max-width: 820px; padding: 40px 0 24px }
+.crop-intro h1 { font-size: clamp(36px, 5vw, 60px); margin-bottom: 18px }
+.crop-intro > p { max-width: 690px }
+.crop-help { font-size: 12px; color: var(--muted); line-height: 1.7; overflow-wrap: anywhere }
+.crop-runtime { font-size: 13px; color: var(--green); margin-bottom: 8px }
+.crop-problem { margin: 10px 0 0 }
+.crop-runtime.error, .crop-input-status.error { color: var(--error) }
+.crop-workbench { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); border: 1px solid var(--line); border-radius: 8px; background: var(--white); overflow: hidden }
+#crop-form, .crop-result { min-width: 0; padding: 28px }
+.crop-result { border-left: 1px solid var(--line); background: #f8faf3 }
+.crop-preset-label, #crop-form label { display: block; margin-bottom: 7px; font-weight: 650; font-size: 12px }
+#crop-preset { display: block; width: 100%; padding: 10px; border: 1px solid #bdc8bc; color: var(--ink); background: var(--white); margin-bottom: 25px }
+.crop-rectangles { display: grid; gap: 22px; margin-bottom: 22px }
+.crop-rectangles fieldset { margin: 0; padding: 0; border: 0; min-width: 0 }
+.crop-rectangles legend { font-weight: 650; font-size: 17px; padding: 0; margin-bottom: 5px }
+.crop-rectangles fieldset > p { margin-bottom: 12px }
+.crop-coordinate-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px 14px }
+.crop-coordinate-grid input { display: block; width: 100%; min-width: 0; border: 1px solid #bdc8bc; background: var(--white); color: var(--ink); padding: 11px 9px; font: 13px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; font-variant-numeric: tabular-nums; direction: ltr }
+.crop-coordinate-grid input[aria-invalid="true"] { border-color: var(--error) }
+#crop-run { margin: 8px 0 15px; width: auto }
+.crop-input-status { font-size: 12px; min-height: 1.6em; margin-bottom: 0; overflow-wrap: anywhere }
+.crop-result-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 24px }
+.crop-result-heading h2, .crop-method h2 { font-size: 20px; margin: 0; letter-spacing: -.4px }
+.crop-result-status { font-size: 16px; line-height: 1.6; margin-bottom: 22px }
+.crop-output-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin: 0 0 15px }
+.crop-output-grid > div { padding: 13px 15px; background: var(--white); border: 1px solid var(--line); border-radius: 6px }
+.crop-output-grid dt { font-size: 11px; color: var(--muted); margin-bottom: 4px }
+.crop-output-grid dd { margin: 0; font: 17px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; font-variant-numeric: tabular-nums; overflow-wrap: anywhere }
+.crop-pixels { display: flex; align-items: baseline; gap: 14px; padding: 10px 0; color: var(--green) }
+.crop-pixels code { font-size: 12px }
+.crop-pixels strong { font: 700 17px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace }
+.crop-error { padding: 12px 15px; border: 1px solid #d9b9ae; background: #fff6ee; border-radius: 6px; color: var(--error); font-size: 13px; overflow-wrap: anywhere }
+.crop-details { margin: 20px 0; font-size: 12px }
+.crop-details summary { cursor: pointer; color: var(--green); font-weight: 600; margin-bottom: 14px }
+.crop-details pre { margin: 12px 0 0; padding: 15px; max-height: 360px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; border: 1px solid var(--line); border-radius: 6px; background: var(--white); font: 12px/1.7 ui-monospace, SFMono-Regular, Consolas, monospace }
+.crop-method { padding: 32px 0 14px; margin-top: 32px; border-top: 1px solid var(--line); max-width: 860px }
+.crop-method h2 { margin-bottom: 12px }
+.crop-method > p { font-size: 14px }
+.crop-evidence { display: flex; flex-wrap: wrap; gap: 10px 22px; list-style: none; padding: 0; font-size: 12px }
+@media (max-width: 900px) {
+  .crop-workbench { grid-template-columns: 1fr }
+  .crop-result { border-left: 0; border-top: 1px solid var(--line) }
+  .crop-output-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) }
+}
+@media (max-width: 620px) {
+  .crop-intro { padding-top: 24px }
+  #crop-form, .crop-result { padding: 20px }
+  .crop-coordinate-grid, .crop-output-grid { grid-template-columns: minmax(0, 1fr) }
+  .crop-coordinate-grid input { font-size: 16px }
+}

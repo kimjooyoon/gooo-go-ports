@@ -155,7 +155,10 @@ func run() error {
 	if err := copyFile(filepath.Join(runtime.GOROOT(), "lib/wasm/wasm_exec.js"), filepath.Join(site, "wasm_exec.js")); err != nil {
 		return err
 	}
-	for _, name := range []string{"index.html", "app.js", "share.js", "codepoint.js", "style.css", "text-inspector.html", "text-inspector.js", "text-inspector.css", "text-input.js", "text-inspector-worker.js", "text-inspector-protocol.js", "text-inspection-report.js"} {
+	if err := buildCropDemo(ctx, site, dir, lock); err != nil {
+		return err
+	}
+	for _, name := range []string{"index.html", "app.js", "share.js", "codepoint.js", "style.css", "text-inspector.html", "text-inspector.js", "text-inspector.css", "text-input.js", "text-inspector-worker.js", "text-inspector-protocol.js", "text-inspection-report.js", "crop-planner.html", "crop-planner.js", "crop-planner.css", "crop-planner-protocol.js"} {
 		if err := copyFile(filepath.Join("site", name), filepath.Join(site, name)); err != nil {
 			return err
 		}
