@@ -55,6 +55,10 @@ preserves every pinned range and stride; these two ports are available in native
 Gooo workspaces and in the 21-function browser demo. Try the text inspector’s
 **Letters + decimal digits** example to compare `가`, `١`, `𝟎`, `²`, `¼`, `Ⅷ`
 and a combining accent. These per-character categories do not validate a whole identifier.
+To use these ports outside this repository, follow the complete
+[Unicode import walkthrough](docs/use-unicode-in-your-project.md). It builds a
+separate application from a fixed snapshot, copies both required source files,
+and saves an execution record for replay.
 
 For a fixed snapshot, download [experimental release v0.1.0-preview.2](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.2).
 It includes separate source, native execution/replay evidence, and standalone browser
@@ -268,6 +272,10 @@ UTF-16 코드 단위 수를 반환합니다. `IsSpace`와 기존 UTF 포트를 G
 [새 프로젝트에서 포트 사용하기](docs/use-in-your-project.md)는 고정 소스를 받고
 포트·라이선스를 복사한 뒤, 아래 함수의 workspace·입력 파일을 만들어 실제 실행과
 저장 재실행까지 진행하는 완전한 예제입니다. 새 앱은 이 저장소와 별도 디렉터리에 둡니다.
+
+[문자·십진 숫자 분류를 새 프로젝트에서 사용하기](docs/use-unicode-in-your-project.md)는
+`unicode.IsLetter`·`IsDigit`를 조합하는 예제입니다. 필요한 두 소스 파일과 타입 선언,
+원본 정수 입력의 범위 구분, 실행·저장 재실행을 고정 버전으로 따라 할 수 있습니다.
 
 ```gooo
 package checker

@@ -4,6 +4,10 @@ This walkthrough builds a separate application that imports `utf8.ValidRune`.
 It includes the complete workspace and input files; the port's calculation stays
 in Gooo. No model or inference service is needed.
 
+For `unicode.IsLetter` and `unicode.IsDigit`, follow the separate
+[Unicode classification walkthrough](use-unicode-in-your-project.md), which uses
+a newer fixed source snapshot and both required package files.
+
 Use Git, a POSIX shell, and Go with toolchain selection support, or an installed
 Go **1.27.2**. The commands explicitly select that exact toolchain for this shell;
 the first run may download it. Start in a working directory where neither
