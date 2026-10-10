@@ -171,17 +171,23 @@ Gooo에서 조합하며 원본의 전체 uint8 입력 범위를 유지합니다.
 
 ## 다른 Gooo 프로그램에서 가져오기
 
+[새 프로젝트에서 포트 사용하기](docs/use-in-your-project.md)는 고정 소스를 받고
+포트·라이선스를 복사한 뒤, 아래 함수의 workspace·입력 파일을 만들어 실제 실행과
+저장 재실행까지 진행하는 완전한 예제입니다. 새 앱은 이 저장소와 별도 디렉터리에 둡니다.
+
 ```gooo
 package checker
 namespace checker
 import utf8 "go/unicode/utf8"
 entity Integer id "gooo://std/integer"
 entity Boolean id "gooo://std/boolean"
-activity Valid(Integer) -> Boolean computes `return utf8.ValidRune(input)`
+activity Valid(Integer) -> Boolean id "gooo://example/checker/valid" computes `return utf8.ValidRune(input)`
 ```
 
-원하는 포트 소스를 복사하거나 Git 리비전으로 고정하고, 사용하는 작업공간 명세에
-패키지 경로와 파일을 등록합니다. 전체 구성은 [gooo.workspace.json](gooo.workspace.json),
+원하는 포트 소스를 고정 Git 리비전에서 가져와 작업공간 안에 복사하고, 라이선스·NOTICE·
+upstream 기록과 원본 주석을 함께 보존합니다. 사용하는 작업공간 명세에 패키지 경로와
+manifest 기준 상대 파일 경로를 등록합니다. import 자체가 패키지를 내려받지는 않습니다.
+전체 구성은 [gooo.workspace.json](gooo.workspace.json),
 실제 importing app은 [response.gooo](examples/response.gooo)에 있습니다.
 비트 연산을 가져오는 예제는 [ByteSummary](examples/byte-summary/main.gooo)입니다.
 색상 변환 조합은 [Color inspector](examples/color-inspector/main.gooo)와

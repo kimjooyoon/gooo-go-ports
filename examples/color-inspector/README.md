@@ -85,5 +85,7 @@ go run ./cmd/verify --out out/color-check
 유한 사례 검증이며 모든 RGB 2²⁴ 조합이나 CMYK 2³² 조합의 전수 검사가 아닙니다.
 색상 포트 원본 비교 1,300건과 별도 거부 56건, 이 앱의 원본 비교 637건과
 별도 거부 24건을 [검증 요약](../../evidence/color-ports-20261010.json)에 분리해 기록합니다.
-브라우저 데모는 기존 HTTP·Unicode·비트 함수 13개를 실행하며, 이 색상 예제는 위 native
-명령으로 실행합니다.
+[브라우저 데모](https://kimjooyoon.github.io/gooo-go-ports/)에서는 HTTP·Unicode·비트·색상
+변환 함수 15개를 실행할 수 있습니다. 두 색상 변환을 조합한 이 왕복 소비 앱은 위 native
+명령으로 실행합니다. 별도 프로젝트로 포트를 가져오는 첫 단계는
+[독립 프로젝트 안내](../../docs/use-in-your-project.md)에 있습니다.
