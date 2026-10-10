@@ -577,3 +577,19 @@ test('IsSpace rejects out-of-int32, noncanonical numeric values and a wrong outp
     (operation, inputs) => ({ ok: true, operation, inputs, output: { type: 'text', value: 'true' } }));
   await b.ready(); assert.equal(b.get('result-badge').textContent, 'ERROR');
 });
+
+test('classification functions accept exact pasted points and share their original operation and signed rune input', async () => {
+  for (const operation of ['unicode.IsLetter', 'unicode.IsDigit']) {
+    for (const [raw, decimal] of [['가', '44032'], ['١', '1633'], ['𝟎', '120782'], ['²', '178'], ['\u0301', '769'], ['\ud800', '55296']]) {
+      const a = app('', undefined, spaceReply); await a.ready(); select(a, operation);
+      assert.equal(a.get('codepoint-helper').hidden, false);
+      assert.equal(a.get('whitespace-presets-field').hidden, true);
+      pastePoint(a, raw); a.get('run-form').emit('submit');
+      assert.deepEqual(a.calls, [[operation, decimal, '0']]);
+      assert.equal(JSON.parse(a.get('raw-output').textContent).output.value, true);
+      await a.get('share-button').emit('click');
+      const shared = share.parse(new URL(a.copied[0]).hash);
+      assert.equal(shared.operation, operation); assert.deepEqual(shared.inputs, [decimal, '0']);
+    }
+  }
+});

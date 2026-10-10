@@ -15,7 +15,7 @@ async function runSmoke(directory) {
   const reports = require(path.join(dir, 'text-inspection-report.js'));
   const fixture = read('text-inspector-fixtures.json');
   const metadata = read('metadata.json');
-  assert.equal(fixture.schema, 'gooo/text-inspector-fixtures/v1');
+  assert.equal(fixture.schema, 'gooo/text-inspector-fixtures/v2');
   assert.equal(fixture.go_version, metadata.go_version);
   assert.equal(fixture.compiler_revision, metadata.compiler_revision);
   assert.deepEqual(fixture.limits, { max_code_points: 256, max_utf16_units: 512 });
@@ -63,11 +63,11 @@ async function runSmoke(directory) {
     const rows = await worker.inspectPoints(points, (...args) => { calls++; return runtime.run(...args); });
     const checked = protocol.validateResult({ type: 'result', id, rows, ...runtime.identity }, { id, points, ...runtime.identity });
     assert.deepEqual(checked, item.expected.map(point => ({ input: String(point.codePoint), validScalar: point.validScalar,
-      goSpace: point.goSpace, utf8Bytes: String(point.utf8Bytes), utf16Units: String(point.utf16Units) })), item.id);
+      goSpace: point.goSpace, goLetter: point.goLetter, goDigit: point.goDigit, utf8Bytes: String(point.utf8Bytes), utf16Units: String(point.utf16Units) })), item.id);
     const report = reports.create(decoded, checked, runtime.identity);
     const serialized = reports.serialize(report);
     const restored = JSON.parse(serialized);
-    assert.equal(restored.schema, 'gooo/text-inspection-report/v1', item.id);
+    assert.equal(restored.schema, 'gooo/text-inspection-report/v2', item.id);
     assert.equal(restored.kind, 'browser-observation', item.id);
     assert.match(restored.scope, /Not a native compiler receipt or an independent reference-test result\./, item.id);
     assert.ok(!Object.hasOwn(restored, 'status'), item.id);
@@ -77,7 +77,7 @@ async function runSmoke(directory) {
     assert.equal(JSON.parse(restored.input.escapedJson), original, item.id);
     assert.deepEqual(text.read(restored.input.escapedJson, 'json'), decoded, item.id);
     assert.deepEqual(restored.rows, item.expected.map(point => ({ codePoint: point.codePoint,
-      offset: point.offset, width: point.units, validScalar: point.validScalar, goSpace: point.goSpace,
+      offset: point.offset, width: point.units, validScalar: point.validScalar, goSpace: point.goSpace, goLetter: point.goLetter, goDigit: point.goDigit,
       utf8Bytes: String(point.utf8Bytes), utf16Units: String(point.utf16Units) })), item.id);
     // Expected totals come from the independent Go fixture fields, never from
     // JavaScript character classification or the report's own aggregate fields.
@@ -92,7 +92,7 @@ async function runSmoke(directory) {
     assert.equal(runtimeFailure, undefined);
     observations += points.length;
   }
-  assert.equal(calls, observations * 4);
+  assert.equal(calls, observations * 6);
   return { schema: 'gooo/text-inspector-smoke/v1', status: 'PASS', text_cases: fixture.cases.length,
     code_point_observations: observations, compiled_operation_calls: calls,
     reports_created: reportsCreated, reports_roundtripped: reportsRoundtripped,

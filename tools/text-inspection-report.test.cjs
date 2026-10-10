@@ -5,8 +5,8 @@ const reports = require('../site/text-inspection-report.js');
 const binding = { wasmSha256: 'a'.repeat(64), sourceRevision: 'b'.repeat(40) };
 const clone = value => JSON.parse(JSON.stringify(value));
 // Authored observations test report transport and aggregation, not Go semantics.
-const observed = (input, validScalar = true, goSpace = false, utf8Bytes = '1', utf16Units = '1') =>
-  ({ input: String(input), validScalar, goSpace, utf8Bytes, utf16Units });
+const observed = (input, validScalar = true, goSpace = false, utf8Bytes = '1', utf16Units = '1', goLetter = false, goDigit = false) =>
+  ({ input: String(input), validScalar, goSpace, goLetter, goDigit, utf8Bytes, utf16Units });
 const ascii = raw => reports.create(text.decode(raw), [...raw].map(char => observed(char.charCodeAt(0))), binding);
 
 test('report preserves CRLF, combining marks, supplementary and lone-surrogate units through JSON pasteback', () => {
@@ -117,4 +117,18 @@ test('256 code points / 512 original UTF-16 units survive export and pasteback w
   const tooManyPoints = ascii('A'.repeat(256));
   const over = clone(tooManyPoints); over.input.utf16Units.push(65);
   assert.throws(() => reports.serialize(over));
+});
+
+test('v2 preserves both classification values and rejects absent or mistyped observations', () => {
+  const original = reports.create(text.decode('A1'), [observed(65, true, false, '1', '1', true, false), observed(49, true, false, '1', '1', false, true)], binding);
+  assert.equal(original.schema, 'gooo/text-inspection-report/v2');
+  assert.deepEqual(JSON.parse(reports.serialize(original)).rows.map(r => [r.goLetter, r.goDigit]), [[true, false], [false, true]]);
+  for (const key of ['goLetter', 'goDigit']) {
+    for (const value of [undefined, null, 'true', 1]) {
+      const report = clone(original); report.rows[0][key] = value;
+      assert.throws(() => reports.serialize(report));
+    }
+  }
+  const old = clone(original); old.schema = 'gooo/text-inspection-report/v1';
+  assert.throws(() => reports.serialize(old));
 });

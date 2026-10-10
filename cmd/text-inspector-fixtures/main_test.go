@@ -34,6 +34,7 @@ func TestOracleRequiresPinnedToolchainAndSourceBytes(t *testing.T) {
 		"other pinned version":   func(v *upstream) { v.GoVersion = "go1.28.0" },
 		"other repository":       func(v *upstream) { v.GoRepository = "https://example.com/go" },
 		"missing Go revision":    func(v *upstream) { v.GoRevision = "" },
+		"missing digit source":   func(v *upstream) { delete(v.SourceSHA, "src/unicode/digit.go") },
 		"missing property table": func(v *upstream) { delete(v.SourceSHA, "src/unicode/tables.go") },
 		"changed oracle source":  func(v *upstream) { v.SourceSHA["src/unicode/graphic.go"] = strings.Repeat("0", 64) },
 		"nonlocal source path":   func(v *upstream) { v.SourceSHA["../outside.go"] = strings.Repeat("0", 64) },
@@ -106,7 +107,7 @@ func TestFixtureRoundTripPreservesOriginalSurrogatesAndCoverage(t *testing.T) {
 	if !strings.Contains(string(encoded), `"units":[55296]`) || !strings.Contains(string(encoded), `"codePoint":55296`) {
 		t.Fatal("lone surrogate was replaced or serialized as text")
 	}
-	if len(doc.Cases) != 18 {
+	if len(doc.Cases) != 21 {
 		t.Fatalf("changed application case roster: %d", len(doc.Cases))
 	}
 	byID := map[string]fixtureCase{}
@@ -131,7 +132,7 @@ func TestFixtureRoundTripPreservesOriginalSurrogatesAndCoverage(t *testing.T) {
 	}
 	for _, name := range []string{"lone-high-surrogate", "lone-low-surrogate", "reversed-surrogates"} {
 		for _, p := range byID[name].Expected {
-			if p.ValidScalar || p.GoSpace || p.UTF8Bytes != -1 || p.UTF16Units != -1 || p.Units != 1 {
+			if p.ValidScalar || p.GoSpace || p.GoLetter || p.GoDigit || p.UTF8Bytes != -1 || p.UTF16Units != -1 || p.Units != 1 {
 				t.Fatal("lost distinction between raw code-unit span and invalid scalar length", p)
 			}
 		}
@@ -168,5 +169,42 @@ func TestOutputNeverReplacesAnExistingFile(t *testing.T) {
 	after, err := os.ReadFile(path)
 	if err != nil || string(after) != string(original) {
 		t.Fatal("existing fixture bytes changed", err)
+	}
+}
+
+func TestClassificationRowsDistinguishLettersDecimalDigitsAndOtherNumbers(t *testing.T) {
+	doc, err := makeFixtures(pinnedLock(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if doc.Schema != "gooo/text-inspector-fixtures/v2" {
+		t.Fatal("added row fields need the v2 fixture schema")
+	}
+	seen := map[int]expectedPoint{}
+	for _, c := range doc.Cases {
+		for _, p := range c.Expected {
+			if p.GoLetter != unicode.IsLetter(rune(p.CodePoint)) || p.GoDigit != unicode.IsDigit(rune(p.CodePoint)) {
+				t.Fatalf("not Go classification: %+v", p)
+			}
+			seen[p.CodePoint] = p
+		}
+	}
+	for _, n := range []int{0x41, 0xe9, 0xac00, 0x10400, 0x20000, 0xaa, 0xb5, 0xba, 0x2ec, 0x2ee} {
+		p, ok := seen[n]
+		if !ok || !p.GoLetter || p.GoDigit {
+			t.Fatalf("missing Letter distinction U+%04X", n)
+		}
+	}
+	for _, n := range []int{0x30, 0x660, 0x967, 0x1d7d8} {
+		p, ok := seen[n]
+		if !ok || p.GoLetter || !p.GoDigit {
+			t.Fatalf("missing Nd distinction U+%04X", n)
+		}
+	}
+	for _, n := range []int{0xab, 0xb4, 0xb6, 0xb9, 0x2ed, 0xb2, 0xbd, 0x216b, 0x2460, 0x301, 0x200d, 0xd800, 0xdfff} {
+		p, ok := seen[n]
+		if !ok || p.GoLetter || p.GoDigit {
+			t.Fatalf("missing non-Letter/non-Nd U+%04X", n)
+		}
 	}
 }

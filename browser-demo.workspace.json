@@ -44,7 +44,8 @@
     {
       "path": "go/unicode",
       "sources": [
-        "ports/unicode/space.gooo"
+        "ports/unicode/space.gooo",
+        "ports/unicode/classification.gooo"
       ]
     },
     {

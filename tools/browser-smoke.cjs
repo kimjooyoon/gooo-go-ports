@@ -59,9 +59,9 @@ require(path.join(dir, 'wasm_exec.js'));
   assert.equal(globalThis.goooReady, true);
   const fixture = read('fixtures.json');
   assert.equal(fixture.schema, 'gooo/browser-fixtures/v2');
-  assert.equal(fixture.rejections.length, 338);
-  assert.equal(fixture.cases.length, 10993);
-  assert.equal(new Set(fixture.cases.map(row => row.operation)).size, 19);
+  assert.equal(fixture.rejections.length, 420);
+  assert.equal(fixture.cases.length, 16036);
+  assert.equal(new Set(fixture.cases.map(row => row.operation)).size, 21);
   for (const row of fixture.cases) {
     const shared = sharing.parse(sharing.format({ operation: row.operation, inputs: row.inputs,
       wasm: metadata.wasm_sha256, revision: metadata.source_revision }));
@@ -78,7 +78,7 @@ require(path.join(dir, 'wasm_exec.js'));
   }
   const malformed = [[], ['bits.Len8', 255, '0'], ['bits.Len8', '255', 0], [null, '0', '0'],
     ['bits.Len8', '0'], ['bits.Len8', '0', '0', '0']];
-  for (const [op, arity] of [['color.RGBToCMYK', 3], ['color.CMYKToRGB', 4], ['bits.RotateLeft8', 2], ['time.Duration.Round', 2], ['time.Duration.Truncate', 2], ['unicode.IsSpace', 2]]) {
+  for (const [op, arity] of [['color.RGBToCMYK', 3], ['color.CMYKToRGB', 4], ['bits.RotateLeft8', 2], ['time.Duration.Round', 2], ['time.Duration.Truncate', 2], ['unicode.IsSpace', 2], ['unicode.IsLetter', 2], ['unicode.IsDigit', 2]]) {
     for (let position = 0; position < arity; position++) {
       for (const wrongType of [0, true, null]) {
         const args = [op, ...Array(arity).fill('0')];
@@ -90,7 +90,7 @@ require(path.join(dir, 'wasm_exec.js'));
   for (const args of malformed) {
     assert.equal(JSON.parse(globalThis.goooRun(...args)).ok, false, JSON.stringify(args));
   }
-  console.log(JSON.stringify({schema:'gooo/browser-smoke/v2', functions:19, native_cases:evidence.cases, native_batches:evidence.batches.length, cases:fixture.cases.length,
+  console.log(JSON.stringify({schema:'gooo/browser-smoke/v2', functions:21, native_cases:evidence.cases, native_batches:evidence.batches.length, cases:fixture.cases.length,
     shared_inputs:fixture.cases.length, rejected:fixture.rejections.length + malformed.length,
     wasm_sha256:metadata.wasm_sha256, status:'PASS'}));
   process.exit(0);

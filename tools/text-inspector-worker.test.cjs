@@ -8,7 +8,7 @@ const clone = value => JSON.parse(JSON.stringify(value));
 const reply = (operation, input, value) => JSON.stringify({ ok: true, operation, inputs: [input, '0'],
   output: { type: operation.includes('RuneLen') ? 'integer' : 'boolean', value } });
 const fixedRun = (operation, input) => reply(operation, input, operation.includes('RuneLen') ? '1' : true);
-const row = input => ({ input, validScalar: true, goSpace: true, utf8Bytes: '1', utf16Units: '1' });
+const row = input => ({ input, validScalar: true, goSpace: true, goLetter: true, goDigit: true, utf8Bytes: '1', utf16Units: '1' });
 
 test('request keeps ordered duplicate points and lone-surrogate integers without classification', () => {
   const original = ['0', '55296', '57343', '1114111', '0'];
@@ -46,7 +46,7 @@ test('compiled replies bind exact operation, both input strings, output type and
   assert.throws(() => protocol.parseCompiledReply(reply('bits.Len8', '65', '1'), 'bits.Len8', '65'));
 });
 
-test('four existing unary calls supply displayed values; host does not reclassify results', async () => {
+test('six existing unary calls supply displayed values; host does not reclassify results', async () => {
   const calls = [];
   const points = ['65', '55296', '65'];
   const rows = await worker.inspectPoints(points, (...args) => { calls.push(args); return fixedRun(...args); });
@@ -65,7 +65,7 @@ test('bad later compiled reply fails the whole request and exposes no result row
     calls++;
     return input === '66' ? reply(operation, '65', true) : fixedRun(operation, input);
   }));
-  assert.equal(calls, 5);
+  assert.equal(calls, 7);
 });
 
 test('result identity and exact row roster reject stale, truncated, reordered and malformed replies', () => {
@@ -98,7 +98,7 @@ test('chunk yield permits cancellation without computing the next point', async 
   await assert.rejects(worker.inspectPoints(Array(17).fill('65'), (...args) => { calls++; return fixedRun(...args); }, {
     isCurrent: () => current, yieldControl: async () => { yields++; current = false; }
   }), { name: 'AbortError' });
-  assert.equal(calls, 16 * 4);
+  assert.equal(calls, 16 * 6);
   assert.equal(yields, 1);
 });
 
@@ -132,7 +132,7 @@ test('Worker cancellation and later output failure never publish partial rows', 
   const running = h.send({ type: 'inspect', id: 1, points: Array(17).fill('65') });
   await h.send({ type: 'cancel', id: 1 });
   await running;
-  assert.equal(calls, 64);
+  assert.equal(calls, 96);
   assert.equal(h.messages.filter(m => m.type === 'result').length, 0);
   const failed = harness((operation, input) => input === '66' ? '{}' : fixedRun(operation, input));
   await failed.ready;
@@ -175,4 +175,23 @@ test('failed Worker load reports an error without becoming ready', async () => {
   const scope = { addEventListener() {}, postMessage: message => messages.push(message) };
   await worker.startWorker(scope, async () => { throw new Error('Hash mismatch.'); }).ready;
   assert.deepEqual(messages, [{ type: 'error', message: 'Hash mismatch.' }]);
+});
+
+test('letter and digit outputs are mandatory Booleans and a final classification failure discards the request', async () => {
+  for (const key of ['goLetter', 'goDigit']) {
+    for (const value of [undefined, null, 0, 'true']) {
+      const changed = { ...row('65'), [key]: value };
+      const request = { id: 1, points: ['65'], ...identity };
+      assert.throws(() => protocol.validateResult({ type: 'result', ...request, rows: [changed] }, request));
+    }
+  }
+  for (const operation of ['unicode.IsLetter', 'unicode.IsDigit']) {
+    for (const value of [null, 1, 'false']) assert.throws(() => protocol.parseCompiledReply(reply(operation, '65', value), operation, '65'));
+  }
+  let calls = 0;
+  await assert.rejects(worker.inspectPoints(['65', '66'], (operation, input) => {
+    calls++;
+    return operation === 'unicode.IsDigit' && input === '66' ? reply(operation, input, 'true') : fixedRun(operation, input);
+  }));
+  assert.equal(calls, 12);
 });

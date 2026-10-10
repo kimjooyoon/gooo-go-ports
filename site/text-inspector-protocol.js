@@ -1,5 +1,5 @@
 // Transport validation only. All Unicode classification and scalar lengths
-// come from the four existing generated Gooo operations.
+// come from the six existing generated Gooo operations.
 ((root, factory) => {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -7,7 +7,7 @@
 })(globalThis, () => {
   'use strict';
   const MAX_POINTS = 256;
-  const OPERATIONS = Object.freeze(['utf8.ValidRune', 'unicode.IsSpace', 'utf8.RuneLen', 'utf16.RuneLen']);
+  const OPERATIONS = Object.freeze(['utf8.ValidRune', 'unicode.IsSpace', 'utf8.RuneLen', 'utf16.RuneLen', 'unicode.IsLetter', 'unicode.IsDigit']);
   const hash = /^[a-f0-9]{64}$/;
   const revision = /^[a-f0-9]{40}$/;
 
@@ -72,7 +72,7 @@
       throw new Error('Compiled reply does not match the requested operation and input.');
     }
     object(reply.output, ['type', 'value'], 'compiled output');
-    const boolean = operation === 'utf8.ValidRune' || operation === 'unicode.IsSpace';
+    const boolean = ['utf8.ValidRune', 'unicode.IsSpace', 'unicode.IsLetter', 'unicode.IsDigit'].includes(operation);
     if (reply.output.type !== (boolean ? 'boolean' : 'integer')) throw new Error('Invalid compiled output type.');
     if (boolean) {
       if (typeof reply.output.value !== 'boolean') throw new Error('Invalid compiled Boolean.');
@@ -81,11 +81,11 @@
     return lengthValue(reply.output.value, operation === 'utf8.RuneLen');
   }
   function validateRow(row, point) {
-    object(row, ['input', 'validScalar', 'goSpace', 'utf8Bytes', 'utf16Units'], 'row');
-    if (row.input !== point || typeof row.validScalar !== 'boolean' || typeof row.goSpace !== 'boolean') {
+    object(row, ['input', 'validScalar', 'goSpace', 'goLetter', 'goDigit', 'utf8Bytes', 'utf16Units'], 'row');
+    if (row.input !== point || ['validScalar', 'goSpace', 'goLetter', 'goDigit'].some(key => typeof row[key] !== 'boolean')) {
       throw new Error('Invalid result input or Boolean fields.');
     }
-    return Object.freeze({ input: point, validScalar: row.validScalar, goSpace: row.goSpace,
+    return Object.freeze({ input: point, validScalar: row.validScalar, goSpace: row.goSpace, goLetter: row.goLetter, goDigit: row.goDigit,
       utf8Bytes: lengthValue(row.utf8Bytes, true), utf16Units: lengthValue(row.utf16Units, false) });
   }
   function validateResult(message, expected) {

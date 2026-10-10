@@ -22,7 +22,7 @@ func lookup(name string) (operation, bool) {
 	switch name {
 	case "http.StatusText":
 		return operation{minInt, maxInt, 2, 1, "text"}, true
-	case "utf8.ValidRune", "utf16.IsSurrogate", "unicode.IsSpace":
+	case "utf8.ValidRune", "utf16.IsSurrogate", "unicode.IsSpace", "unicode.IsLetter", "unicode.IsDigit":
 		return operation{minRune, maxRune, 2, 1, "boolean"}, true
 	case "utf8.RuneLen", "utf16.RuneLen":
 		return operation{minRune, maxRune, 2, 1, "integer"}, true

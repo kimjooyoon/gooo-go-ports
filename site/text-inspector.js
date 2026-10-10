@@ -238,6 +238,8 @@
         cell('td', 'Code point', item.notation, `decimal ${item.decimal}`),
         cell('td', 'Valid scalar', row.validScalar ? 'Yes' : 'No', '', !row.validScalar),
         cell('td', 'Go White_Space', row.goSpace ? 'Yes' : 'No'),
+        cell('td', 'Go letter (L)', row.goLetter ? 'Yes' : 'No'),
+        cell('td', 'Go decimal digit (Nd)', row.goDigit ? 'Yes' : 'No'),
         cell('td', 'UTF-8 bytes', row.utf8Bytes, row.utf8Bytes === '-1' ? 'Cannot encode' : ''),
         cell('td', 'UTF-16 encoded units', row.utf16Units, row.utf16Units === '-1' ? 'Cannot encode' : ''));
       rendered.push(tr);
@@ -252,7 +254,7 @@
     $('text-summary').textContent = `${rows.length} decoded items · ${snapshot.codeUnits} received UTF-16 code units · ${spaces} Go whitespace items. ` +
       (allScalar ? `Encoded totals: ${bytes} UTF-8 bytes and ${units} UTF-16 units.` : 'Encoded totals are unavailable: at least one returned scalar or encoding result is invalid. Received code-unit counts remain exact.');
     $('text-summary').hidden = false;
-    $('text-progress').textContent = rows.length ? `Complete · ${rows.length} items · ${rows.length * 4} Gooo calls.` : 'Complete · empty input · no Gooo calls needed.';
+    $('text-progress').textContent = rows.length ? `Complete · ${rows.length} items · ${rows.length * protocol.OPERATIONS.length} Gooo calls.` : 'Complete · empty input · no Gooo calls needed.';
     $('text-progress-bar').hidden = true;
     $('text-result-error').hidden = true;
   }

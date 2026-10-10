@@ -45,6 +45,8 @@ type expectedPoint struct {
 	point
 	ValidScalar bool `json:"validScalar"`
 	GoSpace     bool `json:"goSpace"`
+	GoLetter    bool `json:"goLetter"`
+	GoDigit     bool `json:"goDigit"`
 	UTF8Bytes   int  `json:"utf8Bytes"`
 	UTF16Units  int  `json:"utf16Units"`
 }
@@ -121,7 +123,7 @@ func checkOracleIdentity(lock upstream, version, goroot string) error {
 	if _, err := hex.DecodeString(lock.CompilerRevision); err != nil || len(lock.CompilerRevision) != 40 {
 		return fmt.Errorf("missing compiler revision")
 	}
-	for _, name := range []string{"src/unicode/graphic.go", "src/unicode/letter.go", "src/unicode/tables.go", "src/unicode/utf8/utf8.go", "src/unicode/utf16/utf16.go", "LICENSE"} {
+	for _, name := range []string{"src/unicode/graphic.go", "src/unicode/digit.go", "src/unicode/letter.go", "src/unicode/tables.go", "src/unicode/utf8/utf8.go", "src/unicode/utf16/utf16.go", "LICENSE"} {
 		if lock.SourceSHA[name] == "" {
 			return fmt.Errorf("missing pinned Go source %s", name)
 		}
@@ -143,11 +145,11 @@ func checkOracleIdentity(lock upstream, version, goroot string) error {
 
 func makeFixtures(lock upstream) (fixtures, error) {
 	doc := fixtures{
-		Schema: "gooo/text-inspector-fixtures/v1", GoVersion: lock.GoVersion,
+		Schema: "gooo/text-inspector-fixtures/v2", GoVersion: lock.GoVersion,
 		GoRepository: lock.GoRepository, GoRevision: lock.GoRevision,
 		UnicodeVersion: unicode.Version, CompilerRevision: lock.CompilerRevision,
 		GoSourceSHA: lock.SourceSHA,
-		Scope:       "Finite browser application observations. The host decodes original UTF-16 units into authored code-point rows and calls four existing compiled Gooo functions. Go supplies independent scalar validity, White_Space membership and encoding lengths. Lone surrogate integers are preserved; this is not a whole-text Go port, original-file UTF-8 validation, grapheme segmentation, or new native-port coverage.",
+		Scope:       "Finite browser application observations. The host decodes original UTF-16 units into authored code-point rows and calls six existing compiled Gooo functions. Go supplies independent scalar validity, White_Space, Letter and decimal digit (Nd) membership, and encoding lengths. Lone surrogate integers are preserved; this is not a whole-text Go port, original-file UTF-8 validation, grapheme segmentation, or new native-port coverage.",
 		Cases:       []fixtureCase{},
 	}
 	doc.Limits.MaxCodePoints, doc.Limits.MaxUTF16Units = maxCodePoints, maxUTF16Units
@@ -163,7 +165,7 @@ func makeFixtures(lock upstream) (fixtures, error) {
 		row := fixtureCase{ID: e.ID, Units: slices.Clone(e.Units), Expected: []expectedPoint{}}
 		for _, p := range e.Points {
 			r := rune(p.CodePoint) // The complete authored numeric domain was checked above.
-			row.Expected = append(row.Expected, expectedPoint{p, utf8.ValidRune(r), unicode.IsSpace(r), utf8.RuneLen(r), utf16.RuneLen(r)})
+			row.Expected = append(row.Expected, expectedPoint{p, utf8.ValidRune(r), unicode.IsSpace(r), unicode.IsLetter(r), unicode.IsDigit(r), utf8.RuneLen(r), utf16.RuneLen(r)})
 		}
 		doc.Cases = append(doc.Cases, row)
 	}
@@ -238,6 +240,9 @@ func examples() []example {
 		{"maximum-scalar", []uint16{0xdbff, 0xdfff}, []point{{0x10ffff, 0, 2}}},
 		{"scalar-boundaries", []uint16{0xd7ff, 0xe000, 0xfffd, 0xffff, 0xd800, 0xdc00}, []point{{0xd7ff, 0, 1}, {0xe000, 1, 1}, {0xfffd, 2, 1}, {0xffff, 3, 1}, {0x10000, 4, 2}}},
 		{"nul-and-bom", []uint16{0, 0xfeff, 0x41, 0}, []point{{0, 0, 1}, {0xfeff, 1, 1}, {0x41, 2, 1}, {0, 3, 1}}},
+		{"multilingual-letters", []uint16{0x41, 0xe9, 0xac00, 0xd801, 0xdc00, 0xd840, 0xdc00}, []point{{0x41, 0, 1}, {0xe9, 1, 1}, {0xac00, 2, 1}, {0x10400, 3, 2}, {0x20000, 5, 2}}},
+		{"decimal-and-other-numbers", []uint16{0x30, 0x660, 0x967, 0xd835, 0xdfd8, 0xb2, 0xbd, 0x216b, 0x2460}, []point{{0x30, 0, 1}, {0x660, 1, 1}, {0x967, 2, 1}, {0x1d7d8, 3, 2}, {0xb2, 5, 1}, {0xbd, 6, 1}, {0x216b, 7, 1}, {0x2460, 8, 1}}},
+		{"letter-stride-members-and-holes", []uint16{0xaa, 0xab, 0xb4, 0xb5, 0xb6, 0xb9, 0xba, 0x2ec, 0x2ed, 0x2ee}, []point{{0xaa, 0, 1}, {0xab, 1, 1}, {0xb4, 2, 1}, {0xb5, 3, 1}, {0xb6, 4, 1}, {0xb9, 5, 1}, {0xba, 6, 1}, {0x2ec, 7, 1}, {0x2ed, 8, 1}, {0x2ee, 9, 1}}},
 		repeatExample("limit-256-ascii", []uint16{0x41}, 0x41),
 		repeatExample("limit-256-supplementary", []uint16{0xd83d, 0xde00}, 0x1f600),
 	}

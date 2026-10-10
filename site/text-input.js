@@ -43,6 +43,7 @@
   }
 
   const presets = Object.freeze({
+    letters: Object.freeze({ mode: 'text', source: 'A가𐐀1١𝟎²¼Ⅷe\u0301_', label: 'Letters, decimal digits, other numbers and a combining accent' }),
     mixed: Object.freeze({ mode: 'text', source: 'A\u00A0B\r\n\u200B😀', label: 'NBSP, CRLF, zero-width space and emoji' }),
     boundaries: Object.freeze({ mode: 'text', source: '\u0085\uFEFF', label: 'Next line and byte order mark' }),
     combined: Object.freeze({ mode: 'text', source: 'e\u0301👩‍💻', label: 'Combining accent and joined emoji' }),

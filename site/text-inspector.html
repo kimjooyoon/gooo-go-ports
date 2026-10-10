@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Inspect pasted text one Unicode code point at a time using compiled Gooo ports of Go’s whitespace and UTF encoding functions.">
+  <meta name="description" content="Inspect Unicode letters, decimal digits, whitespace and encoding lengths in pasted text, using compiled Gooo ports of Go functions.">
   <meta name="theme-color" content="#f5f3eb">
   <title>Unicode text inspector — Gooo ports</title>
   <link rel="canonical" href="https://kimjooyoon.github.io/gooo-go-ports/text-inspector.html">
@@ -29,7 +29,7 @@
       <section class="text-intro" aria-labelledby="text-title">
         <p class="eyebrow">UNICODE / COMPILED GOOO</p>
         <h1 id="text-title">What’s in this text?</h1>
-        <p>Paste a short piece of text to inspect each code point’s Go whitespace membership and encoding lengths.</p>
+        <p>Paste a short piece of text to inspect Unicode letters, decimal digits, whitespace and encoding lengths.</p>
         <p class="text-runtime" id="text-runtime" role="status">Loading the WebAssembly worker…</p>
         <button id="text-retry" class="text-button" type="button" hidden>Retry loading</button>
         <p><a class="text-link" href="https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml">Report a problem <span aria-hidden="true">↗</span></a></p>
@@ -48,6 +48,7 @@
           <p id="text-limits" class="text-help">This browser view accepts up to 256 decoded items and 512 UTF-16 code units. Longer input is rejected in full. These are interface limits, not limits of the underlying functions.</p>
           <p id="text-json-limit" class="text-help" hidden>Use one JSON string with double quotes, for example <code>"A\r\n\uD800"</code>. JSON notation is limited to 4,096 characters before decoding.</p>
           <div class="text-presets" role="group" aria-label="Text examples">
+            <button type="button" data-text-preset="letters">Letters + decimal digits</button>
             <button type="button" data-text-preset="mixed">Spaces + CRLF + emoji</button>
             <button type="button" data-text-preset="boundaries">NEL + BOM</button>
             <button type="button" data-text-preset="combined">Combining + joined text</button>
@@ -91,6 +92,8 @@
               <th scope="col">Code point</th>
               <th scope="col">Valid scalar</th>
               <th scope="col">Go White_Space</th>
+              <th scope="col">Go letter (L)</th>
+              <th scope="col">Go decimal digit (Nd)</th>
               <th scope="col">UTF-8 bytes</th>
               <th scope="col">UTF-16 encoded units</th>
             </tr></thead>
@@ -99,10 +102,11 @@
         </div>
         <p class="text-help">Offsets start at zero in the received UTF-16 sequence. Encoding lengths come from Go’s RuneLen functions: <code>−1</code> means the value cannot be encoded as a Unicode scalar. A lone surrogate occupies one received code unit but has encoding length <code>−1</code>.</p>
         <p class="text-help">Go White_Space membership does not describe how a character looks. This view reports code points, not user-perceived character boundaries.</p>
+        <p class="text-help">Letters and decimal digits use Unicode 17.0.0 categories L and Nd. For example, <code>١</code> is a decimal digit; <code>²</code>, <code>¼</code> and <code>Ⅷ</code> are other numbers. A combining accent is not a letter. These per-code-point results do not validate a complete identifier or assess confusables.</p>
       </section>
       <section class="text-method" aria-labelledby="text-method-title">
-        <h2 id="text-method-title">Four Gooo calls for each row.</h2>
-        <p>The browser decodes its UTF-16 input and passes each decimal value to the existing compiled <code>utf8.ValidRune</code>, <code>unicode.IsSpace</code>, <code>utf8.RuneLen</code> and <code>utf16.RuneLen</code> ports. A dedicated worker runs the same WebAssembly program as the <a href="./">function demo</a>. No arbitrary text is passed to a Gooo string-processing function.</p>
+        <h2 id="text-method-title">Six Gooo calls for each row.</h2>
+        <p>The browser decodes its UTF-16 input and passes each decimal value to the compiled <code>utf8.ValidRune</code>, <code>unicode.IsSpace</code>, <code>unicode.IsLetter</code>, <code>unicode.IsDigit</code>, <code>utf8.RuneLen</code> and <code>utf16.RuneLen</code> ports. A dedicated worker runs the same WebAssembly program as the <a href="./">function demo</a>. No arbitrary text is passed to a Gooo string-processing function.</p>
         <p id="text-program" class="text-help">Program identity will appear after loading.</p>
       </section>
     </main>

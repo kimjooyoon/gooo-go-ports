@@ -53,7 +53,7 @@ func TestWhitespaceBrowserSeedsKeepAllMembersAndIndexedBatches(t *testing.T) {
 			t.Fatalf("seed is not Go reference for %d", n)
 		}
 	}
-	if len(doc.Cases) != 193 || len(seen) != 40 || positive != 25 {
+	if len(doc.Cases) != 261 || len(seen) != 40 || positive != 25 {
 		t.Fatalf("unexpected seeds %d, whitespace %d, members %d", len(doc.Cases), len(seen), positive)
 	}
 	t.Logf("%d browser seeds preserved across %d indexed batches", len(doc.Cases), len(batches))

@@ -194,6 +194,35 @@ func makeBrowserFixtures(suites []suite, lock upstream) (browserFixtures, error)
 		result.Cases = append(result.Cases, row)
 	}
 	result.Rejections = append(result.Rejections, whitespaceBrowserRejections()...)
+	classifications, err := classificationCorpus()
+	if err != nil {
+		return browserFixtures{}, err
+	}
+	for _, suite := range classifications.Suites {
+		if suite.Package != "go/unicode" {
+			continue
+		}
+		operation := "unicode." + suite.Activity
+		for _, c := range suite.Cases {
+			if len(c.Inputs) != 1 {
+				return browserFixtures{}, fmt.Errorf("classification fixture must contain one input")
+			}
+			n, ok := c.Inputs[0].(int64)
+			if !ok {
+				return browserFixtures{}, fmt.Errorf("classification input is not int64")
+			}
+			if n < -1<<31 || n > 1<<31-1 {
+				result.Rejections = append(result.Rejections, browserRejection{operation, []string{strconv.FormatInt(n, 10), "0"}})
+				continue // Preserve the original integer: no narrowing to a Go rune.
+			}
+			row, err := browserRow(operation, c)
+			if err != nil {
+				return browserFixtures{}, err
+			}
+			result.Cases = append(result.Cases, row)
+		}
+	}
+	result.Rejections = append(result.Rejections, classificationBrowserRejections()...)
 	return result, nil
 }
 
@@ -221,7 +250,7 @@ func browserRow(operation string, c testCase) (browserCase, error) {
 		if (arity >= 3 || operation == "bits.RotateLeft8" && i == 0) && (n < 0 || n > 255) {
 			return browserCase{}, fmt.Errorf("reference input outside byte domain")
 		}
-		if operation == "unicode.IsSpace" && (n < -1<<31 || n > 1<<31-1) {
+		if (operation == "unicode.IsSpace" || operation == "unicode.IsLetter" || operation == "unicode.IsDigit") && (n < -1<<31 || n > 1<<31-1) {
 			return browserCase{}, fmt.Errorf("reference input outside rune domain")
 		}
 		row.Inputs[i] = strconv.FormatInt(n, 10)
@@ -241,7 +270,7 @@ func browserRow(operation string, c testCase) (browserCase, error) {
 			return browserCase{}, fmt.Errorf("expected text oracle output")
 		}
 		row.Expected = browserOutput{"text", value}
-	case "utf8.ValidRune", "utf8.RuneStart", "utf16.IsSurrogate", "unicode.IsSpace":
+	case "utf8.ValidRune", "utf8.RuneStart", "utf16.IsSurrogate", "unicode.IsSpace", "unicode.IsLetter", "unicode.IsDigit":
 		value, ok := expected.(bool)
 		if !ok {
 			return browserCase{}, fmt.Errorf("expected Boolean oracle output")
@@ -431,6 +460,19 @@ func whitespaceBrowserRejections() []browserRejection {
 			inputs[i] = "0"
 		}
 		result = append(result, browserRejection{"unicode.IsSpace", inputs})
+	}
+	return result
+}
+
+// Classification retains the two-string rune ABI, with no narrowing of original
+// inputs. The corpus supplies outside-int32 values; these cover protocol errors.
+func classificationBrowserRejections() []browserRejection {
+	var result []browserRejection
+	for _, operation := range []string{"unicode.IsLetter", "unicode.IsDigit"} {
+		for _, rejection := range whitespaceBrowserRejections() {
+			rejection.Operation = operation
+			result = append(result, rejection)
+		}
 	}
 	return result
 }

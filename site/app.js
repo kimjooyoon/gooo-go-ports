@@ -3,6 +3,8 @@
 
   const $ = (id) => document.getElementById(id);
   const operations = {
+    'unicode.IsLetter': { scenario: 'unicode', path: 'go/unicode', source: 'ports/unicode/classification.gooo', label: 'Code point (decimal)', domain: 'int32 rune', example: '44032', output: 'boolean', description: 'Check whether one code point is a Unicode letter (category L).', help: 'Uses Go’s pinned Unicode 17.0.0 tables, including supplementary-plane letters. Combining marks, underscore and Roman numerals are not category L. This is one character classification, not a complete identifier or security check.' },
+    'unicode.IsDigit': { scenario: 'unicode', path: 'go/unicode', source: 'ports/unicode/classification.gooo', label: 'Code point (decimal)', domain: 'int32 rune', example: '1633', output: 'boolean', description: 'Check whether one code point is a Unicode decimal digit (category Nd).', help: 'Includes decimal digits such as 1, ١ and 𝟎. Superscript ², fraction ¼ and Roman numeral Ⅷ are other numeric categories and return false. Negative values, surrogates and values above U+10FFFF return false within the signed 32-bit rune domain.' },
     'http.StatusText': { scenario: 'http', path: 'go/net/http', source: 'ports/net/http.gooo', label: 'Status code', domain: 'int64', example: '404', description: 'Look up the standard description of an HTTP status code.', help: 'Use a decimal integer. Unknown status codes return an empty string.' },
     'unicode.IsSpace': { scenario: 'unicode', path: 'go/unicode', source: 'ports/unicode/space.gooo', label: 'Code point (decimal)', domain: 'int32 rune', example: '160', output: 'boolean', description: 'Check one code point against Go’s Unicode White_Space property.', help: 'Go includes non-breaking space and next line, but excludes zero-width space and the byte order mark. This checks whitespace membership, not visibility. Negative values, surrogates and values above U+10FFFF return false within the signed 32-bit domain.' },
     'utf8.ValidRune': { scenario: 'unicode', path: 'go/unicode/utf8', source: 'ports/unicode/utf8.gooo', label: 'Code point', domain: 'int32 rune', example: '128512', description: 'Check whether a code point is a valid Unicode scalar value.', help: 'Use a decimal integer. Surrogates and values outside the Unicode scalar range are invalid.' },
@@ -29,6 +31,7 @@
     precise: ['9007199254740993', '2'], unchanged: ['-9223372036854775808', '0']
   };
   const whitespacePresets = new Set(['160', '133', '8203', '65279', '9', '12288']);
+  const codePointOperations = new Set(['unicode.IsSpace', 'unicode.IsLetter', 'unicode.IsDigit']);
   const scenarios = { http: 'http.StatusText', unicode: 'utf16.EncodeRune', bytes: 'bits.Reverse8', colors: 'color.RGBToCMYK', duration: 'time.Duration.Round' };
   const inputNames = ['first', 'second', 'third', 'fourth'];
   const outputChannels = { rgb: ['red', 'green', 'blue'], cmyk: ['cyan', 'magenta', 'yellow', 'black'] };
@@ -160,7 +163,7 @@
   }
 
   function useCodePoint(text) {
-    if ($('operation').value !== 'unicode.IsSpace') return;
+    if (!codePointOperations.has($('operation').value)) return;
     forgetSharedInput();
     clearResult();
     resetCodePointHelper();
@@ -187,8 +190,8 @@
   function selectOperation(name, resetInput = true) {
     const operation = operations[name];
     resetCodePointHelper();
-    $('codepoint-helper').hidden = name !== 'unicode.IsSpace';
-    $('codepoint-input').disabled = name !== 'unicode.IsSpace';
+    $('codepoint-helper').hidden = !codePointOperations.has(name);
+    $('codepoint-input').disabled = !codePointOperations.has(name);
     $('whitespace-presets-field').hidden = name !== 'unicode.IsSpace';
     $('operation').value = name;
     $('function-description').textContent = operation.description;

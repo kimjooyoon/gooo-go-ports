@@ -3666,6 +3666,1298 @@
         "app/browser-demo:Dispatch.input3": 0,
         "app/browser-demo:Dispatch.input4": 0
       }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": -2147483648,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": -65471,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": -1,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 0,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 48,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": true,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 65,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 95,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": true,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 170,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 171,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 180,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": true,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 181,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": true,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 186,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": true,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 192,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": true,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 233,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": true,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 748,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 749,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": true,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 750,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 769,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 1632,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 2407,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": true,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 44032,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": true,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 66560,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 66720,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 120792,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": true,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 131072,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 178,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 189,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 8555,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 9312,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 55296,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 57343,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 1114111,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 1114112,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsLetter",
+        "app/browser-demo:Dispatch.input1": 2147483647,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": -2147483648,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": -65471,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": -1,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 0,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": true,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 48,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 65,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 95,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 170,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 171,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 180,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 181,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 186,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 192,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 233,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 748,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 749,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 750,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 769,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": true,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 1632,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": true,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 2407,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 44032,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 66560,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": true,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 66720,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": true,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 120792,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 131072,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 178,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 189,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 8555,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 9312,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 55296,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 57343,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 1114111,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 1114112,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
+    },
+    {
+      "expected": {
+        "app/browser-demo:Dispatch": {
+          "first": 0,
+          "flag": false,
+          "fourth": 0,
+          "second": 0,
+          "text": "",
+          "third": 0
+        }
+      },
+      "inputs": {
+        "app/browser-demo:Dispatch.input0": "unicode.IsDigit",
+        "app/browser-demo:Dispatch.input1": 2147483647,
+        "app/browser-demo:Dispatch.input2": 0,
+        "app/browser-demo:Dispatch.input3": 0,
+        "app/browser-demo:Dispatch.input4": 0
+      }
     }
   ],
   "schema": "gooo/body-composition-cases/v1"

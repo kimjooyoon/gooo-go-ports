@@ -8,10 +8,10 @@
   }
 })(globalThis, (textInput, protocol) => {
   'use strict';
-  const schema = 'gooo/text-inspection-report/v1';
+  const schema = 'gooo/text-inspection-report/v2';
   const kind = 'browser-observation';
-  const scope = 'Unsigned local browser observation of four compiled Gooo operations. Not a native compiler receipt or an independent reference-test result.';
-  const rowKeys = ['codePoint', 'offset', 'width', 'validScalar', 'goSpace', 'utf8Bytes', 'utf16Units'];
+  const scope = 'Unsigned local browser observation of six compiled Gooo operations. Not a native compiler receipt or an independent reference-test result.';
+  const rowKeys = ['codePoint', 'offset', 'width', 'validScalar', 'goSpace', 'goLetter', 'goDigit', 'utf8Bytes', 'utf16Units'];
   const totalKeys = ['codePoints', 'receivedUtf16Units', 'goWhitespaceItems', 'utf8Bytes', 'utf16Units'];
 
   function fields(value, names, label) {
@@ -64,7 +64,7 @@
     const checked = protocol.validateResult({ type: 'result', id: 1, rows, ...program }, { id: 1, points, ...program });
     const resultRows = checked.map((row, index) => ({
       codePoint: Number(points[index]), offset: decoded.items[index].offset, width: decoded.items[index].width,
-      validScalar: row.validScalar, goSpace: row.goSpace, utf8Bytes: row.utf8Bytes, utf16Units: row.utf16Units
+      validScalar: row.validScalar, goSpace: row.goSpace, goLetter: row.goLetter, goDigit: row.goDigit, utf8Bytes: row.utf8Bytes, utf16Units: row.utf16Units
     }));
     const encodable = checked.every(row => row.validScalar && row.utf8Bytes !== '-1' && row.utf16Units !== '-1');
     const totals = {
@@ -97,7 +97,7 @@
       if (!Object.is(row.codePoint, Number(item.decimal)) || !Object.is(row.offset, item.offset) || !Object.is(row.width, item.width)) {
         throw new Error('Report code point or position differs from its input.');
       }
-      return { input: item.decimal, validScalar: row.validScalar, goSpace: row.goSpace,
+      return { input: item.decimal, validScalar: row.validScalar, goSpace: row.goSpace, goLetter: row.goLetter, goDigit: row.goDigit,
         utf8Bytes: row.utf8Bytes, utf16Units: row.utf16Units };
     });
     const canonical = create(decoded, rows, program);

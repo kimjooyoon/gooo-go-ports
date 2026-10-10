@@ -84,7 +84,7 @@ function app(options = {}) {
     assert.equal(prevented, true);
   };
   const run = () => { get('text-form').emit('submit'); return current().messages.at(-1); };
-  const reply = (mapper = point => ({ input: point, validScalar: true, goSpace: false, utf8Bytes: '1', utf16Units: '1' }), worker = current(), changes = {}) => {
+  const reply = (mapper = point => ({ input: point, validScalar: true, goSpace: false, goLetter: false, goDigit: false, utf8Bytes: '1', utf16Units: '1' }), worker = current(), changes = {}) => {
     const request = worker.messages.at(-1);
     worker.deliver({ type: 'result', id: request.id, rows: request.points.map(mapper), ...identity, ...changes });
   };
@@ -119,11 +119,14 @@ test('typing after paste starts a new authoritative input, and edits hide old re
 
 test('UI displays compiled Boolean/length fields rather than reclassifying input', () => {
   const a = app(); a.ready(); a.transfer('\uFEFF\uD800😀'); a.run();
-  a.reply(point => ({ input: point, validScalar: true, goSpace: true, utf8Bytes: '4', utf16Units: '2' }));
+  a.reply(point => ({ input: point, validScalar: true, goSpace: true, goLetter: true, goDigit: true, utf8Bytes: '4', utf16Units: '2' }));
   const rows = a.get('text-rows').children;
   assert.equal(rows.length, 3);
+  assert.match(a.get('text-progress').textContent, /18 Gooo calls/);
   assert.equal(rows[1].children[3].textContent, 'Yes', 'surrogate result must be the worker Boolean');
   assert.equal(rows[0].children[4].textContent, 'Yes', 'BOM result must be the worker Boolean');
+  assert.equal(rows[0].children[5].textContent, 'Yes', 'letter value must remain the returned Boolean');
+  assert.equal(rows[1].children[6].textContent, 'Yes', 'digit value must remain the returned Boolean');
   assert.match(rows[1].children[1].textContent, /\\uD800.*1 received unit/);
   assert.match(rows[2].children[0].textContent, /offset 2/);
   assert.match(a.get('text-summary').textContent, /4 received UTF-16.*3 Go whitespace.*12 UTF-8 bytes and 6 UTF-16/);
@@ -131,10 +134,10 @@ test('UI displays compiled Boolean/length fields rather than reclassifying input
 
 test('invalid scalars or returned -1 encoding values suppress totals but retain received-unit count', () => {
   for (const row of [
-    { validScalar: false, goSpace: false, utf8Bytes: '-1', utf16Units: '-1' },
-    { validScalar: true, goSpace: false, utf8Bytes: '-1', utf16Units: '1' },
-    { validScalar: true, goSpace: false, utf8Bytes: '1', utf16Units: '-1' },
-    { validScalar: false, goSpace: true, utf8Bytes: '1', utf16Units: '1' }
+    { validScalar: false, goSpace: false, goLetter: false, goDigit: false, utf8Bytes: '-1', utf16Units: '-1' },
+    { validScalar: true, goSpace: false, goLetter: false, goDigit: false, utf8Bytes: '-1', utf16Units: '1' },
+    { validScalar: true, goSpace: false, goLetter: false, goDigit: false, utf8Bytes: '1', utf16Units: '-1' },
+    { validScalar: false, goSpace: true, goLetter: true, goDigit: true, utf8Bytes: '1', utf16Units: '1' }
   ]) {
     const a = app(); a.ready(); a.mode('json'); a.type('"\\uD800"'); a.run();
     a.reply(point => ({ input: point, ...row }));
@@ -230,9 +233,9 @@ test('progress never exposes partial rows; duplicate submits and stale IDs canno
 test('malformed rows, program mismatch, worker errors and backwards progress clear results', () => {
   const corruptions = [
     (a, request) => a.reply(undefined, a.current(), { wasmSha256: 'c'.repeat(64) }),
-    a => a.reply(() => ({ input: '66', validScalar: true, goSpace: false, utf8Bytes: '1', utf16Units: '1' })),
+    a => a.reply(() => ({ input: '66', validScalar: true, goSpace: false, goLetter: false, goDigit: false, utf8Bytes: '1', utf16Units: '1' })),
     a => a.reply(undefined, a.current(), { rows: [] }),
-    a => a.reply(() => ({ input: '65', validScalar: true, goSpace: false, utf8Bytes: '0', utf16Units: '1' })),
+    a => a.reply(() => ({ input: '65', validScalar: true, goSpace: false, goLetter: false, goDigit: false, utf8Bytes: '0', utf16Units: '1' })),
     (a, request) => a.current().deliver({ type: 'error', id: request.id, message: 'compiled call failed' }),
     (a, request) => { a.current().deliver({ type: 'progress', id: request.id, completed: 1, total: 1 }); a.current().deliver({ type: 'progress', id: request.id, completed: 0, total: 1 }); }
   ];
@@ -289,7 +292,7 @@ test('page exposes matching input controls, scripts and responsive semantic tabl
   assert.ok(html.indexOf('text-inspection-report.js') < html.indexOf('text-inspector.js'));
   for (const name of ['text-mode', 'text-capture', 'text-preview', 'text-form', 'text-run', 'text-rows', 'text-progress']) assert.match(html, new RegExp('id="' + name + '"'));
   assert.match(html, /<caption>One row per UTF-16-decoded code point/);
-  assert.equal((html.match(/scope="col"/g) || []).length, 7);
+  assert.equal((html.match(/scope="col"/g) || []).length, 9);
   assert.match(html, /4,096 characters before decoding/);
   assert.match(css, /@media \(max-width: 620px\)/);
   assert.match(html, /id="text-download"[^>]*disabled hidden/);
@@ -361,7 +364,7 @@ test('Blob download preserves CRLF and lone surrogate JSON, identity and exact c
   const a = app(); a.ready(); a.mode('json'); a.type('"\\r\\n\\uD800A\\uDFFF\\uFFFD"'); a.run();
   a.reply(point => {
     const lone = ['55296', '57343'].includes(point);
-    return { input: point, validScalar: !lone, goSpace: ['13', '10'].includes(point), utf8Bytes: lone ? '-1' : point === '65533' ? '3' : '1', utf16Units: lone ? '-1' : '1' };
+    return { input: point, validScalar: !lone, goSpace: ['13', '10'].includes(point), goLetter: false, goDigit: false, utf8Bytes: lone ? '-1' : point === '65533' ? '3' : '1', utf16Units: lone ? '-1' : '1' };
   });
   const summary = a.get('text-summary').textContent;
   a.download();
@@ -370,7 +373,7 @@ test('Blob download preserves CRLF and lone surrogate JSON, identity and exact c
   const json = await a.objectUrls[0].blob.text();
   assert.equal(json.endsWith('\n'), true);
   const report = JSON.parse(json);
-  assert.equal(report.schema, 'gooo/text-inspection-report/v1');
+  assert.equal(report.schema, 'gooo/text-inspection-report/v2');
   assert.equal(report.kind, 'browser-observation');
   assert.deepEqual(report.input.utf16Units, [13, 10, 55296, 65, 57343, 65533]);
   assert.equal(JSON.parse(report.input.escapedJson), '\r\n\uD800A\uDFFF\uFFFD');

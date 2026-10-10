@@ -5,11 +5,12 @@ to examine copied text without installing a compiler. For example, the built-in
 mixed-text input contains `A`, a non-breaking space, `B`, CR, LF, a zero-width
 space, and an emoji. Its seven rows show exactly where each item occurs.
 
-The application calls four existing Gooo ports for every decoded item:
-`utf8.ValidRune`, `unicode.IsSpace`, `utf8.RuneLen`, and `utf16.RuneLen`.
+The application calls six existing Gooo ports for every decoded item:
+`utf8.ValidRune`, `unicode.IsSpace`, `unicode.IsLetter`, `unicode.IsDigit`,
+`utf8.RuneLen`, and `utf16.RuneLen`.
 Their calculations run in the same precompiled WebAssembly program as the
 single-function demo. A separate browser Worker keeps this work off the page's
-main thread. The function count remains 19; this browser workflow does not add
+main thread. The demo exposes 21 existing port functions; this browser workflow does not add
 a native Gooo consumer or implement a whole-string Go API.
 
 ## Supply text and inspect the captured input
@@ -44,6 +45,12 @@ interrupted run does not leave partial results presented as a completed check.
   letters or grapheme clusters.
 - Go whitespace uses Unicode 17.0.0 White_Space: NEL and NBSP are included,
   while BOM and U+200B are excluded. This is not a visibility or safety verdict.
+- Go letters use Unicode category L and decimal digits use Nd. `가` and `𐐀`
+  are letters; `١` and `𝟎` are decimal digits. `²`, `¼` and `Ⅷ` belong to other
+  number categories, and U+0301 is a combining mark. No normalization is applied:
+  `é` and `e` plus a combining accent produce different rows. The **Letters +
+  decimal digits** example demonstrates these distinctions. Neither category
+  validates a complete identifier, reserved word, grapheme, or confusable.
 - Original UTF-16 units describe the input transport. Gooo's UTF-16 encoding
   length describes whether the item can encode a valid scalar. For a lone
   surrogate, the former is 1 and the latter is -1. UTF-8 length is also -1.
@@ -63,17 +70,20 @@ After an inspection completes, use **Download inspection JSON** to save
 results and program identity. Creating the download stays in the browser;
 sharing the saved file is a separate action you control.
 
-The report uses schema `gooo/text-inspection-report/v1` and identifies itself as
+The report uses schema `gooo/text-inspection-report/v2` and identifies itself as
 a `browser-observation`. It records a completed use of the browser application.
 It is unsigned and does not carry a native compiler execution receipt or a
-Go-reference comparison result.
+Go-reference comparison result. Version 2 adds required Boolean `goLetter` and
+`goDigit` row fields. Previously downloaded v1 reports remain historical four-call
+observations; their `input.escapedJson` still recreates the exact input in this
+version. Missing old classification fields are not inferred or filled in.
 
 - `input.utf16Units` is the original sequence of numeric UTF-16 code units.
   This representation preserves CR, LF, NUL and lone surrogates exactly.
 - `input.escapedJson` is a quoted JSON string with one `\uXXXX` escape per
   original code unit. Its decoded field value can be pasted into JSON string
   mode to recreate the same captured input.
-- `rows` retain each code point, zero-based offset, original width and all four
+- `rows` retain each code point, zero-based offset, original width and all six
   Gooo results. Encoding lengths remain decimal strings, including `"-1"`.
 - `totals` keep the received unit and code-point counts. Both encoding totals
   are `null` when any scalar or returned length is invalid; empty text has zero
@@ -103,11 +113,11 @@ device. A file download error can be retried without rerunning the inspection.
 The Worker checks the program bytes against the bundled Wasm hash and checks
 each runtime response's operation, original input and output shape before using
 it. JavaScript decodes the input and displays or totals the returned values;
-the four per-item judgments come from compiled Gooo.
+the six per-item judgments come from compiled Gooo.
 
 The existing native execution/replay evidence and browser reference corpus still
 cover the same ports. Additional application fixtures use numeric UTF-16 units
-and explicitly expected decoded positions, with the four reference outputs
+and explicitly expected decoded positions, with the six reference outputs
 computed independently by the pinned Go toolchain. Numeric units preserve lone
 surrogates that decoding a JSON string into a Go string would replace.
 The application checks are reported separately from the port corpus.

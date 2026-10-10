@@ -25,7 +25,7 @@
       const values = protocol.OPERATIONS.map(operation =>
         protocol.parseCompiledReply(run(operation, input, '0'), operation, input));
       if (!current()) throw cancelled();
-      rows.push({ input, validScalar: values[0], goSpace: values[1], utf8Bytes: values[2], utf16Units: values[3] });
+      rows.push({ input, validScalar: values[0], goSpace: values[1], utf8Bytes: values[2], utf16Units: values[3], goLetter: values[4], goDigit: values[5] });
       const completed = index + 1;
       if (completed % chunkSize === 0 || completed === points.length) {
         if (options.onProgress) options.onProgress(completed, points.length);

@@ -304,3 +304,14 @@ test('single-codepoint decoding is exact UTF-16 decoding, not trimming or whites
   }
   for (const text of ['', '  ', '\r\n', 'e\u0301', '👩‍💻', '🇰🇷', '\ud800x', '😀a', null, 32]) assert.throws(() => helper.fromText(text), /exactly one code point/);
 });
+
+test('classification share links retain signed rune boundaries and reject narrowing aliases', () => {
+  for (const operation of ['unicode.IsLetter', 'unicode.IsDigit']) {
+    for (const input of ['-2147483648', '-1', '0', '65', '55296', '1114112', '2147483647']) {
+      const value = { operation, inputs: [input, '0'], wasm: 'a'.repeat(64), revision: 'b'.repeat(40) };
+      assert.deepEqual(share.parse(share.format(value)), value);
+    }
+    for (const input of ['-2147483649', '2147483648', '4294967361', '4294967345', '065', '+65', '-0']) assert.throws(() => share.validateInputs(operation, [input, '0']));
+    for (const inputs of [[], ['65'], ['65', '1'], ['65', '0', '0']]) assert.throws(() => share.validateInputs(operation, inputs));
+  }
+});

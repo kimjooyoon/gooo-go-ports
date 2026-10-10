@@ -38,9 +38,9 @@ scalar validity, ASCII whitespace membership, and UTF-8/UTF-16 lengths.
 This classification does not determine whether a character is visible or safe.
 
 The [Unicode text inspector](https://kimjooyoon.github.io/gooo-go-ports/text-inspector.html)
-combines four existing compiled Gooo functions for a whole pasted input. It shows
-each code point's original UTF-16 position, scalar validity, Go whitespace
-membership, and UTF-8 / UTF-16 encoding lengths. CR and LF remain separate;
+combines six existing compiled Gooo functions for a whole pasted input. It shows
+each code point's original UTF-16 position, scalar validity, Go whitespace, letter
+and decimal-digit membership, and UTF-8 / UTF-16 encoding lengths. CR and LF remain separate;
 combining and joined sequences are shown as their constituent code points.
 The browser decodes the received UTF-16 text and displays the Gooo results.
 Download a completed inspection as JSON to retain the exact input, returned
@@ -52,7 +52,9 @@ The native [identifier character classifier](examples/identifier-rune/README.md)
 complete Unicode `IsLetter` and `IsDigit` ports. It distinguishes letters, decimal
 digits and underscore for one identifier character. A reproducible generator
 preserves every pinned range and stride; these two ports are available in native
-Gooo workspaces. The browser dispatcher continues to expose its existing 19 functions.
+Gooo workspaces and in the 21-function browser demo. Try the text inspector’s
+**Letters + decimal digits** example to compare `가`, `١`, `𝟎`, `²`, `¼`, `Ⅷ`
+and a combining accent. These per-character categories do not validate a whole identifier.
 
 For a fixed snapshot, download [experimental release v0.1.0-preview.2](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.2).
 It includes separate source, native execution/replay evidence, and standalone browser
@@ -150,12 +152,13 @@ python3 -m http.server 8766 --bind 127.0.0.1 --directory out/browser/site
 브라우저 비교는 기존 함수 입력 3,135개와 정밀도 경계 2개를 보존하고 색상 원본 비교 1,300개를
 추가한 4,437건과 회전 원본 비교 2,472건을 합친 6,909건을 보존합니다.
 시간 간격 두 함수에 각각 1,789건을 더한 **10,487건**도 유지하고, `IsSpace` **506건**을
-추가해 **10,993건**입니다. 잘못된 입력·채널 개수 등의 거부 **338건**은 별도 집계합니다.
-Node smoke 검사는 공유 입력 왕복 10,993건과 추가 호출 형태·타입 오류 51건도 검사하므로
-총 거부 검사는 **389건**입니다. 아래 native 소비 예제는 브라우저 집계에 포함하지 않습니다.
+추가한 **10,993건**을 유지합니다. `IsLetter` 4,128건과 `IsDigit` 915건을 더한
+현재 브라우저 원본 비교는 **16,036건**입니다. 잘못된 입력·채널 개수 등의 거부 **420건**은 별도 집계합니다.
+Node smoke 검사는 공유 입력 왕복 16,036건과 추가 호출 형태·타입 오류 63건도 검사하므로
+총 거부 검사는 **483건**입니다. 아래 native 소비 예제는 브라우저 집계에 포함하지 않습니다.
 HTTP·rune·색상 검사는 유한 입력 관측이며 패키지 전체 호환성이나 성능을 보장하지 않습니다.
 
-브라우저 생성용 사례 **193개**도 기대 결과와 함께 native 실행·저장된 프로그램 재실행을 검증합니다.
+브라우저 생성용 사례 **261개**도 기대 결과와 함께 native 실행·저장된 프로그램 재실행을 검증합니다.
 입력 파일당 128개·32 KiB 제한을 지키도록 실제 JSON 바이트 크기로 나누며 사례를 생략하지 않습니다.
 배포물의 `evidence-index.json`에 모든 배치 입력·실행·재실행 파일과 해시가 있습니다.
 `execution.json`·`replay.json`은 첫 배치의 원본 바이트 별칭이며 전체 기록은 인덱스를 따릅니다.

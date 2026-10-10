@@ -30,6 +30,12 @@ activity Dispatch(Text, Integer, Integer, Integer, Integer) -> Reply id "gooo://
 if input0 == "unicode.IsSpace" {
     return Reply{text: "", flag: unicode.IsSpace(input1), first: 0, second: 0, third: 0, fourth: 0}
 }
+if input0 == "unicode.IsLetter" {
+    return Reply{text: "", flag: unicode.IsLetter(input1), first: 0, second: 0, third: 0, fourth: 0}
+}
+if input0 == "unicode.IsDigit" {
+    return Reply{text: "", flag: unicode.IsDigit(input1), first: 0, second: 0, third: 0, fourth: 0}
+}
 if input0 == "utf8.ValidRune" {
     return Reply{text: "", flag: utf8.ValidRune(input1), first: 0, second: 0, third: 0, fourth: 0}
 }

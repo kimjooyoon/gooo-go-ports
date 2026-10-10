@@ -25,7 +25,7 @@ func TestBrowserFixturesKeepOracleCoverageAndExactStrings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(doc.Cases) != 10993 || len(doc.Rejections) != 338 || doc.GoVersion != lock.GoVersion || doc.CompilerRevision != lock.CompilerRevision {
+	if len(doc.Cases) != 16036 || len(doc.Rejections) != 420 || doc.GoVersion != lock.GoVersion || doc.CompilerRevision != lock.CompilerRevision {
 		t.Fatalf("changed fixture scope: %d cases, %d rejections", len(doc.Cases), len(doc.Rejections))
 	}
 	for _, legacy := range []struct {
@@ -90,7 +90,7 @@ func TestBrowserFixturesKeepOracleCoverageAndExactStrings(t *testing.T) {
 			byteInputs[c.Operation][c.Inputs[0]] = true
 		}
 	}
-	if len(counts) != 19 || counts["unicode.IsSpace"] != 506 || counts["time.Duration.Round"] != 1789 || counts["time.Duration.Truncate"] != 1789 || counts["bits.RotateLeft8"] != 2472 || counts["color.RGBToCMYK"] != 637 || counts["color.CMYKToRGB"] != 663 || counts["http.StatusText"] != 627 || counts["utf16.DecodeRune"] != 164 || len(byteInputs) != 6 {
+	if len(counts) != 21 || counts["unicode.IsLetter"] != 4128 || counts["unicode.IsDigit"] != 915 || counts["unicode.IsSpace"] != 506 || counts["time.Duration.Round"] != 1789 || counts["time.Duration.Truncate"] != 1789 || counts["bits.RotateLeft8"] != 2472 || counts["color.RGBToCMYK"] != 637 || counts["color.CMYKToRGB"] != 663 || counts["http.StatusText"] != 627 || counts["utf16.DecodeRune"] != 164 || len(byteInputs) != 6 {
 		t.Fatalf("wrong operation roster: %v", counts)
 	}
 	for operation, inputs := range byteInputs {

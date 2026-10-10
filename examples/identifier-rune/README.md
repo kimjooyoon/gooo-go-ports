@@ -21,6 +21,16 @@ words, perform normalization, implement Unicode XID rules, or assess confusables
 and security. In particular, `é` and a sequence of `e` plus a combining accent
 are different inputs. Go's blank identifier has additional context-specific rules.
 
+## Try the classification in a browser
+
+The [text inspector](https://kimjooyoon.github.io/gooo-go-ports/text-inspector.html)
+shows the same `IsLetter` and `IsDigit` ports for each decoded code point. Choose
+**Letters + decimal digits** to compare letters, Nd digits and other numbers.
+This browser view does not call this native `Classify` consumer or determine
+whether a complete string is a valid identifier. The
+[function demo](https://kimjooyoon.github.io/gooo-go-ports/) also accepts original
+signed int32 inputs, including negative and non-scalar values.
+
 ## Run and replay
 
 From the repository root, with Git, a POSIX shell, and Go toolchain selection:
