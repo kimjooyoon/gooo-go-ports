@@ -14,7 +14,7 @@ Color ports and their consumer add separate reference and rejection cases, detai
 Other domains use finite boundary cases and samples. This is an independent experimental port,
 not a complete Go package implementation or an official Google/Go project.
 
-[Try the browser demo](https://kimjooyoon.github.io/gooo-go-ports/) to run 19 HTTP, Unicode, byte, color, and duration functions
+[Try the browser demo](https://kimjooyoon.github.io/gooo-go-ports/) to run 21 HTTP, Unicode, byte, color, and duration functions
 without installing a compiler. It executes a precompiled Gooo program as WebAssembly;
 it is not an editor for compiling arbitrary source. The page includes the Gooo source,
 unmodified generated Go, execution receipts, and an optional reference-check button.
