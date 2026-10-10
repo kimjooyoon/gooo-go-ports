@@ -21,6 +21,9 @@ type resultContract struct {
 // Existing activities retain their contracts; these new result identities also
 // bind the record's semantic field IDs, order and values to independent Go output.
 func whitespaceResultContract(s suite) resultContract {
+	if geometry := geometryResultContract(s); geometry.Entity != "" {
+		return geometry
+	}
 	switch s.Package + ":" + s.Activity {
 	case "go/unicode:IsSpace", "go/unicode:IsLetter", "go/unicode:IsDigit":
 		return resultContract{Entity: "gooo://std/boolean"}

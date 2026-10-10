@@ -1,0 +1,16 @@
+// Clip a requested crop to supplied bounds through imported Gooo geometry.
+// This computes coordinates only; it does not read, crop or resize an image.
+package crop_planner
+namespace gooo_ports_examples_crop_planner
+import geometry "go/image"
+entity CropResult id "gooo://example/crop-planner/result" fields {
+    field min_x id "gooo://example/crop-planner/result/min-x" type integer required one
+    field min_y id "gooo://example/crop-planner/result/min-y" type integer required one
+    field max_x id "gooo://example/crop-planner/result/max-x" type integer required one
+    field max_y id "gooo://example/crop-planner/result/max-y" type integer required one
+    field has_pixels id "gooo://example/crop-planner/result/has-pixels" type boolean required one
+}
+
+// input0 is the original bounds; input1 is the original requested crop.
+activity CropPlan(Rectangle, Rectangle) -> CropResult id "gooo://example/crop-planner/crop-plan" computes `let clipped = geometry.RectangleIntersect(input0, input1)
+return CropResult{min_x: clipped.min_x, min_y: clipped.min_y, max_x: clipped.max_x, max_y: clipped.max_y, has_pixels: !geometry.RectangleEmpty(clipped)}`

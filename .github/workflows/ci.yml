@@ -48,6 +48,7 @@ jobs:
           ./.gooo check ports/unicode/space.gooo
           ./.gooo check ports/math/bits.gooo
           ./.gooo check ports/image/color.gooo
+          ./.gooo check ports/image/geometry.gooo
           ./.gooo check ports/time/duration.gooo
           sh tools/probe.sh --out out/probes
       - name: Compare the ports with Go and replay every batch
@@ -57,7 +58,7 @@ jobs:
             .schema == "gooo/go-ports-differential/v1" and
             .go_version == "go1.27.2" and
             .compiler_revision == "366ee6ef8f9d2b9b57331dfd26b6f908c0289851" and
-            .ported_functions == 21 and .consumer_programs == 8 and .consumer_activities == 9 and
+            .ported_functions == 25 and .consumer_programs == 9 and .consumer_activities == 10 and
             .legacy_cases == 3147 and .unicode_reference_cases == 334 and .unicode_rejection_cases == 12 and
             .color_port_reference_cases == 1300 and .color_port_rejection_cases == 56 and
             .color_consumer_reference_cases == 637 and .color_consumer_rejection_cases == 24 and
@@ -68,9 +69,10 @@ jobs:
             .whitespace_consumer_reference_cases == 506 and .whitespace_consumer_rejection_cases == 8 and
             .classification_port_reference_cases == 5043 and .classification_port_rejection_cases == 24 and
             .classification_consumer_reference_cases == 4570 and .classification_consumer_rejection_cases == 12 and
-            .cases == 24770 and .passed == 24770 and
-            (.runs | length) == 30 and
-            ([.runs[].cases] | add) == 24770 and ([.runs[].batches] | add) == 295 and
+            .geometry_port_reference_cases == 1711 and .geometry_consumer_reference_cases == 486 and
+            .cases == 26967 and .passed == 26967 and
+            (.runs | length) == 35 and
+            ([.runs[].cases] | add) == 26967 and ([.runs[].batches] | add) == 363 and
             all(.runs[]; .passed == .cases and .replay_equal == true)
           ' out/ci/summary.json
       - name: Exhaustively compare generated Unicode classifications
@@ -328,6 +330,15 @@ jobs:
           assert execution["result"]["runtime"]["traces"] == replay["result"]["runtime"]["traces"]
           assert execution["result"]["composition"]["source"] == replay["result"]["composition"]["source"]
           PYTHON
+      - name: Execute and replay the rectangle crop planner
+        run: |
+          ./.gooo package execute --json --inputs examples/crop-planner/inputs.json \
+            crop-planner.workspace.json > out/crop-example.json
+          ./.gooo package replay --json --receipt out/crop-example.json \
+            --inputs examples/crop-planner/inputs.json \
+            crop-planner.workspace.json > out/crop-replay.json
+          python3 tools/check-crop-example.py out/crop-example.json out/crop-replay.json
+          python3 tools/check-rectangle-inputs.py out/rectangle-input-rejections
       - name: Upload execution and diagnostic evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

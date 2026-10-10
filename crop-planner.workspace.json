@@ -1,0 +1,21 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "example/crop-planner",
+    "activity": "CropPlan"
+  },
+  "packages": [
+    {
+      "path": "go/image",
+      "sources": [
+        "ports/image/geometry.gooo"
+      ]
+    },
+    {
+      "path": "example/crop-planner",
+      "sources": [
+        "examples/crop-planner/crop_planner.gooo"
+      ]
+    }
+  ]
+}

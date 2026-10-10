@@ -39,13 +39,17 @@ func allNativeSuites(t *testing.T) []suite {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return append(append(append(append(append(append(suites, unicode.Suites...), colors.Suites...), rotations.Suites...), durations.Suites...), whitespace.Suites...), classification.Suites...)
+	geometry, err := geometryCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return append(append(append(append(append(append(append(suites, unicode.Suites...), colors.Suites...), rotations.Suites...), durations.Suites...), whitespace.Suites...), classification.Suites...), geometry.Suites...)
 }
 
 func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 	contracts := nativeActivityContracts()
 	suites := allNativeSuites(t)
-	if len(contracts) != 30 || len(suites) != 30 {
+	if len(contracts) != 35 || len(suites) != 35 {
 		t.Fatal("contract/suite roster changed")
 	}
 	seen := map[string]bool{}
@@ -74,6 +78,16 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 			t.Fatal("contract arity differs from source", key)
 		}
 		for i, input := range inputs {
+			if contract.InputEntities[i] == rectangleEntity {
+				declarations, err := os.ReadFile("../../ports/image/geometry.gooo")
+				if err != nil {
+					t.Fatal(err)
+				}
+				if strings.TrimSpace(input) != "Rectangle" || !strings.Contains(string(declarations), `entity Rectangle id "`+rectangleEntity+`"`) {
+					t.Fatal("contract Rectangle input entity differs from source", key)
+				}
+				continue
+			}
 			// Generated classifications share the package's reviewed entity declarations.
 			declarations := source
 			if contract.Source == "ports/unicode/classification.gooo" {
@@ -93,12 +107,12 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		}
 		total += len(s.Cases)
 	}
-	classification, err := classificationCorpus()
+	geometry, err := geometryCorpus()
 	if err != nil {
 		t.Fatal(err)
 	}
-	added := classification.PortReferenceCases + classification.PortRejectionCases + classification.ConsumerReferenceCases + classification.ConsumerRejectionCases
-	if total != 15121+added {
+	added := geometry.PortReferenceCases + geometry.ConsumerReferenceCases
+	if total != 24770+added {
 		t.Fatalf("corpus changed: %d", total)
 	}
 	if _, err := contractFor(suite{Package: "go/net/http", Activity: "Unknown"}); err == nil {

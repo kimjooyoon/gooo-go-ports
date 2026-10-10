@@ -8,6 +8,7 @@
     {"path": "go/unicode", "sources": ["ports/unicode/space.gooo", "ports/unicode/classification.gooo"]},
     {"path": "go/math/bits", "sources": ["ports/math/bits.gooo"]},
     {"path": "go/image/color", "sources": ["ports/image/color.gooo"]},
+    {"path": "go/image", "sources": ["ports/image/geometry.gooo"]},
     {"path": "go/time", "sources": ["ports/time/duration.gooo"]},
     {"path": "app/response", "sources": ["examples/response.gooo"]},
     {"path": "app/byte-summary", "sources": ["examples/byte-summary/main.gooo"]},
@@ -16,6 +17,7 @@
     {"path": "app/color-inspector", "sources": ["examples/color-inspector/main.gooo"]},
     {"path": "app/duration-quantizer", "sources": ["examples/duration-quantizer/main.gooo"]},
     {"path": "app/whitespace-inspector", "sources": ["examples/whitespace-inspector/main.gooo"]},
-    {"path": "app/identifier-rune", "sources": ["examples/identifier-rune/main.gooo"]}
+    {"path": "app/identifier-rune", "sources": ["examples/identifier-rune/main.gooo"]},
+    {"path": "example/crop-planner", "sources": ["examples/crop-planner/crop_planner.gooo"]}
   ]
 }

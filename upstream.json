@@ -7,6 +7,7 @@
   "compiler_revision": "366ee6ef8f9d2b9b57331dfd26b6f908c0289851",
   "compiler_version": "0.6.24-dev",
   "source_sha256": {
+    "src/image/geom.go": "7cc4be83e978cc172e0ebb9713a6afd77ccf3ceb82d9cbc6f79082e698884ec2",
     "src/unicode/digit.go": "dfb14dbbcb918a6c7ee9be15293327d022f9d64a4c1a90f9c8049b682e799761",
     "src/unicode/graphic.go": "46a43107a87c88cf17a05a557e00dbf6b0f4bb53ebcd7d3035e02f1e67c428be",
     "src/unicode/letter.go": "b35a6d259313cef88d07e9e4027b8bd72c60ae140418f5be2c41a2ecea6074fe",
@@ -22,6 +23,13 @@
     "LICENSE": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
   },
   "ports": [
+    {
+      "source": "src/image/geom.go",
+      "target": "ports/image/geometry.gooo",
+      "symbols": ["Rectangle.Empty", "Rectangle.Overlaps", "Rectangle.Intersect", "Rectangle.Union"],
+      "target_activities": ["RectangleEmpty", "RectangleOverlaps", "RectangleIntersect", "RectangleUnion"],
+      "api_mapping": "Rectangle receiver is the first record argument. Go Min.X, Min.Y, Max.X, Max.Y map to required Integer fields min_x, min_y, max_x, max_y without normalization. Each coordinate preserves the full signed int64 Go int domain on amd64/arm64. Empty and reversed rectangles remain valid inputs; no coordinate arithmetic, narrowing, or domain extension."
+    },
     {
       "source": "src/unicode/graphic.go",
       "supporting_sources": ["src/unicode/digit.go", "src/unicode/letter.go", "src/unicode/tables.go"],

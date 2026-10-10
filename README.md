@@ -4,7 +4,7 @@
 describing what programs should do and inspecting how they are built and run.
 This independent ecosystem project implements selected Go standard-library functions in Gooo,
 with independent Go reference outputs and saved replay. The current scope is
-21 HTTP, Unicode, 8-bit integer, color-conversion, and duration functions, eight native importing examples,
+25 HTTP, Unicode, 8-bit integer, color, duration, and rectangle functions, nine native importing examples,
 and an importing browser dispatcher.
 Use Go 1.27.2, Git, and a POSIX shell on macOS or Linux: run `./tools/bootstrap.sh`, then
 `go run ./cmd/verify --out out/first` from this repository. The output directory must be new.
@@ -60,6 +60,12 @@ To use these ports outside this repository, follow the complete
 separate application from a fixed snapshot, copies both required source files,
 and saves an execution record for replay.
 
+The native [crop planner](examples/crop-planner/README.md) imports the rectangle
+package and clips a requested region to image bounds. Rectangle records preserve
+all four signed 64-bit coordinates, including reversed and empty rectangles. The
+Go `Min.X`, `Min.Y`, `Max.X`, `Max.Y` fields map to `min_x`, `min_y`, `max_x`, `max_y`;
+the port does not normalize them. These four operations are currently native only.
+
 For a fixed snapshot, download [experimental release v0.1.0-preview.2](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.2).
 It includes separate source, native execution/replay evidence, and standalone browser
 archives, with licenses, provenance, and checksums. Downloads do not require a GitHub
@@ -71,7 +77,7 @@ with the page URL or command and what happened. A working demo or shared input l
 is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수·색상 변환·시간 간격 함수 21개를 제공합니다.
+현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수·색상 변환·시간 간격·사각형 함수 25개를 제공합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -94,6 +100,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | `go/math/bits` | `RotateLeft8` | 바이트와 signed int64 회전 수를 받아 왼쪽 회전. 음수는 오른쪽 회전이며 반환값은 0..255 |
 | `go/image/color` | `RGBToCMYK`, `CMYKToRGB` | 각 채널 0..255의 RGB 3성분·CMYK 4성분 변환. 다중 반환은 `CMYK`·`RGB` 레코드 |
 | `go/time` | `DurationRound`, `DurationTruncate` | Go Duration 메서드의 수신 객체를 첫 인수로 전달. 두 signed int64 나노초 입력의 반올림·절삭과 범위 초과 시 포화 |
+| `go/image` | `RectangleEmpty`, `RectangleOverlaps`, `RectangleIntersect`, `RectangleUnion` | 수신 사각형을 첫 레코드 인수로 전달. Go의 네 좌표를 signed int64 필드로 보존하며 빈·뒤집힌 사각형을 정규화하지 않음. Native 전용 |
 
 원본의 `rune` 입력은 int32 범위를 Gooo Integer로 전달합니다. `byte` 호환 범위는
 0..255입니다. 묵시적으로 정수 폭을 줄이지 않습니다. `RuneStart`의 범위 밖 입력은
@@ -112,7 +119,11 @@ Go의 byte 변환처럼 입력을 잘라서 계산하지 않습니다. 0의 앞�
 시간 간격의 두 입력은 signed int64 나노초 전체 범위입니다. 단위가 0 이하이면 원래 값을
 반환하며, 정확한 중간값은 0에서 멀어지는 쪽으로 반올림합니다. 반올림 결과가 범위를
 넘으면 int64 최솟값·최댓값으로 포화되므로 결과가 단위의 배수가 아닐 수 있습니다.
-HTTP 서버, UTF 인코딩 패키지, Go time 패키지 전체의 이식은 아닙니다.
+사각형은 Go의 `Min.X`, `Min.Y`, `Max.X`, `Max.Y`를 `min_x`, `min_y`, `max_x`, `max_y`로
+표현합니다. 각 좌표는 amd64·arm64의 Go int 전체 범위를 유지합니다. 변이나 꼭짓점만
+접촉하면 겹치지 않으며, 빈 교집합은 네 좌표가 모두 0입니다. 둘 다 빈 사각형이면
+합집합은 두 번째 입력의 좌표를 그대로 돌려줍니다. 좌표를 정렬하거나 범위를 줄이지 않습니다.
+HTTP 서버, UTF 인코딩, Go time·image 패키지 전체의 이식은 아닙니다.
 
 ## 실행하기
 
@@ -267,6 +278,12 @@ UTF-16 코드 단위 수를 반환합니다. `IsSpace`와 기존 UTF 포트를 G
 브라우저에는 단일 `IsSpace` 함수와 한 코드 포인트 붙여넣기 보조 입력을 제공합니다.
 문자열을 잘라내거나 정규화하지 않으며 여러 코드 포인트를 하나로 간주하지 않습니다.
 
+여덟 번째 앱인 [식별자 문자 분류기](examples/identifier-rune/README.md)는 문자·십진 숫자·
+밑줄을 구분합니다. 아홉 번째 앱인 [잘라내기 영역 계산기](examples/crop-planner/README.md)는
+이미지 경계와 요청 사각형을 받아 교집합 좌표와 픽셀 존재 여부를 반환합니다.
+`RectangleIntersect`와 `RectangleEmpty`를 가져오며, 원점이 0이 아닌 이미지 경계도
+그대로 처리합니다. 계산할 좌표를 반환하는 예제이며 이미지 파일을 읽거나 수정하지 않습니다.
+
 ## 다른 Gooo 프로그램에서 가져오기
 
 [새 프로젝트에서 포트 사용하기](docs/use-in-your-project.md)는 고정 소스를 받고
@@ -307,7 +324,11 @@ manifest 기준 상대 파일 경로를 등록합니다. import 자체가 패키
 **3,578건**, 소비 앱 **1,789건**을 더한 **14,093건**도 유지합니다. 공백 포트와 소비 앱은
 각각 원본 비교 **506건**·int32 밖 확장 **8건**을 추가한 **15,121건**도 유지합니다.
 문자·숫자 분류 두 포트는 원본 비교 **5,043건**·int32 밖 확장 **24건**, 식별자 문자 소비 앱은
-원본 비교 **4,570건**·확장 **12건**을 추가해 전체 native 검사는 **24,770건**, 이식 함수는 **21개**입니다. 시간 간격은 두 입력의 전체 int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
+원본 비교 **4,570건**·확장 **12건**을 추가한 **24,770건**도 유지합니다.
+사각형 네 포트의 원본 비교 **1,711건**과 잘라내기 소비 앱 **486건**을 추가해,
+전체 native 검사는 **26,967건**, 이식 함수는 **25개**입니다. 사각형의 네 좌표는
+각각 전체 signed int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
+시간 간격은 두 입력의 전체 int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
 기존 영역 밖 거부 사례는 Go 동등성 집계가 아닙니다.
 
 | 대상 | 입력 수 | 구성 |
@@ -334,6 +355,9 @@ manifest 기준 상대 파일 경로를 등록합니다. import 자체가 패키
 | unicode.IsLetter | 4,128 + 12 | Latin-1 전체·647범위의 양끝·이웃·stride 멤버와 구멍·원래 int32 경계·표본, 별도 확장 |
 | unicode.IsDigit | 915 + 12 | Latin-1 전체·72범위의 양끝·이웃·Nd와 다른 숫자 구분·경계·표본, 별도 확장 |
 | Identifier rune Classify consumer | 4,570 + 12 | 두 포트 입력 합집합으로 식별자 시작·계속 문자·decimal digit과 rune 영역 레코드 비교 |
+| RectangleEmpty | 253 | 작은 좌표 격자, 네 필드 각각의 int64·정밀도 경계, 극값 사각형, 고정 표본 |
+| RectangleOverlaps / RectangleIntersect / RectangleUnion | 각 486 | 작은 좌표 조합, 포함·접촉·분리·다른 빈 표현의 양방향 입력, 여덟 좌표 각각의 경계와 고정 표본 |
+| CropPlan consumer | 486 | 같은 원래 사각형 두 개로 교집합의 네 좌표·픽셀 존재 여부 비교 |
 
 별도 `go run ./cmd/check-unicode --out out/unicode-exhaustive`는 실제 importing 프로그램의
 수정하지 않은 생성 Go를 빌드해 **0..U+10FFFF의 1,114,112개 입력**에서 두 분류 함수를
@@ -342,9 +366,10 @@ manifest 기준 상대 파일 경로를 등록합니다. import 자체가 패키
 signed int32 전체 전수 검사 또는 전체 Unicode 패키지 호환성을 주장하지 않습니다.
 재생성 방법과 API 의미는 [식별자 문자 예제](examples/identifier-rune/README.md)에 있습니다.
 
-Gooo 실행 입력 상한에 맞춰 총 **295개 배치**를 실행합니다. 기존 182개 배치를 유지하고,
-문자·숫자 분류와 식별자 문자 소비 앱의 113개 배치를 추가합니다.
+Gooo 실행 입력 상한에 맞춰 총 **363개 배치**를 실행합니다. 기존 295개 배치를 유지하고,
+사각형 포트와 잘라내기 소비 앱의 68개 배치를 추가합니다.
 Unicode 앱과 색상 포트는 64건 이하, 색상 소비 앱은 32건 이하입니다.
+사각형의 단항 연산은 64건 이하, 이항 연산과 소비 앱은 32건 이하입니다.
 새 레코드 기대값도 들여쓴 JSON과 마지막 개행을 포함해 32KiB 한도를 검사합니다.
 원본 비교 기대값은 Gooo 구현과 별개인 Go 표준 함수로 계산합니다.
 Unicode·색상·회전·공백 앱과 색상·회전·공백 포트의 영역 밖 기대값은 명시한 false/-1 계약으로 따로 검사합니다.
@@ -356,6 +381,10 @@ Unicode·색상·회전·공백 앱과 색상·회전·공백 포트의 영역 �
 원본 파일의 내용과 패키지 소속은 실행 전에 읽은 소스에 대조하고, 생성 Go의 실제 내용도
 기록된 해시와 비교합니다. [브라우저 빌드 검사](cmd/build-demo/evidence.go)도 독립적인
 Dispatch 계약과 입력 타입·소스 연결을 확인합니다.
+사각형 입력의 네 필드는 원래 정수 값과 필드 식별자·순서를 함께 비교합니다.
+`python3 tools/check-rectangle-inputs.py out/rectangle-input-rejections`는 양쪽 인수에서
+누락·문자열·소수·int64 초과·null·추가 필드·중복 JSON 키의 거부 18건을 재현합니다.
+이는 컴파일러 입력 검증이며 위 Go 원본 비교 수나 영역 밖 확장 수에 합산하지 않습니다.
 검사 도중 소스가 바뀌어도 처음 읽은 동일한 소스 스냅샷을 모든 배치에 사용합니다.
 보고서·선언·실행 결과의 식별자를 함께 바꾸거나 입력 타입·소스 소속을 바꾼 기록을
 거부하는 회귀 테스트도 포함합니다.
@@ -372,6 +401,7 @@ Dispatch 계약과 입력 타입·소스 연결을 확인합니다.
 [바이트 회전 포트·소비 앱 추가 관측](evidence/byte-rotation-20261010.json),
 [시간 간격 포트·소비 앱 추가 관측](evidence/duration-20261010.json),
 [공백 포트·소비 앱 추가 관측](evidence/whitespace-20261010.json),
+[사각형 포트·소비 앱 추가 관측](evidence/image-rectangles-20261011.json),
 [v0.1.0-preview.2의 전체 실행·재실행 기록](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.2)을
 참고하세요. 릴리스 기록은 해당 버전에 고정되어 있으며, 이후 변경의 기록은 각 GitHub
 Actions 실행에서 확인할 수 있습니다.

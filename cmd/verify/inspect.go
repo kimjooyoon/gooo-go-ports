@@ -59,12 +59,14 @@ type envelope struct {
 			Traces     []struct {
 				Index      int `json:"case_index"`
 				Deliveries []struct {
-					ID     string          `json:"activity_id"`
-					Input  json.RawMessage `json:"input,omitempty"`
-					Inputs []struct {
-						Port   string          `json:"port"`
-						Entity string          `json:"entity_id"`
-						Value  json.RawMessage `json:"value"`
+					ID          string             `json:"activity_id"`
+					Input       json.RawMessage    `json:"input,omitempty"`
+					InputFields []recordFieldValue `json:"input_fields,omitempty"`
+					Inputs      []struct {
+						Port   string             `json:"port"`
+						Entity string             `json:"entity_id"`
+						Value  json.RawMessage    `json:"value"`
+						Fields []recordFieldValue `json:"fields,omitempty"`
 					} `json:"inputs,omitempty"`
 					Actual       json.RawMessage    `json:"actual"`
 					ActualFields []recordFieldValue `json:"actual_fields,omitempty"`
@@ -76,6 +78,13 @@ type envelope struct {
 	} `json:"result"`
 }
 type checked struct{ Generated, ReplayedFrom string }
+
+func inspectReplayBinding(original, replay checked, receiptDigest string) error {
+	if !validDigest(receiptDigest) || replay.Generated != original.Generated || replay.ReplayedFrom != receiptDigest {
+		return fmt.Errorf("saved replay is not bound to the same receipt and generated program")
+	}
+	return nil
+}
 
 func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (checked, error) {
 	contract, err := contractFor(s)
@@ -131,13 +140,19 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 			if len(d.Inputs) != 0 || !equalValue(d.Input, row.Inputs[0]) {
 				return fail("single input")
 			}
+			if err := inspectRectangleInputFields(contract.InputEntities[0], d.InputFields, row.Inputs[0]); err != nil {
+				return fail(err.Error())
+			}
 		} else {
-			if len(d.Input) != 0 || len(d.Inputs) != len(row.Inputs) {
+			if len(d.Input) != 0 || len(d.InputFields) != 0 || len(d.Inputs) != len(row.Inputs) {
 				return fail("input arity")
 			}
 			for j, in := range d.Inputs {
 				if in.Port != fmt.Sprintf("input%d", j) || in.Entity != contract.InputEntities[j] || !equalValue(in.Value, row.Inputs[j]) {
 					return fail("input order or value")
+				}
+				if err := inspectRectangleInputFields(contract.InputEntities[j], in.Fields, row.Inputs[j]); err != nil {
+					return fail(err.Error())
 				}
 			}
 		}

@@ -1,0 +1,173 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "example/crop-planner:CropPlan.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 640,
+        "max_y": 480
+      },
+      "example/crop-planner:CropPlan.input1": {
+        "min_x": -20,
+        "min_y": 40,
+        "max_x": 200,
+        "max_y": 550
+      }
+    },
+    {
+      "example/crop-planner:CropPlan.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 640,
+        "max_y": 480
+      },
+      "example/crop-planner:CropPlan.input1": {
+        "min_x": -100,
+        "min_y": -100,
+        "max_x": 1000,
+        "max_y": 1000
+      }
+    },
+    {
+      "example/crop-planner:CropPlan.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 640,
+        "max_y": 480
+      },
+      "example/crop-planner:CropPlan.input1": {
+        "min_x": 100,
+        "min_y": 100,
+        "max_x": 200,
+        "max_y": 200
+      }
+    },
+    {
+      "example/crop-planner:CropPlan.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 640,
+        "max_y": 480
+      },
+      "example/crop-planner:CropPlan.input1": {
+        "min_x": 640,
+        "min_y": 0,
+        "max_x": 800,
+        "max_y": 100
+      }
+    },
+    {
+      "example/crop-planner:CropPlan.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 640,
+        "max_y": 480
+      },
+      "example/crop-planner:CropPlan.input1": {
+        "min_x": 0,
+        "min_y": 480,
+        "max_x": 100,
+        "max_y": 600
+      }
+    },
+    {
+      "example/crop-planner:CropPlan.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 640,
+        "max_y": 480
+      },
+      "example/crop-planner:CropPlan.input1": {
+        "min_x": 90,
+        "min_y": 80,
+        "max_x": 10,
+        "max_y": 20
+      }
+    },
+    {
+      "example/crop-planner:CropPlan.input0": {
+        "min_x": 640,
+        "min_y": 0,
+        "max_x": 0,
+        "max_y": 480
+      },
+      "example/crop-planner:CropPlan.input1": {
+        "min_x": 10,
+        "min_y": 10,
+        "max_x": 30,
+        "max_y": 30
+      }
+    },
+    {
+      "example/crop-planner:CropPlan.input0": {
+        "min_x": 7,
+        "min_y": 9,
+        "max_x": 7,
+        "max_y": 20
+      },
+      "example/crop-planner:CropPlan.input1": {
+        "min_x": 7,
+        "min_y": 9,
+        "max_x": 8,
+        "max_y": 21
+      }
+    },
+    {
+      "example/crop-planner:CropPlan.input0": {
+        "min_x": -20,
+        "min_y": -30,
+        "max_x": 5,
+        "max_y": 10
+      },
+      "example/crop-planner:CropPlan.input1": {
+        "min_x": -8,
+        "min_y": -40,
+        "max_x": 12,
+        "max_y": 4
+      }
+    },
+    {
+      "example/crop-planner:CropPlan.input0": {
+        "min_x": -9223372036854775808,
+        "min_y": -9223372036854775808,
+        "max_x": 9223372036854775807,
+        "max_y": 9223372036854775807
+      },
+      "example/crop-planner:CropPlan.input1": {
+        "min_x": 9223372036854775806,
+        "min_y": 9223372036854775806,
+        "max_x": 9223372036854775807,
+        "max_y": 9223372036854775807
+      }
+    },
+    {
+      "example/crop-planner:CropPlan.input0": {
+        "min_x": -9223372036854775808,
+        "min_y": -9223372036854775808,
+        "max_x": 9223372036854775807,
+        "max_y": 9223372036854775807
+      },
+      "example/crop-planner:CropPlan.input1": {
+        "min_x": -9223372036854775808,
+        "min_y": -9223372036854775808,
+        "max_x": -9223372036854775807,
+        "max_y": -9223372036854775807
+      }
+    },
+    {
+      "example/crop-planner:CropPlan.input0": {
+        "min_x": 9007199254740992,
+        "min_y": -9007199254740993,
+        "max_x": 9007199254740994,
+        "max_y": -9007199254740991
+      },
+      "example/crop-planner:CropPlan.input1": {
+        "min_x": 9007199254740993,
+        "min_y": -9007199254740992,
+        "max_x": 9007199254740995,
+        "max_y": -9007199254740991
+      }
+    }
+  ]
+}

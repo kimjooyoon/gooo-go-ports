@@ -19,6 +19,11 @@ type activityContract struct {
 func nativeActivityContracts() map[string]activityContract {
 	i := integerEntity
 	return map[string]activityContract{
+		"go/image:RectangleEmpty":             {"ports/image/geometry.gooo", "gooo://go/image/rectangle-empty", []string{rectangleEntity}},
+		"go/image:RectangleOverlaps":          {"ports/image/geometry.gooo", "gooo://go/image/rectangle-overlaps", []string{rectangleEntity, rectangleEntity}},
+		"go/image:RectangleIntersect":         {"ports/image/geometry.gooo", "gooo://go/image/rectangle-intersect", []string{rectangleEntity, rectangleEntity}},
+		"go/image:RectangleUnion":             {"ports/image/geometry.gooo", "gooo://go/image/rectangle-union", []string{rectangleEntity, rectangleEntity}},
+		"example/crop-planner:CropPlan":       {"examples/crop-planner/crop_planner.gooo", "gooo://example/crop-planner/crop-plan", []string{rectangleEntity, rectangleEntity}},
 		"go/unicode:IsLetter":                 {"ports/unicode/classification.gooo", "gooo://go/unicode/IsLetter", []string{i}},
 		"go/unicode:IsDigit":                  {"ports/unicode/classification.gooo", "gooo://go/unicode/IsDigit", []string{i}},
 		"app/identifier-rune:Classify":        {"examples/identifier-rune/main.gooo", "gooo://go-ports/examples/identifier-rune/classify", []string{i}},

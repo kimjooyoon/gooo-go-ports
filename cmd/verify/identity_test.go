@@ -30,6 +30,7 @@ func contractFixture(t *testing.T, s suite) ([]byte, suite, expectedIdentity) {
 	row := s.Cases[0]
 	if len(row.Inputs) == 1 {
 		d.Input, d.Inputs = mustJSON(t, row.Inputs[0]), nil
+		d.InputFields = rectangleFixtureFields(t, contract.InputEntities[0], row.Inputs[0])
 	} else {
 		d.Input = nil
 		for len(d.Inputs) < len(row.Inputs) {
@@ -40,6 +41,7 @@ func contractFixture(t *testing.T, s suite) ([]byte, suite, expectedIdentity) {
 			d.Inputs[i].Port = fmt.Sprintf("input%d", i)
 			d.Inputs[i].Entity = contract.InputEntities[i]
 			d.Inputs[i].Value = mustJSON(t, input)
+			d.Inputs[i].Fields = rectangleFixtureFields(t, contract.InputEntities[i], input)
 		}
 	}
 	d.Expected, d.Actual = mustJSON(t, row.Expected), mustJSON(t, row.Expected)

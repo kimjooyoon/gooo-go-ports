@@ -1,0 +1,53 @@
+// Copyright 2010 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+// Adapted from Go 1.27.2 src/image/geom.go, revision
+// 022c8636110ebac86a9b88724cda168ed713c21f.
+// Source SHA-256: 7cc4be83e978cc172e0ebb9713a6afd77ccf3ceb82d9cbc6f79082e698884ec2.
+// The upstream license is reproduced in third_party/GO-LICENSE.
+//
+// Go Rectangle.Min/Max Point coordinates become four required int64 fields.
+// This preserves the full Go int domain on amd64/arm64; no narrowing, clipping,
+// arithmetic or canonicalization is introduced. The receiver is the first
+// Rectangle argument. Missing, noninteger and outside-int64 record fields are
+// rejected by the input framework, not mapped to a special result.
+package image
+namespace gooo_ports_image
+entity Integer id "gooo://std/integer"
+entity Boolean id "gooo://std/boolean"
+entity Rectangle id "gooo://go/image/rectangle" fields {
+    field min_x id "gooo://go/image/rectangle/min-x" type integer required one
+    field min_y id "gooo://go/image/rectangle/min-y" type integer required one
+    field max_x id "gooo://go/image/rectangle/max-x" type integer required one
+    field max_y id "gooo://go/image/rectangle/max-y" type integer required one
+}
+// Go Empty treats zero dimensions and reversed bounds as empty.
+activity RectangleEmpty(Rectangle) -> Boolean id "gooo://go/image/rectangle-empty" computes `return input.min_x >= input.max_x || input.min_y >= input.max_y`
+
+// Max coordinates are exclusive; touching edges or corners do not overlap.
+activity RectangleOverlaps(Rectangle, Rectangle) -> Boolean id "gooo://go/image/rectangle-overlaps" computes `return !RectangleEmpty(input0) && !RectangleEmpty(input1) && input0.min_x < input1.max_x && input1.min_x < input0.max_x && input0.min_y < input1.max_y && input1.min_y < input0.max_y`
+
+// An empty intersection is the zero rectangle, even for noncanonical inputs.
+activity RectangleIntersect(Rectangle, Rectangle) -> Rectangle id "gooo://go/image/rectangle-intersect" computes `let min_x = input0.min_x
+let min_y = input0.min_y
+let max_x = input0.max_x
+let max_y = input0.max_y
+if min_x < input1.min_x { min_x = input1.min_x }
+if min_y < input1.min_y { min_y = input1.min_y }
+if max_x > input1.max_x { max_x = input1.max_x }
+if max_y > input1.max_y { max_y = input1.max_y }
+if min_x >= max_x || min_y >= max_y { return Rectangle{min_x: 0, min_y: 0, max_x: 0, max_y: 0} }
+return Rectangle{min_x: min_x, min_y: min_y, max_x: max_x, max_y: max_y}`
+
+// Preserve Go's branch order: two empty inputs return the second unchanged.
+activity RectangleUnion(Rectangle, Rectangle) -> Rectangle id "gooo://go/image/rectangle-union" computes `if RectangleEmpty(input0) { return input1 }
+if RectangleEmpty(input1) { return input0 }
+let min_x = input0.min_x
+let min_y = input0.min_y
+let max_x = input0.max_x
+let max_y = input0.max_y
+if min_x > input1.min_x { min_x = input1.min_x }
+if min_y > input1.min_y { min_y = input1.min_y }
+if max_x < input1.max_x { max_x = input1.max_x }
+if max_y < input1.max_y { max_y = input1.max_y }
+return Rectangle{min_x: min_x, min_y: min_y, max_x: max_x, max_y: max_y}`

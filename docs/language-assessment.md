@@ -1,6 +1,6 @@
 # Go 라이브러리 이식을 위한 Gooo 관측
 
-2026-10-10 KST 기준으로 Gooo **0.6.24-dev**, 컴파일러 소스
+2026-10-11 KST 기준으로 Gooo **0.6.24-dev**, 컴파일러 소스
 `366ee6ef8f9d2b9b57331dfd26b6f908c0289851`, Go **1.27.2**를 사용한다.
 `gooo version --build --json`에서 `CLEAN_VCS`, 해당 소스 SHA,
 `go_version=go1.27.2`, `native_go_required=go1.27.2`를 확인했다.
@@ -13,7 +13,7 @@
 
 ## 이번에 옮기는 동작
 
-Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **21개 함수**를 Gooo 활동으로 표현한다.
+Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **25개 함수**를 Gooo 활동으로 표현한다.
 패키지 전체, HTTP 서버, 문자열 인코더 전체 또는 Go API와의 바이너리 호환을 주장하지 않는다.
 
 | 원본 | Gooo 원본 | 표현 방법과 호환 범위 |
@@ -29,6 +29,7 @@ Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **21개 함수**를 Gooo 
 | `math/bits.RotateLeft8` | 같은 파일 | byte 0..255와 원래 signed int64 회전 수. 회전 수의 나머지를 먼저 구해 overflow 없이 산술로 순환 이동. 원본의 입력에 무관한 실행시간 보장은 계승하지 않음 |
 | `image/color.RGBToCMYK`, `CMYKToRGB` | [color.gooo](../ports/image/color.gooo) | 원래 uint8 3/4성분의 전체 범위를 검사한 뒤 정수 변환. 결과는 이름 있는 `CMYK`·`RGB` 레코드이며 영역 밖은 모든 성분 -1 |
 | `time.Duration.Round`, `Truncate` | [duration.gooo](../ports/time/duration.gooo) | 수신 객체를 첫 번째 인수로 옮긴 `DurationRound(d, m)`, `DurationTruncate(d, m)`. 두 인수 모두 전체 signed int64 나노초 범위이며 중간값 처리·포화·0 이하 단위의 동작을 유지 |
+| `image.Rectangle.Empty`, `Overlaps`, `Intersect`, `Union` | [geometry.gooo](../ports/image/geometry.gooo) | 수신 사각형을 첫 레코드 인수로 전달. 네 signed int64 좌표로 Go의 중첩 Point 필드를 명시적으로 펼침. 원본 좌표·입력 순서·빈 사각형 표현을 보존 |
 
 Go의 `rune`은 int32이고 Gooo Integer는 int64다. 테스트에서 int64를 Go rune/byte로
 무조건 변환하면 잘림으로 잘못된 동등성 주장이 생긴다. 원본 입력 범위의 비교와 Gooo
@@ -90,6 +91,18 @@ native 실행·저장 재실행을 통과했다. 정식 생성물은 간결한 �
 확인하며, signed int32 전체를 전수 검사했다고 표현하지 않는다.
 
 ## 확인한 언어 기능
+
+사각형 네 메서드는 [고정 geom.go](https://github.com/golang/go/blob/022c8636110ebac86a9b88724cda168ed713c21f/src/image/geom.go)의
+비교와 복사만 사용한다. 중첩 `Min`, `Max`의 Point 표현은 네 Integer 필드로 바꾸되
+입력 정규화·잘림을 하지 않는다. `Empty(Rectangle)`과 나머지의 `(Rectangle, Rectangle)`
+레코드 입력, 레코드 반환, import된 활동으로의 전달을 실제 실행·저장 재실행에서 검사한다.
+관측 범위는 amd64·arm64의 64비트 Go int다. 좌표 차이·면적을 계산하지 않아 전체 int64
+좌표를 받아도 산술 overflow가 없다. 변·꼭짓점 접촉은 겹침이 아니며 빈 교집합은
+영 사각형이다. 합집합에서 첫 입력이 비면 두 번째 원본을 반환하므로, 서로 다른 빈
+사각형 두 개의 합집합은 입력 순서에 따라 반환 좌표가 다르다. 검증에서 `image.Rect`,
+`Canon`, 빈 사각형을 동등하게 취급하는 `Rectangle.Eq`를 쓰지 않고 네 좌표를 비교한다.
+[잘라내기 예제](../examples/crop-planner/README.md)는 요청·이미지 경계의 교집합과
+픽셀 존재 여부를 반환한다. 실제 이미지 읽기·픽셀 처리·면적 계산은 포함하지 않는다.
 
 첫 8개 활동과 추가한 `math/bits` 5개 활동은 고정한 컴파일러의 `body-codegen --json`에서 `PASS`,
 `route=preserve`를 반환했다. 정수·불리언·문자열 반환, 여러 입력, 조기 반환,
