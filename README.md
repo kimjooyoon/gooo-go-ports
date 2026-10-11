@@ -19,6 +19,12 @@ and an importing browser dispatcher.
 You can also [try 21 library functions in the browser](https://kimjooyoon.github.io/gooo-go-ports/).
 The browser pages run fixed, precompiled programs; use the local toolchain to run modified Gooo source.
 
+[Compare Gooo with generated Go](https://kimjooyoon.github.io/gooo-go-ports/source-view.html)
+without setup: four saved CLI observations show a conditional body, a changed return,
+one selected activity, and a rejected body. This read-only page preserves the exact
+source and output from the linked pinned Linux verification; it does not compile
+edited source or execute the generated Go.
+
 Experimental tooling: [Compiler Explorer adapter and Linux verification](tools/compiler-explorer/README.md)
 for inspecting generated Go. Upstream hosted support is under review.
 

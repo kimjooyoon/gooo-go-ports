@@ -161,7 +161,7 @@ func run() error {
 	if err := buildTutorialDemo(ctx, site, dir, lock); err != nil {
 		return err
 	}
-	for _, name := range []string{"google878ae9014add7065.html", "sitemap.xml", "index.html", "fixed-point-bounds.html", "app.js", "share.js", "codepoint.js", "style.css", "text-inspector.html", "text-inspector.js", "text-inspector.css", "text-input.js", "text-inspector-worker.js", "text-inspector-protocol.js", "text-inspection-report.js", "crop-planner.html", "crop-planner.js", "crop-planner.css", "crop-planner-protocol.js", "tutorial.html", "tutorial.css", "tutorial.js", "tutorial-protocol.js", "tutorial-worker.js"} {
+	for _, name := range []string{"google878ae9014add7065.html", "sitemap.xml", "index.html", "fixed-point-bounds.html", "app.js", "share.js", "codepoint.js", "style.css", "text-inspector.html", "text-inspector.js", "text-inspector.css", "text-input.js", "text-inspector-worker.js", "text-inspector-protocol.js", "text-inspection-report.js", "crop-planner.html", "crop-planner.js", "crop-planner.css", "crop-planner-protocol.js", "tutorial.html", "tutorial.css", "tutorial.js", "tutorial-protocol.js", "tutorial-worker.js", "source-view.html", "source-view.css", "source-view.js", "source-view.json"} {
 		if err := copyFile(filepath.Join("site", name), filepath.Join(site, name)); err != nil {
 			return err
 		}

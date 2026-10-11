@@ -1,0 +1,74 @@
+{
+  "schema": "gooo/source-view-book/v1",
+  "metadata": {
+    "compiler_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+    "compiler_version": "0.6.29-dev",
+    "go_version": "go1.27.2",
+    "source_status": "CLEAN_VCS",
+    "observed_at": "2026-10-11T15:51:20.856550+00:00",
+    "evidence_url": "https://github.com/kimjooyoon/gooo-go-ports/actions/runs/38152688106",
+    "evidence_source_revision": "09861502085012fe41ab5993a220e3fde7f0a87d",
+    "compiler_executes_in_browser": false,
+    "generated_go_executed_by_this_page": false,
+    "scope": "Four saved CLI observations, directly compared to pinned fixtures and the successful actual Linux compiler evidence. No live compilation or language-wide syntax/native-execution claim.",
+    "license_url": "https://github.com/kimjooyoon/gooo-go-ports/blob/09861502085012fe41ab5993a220e3fde7f0a87d/LICENSE"
+  },
+  "cases": [
+    {
+      "id": "clamp",
+      "title": "조건문을 Go로 읽기",
+      "description": "음수일 때 0을 반환하는 Clamp 활동의 생성 결과입니다.",
+      "activity": "Clamp",
+      "source": "package sample\nnamespace sample\nentity Integer id \"sample://integer\"\nactivity Clamp(Integer) -> Integer id \"sample://clamp\" computes \"if input < 0 { return 0 } else { return input }\"\n",
+      "source_sha256": "5210490e986adc17743f55cdb4dd0e0d0c15058aaee11343a4197a0f5480af30",
+      "stdout": "package sample\n\n//gooo:generated:start id=\"sample://clamp\" kind=\"activity\"\nfunc Clamp(input int64) int64 {\n\tif input < 0 {\n\t\treturn 0\n\t} else {\n\t\treturn input\n\t}\n}\n\n//gooo:generated:end id=\"sample://clamp\" kind=\"activity\"\n",
+      "stdout_sha256": "8b0f3e6ffa27de3de5314d990189d1174e4b5ec7d76471890b2f2f978542489e",
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "source_url": "https://github.com/kimjooyoon/gooo-go-ports/blob/09861502085012fe41ab5993a220e3fde7f0a87d/tools/compiler-explorer/fixtures/clamp.gooo"
+    },
+    {
+      "id": "changed",
+      "title": "본문이 바뀐 결과 비교",
+      "description": "같은 활동에서 음수 분기의 반환값을 7로 바꾼 기록입니다.",
+      "activity": "Clamp",
+      "source": "package sample\nnamespace sample\nentity Integer id \"sample://integer\"\nactivity Clamp(Integer) -> Integer id \"sample://clamp\" computes \"if input < 0 { return 7 } else { return input }\"\n",
+      "source_sha256": "6d01d400e0b25a39f10d9868850c3ce588bd50358f189dde263f096d6726ac51",
+      "stdout": "package sample\n\n//gooo:generated:start id=\"sample://clamp\" kind=\"activity\"\nfunc Clamp(input int64) int64 {\n\tif input < 0 {\n\t\treturn 7\n\t} else {\n\t\treturn input\n\t}\n}\n\n//gooo:generated:end id=\"sample://clamp\" kind=\"activity\"\n",
+      "stdout_sha256": "bc29d897c6a6b2723bfacdfa4ef459826741802491af63efee66435dfecbb90a",
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "source_url": "https://github.com/kimjooyoon/gooo-go-ports/blob/09861502085012fe41ab5993a220e3fde7f0a87d/tools/compiler-explorer/fixtures/changed.gooo"
+    },
+    {
+      "id": "double",
+      "title": "활동 하나 선택하기",
+      "description": "두 활동 중 Double을 선택한 결과에는 Double 함수만 생성됩니다.",
+      "activity": "Double",
+      "source": "package sample\nnamespace sample\nentity Integer id \"sample://integer\"\nactivity Clamp(Integer) -> Integer id \"sample://clamp\" computes \"return input\"\nactivity Double(Integer) -> Integer id \"sample://double\" computes \"return input * 2\"\n",
+      "source_sha256": "da3805961901e21993fc351c63a067611493f477715349d135b943689c0b65d7",
+      "stdout": "package sample\n\n//gooo:generated:start id=\"sample://double\" kind=\"activity\"\nfunc Double(input int64) int64 {\n\treturn input * 2\n}\n\n//gooo:generated:end id=\"sample://double\" kind=\"activity\"\n",
+      "stdout_sha256": "97b51de32aed1a98370f00f9296c9f31ce41d962ae91e01a97653b9d5e914736",
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "source_url": "https://github.com/kimjooyoon/gooo-go-ports/blob/09861502085012fe41ab5993a220e3fde7f0a87d/tools/compiler-explorer/fixtures/two-activities.gooo"
+    },
+    {
+      "id": "invalid-body",
+      "title": "지원 경계 확인하기",
+      "description": "기록된 0.6.29-dev 버전은 이 for 본문을 거부하고 Go 소스를 내보내지 않았습니다.",
+      "activity": "Clamp",
+      "source": "package sample\nnamespace sample\nentity Integer id \"sample://integer\"\nactivity Clamp(Integer) -> Integer id \"sample://clamp\" computes \"for input > 0 { input = input - 1 }; return input\"\n",
+      "source_sha256": "e07eea090cf25e122a589b6f4c33c5398d5ac894229bfd259b9a548ec7e3aaf4",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "gooo: invalid-body.gooo: body-codegen: unsupported activity statement *ast.ForStmt\n",
+      "stderr_sha256": "0d0862ec07e13fe6810a13304758552258e95abe11c0a6865a1e345a074124e5",
+      "exit_code": 1,
+      "source_url": "https://github.com/kimjooyoon/gooo-go-ports/blob/09861502085012fe41ab5993a220e3fde7f0a87d/tools/compiler-explorer/fixtures/invalid-body.gooo"
+    }
+  ]
+}
