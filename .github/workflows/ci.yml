@@ -483,7 +483,6 @@ jobs:
           retention-days: 14
 
   browser-demo:
-    needs: native-ports
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -523,7 +522,7 @@ jobs:
 
   deploy-browser-demo:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: browser-demo
+    needs: [native-ports, browser-demo]
     runs-on: ubuntu-latest
     permissions:
       pages: write
