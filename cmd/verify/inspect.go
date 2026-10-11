@@ -145,6 +145,9 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 			if len(d.Inputs) != 0 || !equalValue(d.Input, row.Inputs[0]) {
 				return fail("single input")
 			}
+			if err := inspectNRGBAInputFields(contract.InputEntities[0], d.InputFields, row.Inputs[0]); err != nil {
+				return fail(err.Error())
+			}
 			if err := inspectRectangleInputFields(contract.InputEntities[0], d.InputFields, row.Inputs[0]); err != nil {
 				return fail(err.Error())
 			}
@@ -155,6 +158,9 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 			for j, in := range d.Inputs {
 				if in.Port != fmt.Sprintf("input%d", j) || in.Entity != contract.InputEntities[j] || !equalValue(in.Value, row.Inputs[j]) {
 					return fail("input order or value")
+				}
+				if err := inspectNRGBAInputFields(contract.InputEntities[j], in.Fields, row.Inputs[j]); err != nil {
+					return fail(err.Error())
 				}
 				if err := inspectRectangleInputFields(contract.InputEntities[j], in.Fields, row.Inputs[j]); err != nil {
 					return fail(err.Error())

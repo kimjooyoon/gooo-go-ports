@@ -14,7 +14,7 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(frozen.Catalog.Packages) != 22 || len(frozen.Sources) != 28 {
+	if len(frozen.Catalog.Packages) != 23 || len(frozen.Sources) != 30 {
 		t.Fatal("complete reviewed catalog roster changed")
 	}
 	allIdentities, err := snapshotSourceIdentities(frozen.Catalog.Packages, frozen.Sources)

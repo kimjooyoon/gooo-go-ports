@@ -1,0 +1,33 @@
+// Copyright 2011 The Go Authors. All rights reserved.
+// BSD 3-Clause: see LICENSE and third_party/GO-LICENSE.
+// Adapted from Go 1.27.2 src/image/color/color.go, revision
+// 022c8636110ebac86a9b88724cda168ed713c21f.
+// Source SHA-256: 03511ed250d0b4dd20605d5dc3465164e559033a6ff7e5cd8ac89d2e19c3ab6c.
+// NRGBA's four uint8 fields preserve their full 0..255 domain, including
+// RGB > alpha and hidden RGB at alpha zero. No premultiplication is assumed.
+// Four Go uint32 results in 0..65535 become the RGBA16 record.
+// Out-of-byte inputs return four -1 fields as a separate Integer extension.
+// Original values are checked before arithmetic; there is no uint8 narrowing.
+// For a byte c, c | (c << 8) == c * 257. Keep expansion before division.
+// Existing RGB and Integer declarations remain in color.gooo.
+package color
+namespace gooo_ports_image_color
+entity NRGBA id "gooo://go/image/color/nrgba" fields {
+    field red id "gooo://go/image/color/nrgba/red" type integer required one
+    field green id "gooo://go/image/color/nrgba/green" type integer required one
+    field blue id "gooo://go/image/color/nrgba/blue" type integer required one
+    field alpha id "gooo://go/image/color/nrgba/alpha" type integer required one
+}
+entity RGBA16 id "gooo://go/image/color/rgba16" fields {
+    field red id "gooo://go/image/color/rgba16/red" type integer required one
+    field green id "gooo://go/image/color/rgba16/green" type integer required one
+    field blue id "gooo://go/image/color/rgba16/blue" type integer required one
+    field alpha id "gooo://go/image/color/rgba16/alpha" type integer required one
+}
+
+// Receiver record -> premultiplied 16-bit components, as color.NRGBA.RGBA.
+// Largest product is 255 * 257 * 255 = 16711425; all divisions are nonnegative.
+activity NRGBAToRGBA(NRGBA) -> RGBA16 id "gooo://go/image/color/NRGBAToRGBA" computes `if input.red < 0 || input.red > 255 || input.green < 0 || input.green > 255 || input.blue < 0 || input.blue > 255 || input.alpha < 0 || input.alpha > 255 {
+    return RGBA16{red: -1, green: -1, blue: -1, alpha: -1}
+}
+return RGBA16{red: input.red * 257 * input.alpha / 255, green: input.green * 257 * input.alpha / 255, blue: input.blue * 257 * input.alpha / 255, alpha: input.alpha * 257}`

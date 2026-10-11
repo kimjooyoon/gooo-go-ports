@@ -1,0 +1,8 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {"package_path": "app/alpha-matte", "activity": "MattePixel"},
+  "packages": [
+    {"path": "go/image/color", "sources": ["ports/image/color.gooo", "ports/image/nrgba.gooo"]},
+    {"path": "app/alpha-matte", "sources": ["examples/alpha-matte/main.gooo"]}
+  ]
+}

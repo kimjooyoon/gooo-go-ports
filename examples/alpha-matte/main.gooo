@@ -1,0 +1,29 @@
+// Copyright 2009 The Go Authors. All rights reserved.
+// BSD 3-Clause: see LICENSE and third_party/GO-LICENSE.
+// Pixel arithmetic adapted from Go 1.27.2 src/image/draw/draw.go,
+// drawNRGBAOver, revision 022c8636110ebac86a9b88724cda168ed713c21f.
+// Source SHA-256: 24f42de1373014deefce87d4dd02856010ac8d385c4e61eb0c52a1a1273b0207.
+// One uint8 NRGBA foreground over one opaque uint8 RGB background.
+// This is an application of the port, not a port of the general image/draw API.
+package alpha_matte
+namespace gooo_ports_examples_alpha_matte
+import color "go/image/color"
+entity MatteResult id "gooo://go-ports/examples/alpha-matte/result" fields {
+    field in_byte_domain id "gooo://go-ports/examples/alpha-matte/result/in-byte-domain" type boolean required one
+    field premultiplied_red id "gooo://go-ports/examples/alpha-matte/result/premultiplied-red" type integer required one
+    field premultiplied_green id "gooo://go-ports/examples/alpha-matte/result/premultiplied-green" type integer required one
+    field premultiplied_blue id "gooo://go-ports/examples/alpha-matte/result/premultiplied-blue" type integer required one
+    field premultiplied_alpha id "gooo://go-ports/examples/alpha-matte/result/premultiplied-alpha" type integer required one
+    field red id "gooo://go-ports/examples/alpha-matte/result/red" type integer required one
+    field green id "gooo://go-ports/examples/alpha-matte/result/green" type integer required one
+    field blue id "gooo://go-ports/examples/alpha-matte/result/blue" type integer required one
+}
+
+// input0 is the original NRGBA pixel; input1 is the opaque RGB background.
+// Validate all seven channels before calling the port or doing arithmetic.
+activity MattePixel(NRGBA, RGB) -> MatteResult id "gooo://go-ports/examples/alpha-matte/matte-pixel" computes `if input0.red < 0 || input0.red > 255 || input0.green < 0 || input0.green > 255 || input0.blue < 0 || input0.blue > 255 || input0.alpha < 0 || input0.alpha > 255 || input1.red < 0 || input1.red > 255 || input1.green < 0 || input1.green > 255 || input1.blue < 0 || input1.blue > 255 {
+    return MatteResult{in_byte_domain: false, premultiplied_red: -1, premultiplied_green: -1, premultiplied_blue: -1, premultiplied_alpha: -1, red: -1, green: -1, blue: -1}
+}
+let p = color.NRGBAToRGBA(input0)
+let inverse = (65535 - p.alpha) * 257
+return MatteResult{in_byte_domain: true, premultiplied_red: p.red, premultiplied_green: p.green, premultiplied_blue: p.blue, premultiplied_alpha: p.alpha, red: (input1.red * inverse / 65535 + p.red) / 256, green: (input1.green * inverse / 65535 + p.green) / 256, blue: (input1.blue * inverse / 65535 + p.blue) / 256}`

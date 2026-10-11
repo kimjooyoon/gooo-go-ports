@@ -7,6 +7,8 @@
   "compiler_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
   "compiler_version": "0.6.29-dev",
   "source_sha256": {
+    "src/image/color/color.go": "03511ed250d0b4dd20605d5dc3465164e559033a6ff7e5cd8ac89d2e19c3ab6c",
+    "src/image/draw/draw.go": "24f42de1373014deefce87d4dd02856010ac8d385c4e61eb0c52a1a1273b0207",
     "src/image/geom.go": "7cc4be83e978cc172e0ebb9713a6afd77ccf3ceb82d9cbc6f79082e698884ec2",
     "src/unicode/digit.go": "dfb14dbbcb918a6c7ee9be15293327d022f9d64a4c1a90f9c8049b682e799761",
     "src/unicode/graphic.go": "46a43107a87c88cf17a05a557e00dbf6b0f4bb53ebcd7d3035e02f1e67c428be",
@@ -23,6 +25,14 @@
     "LICENSE": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
   },
   "ports": [
+    {
+      "source": "src/image/color/color.go",
+      "target": "ports/image/nrgba.gooo",
+      "supporting_targets": ["ports/image/color.gooo"],
+      "symbols": ["NRGBA.RGBA"],
+      "target_activities": ["NRGBAToRGBA"],
+      "api_mapping": "The NRGBA receiver becomes one required-field record with red, green, blue and alpha Integers, preserving all four uint8 channels including hidden RGB when alpha is zero. Four uint32 results become an RGBA16 record with 0..65535 premultiplied channels and expanded alpha. Original multiplication and integer truncation are preserved by bounded arithmetic. An out-of-byte field returns all -1 as a separate extension before arithmetic or narrowing. No NRGBA64, file decoding, color-space conversion or image iteration is implemented."
+    },
     {
       "source": "src/unicode/letter.go",
       "supporting_sources": [

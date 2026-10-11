@@ -38,7 +38,8 @@
       "path": "go/image/color",
       "sources": [
         "ports/image/color.gooo",
-        "ports/image/ycbcr.gooo"
+        "ports/image/ycbcr.gooo",
+        "ports/image/nrgba.gooo"
       ]
     },
     {
@@ -131,6 +132,12 @@
       "path": "example/fixed-pixel-bounds",
       "sources": [
         "examples/fixed-pixel-bounds/main.gooo"
+      ]
+    },
+    {
+      "path": "app/alpha-matte",
+      "sources": [
+        "examples/alpha-matte/main.gooo"
       ]
     },
     {

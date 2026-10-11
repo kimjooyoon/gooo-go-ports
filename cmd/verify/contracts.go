@@ -19,6 +19,8 @@ type activityContract struct {
 func nativeActivityContracts() map[string]activityContract {
 	i := integerEntity
 	return map[string]activityContract{
+		"go/image/color:NRGBAToRGBA":             {"ports/image/nrgba.gooo", "gooo://go/image/color/NRGBAToRGBA", []string{nrgbaEntity}},
+		"app/alpha-matte:MattePixel":             {"examples/alpha-matte/main.gooo", "gooo://go-ports/examples/alpha-matte/matte-pixel", []string{nrgbaEntity, nrgbaRGBEntity}},
 		"go/unicode:To":                          {"ports/unicode/case_mapping.gooo", "gooo://go/unicode/To", []string{i, i}},
 		"go/unicode:ToUpper":                     {"ports/unicode/case_mapping.gooo", "gooo://go/unicode/ToUpper", []string{i}},
 		"go/unicode:ToLower":                     {"ports/unicode/case_mapping.gooo", "gooo://go/unicode/ToLower", []string{i}},

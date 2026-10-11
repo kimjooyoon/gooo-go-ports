@@ -24,6 +24,7 @@
 | 2i | `image/color.RGBToYCbCr`·`YCbCrToRGB`와 [YCbCr 왕복 검사](../examples/ycbcr-inspector/README.md) | 세 uint8 입력 전체 범위, 원본 계수·반올림·채널 포화 보존. 경계·회색·표본의 독립 Go 비교와 저장 재실행, 수정 없는 생성 함수의 각 256³ 입력 전수 비교. 소비 앱은 중간 채널과 복원 차이를 표시 |
 | 2j | `image.Rectangle.Canon`과 [방향 독립 드래그 선택](drag-crop.md) | 전체 signed int64 좌표·퇴화 위치 보존, 원본 좌표와 canonical 출력의 유한 멱등성 비교. 선택 영역만 정규화하며 기존 CropPlan은 변경하지 않음. Canon 371건·드래그 활동 501건의 native 실행과 저장 재실행 |
 | 2k | `unicode.To`·`ToUpper`·`ToLower`·`ToTitle`과 [한 rune의 세 변환 비교](../examples/case-inspector/README.md) | CaseRanges 전체를 하나의 Gooo 구현으로 공유, range 시작점 기준 교대 parity와 별도 title delta 보존. 원래 signed int32 rune와 64비트 case 입력, invalid case 우선순위, Unicode 밖 identity를 독립 Go 원본 및 저장 재실행과 비교. 수정 없는 생성 Go의 Unicode 구간 전수 비교는 유한 영수증과 별도 집계 |
+| 2l | `color.NRGBA.RGBA`와 [한 픽셀 알파 합성](../examples/alpha-matte/README.md) | 네 uint8 수신 필드와 premultiplied 16비트 결과, 알파 0의 숨은 RGB·중간 알파·정수 버림 보존. 불투명 RGB 배경에 대한 소비자 결과를 실제 Go `draw.Draw`의 최적·일반 경로와 비교하고 저장 재실행. 전체 이미지 처리·선형 광량 합성·uint8⁴ 전수 검사는 범위 밖 |
 | 3 | `strings.Index`/`Count`, UTF-8 순회 등 반복이 필요한 문자열 함수 조사 | `for`/`range`, 바이트 읽기, 루프 종료·입력 제한의 재현. Text 슬라이싱 지원만으로 문자열 전체 지원을 선언하지 않음 |
 | 4 | `encoding/hex`의 제한된 인코딩·디코딩부터 바이트 패키지 확장 | byte 배열/슬라이스, 출력 구성, 잘못된 문자와 길이에 대한 오류 계약, 비트 연산 또는 검증된 산술 표현 |
 | 5 | Google의 `google/uuid` 파싱·표시·버전/variant 부분 이식 | 원본 형식별 입력과 오류를 보존하고 16바이트 값을 표현할 타입, 반복, 인덱싱, hex 처리가 확보될 것 |

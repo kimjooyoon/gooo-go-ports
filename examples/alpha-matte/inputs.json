@@ -1,0 +1,317 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 255,
+        "green": 0,
+        "blue": 0,
+        "alpha": 0
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 10,
+        "green": 20,
+        "blue": 30
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 12,
+        "green": 34,
+        "blue": 56,
+        "alpha": 0
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 255,
+        "green": 255,
+        "blue": 255
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 13,
+        "green": 77,
+        "blue": 201,
+        "alpha": 255
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 201,
+        "green": 77,
+        "blue": 13
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 255,
+        "green": 0,
+        "blue": 0,
+        "alpha": 128
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 0,
+        "green": 0,
+        "blue": 255
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 255,
+        "green": 0,
+        "blue": 0,
+        "alpha": 127
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 0,
+        "green": 0,
+        "blue": 255
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 255,
+        "green": 255,
+        "blue": 255,
+        "alpha": 1
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 0,
+        "green": 0,
+        "blue": 0
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 255,
+        "green": 255,
+        "blue": 255,
+        "alpha": 254
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 0,
+        "green": 0,
+        "blue": 0
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 1,
+        "green": 0,
+        "blue": 0,
+        "alpha": 128
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 0,
+        "green": 0,
+        "blue": 0
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 1,
+        "green": 1,
+        "blue": 1,
+        "alpha": 1
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 255,
+        "green": 255,
+        "blue": 255
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 255,
+        "green": 1,
+        "blue": 128,
+        "alpha": 1
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 13,
+        "green": 77,
+        "blue": 201
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 0,
+        "green": 254,
+        "blue": 127,
+        "alpha": 254
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 13,
+        "green": 77,
+        "blue": 201
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 0,
+        "green": 0,
+        "blue": 0,
+        "alpha": 128
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 255,
+        "green": 255,
+        "blue": 255
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 255,
+        "green": 255,
+        "blue": 255,
+        "alpha": 128
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 0,
+        "green": 0,
+        "blue": 0
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 13,
+        "green": 77,
+        "blue": 201,
+        "alpha": 128
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 13,
+        "green": 77,
+        "blue": 201
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 127,
+        "green": 127,
+        "blue": 127,
+        "alpha": 127
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 128,
+        "green": 128,
+        "blue": 128
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 128,
+        "green": 128,
+        "blue": 128,
+        "alpha": 128
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 127,
+        "green": 127,
+        "blue": 127
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 0,
+        "green": 0,
+        "blue": 0,
+        "alpha": 255
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 255,
+        "green": 255,
+        "blue": 255
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 255,
+        "green": 255,
+        "blue": 255,
+        "alpha": 255
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 0,
+        "green": 0,
+        "blue": 0
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": -1,
+        "green": 128,
+        "blue": 255,
+        "alpha": 128
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 13,
+        "green": 77,
+        "blue": 201
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 255,
+        "green": 128,
+        "blue": 1,
+        "alpha": 256
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 13,
+        "green": 77,
+        "blue": 201
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 255,
+        "green": 128,
+        "blue": 1,
+        "alpha": 128
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 13,
+        "green": 77,
+        "blue": 256
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 255,
+        "green": 128,
+        "blue": 1,
+        "alpha": 128
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 13,
+        "green": -1,
+        "blue": 201
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 9223372036854775807,
+        "green": 128,
+        "blue": 1,
+        "alpha": 128
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 13,
+        "green": 77,
+        "blue": 201
+      }
+    },
+    {
+      "app/alpha-matte:MattePixel.input0": {
+        "red": 255,
+        "green": 128,
+        "blue": 1,
+        "alpha": 128
+      },
+      "app/alpha-matte:MattePixel.input1": {
+        "red": 13,
+        "green": 77,
+        "blue": -9223372036854775808
+      }
+    }
+  ]
+}

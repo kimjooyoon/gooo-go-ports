@@ -64,7 +64,12 @@ func allNativeSuites(t *testing.T) []suite {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return append(all, mapping.Suites...)
+	all = append(all, mapping.Suites...)
+	nrgba, err := nrgbaCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return append(all, nrgba.Suites...)
 }
 
 func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
@@ -74,7 +79,7 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	suites := allNativeSuites(t)
-	if len(contracts) != 50 || len(suites) != 50 {
+	if len(contracts) != 52 || len(suites) != 52 {
 		t.Fatal("contract/suite roster changed")
 	}
 	seen := map[string]bool{}
@@ -103,6 +108,16 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 			t.Fatal("contract arity differs from source", key)
 		}
 		for i, input := range inputs {
+			if contract.InputEntities[i] == nrgbaEntity || contract.InputEntities[i] == nrgbaRGBEntity {
+				name, declaration := "NRGBA", "ports/image/nrgba.gooo"
+				if contract.InputEntities[i] == nrgbaRGBEntity {
+					name, declaration = "RGB", "ports/image/color.gooo"
+				}
+				if strings.TrimSpace(input) != name || !strings.Contains(string(catalog.Sources[declaration]), `entity `+name+` id "`+contract.InputEntities[i]+`"`) {
+					t.Fatal("contract color record input differs from source", key)
+				}
+				continue
+			}
 			if contract.InputEntities[i] == rectangleEntity {
 				declarations := catalog.Sources["ports/image/geometry.gooo"]
 				if strings.TrimSpace(input) != "Rectangle" || !strings.Contains(string(declarations), `entity Rectangle id "`+rectangleEntity+`"`) {
@@ -157,6 +172,11 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	added += mapping.PortReferenceCases + mapping.PortExtensionCases + mapping.ConsumerReferenceCases + mapping.ConsumerExtensionCases
+	nrgba, err := nrgbaCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	added += nrgba.PortReferenceCases + nrgba.PortRejectionCases + nrgba.ConsumerReferenceCases + nrgba.ConsumerRejectionCases
 	if total != 24770+added {
 		t.Fatalf("corpus changed: %d", total)
 	}

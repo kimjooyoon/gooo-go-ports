@@ -188,7 +188,7 @@ func TestCaseMappingNamedSemanticsAndPresetCoverage(t *testing.T) {
 
 func TestCaseMappingActualSerializedBatchesAndBaselinePreserved(t *testing.T) {
 	all := allNativeSuites(t)
-	if len(all) != 50 {
+	if len(all) != 52 {
 		t.Fatal("native suite roster")
 	}
 	documents := []any{}
@@ -201,7 +201,7 @@ func TestCaseMappingActualSerializedBatchesAndBaselinePreserved(t *testing.T) {
 		t.Fatal("existing 45 suites/37,232 original inputs or expectations changed")
 	}
 	maximum, addedCases, addedBatches := 0, 0, 0
-	for _, s := range all[45:] {
+	for _, s := range all[45:50] {
 		size := caseMappingPortBatchSize
 		if s.Package == "app/case-inspector" {
 			size = caseMappingConsumerBatchSize
