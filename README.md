@@ -7,6 +7,23 @@ with independent Go reference outputs and saved replay: 34 standard-library port
 and two ports from golang.org/x/image. The current scope is
 36 HTTP, Unicode, 8-bit integer, color, duration, rectangle and fixed-point functions, fourteen native importing examples,
 and an importing browser dispatcher.
+
+## Start here
+
+| What would you like to do? | Start with | What you can change |
+| --- | --- | --- |
+| Try Gooo without installing anything | [Interactive tutorial](https://kimjooyoon.github.io/gooo-go-ports/tutorial.html) | Change a score and label, see the returned record, and read the two Gooo source files |
+| Edit and run Gooo code locally | [Run and edit locally](#run-and-edit-locally) | Install the pinned compiler, then change the tutorial's condition and rerun it |
+| Use a port in another project | [Import walkthrough](docs/use-in-your-project.md) | Build a separate application that imports `utf8.ValidRune` from a fixed source snapshot |
+
+You can also [try 21 library functions in the browser](https://kimjooyoon.github.io/gooo-go-ports/).
+The browser pages run fixed, precompiled programs; use the local toolchain to run modified Gooo source.
+
+한국어 안내: 설치 없이 [튜토리얼 실행](https://kimjooyoon.github.io/gooo-go-ports/tutorial.html),
+[로컬에서 코드 수정](#run-and-edit-locally), [다른 프로젝트에 가져오기](#다른-gooo-프로그램에서-가져오기) 중에서 시작하세요.
+
+## Run and edit locally
+
 Start by running and editing the small [Gooo tutorial](examples/learn-gooo/README.md).
 With Git, a POSIX shell and a Go installation that supports toolchain selection,
 run these commands from this repository's root on macOS or Linux:
