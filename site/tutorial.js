@@ -180,7 +180,11 @@
     } catch { $('tutorial-download-status').textContent = 'The input download could not start. Check browser download permissions and try again.'; }
     finally { anchor?.remove(); if (url) window.setTimeout(() => URL.revokeObjectURL(url), 1000); }
   });
-  window.addEventListener('pagehide', () => { worker?.terminate(); loading.abort(); if (archiveURL) URL.revokeObjectURL(archiveURL); });
+  window.addEventListener('pagehide', event => {
+    // A cached page resumes this runtime, its timers and its verified download.
+    if (event.persisted) return;
+    worker?.terminate(); loading.abort(); if (archiveURL) URL.revokeObjectURL(archiveURL);
+  });
   updateInputs();
   try {
     if (!globalThis.crypto?.subtle || typeof Worker !== 'function') throw new Error('Use HTTPS or localhost in a browser with Web Workers and WebAssembly support.');

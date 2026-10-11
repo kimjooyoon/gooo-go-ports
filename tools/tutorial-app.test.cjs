@@ -82,7 +82,8 @@ function app(options = {}) {
     mode(mode) { get('tutorial-label-mode').value = mode; get('tutorial-label-mode').emit('change'); },
     preset(score) { get('tutorial-preset').value = score; get('tutorial-preset').emit('change'); },
     download: () => get('tutorial-download-inputs').emit('click'),
-    pagehide: () => events.get('pagehide')(), get reloaded() { return reloaded; } };
+    pagehide: (persisted = false) => events.get('pagehide')({ persisted }),
+    pageshow: () => events.get('pageshow')?.({ persisted: true }), get reloaded() { return reloaded; } };
 }
 
 test('no automatic execution; six displayed files and portable ZIP are verified before ready', async () => {
@@ -193,4 +194,90 @@ test('loading/runtime timeouts and page exit terminate workers and release downl
   assert.equal(b.get('tutorial-values').hidden, true);
   const c = app(); await c.ready(); c.pagehide();
   assert.equal(c.current().terminated, true); assert.deepEqual(c.revoked, [c.urls[0].url]);
+});
+
+test('cached tutorial preserves its worker and loading timeout before the ready message', async () => {
+  const a = app(); const worker = a.current();
+  const loadTimer = [...a.timers.entries()];
+  a.pagehide(true); a.pageshow();
+  assert.equal(worker.terminated, false);
+  assert.equal(a.current(), worker);
+  assert.deepEqual([...a.timers.entries()], loadTimer);
+  assert.equal(a.get('tutorial-run').disabled, true);
+  await a.ready();
+  assert.equal(a.get('tutorial-run').disabled, false);
+  assert.equal(a.timers.size, 0);
+  assert.equal(worker.messages.length, 0, 'restoration must not automatically run the user input');
+});
+
+test('cached tutorial preserves in-flight source verification and the verified project download', async () => {
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  const a = app({ fetch: async url => {
+    await gate;
+    const bytes = url.endsWith('source.zip') ? archive : samples[url.split('/').at(-1)];
+    return { ok: true, arrayBuffer: async () => bytes };
+  } });
+  a.deliverReady();
+  await until(() => a.requests.length === protocol.files.length);
+  a.pagehide(true); a.pageshow();
+  assert.equal(a.current().terminated, false);
+  assert.ok(a.requests.every(request => !request.options.signal.aborted));
+  release();
+  await until(() => a.get('tutorial-runtime').textContent.startsWith('Ready'));
+  assert.equal(a.requests.length, 7);
+  assert.equal(a.get('tutorial-download').hidden, false);
+  assert.equal(await a.urls[0].blob.text(), archive.toString());
+  assert.deepEqual(a.revoked, []);
+  assert.equal(a.timers.size, 0);
+});
+
+test('cached tutorial retains edited inputs and a live ZIP while allowing a new run on return', async () => {
+  const a = app(); await a.ready(); a.preset('42'); a.reply(a.run());
+  a.edit('tutorial-label', 'kept input');
+  const worker = a.current(), zipURL = a.get('tutorial-download').href;
+  a.pagehide(true); a.pageshow();
+  assert.equal(worker.terminated, false);
+  assert.equal(a.get('tutorial-score').value, '42');
+  assert.equal(a.get('tutorial-label').value, 'kept input');
+  assert.equal(a.get('tutorial-download').href, zipURL);
+  assert.equal(a.get('tutorial-download').hidden, false);
+  assert.deepEqual(a.revoked, []);
+  assert.ok(a.requests.every(request => !request.options.signal.aborted));
+  assert.equal(worker.messages.length, 1);
+  a.edit('tutorial-score', '75');
+  const request = a.run(); assert.deepEqual(request.inputs, ['75', 'kept input']);
+  a.reply(request, { result: { ok: true, inputs: request.inputs,
+    output: { score: '75', remaining: '25', in_range: true, label: 'kept input: high' } } });
+  assert.equal(a.get('result-score').textContent, '75');
+  assert.equal(a.get('tutorial-result-badge').textContent, 'EXECUTED');
+  assert.equal(a.current(), worker);
+  assert.equal(a.urls.length, 1);
+});
+
+test('cached tutorial retains a pending run and its timeout until its result resumes', async () => {
+  const a = app(); await a.ready(); a.preset('42');
+  const request = a.run(), worker = a.current(), runTimer = [...a.timers.entries()];
+  a.pagehide(true); a.pageshow();
+  assert.equal(worker.terminated, false);
+  assert.equal(a.get('tutorial-result-badge').textContent, 'RUNNING');
+  assert.equal(a.get('tutorial-run').disabled, true);
+  assert.deepEqual([...a.timers.entries()], runTimer);
+  assert.equal(worker.messages.length, 1);
+  a.reply(request);
+  assert.equal(a.get('result-score').textContent, '42');
+  assert.equal(a.get('tutorial-result-badge').textContent, 'EXECUTED');
+  assert.equal(a.get('tutorial-run').disabled, false);
+  assert.equal(a.timers.size, 0);
+});
+
+test('terminal pagehide after a cached return still releases the worker and verified download', async () => {
+  const a = app(); await a.ready();
+  a.pagehide(true); a.pageshow();
+  assert.equal(a.current().terminated, false);
+  assert.deepEqual(a.revoked, []);
+  a.pagehide(false);
+  assert.equal(a.current().terminated, true);
+  assert.ok(a.requests.every(request => request.options.signal.aborted));
+  assert.deepEqual(a.revoked, [a.urls[0].url]);
 });
