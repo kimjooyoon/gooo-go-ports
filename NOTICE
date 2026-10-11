@@ -6,3 +6,8 @@ Copyright 2009, 2010, 2011, 2017 The Go Authors. All rights reserved.
 Licensed under the BSD 3-Clause terms reproduced in LICENSE and third_party/GO-LICENSE.
 Exact original files, revision, hashes and corresponding Gooo functions are in upstream.json.
 The Go and Google projects do not endorse this independent experimental port.
+
+The tutorial source and input files under examples/learn-gooo reproduce the
+original Gooo tutorial contribution by asketeddy, prepared with OpenAI Codex
+assistance. Those tutorial files use CC-BY-SA-3.0; see that directory's NOTICE.
+This exception does not change the licenses of the Go ports or browser adapter.

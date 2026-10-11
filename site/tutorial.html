@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Run a small Gooo tutorial program in your browser. Edit a score and label, inspect the returned record, then download the same source to change it locally.">
+  <meta name="theme-color" content="#f5f3eb">
+  <title>Try the Gooo tutorial — a score and a label</title>
+  <link rel="canonical" href="https://kimjooyoon.github.io/gooo-go-ports/tutorial.html">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./tutorial.css">
+  <script defer src="./tutorial-protocol.js"></script>
+  <script defer src="./tutorial.js"></script>
+</head>
+<body class="tutorial-page">
+  <a class="skip-link" href="#tutorial-form">Skip to the example</a>
+  <div class="page-shell">
+    <header class="masthead">
+      <a class="wordmark" href="https://github.com/kimjooyoon/meta-ontology-go" aria-label="Gooo language on GitHub">gooo<span class="wordmark-dot" aria-hidden="true">.</span></a>
+      <span class="masthead-caption">A small program / your inputs</span>
+      <nav class="repository-links" aria-label="Related pages">
+        <a class="text-link" href="./">Function demo</a>
+        <a class="text-link" href="https://github.com/kimjooyoon/meta-ontology-go">Gooo language ↗</a>
+      </nav>
+    </header>
+    <main>
+      <section class="tutorial-intro" aria-labelledby="tutorial-title">
+        <p class="eyebrow">TRY THE TUTORIAL</p>
+        <h1 id="tutorial-title">Change an input.<br>See the Gooo result.</h1>
+        <p>This program brings a score into the range 0–100 and returns a labelled record. Try the four tutorial examples, then use your own values.</p>
+        <p class="tutorial-help">The fixed Gooo source below is compiled to WebAssembly. This page runs new inputs; it does not compile source edits. No installation, account or model is needed.</p>
+        <p id="tutorial-runtime" class="tutorial-runtime" role="status">Loading the program and its source…</p>
+        <button id="tutorial-retry" class="text-button" type="button" hidden>Retry loading</button>
+        <noscript><p>JavaScript is needed to run this example. Read the <a href="https://github.com/kimjooyoon/gooo-go-ports/tree/main/examples/learn-gooo">native example</a> instead.</p></noscript>
+      </section>
+
+      <section class="tutorial-workbench" aria-label="Tutorial inputs and returned record">
+        <form id="tutorial-form" novalidate>
+          <p class="eyebrow">1 / CHOOSE YOUR INPUTS</p>
+          <label for="tutorial-preset">Start with a tutorial example</label>
+          <select id="tutorial-preset">
+            <option value="-5">−5 · below the range</option>
+            <option value="42">42 · within the range</option>
+            <option value="75">75 · a high score</option>
+            <option value="105">105 · above the range</option>
+            <option value="" disabled>Custom inputs</option>
+          </select>
+          <label for="tutorial-score">Score</label>
+          <input id="tutorial-score" type="text" inputmode="text" value="-5" autocomplete="off" spellcheck="false" aria-describedby="tutorial-score-help tutorial-input-status">
+          <p id="tutorial-score-help" class="tutorial-help">An exact signed 64-bit decimal integer, from <code>-9223372036854775808</code> to <code>9223372036854775807</code>. No rounding or truncation.</p>
+          <div class="tutorial-label-heading"><label for="tutorial-label">Label</label><label class="visually-hidden" for="tutorial-label-mode">Label input format</label>
+            <select id="tutorial-label-mode"><option value="text">Text</option><option value="json">JSON string · exact escapes</option></select>
+          </div>
+          <textarea id="tutorial-label" rows="3" autocomplete="off" spellcheck="false" aria-describedby="tutorial-label-help tutorial-label-preview tutorial-input-status">sensor</textarea>
+          <p id="tutorial-label-help" class="tutorial-help">Text is used without trimming. In JSON string mode, include double quotes; for example <code>"line\r\nnext\u0000"</code>.</p>
+          <p id="tutorial-label-bytes" class="tutorial-help"></p>
+          <p id="tutorial-label-warning" class="tutorial-warning" role="status" hidden></p>
+          <details class="tutorial-details tutorial-input-detail">
+            <summary>See the label passed to Gooo</summary>
+            <pre id="tutorial-label-preview" tabindex="0"></pre>
+            <p class="tutorial-help">This JSON view shows CR, LF and NUL as escapes. Other Unicode characters may remain invisible. A normal text editor may convert CR/CRLF to LF; JSON string mode preserves explicit escapes. Native JSON decoding replaces unpaired UTF-16 surrogates with U+FFFD. Valid pairs, BOMs and combining marks are preserved.</p>
+            <p class="tutorial-help">The label input and returned Text each allow up to 1,024 UTF-8 bytes. The program adds <code>: low</code> or <code>: high</code>, so a long accepted input can still produce an output-limit error. Inputs are never shortened to make them fit.</p>
+          </details>
+          <button id="tutorial-run" class="primary-button" type="submit" disabled>Run this example <span aria-hidden="true">→</span></button>
+          <p id="tutorial-input-status" class="tutorial-help" role="status">Choose an example or edit the inputs, then run.</p>
+        </form>
+
+        <section class="tutorial-result" aria-labelledby="tutorial-result-title">
+          <div class="tutorial-result-heading"><h2 id="tutorial-result-title">2 / Returned record</h2><span id="tutorial-result-badge" class="result-badge">NOT RUN</span></div>
+          <p id="tutorial-result-status" role="status">Your result will appear here.</p>
+          <p id="tutorial-error" class="tutorial-error" role="alert" hidden></p>
+          <dl id="tutorial-values" class="tutorial-output" hidden>
+            <div><dt>score <span>after bringing it into 0–100</span></dt><dd id="result-score"></dd></div>
+            <div><dt>remaining <span>100 minus the returned score</span></dt><dd id="result-remaining"></dd></div>
+            <div><dt>in_range <span>whether the original score was in 0–100</span></dt><dd id="result-in-range"></dd></div>
+            <div><dt>label <span>your label with a low/high suffix; high starts at 60</span></dt><dd id="result-label"></dd></div>
+          </dl>
+          <p class="tutorial-help">Every value comes from the compiled Gooo program. A successful run is an observation of these inputs, not a proof for all inputs.</p>
+          <details id="tutorial-raw" class="tutorial-details" hidden>
+            <summary>Inspect the browser result</summary>
+            <pre id="tutorial-raw-output" tabindex="0"></pre>
+            <p class="tutorial-help">Integer strings retain exact values in browser JSON. This is a browser result, not a native execution receipt.</p>
+          </details>
+        </section>
+      </section>
+
+      <section class="tutorial-source-section" aria-labelledby="tutorial-source-title">
+        <div class="tutorial-section-heading"><div><p class="eyebrow">3 / READ IT, THEN MAKE IT YOURS</p><h2 id="tutorial-source-title">Two Gooo files. One small program.</h2></div>
+          <a id="tutorial-download" class="text-link" href="./tutorial/source.zip" download="learn-gooo-source.zip" hidden>Download the original project (.zip) ↓</a>
+        </div>
+        <p><code>main.gooo</code> imports <code>limits.gooo</code>. The workspace joins them and selects <code>Describe</code>. These are the exact source files used for this build.</p>
+        <label for="tutorial-source-file">Read a file</label>
+        <select id="tutorial-source-file"><option value="main.gooo">main.gooo · return a record</option><option value="limits.gooo">limits.gooo · check and clamp</option><option value="gooo.workspace.json">gooo.workspace.json · connect the packages</option><option value="inputs.json">inputs.json · the four original examples</option><option value="README.md">README.md · run and edit locally</option><option value="NOTICE">NOTICE · attribution and license</option></select>
+        <pre id="tutorial-source" class="tutorial-source" tabindex="0">Loading the original source…</pre>
+        <p id="tutorial-source-status" class="tutorial-help" role="status"></p>
+        <div class="tutorial-next">
+          <h3>Change the code on your computer</h3>
+          <p>The download contains both sources, the portable workspace, the four original inputs, instructions and their license notice. Follow the <a id="tutorial-native-guide" href="./tutorial/source/README.md">native instructions</a> to install the pinned compiler and Go 1.27.2. Then edit a condition or the label suffix and execute again.</p>
+          <p><button id="tutorial-download-inputs" class="text-button" type="button" disabled>Download your current inputs.json ↓</button></p>
+          <p class="tutorial-help">Replace the original <code>inputs.json</code> with your downloaded input to reproduce this request. Create a new execution record after changing source; a saved replay keeps its source fixed.</p>
+          <p id="tutorial-download-status" class="tutorial-help" role="status"></p>
+        </div>
+        <details class="tutorial-details">
+          <summary>Build identity and execution evidence</summary>
+          <p id="tutorial-program" class="tutorial-help">Build identity will appear after loading.</p>
+          <p id="tutorial-program-hash" class="tutorial-help"></p>
+          <ul class="tutorial-evidence"><li><a href="./tutorial/manifest.json">Build manifest</a></li><li><a href="./tutorial/generated.go">Generated Go</a></li><li><a href="./tutorial/execution.json">Native execution</a></li><li><a href="./tutorial/replay.json">Saved replay</a></li><li><a href="./tutorial/fixtures.json">Finite comparison cases</a></li></ul>
+          <p class="tutorial-help">The browser checks the program and displayed source against this build’s SHA-256 hashes. These hashes bind the files to the supplied manifest; they are not a separate publisher signature.</p>
+        </details>
+        <p class="tutorial-attribution">Example by asketeddy, prepared with OpenAI Codex assistance, under <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>. <a href="./tutorial/source/NOTICE">Full notice</a>. The <a href="https://github.com/adambard/learnxinyminutes-docs/pull/5629">Learn X in Y Minutes contribution</a> is pending independent review; this page does not imply its approval or endorsement.</p>
+      </section>
+    </main>
+    <footer><span>Gooo / Try a small program</span><a href="https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml">Report a problem ↗</a></footer>
+  </div>
+</body>
+</html>

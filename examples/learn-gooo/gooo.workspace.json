@@ -1,0 +1,8 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {"package_path": "app/report", "activity": "Describe"},
+  "packages": [
+    {"path": "example/limits", "sources": ["limits.gooo"]},
+    {"path": "app/report", "sources": ["main.gooo"]}
+  ]
+}

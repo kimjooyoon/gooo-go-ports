@@ -81,6 +81,15 @@ not load or modify image files. This separate browser program composes the
 existing `RectangleIntersect` and `RectangleEmpty` ports; it adds no new port
 and leaves the 21-function demo's input and shared-link formats unchanged.
 
+To learn the language from a small program, try the
+[score-and-label tutorial](https://kimjooyoon.github.io/gooo-go-ports/tutorial.html).
+Change two inputs, inspect the four returned fields, and read both Gooo source
+files on the page. Download the same project and follow its
+[native instructions](examples/learn-gooo/README.md) to change the code locally.
+The browser runs this fixed program as WebAssembly and preserves exact 64-bit
+scores. The example accompanies a pending Learn X in Y Minutes contribution;
+it is separate from the Go port counts and does not imply that site's endorsement.
+
 The separate [offline decision-policy experiment](examples/decision-policy-pilot/README.md)
 applies explicit tenant, action, integer-limit and expiry rules to synthetic Choice
 proposals. It compares Gooo with an independently written Go policy and manual
@@ -188,6 +197,7 @@ Wasm 해시가 달라졌으면 자동 실행하지 않습니다.
 go run ./cmd/build-demo --out out/browser
 node tools/browser-smoke.cjs out/browser/site
 node tools/crop-browser-smoke.cjs out/browser/site
+node tools/tutorial-browser-smoke.cjs out/browser/site
 node --test tools/share-link.test.cjs tools/share-app.test.cjs
 python3 -m http.server 8766 --bind 127.0.0.1 --directory out/browser/site
 ```
@@ -211,6 +221,13 @@ HTTP·rune·색상 검사는 유한 입력 관측이며 패키지 전체 호환�
 범위를 넘어도 원본 값을 보존합니다. `crop/` 아래에 이 프로그램의 생성 Go, 실행·재실행
 기록, 독립 Go 비교 입력과 빌드 메타데이터가 있습니다. crop smoke 결과는 기존
 16,036건 비교 및 483건 거부 집계와 분리합니다.
+
+별도 [언어 튜토리얼](https://kimjooyoon.github.io/gooo-go-ports/tutorial.html)은
+점수와 이름표를 받아 네 필드를 돌려주는 두 파일짜리 Gooo 프로그램을 실행합니다.
+화면에서 입력을 바꾸고 원본 소스를 읽거나 내려받을 수 있습니다. 소스 변경은
+[native 실행 안내](examples/learn-gooo/README.md)를 따릅니다. 정수는 int64 전체 범위를
+보존하며 Text 입력과 반환 필드의 1,024 UTF-8 바이트 제한을 각각 검사합니다.
+이 예제의 실행·재실행 기록과 브라우저 비교는 기존 Go 포트 호환성 집계에 포함하지 않습니다.
 
 브라우저 생성용 사례 **261개**도 기대 결과와 함께 native 실행·저장된 프로그램 재실행을 검증합니다.
 입력 파일당 128개·32 KiB 제한을 지키도록 실제 JSON 바이트 크기로 나누며 사례를 생략하지 않습니다.

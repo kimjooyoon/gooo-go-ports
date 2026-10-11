@@ -1,0 +1,68 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"strconv"
+	"syscall/js"
+)
+
+func tutorialFailure(message string) string {
+	b, _ := json.Marshal(map[string]any{"ok": false, "error": message})
+	return string(b)
+}
+func main() {
+	compute := js.FuncOf(func(_ js.Value, args []js.Value) (result any) {
+		defer func() {
+			if recover() != nil {
+				result = tutorialFailure("Invalid browser argument or runtime failure.")
+			}
+		}()
+		if len(args) != 2 || args[0].Type() != js.TypeString || args[1].Type() != js.TypeString {
+			return tutorialFailure("Expected an integer string and a label string.")
+		}
+		score, label := args[0].String(), args[1].String()
+		n, err := strconv.ParseInt(score, 10, 64)
+		if err != nil || strconv.FormatInt(n, 10) != score {
+			return tutorialFailure("Score must be a canonical signed 64-bit decimal integer.")
+		}
+		// syscall/js decodes via TextEncoder: lone UTF-16 surrogates become U+FFFD,
+		// matching native Go JSON string decoding. Echo the bound text explicitly.
+		if len(label) > 1024 {
+			return tutorialFailure("Input Text exceeds the native 1024 UTF-8-byte limit.")
+		}
+		raw, err := json.Marshal(GoooComposedActivity0(n, label))
+		if err != nil {
+			return tutorialFailure("Cannot encode the compiled result.")
+		}
+		var output struct {
+			Score     *json.Number `json:"score"`
+			Remaining *json.Number `json:"remaining"`
+			InRange   *bool        `json:"in_range"`
+			Label     *string      `json:"label"`
+		}
+		if err = json.Unmarshal(raw, &output); err != nil || output.Score == nil || output.Remaining == nil || output.InRange == nil || output.Label == nil {
+			return tutorialFailure("Invalid compiled record.")
+		}
+		// The pinned native receipt runtime applies its Text limit to output fields
+		// too. Check the actual generated result; never infer/reimplement its label.
+		if len(*output.Label) > 1024 {
+			return tutorialFailure("Compiled output Text exceeds the native 1024 UTF-8-byte limit.")
+		}
+		for _, v := range []*json.Number{output.Score, output.Remaining} {
+			n, err := v.Int64()
+			if err != nil || strconv.FormatInt(n, 10) != v.String() {
+				return tutorialFailure("Invalid compiled integer.")
+			}
+		}
+		response := map[string]any{"ok": true, "inputs": []string{score, label}, "output": map[string]any{"score": output.Score.String(), "remaining": output.Remaining.String(), "in_range": *output.InRange, "label": *output.Label}}
+		encoded, err := json.Marshal(response)
+		if err != nil {
+			return tutorialFailure(fmt.Sprint(err))
+		}
+		return string(encoded)
+	})
+	js.Global().Set("goooTutorial", compute)
+	js.Global().Set("goooTutorialReady", true)
+	select {}
+}

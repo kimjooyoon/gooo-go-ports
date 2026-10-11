@@ -1,0 +1,17 @@
+// A file declares one package and namespace.
+package limits
+namespace learn_gooo_limits
+
+// These builtin identities select signed int64 and Boolean representations.
+// An ID identifies a declaration; it is not a URL that the runtime fetches.
+entity Integer id "urn:gooo:type:integer"
+entity Boolean id "urn:gooo:type:boolean"
+
+// One input is called input. An activity returns exactly one value.
+activity InRange(Integer) -> Boolean id "urn:learn-gooo:in-range"
+computes `return input >= 0 && input <= 100`
+
+activity Clamp(Integer) -> Integer id "urn:learn-gooo:clamp"
+computes `if input < 0 { return 0 }
+if input > 100 { return 100 }
+return input`
