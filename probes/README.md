@@ -2,7 +2,12 @@
 
 These three small Gooo sources preserve the unsupported features encountered
 when choosing Go libraries to port. They are deliberately kept outside `ports/`.
-They are examples for upstream language work, not requests already sent upstream.
+The loop and byte-index fixtures now support the upstream
+[bounded traversal and Text byte-access request](https://github.com/kimjooyoon/meta-ontology-go/issues/1462)
+for string-search ports. That request also records their unchanged rejection in
+Gooo `0.6.29-dev`; the observations below retain this repository's pinned compiler.
+It is a feature request, not an accepted implementation or an external customer report.
+The bitwise fixture remains separate evidence without an upstream request here.
 
 Observed with clean Gooo `0.6.24-dev` compiler source
 `366ee6ef8f9d2b9b57331dfd26b6f908c0289851`, built with Go `1.27.2`:
