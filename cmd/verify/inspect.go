@@ -8,6 +8,8 @@ import (
 	"io"
 	"reflect"
 	"strings"
+
+	"github.com/kimjooyoon/gooo-go-ports/internal/jsonkeys"
 )
 
 type expectedIdentity struct {
@@ -90,6 +92,9 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 	contract, err := contractFor(s)
 	if err != nil {
 		return checked{}, err
+	}
+	if err := jsonkeys.RejectDuplicates(raw); err != nil {
+		return checked{}, fmt.Errorf("invalid evidence: %w", err)
 	}
 	var e envelope
 	if err := json.Unmarshal(raw, &e); err != nil {
@@ -178,6 +183,9 @@ func equalValue(raw json.RawMessage, want any) bool {
 	return err == nil && reflect.DeepEqual(left, right)
 }
 func decode(raw []byte) (any, error) {
+	if err := jsonkeys.RejectDuplicates(raw); err != nil {
+		return nil, err
+	}
 	var v any
 	d := json.NewDecoder(bytes.NewReader(raw))
 	d.UseNumber()

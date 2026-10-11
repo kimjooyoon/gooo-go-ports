@@ -7,6 +7,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+from receipt_json import loads_receipt
+
 
 def main():
     if len(sys.argv) != 2:
@@ -61,7 +63,7 @@ def main():
             result = subprocess.run(command, capture_output=True, timeout=30)
             (out / (prefix + ".receipt.json")).write_bytes(result.stdout)
             (out / (prefix + ".stderr.txt")).write_bytes(result.stderr)
-            receipt = json.loads(result.stdout)
+            receipt = loads_receipt(result.stdout)
             assert result.returncode == 1 and receipt["decision"] == "FAIL_CLOSED", prefix
             assert diagnostic in receipt["error"], (prefix, receipt["error"])
             if name != "duplicate":

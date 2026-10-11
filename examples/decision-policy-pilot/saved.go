@@ -12,6 +12,10 @@ import (
 
 func verifyFailureProbe(out string) error {
 	read := func(name string) []byte { raw, _ := os.ReadFile(filepath.Join(out, name)); return raw }
+	raw := read("missing-context.json")
+	if err := checkJSON(raw, 16<<20, 64); err != nil {
+		return err
+	}
 	var r struct {
 		Schema   string          `json:"schema"`
 		Decision string          `json:"decision"`
@@ -20,7 +24,7 @@ func verifyFailureProbe(out string) error {
 		Cases    string          `json:"cases_digest"`
 		Result   json.RawMessage `json:"result"`
 	}
-	if err := json.Unmarshal(read("missing-context.json"), &r); err != nil {
+	if err := json.Unmarshal(raw, &r); err != nil {
 		return err
 	}
 	if string(read("missing-context.exit.txt")) != "1" || r.Schema != "gooo/workspace-body-execution-receipt/v1" || r.Decision != "FAIL_CLOSED" || !strings.Contains(r.Error, `requires field "now"`) || len(r.Result) != 0 || r.Manifest != digest(read("gooo.workspace.json")) || r.Cases != digest(read("missing-context-cases.json")) {

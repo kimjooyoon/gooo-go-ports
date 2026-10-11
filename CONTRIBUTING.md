@@ -44,6 +44,7 @@ test -z "$(gofmt -l cmd)"
 go vet ./...
 go test -race ./...
 python3 tools/bootstrap.test.py
+python3 tools/receipt_json_test.py
 go run ./cmd/verify --out out/contribution
 ./tools/probe.sh --out out/contribution-probes
 ```

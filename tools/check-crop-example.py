@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 import sys
 
+from receipt_json import loads_receipt
+
 
 def digest(raw):
     return "sha256:" + hashlib.sha256(raw).hexdigest()
@@ -29,8 +31,8 @@ def main():
     manifest = json.loads(manifest_raw)
     lock = json.loads(Path("upstream.json").read_bytes())
     execution_raw = Path(sys.argv[1]).read_bytes()
-    execution = json.loads(execution_raw)
-    replay = json.loads(Path(sys.argv[2]).read_bytes())
+    execution = loads_receipt(execution_raw)
+    replay = loads_receipt(Path(sys.argv[2]).read_bytes())
     assert replay["replayed_from_sha256"] == digest(execution_raw)
     assert replay["result"]["replay"]["model_calls"] == 0
     coordinate_names = ["min_x", "min_y", "max_x", "max_y"]

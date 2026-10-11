@@ -8,6 +8,8 @@ import (
 	"os"
 	"reflect"
 	"strings"
+
+	"github.com/kimjooyoon/gooo-go-ports/internal/jsonkeys"
 )
 
 // Keep the browser's public entry contract independent of receipt claims.
@@ -95,6 +97,9 @@ func inspectReceipt(raw []byte, lock lockfile, sources map[string]string, replay
 }
 
 func inspectBatchReceipt(raw []byte, lock lockfile, sources map[string]string, replayedFrom, caseFile string) (string, error) {
+	if err := jsonkeys.RejectDuplicates(raw); err != nil {
+		return "", fmt.Errorf("invalid browser build evidence: %w", err)
+	}
 	var e receipt
 	if err := json.Unmarshal(raw, &e); err != nil {
 		return "", err
@@ -245,6 +250,9 @@ func inspectBatchReceipt(raw []byte, lock lockfile, sources map[string]string, r
 
 func sameJSON(a, b []byte) bool {
 	decode := func(raw []byte) (any, error) {
+		if err := jsonkeys.RejectDuplicates(raw); err != nil {
+			return nil, err
+		}
 		var x any
 		d := json.NewDecoder(bytes.NewReader(raw))
 		d.UseNumber()

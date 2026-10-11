@@ -11,6 +11,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/kimjooyoon/gooo-go-ports/internal/jsonkeys"
 )
 
 type activityExport struct {
@@ -123,6 +125,9 @@ type generatedNames struct{ Entry, Letter, Digit, Record, InRuneDomain, CanStart
 func inspectReceipt(raw []byte, b evidenceBinding, replayedFrom string) (string, generatedNames, error) {
 	fail := func(reason string) (string, generatedNames, error) {
 		return "", generatedNames{}, fmt.Errorf("invalid evidence: %s", reason)
+	}
+	if err := jsonkeys.RejectDuplicates(raw); err != nil {
+		return fail(err.Error())
 	}
 	var e receipt
 	if err := json.Unmarshal(raw, &e); err != nil {
@@ -378,6 +383,9 @@ func ident(expr ast.Expr) string {
 }
 func sameJSON(a, b []byte) bool {
 	decode := func(raw []byte) (any, error) {
+		if err := jsonkeys.RejectDuplicates(raw); err != nil {
+			return nil, err
+		}
 		var v any
 		d := json.NewDecoder(bytes.NewReader(raw))
 		d.UseNumber()

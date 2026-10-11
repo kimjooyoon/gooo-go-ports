@@ -27,6 +27,7 @@ jobs:
           go vet ./...
           go test -race ./...
           python3 tools/bootstrap.test.py
+          python3 tools/receipt_json_test.py
       - name: Check pinned Unicode table generation
         run: |
           go run ./cmd/gen-unicode --check
@@ -151,8 +152,9 @@ jobs:
 
           fixture = json.loads(Path("examples/byte-rotation/inputs.json").read_bytes())
           execution_bytes = Path("out/rotation-example.json").read_bytes()
-          execution = json.loads(execution_bytes)
-          replay = json.loads(Path("out/rotation-replay.json").read_bytes())
+          from tools.receipt_json import loads_receipt
+          execution = loads_receipt(execution_bytes)
+          replay = loads_receipt(Path("out/rotation-replay.json").read_bytes())
           assert replay["replayed_from_sha256"] == "sha256:" + hashlib.sha256(execution_bytes).hexdigest()
           assert execution["result"]["composition"]["generated_sha256"] == replay["result"]["composition"]["generated_sha256"]
           deliveries = lambda receipt: [d for t in receipt["result"]["runtime"]["traces"] for d in t["deliveries"]]
@@ -231,8 +233,9 @@ jobs:
           manifest_bytes = Path("duration-quantizer.workspace.json").read_bytes()
           lock = json.loads(Path("upstream.json").read_bytes())
           execution_bytes = Path("out/duration-example.json").read_bytes()
-          execution = json.loads(execution_bytes)
-          replay = json.loads(Path("out/duration-replay.json").read_bytes())
+          from tools.receipt_json import loads_receipt
+          execution = loads_receipt(execution_bytes)
+          replay = loads_receipt(Path("out/duration-replay.json").read_bytes())
           assert replay["replayed_from_sha256"] == "sha256:" + hashlib.sha256(execution_bytes).hexdigest()
           assert execution["result"]["composition"]["generated_sha256"] == replay["result"]["composition"]["generated_sha256"]
           assert replay["result"]["replay"]["model_calls"] == 0
@@ -290,8 +293,9 @@ jobs:
           entity = "gooo://go-ports/examples/whitespace-inspector/inspection"
           lock = json.loads(Path("upstream.json").read_bytes())
           original = Path("out/whitespace-example.json").read_bytes()
-          execution = json.loads(original)
-          replay = json.loads(Path("out/whitespace-replay.json").read_bytes())
+          from tools.receipt_json import loads_receipt
+          execution = loads_receipt(original)
+          replay = loads_receipt(Path("out/whitespace-replay.json").read_bytes())
           assert replay["replayed_from_sha256"] == digest(original)
           assert replay["result"]["replay"]["model_calls"] == 0
           for receipt in (execution, replay):
