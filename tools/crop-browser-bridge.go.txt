@@ -32,7 +32,7 @@ func main() {
 			return GoooComposedActivity0(first, second)
 		})
 	})
-	js.Global().Set("goooCrop", compute)
-	js.Global().Set("goooCropReady", true)
+	js.Global().Set("__GLOBAL__", compute)
+	js.Global().Set("__GLOBAL__Ready", true)
 	select {}
 }

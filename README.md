@@ -90,11 +90,14 @@ not load or modify image files. This separate browser program composes the
 existing `RectangleIntersect` and `RectangleEmpty` ports; it adds no new port
 and leaves the 21-function demo's input and shared-link formats unchanged.
 
-The experimental native [drag-selection crop planner](docs/drag-crop.md) interprets the requested
-rectangle as two unordered drag corners. It imports `RectangleCanon`, then clips
-to the original bounds. This is a separate activity: existing `CropPlan` and the
-browser crop planner keep their original reversed-input behavior. No new browser
-function or image-file operation is introduced.
+The experimental [drag-selection crop planner](docs/drag-crop.md) interprets the requested
+rectangle as two unordered drag corners. Choose **Two-corner selection** in the
+browser crop planner: (200,200) to (100,100) selects the same region as the reverse
+direction. A separate compiled `DragCropPlan` program imports `RectangleCanon`,
+then clips to the original bounds. The default **Keep rectangle order** mode
+continues to run `CropPlan` with its original reversed-input behavior. Neither
+mode normalizes image bounds or processes image files; the 21-function dispatcher
+is unchanged.
 
 To learn the language from a small program, try the
 [score-and-label tutorial](https://kimjooyoon.github.io/gooo-go-ports/tutorial.html).
@@ -215,7 +218,7 @@ Wasm 해시가 달라졌으면 자동 실행하지 않습니다.
 ./tools/bootstrap.sh
 go run ./cmd/build-demo --out out/browser
 node tools/browser-smoke.cjs out/browser/site
-node tools/crop-browser-smoke.cjs out/browser/site
+node tools/drag-crop-browser-smoke.cjs out/browser/site
 node tools/tutorial-browser-smoke.cjs out/browser/site
 node --test tools/share-link.test.cjs tools/share-app.test.cjs
 python3 -m http.server 8766 --bind 127.0.0.1 --directory out/browser/site
@@ -235,10 +238,13 @@ Node smoke 검사는 공유 입력 왕복 16,036건과 추가 호출 형태·타
 총 거부 검사는 **483건**입니다. 아래 native 소비 예제는 브라우저 집계에 포함하지 않습니다.
 HTTP·rune·색상 검사는 유한 입력 관측이며 패키지 전체 호환성이나 성능을 보장하지 않습니다.
 
-별도 `crop-planner.html`은 기존 crop 소비 프로그램을 `crop/crop.wasm`으로 실행합니다.
+별도 `crop-planner.html`은 기본 모드에서 기존 crop 소비 프로그램을 `crop/crop.wasm`으로 실행합니다.
+Two-corner selection 모드는 별도 `drag-crop/crop.wasm`의 `DragCropPlan`을 실행하여 선택한 두 모서리만 정렬합니다.
 좌표는 브라우저와 Wasm 사이에서 십진 문자열로 전달하므로 JavaScript의 안전한 정수
 범위를 넘어도 원본 값을 보존합니다. `crop/` 아래에 이 프로그램의 생성 Go, 실행·재실행
-기록, 독립 Go 비교 입력과 빌드 메타데이터가 있습니다. crop smoke 결과는 기존
+기록, 독립 Go 비교 입력과 빌드 메타데이터가 있으며 `drag-crop/`에도 같은 형식의 별도 증거가 있습니다.
+두 모드는 각각 Go 기준값 88건, 잘못된 문자열 96건, JS 타입 104건, 인수 개수 10건을 검사합니다.
+추가로 두 Wasm 프로그램을 함께 실행해 7개 입력의 14회 호출을 비교합니다. crop smoke 결과는 기존
 16,036건 비교 및 483건 거부 집계와 분리합니다.
 
 별도 [언어 튜토리얼](https://kimjooyoon.github.io/gooo-go-ports/tutorial.html)은

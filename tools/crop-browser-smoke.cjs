@@ -26,14 +26,21 @@ function cropOutput(value, context) {
   assert.equal(typeof value.has_pixels, 'boolean', context);
 }
 
-async function runSmoke(directory) {
+async function runSmoke(directory, mode = 'crop') {
+  assert.ok(mode === 'crop' || mode === 'drag-crop', 'unsupported crop program');
+  const drag = mode === 'drag-crop';
+  const activity = drag ? 'DragCropPlan' : 'CropPlan';
+  const entryId = `gooo://example/crop-planner/${drag ? 'drag-crop-plan' : 'crop-plan'}`;
+  const manifest = drag ? 'drag-crop.workspace.json' : 'crop-planner.workspace.json';
+  const globalName = drag ? 'goooDragCrop' : 'goooCrop';
   const site = path.resolve(directory);
-  const dir = path.join(site, 'crop');
+  const dir = path.join(site, mode);
   const bytes = name => fs.readFileSync(path.join(dir, name));
   const read = name => JSON.parse(bytes(name).toString('utf8'));
   const hash = name => createHash('sha256').update(bytes(name)).digest('hex');
   const metadata = read('metadata.json');
   assert.equal(metadata.schema, 'gooo/browser-crop-planner/v1');
+  assert.equal(metadata.entry_id, entryId);
   assert.match(metadata.source_revision, /^[a-f0-9]{40}$/);
   assert.equal(typeof metadata.source_dirty, 'boolean');
   const lock = read('upstream.json');
@@ -42,7 +49,7 @@ async function runSmoke(directory) {
   for (const [name, key] of [
     ['crop.wasm', 'wasm_sha256'], ['generated.go', 'generated_sha256'],
     ['execution.json', 'execution_sha256'], ['replay.json', 'replay_sha256'],
-    ['fixtures.json', 'fixtures_sha256'], ['crop-planner.workspace.json', 'manifest_sha256'],
+    ['fixtures.json', 'fixtures_sha256'], [manifest, 'manifest_sha256'],
     ['inputs.json', 'inputs_sha256']
   ]) {
     assert.match(metadata[key], /^[a-f0-9]{64}$/, key);
@@ -50,7 +57,8 @@ async function runSmoke(directory) {
   }
   assert.equal(bytes('crop.wasm').length, metadata.wasm_bytes);
   objectKeys(metadata.source_sha256, [
-    'ports/image/geometry.gooo', 'examples/crop-planner/crop_planner.gooo'
+    'ports/image/geometry.gooo', 'examples/crop-planner/crop_planner.gooo',
+    ...(drag ? ['ports/image/canon.gooo', 'examples/crop-planner/drag_crop.gooo'] : [])
   ], 'source roster');
   const expectedEncodedSources = {};
   for (const [name, expected] of Object.entries(metadata.source_sha256)) {
@@ -76,7 +84,8 @@ async function runSmoke(directory) {
     assert.equal(record.result.composition.source, generated, name);
     const program = record.result.program;
     assert.equal(program.entry.package_path, 'example/crop-planner', name);
-    assert.equal(program.entry.activity, 'CropPlan', name);
+    assert.equal(program.entry.activity, activity, name);
+    assert.equal(record.result.composition.plan.activities[0].id, entryId, name);
     const boundSources = {};
     for (const pkg of program.workspace_image.packages) {
       for (const source of pkg.sources) {
@@ -120,11 +129,11 @@ async function runSmoke(directory) {
   const { instance } = await WebAssembly.instantiate(bytes('crop.wasm'), go.importObject);
   let runtimeFailure;
   go.run(instance).then(() => { runtimeFailure = new Error('Crop runtime stopped.'); }, error => { runtimeFailure = error; });
-  assert.equal(globalThis.goooCropReady, true);
-  assert.equal(typeof globalThis.goooCrop, 'function');
+  assert.equal(globalThis[`${globalName}Ready`], true);
+  assert.equal(typeof globalThis[globalName], 'function');
   const invoke = (args, context) => {
     assert.equal(runtimeFailure, undefined, context);
-    const raw = globalThis.goooCrop(...args);
+    const raw = globalThis[globalName](...args);
     assert.equal(typeof raw, 'string', context);
     return JSON.parse(raw);
   };
@@ -179,18 +188,18 @@ async function runSmoke(directory) {
   await Promise.resolve();
   assert.equal(runtimeFailure, undefined);
   return {
-    schema: 'gooo/crop-browser-smoke/v1', status: 'PASS', cases: fixture.cases.length,
+    schema: 'gooo/crop-browser-smoke/v1', status: 'PASS', entry_id: entryId, cases: fixture.cases.length,
     fixture_rejections: fixture.rejections.length, type_rejections: typeRejections,
     arity_rejections: arityRejections, rejected: fixture.rejections.length + typeRejections + arityRejections,
     native_observations: inputs.inputs.length, compiler_revision: metadata.compiler_revision,
     source_revision: metadata.source_revision, wasm_sha256: metadata.wasm_sha256,
-    scope: 'Actual shipped crop Wasm compared with independent Go fixtures; exact decimal-string inputs and outputs, invalid JavaScript types, arities and saved native evidence identities checked. No DOM or image-file processing test.'
+    scope: 'Actual built crop Wasm compared with independent Go fixtures; exact decimal-string inputs and outputs, invalid JavaScript types, arities and saved native evidence identities checked. No DOM or image-file processing test.'
   };
 }
 
 module.exports = { runSmoke };
 if (require.main === module) {
-  runSmoke(process.argv[2] || 'out/browser/site').then(result => {
+  runSmoke(process.argv[2] || 'out/browser/site', process.argv[3] || 'crop').then(result => {
     console.log(JSON.stringify(result));
     process.exit(0);
   }).catch(error => { console.error(error); process.exit(1); });

@@ -4,7 +4,7 @@ const protocol = require('../site/crop-planner-protocol.js');
 const normal = [...protocol.presets.partial];
 const output = { min_x: '0', min_y: '40', max_x: '200', max_y: '480', has_pixels: true };
 const reply = (inputs = normal, value = output) => JSON.stringify({ ok: true, inputs, output: value });
-const metadata = { schema: 'gooo/browser-crop-planner/v1', wasm_sha256: 'a'.repeat(64), wasm_bytes: 100,
+const metadata = { schema: 'gooo/browser-crop-planner/v1', entry_id: protocol.modes.ordered.entryId, wasm_sha256: 'a'.repeat(64), wasm_bytes: 100,
   source_revision: 'b'.repeat(40), source_dirty: false, compiler_revision: 'c'.repeat(40), go_version: 'go1.27.2',
   generated_sha256: 'd'.repeat(64), execution_sha256: 'e'.repeat(64), replay_sha256: 'f'.repeat(64), fixture_cases: 486 };
 
@@ -91,5 +91,40 @@ test('metadata requires the crop schema, complete immutable identities and finit
     { source_revision: 'main' }, { source_dirty: 'false' }, { wasm_bytes: 0 }, { wasm_bytes: 33554433 },
     { wasm_bytes: 1.5 }, { fixture_cases: 0 }, { fixture_cases: 1.5 }]) {
     assert.throws(() => protocol.validateMetadata({ ...metadata, ...patch }), /metadata/);
+  }
+});
+
+test('modes require their exact activity identity and cannot accept each other’s metadata', () => {
+  assert.equal(protocol.modeFor('ordered').runtimeName, 'goooCrop');
+  assert.equal(protocol.modeFor('corners').runtimeName, 'goooDragCrop');
+  assert.equal(protocol.modeFor('corners').assetBase, './drag-crop/');
+  const drag = { ...metadata, entry_id: protocol.modes.corners.entryId };
+  assert.deepEqual(protocol.validateMetadata(drag, 'corners'), drag);
+  assert.throws(() => protocol.validateMetadata(metadata, 'corners'), /metadata/);
+  assert.throws(() => protocol.validateMetadata(drag, 'ordered'), /metadata/);
+  assert.throws(() => protocol.validateMetadata(drag), /metadata/);
+  for (const bad of ['', 'constructor', '__proto__', 'unknown', null, undefined]) {
+    assert.throws(() => protocol.modeFor(bad), /mode/);
+  }
+  assert.throws(() => protocol.validateInputs(normal, 'unknown'), /mode/);
+  assert.throws(() => protocol.parseReply(reply(), normal, 'unknown'), /mode/);
+  assert.throws(() => protocol.validateMetadata(metadata, 'unknown'), /mode/);
+});
+
+test('two-corner transport keeps original order and labels without doing crop arithmetic', () => {
+  const inputs = protocol.presets.reversedCrop;
+  const accepted = protocol.validateInputs(inputs, 'corners');
+  assert.deepEqual(accepted, inputs);
+  assert.deepEqual(accepted.slice(4), ['90', '80', '10', '20']);
+  const selected = { min_x: '10', min_y: '20', max_x: '90', max_y: '80', has_pixels: true };
+  assert.deepEqual(protocol.parseReply(reply(inputs, selected), inputs, 'corners').output, selected);
+  for (const [index, label] of [[4, 'First corner x'], [5, 'First corner y'], [6, 'Second corner x'], [7, 'Second corner y']]) {
+    const invalid = [...inputs]; invalid[index] = '1.5';
+    assert.throws(() => protocol.validateInputs(invalid, 'corners'), error => error.inputIndex === index && error.message.startsWith(label));
+  }
+  const invalid = [...inputs]; invalid[0] = '1.5';
+  assert.throws(() => protocol.validateInputs(invalid, 'corners'), /^Error: Bounds min_x/);
+  for (const preset of ['precise', 'minimum', 'maximum', 'reversedBounds']) {
+    assert.deepEqual(protocol.validateInputs(protocol.presets[preset], 'corners'), protocol.presets[preset]);
   }
 });

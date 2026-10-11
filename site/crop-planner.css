@@ -9,7 +9,7 @@
 #crop-form, .crop-result { min-width: 0; padding: 28px }
 .crop-result { border-left: 1px solid var(--line); background: #f8faf3 }
 .crop-preset-label, #crop-form label { display: block; margin-bottom: 7px; font-weight: 650; font-size: 12px }
-#crop-preset { display: block; width: 100%; padding: 10px; border: 1px solid #bdc8bc; color: var(--ink); background: var(--white); margin-bottom: 25px }
+#crop-preset, #crop-mode { display: block; width: 100%; padding: 10px; border: 1px solid #bdc8bc; color: var(--ink); background: var(--white); margin-bottom: 25px }
 .crop-rectangles { display: grid; gap: 22px; margin-bottom: 22px }
 .crop-rectangles fieldset { margin: 0; padding: 0; border: 0; min-width: 0 }
 .crop-rectangles legend { font-weight: 650; font-size: 17px; padding: 0; margin-bottom: 5px }

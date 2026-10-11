@@ -5,12 +5,15 @@ reports whether the intersection contains pixels. It returns exact coordinates;
 it does not load, crop, or resize an image file.
 
 [Try the browser crop planner](https://kimjooyoon.github.io/gooo-go-ports/crop-planner.html)
-without installing a compiler. It runs this same importing program as a separate
+without installing a compiler. Its default **Keep rectangle order** mode runs this same importing program as a separate
 precompiled WebAssembly module. Enter the two original rectangles using decimal
 integers; coordinates remain exact through the full signed 64-bit range.
 The page includes edge-touching, reversed, empty, negative and precision-boundary
 examples. Editing an input clears the previous result; press **Plan crop** to run
-the new values.
+the new values. The optional **Two-corner selection** mode runs the separate
+[DragCropPlan activity](../../docs/drag-crop.md), which orders only the selection
+before clipping. This native `CropPlan` example and its reversed-input behavior
+remain unchanged.
 
 The browser adapter parses eight canonical decimal strings into the two records
 and returns the four coordinates as strings with a Boolean `has_pixels`.

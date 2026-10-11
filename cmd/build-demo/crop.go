@@ -33,6 +33,35 @@ var cropSources = map[string]string{
 }
 var cropCoordinates = []string{"min_x", "min_y", "max_x", "max_y"}
 
+// Source lists use the pinned workspace image's filename sort order.
+// Each consumer keeps its own unmodified composition and Wasm module. The Go
+// reference calculation runs only while building fixtures, never in a bridge.
+type cropProgram struct {
+	asset, manifest, inputs, activity, activityID, global, guide string
+	sources                                                      map[string][]string
+	canonicalSelection                                           bool
+}
+
+var originalCropProgram = cropProgram{
+	asset: "crop", manifest: cropManifest, inputs: cropInputs,
+	activity: "CropPlan", activityID: cropActivityID, global: "goooCrop", guide: "examples/crop-planner/README.md",
+	sources: map[string][]string{
+		"go/image":             {"ports/image/geometry.gooo"},
+		"example/crop-planner": {"examples/crop-planner/crop_planner.gooo"},
+	},
+}
+var dragCropProgram = cropProgram{
+	asset: "drag-crop", manifest: "drag-crop.workspace.json", inputs: "examples/crop-planner/drag_inputs.json",
+	activity: "DragCropPlan", activityID: "gooo://example/crop-planner/drag-crop-plan", global: "goooDragCrop", guide: "docs/drag-crop.md",
+	sources: map[string][]string{
+		"go/image":             {"ports/image/canon.gooo", "ports/image/geometry.gooo"},
+		"example/crop-planner": {"examples/crop-planner/crop_planner.gooo", "examples/crop-planner/drag_crop.gooo"},
+	},
+	canonicalSelection: true,
+}
+
+func (program cropProgram) entry() string { return "example/crop-planner:" + program.activity }
+
 type cropCase struct {
 	Name     string            `json:"name"`
 	Inputs   []string          `json:"inputs"`
@@ -56,69 +85,83 @@ type cropFixtures struct {
 // buildCropDemo retains the original two-record entry. Its generated source is
 // never edited: only the separate JS bridge adapts eight strings to Go records.
 func buildCropDemo(ctx context.Context, site, dir string, lock lockfile) error {
+	for _, program := range []cropProgram{originalCropProgram, dragCropProgram} {
+		if err := buildCropConsumer(ctx, site, dir, lock, program); err != nil {
+			return fmt.Errorf("%s: %w", program.activity, err)
+		}
+	}
+	return nil
+}
+
+func buildCropConsumer(ctx context.Context, site, dir string, lock lockfile, program cropProgram) error {
 	if strconv.IntSize != 64 || (runtime.GOARCH != "amd64" && runtime.GOARCH != "arm64") || runtime.Version() != lock.GoVersion {
 		return fmt.Errorf("crop oracle requires pinned Go on amd64/arm64 with 64-bit int")
 	}
-	asset := filepath.Join(site, "crop")
-	work := filepath.Join(dir, "crop-build")
+	asset := filepath.Join(site, program.asset)
+	work := filepath.Join(dir, program.asset+"-build")
 	for _, path := range []string{asset, work} {
 		if err := os.Mkdir(path, 0755); err != nil {
 			return err
 		}
 	}
-	manifestRaw, err := os.ReadFile(cropManifest)
+	manifestRaw, err := os.ReadFile(program.manifest)
 	if err != nil {
 		return err
 	}
-	inputsRaw, err := os.ReadFile(cropInputs)
+	inputsRaw, err := os.ReadFile(program.inputs)
 	if err != nil {
 		return err
 	}
-	rows, err := cropInputRows(inputsRaw)
+	rows, err := cropProgramInputRows(inputsRaw, program)
 	if err != nil {
 		return err
 	}
-	fixtures, err := makeCropFixtures(rows, lock)
+	fixtures, err := makeCropProgramFixtures(rows, lock, program)
 	if err != nil {
 		return err
 	}
 	sources := map[string][]byte{}
 	sourceHashes := map[string]string{}
-	for _, path := range cropSources {
-		raw, err := os.ReadFile(path)
-		if err != nil {
-			return err
-		}
-		sources[path], sourceHashes[path] = raw, digest(raw)
-		if err := write(filepath.Join(asset, "source", path), raw); err != nil {
-			return err
+	for _, paths := range program.sources {
+		for _, path := range paths {
+			raw, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			sources[path], sourceHashes[path] = raw, digest(raw)
+			if err := write(filepath.Join(asset, "source", path), raw); err != nil {
+				return err
+			}
 		}
 	}
-	// This is the only native CropPlan execution needed for the browser build.
+	if err := copyFile(program.guide, filepath.Join(asset, "source", program.guide)); err != nil {
+		return err
+	}
+	// Execute this consumer with its original two-record input ABI.
 	// It uses the existing 12 input-only examples, then checks their outputs with
 	// the independent Go oracle below. OBSERVED receipts remain OBSERVED.
-	execution, err := command(ctx, nil, "./.gooo", "package", "execute", "--json", "--inputs", cropInputs, cropManifest)
+	execution, err := command(ctx, nil, "./.gooo", "package", "execute", "--json", "--inputs", program.inputs, program.manifest)
 	if err != nil {
 		return err
 	}
-	generated, err := inspectCropReceipt(execution, lock, manifestRaw, inputsRaw, sources, "")
+	generated, err := inspectCropProgramReceipt(execution, lock, manifestRaw, inputsRaw, sources, "", program)
 	if err != nil {
 		return err
 	}
 	if err := write(filepath.Join(asset, "execution.json"), execution); err != nil {
 		return err
 	}
-	replay, err := command(ctx, nil, "./.gooo", "package", "replay", "--json", "--receipt", filepath.Join(asset, "execution.json"), "--inputs", cropInputs, cropManifest)
+	replay, err := command(ctx, nil, "./.gooo", "package", "replay", "--json", "--receipt", filepath.Join(asset, "execution.json"), "--inputs", program.inputs, program.manifest)
 	if err != nil {
 		return err
 	}
-	replayed, err := inspectCropReceipt(replay, lock, manifestRaw, inputsRaw, sources, "sha256:"+digest(execution))
+	replayed, err := inspectCropProgramReceipt(replay, lock, manifestRaw, inputsRaw, sources, "sha256:"+digest(execution), program)
 	if err != nil || replayed != generated {
 		return fmt.Errorf("crop replay source or evidence mismatch: %v", err)
 	}
 	for path, raw := range map[string][]byte{
 		"generated.go": []byte(generated), "replay.json": replay,
-		"inputs.json": inputsRaw, cropManifest: manifestRaw,
+		"inputs.json": inputsRaw, program.manifest: manifestRaw,
 	} {
 		if err := write(filepath.Join(asset, path), raw); err != nil {
 			return err
@@ -131,7 +174,7 @@ func buildCropDemo(ctx context.Context, site, dir string, lock lockfile) error {
 	if err != nil {
 		return err
 	}
-	replacements := []string{"__RECTANGLE__", cropGoName("Record", cropRectangleID)}
+	replacements := []string{"__RECTANGLE__", cropGoName("Record", cropRectangleID), "__GLOBAL__", program.global}
 	for _, name := range cropCoordinates {
 		replacements = append(replacements, "__"+strings.ToUpper(name)+"__", cropGoName("Field", cropFieldID(cropRectangleID, name)))
 	}
@@ -139,7 +182,7 @@ func buildCropDemo(ctx context.Context, site, dir string, lock lockfile) error {
 	if err := write(filepath.Join(work, "bridge.go"), bridge); err != nil {
 		return err
 	}
-	_, err = command(ctx, []string{"GOOS=js", "GOARCH=wasm", "CGO_ENABLED=0"}, "go", "-C", dir, "build", "-trimpath", "-buildvcs=false", "-ldflags=-s -w", "-o", filepath.Join(asset, "crop.wasm"), "./crop-build")
+	_, err = command(ctx, []string{"GOOS=js", "GOARCH=wasm", "CGO_ENABLED=0"}, "go", "-C", dir, "build", "-trimpath", "-buildvcs=false", "-ldflags=-s -w", "-o", filepath.Join(asset, "crop.wasm"), "./"+program.asset+"-build")
 	if err != nil {
 		return err
 	}
@@ -169,7 +212,7 @@ func buildCropDemo(ctx context.Context, site, dir string, lock lockfile) error {
 		return err
 	}
 	metadata := map[string]any{
-		"schema": "gooo/browser-crop-planner/v1", "entry_id": cropActivityID,
+		"schema": "gooo/browser-crop-planner/v1", "entry_id": program.activityID,
 		"compiler_revision": lock.CompilerRevision, "go_version": lock.GoVersion,
 		"source_revision": strings.TrimSpace(string(revision)), "source_dirty": len(status) > 0,
 		"source_sha256": sourceHashes, "generated_sha256": digest([]byte(generated)),
@@ -190,13 +233,24 @@ func buildCropDemo(ctx context.Context, site, dir string, lock lockfile) error {
 // The oracle runs only on the pinned 64-bit build host, never in the Wasm
 // module. Direct Point fields preserve reversed bounds: image.Rect would not.
 func cropOracle(values [8]int64) map[string]any {
+	return cropProgramOracle(values, originalCropProgram)
+}
+
+func cropProgramOracle(values [8]int64, program cropProgram) map[string]any {
 	a := image.Rectangle{Min: image.Point{X: int(values[0]), Y: int(values[1])}, Max: image.Point{X: int(values[2]), Y: int(values[3])}}
 	b := image.Rectangle{Min: image.Point{X: int(values[4]), Y: int(values[5])}, Max: image.Point{X: int(values[6]), Y: int(values[7])}}
+	if program.canonicalSelection {
+		b = b.Canon()
+	}
 	c := a.Intersect(b)
 	return map[string]any{"min_x": int64(c.Min.X), "min_y": int64(c.Min.Y), "max_x": int64(c.Max.X), "max_y": int64(c.Max.Y), "has_pixels": !c.Empty()}
 }
 
 func makeCropFixtures(rows [][8]int64, lock lockfile) (cropFixtures, error) {
+	return makeCropProgramFixtures(rows, lock, originalCropProgram)
+}
+
+func makeCropProgramFixtures(rows [][8]int64, lock lockfile, program cropProgram) (cropFixtures, error) {
 	var upstream struct {
 		SourceSHA map[string]string `json:"source_sha256"`
 	}
@@ -210,7 +264,7 @@ func makeCropFixtures(rows [][8]int64, lock lockfile) (cropFixtures, error) {
 	}
 	f := cropFixtures{Schema: "gooo/crop-browser-fixtures/v1", GoVersion: lock.GoVersion, CompilerRevision: lock.CompilerRevision, GoSourceSHA: map[string]string{source: upstream.SourceSHA[source]}}
 	add := func(name string, values [8]int64) error {
-		raw, err := json.Marshal(cropOracle(values))
+		raw, err := json.Marshal(cropProgramOracle(values, program))
 		if err != nil {
 			return err
 		}
@@ -272,6 +326,10 @@ func makeCropFixtures(rows [][8]int64, lock lockfile) (cropFixtures, error) {
 }
 
 func cropInputRows(raw []byte) ([][8]int64, error) {
+	return cropProgramInputRows(raw, originalCropProgram)
+}
+
+func cropProgramInputRows(raw []byte, program cropProgram) ([][8]int64, error) {
 	v, err := cropDecode(raw)
 	if err != nil {
 		return nil, err
@@ -292,7 +350,7 @@ func cropInputRows(raw []byte) ([][8]int64, error) {
 		}
 		var values [8]int64
 		for i := range 2 {
-			record, ok := row[fmt.Sprintf("%s.input%d", cropEntry, i)].(map[string]any)
+			record, ok := row[fmt.Sprintf("%s.input%d", program.entry(), i)].(map[string]any)
 			if !ok || len(record) != 4 {
 				return nil, fmt.Errorf("crop example has invalid record")
 			}
@@ -348,7 +406,11 @@ func cropRecordLayout(name, id string, names []string) map[string]any {
 
 // inspectCropReceipt binds observed inputs and outputs to source/type identities
 // and the pinned producer. A successful observation alone is not a Go oracle.
-func inspectCropReceipt(raw []byte, lock lockfile, manifestRaw, inputsRaw []byte, sources map[string][]byte, prior string) (source string, err error) {
+func inspectCropReceipt(raw []byte, lock lockfile, manifestRaw, inputsRaw []byte, sources map[string][]byte, prior string) (string, error) {
+	return inspectCropProgramReceipt(raw, lock, manifestRaw, inputsRaw, sources, prior, originalCropProgram)
+}
+
+func inspectCropProgramReceipt(raw []byte, lock lockfile, manifestRaw, inputsRaw []byte, sources map[string][]byte, prior string, program cropProgram) (source string, err error) {
 	defer func() {
 		if recover() != nil {
 			source, err = "", fmt.Errorf("invalid crop receipt shape")
@@ -360,7 +422,7 @@ func inspectCropReceipt(raw []byte, lock lockfile, manifestRaw, inputsRaw []byte
 		return "", err
 	}
 	e := cropMap(v)
-	rows, err := cropInputRows(inputsRaw)
+	rows, err := cropProgramInputRows(inputsRaw, program)
 	if err != nil {
 		return "", err
 	}
@@ -381,7 +443,7 @@ func inspectCropReceipt(raw []byte, lock lockfile, manifestRaw, inputsRaw []byte
 	entry := cropMap(p["entry"])
 	lowered, ok := entry["lowered_name"].(string)
 	plan := cropMap(c["plan"])
-	if entry["package_path"] != "example/crop-planner" || entry["activity"] != "CropPlan" || !ok || !token.IsIdentifier(lowered) || plan["entry_activity"] != lowered {
+	if entry["package_path"] != "example/crop-planner" || entry["activity"] != program.activity || !ok || !token.IsIdentifier(lowered) || plan["entry_activity"] != lowered {
 		return fail("entry")
 	}
 	activities := cropList(plan["activities"])
@@ -389,7 +451,7 @@ func inspectCropReceipt(raw []byte, lock lockfile, manifestRaw, inputsRaw []byte
 		return fail("entry activity plan")
 	}
 	activity := cropMap(activities[0])
-	if activity["name"] != lowered || activity["id"] != cropActivityID || activity["go_function"] != "GoooComposedActivity0" {
+	if activity["name"] != lowered || activity["id"] != program.activityID || activity["go_function"] != "GoooComposedActivity0" {
 		return fail("lowered entry binding")
 	}
 	packages := cropList(cropMap(p["workspace_image"])["packages"])
@@ -400,29 +462,31 @@ func inspectCropReceipt(raw []byte, lock lockfile, manifestRaw, inputsRaw []byte
 	for _, value := range packages {
 		pkg := cropMap(value)
 		path := pkg["path"].(string)
-		filename, ok := cropSources[path]
+		filenames, ok := program.sources[path]
 		if !ok || seen[path] {
 			return fail("package identity")
 		}
 		seen[path] = true
 		sourceRows := cropList(pkg["sources"])
-		if len(sourceRows) != 1 {
+		if len(sourceRows) != len(filenames) {
 			return fail("source roster")
 		}
-		encoded, _ := json.Marshal(string(sources[filename]))
-		src := cropMap(sourceRows[0])
-		if len(sources[filename]) == 0 || src["filename"] != filename || src["source_digest"] != "sha256:"+digest(encoded) {
-			return fail("source binding")
+		for i, filename := range filenames {
+			encoded, _ := json.Marshal(string(sources[filename]))
+			src := cropMap(sourceRows[i])
+			if len(sources[filename]) == 0 || src["filename"] != filename || src["source_digest"] != "sha256:"+digest(encoded) {
+				return fail("source binding")
+			}
 		}
 		if path == "example/crop-planner" {
 			matched := 0
 			for _, value := range cropList(pkg["exports"]) {
 				x := cropMap(value)
-				if x["name"] != "CropPlan" && x["id"] != cropActivityID {
+				if x["name"] != program.activity && x["id"] != program.activityID {
 					continue
 				}
 				matched++
-				if x["name"] != "CropPlan" || x["kind"] != "activity" || x["id"] != cropActivityID || x["output_type"] != cropResultID || !cropEqual(x["input_types"], []string{cropRectangleID, cropRectangleID}) {
+				if x["name"] != program.activity || x["kind"] != "activity" || x["id"] != program.activityID || x["output_type"] != cropResultID || !cropEqual(x["input_types"], []string{cropRectangleID, cropRectangleID}) {
 					return fail("entry export signature")
 				}
 			}
@@ -445,7 +509,7 @@ func inspectCropReceipt(raw []byte, lock lockfile, manifestRaw, inputsRaw []byte
 		return fail("generation roster")
 	}
 	report := cropMap(cropMap(cropMap(steps[0])["generation"])["report"])
-	if report["activity_id"] != cropActivityID || report["compiler_source_sha"] != lock.CompilerRevision {
+	if report["activity_id"] != program.activityID || report["compiler_source_sha"] != lock.CompilerRevision {
 		return fail("generation identity")
 	}
 	version, ok := run["go_version"].(string)
@@ -484,8 +548,8 @@ func inspectCropReceipt(raw []byte, lock lockfile, manifestRaw, inputsRaw []byte
 			}
 			inputs[j] = map[string]any{"port": fmt.Sprintf("input%d", j), "entity_id": cropRectangleID, "value": record, "fields": cropFields(cropRectangleID, cropCoordinates, record)}
 		}
-		want := cropOracle(rows[i])
-		if len(d) != 4 || d["activity_id"] != cropActivityID || !cropEqual(d["inputs"], inputs) || !cropEqual(d["actual"], want) || !cropEqual(d["actual_fields"], cropFields(cropResultID, resultNames, want)) {
+		want := cropProgramOracle(rows[i], program)
+		if len(d) != 4 || d["activity_id"] != program.activityID || !cropEqual(d["inputs"], inputs) || !cropEqual(d["actual"], want) || !cropEqual(d["actual_fields"], cropFields(cropResultID, resultNames, want)) {
 			return fail("original input, exact field binding or Go-reference output")
 		}
 	}

@@ -1,7 +1,11 @@
 # Direction-independent drag selection crop planner
 
-This experimental native program computes a crop rectangle from two drag corners.
-The published browser crop planner continues to run the existing `CropPlan` activity.
+This experimental program computes a crop rectangle from two drag corners.
+In the [browser crop planner](https://kimjooyoon.github.io/gooo-go-ports/crop-planner.html),
+choose **Two-corner selection** to run the compiled `DragCropPlan` activity.
+For example, (200,200) to (100,100) selects the same 100..200 region as
+(100,100) to (200,200), subject to the supplied bounds. The default **Keep rectangle
+order** mode continues to run the existing `CropPlan` activity.
 
 `DragCropPlan` accepts image bounds and the two corners of a drag selection. It
 normalizes only the selection with `RectangleCanon`, then uses the existing
@@ -127,3 +131,27 @@ boundary contact, negative coordinates, int64 extremes and precision boundaries.
 The original `CropPlan` cases remain separate to detect accidental behavior
 changes. These are finite observations, not an exhaustive test of all coordinate
 combinations or evidence of image-file processing or established user demand.
+
+## Browser build
+
+The two modes use separate WebAssembly modules. `crop/crop.wasm` runs the original
+`CropPlan`; `drag-crop/crop.wasm` runs `DragCropPlan`. Each is built from the exact
+Go source in its checked native execution receipt. JavaScript keeps all eight
+input coordinates as decimal strings and does not implement corner ordering or
+intersection. Only the selected module is loaded; changing modes clears the old
+result. No image is uploaded or processed.
+
+From a checkout with the pinned compiler and Go toolchain:
+
+```sh
+go run ./cmd/build-demo --out out/drag-crop-browser
+node tools/drag-crop-browser-smoke.cjs out/drag-crop-browser/site
+python3 -m http.server 8766 --bind 127.0.0.1 --directory out/drag-crop-browser/site
+```
+
+Open `http://127.0.0.1:8766/crop-planner.html`. Use a fresh build output directory.
+Each mode has 88 independent Go-reference fixtures and 210 rejected string/type/
+arity calls. Seven further paired inputs check that both actual Wasm programs
+coexist and keep their distinct reversed-selection behavior, including int64
+endpoints and values beyond JavaScript's exact Number range. These finite browser
+observations are separate from the native verifier and the 21-function demo.

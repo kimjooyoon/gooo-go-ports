@@ -1,4 +1,4 @@
-// Exact decimal transport for the compiled CropPlan consumer. No crop arithmetic.
+// Exact decimal transport for two compiled consumers. No crop arithmetic.
 ((root, factory) => {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -10,6 +10,20 @@
     'crop-min-x', 'crop-min-y', 'crop-max-x', 'crop-max-y']);
   const labels = Object.freeze(['Bounds min_x', 'Bounds min_y', 'Bounds max_x', 'Bounds max_y',
     'Requested crop min_x', 'Requested crop min_y', 'Requested crop max_x', 'Requested crop max_y']);
+  const cornerLabels = Object.freeze([...labels.slice(0, 4),
+    'First corner x', 'First corner y', 'Second corner x', 'Second corner y']);
+  const modes = Object.freeze({
+    ordered: Object.freeze({ label: 'Keep rectangle order', entryId: 'gooo://example/crop-planner/crop-plan',
+      assetBase: './crop/', runtimeName: 'goooCrop', readyName: 'goooCropReady', activity: 'CropPlan',
+      source: 'examples/crop-planner/crop_planner.gooo', portSource: 'ports/image/geometry.gooo' }),
+    corners: Object.freeze({ label: 'Two-corner selection', entryId: 'gooo://example/crop-planner/drag-crop-plan',
+      assetBase: './drag-crop/', runtimeName: 'goooDragCrop', readyName: 'goooDragCropReady', activity: 'DragCropPlan',
+      source: 'examples/crop-planner/drag_crop.gooo', portSource: 'ports/image/canon.gooo' })
+  });
+  function modeFor(mode) {
+    if (!Object.hasOwn(modes, mode)) throw new Error('Choose a supported crop selection mode.');
+    return modes[mode];
+  }
   const decimal = /^(?:0|[1-9][0-9]*|-[1-9][0-9]*)$/;
   const minimum = -9223372036854775808n;
   const maximum = 9223372036854775807n;
@@ -34,12 +48,14 @@
     return parsed >= minimum && parsed <= maximum;
   }
 
-  function validateInputs(inputs) {
+  function validateInputs(inputs, mode = 'ordered') {
+    modeFor(mode);
+    const inputLabels = mode === 'corners' ? cornerLabels : labels;
     if (!Array.isArray(inputs) || inputs.length !== 8) throw new Error('Enter all eight coordinates.');
     for (let index = 0; index < inputs.length; index++) {
       const value = inputs[index];
       if (!integer(value)) {
-        const error = new Error(`${labels[index]} must be a decimal integer from -9223372036854775808 to 9223372036854775807. Use no spaces, plus sign, leading zeros or -0.`);
+        const error = new Error(`${inputLabels[index]} must be a decimal integer from -9223372036854775808 to 9223372036854775807. Use no spaces, plus sign, leading zeros or -0.`);
         error.inputIndex = index;
         throw error;
       }
@@ -52,8 +68,8 @@
       Object.keys(value).sort().join(',') === [...keys].sort().join(',');
   }
 
-  function parseReply(raw, originalInputs) {
-    const inputs = validateInputs(originalInputs);
+  function parseReply(raw, originalInputs, mode = 'ordered') {
+    const inputs = validateInputs(originalInputs, mode);
     if (typeof raw !== 'string' || raw.length > 4096) throw new Error('The program returned an unreadable result.');
     let reply;
     try { reply = JSON.parse(raw); } catch { throw new Error('The program returned invalid JSON.'); }
@@ -75,10 +91,11 @@
     return Object.freeze({ ok: true, inputs, output: Object.freeze({ ...output }) });
   }
 
-  function validateMetadata(metadata) {
+  function validateMetadata(metadata, mode = 'ordered') {
+    const expected = modeFor(mode);
     const sha = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
     const revision = value => typeof value === 'string' && /^[a-f0-9]{40}$/.test(value);
-    if (!metadata || metadata.schema !== 'gooo/browser-crop-planner/v1' ||
+    if (!metadata || metadata.schema !== 'gooo/browser-crop-planner/v1' || metadata.entry_id !== expected.entryId ||
         !sha(metadata.wasm_sha256) || !sha(metadata.generated_sha256) ||
         !sha(metadata.execution_sha256) || !sha(metadata.replay_sha256) ||
         !revision(metadata.source_revision) || !revision(metadata.compiler_revision) ||
@@ -90,5 +107,5 @@
     return Object.freeze({ ...metadata });
   }
 
-  return Object.freeze({ fields, inputIds, presets, validateInputs, parseReply, validateMetadata });
+  return Object.freeze({ fields, inputIds, presets, modes, modeFor, validateInputs, parseReply, validateMetadata });
 });

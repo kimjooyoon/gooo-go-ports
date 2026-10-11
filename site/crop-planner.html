@@ -40,6 +40,12 @@
 
       <section class="crop-workbench" aria-label="Crop input and result">
         <form id="crop-form" novalidate>
+          <label for="crop-mode">Selection mode</label>
+          <select id="crop-mode" aria-describedby="crop-mode-help">
+            <option value="ordered" selected>Keep rectangle order</option>
+            <option value="corners">Two-corner selection</option>
+          </select>
+          <p id="crop-mode-help" class="crop-help">Keep the requested rectangle's minimum and maximum as entered. Reversed coordinates describe an empty rectangle. Bounds always remain unchanged.</p>
           <label class="crop-preset-label" for="crop-preset">Try an example</label>
           <select id="crop-preset">
             <option value="partial">Partly outside the bounds</option>
@@ -65,13 +71,13 @@
               </div>
             </fieldset>
             <fieldset>
-              <legend>Requested crop</legend>
-              <p class="crop-help">The region you want to keep.</p>
+              <legend id="crop-selection-title">Requested crop</legend>
+              <p id="crop-selection-help" class="crop-help">The region you want to keep.</p>
               <div class="crop-coordinate-grid">
-                <div><label for="crop-min-x">min_x</label><input id="crop-min-x" type="text" inputmode="text" value="-20" autocomplete="off" spellcheck="false" aria-describedby="crop-domain crop-semantics crop-input-status"></div>
-                <div><label for="crop-min-y">min_y</label><input id="crop-min-y" type="text" inputmode="text" value="40" autocomplete="off" spellcheck="false" aria-describedby="crop-domain crop-semantics crop-input-status"></div>
-                <div><label for="crop-max-x">max_x</label><input id="crop-max-x" type="text" inputmode="text" value="200" autocomplete="off" spellcheck="false" aria-describedby="crop-domain crop-semantics crop-input-status"></div>
-                <div><label for="crop-max-y">max_y</label><input id="crop-max-y" type="text" inputmode="text" value="550" autocomplete="off" spellcheck="false" aria-describedby="crop-domain crop-semantics crop-input-status"></div>
+                <div><label id="crop-label-min-x" for="crop-min-x">min_x</label><input id="crop-min-x" type="text" inputmode="text" value="-20" autocomplete="off" spellcheck="false" aria-describedby="crop-domain crop-semantics crop-input-status"></div>
+                <div><label id="crop-label-min-y" for="crop-min-y">min_y</label><input id="crop-min-y" type="text" inputmode="text" value="40" autocomplete="off" spellcheck="false" aria-describedby="crop-domain crop-semantics crop-input-status"></div>
+                <div><label id="crop-label-max-x" for="crop-max-x">max_x</label><input id="crop-max-x" type="text" inputmode="text" value="200" autocomplete="off" spellcheck="false" aria-describedby="crop-domain crop-semantics crop-input-status"></div>
+                <div><label id="crop-label-max-y" for="crop-max-y">max_y</label><input id="crop-max-y" type="text" inputmode="text" value="550" autocomplete="off" spellcheck="false" aria-describedby="crop-domain crop-semantics crop-input-status"></div>
               </div>
             </fieldset>
           </div>
@@ -98,7 +104,7 @@
           <p class="crop-help"><code>has_pixels</code> describes geometry. It does not check image data, available memory or an image library’s size limits.</p>
           <details id="crop-raw-result" class="crop-details" hidden>
             <summary>Inspect the returned JSON</summary>
-            <p class="crop-help">Coordinate strings preserve the exact integers. This is a browser result, not a native compiler execution receipt.</p>
+            <p class="crop-help">Coordinate strings preserve the exact integers. The selected mode and entry identify which program produced this browser result; it is not a native compiler execution receipt.</p>
             <pre id="crop-raw-output" tabindex="0"></pre>
           </details>
         </section>
@@ -106,7 +112,7 @@
 
       <section class="crop-method" aria-labelledby="crop-method-title">
         <h2 id="crop-method-title">A Gooo program you can reuse.</h2>
-        <p>The same <code>CropPlan</code> consumer used by the native example calls the Gooo <code>RectangleIntersect</code> and <code>RectangleEmpty</code> ports. The browser passes your original coordinates to the compiled program.</p>
+        <p id="crop-method-copy">The same <code>CropPlan</code> consumer used by the native example calls the Gooo <code>RectangleIntersect</code> and <code>RectangleEmpty</code> ports. The browser passes your original coordinates to the compiled program.</p>
         <p><a id="crop-native-guide" class="text-link" href="https://github.com/kimjooyoon/gooo-go-ports/tree/main/examples/crop-planner">Use the native example ↗</a></p>
         <details class="crop-details">
           <summary>Program source and build evidence</summary>
@@ -116,11 +122,11 @@
           <ul class="crop-evidence">
             <li><a id="crop-source-link" href="./crop/source/examples/crop-planner/crop_planner.gooo">CropPlan source</a></li>
             <li><a id="crop-port-link" href="./crop/source/ports/image/geometry.gooo">Rectangle port source</a></li>
-            <li><a href="./crop/generated.go">Generated Go</a></li>
-            <li><a href="./crop/metadata.json">Build metadata</a></li>
-            <li><a href="./crop/execution.json">Native execution receipt</a></li>
-            <li><a href="./crop/replay.json">Saved replay receipt</a></li>
-            <li><a href="./crop/fixtures.json">Go reference cases</a></li>
+            <li><a id="crop-generated-link" href="./crop/generated.go">Generated Go</a></li>
+            <li><a id="crop-metadata-link" href="./crop/metadata.json">Build metadata</a></li>
+            <li><a id="crop-execution-link" href="./crop/execution.json">Native execution receipt</a></li>
+            <li><a id="crop-replay-link" href="./crop/replay.json">Saved replay receipt</a></li>
+            <li><a id="crop-fixtures-link" href="./crop/fixtures.json">Go reference cases</a></li>
           </ul>
         </details>
       </section>
