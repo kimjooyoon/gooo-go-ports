@@ -1,0 +1,66 @@
+package main
+
+import (
+	"bufio"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"os"
+)
+
+func main() {
+	s := bufio.NewScanner(os.Stdin)
+	s.Buffer(make([]byte, 65536), 4<<20)
+	checked := []map[string]string{}
+	for s.Scan() {
+		var doc struct {
+			ID     string `json:"id"`
+			Report struct {
+				RecordAssembly json.RawMessage `json:"record_assembly"`
+				BodyPaths      json.RawMessage `json:"body_paths"`
+				Completeness   struct {
+					Scope map[string]json.RawMessage `json:"scope"`
+				} `json:"completeness_receipt"`
+			} `json:"report"`
+		}
+		if err := json.Unmarshal(s.Bytes(), &doc); err != nil {
+			panic(err)
+		}
+		for _, receipt := range []struct {
+			key string
+			raw json.RawMessage
+		}{
+			{"record_assembly", doc.Report.RecordAssembly}, {"typed_path", doc.Report.BodyPaths},
+		} {
+			scope := doc.Report.Completeness.Scope[receipt.key]
+			if len(scope) == 0 {
+				continue
+			}
+			var claim struct {
+				Hash string `json:"observation_sha256"`
+			}
+			if err := json.Unmarshal(scope, &claim); err != nil {
+				panic(err)
+			}
+			// RawMessage retains number tokens and field order. Marshal applies the
+			// same compaction and HTML escaping as the core's Go JSON hash input.
+			encoded, err := json.Marshal(receipt.raw)
+			if err != nil {
+				panic(err)
+			}
+			sum := sha256.Sum256(encoded)
+			got := "sha256:" + hex.EncodeToString(sum[:])
+			if got != claim.Hash {
+				panic(fmt.Sprintf("%s %s digest mismatch: got %s want %s", doc.ID, receipt.key, got, claim.Hash))
+			}
+			checked = append(checked, map[string]string{"id": doc.ID, "receipt": receipt.key, "sha256": got})
+		}
+	}
+	if err := s.Err(); err != nil {
+		panic(err)
+	}
+	if err := json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "PASS", "encoding": "Go encoding/json on original RawMessage; numeric tokens and field order retained", "count": len(checked), "checked": checked}); err != nil {
+		panic(err)
+	}
+}

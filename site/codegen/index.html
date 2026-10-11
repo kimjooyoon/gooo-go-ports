@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; connect-src 'self'; worker-src 'self'; img-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Edit Gooo, generate Go</title>
+  <link rel="stylesheet" href="./probe.css">
+  <script src="./probe.js" defer></script>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow"><a href="../index.html">Gooo Go Ports</a> · Experimental</p>
+      <h1>Edit Gooo, generate Go</h1>
+      <p>Edit a single-file Gooo source and generate Go for one activity. The pinned Gooo compiler library runs locally in your browser.</p>
+      <p class="limits">This generates Go; it does not run the generated program. Package imports and model-backed generation are unavailable here. The first load downloads about 22 MB.</p>
+    </header>
+
+    <section class="controls" aria-label="Probe inputs">
+      <div class="control-row">
+        <label for="probe-cases">Saved sample
+          <select id="probe-cases" aria-label="Saved sample" disabled>
+            <option value="">Loading samples…</option>
+          </select>
+        </label>
+        <label for="probe-activity">Activity
+          <input id="probe-activity" aria-label="Activity" type="text" spellcheck="false" autocomplete="off" autocapitalize="off">
+        </label>
+        <button id="probe-generate" type="button" disabled>Generate Go</button>
+        <button id="probe-retry" type="button" hidden>Retry compiler load</button>
+      </div>
+      <p class="hint">Selecting a saved sample preloads its source. You can edit it below; samples themselves stay unchanged.</p>
+      <p id="probe-status" role="status" aria-live="polite">Loading the compiler…</p>
+    </section>
+
+    <div class="panes">
+      <section aria-label="Source editor">
+        <h2><label for="probe-source">Source</label></h2>
+        <textarea id="probe-source" aria-label="Source" aria-describedby="probe-source-limit" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="soft"></textarea>
+        <p id="probe-source-limit" class="hint">Source limit will be read from verified bridge metadata.</p>
+      </section>
+      <section aria-label="Generated Go">
+        <h2>Generated Go</h2>
+        <pre id="probe-output" aria-label="Generated Go" tabindex="0"></pre>
+        <p id="probe-result-binding" class="hint"></p>
+      </section>
+    </div>
+
+    <section class="diagnostics" aria-label="Generation error">
+      <h2>Error</h2>
+      <pre id="probe-error" aria-label="Generation error" role="alert"></pre>
+    </section>
+
+    <details class="report">
+      <summary>Raw compiler response</summary>
+      <p class="hint">The bridge response contains the compiler report. This original JSON text preserves int64 numbers and the engine's own provenance fields.</p>
+      <pre id="probe-report" aria-label="Raw compiler response" tabindex="0"></pre>
+    </details>
+
+    <details class="provenance" open>
+      <summary>Build provenance and limits</summary>
+      <dl>
+        <dt>Compiler pin</dt><dd id="probe-compiler-pin">Not verified yet.</dd>
+        <dt>Separate bridge source SHA-256</dt><dd id="probe-bridge-sha">Not verified yet.</dd>
+        <dt>WebAssembly bytes / SHA-256</dt><dd id="probe-wasm-sha">Not verified yet.</dd>
+        <dt>Go runtime</dt><dd id="probe-go-version">Not verified yet.</dd>
+        <dt>Current engine report provenance</dt><dd id="probe-engine-provenance">No current report.</dd>
+        <dt>Bridge limits</dt><dd id="probe-bridge-limits">Not verified yet.</dd>
+      </dl>
+      <p class="hint">The compiler pin and bridge hash identify the compiler checkout and this separate browser bridge. They do not overwrite the engine's <code>UNBOUND_LOCAL_SOURCE</code> receipt. Input edits and new requests immediately clear previous output and reports.</p>
+      <p class="hint">The worker loads only local static assets and has no filesystem access supplied by this page. Compiler initialization expires after 60 seconds; generation expires after 15 seconds and terminates the worker.</p>
+    </details>
+    <p class="hint"><a href="./NOTICE">Licenses and attribution</a> · <a href="https://github.com/kimjooyoon/gooo-go-ports">Source and build instructions</a> · <a href="https://github.com/kimjooyoon/meta-ontology-go">Gooo language</a></p>
+    <noscript>This probe requires JavaScript and WebAssembly.</noscript>
+  </main>
+</body>
+</html>

@@ -34,6 +34,8 @@ func main() {
 
 func run() error {
 	out := flag.String("out", "", "new build directory beneath this repository")
+	compilerRoot := flag.String("compiler-root", ".compiler", "clean pinned compiler checkout used only by the browser codegen overlay")
+	codegenOnly := flag.Bool("codegen-only", false, "build and verify only the editable browser body-codegen page")
 	flag.Parse()
 	if *out == "" {
 		return fmt.Errorf("provide --out for a new build directory")
@@ -103,6 +105,13 @@ func run() error {
 			return err
 		}
 	}
+	if *codegenOnly {
+		if err := buildCodegenDemo(ctx, site, dir, lock, *compilerRoot); err != nil {
+			return err
+		}
+		fmt.Printf("Built %s/codegen; actual compiler-library code generation, no generated-Go execution\n", site)
+		return nil
+	}
 	var ws struct {
 		Packages []struct {
 			Sources []string `json:"sources"`
@@ -159,6 +168,9 @@ func run() error {
 		return err
 	}
 	if err := buildTutorialDemo(ctx, site, dir, lock); err != nil {
+		return err
+	}
+	if err := buildCodegenDemo(ctx, site, dir, lock, *compilerRoot); err != nil {
 		return err
 	}
 	for _, name := range []string{"google878ae9014add7065.html", "sitemap.xml", "index.html", "fixed-point-bounds.html", "app.js", "share.js", "codepoint.js", "style.css", "text-inspector.html", "text-inspector.js", "text-inspector.css", "text-input.js", "text-inspector-worker.js", "text-inspector-protocol.js", "text-inspection-report.js", "crop-planner.html", "crop-planner.js", "crop-planner.css", "crop-planner-protocol.js", "tutorial.html", "tutorial.css", "tutorial.js", "tutorial-protocol.js", "tutorial-worker.js", "source-view.html", "source-view.css", "source-view.js", "source-view.json"} {

@@ -1,0 +1,4 @@
+package sample
+namespace sample
+entity Integer id "sample://integer"
+activity Wrong(Integer) -> Integer computes "return true"

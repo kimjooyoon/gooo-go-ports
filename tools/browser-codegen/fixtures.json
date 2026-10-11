@@ -1,0 +1,294 @@
+{
+  "schema": "gooo/browser-codegen-probe-fixtures/v1",
+  "compiler_pin": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+  "cases": [
+    {
+      "id": "clamp",
+      "origin": "https://github.com/kimjooyoon/gooo-go-ports/blob/09861502085012fe41ab5993a220e3fde7f0a87d/tools/compiler-explorer/fixtures/clamp.gooo",
+      "origin_sha256": "5210490e986adc17743f55cdb4dd0e0d0c15058aaee11343a4197a0f5480af30",
+      "request": {
+        "schema": "gooo/browser-body-codegen-request/v1",
+        "id": "clamp",
+        "filename": "clamp.gooo",
+        "source": "package sample\nnamespace sample\nentity Integer id \"sample://integer\"\nactivity Clamp(Integer) -> Integer id \"sample://clamp\" computes \"if input < 0 { return 0 } else { return input }\"\n",
+        "activity": "Clamp"
+      },
+      "native_comparison": true,
+      "source_file": "tools/browser-codegen/fixtures/clamp.gooo",
+      "origin_kind": "ports",
+      "origin_path": "tools/compiler-explorer/fixtures/clamp.gooo",
+      "origin_revision": "09861502085012fe41ab5993a220e3fde7f0a87d",
+      "license": "../../LICENSE"
+    },
+    {
+      "id": "changed",
+      "origin": "https://github.com/kimjooyoon/gooo-go-ports/blob/09861502085012fe41ab5993a220e3fde7f0a87d/tools/compiler-explorer/fixtures/changed.gooo",
+      "origin_sha256": "6d01d400e0b25a39f10d9868850c3ce588bd50358f189dde263f096d6726ac51",
+      "request": {
+        "schema": "gooo/browser-body-codegen-request/v1",
+        "id": "changed",
+        "filename": "changed.gooo",
+        "source": "package sample\nnamespace sample\nentity Integer id \"sample://integer\"\nactivity Clamp(Integer) -> Integer id \"sample://clamp\" computes \"if input < 0 { return 7 } else { return input }\"\n",
+        "activity": "Clamp"
+      },
+      "native_comparison": true,
+      "source_file": "tools/browser-codegen/fixtures/changed.gooo",
+      "origin_kind": "ports",
+      "origin_path": "tools/compiler-explorer/fixtures/changed.gooo",
+      "origin_revision": "09861502085012fe41ab5993a220e3fde7f0a87d",
+      "license": "../../LICENSE"
+    },
+    {
+      "id": "double",
+      "origin": "https://github.com/kimjooyoon/gooo-go-ports/blob/09861502085012fe41ab5993a220e3fde7f0a87d/tools/compiler-explorer/fixtures/two-activities.gooo",
+      "origin_sha256": "da3805961901e21993fc351c63a067611493f477715349d135b943689c0b65d7",
+      "request": {
+        "schema": "gooo/browser-body-codegen-request/v1",
+        "id": "double",
+        "filename": "double.gooo",
+        "source": "package sample\nnamespace sample\nentity Integer id \"sample://integer\"\nactivity Clamp(Integer) -> Integer id \"sample://clamp\" computes \"return input\"\nactivity Double(Integer) -> Integer id \"sample://double\" computes \"return input * 2\"\n",
+        "activity": "Double"
+      },
+      "native_comparison": true,
+      "source_file": "tools/browser-codegen/fixtures/double.gooo",
+      "origin_kind": "ports",
+      "origin_path": "tools/compiler-explorer/fixtures/two-activities.gooo",
+      "origin_revision": "09861502085012fe41ab5993a220e3fde7f0a87d",
+      "license": "../../LICENSE"
+    },
+    {
+      "id": "invalid-body",
+      "origin": "https://github.com/kimjooyoon/gooo-go-ports/blob/09861502085012fe41ab5993a220e3fde7f0a87d/tools/compiler-explorer/fixtures/invalid-body.gooo",
+      "origin_sha256": "e07eea090cf25e122a589b6f4c33c5398d5ac894229bfd259b9a548ec7e3aaf4",
+      "request": {
+        "schema": "gooo/browser-body-codegen-request/v1",
+        "id": "invalid-body",
+        "filename": "invalid-body.gooo",
+        "source": "package sample\nnamespace sample\nentity Integer id \"sample://integer\"\nactivity Clamp(Integer) -> Integer id \"sample://clamp\" computes \"for input > 0 { input = input - 1 }; return input\"\n",
+        "activity": "Clamp"
+      },
+      "native_comparison": true,
+      "source_file": "tools/browser-codegen/fixtures/invalid-body.gooo",
+      "origin_kind": "ports",
+      "origin_path": "tools/compiler-explorer/fixtures/invalid-body.gooo",
+      "origin_revision": "09861502085012fe41ab5993a220e3fde7f0a87d",
+      "license": "../../LICENSE"
+    },
+    {
+      "id": "malformed",
+      "origin": "https://github.com/kimjooyoon/gooo-go-ports/blob/09861502085012fe41ab5993a220e3fde7f0a87d/tools/compiler-explorer/fixtures/malformed.gooo",
+      "origin_sha256": "5579a6c01374436162ff671832a6708e670c72ac188cdd1fd695c22009ea6879",
+      "request": {
+        "schema": "gooo/browser-body-codegen-request/v1",
+        "id": "malformed",
+        "filename": "malformed.gooo",
+        "source": "package sample\nentity Integer id \"sample://integer\"\nactivity Clamp(Integer) -> Integer computes \"return input\n",
+        "activity": "Clamp"
+      },
+      "native_comparison": true,
+      "source_file": "tools/browser-codegen/fixtures/malformed.gooo",
+      "origin_kind": "ports",
+      "origin_path": "tools/compiler-explorer/fixtures/malformed.gooo",
+      "origin_revision": "09861502085012fe41ab5993a220e3fde7f0a87d",
+      "license": "../../LICENSE"
+    },
+    {
+      "id": "text",
+      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/90ff2bb5aeffc2ac553496b646d14db1e8d33fdb/examples/body-codegen/text-assignment.gooo.fixture",
+      "origin_sha256": "e435a7a738def6bcc82f28957207b55dc1d9e3f457af177406c4dec3694d465c",
+      "request": {
+        "schema": "gooo/browser-body-codegen-request/v1",
+        "id": "text",
+        "filename": "text.gooo",
+        "source": "package bodycodegen\nnamespace bodycodegen\n\nentity Text id \"bodycodegen://entity/text\"\n\nactivity NormalizeText(Text) -> Text computes \"let normalized = input\\nnormalized = input\\nlet accepted = normalized == \\\"approved\\\"\\nif accepted { return \\\"allow\\\" } else { return \\\"deny\\\" }\"\n",
+        "activity": "NormalizeText"
+      },
+      "native_comparison": true,
+      "source_file": "tools/browser-codegen/fixtures/text.gooo",
+      "origin_kind": "compiler",
+      "origin_path": "examples/body-codegen/text-assignment.gooo.fixture",
+      "origin_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+      "license": "LICENSE-COMPILER"
+    },
+    {
+      "id": "multiple-inputs",
+      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/90ff2bb5aeffc2ac553496b646d14db1e8d33fdb/examples/body-codegen/native-input-joins.gooo.fixture",
+      "origin_sha256": "1d40b5b796ffb0de08a2f2bbaa8feaf33a05fc6c6c0276b7c057777142b3c2f4",
+      "request": {
+        "schema": "gooo/browser-body-codegen-request/v1",
+        "id": "multiple-inputs",
+        "filename": "multiple-inputs.gooo",
+        "source": "package joins\nnamespace joins\nentity Integer id \"joins://integer\"\nentity Boolean id \"joins://boolean\"\nentity Text id \"joins://text\"\n\nactivity Left(Integer) -> Integer computes `let a = input - 1\nlet b = a - 3\nreturn b - 9` assembling {\n    choice \"first\" operand_order at \"0\" intent \"첫 번째 피연산자를 반대로 배치한다. Reverse the first operands.\"\n    choice \"second\" operand_order at \"1\" intent \"두 번째 피연산자를 반대로 배치한다. Reverse the second operands.\"\n    choice \"third\" operand_order at \"2\" intent \"세 번째 피연산자를 반대로 배치한다. Reverse the third operands.\"\n    case \"-8\" -> \"15\"\n    case \"-1\" -> \"8\"\n    case \"0\" -> \"7\"\n    case \"3\" -> \"4\"\n    case \"4\" -> \"3\"\n    case \"9\" -> \"-2\"\n    attempts \"8\"\n}\nactivity Right(Integer) -> Integer computes \"return input * 2\"\nactivity Add(Integer, Integer) -> Integer computes \"return input0 + input1\"\nactivity Difference(Integer, Integer) -> Integer computes \"return input0 - input1\"\nactivity Label(Integer, Boolean, Text) -> Text computes `if input1 && input0 > 0 { return input2 + \"!\" } else { return input2 }`\nactivity Compare(Text, Text) -> Boolean computes \"return input0 == input1\"\nactivity Invert(Boolean) -> Boolean computes \"return !input\"\n\nbind Left.result -> Add.input0\nbind Right.result -> Add.input1\nbind Right.result -> Difference.input0\nbind Left.result -> Difference.input1\nbind Add.result -> Label.input0\nbind Compare.result -> Invert.input\n",
+        "activity": "Label"
+      },
+      "native_comparison": true,
+      "source_file": "tools/browser-codegen/fixtures/multiple-inputs.gooo",
+      "origin_kind": "compiler",
+      "origin_path": "examples/body-codegen/native-input-joins.gooo.fixture",
+      "origin_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+      "license": "LICENSE-COMPILER"
+    },
+    {
+      "id": "record",
+      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/90ff2bb5aeffc2ac553496b646d14db1e8d33fdb/examples/body-codegen/native-records.gooo.fixture",
+      "origin_sha256": "1ecf4b965ef63edc1ffe35619d3bb0c30b3099fa38b6f74c84ff71c7f24fee6d",
+      "request": {
+        "schema": "gooo/browser-body-codegen-request/v1",
+        "id": "record",
+        "filename": "record.gooo",
+        "source": "package records\nnamespace records\nentity Integer id \"records://integer\"\nentity Boolean id \"records://boolean\"\nentity Text id \"records://text\"\nentity Candidate id \"records://candidate\" fields {\n    field title id \"records://candidate/title\" type string required one\n    field state id \"records://candidate/state\" type string required one\n}\nentity Review id \"records://review\" fields {\n    field summary id \"records://review/summary\" type string required one\n    field reason id \"records://review/reason\" type string required one\n}\n\nactivity Score(Integer) -> Integer computes `let a = input - 1\nlet b = a - 3\nreturn b - 9` assembling {\n    choice \"first\" operand_order at \"0\" intent \"첫 번째 피연산자를 반대로 배치한다. Reverse the first operands.\"\n    choice \"second\" operand_order at \"1\" intent \"두 번째 피연산자를 반대로 배치한다. Reverse the second operands.\"\n    choice \"third\" operand_order at \"2\" intent \"세 번째 피연산자를 반대로 배치한다. Reverse the third operands.\"\n    case \"-8\" -> \"15\"\n    case \"-1\" -> \"8\"\n    case \"0\" -> \"7\"\n    case \"3\" -> \"4\"\n    case \"4\" -> \"3\"\n    case \"9\" -> \"-2\"\n    attempts \"8\"\n}\nactivity Propose(Integer, Text) -> Candidate computes `if input0 >= 0 { return Candidate{title: input1, state: \"ready\"} } else { return Candidate{title: input1, state: \"wait\"} }`\nactivity ReviewCandidate(Candidate, Boolean) -> Review computes `if input1 && input0.state == \"ready\" { return Review{summary: input0.title, reason: \"accepted\"} } else { return Review{summary: input0.title, reason: \"deferred\"} }`\nactivity Label(Review) -> Text computes `let copy = input\nreturn copy.summary + \":\" + copy.reason`\nactivity Echo(Candidate) -> Candidate computes \"return input\"\nactivity Same(Candidate, Candidate) -> Boolean computes \"return input0 == input1\"\n\nbind Score.result -> Propose.input0\nbind Propose.result -> ReviewCandidate.input0\nbind ReviewCandidate.result -> Label.input\nbind Propose.result -> Echo.input\nbind Echo.result -> Same.input0\nbind Propose.result -> Same.input1\n",
+        "activity": "Propose"
+      },
+      "native_comparison": true,
+      "source_file": "tools/browser-codegen/fixtures/record.gooo",
+      "origin_kind": "compiler",
+      "origin_path": "examples/body-codegen/native-records.gooo.fixture",
+      "origin_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+      "license": "LICENSE-COMPILER"
+    },
+    {
+      "id": "ir-fill",
+      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/90ff2bb5aeffc2ac553496b646d14db1e8d33fdb/examples/body-codegen/source-ir-fill-derived.gooo.fixture",
+      "origin_sha256": "1966441a92a13150348cb17f360753ae3a0d24c2880e5e3aa74b3412387f284f",
+      "request": {
+        "schema": "gooo/browser-body-codegen-request/v1",
+        "id": "ir-fill",
+        "filename": "ir-fill.gooo",
+        "source": "package source_ir_fill_derived\nnamespace source_ir_fill_derived\nentity Integer id \"source-ir-fill-derived://integer\"\n\nactivity Lift(Integer) -> Integer computes `let base = __GOOO_BODY_HOLE_seed__\nlet increment = __GOOO_BODY_HOLE_step__\nreturn base + increment` assembling {\n    source_fill intent \"Represent input plus one as a base value and a small increment.\" {\n        hole \"seed\"\n        hole \"step\"\n        derive grammar \"integer-offset-constant/v1\" max_expressions \"8\" max_candidates \"16\"\n    }\n    case \"-2\" -> \"-1\"\n    case \"0\" -> \"1\"\n    case \"7\" -> \"8\"\n}\n",
+        "activity": "Lift"
+      },
+      "native_comparison": true,
+      "source_file": "tools/browser-codegen/fixtures/ir-fill.gooo",
+      "origin_kind": "compiler",
+      "origin_path": "examples/body-codegen/source-ir-fill-derived.gooo.fixture",
+      "origin_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+      "license": "LICENSE-COMPILER"
+    },
+    {
+      "id": "ir-search",
+      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/90ff2bb5aeffc2ac553496b646d14db1e8d33fdb/examples/body-codegen/ir-search-source.gooo.fixture",
+      "origin_sha256": "29cbb8416983d79795b19fed5098e75c47126650bcdae27d96827496bed05b49",
+      "request": {
+        "schema": "gooo/browser-body-codegen-request/v1",
+        "id": "ir-search",
+        "filename": "ir-search.gooo",
+        "source": "package bodycodegen\nnamespace bodycodegen\n\nentity Integer id \"bodycodegen://entity/integer\"\n\nactivity ClampNegativeToZero(Integer) -> Integer computes \"let output = input; if input < 0 { output = __GOOO_BODY_HOLE_floor__ } else { output = input }; return output\" assembling {\n    search hole \"floor\" grammar \"integer-offset-constant/v1\" intent \"Return zero for negative integers and preserve zero or positive integers.\" max_candidates \"16\"\n    case \"-2\" -> \"0\"\n    case \"-1\" -> \"0\"\n    case \"0\" -> \"0\"\n    case \"1\" -> \"1\"\n    case \"2\" -> \"2\"\n    holdout_case \"-9223372036854775808\" -> \"0\"\n    holdout_case \"9223372036854775807\" -> \"9223372036854775807\"\n    attempts \"8\"\n}\n",
+        "activity": "ClampNegativeToZero"
+      },
+      "native_comparison": true,
+      "source_file": "tools/browser-codegen/fixtures/ir-search.gooo",
+      "origin_kind": "compiler",
+      "origin_path": "examples/body-codegen/ir-search-source.gooo.fixture",
+      "origin_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+      "license": "LICENSE-COMPILER"
+    },
+    {
+      "id": "record-assembly",
+      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/90ff2bb5aeffc2ac553496b646d14db1e8d33fdb/examples/body-codegen/record-field-assembly.gooo.fixture",
+      "origin_sha256": "834075cd9730906d1e263292e96924ae94a624364bc123cfd76177814a47f99d",
+      "request": {
+        "schema": "gooo/browser-body-codegen-request/v1",
+        "id": "record-assembly",
+        "filename": "record-assembly.gooo",
+        "source": "package records\nnamespace fieldassembly\nentity Text id \"fieldassembly://text\"\nentity Boolean id \"fieldassembly://boolean\"\nentity Candidate id \"fieldassembly://candidate\" fields {\n    field title id \"fieldassembly://candidate/title\" type string required one\n    field state id \"fieldassembly://candidate/state\" type string required one\n    field reason id \"fieldassembly://candidate/reason\" type string required one\n}\nactivity Select(Candidate, Boolean) -> Candidate computes `let copy = input0\nif input1 && copy.state != \"ready\" {\n    copy = Candidate{title: \"draft\", state: \"wait\", reason: \"deferred\"}\n} else {\n    copy = input0\n}\nreturn copy` assembling {\n    choice \"title\" field_value at \"0\" alternative \"input0.title\" intent \"원래 제목을 사용한다. Keep the original title.\"\n    choice \"state\" field_value at \"1\" alternative \"\\\"ready\\\"\" intent \"선택된 기록의 상태는 ready이다. Set state to ready.\"\n    choice \"reason\" field_value at \"2\" alternative \"input0.reason + \\\":accepted\\\"\" intent \"기존 사유에 accepted를 붙인다. Append accepted to the reason.\"\n    value_case \"[{\\\"title\\\":\\\"한글\\\",\\\"state\\\":\\\"queued\\\",\\\"reason\\\":\\\"검토\\\"},true]\" -> \"{\\\"title\\\":\\\"한글\\\",\\\"state\\\":\\\"ready\\\",\\\"reason\\\":\\\"검토:accepted\\\"}\"\n    value_case \"[{\\\"title\\\":\\\"English\\\",\\\"state\\\":\\\"queued\\\",\\\"reason\\\":\\\"review\\\"},true]\" -> \"{\\\"title\\\":\\\"English\\\",\\\"state\\\":\\\"ready\\\",\\\"reason\\\":\\\"review:accepted\\\"}\"\n    value_case \"[{\\\"title\\\":\\\"\\\",\\\"state\\\":\\\"queued\\\",\\\"reason\\\":\\\"\\\"},true]\" -> \"{\\\"title\\\":\\\"\\\",\\\"state\\\":\\\"ready\\\",\\\"reason\\\":\\\":accepted\\\"}\"\n    value_case \"[{\\\"title\\\":\\\"kept\\\",\\\"state\\\":\\\"queued\\\",\\\"reason\\\":\\\"later\\\"},false]\" -> \"{\\\"title\\\":\\\"kept\\\",\\\"state\\\":\\\"queued\\\",\\\"reason\\\":\\\"later\\\"}\"\n    value_case \"[{\\\"title\\\":\\\"already\\\",\\\"state\\\":\\\"ready\\\",\\\"reason\\\":\\\"done\\\"},true]\" -> \"{\\\"title\\\":\\\"already\\\",\\\"state\\\":\\\"ready\\\",\\\"reason\\\":\\\"done\\\"}\"\n    attempts \"8\"\n}\nactivity Label(Candidate) -> Text computes `return input.title + \":\" + input.state + \":\" + input.reason`\nbind Select.result -> Label.input\n",
+        "activity": "Select"
+      },
+      "native_comparison": true,
+      "source_file": "tools/browser-codegen/fixtures/record-assembly.gooo",
+      "origin_kind": "compiler",
+      "origin_path": "examples/body-codegen/record-field-assembly.gooo.fixture",
+      "origin_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+      "license": "LICENSE-COMPILER"
+    },
+    {
+      "id": "typed-assembly",
+      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/90ff2bb5aeffc2ac553496b646d14db1e8d33fdb/examples/body-codegen/source-assembly.gooo.fixture",
+      "origin_sha256": "a482f792a78ec4bee9de7e25d447c9926e913b155255adeb4f6fda428689ea3a",
+      "request": {
+        "schema": "gooo/browser-body-codegen-request/v1",
+        "id": "typed-assembly",
+        "filename": "typed-assembly.gooo",
+        "source": "package source_assembly\nnamespace source_assembly\nentity Integer id \"source-assembly://integer\"\n\nactivity Qualified(Integer) -> Integer computes `let first = input + 2\nlet second = input * 2\nlet chosen = first\nlet eligible = input >= 0 && input != 2\nif eligible && !(input > 4) {\n    chosen = chosen + 3\n} else {\n    chosen = chosen - 3\n}\nreturn chosen + (first + second)` assembling {\n    choice \"base-local\" local_reference at \"0\" alternative \"second\" intent \"두 번째 지역값을 분기의 기준으로 사용한다. Use the second local as the branch base.\"\n    choice \"condition-branches\" branch_layout at \"0\" intent \"0 이상 2가 아닌 값이 4 이하이면 3을 더하고 나머지는 3을 뺀다. Add three for eligible values through four, otherwise subtract three.\"\n    choice \"independent-declarations\" root_order at \"0\" intent \"두 값은 독립이므로 선언 순서는 어느 쪽이든 된다. Either independent declaration order is valid.\"\n    case \"-1\" -> \"-6\"\n    case \"0\" -> \"5\"\n    case \"2\" -> \"9\"\n    case \"4\" -> \"25\"\n    case \"5\" -> \"24\"\n    attempts \"8\"\n}\n\nactivity Clamp(Integer) -> Integer computes \"if input < 0 { return 0 } else if input < 10 { return input } else { return 10 }\" assembling {\n    choice \"lower-branch\" branch_layout at \"0\" intent \"음수이면 0을 반환한다. Return zero for negative input.\"\n    choice \"upper-comparison\" operand_order at \"1\" intent \"입력이 10보다 작은지 확인한다. Check input below ten.\"\n    choice \"middle-branch\" branch_layout at \"1\" intent \"중간 범위는 입력을, 그 이상은 10을 반환한다. Return input in the middle range, otherwise ten.\"\n    case \"-1\" -> \"0\"\n    case \"5\" -> \"5\"\n    case \"11\" -> \"10\"\n    attempts \"8\"\n}\n",
+        "activity": "Qualified"
+      },
+      "native_comparison": true,
+      "source_file": "tools/browser-codegen/fixtures/typed-assembly.gooo",
+      "origin_kind": "compiler",
+      "origin_path": "examples/body-codegen/source-assembly.gooo.fixture",
+      "origin_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+      "license": "LICENSE-COMPILER"
+    },
+    {
+      "id": "pure-callee",
+      "origin": "tools/browser-codegen/fixtures/pure-callee.gooo",
+      "origin_sha256": "540d9020802276b806c19a8c95401f645c78538852c0a626af3fc13d88e6830d",
+      "request": {
+        "schema": "gooo/browser-body-codegen-request/v1",
+        "id": "pure-callee",
+        "filename": "pure-callee.gooo",
+        "source": "package helpers\nnamespace helpers\nentity Integer id \"helpers://integer\"\nactivity Double(Integer) -> Integer id \"helpers://double\" computes \"return input * 2\"\nactivity Enhance(Integer) -> Integer id \"helpers://enhance\" computes \"let doubled = Double(input); return doubled + 1\"\n",
+        "activity": "Enhance"
+      },
+      "native_comparison": true,
+      "source_file": "tools/browser-codegen/fixtures/pure-callee.gooo",
+      "origin_kind": "local",
+      "origin_path": "tools/browser-codegen/fixtures/pure-callee.gooo",
+      "origin_revision": null,
+      "license": "../../LICENSE"
+    },
+    {
+      "id": "missing-activity",
+      "origin": "tools/browser-codegen/fixtures/missing-activity.gooo",
+      "origin_sha256": "5210490e986adc17743f55cdb4dd0e0d0c15058aaee11343a4197a0f5480af30",
+      "request": {
+        "schema": "gooo/browser-body-codegen-request/v1",
+        "id": "missing-activity",
+        "filename": "missing-activity.gooo",
+        "source": "package sample\nnamespace sample\nentity Integer id \"sample://integer\"\nactivity Clamp(Integer) -> Integer id \"sample://clamp\" computes \"if input < 0 { return 0 } else { return input }\"\n",
+        "activity": "Missing"
+      },
+      "native_comparison": true,
+      "source_file": "tools/browser-codegen/fixtures/missing-activity.gooo",
+      "origin_kind": "local",
+      "origin_path": "tools/browser-codegen/fixtures/missing-activity.gooo",
+      "origin_revision": null,
+      "license": "../../LICENSE"
+    },
+    {
+      "id": "invalid-import",
+      "origin": "tools/browser-codegen/fixtures/invalid-import.gooo",
+      "origin_sha256": "715c1f0ec87f0fa22b96bb9265c2ccaacc9ff22161d88e199d8d80183a50c561",
+      "request": {
+        "schema": "gooo/browser-body-codegen-request/v1",
+        "id": "invalid-import",
+        "filename": "invalid-import.gooo",
+        "source": "package sample\nnamespace sample\nimport other \"other/package\"\nentity Integer id \"sample://integer\"\nactivity Clamp(Integer) -> Integer computes \"return input\"\n",
+        "activity": "Clamp"
+      },
+      "native_comparison": false,
+      "source_file": "tools/browser-codegen/fixtures/invalid-import.gooo",
+      "origin_kind": "local",
+      "origin_path": "tools/browser-codegen/fixtures/invalid-import.gooo",
+      "origin_revision": null,
+      "license": "../../LICENSE"
+    },
+    {
+      "id": "type-error",
+      "origin": "tools/browser-codegen/fixtures/type-error.gooo",
+      "origin_sha256": "2aaaf49a51b79299e7a2b70371e1292b4e78500c3db643029b99be1a364c8f49",
+      "request": {
+        "schema": "gooo/browser-body-codegen-request/v1",
+        "id": "type-error",
+        "filename": "type-error.gooo",
+        "source": "package sample\nnamespace sample\nentity Integer id \"sample://integer\"\nactivity Wrong(Integer) -> Integer computes \"return true\"\n",
+        "activity": "Wrong"
+      },
+      "native_comparison": true,
+      "source_file": "tools/browser-codegen/fixtures/type-error.gooo",
+      "origin_kind": "local",
+      "origin_path": "tools/browser-codegen/fixtures/type-error.gooo",
+      "origin_revision": null,
+      "license": "../../LICENSE"
+    }
+  ]
+}

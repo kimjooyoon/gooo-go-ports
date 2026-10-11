@@ -1,0 +1,5 @@
+package sample
+namespace sample
+import other "other/package"
+entity Integer id "sample://integer"
+activity Clamp(Integer) -> Integer computes "return input"

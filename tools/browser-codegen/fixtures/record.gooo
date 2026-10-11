@@ -1,0 +1,41 @@
+package records
+namespace records
+entity Integer id "records://integer"
+entity Boolean id "records://boolean"
+entity Text id "records://text"
+entity Candidate id "records://candidate" fields {
+    field title id "records://candidate/title" type string required one
+    field state id "records://candidate/state" type string required one
+}
+entity Review id "records://review" fields {
+    field summary id "records://review/summary" type string required one
+    field reason id "records://review/reason" type string required one
+}
+
+activity Score(Integer) -> Integer computes `let a = input - 1
+let b = a - 3
+return b - 9` assembling {
+    choice "first" operand_order at "0" intent "첫 번째 피연산자를 반대로 배치한다. Reverse the first operands."
+    choice "second" operand_order at "1" intent "두 번째 피연산자를 반대로 배치한다. Reverse the second operands."
+    choice "third" operand_order at "2" intent "세 번째 피연산자를 반대로 배치한다. Reverse the third operands."
+    case "-8" -> "15"
+    case "-1" -> "8"
+    case "0" -> "7"
+    case "3" -> "4"
+    case "4" -> "3"
+    case "9" -> "-2"
+    attempts "8"
+}
+activity Propose(Integer, Text) -> Candidate computes `if input0 >= 0 { return Candidate{title: input1, state: "ready"} } else { return Candidate{title: input1, state: "wait"} }`
+activity ReviewCandidate(Candidate, Boolean) -> Review computes `if input1 && input0.state == "ready" { return Review{summary: input0.title, reason: "accepted"} } else { return Review{summary: input0.title, reason: "deferred"} }`
+activity Label(Review) -> Text computes `let copy = input
+return copy.summary + ":" + copy.reason`
+activity Echo(Candidate) -> Candidate computes "return input"
+activity Same(Candidate, Candidate) -> Boolean computes "return input0 == input1"
+
+bind Score.result -> Propose.input0
+bind Propose.result -> ReviewCandidate.input0
+bind ReviewCandidate.result -> Label.input
+bind Propose.result -> Echo.input
+bind Echo.result -> Same.input0
+bind Propose.result -> Same.input1

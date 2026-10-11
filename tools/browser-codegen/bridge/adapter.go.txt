@@ -1,0 +1,292 @@
+// The source-assembly dispatch below is adapted from the pinned compiler's
+// cmd/gooo/body_codegen.go and cmd/gooo/body_record_assembly.go:
+// https://github.com/kimjooyoon/meta-ontology-go/blob/90ff2bb5aeffc2ac553496b646d14db1e8d33fdb/cmd/gooo/body_codegen.go
+//
+// MIT License
+//
+// Copyright (c) 2026 Kim Joo-yoon
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+package main
+
+import (
+	"bytes"
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"io"
+	"runtime"
+	"strings"
+	"unicode/utf8"
+
+	decision "github.com/kimjooyoon/gooo-decision-runtime"
+	"github.com/kimjooyoon/meta-ontology-go/internal/bodycodegen"
+	"github.com/kimjooyoon/meta-ontology-go/internal/syntax"
+)
+
+const (
+	requestSchema    = "gooo/browser-body-codegen-request/v1"
+	responseSchema   = "gooo/browser-body-codegen-response/v1"
+	metadataSchema   = "gooo/browser-body-codegen-metadata/v1"
+	compilerPin      = "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb"
+	maxSourceBytes   = 64 << 10
+	maxRequestBytes  = 400 << 10
+	maxFilenameBytes = 128
+	maxIDBytes       = 128
+	maxActivityBytes = 128
+	bridgeScope      = "Disconnected single-file pure-body Go projection with source-owned assembly; package imports, model files, providers and native execution are outside this bridge's scope. This is not the full CLI or a platform compatibility claim."
+)
+
+// The external harness sets this to the hash of the bridge source set. It is
+// separate from the compiler report's own, unmodified build-provenance field.
+var bridgeSourceSHA = "UNBOUND_BRIDGE"
+
+type codegenRequest struct {
+	Schema   string `json:"schema"`
+	ID       string `json:"id"`
+	Filename string `json:"filename"`
+	Source   string `json:"source"`
+	Activity string `json:"activity"`
+}
+
+type bridgeDiagnostic struct {
+	Scope             string             `json:"scope"`
+	Code              string             `json:"code"`
+	Message           string             `json:"message"`
+	SyntaxDiagnostics syntax.Diagnostics `json:"syntax_diagnostics,omitempty"`
+}
+
+type codegenResponse struct {
+	Schema             string              `json:"schema"`
+	ID                 string              `json:"id"`
+	SourceSHA256       string              `json:"source_sha256"`
+	Activity           string              `json:"activity"`
+	OK                 bool                `json:"ok"`
+	Source             string              `json:"source"`
+	GoooSource         string              `json:"gooo_source"`
+	Report             *bodycodegen.Report `json:"report"`
+	Error              string              `json:"error,omitempty"`
+	Diagnostic         *bridgeDiagnostic   `json:"diagnostic,omitempty"`
+	CompilerPin        string              `json:"compiler_pin"`
+	BridgeSourceSHA256 string              `json:"bridge_source_sha256"`
+	NativeExecution    bool                `json:"native_execution"`
+	ModelCalls         bool                `json:"model_calls"`
+	Scope              string              `json:"scope"`
+}
+
+type resourceLimits struct {
+	Kind             string `json:"kind"`
+	MaxSourceBytes   int    `json:"max_source_bytes"`
+	MaxRequestBytes  int    `json:"max_request_bytes"`
+	MaxFilenameBytes int    `json:"max_filename_bytes"`
+	MaxIDBytes       int    `json:"max_id_bytes"`
+	MaxActivityBytes int    `json:"max_activity_bytes"`
+}
+
+type bridgeMetadata struct {
+	Schema             string         `json:"schema"`
+	CompilerPin        string         `json:"compiler_pin"`
+	BridgeSourceSHA256 string         `json:"bridge_source_sha256"`
+	GoVersion          string         `json:"go_version"`
+	NativeExecution    bool           `json:"native_execution"`
+	ModelCalls         bool           `json:"model_calls"`
+	Scope              string         `json:"scope"`
+	ResourceLimits     resourceLimits `json:"resource_limits"`
+}
+
+func metadataJSON() string {
+	metadata := bridgeMetadata{
+		Schema: metadataSchema, CompilerPin: compilerPin,
+		BridgeSourceSHA256: bridgeSourceSHA, GoVersion: runtime.Version(),
+		Scope: bridgeScope,
+		ResourceLimits: resourceLimits{
+			Kind:           "bridge_wrapper_resource_limits",
+			MaxSourceBytes: maxSourceBytes, MaxRequestBytes: maxRequestBytes,
+			MaxFilenameBytes: maxFilenameBytes, MaxIDBytes: maxIDBytes,
+			MaxActivityBytes: maxActivityBytes,
+		},
+	}
+	raw, _ := json.Marshal(metadata)
+	return string(raw)
+}
+
+func newResponse(request codegenRequest) codegenResponse {
+	response := codegenResponse{
+		Schema: responseSchema, ID: request.ID, Activity: request.Activity,
+		CompilerPin: compilerPin, BridgeSourceSHA256: bridgeSourceSHA,
+		Scope: bridgeScope,
+	}
+	if request.Source != "" {
+		response.SourceSHA256 = sourceSHA256(request.Source)
+	}
+	return response
+}
+
+func sourceSHA256(source string) string {
+	digest := sha256.Sum256([]byte(source))
+	return "sha256:" + hex.EncodeToString(digest[:])
+}
+
+func failResponse(response codegenResponse, scope, code, message string, diagnostics syntax.Diagnostics) codegenResponse {
+	response.OK, response.Source, response.GoooSource, response.Report = false, "", "", nil
+	response.Error = message
+	response.Diagnostic = &bridgeDiagnostic{Scope: scope, Code: code, Message: message, SyntaxDiagnostics: diagnostics}
+	return response
+}
+
+func responseJSON(response codegenResponse) string {
+	raw, err := json.Marshal(response)
+	if err == nil {
+		return string(raw)
+	}
+	// A malformed/non-finite compiler report must not expose partial output.
+	failure := failResponse(newResponse(codegenRequest{ID: response.ID, Activity: response.Activity}),
+		"bridge_runtime", "response_encoding", "compiler response could not be encoded; no generated output returned", nil)
+	failure.SourceSHA256 = response.SourceSHA256
+	raw, _ = json.Marshal(failure)
+	return string(raw)
+}
+
+func rejectedRequestJSON(code, message string) string {
+	return responseJSON(failResponse(newResponse(codegenRequest{}), "bridge_request", code, message, nil))
+}
+
+func panicResponseJSON() string {
+	return responseJSON(failResponse(newResponse(codegenRequest{}), "bridge_runtime", "panic",
+		"compiler bridge panicked; no generated output returned", nil))
+}
+
+func generateJSON(raw []byte) (output string) {
+	response := newResponse(codegenRequest{})
+	defer func() {
+		if recover() != nil {
+			output = responseJSON(failResponse(response, "bridge_runtime", "panic",
+				"compiler bridge panicked; no generated output returned", nil))
+		}
+	}()
+	if len(raw) == 0 || len(raw) > maxRequestBytes {
+		return rejectedRequestJSON("request_size", "bridge wrapper requires a JSON request of 1..409600 UTF-8 bytes")
+	}
+	if !utf8.Valid(raw) {
+		return rejectedRequestJSON("request_utf8", "bridge wrapper requires valid UTF-8 JSON")
+	}
+	if err := decision.RejectDuplicateJSONKeys(raw); err != nil {
+		return rejectedRequestJSON("request_json", "invalid or duplicate-key JSON request: "+err.Error())
+	}
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &fields); err != nil || fields == nil {
+		return rejectedRequestJSON("request_object", "bridge wrapper requires one JSON request object")
+	}
+	// Retain unambiguous string fields for response correlation even when later
+	// request validation fails. Nothing reaches the compiler until strict decode.
+	var request codegenRequest
+	_ = json.Unmarshal(raw, &request)
+	response = newResponse(request)
+	for key := range fields {
+		switch key {
+		case "schema", "id", "filename", "source", "activity":
+		default:
+			return responseJSON(failResponse(response, "bridge_request", "unknown_field", "unknown request field "+fmt.Sprintf("%q", key), nil))
+		}
+	}
+	for _, key := range []string{"schema", "id", "filename", "source", "activity"} {
+		value, exists := fields[key]
+		if !exists || bytes.Equal(bytes.TrimSpace(value), []byte("null")) {
+			return responseJSON(failResponse(response, "bridge_request", "missing_field", "request requires a string field "+fmt.Sprintf("%q", key), nil))
+		}
+	}
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&request); err != nil {
+		return responseJSON(failResponse(response, "bridge_request", "request_json", "invalid request: "+err.Error(), nil))
+	}
+	if err := decoder.Decode(&struct{}{}); err != io.EOF {
+		return responseJSON(failResponse(response, "bridge_request", "request_json", "request must contain exactly one JSON object", nil))
+	}
+	response = newResponse(request)
+	response.SourceSHA256 = sourceSHA256(request.Source)
+	if request.Schema != requestSchema {
+		return responseJSON(failResponse(response, "bridge_request", "request_schema", "unsupported browser body-codegen request schema", nil))
+	}
+	if request.ID == "" || len(request.ID) > maxIDBytes || !utf8.ValidString(request.ID) {
+		return responseJSON(failResponse(response, "bridge_request", "request_id", "bridge wrapper requires an id of 1..128 UTF-8 bytes", nil))
+	}
+	if request.Filename == "" || len(request.Filename) > maxFilenameBytes || !utf8.ValidString(request.Filename) ||
+		strings.ContainsAny(request.Filename, "/\\\x00") || request.Filename == "." || request.Filename == ".." {
+		return responseJSON(failResponse(response, "bridge_request", "filename", "bridge wrapper filename must be a diagnostic basename of 1..128 UTF-8 bytes without slash, backslash or NUL", nil))
+	}
+	if request.Activity == "" || len(request.Activity) > maxActivityBytes || !utf8.ValidString(request.Activity) {
+		return responseJSON(failResponse(response, "bridge_request", "activity", "bridge wrapper requires an activity name of 1..128 UTF-8 bytes", nil))
+	}
+	if len(request.Source) == 0 || len(request.Source) > maxSourceBytes || !utf8.ValidString(request.Source) {
+		return responseJSON(failResponse(response, "bridge_request", "source_size_or_utf8", "bridge wrapper requires Gooo source of 1..65536 UTF-8 bytes", nil))
+	}
+	source := []byte(request.Source)
+	file, diagnostics := bodycodegen.ParseBodyFile(request.Filename, source)
+	if file == nil || diagnostics.HasErrors() {
+		return responseJSON(failResponse(response, "compiler_syntax", "parse_source", "compiler source parsing failed", diagnostics))
+	}
+	if len(file.Imports) != 0 {
+		return responseJSON(failResponse(response, "bridge_scope", "package_imports_outside_bridge_scope",
+			"package imports are outside this single-file bridge's scope; the core parser accepted them, but this bridge does not resolve package manifests or imports", nil))
+	}
+	result, err := generateDisconnected(context.Background(), request.Filename, source, request.Activity)
+	if err != nil {
+		return responseJSON(failResponse(response, "compiler_codegen", "generation_failed", err.Error(), nil))
+	}
+	response.OK, response.Source, response.GoooSource, response.Report = true, result.Source, result.GoooSource, &result.Report
+	return responseJSON(response)
+}
+
+// Preserve the default CLI's source-owned contract dispatch. Empty provider and
+// model selectors choose the compiler's existing disconnected behavior; source
+// choices, cases, holdouts, seeds and budgets are passed intact to the core.
+func generateDisconnected(ctx context.Context, filename string, source []byte, activity string) (bodycodegen.Result, error) {
+	assembly, err := bodycodegen.SourceAssembly(ctx, filename, source, activity)
+	if err != nil {
+		return bodycodegen.Result{}, err
+	}
+	switch {
+	case bodycodegen.IsSourceIRBodyFill(assembly):
+		return bodycodegen.GenerateWithSourceIRBodyFill(ctx, filename, source, activity, assembly,
+			"", "", bodycodegen.IRBodyFillOptions{})
+	case bodycodegen.IsSourceIRSearch(assembly):
+		return bodycodegen.GenerateWithSourceIRSearch(ctx, filename, source, activity, assembly, "", "")
+	case bodycodegen.IsRecordAssembly(assembly):
+		if err := bodycodegen.ValidateSourceAssembly(ctx, filename, source, activity); err != nil {
+			return bodycodegen.Result{}, err
+		}
+		generator, err := bodycodegen.NewTypedPathGenerator("")
+		if err != nil {
+			return bodycodegen.Result{}, err
+		}
+		return generator.GenerateSourceAssembly(ctx, filename, source, activity)
+	case assembly != nil:
+		document, err := bodycodegen.DecodeSourcePathDocument(ctx, filename, source, activity, nil)
+		if err != nil {
+			return bodycodegen.Result{}, err
+		}
+		return bodycodegen.GenerateWithTypedPaths(ctx, filename, source, activity, document, "")
+	default:
+		return bodycodegen.GenerateWithPlannerAndSampleSeed(ctx, filename, source, activity, "", "", "")
+	}
+}

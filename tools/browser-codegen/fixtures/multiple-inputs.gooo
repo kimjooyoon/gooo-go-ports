@@ -1,0 +1,33 @@
+package joins
+namespace joins
+entity Integer id "joins://integer"
+entity Boolean id "joins://boolean"
+entity Text id "joins://text"
+
+activity Left(Integer) -> Integer computes `let a = input - 1
+let b = a - 3
+return b - 9` assembling {
+    choice "first" operand_order at "0" intent "첫 번째 피연산자를 반대로 배치한다. Reverse the first operands."
+    choice "second" operand_order at "1" intent "두 번째 피연산자를 반대로 배치한다. Reverse the second operands."
+    choice "third" operand_order at "2" intent "세 번째 피연산자를 반대로 배치한다. Reverse the third operands."
+    case "-8" -> "15"
+    case "-1" -> "8"
+    case "0" -> "7"
+    case "3" -> "4"
+    case "4" -> "3"
+    case "9" -> "-2"
+    attempts "8"
+}
+activity Right(Integer) -> Integer computes "return input * 2"
+activity Add(Integer, Integer) -> Integer computes "return input0 + input1"
+activity Difference(Integer, Integer) -> Integer computes "return input0 - input1"
+activity Label(Integer, Boolean, Text) -> Text computes `if input1 && input0 > 0 { return input2 + "!" } else { return input2 }`
+activity Compare(Text, Text) -> Boolean computes "return input0 == input1"
+activity Invert(Boolean) -> Boolean computes "return !input"
+
+bind Left.result -> Add.input0
+bind Right.result -> Add.input1
+bind Right.result -> Difference.input0
+bind Left.result -> Difference.input1
+bind Add.result -> Label.input0
+bind Compare.result -> Invert.input

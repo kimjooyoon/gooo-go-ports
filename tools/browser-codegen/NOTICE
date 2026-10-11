@@ -1,0 +1,23 @@
+Gooo browser body-codegen adapter
+
+The compiler is the unmodified MIT-licensed Gooo compiler at revision
+90ff2bb5aeffc2ac553496b646d14db1e8d33fdb. Its source-assembly dispatch is adapted
+in bridge/adapter.go.txt with the original copyright and MIT terms preserved.
+The compiler and copied compiler fixtures retain the MIT license in
+LICENSE-COMPILER (Copyright 2026 Kim Joo-yoon). The separate browser bridge
+is distributed under these same MIT terms.
+
+The linked gooo-decision-runtime v0.2.41-experimental uses the MIT license in
+LICENSE-DECISION-RUNTIME (Copyright 2026 Gooo contributors).
+The Go standard library and wasm_exec.js use the BSD license preserved in
+../../third_party/GO-LICENSE.
+
+Other locally authored fixture probes and browser page assets use the repository's
+BSD license in ../../LICENSE. Fixture origins, immutable revisions, raw source
+hashes and source-file paths are recorded in fixtures.json.
+
+Prepared with OpenAI Codex assistance. Independent of Google and the Go project.
+The page generates Go through the actual compiler library; it does not execute
+the generated Go or expose the full CLI, package imports or model/provider files.
+The separate bridge provenance does not replace UNBOUND_LOCAL_SOURCE in the
+compiler's own build report.

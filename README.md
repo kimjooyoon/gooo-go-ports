@@ -13,11 +13,19 @@ and an importing browser dispatcher.
 | What would you like to do? | Start with | What you can change |
 | --- | --- | --- |
 | Try Gooo without installing anything | [Interactive tutorial](https://kimjooyoon.github.io/gooo-go-ports/tutorial.html) | Change a score and label, see the returned record, and read the two Gooo source files |
+| Edit source and inspect generated Go in the browser | [Gooo code editor](https://kimjooyoon.github.io/gooo-go-ports/codegen/) | Edit one source file and generate Go for one activity; generated Go is not executed |
 | Edit and run Gooo code locally | [Run and edit locally](#run-and-edit-locally) | Install the pinned compiler, then change the tutorial's condition and rerun it |
 | Use a port in another project | [Import walkthrough](docs/use-in-your-project.md) | Build a separate application that imports `utf8.ValidRune` from a fixed source snapshot |
 
 You can also [try 21 library functions in the browser](https://kimjooyoon.github.io/gooo-go-ports/).
-The browser pages run fixed, precompiled programs; use the local toolchain to run modified Gooo source.
+The library tools and tutorial run fixed, precompiled programs. The experimental
+[code editor](https://kimjooyoon.github.io/gooo-go-ports/codegen/) uses the actual
+pinned Gooo compiler library as WebAssembly to generate Go from edited source.
+It loads about 22 MB, accepts one file up to 64 KiB, and does not support package
+imports or model-backed generation. Use the local toolchain to execute modified
+Gooo programs. Browser compilation reports retain their engine
+`UNBOUND_LOCAL_SOURCE` provenance; the separately hashed bridge does not turn
+them into native execution receipts.
 
 [Compare Gooo with generated Go](https://kimjooyoon.github.io/gooo-go-ports/source-view.html)
 without setup: four saved CLI observations show a conditional body, a changed return,
@@ -307,11 +315,15 @@ go run ./cmd/build-demo --out out/browser
 node tools/browser-smoke.cjs out/browser/site
 node tools/drag-crop-browser-smoke.cjs out/browser/site
 node tools/tutorial-browser-smoke.cjs out/browser/site
+node tools/browser-codegen-smoke.cjs out/browser/site/codegen out/browser/codegen-evidence
 node --test tools/share-link.test.cjs tools/share-app.test.cjs
 python3 -m http.server 8766 --bind 127.0.0.1 --directory out/browser/site
 ```
 
 마지막 명령은 Python 3가 필요하며, 실행 후 `http://127.0.0.1:8766`을 엽니다.
+소스 편집기는 `/codegen/`에 있습니다. 생성 검사에서는 16개 예제와 저장되지 않은
+새 편집 소스를 실제 컴파일러·WebAssembly와 비교하며, 생성한 Go는 실행하지 않습니다.
+편집기만 빌드하려면 새 출력 경로와 `--codegen-only`를 사용하면 됩니다.
 다른 정적 HTTP 서버를 사용해도 됩니다. `--out` 디렉터리는 새 경로여야 합니다.
 여러 배포본을 로컬에서 열 때는 버전별 디렉터리와 URL을 유지하세요. 같은 URL의
 파일을 교체했다면 캐시를 무시하고 새로고침해 HTML과 스크립트를 다시 받습니다.

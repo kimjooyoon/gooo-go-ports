@@ -1,0 +1,34 @@
+package source_assembly
+namespace source_assembly
+entity Integer id "source-assembly://integer"
+
+activity Qualified(Integer) -> Integer computes `let first = input + 2
+let second = input * 2
+let chosen = first
+let eligible = input >= 0 && input != 2
+if eligible && !(input > 4) {
+    chosen = chosen + 3
+} else {
+    chosen = chosen - 3
+}
+return chosen + (first + second)` assembling {
+    choice "base-local" local_reference at "0" alternative "second" intent "두 번째 지역값을 분기의 기준으로 사용한다. Use the second local as the branch base."
+    choice "condition-branches" branch_layout at "0" intent "0 이상 2가 아닌 값이 4 이하이면 3을 더하고 나머지는 3을 뺀다. Add three for eligible values through four, otherwise subtract three."
+    choice "independent-declarations" root_order at "0" intent "두 값은 독립이므로 선언 순서는 어느 쪽이든 된다. Either independent declaration order is valid."
+    case "-1" -> "-6"
+    case "0" -> "5"
+    case "2" -> "9"
+    case "4" -> "25"
+    case "5" -> "24"
+    attempts "8"
+}
+
+activity Clamp(Integer) -> Integer computes "if input < 0 { return 0 } else if input < 10 { return input } else { return 10 }" assembling {
+    choice "lower-branch" branch_layout at "0" intent "음수이면 0을 반환한다. Return zero for negative input."
+    choice "upper-comparison" operand_order at "1" intent "입력이 10보다 작은지 확인한다. Check input below ten."
+    choice "middle-branch" branch_layout at "1" intent "중간 범위는 입력을, 그 이상은 10을 반환한다. Return input in the middle range, otherwise ten."
+    case "-1" -> "0"
+    case "5" -> "5"
+    case "11" -> "10"
+    attempts "8"
+}

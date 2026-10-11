@@ -1,0 +1,28 @@
+//go:build js && wasm
+
+package main
+
+import "syscall/js"
+
+var browserGenerate, browserMetadata js.Func
+
+func main() {
+	browserGenerate = js.FuncOf(func(_ js.Value, args []js.Value) (output any) {
+		defer func() {
+			if recover() != nil {
+				output = panicResponseJSON()
+			}
+		}()
+		if len(args) != 1 || args[0].Type() != js.TypeString {
+			return rejectedRequestJSON("javascript_argument", "goooBrowserGenerate requires exactly one JSON string argument")
+		}
+		return generateJSON([]byte(args[0].String()))
+	})
+	browserMetadata = js.FuncOf(func(_ js.Value, _ []js.Value) any {
+		return metadataJSON()
+	})
+	js.Global().Set("goooBrowserGenerate", browserGenerate)
+	js.Global().Set("goooBrowserMetadata", browserMetadata)
+	js.Global().Set("goooBrowserReady", true)
+	select {}
+}

@@ -1,0 +1,6 @@
+package bodycodegen
+namespace bodycodegen
+
+entity Text id "bodycodegen://entity/text"
+
+activity NormalizeText(Text) -> Text computes "let normalized = input\nnormalized = input\nlet accepted = normalized == \"approved\"\nif accepted { return \"allow\" } else { return \"deny\" }"

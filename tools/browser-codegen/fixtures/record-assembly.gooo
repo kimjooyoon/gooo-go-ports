@@ -1,0 +1,28 @@
+package records
+namespace fieldassembly
+entity Text id "fieldassembly://text"
+entity Boolean id "fieldassembly://boolean"
+entity Candidate id "fieldassembly://candidate" fields {
+    field title id "fieldassembly://candidate/title" type string required one
+    field state id "fieldassembly://candidate/state" type string required one
+    field reason id "fieldassembly://candidate/reason" type string required one
+}
+activity Select(Candidate, Boolean) -> Candidate computes `let copy = input0
+if input1 && copy.state != "ready" {
+    copy = Candidate{title: "draft", state: "wait", reason: "deferred"}
+} else {
+    copy = input0
+}
+return copy` assembling {
+    choice "title" field_value at "0" alternative "input0.title" intent "원래 제목을 사용한다. Keep the original title."
+    choice "state" field_value at "1" alternative "\"ready\"" intent "선택된 기록의 상태는 ready이다. Set state to ready."
+    choice "reason" field_value at "2" alternative "input0.reason + \":accepted\"" intent "기존 사유에 accepted를 붙인다. Append accepted to the reason."
+    value_case "[{\"title\":\"한글\",\"state\":\"queued\",\"reason\":\"검토\"},true]" -> "{\"title\":\"한글\",\"state\":\"ready\",\"reason\":\"검토:accepted\"}"
+    value_case "[{\"title\":\"English\",\"state\":\"queued\",\"reason\":\"review\"},true]" -> "{\"title\":\"English\",\"state\":\"ready\",\"reason\":\"review:accepted\"}"
+    value_case "[{\"title\":\"\",\"state\":\"queued\",\"reason\":\"\"},true]" -> "{\"title\":\"\",\"state\":\"ready\",\"reason\":\":accepted\"}"
+    value_case "[{\"title\":\"kept\",\"state\":\"queued\",\"reason\":\"later\"},false]" -> "{\"title\":\"kept\",\"state\":\"queued\",\"reason\":\"later\"}"
+    value_case "[{\"title\":\"already\",\"state\":\"ready\",\"reason\":\"done\"},true]" -> "{\"title\":\"already\",\"state\":\"ready\",\"reason\":\"done\"}"
+    attempts "8"
+}
+activity Label(Candidate) -> Text computes `return input.title + ":" + input.state + ":" + input.reason`
+bind Select.result -> Label.input

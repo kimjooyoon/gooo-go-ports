@@ -1,0 +1,5 @@
+package helpers
+namespace helpers
+entity Integer id "helpers://integer"
+activity Double(Integer) -> Integer id "helpers://double" computes "return input * 2"
+activity Enhance(Integer) -> Integer id "helpers://enhance" computes "let doubled = Double(input); return doubled + 1"

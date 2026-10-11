@@ -1,0 +1,16 @@
+package source_ir_fill_derived
+namespace source_ir_fill_derived
+entity Integer id "source-ir-fill-derived://integer"
+
+activity Lift(Integer) -> Integer computes `let base = __GOOO_BODY_HOLE_seed__
+let increment = __GOOO_BODY_HOLE_step__
+return base + increment` assembling {
+    source_fill intent "Represent input plus one as a base value and a small increment." {
+        hole "seed"
+        hole "step"
+        derive grammar "integer-offset-constant/v1" max_expressions "8" max_candidates "16"
+    }
+    case "-2" -> "-1"
+    case "0" -> "1"
+    case "7" -> "8"
+}

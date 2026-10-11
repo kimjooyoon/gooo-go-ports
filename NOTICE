@@ -20,3 +20,9 @@ Fixed-point ports and the byte-preserved independent Go oracle copy:
 Copyright 2015 The Go Authors. All rights reserved.
 Adapted from golang.org/x/image/math/fixed at the revision recorded in upstream.json.
 BSD 3-Clause terms are reproduced in third_party/x-image/LICENSE.
+
+The browser compiler bridge under tools/browser-codegen/bridge and copied
+compiler fixtures retain the upstream Gooo MIT terms in
+tools/browser-codegen/LICENSE-COMPILER. The linked decision runtime has separate
+MIT terms in tools/browser-codegen/LICENSE-DECISION-RUNTIME. See that directory's
+NOTICE for scope, provenance and source attribution.

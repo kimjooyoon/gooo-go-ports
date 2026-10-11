@@ -1,0 +1,16 @@
+package bodycodegen
+namespace bodycodegen
+
+entity Integer id "bodycodegen://entity/integer"
+
+activity ClampNegativeToZero(Integer) -> Integer computes "let output = input; if input < 0 { output = __GOOO_BODY_HOLE_floor__ } else { output = input }; return output" assembling {
+    search hole "floor" grammar "integer-offset-constant/v1" intent "Return zero for negative integers and preserve zero or positive integers." max_candidates "16"
+    case "-2" -> "0"
+    case "-1" -> "0"
+    case "0" -> "0"
+    case "1" -> "1"
+    case "2" -> "2"
+    holdout_case "-9223372036854775808" -> "0"
+    holdout_case "9223372036854775807" -> "9223372036854775807"
+    attempts "8"
+}

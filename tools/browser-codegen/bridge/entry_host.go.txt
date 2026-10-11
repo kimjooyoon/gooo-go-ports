@@ -1,0 +1,64 @@
+//go:build !js
+
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"io"
+	"os"
+)
+
+func main() {
+	reader := bufio.NewReaderSize(os.Stdin, 16<<10)
+	writer := bufio.NewWriter(os.Stdout)
+	for {
+		line, oversized, err := readRequestLine(reader)
+		if err == io.EOF && len(line) == 0 && !oversized {
+			return
+		}
+		output := ""
+		if oversized {
+			output = rejectedRequestJSON("request_size", "bridge wrapper requires a JSON request of 1..409600 UTF-8 bytes")
+		} else {
+			output = generateJSON(line)
+		}
+		if _, writeErr := fmt.Fprintln(writer, output); writeErr != nil {
+			fmt.Fprintln(os.Stderr, "browser frontend host response:", writeErr)
+			os.Exit(1)
+		}
+		if flushErr := writer.Flush(); flushErr != nil {
+			fmt.Fprintln(os.Stderr, "browser frontend host response:", flushErr)
+			os.Exit(1)
+		}
+		if err != nil {
+			if err == io.EOF {
+				return
+			}
+			fmt.Fprintln(os.Stderr, "browser frontend host input:", err)
+			os.Exit(1)
+		}
+	}
+}
+
+// Drain an oversized line without retaining it so that each subsequent NDJSON
+// request still receives its own response. No input path or filesystem is used.
+func readRequestLine(reader *bufio.Reader) (line []byte, oversized bool, err error) {
+	for {
+		fragment, readErr := reader.ReadSlice('\n')
+		if readErr == nil {
+			fragment = fragment[:len(fragment)-1]
+		}
+		if !oversized {
+			if len(line)+len(fragment) > maxRequestBytes {
+				line, oversized = nil, true
+			} else {
+				line = append(line, fragment...)
+			}
+		}
+		if readErr == bufio.ErrBufferFull {
+			continue
+		}
+		return line, oversized, readErr
+	}
+}
