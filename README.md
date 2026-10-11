@@ -4,7 +4,7 @@
 describing what programs should do and inspecting how they are built and run.
 This independent ecosystem project implements selected Go standard-library functions in Gooo,
 with independent Go reference outputs and saved replay. The current scope is
-28 HTTP, Unicode, 8-bit integer, color, duration, and rectangle functions, eleven native importing examples,
+29 HTTP, Unicode, 8-bit integer, color, duration, and rectangle functions, eleven native importing examples,
 and an importing browser dispatcher.
 Use Go 1.27.2, Git, and a POSIX shell on macOS or Linux: run `./tools/bootstrap.sh`, then
 `go run ./cmd/verify --out out/first` from this repository. The output directory must be new.
@@ -90,6 +90,12 @@ not load or modify image files. This separate browser program composes the
 existing `RectangleIntersect` and `RectangleEmpty` ports; it adds no new port
 and leaves the 21-function demo's input and shared-link formats unchanged.
 
+The experimental native [drag-selection crop planner](docs/drag-crop.md) interprets the requested
+rectangle as two unordered drag corners. It imports `RectangleCanon`, then clips
+to the original bounds. This is a separate activity: existing `CropPlan` and the
+browser crop planner keep their original reversed-input behavior. No new browser
+function or image-file operation is introduced.
+
 To learn the language from a small program, try the
 [score-and-label tutorial](https://kimjooyoon.github.io/gooo-go-ports/tutorial.html).
 Change two inputs, inspect the four returned fields, and read both Gooo source
@@ -118,7 +124,7 @@ with the page URL or command and what happened. A working demo or shared input l
 is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수·색상 변환·시간 간격·사각형 함수 28개를 제공합니다.
+현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수·색상 변환·시간 간격·사각형 함수 29개를 표현합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -143,7 +149,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | `go/image/color` | `RGBToCMYK`, `CMYKToRGB` | 각 채널 0..255의 RGB 3성분·CMYK 4성분 변환. 다중 반환은 `CMYK`·`RGB` 레코드 |
 | `go/image/color` | `RGBToYCbCr`, `YCbCrToRGB` | 각 채널 0..255의 RGB·Y′CbCr 3성분 변환. Go의 고정 소수점·반올림·포화 보존. 다중 반환은 `YCbCr`·`RGB` 레코드. Native 전용 |
 | `go/time` | `DurationRound`, `DurationTruncate` | Go Duration 메서드의 수신 객체를 첫 인수로 전달. 두 signed int64 나노초 입력의 반올림·절삭과 범위 초과 시 포화 |
-| `go/image` | `RectangleEmpty`, `RectangleOverlaps`, `RectangleIntersect`, `RectangleUnion` | 수신 사각형을 첫 레코드 인수로 전달. Go의 네 좌표를 signed int64 필드로 보존하며 빈·뒤집힌 사각형을 정규화하지 않음. Native에서 네 함수를 실행하며 [브라우저 crop](examples/crop-planner/README.md)은 `Intersect` + `Empty`를 조합 |
+| `go/image` | `RectangleEmpty`, `RectangleOverlaps`, `RectangleIntersect`, `RectangleUnion`, `RectangleCanon` | 수신 사각형을 첫 레코드 인수로 전달. Go의 네 좌표를 signed int64 필드로 보존하며 기존 네 활동은 빈·뒤집힌 입력을 정규화하지 않음. `RectangleCanon`만 뒤집힌 축을 비교·교환. Native에서 다섯 함수를 실행하며 [브라우저 crop](examples/crop-planner/README.md)은 `Intersect` + `Empty`를 조합 |
 
 원본의 `rune` 입력은 int32 범위를 Gooo Integer로 전달합니다. `byte` 호환 범위는
 0..255입니다. 묵시적으로 정수 폭을 줄이지 않습니다. `RuneStart`의 범위 밖 입력은
@@ -406,7 +412,8 @@ YCbCr 소비 앱은 [별도 workspace](ycbcr-inspector.workspace.json)로 실행
 int32 밖 identity 확장 **11건**, 두 rune 소비 앱은 원본 비교 **497건**과 영역 밖
 거부 **34건**을 추가한 기존 **31,014건**도 유지합니다. YCbCr 두 포트는 원본 비교
 **2,160건**과 영역 밖 거부 **48건**, 왕복 소비 앱은 원본 비교 **924건**과 거부 **24건**을
-추가합니다. 전체 native 검사는 **34,170건**, 이식 함수는 **28개**입니다.
+추가한 기존 **34,170건**을 유지합니다. Canon **371건**과 드래그 선택 소비 활동
+**501건**을 별도로 더한 native 코퍼스는 **35,042건**, 이식 함수는 **29개**입니다.
 사각형의 네 좌표는
 각각 전체 signed int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
 시간 간격은 두 입력의 전체 int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
@@ -439,6 +446,8 @@ int32 밖 identity 확장 **11건**, 두 rune 소비 앱은 원본 비교 **497�
 | RectangleEmpty | 253 | 작은 좌표 격자, 네 필드 각각의 int64·정밀도 경계, 극값 사각형, 고정 표본 |
 | RectangleOverlaps / RectangleIntersect / RectangleUnion | 각 486 | 작은 좌표 조합, 포함·접촉·분리·다른 빈 표현의 양방향 입력, 여덟 좌표 각각의 경계와 고정 표본 |
 | CropPlan consumer | 486 | 같은 원래 사각형 두 개로 교집합의 네 좌표·픽셀 존재 여부 비교 |
+| RectangleCanon | 371 | 기존 단항 좌표 격자·경계·표본과 모든 관측된 canonical 결과를 다시 입력하여 멱등성 비교 |
+| DragCropPlan | 501 | 기존 두 레코드 격자·경계·표본과 네 드래그 방향, clipping·접촉·퇴화·int64 경계 |
 | unicode.SimpleFold | 3,505 + 11 | 모든 변경 코드 포인트, Latin-1, 원본 case range 경계, invalid Unicode·int32 경계·표본, 별도 int64 identity 확장 |
 | Simple-fold Compare consumer | 497 + 34 | 모든 3/4-member 순환의 순서 있는 쌍, 이름 있는 고정점·2-member 순환, 다른 순환·invalid 값·표본, 별도 영역 밖 거부 |
 | Color RGBToYCbCr | 924 + 24 | RGB 경계 격자·모든 회색·반올림 경계·고정 표본, 별도 영역 밖 거부 |
@@ -464,8 +473,8 @@ byte 3성분 입력을 Go 원본과 비교합니다. 총 **33,554,432번**의 �
 생성 소스 해시·도구체인·결과를 기록합니다. 소비 앱의 모든 RGB 왕복을 실행하거나
 이미지 압축·색상 프로파일을 검증한 것으로 해석하지 않습니다.
 
-Gooo 실행 입력 상한에 맞춰 총 **465개 배치**를 실행합니다. 기존 400개 배치를 유지하고,
-YCbCr 순변환 15개·역변환 20개·소비 앱 30개 배치를 추가합니다.
+Gooo 실행 입력 상한에 맞춰 총 **487개 배치**를 실행합니다. 기존 YCbCr까지의 465개 배치를 유지하고,
+Canon 6개·드래그 선택 소비 활동 16개 배치를 추가합니다.
 Unicode 앱과 색상 포트는 64건 이하, 색상 소비 앱은 32건 이하입니다.
 사각형의 단항 연산은 64건 이하, 이항 연산과 소비 앱은 32건 이하입니다.
 새 레코드 기대값도 들여쓴 JSON과 마지막 개행을 포함해 32KiB 한도를 검사합니다.

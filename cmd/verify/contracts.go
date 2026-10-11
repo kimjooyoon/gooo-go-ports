@@ -19,6 +19,8 @@ type activityContract struct {
 func nativeActivityContracts() map[string]activityContract {
 	i := integerEntity
 	return map[string]activityContract{
+		"go/image:RectangleCanon":             {"ports/image/canon.gooo", "gooo://go/image/rectangle-canon", []string{rectangleEntity}},
+		"example/crop-planner:DragCropPlan":   {"examples/crop-planner/drag_crop.gooo", "gooo://example/crop-planner/drag-crop-plan", []string{rectangleEntity, rectangleEntity}},
 		"go/image/color:RGBToYCbCr":           {"ports/image/ycbcr.gooo", "gooo://go/image/color/RGBToYCbCr", []string{i, i, i}},
 		"go/image/color:YCbCrToRGB":           {"ports/image/ycbcr.gooo", "gooo://go/image/color/YCbCrToRGB", []string{i, i, i}},
 		"app/ycbcr-inspector:InspectRGB":      {"examples/ycbcr-inspector/main.gooo", "gooo://go-ports/examples/ycbcr-inspector/inspect-rgb", []string{i, i, i}},

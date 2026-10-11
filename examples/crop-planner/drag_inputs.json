@@ -1,0 +1,173 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "example/crop-planner:DragCropPlan.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 640,
+        "max_y": 480
+      },
+      "example/crop-planner:DragCropPlan.input1": {
+        "min_x": 100,
+        "min_y": 100,
+        "max_x": 200,
+        "max_y": 200
+      }
+    },
+    {
+      "example/crop-planner:DragCropPlan.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 640,
+        "max_y": 480
+      },
+      "example/crop-planner:DragCropPlan.input1": {
+        "min_x": 200,
+        "min_y": 100,
+        "max_x": 100,
+        "max_y": 200
+      }
+    },
+    {
+      "example/crop-planner:DragCropPlan.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 640,
+        "max_y": 480
+      },
+      "example/crop-planner:DragCropPlan.input1": {
+        "min_x": 100,
+        "min_y": 200,
+        "max_x": 200,
+        "max_y": 100
+      }
+    },
+    {
+      "example/crop-planner:DragCropPlan.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 640,
+        "max_y": 480
+      },
+      "example/crop-planner:DragCropPlan.input1": {
+        "min_x": 200,
+        "min_y": 200,
+        "max_x": 100,
+        "max_y": 100
+      }
+    },
+    {
+      "example/crop-planner:DragCropPlan.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 640,
+        "max_y": 480
+      },
+      "example/crop-planner:DragCropPlan.input1": {
+        "min_x": 200,
+        "min_y": 550,
+        "max_x": -20,
+        "max_y": 40
+      }
+    },
+    {
+      "example/crop-planner:DragCropPlan.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 640,
+        "max_y": 480
+      },
+      "example/crop-planner:DragCropPlan.input1": {
+        "min_x": 7,
+        "min_y": 20,
+        "max_x": 7,
+        "max_y": 9
+      }
+    },
+    {
+      "example/crop-planner:DragCropPlan.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 640,
+        "max_y": 480
+      },
+      "example/crop-planner:DragCropPlan.input1": {
+        "min_x": 800,
+        "min_y": 100,
+        "max_x": 640,
+        "max_y": 0
+      }
+    },
+    {
+      "example/crop-planner:DragCropPlan.input0": {
+        "min_x": 640,
+        "min_y": 0,
+        "max_x": 0,
+        "max_y": 480
+      },
+      "example/crop-planner:DragCropPlan.input1": {
+        "min_x": 30,
+        "min_y": 30,
+        "max_x": 10,
+        "max_y": 10
+      }
+    },
+    {
+      "example/crop-planner:DragCropPlan.input0": {
+        "min_x": -20,
+        "min_y": -30,
+        "max_x": 5,
+        "max_y": 10
+      },
+      "example/crop-planner:DragCropPlan.input1": {
+        "min_x": 12,
+        "min_y": 4,
+        "max_x": -8,
+        "max_y": -40
+      }
+    },
+    {
+      "example/crop-planner:DragCropPlan.input0": {
+        "min_x": -9223372036854775808,
+        "min_y": -9223372036854775808,
+        "max_x": 9223372036854775807,
+        "max_y": 9223372036854775807
+      },
+      "example/crop-planner:DragCropPlan.input1": {
+        "min_x": 9223372036854775807,
+        "min_y": 9223372036854775807,
+        "max_x": 9223372036854775806,
+        "max_y": 9223372036854775806
+      }
+    },
+    {
+      "example/crop-planner:DragCropPlan.input0": {
+        "min_x": -9223372036854775808,
+        "min_y": -9223372036854775808,
+        "max_x": 9223372036854775807,
+        "max_y": 9223372036854775807
+      },
+      "example/crop-planner:DragCropPlan.input1": {
+        "min_x": -9223372036854775807,
+        "min_y": -9223372036854775807,
+        "max_x": -9223372036854775808,
+        "max_y": -9223372036854775808
+      }
+    },
+    {
+      "example/crop-planner:DragCropPlan.input0": {
+        "min_x": 9007199254740992,
+        "min_y": -9007199254740993,
+        "max_x": 9007199254740994,
+        "max_y": -9007199254740991
+      },
+      "example/crop-planner:DragCropPlan.input1": {
+        "min_x": 9007199254740995,
+        "min_y": -9007199254740991,
+        "max_x": 9007199254740993,
+        "max_y": -9007199254740992
+      }
+    }
+  ]
+}

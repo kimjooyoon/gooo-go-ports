@@ -40,6 +40,20 @@
       "api_mapping": "Rectangle receiver is the first record argument. Go Min.X, Min.Y, Max.X, Max.Y map to required Integer fields min_x, min_y, max_x, max_y without normalization. Each coordinate preserves the full signed int64 Go int domain on amd64/arm64. Empty and reversed rectangles remain valid inputs; no coordinate arithmetic, narrowing, or domain extension."
     },
     {
+      "source": "src/image/geom.go",
+      "target": "ports/image/canon.gooo",
+      "supporting_targets": [
+        "ports/image/geometry.gooo"
+      ],
+      "symbols": [
+        "Rectangle.Canon"
+      ],
+      "target_activities": [
+        "RectangleCanon"
+      ],
+      "api_mapping": "A Rectangle record preserves four original signed int64 coordinates on 64-bit Go. Canon swaps each inverted coordinate pair by comparison and selection, without arithmetic or narrowing; degenerate rectangles retain their location. Existing geometry activities and CropPlan do not gain implicit normalization."
+    },
+    {
       "source": "src/unicode/graphic.go",
       "supporting_sources": ["src/unicode/digit.go", "src/unicode/letter.go", "src/unicode/tables.go"],
       "target": "ports/unicode/classification.gooo",

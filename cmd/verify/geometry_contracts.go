@@ -14,9 +14,9 @@ func geometryResultContract(s suite) resultContract {
 	switch s.Package + ":" + s.Activity {
 	case "go/image:RectangleEmpty", "go/image:RectangleOverlaps":
 		return resultContract{Entity: "gooo://std/boolean"}
-	case "go/image:RectangleIntersect", "go/image:RectangleUnion":
+	case "go/image:RectangleIntersect", "go/image:RectangleUnion", "go/image:RectangleCanon":
 		return resultContract{Entity: rectangleEntity, Fields: rectangleFieldContracts(rectangleEntity)}
-	case "example/crop-planner:CropPlan":
+	case "example/crop-planner:CropPlan", "example/crop-planner:DragCropPlan":
 		return resultContract{Entity: cropPlanEntity, Fields: append(rectangleFieldContracts(cropPlanEntity), recordFieldContract{"has_pixels", cropPlanEntity + "/has-pixels"})}
 	}
 	return resultContract{}

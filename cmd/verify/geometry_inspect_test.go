@@ -30,6 +30,11 @@ func TestGeometryReceiptBindsEveryOriginalRecordAndField(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	canonical, err := canonCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	corpus.Suites = append(corpus.Suites, canonical.Suites...)
 	for _, s := range corpus.Suites {
 		// Use distinct, nonzero coordinates outside floating-point and int32 precision.
 		// Union additionally exercises Go's asymmetric both-empty return value.
@@ -127,10 +132,10 @@ func TestGeometryReceiptBindsEveryOriginalRecordAndField(t *testing.T) {
 			}
 			result := geometryResultContract(one)
 			if len(result.Fields) > 0 {
-				if one.Activity == "RectangleUnion" || one.Activity == "CropPlan" {
+				if one.Activity == "RectangleUnion" || one.Activity == "CropPlan" || one.Activity == "DragCropPlan" {
 					changes["correlated raw result and field rewrite"] = func(e *envelope) {
 						wrong := rectangleRecord(rectangleCoordinates{})
-						if one.Activity == "CropPlan" {
+						if one.Activity == "CropPlan" || one.Activity == "DragCropPlan" {
 							for name, value := range one.Cases[0].Expected.(map[string]any) {
 								wrong[name] = value
 							}

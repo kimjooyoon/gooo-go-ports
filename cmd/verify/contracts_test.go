@@ -50,7 +50,12 @@ func allNativeSuites(t *testing.T) []suite {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return append(append(append(append(append(append(append(append(append(suites, unicode.Suites...), colors.Suites...), rotations.Suites...), durations.Suites...), whitespace.Suites...), classification.Suites...), geometry.Suites...), folding.Suites...), ycbcr.Suites...)
+	canonical, err := canonCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	all := append(append(append(append(append(append(append(append(append(suites, unicode.Suites...), colors.Suites...), rotations.Suites...), durations.Suites...), whitespace.Suites...), classification.Suites...), geometry.Suites...), folding.Suites...), ycbcr.Suites...)
+	return append(all, canonical.Suites...)
 }
 
 func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
@@ -60,7 +65,7 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	suites := allNativeSuites(t)
-	if len(contracts) != 40 || len(suites) != 40 {
+	if len(contracts) != 42 || len(suites) != 42 {
 		t.Fatal("contract/suite roster changed")
 	}
 	seen := map[string]bool{}
@@ -128,6 +133,11 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	added := geometry.PortReferenceCases + geometry.ConsumerReferenceCases + folding.PortReferenceCases + folding.PortExtensionCases + folding.ConsumerReferenceCases + folding.ConsumerRejectionCases + ycbcr.PortReferenceCases + ycbcr.PortRejectionCases + ycbcr.ConsumerReferenceCases + ycbcr.ConsumerRejectionCases
+	canonical, err := canonCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	added += canonical.PortReferenceCases + canonical.ConsumerReferenceCases
 	if total != 24770+added {
 		t.Fatalf("corpus changed: %d", total)
 	}

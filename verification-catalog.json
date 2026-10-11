@@ -43,7 +43,8 @@
     {
       "path": "go/image",
       "sources": [
-        "ports/image/geometry.gooo"
+        "ports/image/geometry.gooo",
+        "ports/image/canon.gooo"
       ]
     },
     {
@@ -103,7 +104,8 @@
     {
       "path": "example/crop-planner",
       "sources": [
-        "examples/crop-planner/crop_planner.gooo"
+        "examples/crop-planner/crop_planner.gooo",
+        "examples/crop-planner/drag_crop.gooo"
       ]
     },
     {

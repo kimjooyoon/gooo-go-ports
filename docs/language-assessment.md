@@ -13,7 +13,7 @@
 
 ## 이번에 옮기는 동작
 
-Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **28개 함수**를 Gooo 활동으로 표현한다.
+Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **29개 함수**를 Gooo 활동으로 표현한다.
 패키지 전체, HTTP 서버, 문자열 인코더 전체 또는 Go API와의 바이너리 호환을 주장하지 않는다.
 
 | 원본 | Gooo 원본 | 표현 방법과 호환 범위 |
@@ -32,6 +32,11 @@ Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **28개 함수**를 Gooo 
 | `image/color.RGBToYCbCr`, `YCbCrToRGB` | [ycbcr.gooo](../ports/image/ycbcr.gooo) | 원래 uint8 3성분과 고정 정수 계수·반올림·포화 보존. 결과는 `YCbCr`·`RGB` 레코드이며 영역 밖은 모든 성분 -1 |
 | `time.Duration.Round`, `Truncate` | [duration.gooo](../ports/time/duration.gooo) | 수신 객체를 첫 번째 인수로 옮긴 `DurationRound(d, m)`, `DurationTruncate(d, m)`. 두 인수 모두 전체 signed int64 나노초 범위이며 중간값 처리·포화·0 이하 단위의 동작을 유지 |
 | `image.Rectangle.Empty`, `Overlaps`, `Intersect`, `Union` | [geometry.gooo](../ports/image/geometry.gooo) | 수신 사각형을 첫 레코드 인수로 전달. 네 signed int64 좌표로 Go의 중첩 Point 필드를 명시적으로 펼침. 원본 좌표·입력 순서·빈 사각형 표현을 보존 |
+
+`Rectangle.Canon`은 [canon.gooo](../ports/image/canon.gooo)에서 기존 Rectangle
+레코드를 재사용해 두 축을 독립적으로 비교·교환한다. 입력은 전체 signed int64이며
+새 산술·축소·영역 밖 확장이 없다. [드래그 crop 예제](drag-crop.md)는 선택 영역만
+정규화하며 기존 CropPlan과 브라우저 기능은 바꾸지 않는다.
 
 Go의 `rune`은 int32이고 Gooo Integer는 int64다. 테스트에서 int64를 Go rune/byte로
 무조건 변환하면 잘림으로 잘못된 동등성 주장이 생긴다. 원본 입력 범위의 비교와 Gooo

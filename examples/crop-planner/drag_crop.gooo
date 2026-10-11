@@ -1,0 +1,9 @@
+// Candidate: interpret input1 as two unordered drag corners, then clip to input0.
+// Original image bounds are not canonicalized. Existing CropPlan is unchanged.
+// This computes coordinates only; it does not read or modify pixels.
+package crop_planner
+namespace gooo_ports_examples_crop_planner
+import geometry "go/image"
+activity DragCropPlan(Rectangle, Rectangle) -> CropResult id "gooo://example/crop-planner/drag-crop-plan" computes `let canonical = geometry.RectangleCanon(input1)
+let clipped = geometry.RectangleIntersect(input0, canonical)
+return CropResult{min_x: clipped.min_x, min_y: clipped.min_y, max_x: clipped.max_x, max_y: clipped.max_y, has_pixels: !geometry.RectangleEmpty(clipped)}`

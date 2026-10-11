@@ -28,6 +28,7 @@ jobs:
           go test -race ./...
           python3 tools/bootstrap.test.py
           python3 tools/receipt_json_test.py
+          python3 tools/check-drag-crop-example_test.py
       - name: Check pinned Unicode table generation
         run: |
           go run ./cmd/gen-unicode --check
@@ -52,6 +53,8 @@ jobs:
           ./.gooo check ports/math/bits.gooo
           ./.gooo check ports/image/color.gooo
           ./.gooo check ports/image/geometry.gooo
+          ./.gooo check ports/image/canon.gooo
+          ./.gooo check examples/crop-planner/drag_crop.gooo
           ./.gooo check ports/time/duration.gooo
           sh tools/probe.sh --out out/probes
       - name: Compare the ports with Go and replay every batch
@@ -61,7 +64,7 @@ jobs:
             .schema == "gooo/go-ports-differential/v1" and
             .go_version == "go1.27.2" and
             .compiler_revision == "366ee6ef8f9d2b9b57331dfd26b6f908c0289851" and
-            .ported_functions == 28 and .consumer_programs == 11 and .consumer_activities == 12 and
+            .ported_functions == 29 and .consumer_programs == 11 and .consumer_activities == 13 and
             .legacy_cases == 3147 and .unicode_reference_cases == 334 and .unicode_rejection_cases == 12 and
             .color_port_reference_cases == 1300 and .color_port_rejection_cases == 56 and
             .color_consumer_reference_cases == 637 and .color_consumer_rejection_cases == 24 and
@@ -73,6 +76,7 @@ jobs:
             .classification_port_reference_cases == 5043 and .classification_port_rejection_cases == 24 and
             .classification_consumer_reference_cases == 4570 and .classification_consumer_rejection_cases == 12 and
             .geometry_port_reference_cases == 1711 and .geometry_consumer_reference_cases == 486 and
+            .canon_port_reference_cases == 371 and .drag_crop_consumer_reference_cases == 501 and
             .simple_fold_port_reference_cases == 3505 and .simple_fold_port_extension_cases == 11 and
             .simple_fold_consumer_reference_cases == 497 and .simple_fold_consumer_rejection_cases == 34 and
             .ycbcr_port_reference_cases == 2160 and .ycbcr_port_rejection_cases == 48 and
@@ -83,9 +87,9 @@ jobs:
               .input_count == 16777216 and .comparison_count == 16777216 and
               .component_comparison_count == 50331648 and .mismatches == 0 and
               .output_sha256 == .oracle_sha256) and
-            .cases == 34170 and .passed == 34170 and
-            (.runs | length) == 40 and
-            ([.runs[].cases] | add) == 34170 and ([.runs[].batches] | add) == 465 and
+            .cases == 35042 and .passed == 35042 and
+            (.runs | length) == 42 and
+            ([.runs[].cases] | add) == 35042 and ([.runs[].batches] | add) == 487 and
             all(.runs[]; .passed == .cases and .replay_equal == true)
           ' out/ci/summary.json
       - name: Exhaustively compare generated Unicode classifications
@@ -363,6 +367,14 @@ jobs:
             crop-planner.workspace.json > out/crop-replay.json
           python3 tools/check-crop-example.py out/crop-example.json out/crop-replay.json
           python3 tools/check-rectangle-inputs.py out/rectangle-input-rejections
+      - name: Execute and replay the direction-independent drag crop planner
+        run: |
+          ./.gooo package execute --json --inputs examples/crop-planner/drag_inputs.json \
+            drag-crop.workspace.json > out/drag-crop-example.json
+          ./.gooo package replay --json --receipt out/drag-crop-example.json \
+            --inputs examples/crop-planner/drag_inputs.json \
+            drag-crop.workspace.json > out/drag-crop-replay.json
+          python3 tools/check-drag-crop-example.py out/drag-crop-example.json out/drag-crop-replay.json
       - name: Verify the offline decision-policy experiment
         run: |
           ./examples/decision-policy-pilot/run.sh
