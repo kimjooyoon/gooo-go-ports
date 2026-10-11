@@ -209,7 +209,7 @@ func checkIdentity(raw []byte) error {
 	if err := json.Unmarshal(raw, &b); err != nil {
 		return err
 	}
-	if b.Revision != compilerRevision || b.Go != "go1.27.2" || b.Native != "go1.27.2" || b.Version != "0.6.29-dev" || b.Modified != "false" || b.Status != "CLEAN_VCS" {
+	if b.Revision != compilerRevision || b.Go != "go1.27.2" || b.Native != "go1.27.2" || b.Version != "0.6.32-dev" || b.Modified != "false" || b.Status != "CLEAN_VCS" {
 		return errors.New("compiler identity mismatch")
 	}
 	return nil

@@ -1,6 +1,6 @@
 // The source-assembly dispatch below is adapted from the pinned compiler's
 // cmd/gooo/body_codegen.go and cmd/gooo/body_record_assembly.go:
-// https://github.com/kimjooyoon/meta-ontology-go/blob/90ff2bb5aeffc2ac553496b646d14db1e8d33fdb/cmd/gooo/body_codegen.go
+// https://github.com/kimjooyoon/meta-ontology-go/blob/83928fa4538245abe33b08549da47f8cbdc50ed2/cmd/gooo/body_codegen.go
 //
 // MIT License
 //
@@ -47,7 +47,7 @@ const (
 	requestSchema    = "gooo/browser-body-codegen-request/v1"
 	responseSchema   = "gooo/browser-body-codegen-response/v1"
 	metadataSchema   = "gooo/browser-body-codegen-metadata/v1"
-	compilerPin      = "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb"
+	compilerPin      = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 	maxSourceBytes   = 64 << 10
 	maxRequestBytes  = 400 << 10
 	maxFilenameBytes = 128

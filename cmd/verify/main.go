@@ -146,6 +146,11 @@ func run() error {
 		return err
 	}
 	suites = append(suites, nrgba.Suites...)
+	byteSearch, err := stringByteCorpus()
+	if err != nil {
+		return err
+	}
+	suites = append(suites, byteSearch.Suites...)
 	if *out == "" {
 		return fmt.Errorf("provide --out for a new evidence directory")
 	}
@@ -209,78 +214,12 @@ func run() error {
 	for _, s := range suites {
 		selected := workspaces[s.Package+":"+s.Activity]
 		r := observation{Package: s.Package, Activity: s.Activity, Domain: s.Domain, Cases: len(s.Cases), ReplayEqual: true}
-		batchSize := 128
-		if s.Package == fixedPackage {
-			batchSize = fixedPortBatchSize
-		}
-		if s.Package == "example/fixed-pixel-bounds" {
-			batchSize = fixedConsumerBatchSize
-		}
-		if s.Package == "app/unicode-inspector" {
-			batchSize = unicodeInspectorBatchSize
-		}
-		if s.Package == "go/image/color" {
-			batchSize = colorPortBatchSize
-		}
-		if s.Package == "go/image/color" && s.Activity == "NRGBAToRGBA" {
-			batchSize = nrgbaPortBatchSize
-		}
-		if s.Package == "app/alpha-matte" {
-			batchSize = nrgbaConsumerBatchSize
-		}
-		if s.Package == "app/color-inspector" {
-			batchSize = colorInspectorBatchSize
-		}
-		if s.Package == "go/image/color" && (s.Activity == "RGBToYCbCr" || s.Activity == "YCbCrToRGB") {
-			batchSize = ycbcrPortBatchSize
-		}
-		if s.Package == "app/ycbcr-inspector" {
-			batchSize = ycbcrInspectorBatchSize
-		}
-		if s.Package == "go/math/bits" && s.Activity == "RotateLeft8" {
-			batchSize = rotationPortBatchSize
-		}
-		if s.Package == "app/byte-rotation" {
-			batchSize = rotationInspectorBatchSize
-		}
-		if s.Package == "go/time" {
-			batchSize = durationPortBatchSize
-		}
-		if s.Package == "app/duration-quantizer" {
-			batchSize = durationQuantizerBatchSize
-		}
-		if s.Package == "go/unicode" {
-			batchSize = whitespacePortBatchSize
-		}
-		if s.Package == "go/unicode" && (s.Activity == "IsLetter" || s.Activity == "IsDigit") {
-			batchSize = classificationPortBatchSize
-		}
-		if s.Package == "app/whitespace-inspector" {
-			batchSize = whitespaceInspectorBatchSize
-		}
-		if s.Package == "app/identifier-rune" {
-			batchSize = classificationConsumerBatchSize
-		}
-		if s.Package == "app/simple-fold" {
-			batchSize = simpleFoldConsumerBatchSize
-		}
-		if s.Package == "go/unicode" && s.Activity == "SimpleFold" {
-			batchSize = simpleFoldPortBatchSize
-		}
-		if s.Package == "go/unicode" && (s.Activity == "To" || s.Activity == "ToUpper" || s.Activity == "ToLower" || s.Activity == "ToTitle") {
-			batchSize = caseMappingPortBatchSize
-		}
-		if s.Package == "app/case-inspector" {
-			batchSize = caseMappingConsumerBatchSize
-		}
-		if s.Package == "go/image" || s.Package == "example/crop-planner" {
-			batchSize = geometryBinaryBatchSize
-			if s.Activity == "RectangleEmpty" || s.Activity == "RectangleCanon" {
-				batchSize = geometryUnaryBatchSize
+		batchSize := nativeBatchSize(s)
+		for start := 0; start < len(s.Cases); {
+			end, err := nativeBatchEnd(s, start, batchSize)
+			if err != nil {
+				return err
 			}
-		}
-		for start := 0; start < len(s.Cases); start += batchSize {
-			end := min(start+batchSize, len(s.Cases))
 			batch := s
 			batch.Cases = s.Cases[start:end]
 			dir := filepath.Join(root, strings.ReplaceAll(s.Package, "/", "-")+"-"+s.Activity, fmt.Sprintf("%03d", r.Batches))
@@ -361,19 +300,31 @@ func run() error {
 			}
 			r.Batches++
 			r.Passed += len(batch.Cases)
+			start = end
 		}
 		reports = append(reports, r)
 		fmt.Printf("%s:%s %d/%d; %d batches; replay identical\n", r.Package, r.Activity, r.Passed, r.Cases, r.Batches)
 	}
-	total := 0
+	total, passed, portedFunctions, consumerActivities := 0, 0, 0, 0
+	consumerPrograms := map[string]bool{}
 	for _, r := range reports {
 		total += r.Cases
+		passed += r.Passed
+		if strings.HasPrefix(r.Package, "go/") {
+			portedFunctions++
+		} else {
+			consumerPrograms[r.Package] = true
+			consumerActivities++
+		}
 	}
 	return save(filepath.Join(root, "summary.json"), map[string]any{
 		"schema": "gooo/go-ports-differential/v1", "go_version": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH,
 		"compiler_revision": lock.CompilerRevision, "source_sha256": catalog.Hashes,
 		"verification_catalog_sha256": contentDigest(catalog.Raw),
-		"ported_functions":            36, "consumer_programs": 14, "consumer_activities": 16,
+		"ported_functions":            portedFunctions, "consumer_programs": len(consumerPrograms), "consumer_activities": consumerActivities,
+		"string_byte_port_reference_cases": byteSearch.PortReferenceCases, "string_byte_port_extension_cases": byteSearch.PortExtensionCases,
+		"string_byte_consumer_reference_cases": byteSearch.ConsumerReferenceCases, "string_byte_consumer_extension_cases": byteSearch.ConsumerExtensionCases,
+		"string_byte_scope":          "Six valid UTF-8 Text inputs, including empty, repeated ASCII, embedded NUL, multibyte text and exactly 1024 bytes, are crossed with every byte needle 0..255. The independent Go strings.IndexByte oracle preserves first-match byte offsets, including UTF-8 continuation bytes. Sixteen original out-of-byte int64 needles per activity are separately counted extensions, rejected before narrowing: offset -1 and, for the consumer, found=false, in_byte_domain=false and unchanged byte length. This does not cover arbitrary invalid UTF-8 Go strings, longer native Text, all strings, rune search, full strings-package compatibility or performance.",
 		"nrgba_port_reference_cases": nrgba.PortReferenceCases, "nrgba_port_rejection_cases": nrgba.PortRejectionCases,
 		"nrgba_consumer_reference_cases": nrgba.ConsumerReferenceCases, "nrgba_consumer_rejection_cases": nrgba.ConsumerRejectionCases,
 		"nrgba_scope":                "Finite four-byte NRGBA conversion references use pinned color.NRGBA.RGBA. The importing consumer uses real 1x1 image/draw.Draw, draw.Over, no mask and an opaque RGB destination; optimized and generic wrapper paths must agree for every reference. Out-of-byte rejection is a separate extension checked on original int64 record fields before narrowing. The reported RGBA16 channels are premultiplied; final consumer alpha is implicitly 255. No exhaustive 2^32 or 2^56, full-image rendering, linear-light or color-management claim.",
@@ -404,8 +355,8 @@ func run() error {
 		"simple_fold_exhaustive":        foldingExhaustive,
 		"ycbcr_exhaustive":              ycbcrExhaustive,
 		"ycbcr_exhaustive_scope":        "For each conversion separately, all 16,777,216 byte triples are compared by calling the unmodified generated Go function from a checked finite replay receipt against the pinned Go standard library. These counts are separate from finite receipt cases and do not prove all signed int64 extension inputs, the importing consumer, all runtime targets, a lossless round trip, or whole-image/JPEG behavior.",
-		"cases":                         total, "passed": total, "runs": reports,
-		"scope": "Finite differential observations against pinned Go source, plus identical saved replay. The 57,251 prior cases are unchanged. NRGBA adds finite record-input conversion and opaque matte references with original int64 domain rejection, independent color and draw oracles and separate counters. Case mapping adds independent Go references, separately counted outside-int32 extensions, and a three-mapping diagnostic consumer. Invalid To case selectors return U+FFFD before rune-domain handling; valid selectors and unary wrappers preserve outside-int32 inputs as an explicit identity extension. Fixed-point Floor/Ceil add finite comparisons with byte-preserved golang.org/x/image source, including original int32 overflow; outside-int32 rejection is separate. PixelBounds rejects invalid raw coordinates first, returns original empty/reversed selections as empty before quantization, and rejects nonempty max coordinates that overflow Ceil; it clips the rounded rectangle against unnormalized int64 bounds. No 2^32 exhaustive check or font/image rendering claim. YCbCr adds finite Go-reference tuples and separately counted out-of-byte rejection cases; original int64 inputs are checked before conversion. Its importing RGB round-trip consumer reports signed restored-minus-original deltas and does not promise a lossless conversion. SimpleFold preserves the pinned ASCII, special-orbit and case-range rules over original signed int32 runes; its outside-int32 identity extension is counted separately. The importing two-rune consumer compares simple folding classes with a maximum orbit length verified from the complete pinned Unicode graph; it is not whole-string folding or locale-aware matching. The separate simple_fold_exhaustive report covers the unchanged generated SimpleFold function on every input 0..0x10FFFF, plus separately counted finite int32 and int64 extension samples, not every int32 value or rune pair. The original four geometry methods preserve four original signed int64 coordinates in each Rectangle record on 64-bit Go, including empty and noncanonical rectangles; named boundaries, a small grid and fixed samples are finite Go method comparisons, with no coordinate normalization or domain-rejection extension. Both-empty Union preserves the second original record; empty Intersect returns the zero record. RectangleCanon separately compares and swaps inverted axes; its finite corpus includes canonical outputs again to observe idempotence. DragCropPlan canonicalizes only the original second record (drag corners) before intersection; original bounds and the existing CropPlan semantics are unchanged. These activities introduce no coordinate arithmetic or domain extension. CropPlan computes bounds only and does not process image pixels or calculate possibly overflowing widths/areas. Classification adds complete pinned Letter and Digit table semantics over original signed int32 rune inputs, observed here only through finite range boundaries, stride holes, Latin-1 and deterministic samples. A separate check-unicode command exhaustively checks 0..0x10FFFF using the unmodified generated Go; its counts are not included in these receipt batches. Whitespace uses pinned Unicode 17.0.0 White_Space semantics over original signed int32 rune inputs; all 256 Latin-1 values and all 25 true property members are included, with other domains observed finitely. Outside-int32 false/-1 extensions are counted separately from Go-reference observations. Duration ports and their consumer preserve both signed int64 nanosecond inputs, including nonpositive quanta, and add finite Go-reference observations without domain-rejection extensions. Color and rotation port/consumer Go-reference cases and explicit out-of-byte rejection cases are counted separately. RuneStart and the five original unary math/bits functions each cover all 256 byte values exactly once, excluding out-of-domain inputs. RotateLeft8 covers all 2,048 byte/rotation pairs only for x=0..255 and k=0..7; other signed int64 rotations have finite boundary/sample observations with original inputs preserved. No claim of exhaustive equivalence for all rotations or other domains, input-independent execution time, whole-package compatibility, ICC color management, or printed appearance.",
+		"cases":                         total, "passed": passed, "runs": reports,
+		"scope": "Finite differential observations against pinned Go source, plus identical saved replay. The 62,241 prior cases and their established row-based batches are unchanged. Strings.IndexByte adds independent byte-search references and separately counted original int64 needle extensions; only its two new suites use a serialized-byte batch bound. NRGBA adds finite record-input conversion and opaque matte references with original int64 domain rejection, independent color and draw oracles and separate counters. Case mapping adds independent Go references, separately counted outside-int32 extensions, and a three-mapping diagnostic consumer. Invalid To case selectors return U+FFFD before rune-domain handling; valid selectors and unary wrappers preserve outside-int32 inputs as an explicit identity extension. Fixed-point Floor/Ceil add finite comparisons with byte-preserved golang.org/x/image source, including original int32 overflow; outside-int32 rejection is separate. PixelBounds rejects invalid raw coordinates first, returns original empty/reversed selections as empty before quantization, and rejects nonempty max coordinates that overflow Ceil; it clips the rounded rectangle against unnormalized int64 bounds. No 2^32 exhaustive check or font/image rendering claim. YCbCr adds finite Go-reference tuples and separately counted out-of-byte rejection cases; original int64 inputs are checked before conversion. Its importing RGB round-trip consumer reports signed restored-minus-original deltas and does not promise a lossless conversion. SimpleFold preserves the pinned ASCII, special-orbit and case-range rules over original signed int32 runes; its outside-int32 identity extension is counted separately. The importing two-rune consumer compares simple folding classes with a maximum orbit length verified from the complete pinned Unicode graph; it is not whole-string folding or locale-aware matching. The separate simple_fold_exhaustive report covers the unchanged generated SimpleFold function on every input 0..0x10FFFF, plus separately counted finite int32 and int64 extension samples, not every int32 value or rune pair. The original four geometry methods preserve four original signed int64 coordinates in each Rectangle record on 64-bit Go, including empty and noncanonical rectangles; named boundaries, a small grid and fixed samples are finite Go method comparisons, with no coordinate normalization or domain-rejection extension. Both-empty Union preserves the second original record; empty Intersect returns the zero record. RectangleCanon separately compares and swaps inverted axes; its finite corpus includes canonical outputs again to observe idempotence. DragCropPlan canonicalizes only the original second record (drag corners) before intersection; original bounds and the existing CropPlan semantics are unchanged. These activities introduce no coordinate arithmetic or domain extension. CropPlan computes bounds only and does not process image pixels or calculate possibly overflowing widths/areas. Classification adds complete pinned Letter and Digit table semantics over original signed int32 rune inputs, observed here only through finite range boundaries, stride holes, Latin-1 and deterministic samples. A separate check-unicode command exhaustively checks 0..0x10FFFF using the unmodified generated Go; its counts are not included in these receipt batches. Whitespace uses pinned Unicode 17.0.0 White_Space semantics over original signed int32 rune inputs; all 256 Latin-1 values and all 25 true property members are included, with other domains observed finitely. Outside-int32 false/-1 extensions are counted separately from Go-reference observations. Duration ports and their consumer preserve both signed int64 nanosecond inputs, including nonpositive quanta, and add finite Go-reference observations without domain-rejection extensions. Color and rotation port/consumer Go-reference cases and explicit out-of-byte rejection cases are counted separately. RuneStart and the five original unary math/bits functions each cover all 256 byte values exactly once, excluding out-of-domain inputs. RotateLeft8 covers all 2,048 byte/rotation pairs only for x=0..255 and k=0..7; other signed int64 rotations have finite boundary/sample observations with original inputs preserved. No claim of exhaustive equivalence for all rotations or other domains, input-independent execution time, whole-package compatibility, ICC color management, or printed appearance.",
 	})
 }
 func caseDocument(s suite) any {

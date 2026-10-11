@@ -62,8 +62,8 @@
   function validateMetadata(value) {
     if (!value || value.schema !== 'gooo/browser-tutorial/v1' ||
         !['wasm_sha256', 'generated_sha256', 'execution_sha256', 'replay_sha256'].every(key => sha(value[key])) ||
-        !revision(value.source_revision) || value.compiler_revision !== '90ff2bb5aeffc2ac553496b646d14db1e8d33fdb' ||
-        value.go_version !== 'go1.27.2' || value.compiler_version !== '0.6.29-dev' || typeof value.source_dirty !== 'boolean' ||
+        !revision(value.source_revision) || value.compiler_revision !== '83928fa4538245abe33b08549da47f8cbdc50ed2' ||
+        value.go_version !== 'go1.27.2' || value.compiler_version !== '0.6.32-dev' || typeof value.source_dirty !== 'boolean' ||
         value.entry_id !== 'urn:learn-gooo:describe' || value.result_entity_id !== 'urn:learn-gooo:summary' ||
         !Array.isArray(value.input_entity_ids) || value.input_entity_ids.length !== 2 ||
         value.input_entity_ids[0] !== 'urn:gooo:type:integer' || value.input_entity_ids[1] !== 'urn:gooo:type:string' ||

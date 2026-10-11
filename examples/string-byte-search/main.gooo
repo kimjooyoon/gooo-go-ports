@@ -1,0 +1,15 @@
+// Search for one unsigned byte in valid UTF-8 Text, retaining the original
+// Integer needle. Offsets and lengths count bytes, not Unicode code points.
+package string_byte_search
+namespace gooo_ports_examples_string_byte_search
+import strings "go/strings"
+entity Text id "gooo://std/text"
+entity Integer id "gooo://std/integer"
+entity SearchResult id "gooo://go-ports/examples/string-byte-search/result" fields {
+    field offset id "gooo://go-ports/examples/string-byte-search/result/offset" type integer required one
+    field found id "gooo://go-ports/examples/string-byte-search/result/found" type boolean required one
+    field in_byte_domain id "gooo://go-ports/examples/string-byte-search/result/in-byte-domain" type boolean required one
+    field byte_length id "gooo://go-ports/examples/string-byte-search/result/byte-length" type integer required one
+}
+activity Search(Text, Integer) -> SearchResult id "gooo://go-ports/examples/string-byte-search/search" computes `let offset = strings.IndexByte(input0, input1)
+return SearchResult{offset: offset, found: offset >= 0, in_byte_domain: input1 >= 0 && input1 <= 255, byte_length: int64(len(input0))}`

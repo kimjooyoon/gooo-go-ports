@@ -145,6 +145,18 @@
       "sources": [
         "examples/case-inspector/main.gooo"
       ]
+    },
+    {
+      "path": "go/strings",
+      "sources": [
+        "ports/strings/search.gooo"
+      ]
+    },
+    {
+      "path": "app/string-byte-search",
+      "sources": [
+        "examples/string-byte-search/main.gooo"
+      ]
     }
   ]
 }

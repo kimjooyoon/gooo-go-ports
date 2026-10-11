@@ -69,7 +69,12 @@ func allNativeSuites(t *testing.T) []suite {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return append(all, nrgba.Suites...)
+	all = append(all, nrgba.Suites...)
+	byteSearch, err := stringByteCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return append(all, byteSearch.Suites...)
 }
 
 func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
@@ -79,7 +84,7 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	suites := allNativeSuites(t)
-	if len(contracts) != 52 || len(suites) != 52 {
+	if len(contracts) != 54 || len(suites) != 54 {
 		t.Fatal("contract/suite roster changed")
 	}
 	seen := map[string]bool{}
@@ -108,6 +113,12 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 			t.Fatal("contract arity differs from source", key)
 		}
 		for i, input := range inputs {
+			if contract.InputEntities[i] == textEntity {
+				if strings.TrimSpace(input) != "Text" || !strings.Contains(string(source), `entity Text id "`+textEntity+`"`) {
+					t.Fatal("contract Text input entity differs from source", key)
+				}
+				continue
+			}
 			if contract.InputEntities[i] == nrgbaEntity || contract.InputEntities[i] == nrgbaRGBEntity {
 				name, declaration := "NRGBA", "ports/image/nrgba.gooo"
 				if contract.InputEntities[i] == nrgbaRGBEntity {
@@ -177,6 +188,11 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	added += nrgba.PortReferenceCases + nrgba.PortRejectionCases + nrgba.ConsumerReferenceCases + nrgba.ConsumerRejectionCases
+	byteSearch, err := stringByteCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	added += byteSearch.PortReferenceCases + byteSearch.PortExtensionCases + byteSearch.ConsumerReferenceCases + byteSearch.ConsumerExtensionCases
 	if total != 24770+added {
 		t.Fatalf("corpus changed: %d", total)
 	}

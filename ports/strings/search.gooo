@@ -1,0 +1,50 @@
+// Copyright 2009 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license reproduced in third_party/GO-LICENSE.
+// Go 1.27.2 strings.IndexByte contract: src/strings/strings.go at
+// 022c8636110ebac86a9b88724cda168ed713c21f, line 102.
+// Source SHA256: a81bdf73a308277c322e35d0c602e3813f57b6f769c091f8f8962c8884a45ea3.
+// The bounded loop form is adapted from Gooo's MIT-licensed example
+// examples/bounded-text-search/search.gooo.fixture at
+// c56007f5881296cb3181ff056c50a4ae917a9850. Its MIT notice follows.
+//
+// MIT License
+//
+// Copyright (c) 2026 Kim Joo-yoon
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+// This preserves the first matching byte offset for valid UTF-8 Text of
+// at most 1024 bytes and original Go byte needles 0..255. Go strings can
+// contain arbitrary bytes and have no 1024-byte bound; those are not supported.
+// An Integer outside 0..255 returns -1 as an explicit extension, without
+// narrowing to byte. The native input route enforces the Text size/UTF-8
+// boundary before execution. The length guard precedes every byte access.
+package strings
+namespace gooo_ports_strings
+entity Text id "gooo://std/text"
+entity Integer id "gooo://std/integer"
+
+activity IndexByte(Text, Integer) -> Integer id "gooo://go/strings/IndexByte" computes `if input1 < 0 || input1 > 255 { return -1 }
+let offset = 0
+for offset = 0; offset < 1024; offset = offset + 1 {
+    if offset >= int64(len(input0)) { return -1 }
+    if int64(input0[offset]) == input1 { return offset }
+}
+return -1`

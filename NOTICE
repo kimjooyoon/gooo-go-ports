@@ -26,3 +26,8 @@ compiler fixtures retain the upstream Gooo MIT terms in
 tools/browser-codegen/LICENSE-COMPILER. The linked decision runtime has separate
 MIT terms in tools/browser-codegen/LICENSE-DECISION-RUNTIME. See that directory's
 NOTICE for scope, provenance and source attribution.
+
+The bounded traversal form in ports/strings/search.gooo adapts the Gooo
+examples/bounded-text-search/search.gooo.fixture at compiler source
+c56007f5881296cb3181ff056c50a4ae917a9850. Copyright (c) 2026 Kim Joo-yoon.
+Its full MIT notice is retained in that source alongside Go BSD attribution.

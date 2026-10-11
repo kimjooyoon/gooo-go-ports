@@ -1,0 +1,21 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "app/string-byte-search",
+    "activity": "Search"
+  },
+  "packages": [
+    {
+      "path": "go/strings",
+      "sources": [
+        "ports/strings/search.gooo"
+      ]
+    },
+    {
+      "path": "app/string-byte-search",
+      "sources": [
+        "examples/string-byte-search/main.gooo"
+      ]
+    }
+  ]
+}

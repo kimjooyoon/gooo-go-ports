@@ -1,7 +1,7 @@
 Gooo browser body-codegen adapter
 
 The compiler is the unmodified MIT-licensed Gooo compiler at revision
-90ff2bb5aeffc2ac553496b646d14db1e8d33fdb. Its source-assembly dispatch is adapted
+83928fa4538245abe33b08549da47f8cbdc50ed2. Its source-assembly dispatch is adapted
 in bridge/adapter.go.txt with the original copyright and MIT terms preserved.
 The compiler and copied compiler fixtures retain the MIT license in
 LICENSE-COMPILER (Copyright 2026 Kim Joo-yoon). The separate browser bridge

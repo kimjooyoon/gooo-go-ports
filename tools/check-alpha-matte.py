@@ -19,7 +19,7 @@ INPUT_ENTITIES = [NRGBA, RGB]
 RESULT_NAMES = ["in_byte_domain", "premultiplied_red", "premultiplied_green",
                 "premultiplied_blue", "premultiplied_alpha", "red", "green", "blue"]
 LO, HI = -(2**63), 2**63 - 1
-COMPILER = "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb"
+COMPILER = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 SOURCES = {
     "go/image/color": ["ports/image/color.gooo", "ports/image/nrgba.gooo"],
     "app/alpha-matte": ["examples/alpha-matte/main.gooo"],
@@ -114,7 +114,7 @@ def check(root, execution_path, replay_path):
     require({p["path"]: p["sources"] for p in manifest["packages"]} == SOURCES,
             "manifest source roster")
     lock = loads_receipt((root / "upstream.json").read_bytes())
-    require(lock["compiler_revision"] == COMPILER and lock["compiler_version"] == "0.6.29-dev"
+    require(lock["compiler_revision"] == COMPILER and lock["compiler_version"] == "0.6.32-dev"
             and lock["go_version"] == "go1.27.2"
             and lock["go_revision"] == "022c8636110ebac86a9b88724cda168ed713c21f", "pinned toolchain lock")
     execution_raw = execution_path.read_bytes()

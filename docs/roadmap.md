@@ -75,7 +75,10 @@ Parse와 Validate의 허용 형식·오류가 다르므로 하나의 느슨한 �
 차이를 붙인 이슈 또는 PR 초안으로 정리한다. 문자열 검색에 필요한 제한된 반복과 Text
 바이트 접근은 [upstream #1462](https://github.com/kimjooyoon/meta-ontology-go/issues/1462)에
 두 최소 재현, `0.6.29-dev` 진단, 입력·종료 경계와 원하는 검증 범위를 전달했다.
-이는 이식 작업에서 나온 기능 요청이며 구현 완료나 외부 고객 수요를 뜻하지 않는다.
+요청은 Gooo 0.6.31-dev에서 완료 처리되었다. 현재 핀 0.6.32-dev에서는 고정된 최대
+횟수의 반복과 Text 바이트 접근으로 [IndexByte 포트와 가져오기 예제](../examples/string-byte-search/README.md)를
+검증한다. 일반 조건 반복, 중첩 반복, byte 배열 출력과 비트 연산을 구현했다는 뜻은 아니며
+hex·UUID 전체 이식과 외부 고객 수요는 별도 과제다. 초기 거절 기록은 그대로 보존한다.
 비트 연산은 이 요청의 범위에 포함하지 않았다. 컴파일러 변경은 해당 저장소의
 [기여 계약](https://github.com/kimjooyoon/meta-ontology-go/blob/366ee6ef8f9d2b9b57331dfd26b6f908c0289851/AGENTS.md)에
 맞춰 별도 검증한다.

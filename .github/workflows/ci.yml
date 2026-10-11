@@ -46,8 +46,8 @@ jobs:
           sh tools/bootstrap.sh
           ./.gooo version --build --json > out/compiler-build.json
           jq -e '
-            .version == "0.6.29-dev" and
-            .compiler_source_sha == "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb" and
+            .version == "0.6.32-dev" and
+            .compiler_source_sha == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
             .source_status == "CLEAN_VCS" and .vcs_modified == "false" and
             .go_version == "go1.27.2" and .native_go_required == "go1.27.2"
           ' out/compiler-build.json
@@ -76,8 +76,8 @@ jobs:
           jq -e '
             .schema == "gooo/go-ports-differential/v1" and
             .go_version == "go1.27.2" and
-            .compiler_revision == "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb" and
-            .ported_functions == 36 and .consumer_programs == 14 and .consumer_activities == 16 and
+            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+            .ported_functions == 37 and .consumer_programs == 15 and .consumer_activities == 17 and
             .legacy_cases == 3147 and .unicode_reference_cases == 334 and .unicode_rejection_cases == 12 and
             .color_port_reference_cases == 1300 and .color_port_rejection_cases == 56 and
             .color_consumer_reference_cases == 637 and .color_consumer_rejection_cases == 24 and
@@ -109,6 +109,8 @@ jobs:
             .case_mapping_consumer_reference_cases == 3602 and .case_mapping_consumer_extension_cases == 11 and
             .nrgba_port_reference_cases == 2696 and .nrgba_port_rejection_cases == 32 and
             .nrgba_consumer_reference_cases == 2158 and .nrgba_consumer_rejection_cases == 104 and
+            .string_byte_port_reference_cases == 1536 and .string_byte_port_extension_cases == 16 and
+            .string_byte_consumer_reference_cases == 1536 and .string_byte_consumer_extension_cases == 16 and
             (.case_mapping_exhaustive | keys) == ["To", "ToLower", "ToTitle", "ToUpper"] and
             all(.case_mapping_exhaustive | to_entries[];
               .key == .value.operation and .value.schema == "gooo/case-mapping-exhaustive-native/v1" and
@@ -116,9 +118,9 @@ jobs:
               .value.unicode_range_inputs == 1114112 and .value.mismatches == 0) and
             .case_mapping_exhaustive.To.unicode_range_comparisons == 3342336 and
             ([.case_mapping_exhaustive[].unicode_range_comparisons] | add) == 6684672 and
-            .cases == 62241 and .passed == 62241 and
-            (.runs | length) == 52 and
-            ([.runs[].cases] | add) == 62241 and ([.runs[].batches] | add) == 833 and
+            .cases == 65345 and .passed == 65345 and
+            (.runs | length) == 54 and
+            ([.runs[].cases] | add) == 65345 and ([.runs[].batches] | add) == 882 and
             all(.runs[]; .passed == .cases and .replay_equal == true)
           ' out/ci/summary.json
       - name: Execute and replay the Unicode case inspector

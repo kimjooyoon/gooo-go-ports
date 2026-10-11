@@ -4,8 +4,8 @@
   "go_repository": "https://github.com/golang/go",
   "go_revision": "022c8636110ebac86a9b88724cda168ed713c21f",
   "compiler_repository": "https://github.com/kimjooyoon/meta-ontology-go",
-  "compiler_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
-  "compiler_version": "0.6.29-dev",
+  "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+  "compiler_version": "0.6.32-dev",
   "source_sha256": {
     "src/image/color/color.go": "03511ed250d0b4dd20605d5dc3465164e559033a6ff7e5cd8ac89d2e19c3ab6c",
     "src/image/draw/draw.go": "24f42de1373014deefce87d4dd02856010ac8d385c4e61eb0c52a1a1273b0207",
@@ -22,15 +22,22 @@
     "src/math/bits/bits.go": "694e0114bda396589e8c993a3d7880a0b461da23ee64c272929a3a5b69c2acf2",
     "src/math/bits/bits_tables.go": "c4cb4a05dab6d395d9d51720893a42f0a9d1cdf8a0c2383d87268e49acb73f7f",
     "src/math/bits/make_tables.go": "dc21922114d16d59aa1fe303d5c6ba1e99229c06f3a56a3eff80e13616add2e4",
-    "LICENSE": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+    "LICENSE": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+    "src/strings/strings.go": "a81bdf73a308277c322e35d0c602e3813f57b6f769c091f8f8962c8884a45ea3"
   },
   "ports": [
     {
       "source": "src/image/color/color.go",
       "target": "ports/image/nrgba.gooo",
-      "supporting_targets": ["ports/image/color.gooo"],
-      "symbols": ["NRGBA.RGBA"],
-      "target_activities": ["NRGBAToRGBA"],
+      "supporting_targets": [
+        "ports/image/color.gooo"
+      ],
+      "symbols": [
+        "NRGBA.RGBA"
+      ],
+      "target_activities": [
+        "NRGBAToRGBA"
+      ],
       "api_mapping": "The NRGBA receiver becomes one required-field record with red, green, blue and alpha Integers, preserving all four uint8 channels including hidden RGB when alpha is zero. Four uint32 results become an RGBA16 record with 0..65535 premultiplied channels and expanded alpha. Original multiplication and integer truncation are preserved by bounded arithmetic. An out-of-byte field returns all -1 as a separate extension before arithmetic or narrowing. No NRGBA64, file decoding, color-space conversion or image iteration is implemented."
     },
     {
@@ -51,9 +58,13 @@
     },
     {
       "source": "src/unicode/letter.go",
-      "supporting_sources": ["src/unicode/tables.go"],
+      "supporting_sources": [
+        "src/unicode/tables.go"
+      ],
       "target": "ports/unicode/simple_fold.gooo",
-      "symbols": ["SimpleFold"],
+      "symbols": [
+        "SimpleFold"
+      ],
       "unicode_version": "17.0.0",
       "generator": "cmd/gen-simple-fold",
       "api_mapping": "Complete pinned ASCII folding, special case orbits and case-range delta rules are lowered to Gooo branches. Signed int32 rune inputs preserve SimpleFold's successor and identity behavior, including invalid Unicode values. Outside-int32 Integer values return the original input as a separate identity extension, without narrowing. Scalar declarations are shared with space.gooo."
@@ -61,8 +72,18 @@
     {
       "source": "src/image/geom.go",
       "target": "ports/image/geometry.gooo",
-      "symbols": ["Rectangle.Empty", "Rectangle.Overlaps", "Rectangle.Intersect", "Rectangle.Union"],
-      "target_activities": ["RectangleEmpty", "RectangleOverlaps", "RectangleIntersect", "RectangleUnion"],
+      "symbols": [
+        "Rectangle.Empty",
+        "Rectangle.Overlaps",
+        "Rectangle.Intersect",
+        "Rectangle.Union"
+      ],
+      "target_activities": [
+        "RectangleEmpty",
+        "RectangleOverlaps",
+        "RectangleIntersect",
+        "RectangleUnion"
+      ],
       "api_mapping": "Rectangle receiver is the first record argument. Go Min.X, Min.Y, Max.X, Max.Y map to required Integer fields min_x, min_y, max_x, max_y without normalization. Each coordinate preserves the full signed int64 Go int domain on amd64/arm64. Empty and reversed rectangles remain valid inputs; no coordinate arithmetic, narrowing, or domain extension."
     },
     {
@@ -81,9 +102,16 @@
     },
     {
       "source": "src/unicode/graphic.go",
-      "supporting_sources": ["src/unicode/digit.go", "src/unicode/letter.go", "src/unicode/tables.go"],
+      "supporting_sources": [
+        "src/unicode/digit.go",
+        "src/unicode/letter.go",
+        "src/unicode/tables.go"
+      ],
       "target": "ports/unicode/classification.gooo",
-      "symbols": ["IsLetter", "IsDigit"],
+      "symbols": [
+        "IsLetter",
+        "IsDigit"
+      ],
       "unicode_version": "17.0.0",
       "generator": "cmd/gen-unicode",
       "api_mapping": "Complete Letter (L) and Digit (Nd) RangeTables are lowered to balanced Gooo branches with original strides. Signed int32 rune is represented exactly by Integer; outside-int32 values return false as a separate extension. Integer and Boolean entities are shared with space.gooo in the go/unicode package."
@@ -104,20 +132,34 @@
     {
       "source": "src/time/time.go",
       "target": "ports/time/duration.gooo",
-      "symbols": ["Duration.Round", "Duration.Truncate"],
-      "target_activities": ["DurationRound", "DurationTruncate"],
+      "symbols": [
+        "Duration.Round",
+        "Duration.Truncate"
+      ],
+      "target_activities": [
+        "DurationRound",
+        "DurationTruncate"
+      ],
       "api_mapping": "Duration receiver is the first Integer argument; quantum is the second. Both are exact signed int64 nanoseconds."
     },
     {
       "source": "src/image/color/ycbcr.go",
       "target": "ports/image/color.gooo",
-      "symbols": ["RGBToCMYK", "CMYKToRGB"]
+      "symbols": [
+        "RGBToCMYK",
+        "CMYKToRGB"
+      ]
     },
     {
       "source": "src/image/color/ycbcr.go",
       "target": "ports/image/ycbcr.gooo",
-      "supporting_targets": ["ports/image/color.gooo"],
-      "symbols": ["RGBToYCbCr", "YCbCrToRGB"],
+      "supporting_targets": [
+        "ports/image/color.gooo"
+      ],
+      "symbols": [
+        "RGBToYCbCr",
+        "YCbCrToRGB"
+      ],
       "api_mapping": "Three uint8 arguments map to three Integer arguments with the full 0..255 domain preserved. Multiple results become YCbCr (y, cb, cr) or RGB (red, green, blue) records. Pinned fixed-point coefficients, rounding, and saturation are preserved using bounded arithmetic. An out-of-byte input returns all -1 fields as a separate extension, without narrowing. Integer and RGB declarations are shared with color.gooo."
     },
     {
@@ -161,6 +203,23 @@
         "Reverse8",
         "RotateLeft8"
       ]
+    },
+    {
+      "source": "src/strings/strings.go",
+      "target": "ports/strings/search.gooo",
+      "symbols": [
+        "IndexByte"
+      ],
+      "target_activities": [
+        "IndexByte"
+      ],
+      "api_mapping": "Go string maps to valid UTF-8 Text of at most 1024 bytes on the native input route; Go byte needle maps to an exact original Integer in 0..255. A guarded literal-bound loop returns the first original byte offset or -1. Out-of-byte Integers return -1 as a separately counted extension without narrowing. Arbitrary invalid-UTF8 Go strings and longer inputs are not supported; no rune/grapheme/normalization or whole-package compatibility claim.",
+      "supporting_implementation": {
+        "repository": "https://github.com/kimjooyoon/meta-ontology-go",
+        "revision": "c56007f5881296cb3181ff056c50a4ae917a9850",
+        "path": "examples/bounded-text-search/search.gooo.fixture",
+        "license": "MIT notice retained in target source"
+      }
     }
   ],
   "external_sources": [

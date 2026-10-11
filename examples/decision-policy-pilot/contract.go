@@ -9,7 +9,7 @@ import (
 	"unicode/utf8"
 )
 
-const compilerRevision = "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb"
+const compilerRevision = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 const entityPrefix = "gooo://decision-policy-pilot/"
 const activityID = entityPrefix + "admit"
 const entry = "pilot/policy:Admit"

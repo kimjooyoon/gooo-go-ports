@@ -147,8 +147,12 @@ func TestInputEntityIdentityForAllMultiInputArities(t *testing.T) {
 			continue
 		}
 		raw, s, identity := contractFixture(t, s)
+		contract, _ := contractFor(s)
 		for i := range s.Cases[0].Inputs {
-			for _, entity := range []string{"", "gooo://std/text", "gooo://untrusted/integer"} {
+			for _, entity := range []string{"", textEntity, integerEntity, "gooo://untrusted/integer"} {
+				if entity == contract.InputEntities[i] {
+					continue
+				}
 				t.Run(fmt.Sprintf("%s/%s/input%d/%s", s.Package, s.Activity, i, entity), func(t *testing.T) {
 					var e envelope
 					if err := json.Unmarshal(raw, &e); err != nil {

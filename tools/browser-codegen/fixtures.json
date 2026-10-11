@@ -1,6 +1,6 @@
 {
   "schema": "gooo/browser-codegen-probe-fixtures/v1",
-  "compiler_pin": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+  "compiler_pin": "83928fa4538245abe33b08549da47f8cbdc50ed2",
   "cases": [
     {
       "id": "clamp",
@@ -94,7 +94,7 @@
     },
     {
       "id": "text",
-      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/90ff2bb5aeffc2ac553496b646d14db1e8d33fdb/examples/body-codegen/text-assignment.gooo.fixture",
+      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/83928fa4538245abe33b08549da47f8cbdc50ed2/examples/body-codegen/text-assignment.gooo.fixture",
       "origin_sha256": "e435a7a738def6bcc82f28957207b55dc1d9e3f457af177406c4dec3694d465c",
       "request": {
         "schema": "gooo/browser-body-codegen-request/v1",
@@ -107,12 +107,12 @@
       "source_file": "tools/browser-codegen/fixtures/text.gooo",
       "origin_kind": "compiler",
       "origin_path": "examples/body-codegen/text-assignment.gooo.fixture",
-      "origin_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+      "origin_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
       "license": "LICENSE-COMPILER"
     },
     {
       "id": "multiple-inputs",
-      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/90ff2bb5aeffc2ac553496b646d14db1e8d33fdb/examples/body-codegen/native-input-joins.gooo.fixture",
+      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/83928fa4538245abe33b08549da47f8cbdc50ed2/examples/body-codegen/native-input-joins.gooo.fixture",
       "origin_sha256": "1d40b5b796ffb0de08a2f2bbaa8feaf33a05fc6c6c0276b7c057777142b3c2f4",
       "request": {
         "schema": "gooo/browser-body-codegen-request/v1",
@@ -125,12 +125,12 @@
       "source_file": "tools/browser-codegen/fixtures/multiple-inputs.gooo",
       "origin_kind": "compiler",
       "origin_path": "examples/body-codegen/native-input-joins.gooo.fixture",
-      "origin_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+      "origin_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
       "license": "LICENSE-COMPILER"
     },
     {
       "id": "record",
-      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/90ff2bb5aeffc2ac553496b646d14db1e8d33fdb/examples/body-codegen/native-records.gooo.fixture",
+      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/83928fa4538245abe33b08549da47f8cbdc50ed2/examples/body-codegen/native-records.gooo.fixture",
       "origin_sha256": "1ecf4b965ef63edc1ffe35619d3bb0c30b3099fa38b6f74c84ff71c7f24fee6d",
       "request": {
         "schema": "gooo/browser-body-codegen-request/v1",
@@ -143,12 +143,12 @@
       "source_file": "tools/browser-codegen/fixtures/record.gooo",
       "origin_kind": "compiler",
       "origin_path": "examples/body-codegen/native-records.gooo.fixture",
-      "origin_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+      "origin_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
       "license": "LICENSE-COMPILER"
     },
     {
       "id": "ir-fill",
-      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/90ff2bb5aeffc2ac553496b646d14db1e8d33fdb/examples/body-codegen/source-ir-fill-derived.gooo.fixture",
+      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/83928fa4538245abe33b08549da47f8cbdc50ed2/examples/body-codegen/source-ir-fill-derived.gooo.fixture",
       "origin_sha256": "1966441a92a13150348cb17f360753ae3a0d24c2880e5e3aa74b3412387f284f",
       "request": {
         "schema": "gooo/browser-body-codegen-request/v1",
@@ -161,12 +161,12 @@
       "source_file": "tools/browser-codegen/fixtures/ir-fill.gooo",
       "origin_kind": "compiler",
       "origin_path": "examples/body-codegen/source-ir-fill-derived.gooo.fixture",
-      "origin_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+      "origin_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
       "license": "LICENSE-COMPILER"
     },
     {
       "id": "ir-search",
-      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/90ff2bb5aeffc2ac553496b646d14db1e8d33fdb/examples/body-codegen/ir-search-source.gooo.fixture",
+      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/83928fa4538245abe33b08549da47f8cbdc50ed2/examples/body-codegen/ir-search-source.gooo.fixture",
       "origin_sha256": "29cbb8416983d79795b19fed5098e75c47126650bcdae27d96827496bed05b49",
       "request": {
         "schema": "gooo/browser-body-codegen-request/v1",
@@ -179,12 +179,12 @@
       "source_file": "tools/browser-codegen/fixtures/ir-search.gooo",
       "origin_kind": "compiler",
       "origin_path": "examples/body-codegen/ir-search-source.gooo.fixture",
-      "origin_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+      "origin_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
       "license": "LICENSE-COMPILER"
     },
     {
       "id": "record-assembly",
-      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/90ff2bb5aeffc2ac553496b646d14db1e8d33fdb/examples/body-codegen/record-field-assembly.gooo.fixture",
+      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/83928fa4538245abe33b08549da47f8cbdc50ed2/examples/body-codegen/record-field-assembly.gooo.fixture",
       "origin_sha256": "834075cd9730906d1e263292e96924ae94a624364bc123cfd76177814a47f99d",
       "request": {
         "schema": "gooo/browser-body-codegen-request/v1",
@@ -197,12 +197,12 @@
       "source_file": "tools/browser-codegen/fixtures/record-assembly.gooo",
       "origin_kind": "compiler",
       "origin_path": "examples/body-codegen/record-field-assembly.gooo.fixture",
-      "origin_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+      "origin_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
       "license": "LICENSE-COMPILER"
     },
     {
       "id": "typed-assembly",
-      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/90ff2bb5aeffc2ac553496b646d14db1e8d33fdb/examples/body-codegen/source-assembly.gooo.fixture",
+      "origin": "https://github.com/kimjooyoon/meta-ontology-go/blob/83928fa4538245abe33b08549da47f8cbdc50ed2/examples/body-codegen/source-assembly.gooo.fixture",
       "origin_sha256": "a482f792a78ec4bee9de7e25d447c9926e913b155255adeb4f6fda428689ea3a",
       "request": {
         "schema": "gooo/browser-body-codegen-request/v1",
@@ -215,7 +215,7 @@
       "source_file": "tools/browser-codegen/fixtures/typed-assembly.gooo",
       "origin_kind": "compiler",
       "origin_path": "examples/body-codegen/source-assembly.gooo.fixture",
-      "origin_revision": "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb",
+      "origin_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
       "license": "LICENSE-COMPILER"
     },
     {

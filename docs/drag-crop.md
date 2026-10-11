@@ -25,7 +25,7 @@ can be allocated. No width, height, area or coordinate difference is calculated.
 
 Run from the repository root with Git, a POSIX shell, Python 3 and Go
 1.27.2 on amd64 or arm64. The compiler remains pinned to
-`90ff2bb5aeffc2ac553496b646d14db1e8d33fdb` in `upstream.json`.
+`83928fa4538245abe33b08549da47f8cbdc50ed2` in `upstream.json`.
 
 ```sh
 export GOTOOLCHAIN=go1.27.2

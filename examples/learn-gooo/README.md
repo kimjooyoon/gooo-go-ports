@@ -67,7 +67,7 @@ export GOWORK=off
 mkdir compiler
 git -C compiler init
 git -C compiler remote add origin https://github.com/kimjooyoon/meta-ontology-go.git
-git -C compiler fetch --depth=1 origin 90ff2bb5aeffc2ac553496b646d14db1e8d33fdb
+git -C compiler fetch --depth=1 origin 83928fa4538245abe33b08549da47f8cbdc50ed2
 git -C compiler checkout --detach FETCH_HEAD
 cd compiler
 go build -o ../gooo ./cmd/gooo

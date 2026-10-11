@@ -28,6 +28,11 @@ func whitespaceResultContract(s suite) resultContract {
 		return geometry
 	}
 	switch s.Package + ":" + s.Activity {
+	case stringBytePackage + ":IndexByte":
+		return resultContract{Entity: integerEntity}
+	case stringByteConsumerPackage + ":Search":
+		const e = stringByteResultEntity
+		return resultContract{Entity: e, Fields: []recordFieldContract{{"offset", e + "/offset"}, {"found", e + "/found"}, {"in_byte_domain", e + "/in-byte-domain"}, {"byte_length", e + "/byte-length"}}}
 	case "go/unicode:To", "go/unicode:ToUpper", "go/unicode:ToLower", "go/unicode:ToTitle":
 		return resultContract{Entity: integerEntity}
 	case "app/case-inspector:Describe":

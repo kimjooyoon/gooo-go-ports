@@ -3,9 +3,9 @@
 [Gooo](https://github.com/kimjooyoon/meta-ontology-go) is an experimental language for
 describing what programs should do and inspecting how they are built and run.
 This independent ecosystem project implements selected Go standard-library and x/image functions in Gooo,
-with independent Go reference outputs and saved replay: 34 standard-library ports
+with independent Go reference outputs and saved replay: 35 standard-library ports
 and two ports from golang.org/x/image. The current scope is
-36 HTTP, Unicode, 8-bit integer, color, duration, rectangle and fixed-point functions, fourteen native importing examples,
+37 HTTP, Unicode, byte-search, 8-bit integer, color, duration, rectangle and fixed-point functions, fifteen native importing examples,
 and an importing browser dispatcher.
 
 ## Start here
@@ -130,6 +130,15 @@ To use these ports outside this repository, follow the complete
 separate application from a fixed snapshot, copies both required source files,
 and saves an execution record for replay.
 
+The native [byte-search example](examples/string-byte-search/README.md) imports
+`strings.IndexByte` to find one byte in valid UTF-8 Text of at most 1,024 bytes.
+Its Gooo loop checks the length before each byte access and preserves Go byte
+offsets, including matches inside a multibyte character. The returned record
+shows the offset, whether a match was found, the original needle domain and byte
+length. An Integer outside 0..255 returns -1 as a separate extension. This is
+not whole-string Unicode searching, arbitrary Go byte-string support, or the
+whole `strings` package; the existing 21-function browser tools are unchanged.
+
 The native [simple case-fold comparison](examples/simple-fold/README.md) imports
 `unicode.SimpleFold` to compare two rune values and show each value's next member
 in its Unicode simple-folding cycle. For example, `K`, `k`, and the Kelvin sign
@@ -212,7 +221,7 @@ with the page URL or command and what happened. A working demo or shared input l
 is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-현재 Go 표준 라이브러리와 x/image의 HTTP·Unicode·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 함수 36개를 표현합니다.
+현재 Go 표준 라이브러리와 x/image의 HTTP·Unicode·바이트 검색·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 함수 37개를 표현합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -225,6 +234,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | Gooo 패키지 경로 | 함수 | 원본과의 대응 |
 | --- | --- | --- |
 | `go/net/http` | `StatusText` | Go의 상태 코드 62개와 설명. 미등록 코드는 빈 문자열 |
+| `go/strings` | `IndexByte` | UTF-8 Text 최대 1,024바이트에서 0..255 byte의 첫 위치 또는 -1. 원본 바이트 offset과 길이 보존; 영역 밖 Integer는 별도 -1 확장. Native 전용 |
 | `go/unicode` | `IsLetter`, `IsDigit` | Unicode 17.0.0 전체 Letter(L)·decimal digit(Nd) 범위와 stride 보존. 원본 표에서 결정적으로 Gooo 분기 생성 |
 | `go/unicode` | `IsSpace` | Unicode 17.0.0 White_Space 속성의 25개 코드 포인트 판정. 전체 signed int32 rune 입력 유지 |
 | `go/unicode` | `SimpleFold` | Unicode 17.0.0 단순 대소문자 접기의 다음 순환 멤버. ASCII·특수 순환·case range 우선순위 및 전체 int32 입력 보존. Native 전용 |
@@ -529,8 +539,14 @@ Unicode case mapping 네 포트의 원본 비교 **16,208건**·별도 확장 **
 원본 비교 **3,602건**·확장 **11건**을 더한 기존 **57,251건**도 유지합니다.
 잘못된 case 선택자의 원본 비교 132건·확장 132건은 각각 위 포트 집계에 이미 포함됩니다.
 NRGBA 포트의 원본 비교 **2,696건**·영역 밖 거부 **32건**, 알파 합성 소비자의 원본 비교
-**2,158건**·거부 **104건**을 더해 현재 총 **62,241건**입니다. 합성 기대값은 실제
+**2,158건**·거부 **104건**을 더한 기존 **62,241건**은 그대로 유지합니다. 합성 기대값은 실제
 Go `draw.Draw`의 NRGBA→RGBA 최적 경로와 일반 인터페이스 경로를 함께 확인합니다.
+바이트 검색 포트와 소비 예제는 각각 문자열 6개와 전체 byte 256개의 원본 비교
+**1,536건**과 needle 영역 밖 확장 **16건**을 추가합니다. native 검증 코퍼스는
+총 **65,345건·54개 suite**입니다. 기존 833개 배치 경계는 유지하며, 새 두 suite만
+실제 직렬화 JSON 30,000바이트와 128행 상한을 함께 적용해 전체 **882배치**로 실행합니다.
+범위는 유효한 UTF-8 Text 최대 1,024바이트이며 임의 Go 바이트 문자열 전체가 아닙니다.
+
 사각형의 네 좌표는
 각각 전체 signed int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
 시간 간격은 두 입력의 전체 int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
@@ -538,6 +554,8 @@ Go `draw.Draw`의 NRGBA→RGBA 최적 경로와 일반 인터페이스 경로를
 
 | 대상 | 입력 수 | 구성 |
 | --- | ---: | --- |
+| Strings IndexByte | 1,536 + 16 | 빈·반복·ASCII·NUL·다중 바이트·1,024바이트 문자열 × byte 전체, 별도 needle 영역 밖 확장 |
+| Byte search Search consumer | 1,536 + 16 | 원본 byte offset과 found·in_byte_domain·byte_length를 가져오기 예제로 비교 |
 | HTTP StatusText | 625 | -10..610 전체 정수와 int64 양 끝 등 네 입력 |
 | UTF-8 ValidRune / RuneLen | 각 162 | 경계값 34개와 고정 시드 표본 128개 |
 | UTF-8 RuneStart | 256 | byte의 전체 영역 |
@@ -601,7 +619,10 @@ byte 3성분 입력을 Go 원본과 비교합니다. 총 **33,554,432번**의 �
 생성 소스 해시·도구체인·결과를 기록합니다. 소비 앱의 모든 RGB 왕복을 실행하거나
 이미지 압축·색상 프로파일을 검증한 것으로 해석하지 않습니다.
 
-Gooo 실행 입력 상한에 맞춰 총 **833개 배치**를 실행합니다. 기존 YCbCr까지의 465개 배치를 유지하고,
+Gooo 실행 입력 상한에 맞춰 총 **882개 배치**를 실행합니다. 기존 833개 배치와
+그 경계를 유지하며 IndexByte 21개·Search 소비 앱 28개 배치를 추가합니다.
+새 두 suite는 128행 이하에서 실제 JSON 30,000바이트 상한에 맞춰 최대 접두 배치를 선택합니다.
+기존 YCbCr까지의 465개 배치를 유지하고,
 Canon 6개·드래그 선택 소비 활동 16개, x/image Floor/Ceil 각각 14개와 픽셀 경계 소비 활동
 16개 배치까지의 기존 531개를 보존합니다. case mapping 네 포트 131개와 새 소비 앱 57개
 배치까지의 기존 719개를 보존합니다. NRGBA 포트 43개와 알파 합성 소비 앱 71개 배치를 추가합니다.
@@ -680,8 +701,8 @@ Actions 실행에서 확인할 수 있습니다.
 
 [upstream.json](upstream.json)에 Go **1.27.2**의 커밋
 `022c8636110ebac86a9b88724cda168ed713c21f`, 파일 SHA-256,
-Gooo **0.6.29-dev** 컴파일러 커밋
-`90ff2bb5aeffc2ac553496b646d14db1e8d33fdb`을 고정했습니다.
+Gooo **0.6.32-dev** 컴파일러 커밋
+`83928fa4538245abe33b08549da47f8cbdc50ed2`을 고정했습니다.
 테스트의 Go 도구 체인에서도 원본 파일 해시가 일치해야 합니다.
 
 BSD 3-Clause 라이선스입니다. Go 원본 저작권과
@@ -697,6 +718,7 @@ Floor/Ceil로 바꾸고 기존 RectangleIntersect로 잘라냅니다. 기존 35,
 33건·Ceil overflow 거부 6건을 더합니다. 이 단계까지의 finite 코퍼스 37,232건·45개 suite,
 31개 포트는 보존됩니다. 픽셀 경계는 12번째 소비 예제이며, 이후 case mapping 네 포트와
 13번째 소비 예제까지의 총계는 35개 포트·15개 소비 활동입니다. 이후 NRGBA 변환과
-알파 합성 예제를 더한 현재 총계는 36개 포트·14개 소비 프로그램·16개 소비 활동입니다.
+알파 합성 예제까지의 36개 포트·14개 소비 프로그램·16개 소비 활동은 유지하며,
+바이트 검색을 더한 현재 총계는 37개 포트·15개 소비 프로그램·17개 소비 활동입니다.
 원본 int32 전체의 동작을 구현하되 2^32 전수 검사를 주장하지 않습니다.
 브라우저 21함수와 두 crop 모드는 그대로입니다.

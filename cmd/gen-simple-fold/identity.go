@@ -10,7 +10,7 @@ import (
 const pinnedGo = "go1.27.2"
 const pinnedUnicode = "17.0.0"
 const pinnedGoRevision = "022c8636110ebac86a9b88724cda168ed713c21f"
-const pinnedCompiler = "90ff2bb5aeffc2ac553496b646d14db1e8d33fdb"
+const pinnedCompiler = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 
 var requiredSources = []string{"src/unicode/letter.go", "src/unicode/tables.go", "LICENSE"}
 

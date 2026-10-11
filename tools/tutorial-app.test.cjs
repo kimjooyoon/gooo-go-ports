@@ -11,8 +11,8 @@ const html = fs.readFileSync(path.join(__dirname, '../site/tutorial.html'), 'utf
 const hash = data => createHash('sha256').update(data).digest('hex');
 const samples = Object.fromEntries(protocol.files.map(file => [file, Buffer.from(`original ${file}\n`)]));
 const archive = Buffer.from('synthetic archive for trust-boundary testing');
-const metadata = { schema: 'gooo/browser-tutorial/v1', compiler_revision: '90ff2bb5aeffc2ac553496b646d14db1e8d33fdb',
-  compiler_version: '0.6.29-dev', go_version: 'go1.27.2', source_revision: 'b'.repeat(40), source_dirty: false,
+const metadata = { schema: 'gooo/browser-tutorial/v1', compiler_revision: '83928fa4538245abe33b08549da47f8cbdc50ed2',
+  compiler_version: '0.6.32-dev', go_version: 'go1.27.2', source_revision: 'b'.repeat(40), source_dirty: false,
   entry_id: 'urn:learn-gooo:describe', result_entity_id: 'urn:learn-gooo:summary',
   input_entity_ids: ['urn:gooo:type:integer', 'urn:gooo:type:string'], wasm_sha256: 'a'.repeat(64), wasm_bytes: 4,
   generated_sha256: 'c'.repeat(64), execution_sha256: 'd'.repeat(64), replay_sha256: 'e'.repeat(64),
