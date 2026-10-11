@@ -117,6 +117,11 @@ func run() error {
 		return err
 	}
 	suites = append(suites, folding.Suites...)
+	ycbcr, err := ycbcrCorpus()
+	if err != nil {
+		return err
+	}
+	suites = append(suites, ycbcr.Suites...)
 	if *out == "" {
 		return fmt.Errorf("provide --out for a new evidence directory")
 	}
@@ -149,36 +154,26 @@ func run() error {
 	if build.Revision != lock.CompilerRevision || build.Version != lock.CompilerVersion || build.Modified != "false" || build.Go != lock.GoVersion || build.Native != lock.GoVersion {
 		return fmt.Errorf("compiler identity differs from upstream.json: %s", raw)
 	}
-	var manifest map[string]json.RawMessage
-	if err = readJSON("gooo.workspace.json", &manifest); err != nil {
-		return err
-	}
-	var packages []sourcePackage
-	if err = json.Unmarshal(manifest["packages"], &packages); err != nil {
-		return err
-	}
-	sourceHashes := map[string]string{}
-	sourceBytes := map[string][]byte{}
-	var sources []string
-	for _, p := range packages {
-		for _, source := range p.Sources {
-			raw, err := os.ReadFile(source)
-			if err != nil {
-				return err
-			}
-			sum := sha256.Sum256(raw)
-			sourceBytes[source] = raw
-			sourceHashes[source] = hex.EncodeToString(sum[:])
-			sources = append(sources, source)
-		}
-	}
-	sourceIdentities, err := snapshotSourceIdentities(packages, sourceBytes)
+	catalog, err := freezeVerificationCatalog("verification-catalog.json")
 	if err != nil {
 		return err
 	}
+	if err := os.WriteFile(filepath.Join(root, "verification-catalog.json"), catalog.Raw, 0644); err != nil {
+		return err
+	}
+	workspaces := map[string]suiteWorkspace{}
+	for _, s := range suites {
+		workspace, err := catalog.workspaceForSuite(s)
+		if err != nil {
+			return err
+		}
+		workspaces[s.Package+":"+s.Activity] = workspace
+	}
 	reports := []observation{}
 	var foldingExhaustive simpleFoldExhaustiveReport
+	ycbcrExhaustive := map[string]ycbcrExhaustiveReport{}
 	for _, s := range suites {
+		selected := workspaces[s.Package+":"+s.Activity]
 		r := observation{Package: s.Package, Activity: s.Activity, Domain: s.Domain, Cases: len(s.Cases), ReplayEqual: true}
 		batchSize := 128
 		if s.Package == "app/unicode-inspector" {
@@ -189,6 +184,12 @@ func run() error {
 		}
 		if s.Package == "app/color-inspector" {
 			batchSize = colorInspectorBatchSize
+		}
+		if s.Package == "go/image/color" && (s.Activity == "RGBToYCbCr" || s.Activity == "YCbCrToRGB") {
+			batchSize = ycbcrPortBatchSize
+		}
+		if s.Package == "app/ycbcr-inspector" {
+			batchSize = ycbcrInspectorBatchSize
 		}
 		if s.Package == "go/math/bits" && s.Activity == "RotateLeft8" {
 			batchSize = rotationPortBatchSize
@@ -234,8 +235,8 @@ func run() error {
 			if err = os.MkdirAll(dir, 0755); err != nil {
 				return err
 			}
-			for _, source := range sources {
-				b := sourceBytes[source]
+			for _, source := range selected.Names {
+				b := selected.Sources[source]
 				path := filepath.Join(dir, source)
 				if err = os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 					return err
@@ -244,11 +245,9 @@ func run() error {
 					return err
 				}
 			}
-			entry, _ := json.Marshal(map[string]string{"package_path": s.Package, "activity": s.Activity})
-			manifest["entry"] = entry
 			workspace := filepath.Join(dir, "gooo.workspace.json")
 			cases := filepath.Join(dir, "cases.json")
-			if err = save(workspace, manifest); err != nil {
+			if err = save(workspace, selected.Manifest); err != nil {
 				return err
 			}
 			if err = save(cases, caseDocument(batch)); err != nil {
@@ -262,7 +261,7 @@ func run() error {
 			if err != nil {
 				return err
 			}
-			identity := expectedIdentity{CompilerRevision: lock.CompilerRevision, GoVersion: lock.GoVersion, ManifestDigest: "sha256:" + manifestSHA, CasesDigest: "sha256:" + casesSHA, Sources: sourceIdentities}
+			identity := expectedIdentity{CompilerRevision: lock.CompilerRevision, GoVersion: lock.GoVersion, ManifestDigest: "sha256:" + manifestSHA, CasesDigest: "sha256:" + casesSHA, Sources: selected.Identities}
 			receipt := filepath.Join(dir, "execution.json")
 			raw, err = execute(ctx, *compiler, receipt, "package", "execute", "--json", "--cases", cases, workspace)
 			if err != nil {
@@ -294,6 +293,13 @@ func run() error {
 					return err
 				}
 			}
+			if s.Package == "go/image/color" && (s.Activity == "RGBToYCbCr" || s.Activity == "YCbCrToRGB") && r.Batches == 0 {
+				exhaustive, err := checkYCbCrExhaustive(ctx, filepath.Join(root, "ycbcr-exhaustive-"+s.Activity), raw, original.Generated, s.Activity)
+				if err != nil {
+					return err
+				}
+				ycbcrExhaustive[s.Activity] = exhaustive
+			}
 			r.Batches++
 			r.Passed += len(batch.Cases)
 		}
@@ -306,8 +312,9 @@ func run() error {
 	}
 	return save(filepath.Join(root, "summary.json"), map[string]any{
 		"schema": "gooo/go-ports-differential/v1", "go_version": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH,
-		"compiler_revision": lock.CompilerRevision, "source_sha256": sourceHashes,
-		"ported_functions": 26, "consumer_programs": 10, "consumer_activities": 11,
+		"compiler_revision": lock.CompilerRevision, "source_sha256": catalog.Hashes,
+		"verification_catalog_sha256": contentDigest(catalog.Raw),
+		"ported_functions":            28, "consumer_programs": 11, "consumer_activities": 12,
 		"legacy_cases": legacyCases, "unicode_reference_cases": inspector.ReferenceCases, "unicode_rejection_cases": inspector.RejectionCases,
 		"color_port_reference_cases": colors.PortReferenceCases, "color_port_rejection_cases": colors.PortRejectionCases,
 		"color_consumer_reference_cases": colors.ConsumerReferenceCases, "color_consumer_rejection_cases": colors.ConsumerRejectionCases,
@@ -321,9 +328,13 @@ func run() error {
 		"geometry_port_reference_cases": geometry.PortReferenceCases, "geometry_consumer_reference_cases": geometry.ConsumerReferenceCases,
 		"simple_fold_port_reference_cases": folding.PortReferenceCases, "simple_fold_port_extension_cases": folding.PortExtensionCases,
 		"simple_fold_consumer_reference_cases": folding.ConsumerReferenceCases, "simple_fold_consumer_rejection_cases": folding.ConsumerRejectionCases,
+		"ycbcr_port_reference_cases": ycbcr.PortReferenceCases, "ycbcr_port_rejection_cases": ycbcr.PortRejectionCases,
+		"ycbcr_consumer_reference_cases": ycbcr.ConsumerReferenceCases, "ycbcr_consumer_rejection_cases": ycbcr.ConsumerRejectionCases,
 		"simple_fold_exhaustive": foldingExhaustive,
+		"ycbcr_exhaustive":       ycbcrExhaustive,
+		"ycbcr_exhaustive_scope": "For each conversion separately, all 16,777,216 byte triples are compared by calling the unmodified generated Go function from a checked finite replay receipt against the pinned Go standard library. These counts are separate from finite receipt cases and do not prove all signed int64 extension inputs, the importing consumer, all runtime targets, a lossless round trip, or whole-image/JPEG behavior.",
 		"cases":                  total, "passed": total, "runs": reports,
-		"scope": "Finite differential observations against pinned Go source, plus identical saved replay. The 26,967 existing cases are unchanged. SimpleFold preserves the pinned ASCII, special-orbit and case-range rules over original signed int32 runes; its outside-int32 identity extension is counted separately. The importing two-rune consumer compares simple folding classes with a maximum orbit length verified from the complete pinned Unicode graph; it is not whole-string folding or locale-aware matching. The separate simple_fold_exhaustive report covers the unchanged generated SimpleFold function on every input 0..0x10FFFF, plus separately counted finite int32 and int64 extension samples, not every int32 value or rune pair. Geometry preserves four original signed int64 coordinates in each Rectangle record on 64-bit Go, including empty and noncanonical rectangles; named boundaries, a small grid and fixed samples are finite Go method comparisons, with no coordinate normalization or domain-rejection extension. Both-empty Union preserves the second original record; empty Intersect returns the zero record. CropPlan computes bounds only and does not process image pixels or calculate possibly overflowing widths/areas. Classification adds complete pinned Letter and Digit table semantics over original signed int32 rune inputs, observed here only through finite range boundaries, stride holes, Latin-1 and deterministic samples. A separate check-unicode command exhaustively checks 0..0x10FFFF using the unmodified generated Go; its counts are not included in these receipt batches. Whitespace uses pinned Unicode 17.0.0 White_Space semantics over original signed int32 rune inputs; all 256 Latin-1 values and all 25 true property members are included, with other domains observed finitely. Outside-int32 false/-1 extensions are counted separately from Go-reference observations. Duration ports and their consumer preserve both signed int64 nanosecond inputs, including nonpositive quanta, and add finite Go-reference observations without domain-rejection extensions. Color and rotation port/consumer Go-reference cases and explicit out-of-byte rejection cases are counted separately. RuneStart and the five original unary math/bits functions each cover all 256 byte values exactly once, excluding out-of-domain inputs. RotateLeft8 covers all 2,048 byte/rotation pairs only for x=0..255 and k=0..7; other signed int64 rotations have finite boundary/sample observations with original inputs preserved. No claim of exhaustive equivalence for all rotations or other domains, input-independent execution time, whole-package compatibility, ICC color management, or printed appearance.",
+		"scope": "Finite differential observations against pinned Go source, plus identical saved replay. The 31,014 existing cases are unchanged. YCbCr adds finite Go-reference tuples and separately counted out-of-byte rejection cases; original int64 inputs are checked before conversion. Its importing RGB round-trip consumer reports signed restored-minus-original deltas and does not promise a lossless conversion. SimpleFold preserves the pinned ASCII, special-orbit and case-range rules over original signed int32 runes; its outside-int32 identity extension is counted separately. The importing two-rune consumer compares simple folding classes with a maximum orbit length verified from the complete pinned Unicode graph; it is not whole-string folding or locale-aware matching. The separate simple_fold_exhaustive report covers the unchanged generated SimpleFold function on every input 0..0x10FFFF, plus separately counted finite int32 and int64 extension samples, not every int32 value or rune pair. Geometry preserves four original signed int64 coordinates in each Rectangle record on 64-bit Go, including empty and noncanonical rectangles; named boundaries, a small grid and fixed samples are finite Go method comparisons, with no coordinate normalization or domain-rejection extension. Both-empty Union preserves the second original record; empty Intersect returns the zero record. CropPlan computes bounds only and does not process image pixels or calculate possibly overflowing widths/areas. Classification adds complete pinned Letter and Digit table semantics over original signed int32 rune inputs, observed here only through finite range boundaries, stride holes, Latin-1 and deterministic samples. A separate check-unicode command exhaustively checks 0..0x10FFFF using the unmodified generated Go; its counts are not included in these receipt batches. Whitespace uses pinned Unicode 17.0.0 White_Space semantics over original signed int32 rune inputs; all 256 Latin-1 values and all 25 true property members are included, with other domains observed finitely. Outside-int32 false/-1 extensions are counted separately from Go-reference observations. Duration ports and their consumer preserve both signed int64 nanosecond inputs, including nonpositive quanta, and add finite Go-reference observations without domain-rejection extensions. Color and rotation port/consumer Go-reference cases and explicit out-of-byte rejection cases are counted separately. RuneStart and the five original unary math/bits functions each cover all 256 byte values exactly once, excluding out-of-domain inputs. RotateLeft8 covers all 2,048 byte/rotation pairs only for x=0..255 and k=0..7; other signed int64 rotations have finite boundary/sample observations with original inputs preserved. No claim of exhaustive equivalence for all rotations or other domains, input-independent execution time, whole-package compatibility, ICC color management, or printed appearance.",
 	})
 }
 func caseDocument(s suite) any {

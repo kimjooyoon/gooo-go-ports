@@ -4,7 +4,7 @@
 describing what programs should do and inspecting how they are built and run.
 This independent ecosystem project implements selected Go standard-library functions in Gooo,
 with independent Go reference outputs and saved replay. The current scope is
-26 HTTP, Unicode, 8-bit integer, color, duration, and rectangle functions, ten native importing examples,
+28 HTTP, Unicode, 8-bit integer, color, duration, and rectangle functions, eleven native importing examples,
 and an importing browser dispatcher.
 Use Go 1.27.2, Git, and a POSIX shell on macOS or Linux: run `./tools/bootstrap.sh`, then
 `go run ./cmd/verify --out out/first` from this repository. The output directory must be new.
@@ -70,6 +70,13 @@ special cycles and invalid Unicode values; it is a per-rune API, not whole-strin
 folding, normalization, or locale-sensitive text comparison. The browser tools
 continue to provide their existing 21 functions.
 
+The native [YCbCr round-trip inspector](examples/ycbcr-inspector/README.md) imports
+Go's `RGBToYCbCr` and `YCbCrToRGB` ports. It preserves the full byte range and
+the pinned Go fixed-point rules, and shows the recovered RGB channels and their
+differences. Pure red `(255, 0, 0)` returns as `(254, 0, 0)` in this conversion.
+Use the saved records to investigate integer color conversion; the example
+does not read image files or perform JPEG compression or chroma subsampling.
+
 The native [crop planner](examples/crop-planner/README.md) imports the rectangle
 package and clips a requested region to image bounds. Rectangle records preserve
 all four signed 64-bit coordinates, including reversed and empty rectangles. The
@@ -111,7 +118,7 @@ with the page URL or command and what happened. A working demo or shared input l
 is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수·색상 변환·시간 간격·사각형 함수 26개를 제공합니다.
+현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수·색상 변환·시간 간격·사각형 함수 28개를 제공합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -134,6 +141,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | `go/math/bits` | `Len8`, `LeadingZeros8`, `TrailingZeros8`, `OnesCount8`, `Reverse8` | 0..255 정수의 비트 길이, 앞·뒤 0 개수, 1 개수와 비트 순서 반전. 비교·산술로 구현 |
 | `go/math/bits` | `RotateLeft8` | 바이트와 signed int64 회전 수를 받아 왼쪽 회전. 음수는 오른쪽 회전이며 반환값은 0..255 |
 | `go/image/color` | `RGBToCMYK`, `CMYKToRGB` | 각 채널 0..255의 RGB 3성분·CMYK 4성분 변환. 다중 반환은 `CMYK`·`RGB` 레코드 |
+| `go/image/color` | `RGBToYCbCr`, `YCbCrToRGB` | 각 채널 0..255의 RGB·Y′CbCr 3성분 변환. Go의 고정 소수점·반올림·포화 보존. 다중 반환은 `YCbCr`·`RGB` 레코드. Native 전용 |
 | `go/time` | `DurationRound`, `DurationTruncate` | Go Duration 메서드의 수신 객체를 첫 인수로 전달. 두 signed int64 나노초 입력의 반올림·절삭과 범위 초과 시 포화 |
 | `go/image` | `RectangleEmpty`, `RectangleOverlaps`, `RectangleIntersect`, `RectangleUnion` | 수신 사각형을 첫 레코드 인수로 전달. Go의 네 좌표를 signed int64 필드로 보존하며 빈·뒤집힌 사각형을 정규화하지 않음. Native에서 네 함수를 실행하며 [브라우저 crop](examples/crop-planner/README.md)은 `Intersect` + `Empty`를 조합 |
 
@@ -153,6 +161,9 @@ JavaScript의 `\s`·`trim`과는 다른 판정이며, 보이지 않는 문자 �
 Go의 byte 변환처럼 입력을 잘라서 계산하지 않습니다. 0의 앞·뒤 0 개수는 원본과 같은 8입니다.
 색상 변환도 모든 채널을 먼저 검사하며 범위 밖에서는 레코드의 모든 성분을 -1로 반환합니다.
 원본의 정수 나눗셈 순서를 유지하므로 왕복 변환이 원래 RGB와 항상 같은 것은 아닙니다.
+YCbCr 변환은 Go의 JFIF 계수와 채널 포화를 보존합니다. 역변환은 `Y′ * 65793`을
+그대로 사용하며 음수·상한 밖 분자를 먼저 처리해 signed shift를 안전한 나눗셈으로 옮깁니다.
+두 파일 `ports/image/color.gooo`와 `ports/image/ycbcr.gooo`를 함께 가져와야 합니다.
 `StatusText`와 `RotateLeft8`의 Go int 입력 비교는 int가 64비트인 amd64·arm64에서 실행합니다.
 회전 수는 int64 전체를 보존하며, 나머지를 먼저 계산해 최솟값의 부호 반전을 피합니다.
 원본 RotateLeft8의 입력에 무관한 실행시간 보장은 분기·산술로 구현한 포트에 계승하지 않습니다.
@@ -342,6 +353,11 @@ UTF-16 코드 단위 수를 반환합니다. `IsSpace`와 기존 UTF 포트를 G
 `RectangleIntersect`와 `RectangleEmpty`를 가져오며, 원점이 0이 아닌 이미지 경계도
 그대로 처리합니다. 계산할 좌표를 반환하는 예제이며 이미지 파일을 읽거나 수정하지 않습니다.
 
+열 번째 앱인 [단순 대소문자 접기 비교](examples/simple-fold/README.md)는 두 rune의
+다음 순환 멤버와 같은 접기 순환 여부를 반환합니다. 열한 번째 앱인
+[YCbCr 왕복 검사기](examples/ycbcr-inspector/README.md)는 RGB를 Y′CbCr로 변환한 뒤
+복원 RGB·채널 차이·정확 일치 여부를 반환합니다. 두 앱 모두 native 실행과 저장 재실행을 제공합니다.
+
 ## 다른 Gooo 프로그램에서 가져오기
 
 [새 프로젝트에서 포트 사용하기](docs/use-in-your-project.md)는 고정 소스를 받고
@@ -364,8 +380,10 @@ activity Valid(Integer) -> Boolean id "gooo://example/checker/valid" computes `r
 원하는 포트 소스를 고정 Git 리비전에서 가져와 작업공간 안에 복사하고, 라이선스·NOTICE·
 upstream 기록과 원본 주석을 함께 보존합니다. 사용하는 작업공간 명세에 패키지 경로와
 manifest 기준 상대 파일 경로를 등록합니다. import 자체가 패키지를 내려받지는 않습니다.
-전체 구성은 [gooo.workspace.json](gooo.workspace.json),
+기본 실행 구성은 [gooo.workspace.json](gooo.workspace.json),
 실제 importing app은 [response.gooo](examples/response.gooo)에 있습니다.
+모든 검증 대상의 소스 목록은 [verification-catalog.json](verification-catalog.json)에 있고,
+YCbCr 소비 앱은 [별도 workspace](ycbcr-inspector.workspace.json)로 실행합니다.
 비트 연산을 가져오는 예제는 [ByteSummary](examples/byte-summary/main.gooo)와
 회전 수를 함께 받는 [Byte rotation inspector](examples/byte-rotation/README.md)입니다.
 색상 변환 조합은 [Color inspector](examples/color-inspector/main.gooo)와
@@ -386,7 +404,9 @@ manifest 기준 상대 파일 경로를 등록합니다. import 자체가 패키
 사각형 네 포트의 원본 비교 **1,711건**과 잘라내기 소비 앱 **486건**을 추가해,
 기존 native 검사 **26,967건**도 유지합니다. SimpleFold는 원본 비교 **3,505건**과
 int32 밖 identity 확장 **11건**, 두 rune 소비 앱은 원본 비교 **497건**과 영역 밖
-거부 **34건**을 추가합니다. 전체 native 검사는 **31,014건**, 이식 함수는 **26개**입니다.
+거부 **34건**을 추가한 기존 **31,014건**도 유지합니다. YCbCr 두 포트는 원본 비교
+**2,160건**과 영역 밖 거부 **48건**, 왕복 소비 앱은 원본 비교 **924건**과 거부 **24건**을
+추가합니다. 전체 native 검사는 **34,170건**, 이식 함수는 **28개**입니다.
 사각형의 네 좌표는
 각각 전체 signed int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
 시간 간격은 두 입력의 전체 int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
@@ -421,6 +441,9 @@ int32 밖 identity 확장 **11건**, 두 rune 소비 앱은 원본 비교 **497�
 | CropPlan consumer | 486 | 같은 원래 사각형 두 개로 교집합의 네 좌표·픽셀 존재 여부 비교 |
 | unicode.SimpleFold | 3,505 + 11 | 모든 변경 코드 포인트, Latin-1, 원본 case range 경계, invalid Unicode·int32 경계·표본, 별도 int64 identity 확장 |
 | Simple-fold Compare consumer | 497 + 34 | 모든 3/4-member 순환의 순서 있는 쌍, 이름 있는 고정점·2-member 순환, 다른 순환·invalid 값·표본, 별도 영역 밖 거부 |
+| Color RGBToYCbCr | 924 + 24 | RGB 경계 격자·모든 회색·반올림 경계·고정 표본, 별도 영역 밖 거부 |
+| Color YCbCrToRGB | 1,236 + 24 | Y′CbCr 경계 격자·회색·채널 포화 전환·고정 표본, 별도 영역 밖 거부 |
+| YCbCr InspectRGB consumer | 924 + 24 | RGB→Y′CbCr→RGB 결과·채널 차이·일치 여부, 별도 영역 밖 거부 |
 
 별도 `go run ./cmd/check-unicode --out out/unicode-exhaustive`는 실제 importing 프로그램의
 수정하지 않은 생성 Go를 빌드해 **0..U+10FFFF의 1,114,112개 입력**에서 두 분류 함수를
@@ -435,8 +458,14 @@ signed int32 전체 전수 검사 또는 전체 Unicode 패키지 호환성을 �
 이 검사는 위 유한 영수증 집계와 별개이고, 전체 int32 또는 모든 두-rune 쌍을
 전수 검사했다는 뜻이 아닙니다. 정수 영역 밖 샘플도 따로 집계합니다.
 
-Gooo 실행 입력 상한에 맞춰 총 **400개 배치**를 실행합니다. 기존 363개 배치를 유지하고,
-SimpleFold 포트 28개·소비 앱 9개 배치를 추가합니다.
+YCbCr 두 변환도 검증된 실행·재실행의 생성 Go를 그대로 빌드해 각 **16,777,216개**
+byte 3성분 입력을 Go 원본과 비교합니다. 총 **33,554,432번**의 비교는 위 영수증
+사례 수와 따로 집계하며, 요약의 `ycbcr_exhaustive`와 각 `ycbcr-exhaustive-*` 폴더에
+생성 소스 해시·도구체인·결과를 기록합니다. 소비 앱의 모든 RGB 왕복을 실행하거나
+이미지 압축·색상 프로파일을 검증한 것으로 해석하지 않습니다.
+
+Gooo 실행 입력 상한에 맞춰 총 **465개 배치**를 실행합니다. 기존 400개 배치를 유지하고,
+YCbCr 순변환 15개·역변환 20개·소비 앱 30개 배치를 추가합니다.
 Unicode 앱과 색상 포트는 64건 이하, 색상 소비 앱은 32건 이하입니다.
 사각형의 단항 연산은 64건 이하, 이항 연산과 소비 앱은 32건 이하입니다.
 새 레코드 기대값도 들여쓴 JSON과 마지막 개행을 포함해 32KiB 한도를 검사합니다.
@@ -455,6 +484,10 @@ Dispatch 계약과 입력 타입·소스 연결을 확인합니다.
 누락·문자열·소수·int64 초과·null·추가 필드·중복 JSON 키의 거부 18건을 재현합니다.
 이는 컴파일러 입력 검증이며 위 Go 원본 비교 수나 영역 밖 확장 수에 합산하지 않습니다.
 검사 도중 소스가 바뀌어도 처음 읽은 동일한 소스 스냅샷을 모든 배치에 사용합니다.
+고정 컴파일러는 한 생성 프로그램의 레코드 타입을 16개로 제한하므로, 검증기는
+전체 소스 목록에서 공통 포트와 해당 배치의 소비 앱만 작업공간에 넣습니다.
+실행에 포함된 소스의 식별자·해시도 이 선택된 목록에 정확히 대조합니다.
+사례나 이식 함수의 입력 범위를 줄여 한도를 피하지 않습니다.
 보고서·선언·실행 결과의 식별자를 함께 바꾸거나 입력 타입·소스 소속을 바꾼 기록을
 거부하는 회귀 테스트도 포함합니다.
 
@@ -470,6 +503,7 @@ CI의 회전·시간 반올림·공백 관측 예제도 같은 Python 영수증 
 `RuneStart`와 `math/bits`의 기존 단일 입력 다섯 함수는 Go byte 영역을 전수 비교합니다.
 `RotateLeft8`의 전수 비교는 byte × 회전 수 0..7의 2,048쌍입니다. 원래 signed int64
 회전 수 전체를 실행한 것은 아니며, 나머지는 음수·양 끝·큰 정수 경계와 고정 표본입니다.
+YCbCr 두 함수는 위 별도 검사에서 각 byte 3성분 영역을 전수 비교합니다.
 그 밖의 함수는 모든 입력을 검사한 것이 아닙니다. 여러 함수가 같은 정수 입력을 재사용하므로
 이 사례 수는 전역적으로 서로 다른 정수 값의 개수가 아닙니다.
 별도 모델 학습, 성능 우위, 패키지 전체의 호환성은 검증 범위에 포함하지 않습니다.
@@ -480,6 +514,7 @@ CI의 회전·시간 반올림·공백 관측 예제도 같은 Python 영수증 
 [시간 간격 포트·소비 앱 추가 관측](evidence/duration-20261010.json),
 [공백 포트·소비 앱 추가 관측](evidence/whitespace-20261010.json),
 [사각형 포트·소비 앱 추가 관측](evidence/image-rectangles-20261011.json),
+[YCbCr 포트·소비 앱과 전수 비교 관측](evidence/ycbcr-20261011.json),
 [릴리스별 실행·재실행 기록](https://github.com/kimjooyoon/gooo-go-ports/releases)을
 참고하세요. 릴리스 기록은 해당 버전에 고정되어 있으며, 이후 변경의 기록은 각 GitHub
 Actions 실행에서 확인할 수 있습니다.

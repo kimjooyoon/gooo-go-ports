@@ -30,7 +30,11 @@ failure, the page URL and visible error are enough.
 2. `ports/`에 Gooo 계산을 구현하고 고유한 stable ID를 부여합니다.
    정수 폭, 문자열 인코딩, 실패값, 다중 반환과 같은 API 차이를 문서에 씁니다.
    Go에서 계산한 값을 반환하는 wrapper를 Gooo 이식으로 집계하지 않습니다.
-3. `gooo.workspace.json`에 패키지를 등록하고 실제 importing example을 추가합니다.
+3. `verification-catalog.json`에 포트와 실제 importing example의 패키지·소스를 등록하고,
+   예제를 실행할 별도 workspace를 추가합니다. 검증기는 전체 소스를 먼저 고정한 뒤
+   공통 포트와 해당 소비 앱만 각 실행 workspace에 넣습니다. 고정 컴파일러의
+   프로그램당 레코드 타입 16개 한도를 고려해 모든 예제를 기본 `gooo.workspace.json`에
+   누적하지 않습니다. 기본 예제에 필요한 포트는 기본 workspace에도 등록합니다.
 4. Go 원본을 독립 oracle로 사용하는 입력군을 추가합니다. 정상값·경계값·잘못된 입력을
    포함하고 난수를 사용하면 시드를 고정합니다. 변환 전에 원본 입력 타입 범위를 확인합니다.
 5. `upstream.json`과 API 목록을 갱신합니다. 새로운 원본 파일은 정확한 source hash를

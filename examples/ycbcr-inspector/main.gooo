@@ -1,0 +1,26 @@
+// Inspect the pinned Go RGB/Y'CbCr conversions and their integer round-trip
+// differences. This is a color-value diagnostic, not an image codec.
+package ycbcr_inspector
+namespace gooo_ports_examples_ycbcr_inspector
+import color "go/image/color"
+entity Integer id "gooo://std/integer"
+entity Inspection id "gooo://go-ports/examples/ycbcr-inspector/inspection" fields {
+    field in_byte_domain id "gooo://go-ports/examples/ycbcr-inspector/inspection/in-byte-domain" type boolean required one
+    field y id "gooo://go-ports/examples/ycbcr-inspector/inspection/y" type integer required one
+    field cb id "gooo://go-ports/examples/ycbcr-inspector/inspection/cb" type integer required one
+    field cr id "gooo://go-ports/examples/ycbcr-inspector/inspection/cr" type integer required one
+    field red id "gooo://go-ports/examples/ycbcr-inspector/inspection/red" type integer required one
+    field green id "gooo://go-ports/examples/ycbcr-inspector/inspection/green" type integer required one
+    field blue id "gooo://go-ports/examples/ycbcr-inspector/inspection/blue" type integer required one
+    field red_delta id "gooo://go-ports/examples/ycbcr-inspector/inspection/red-delta" type integer required one
+    field green_delta id "gooo://go-ports/examples/ycbcr-inspector/inspection/green-delta" type integer required one
+    field blue_delta id "gooo://go-ports/examples/ycbcr-inspector/inspection/blue-delta" type integer required one
+    field exact id "gooo://go-ports/examples/ycbcr-inspector/inspection/exact" type boolean required one
+}
+
+activity InspectRGB(Integer, Integer, Integer) -> Inspection id "gooo://go-ports/examples/ycbcr-inspector/inspect-rgb" computes `if input0 < 0 || input0 > 255 || input1 < 0 || input1 > 255 || input2 < 0 || input2 > 255 {
+    return Inspection{in_byte_domain: false, y: -1, cb: -1, cr: -1, red: -1, green: -1, blue: -1, red_delta: -1, green_delta: -1, blue_delta: -1, exact: false}
+}
+let ycbcr = color.RGBToYCbCr(input0, input1, input2)
+let rgb = color.YCbCrToRGB(ycbcr.y, ycbcr.cb, ycbcr.cr)
+return Inspection{in_byte_domain: true, y: ycbcr.y, cb: ycbcr.cb, cr: ycbcr.cr, red: rgb.red, green: rgb.green, blue: rgb.blue, red_delta: rgb.red - input0, green_delta: rgb.green - input1, blue_delta: rgb.blue - input2, exact: rgb.red == input0 && rgb.green == input1 && rgb.blue == input2}`

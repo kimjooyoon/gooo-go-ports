@@ -13,7 +13,7 @@
 
 ## 이번에 옮기는 동작
 
-Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **26개 함수**를 Gooo 활동으로 표현한다.
+Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **28개 함수**를 Gooo 활동으로 표현한다.
 패키지 전체, HTTP 서버, 문자열 인코더 전체 또는 Go API와의 바이너리 호환을 주장하지 않는다.
 
 | 원본 | Gooo 원본 | 표현 방법과 호환 범위 |
@@ -29,6 +29,7 @@ Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **26개 함수**를 Gooo 
 | `math/bits.Len8`, `LeadingZeros8`, `TrailingZeros8`, `OnesCount8`, `Reverse8` | [bits.gooo](../ports/math/bits.gooo) | 0..255를 먼저 검사한 뒤 비교와 정수 산술로 계산. 테이블·비트 연산·반복문을 쓰지 않으며 영역 밖은 -1이라는 별도 확장 계약 |
 | `math/bits.RotateLeft8` | 같은 파일 | byte 0..255와 원래 signed int64 회전 수. 회전 수의 나머지를 먼저 구해 overflow 없이 산술로 순환 이동. 원본의 입력에 무관한 실행시간 보장은 계승하지 않음 |
 | `image/color.RGBToCMYK`, `CMYKToRGB` | [color.gooo](../ports/image/color.gooo) | 원래 uint8 3/4성분의 전체 범위를 검사한 뒤 정수 변환. 결과는 이름 있는 `CMYK`·`RGB` 레코드이며 영역 밖은 모든 성분 -1 |
+| `image/color.RGBToYCbCr`, `YCbCrToRGB` | [ycbcr.gooo](../ports/image/ycbcr.gooo) | 원래 uint8 3성분과 고정 정수 계수·반올림·포화 보존. 결과는 `YCbCr`·`RGB` 레코드이며 영역 밖은 모든 성분 -1 |
 | `time.Duration.Round`, `Truncate` | [duration.gooo](../ports/time/duration.gooo) | 수신 객체를 첫 번째 인수로 옮긴 `DurationRound(d, m)`, `DurationTruncate(d, m)`. 두 인수 모두 전체 signed int64 나노초 범위이며 중간값 처리·포화·0 이하 단위의 동작을 유지 |
 | `image.Rectangle.Empty`, `Overlaps`, `Intersect`, `Union` | [geometry.gooo](../ports/image/geometry.gooo) | 수신 사각형을 첫 레코드 인수로 전달. 네 signed int64 좌표로 Go의 중첩 Point 필드를 명시적으로 펼침. 원본 좌표·입력 순서·빈 사각형 표현을 보존 |
 
@@ -49,13 +50,20 @@ Go의 `rune`은 int32이고 Gooo Integer는 int64다. 테스트에서 int64를 G
 결과는 원래 RGB와 다를 수 있어 [소비 예제](../examples/color-inspector/README.md)가
 채널별 차이와 정확 일치 여부를 보여준다. 이미지 파일·ICC 프로파일 API는 이식 범위가 아니다.
 
+Y′CbCr 변환은 같은 원본의 정수 계수와 포화를 보존한다. 순변환의 비음수 분자에만
+`/65536`을 적용하며, 역변환은 각 분자의 음수·상한 밖을 먼저 포화시키고 나머지에
+나눗셈을 적용한다. 역변환의 `Y′ * 65793`을 고정 반올림 상수로 바꾸지 않는다.
+[YCbCr 소비 예제](../examples/ycbcr-inspector/README.md)는 두 포트를 조합해 복원 RGB와
+채널 차이를 반환한다. 수정 없는 생성 함수의 각 256³ 입력 비교는 유한 영수증 사례와
+따로 기록하며, 이미지 코덱이나 다른 색상 변환 행렬의 검증을 뜻하지 않는다.
+
 원본은 Go의 [status.go](https://github.com/golang/go/blob/go1.27.2/src/net/http/status.go),
 [utf8.go](https://github.com/golang/go/blob/go1.27.2/src/unicode/utf8/utf8.go),
 [utf16.go](https://github.com/golang/go/blob/go1.27.2/src/unicode/utf16/utf16.go)다.
 `math/bits`는 같은 리비전의 `bits.go`, `bits_tables.go`, `make_tables.go`에 근거한다.
 테이블 값을 수동 복제하지 않고 길이 임계값과 8단계 산술 계산으로 표현한다.
 색상 변환은 고정 리비전의
-[image/color/ycbcr.go](https://github.com/golang/go/blob/022c8636110ebac86a9b88724cda168ed713c21f/src/image/color/ycbcr.go#L315)에 근거한다.
+[image/color/ycbcr.go](https://github.com/golang/go/blob/022c8636110ebac86a9b88724cda168ed713c21f/src/image/color/ycbcr.go)에 근거한다.
 저작권 표기와 BSD 라이선스를 보존한다.
 
 시간 간격은 [고정 time.go](https://github.com/golang/go/blob/022c8636110ebac86a9b88724cda168ed713c21f/src/time/time.go#L1110)의

@@ -61,7 +61,7 @@ jobs:
             .schema == "gooo/go-ports-differential/v1" and
             .go_version == "go1.27.2" and
             .compiler_revision == "366ee6ef8f9d2b9b57331dfd26b6f908c0289851" and
-            .ported_functions == 26 and .consumer_programs == 10 and .consumer_activities == 11 and
+            .ported_functions == 28 and .consumer_programs == 11 and .consumer_activities == 12 and
             .legacy_cases == 3147 and .unicode_reference_cases == 334 and .unicode_rejection_cases == 12 and
             .color_port_reference_cases == 1300 and .color_port_rejection_cases == 56 and
             .color_consumer_reference_cases == 637 and .color_consumer_rejection_cases == 24 and
@@ -75,9 +75,17 @@ jobs:
             .geometry_port_reference_cases == 1711 and .geometry_consumer_reference_cases == 486 and
             .simple_fold_port_reference_cases == 3505 and .simple_fold_port_extension_cases == 11 and
             .simple_fold_consumer_reference_cases == 497 and .simple_fold_consumer_rejection_cases == 34 and
-            .cases == 31014 and .passed == 31014 and
-            (.runs | length) == 37 and
-            ([.runs[].cases] | add) == 31014 and ([.runs[].batches] | add) == 400 and
+            .ycbcr_port_reference_cases == 2160 and .ycbcr_port_rejection_cases == 48 and
+            .ycbcr_consumer_reference_cases == 924 and .ycbcr_consumer_rejection_cases == 24 and
+            (.ycbcr_exhaustive | keys) == ["RGBToYCbCr", "YCbCrToRGB"] and
+            all(.ycbcr_exhaustive[];
+              .schema == "gooo/ycbcr-exhaustive-native/v1" and .go_version == "go1.27.2" and
+              .input_count == 16777216 and .comparison_count == 16777216 and
+              .component_comparison_count == 50331648 and .mismatches == 0 and
+              .output_sha256 == .oracle_sha256) and
+            .cases == 34170 and .passed == 34170 and
+            (.runs | length) == 40 and
+            ([.runs[].cases] | add) == 34170 and ([.runs[].batches] | add) == 465 and
             all(.runs[]; .passed == .cases and .replay_equal == true)
           ' out/ci/summary.json
       - name: Exhaustively compare generated Unicode classifications
@@ -214,6 +222,14 @@ jobs:
             ([.[0].result.runtime.traces[].deliveries[] | {input, inputs, actual}] ==
              [.[1].result.runtime.traces[].deliveries[] | {input, inputs, actual}])
           ' out/color-example.json out/color-replay.json
+      - name: Execute and replay the YCbCr inspector input-only example
+        run: |
+          ./.gooo package execute --json --inputs examples/ycbcr-inspector/inputs.json \
+            ycbcr-inspector.workspace.json > out/ycbcr-example.json
+          ./.gooo package replay --json --receipt out/ycbcr-example.json \
+            --inputs examples/ycbcr-inspector/inputs.json \
+            ycbcr-inspector.workspace.json > out/ycbcr-replay.json
+          python3 tools/check-ycbcr-example.py out/ycbcr-example.json out/ycbcr-replay.json
       - name: Execute and replay the duration quantizer input-only example
         run: |
           ./.gooo package execute --json --inputs examples/duration-quantizer/inputs.json \

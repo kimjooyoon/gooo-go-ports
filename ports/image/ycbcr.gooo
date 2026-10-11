@@ -1,0 +1,46 @@
+// Copyright 2011 The Go Authors. All rights reserved.
+// BSD 3-Clause: see LICENSE and third_party/GO-LICENSE.
+// Adapted from Go 1.27.2 src/image/color/ycbcr.go, revision
+// 022c8636110ebac86a9b88724cda168ed713c21f.
+// Source SHA-256: 7afc91f21cb8eb68027f54180a862137bdef26cfd59389ecb609c0f87923de0c.
+// Integer inputs preserve the full uint8 domain 0..255 without narrowing.
+// Multiple Go results become records. Invalid inputs return all -1 fields,
+// a separate Gooo extension contract. These are the 8-bit JFIF conversions,
+// not the distinct 16-bit YCbCr.RGBA method or a complete image codec.
+package color
+namespace gooo_ports_image_color
+entity YCbCr id "gooo://go/image/color/ycbcr" fields {
+    field y id "gooo://go/image/color/ycbcr/y" type integer required one
+    field cb id "gooo://go/image/color/ycbcr/cb" type integer required one
+    field cr id "gooo://go/image/color/ycbcr/cr" type integer required one
+}
+
+// After the byte-domain guard, all three numerators are nonnegative.
+// Thus division by 65536 preserves >>16 exactly; Cb and Cr can reach 256
+// before saturation. Integer and RGB are shared with color.gooo.
+activity RGBToYCbCr(Integer, Integer, Integer) -> YCbCr id "gooo://go/image/color/RGBToYCbCr" computes `if input0 < 0 || input0 > 255 || input1 < 0 || input1 > 255 || input2 < 0 || input2 > 255 {
+    return YCbCr{y: -1, cb: -1, cr: -1}
+}
+let y = (19595 * input0 + 38470 * input1 + 7471 * input2 + 32768) / 65536
+let cb = (-11056 * input0 - 21712 * input1 + 32768 * input2 + 8421376) / 65536
+let cr = (32768 * input0 - 27440 * input1 - 5328 * input2 + 8421376) / 65536
+if cb > 255 { cb = 255 }
+if cr > 255 { cr = 255 }
+return YCbCr{y: y, cb: cb, cr: cr}`
+
+// Preserve Go's y-dependent rounding adjustment: 65793 == 65536 + 257.
+// Saturate negative/high numerators before division so that signed >>16
+// is never approximated by truncation toward zero on a negative operand.
+activity YCbCrToRGB(Integer, Integer, Integer) -> RGB id "gooo://go/image/color/YCbCrToRGB" computes `if input0 < 0 || input0 > 255 || input1 < 0 || input1 > 255 || input2 < 0 || input2 > 255 {
+    return RGB{red: -1, green: -1, blue: -1}
+}
+let yy = input0 * 65793
+let cb = input1 - 128
+let cr = input2 - 128
+let red = yy + 91881 * cr
+let green = yy - 22554 * cb - 46802 * cr
+let blue = yy + 116130 * cb
+if red < 0 { red = 0 } else if red >= 16777216 { red = 255 } else { red = red / 65536 }
+if green < 0 { green = 0 } else if green >= 16777216 { green = 255 } else { green = green / 65536 }
+if blue < 0 { blue = 0 } else if blue >= 16777216 { blue = 255 } else { blue = blue / 65536 }
+return RGB{red: red, green: green, blue: blue}`

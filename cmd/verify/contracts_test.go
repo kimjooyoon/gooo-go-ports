@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"os"
 	"reflect"
 	"regexp"
 	"strings"
@@ -47,13 +46,21 @@ func allNativeSuites(t *testing.T) []suite {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return append(append(append(append(append(append(append(append(suites, unicode.Suites...), colors.Suites...), rotations.Suites...), durations.Suites...), whitespace.Suites...), classification.Suites...), geometry.Suites...), folding.Suites...)
+	ycbcr, err := ycbcrCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return append(append(append(append(append(append(append(append(append(suites, unicode.Suites...), colors.Suites...), rotations.Suites...), durations.Suites...), whitespace.Suites...), classification.Suites...), geometry.Suites...), folding.Suites...), ycbcr.Suites...)
 }
 
 func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 	contracts := nativeActivityContracts()
+	catalog, err := freezeVerificationCatalog("../../verification-catalog.json")
+	if err != nil {
+		t.Fatal(err)
+	}
 	suites := allNativeSuites(t)
-	if len(contracts) != 37 || len(suites) != 37 {
+	if len(contracts) != 40 || len(suites) != 40 {
 		t.Fatal("contract/suite roster changed")
 	}
 	seen := map[string]bool{}
@@ -68,9 +75,9 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		source, err := os.ReadFile("../../" + contract.Source)
-		if err != nil {
-			t.Fatal(err)
+		source, exists := catalog.Sources[contract.Source]
+		if !exists {
+			t.Fatal("contract source missing from verification catalog", contract.Source)
 		}
 		pattern := `(?m)^activity ` + regexp.QuoteMeta(s.Activity) + `\(([^)]*)\) -> [^\n]+? id "([^"]+)"`
 		match := regexp.MustCompile(pattern).FindSubmatch(source)
@@ -83,10 +90,7 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		}
 		for i, input := range inputs {
 			if contract.InputEntities[i] == rectangleEntity {
-				declarations, err := os.ReadFile("../../ports/image/geometry.gooo")
-				if err != nil {
-					t.Fatal(err)
-				}
+				declarations := catalog.Sources["ports/image/geometry.gooo"]
 				if strings.TrimSpace(input) != "Rectangle" || !strings.Contains(string(declarations), `entity Rectangle id "`+rectangleEntity+`"`) {
 					t.Fatal("contract Rectangle input entity differs from source", key)
 				}
@@ -95,10 +99,10 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 			// Generated classifications share the package's reviewed entity declarations.
 			declarations := source
 			if contract.Source == "ports/unicode/classification.gooo" || contract.Source == "ports/unicode/simple_fold.gooo" {
-				declarations, err = os.ReadFile("../../ports/unicode/space.gooo")
-				if err != nil {
-					t.Fatal(err)
-				}
+				declarations = catalog.Sources["ports/unicode/space.gooo"]
+			}
+			if contract.Source == "ports/image/ycbcr.gooo" {
+				declarations = catalog.Sources["ports/image/color.gooo"]
 			}
 			if strings.TrimSpace(input) != "Integer" || contract.InputEntities[i] != integerEntity || !strings.Contains(string(declarations), `entity Integer id "`+integerEntity+`"`) {
 				t.Fatal("contract input entity differs from source", key)
@@ -119,7 +123,11 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	added := geometry.PortReferenceCases + geometry.ConsumerReferenceCases + folding.PortReferenceCases + folding.PortExtensionCases + folding.ConsumerReferenceCases + folding.ConsumerRejectionCases
+	ycbcr, err := ycbcrCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	added := geometry.PortReferenceCases + geometry.ConsumerReferenceCases + folding.PortReferenceCases + folding.PortExtensionCases + folding.ConsumerReferenceCases + folding.ConsumerRejectionCases + ycbcr.PortReferenceCases + ycbcr.PortRejectionCases + ycbcr.ConsumerReferenceCases + ycbcr.ConsumerRejectionCases
 	if total != 24770+added {
 		t.Fatalf("corpus changed: %d", total)
 	}

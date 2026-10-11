@@ -19,6 +19,9 @@ type activityContract struct {
 func nativeActivityContracts() map[string]activityContract {
 	i := integerEntity
 	return map[string]activityContract{
+		"go/image/color:RGBToYCbCr":           {"ports/image/ycbcr.gooo", "gooo://go/image/color/RGBToYCbCr", []string{i, i, i}},
+		"go/image/color:YCbCrToRGB":           {"ports/image/ycbcr.gooo", "gooo://go/image/color/YCbCrToRGB", []string{i, i, i}},
+		"app/ycbcr-inspector:InspectRGB":      {"examples/ycbcr-inspector/main.gooo", "gooo://go-ports/examples/ycbcr-inspector/inspect-rgb", []string{i, i, i}},
 		"go/unicode:SimpleFold":               {"ports/unicode/simple_fold.gooo", "gooo://go/unicode/SimpleFold", []string{i}},
 		"app/simple-fold:Compare":             {"examples/simple-fold/main.gooo", "gooo://go-ports/examples/simple-fold/compare", []string{i, i}},
 		"go/image:RectangleEmpty":             {"ports/image/geometry.gooo", "gooo://go/image/rectangle-empty", []string{rectangleEntity}},

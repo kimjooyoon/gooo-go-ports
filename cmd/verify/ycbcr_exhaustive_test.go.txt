@@ -1,0 +1,48 @@
+package main
+
+import (
+    "crypto/sha256"
+    "encoding/json"
+    "fmt"
+    "image/color"
+    "os"
+    "runtime"
+    "testing"
+)
+
+// This harness supplies only the independent pinned oracle and reporting. The
+// generated composition is compiled unchanged, and each int64 output component
+// is compared before converting to bytes for the reproducible stream digest.
+func TestYCbCrExhaustive(t *testing.T) {
+    if runtime.Version() != "go1.27.2" { t.Fatal("wrong pinned Go oracle") }
+    actual, oracle := sha256.New(), sha256.New()
+    inputs, comparisons, components := 0, 0, 0
+    for n := 0; n < 16777216; n++ {
+        a, b, c := uint8(n >> 16), uint8(n >> 8), uint8(n)
+        x, y, z := color.{{.Operation}}(a, b, c)
+        got := {{.Function}}(int64(a), int64(b), int64(c))
+        if got.{{index .Fields 0}} != int64(x) || got.{{index .Fields 1}} != int64(y) || got.{{index .Fields 2}} != int64(z) {
+            t.Fatalf("{{.Operation}}(%d,%d,%d) = (%d,%d,%d), want (%d,%d,%d)", a, b, c,
+                got.{{index .Fields 0}}, got.{{index .Fields 1}}, got.{{index .Fields 2}}, x, y, z)
+        }
+        _, _ = actual.Write([]byte{byte(got.{{index .Fields 0}}), byte(got.{{index .Fields 1}}), byte(got.{{index .Fields 2}})})
+        _, _ = oracle.Write([]byte{x, y, z})
+        inputs++
+        comparisons++
+        components += 3
+    }
+    report := map[string]any{
+        "schema": "gooo/ycbcr-exhaustive-native/v1", "go_version": runtime.Version(),
+        "operation": "{{.Operation}}", "activity_id": "gooo://go/image/color/{{.Operation}}",
+        "output_entity_id": "{{.Entity}}", "generated_sha256": "{{.Generated}}",
+        "input_min": 0, "input_max": 255, "input_arity": 3,
+        "input_order": "input0-major,input1-middle,input2-minor",
+        "input_count": inputs, "comparison_count": comparisons, "component_comparison_count": components,
+        "output_sha256": fmt.Sprintf("sha256:%x", actual.Sum(nil)),
+        "oracle_sha256": fmt.Sprintf("sha256:%x", oracle.Sum(nil)), "mismatches": 0,
+    }
+    path := os.Getenv("GOOO_YCBCR_REPORT")
+    if path == "" { t.Fatal("missing report path") }
+    raw, err := json.MarshalIndent(report, "", "  "); if err != nil { t.Fatal(err) }
+    if err := os.WriteFile(path, append(raw, '\n'), 0644); err != nil { t.Fatal(err) }
+}

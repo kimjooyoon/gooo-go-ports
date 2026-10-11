@@ -25,6 +25,25 @@ func whitespaceResultContract(s suite) resultContract {
 		return geometry
 	}
 	switch s.Package + ":" + s.Activity {
+	case "go/image/color:RGBToYCbCr":
+		const entity = "gooo://go/image/color/ycbcr"
+		return resultContract{Entity: entity, Fields: []recordFieldContract{
+			{"y", entity + "/y"}, {"cb", entity + "/cb"}, {"cr", entity + "/cr"},
+		}}
+	case "go/image/color:YCbCrToRGB":
+		const entity = "gooo://go/image/color/rgb"
+		return resultContract{Entity: entity, Fields: []recordFieldContract{
+			{"red", entity + "/red"}, {"green", entity + "/green"}, {"blue", entity + "/blue"},
+		}}
+	case "app/ycbcr-inspector:InspectRGB":
+		const entity = "gooo://go-ports/examples/ycbcr-inspector/inspection"
+		return resultContract{Entity: entity, Fields: []recordFieldContract{
+			{"in_byte_domain", entity + "/in-byte-domain"}, {"y", entity + "/y"},
+			{"cb", entity + "/cb"}, {"cr", entity + "/cr"},
+			{"red", entity + "/red"}, {"green", entity + "/green"}, {"blue", entity + "/blue"},
+			{"red_delta", entity + "/red-delta"}, {"green_delta", entity + "/green-delta"}, {"blue_delta", entity + "/blue-delta"},
+			{"exact", entity + "/exact"},
+		}}
 	case "go/unicode:SimpleFold":
 		return resultContract{Entity: integerEntity}
 	case "app/simple-fold:Compare":

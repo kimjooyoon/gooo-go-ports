@@ -74,6 +74,13 @@
       "symbols": ["RGBToCMYK", "CMYKToRGB"]
     },
     {
+      "source": "src/image/color/ycbcr.go",
+      "target": "ports/image/ycbcr.gooo",
+      "supporting_targets": ["ports/image/color.gooo"],
+      "symbols": ["RGBToYCbCr", "YCbCrToRGB"],
+      "api_mapping": "Three uint8 arguments map to three Integer arguments with the full 0..255 domain preserved. Multiple results become YCbCr (y, cb, cr) or RGB (red, green, blue) records. Pinned fixed-point coefficients, rounding, and saturation are preserved using bounded arithmetic. An out-of-byte input returns all -1 fields as a separate extension, without narrowing. Integer and RGB declarations are shared with color.gooo."
+    },
+    {
       "source": "src/net/http/status.go",
       "target": "ports/net/http.gooo",
       "symbols": [

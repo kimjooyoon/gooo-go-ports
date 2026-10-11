@@ -1,0 +1,122 @@
+{
+  "schema": "gooo/go-ports-verification-catalog/v1",
+  "packages": [
+    {
+      "path": "go/net/http",
+      "sources": [
+        "ports/net/http.gooo"
+      ]
+    },
+    {
+      "path": "go/unicode/utf8",
+      "sources": [
+        "ports/unicode/utf8.gooo"
+      ]
+    },
+    {
+      "path": "go/unicode/utf16",
+      "sources": [
+        "ports/unicode/utf16.gooo"
+      ]
+    },
+    {
+      "path": "go/unicode",
+      "sources": [
+        "ports/unicode/space.gooo",
+        "ports/unicode/classification.gooo",
+        "ports/unicode/simple_fold.gooo"
+      ]
+    },
+    {
+      "path": "go/math/bits",
+      "sources": [
+        "ports/math/bits.gooo"
+      ]
+    },
+    {
+      "path": "go/image/color",
+      "sources": [
+        "ports/image/color.gooo",
+        "ports/image/ycbcr.gooo"
+      ]
+    },
+    {
+      "path": "go/image",
+      "sources": [
+        "ports/image/geometry.gooo"
+      ]
+    },
+    {
+      "path": "go/time",
+      "sources": [
+        "ports/time/duration.gooo"
+      ]
+    },
+    {
+      "path": "app/response",
+      "sources": [
+        "examples/response.gooo"
+      ]
+    },
+    {
+      "path": "app/byte-summary",
+      "sources": [
+        "examples/byte-summary/main.gooo"
+      ]
+    },
+    {
+      "path": "app/byte-rotation",
+      "sources": [
+        "examples/byte-rotation/main.gooo"
+      ]
+    },
+    {
+      "path": "app/unicode-inspector",
+      "sources": [
+        "examples/unicode-inspector/main.gooo"
+      ]
+    },
+    {
+      "path": "app/color-inspector",
+      "sources": [
+        "examples/color-inspector/main.gooo"
+      ]
+    },
+    {
+      "path": "app/duration-quantizer",
+      "sources": [
+        "examples/duration-quantizer/main.gooo"
+      ]
+    },
+    {
+      "path": "app/whitespace-inspector",
+      "sources": [
+        "examples/whitespace-inspector/main.gooo"
+      ]
+    },
+    {
+      "path": "app/identifier-rune",
+      "sources": [
+        "examples/identifier-rune/main.gooo"
+      ]
+    },
+    {
+      "path": "example/crop-planner",
+      "sources": [
+        "examples/crop-planner/crop_planner.gooo"
+      ]
+    },
+    {
+      "path": "app/simple-fold",
+      "sources": [
+        "examples/simple-fold/main.gooo"
+      ]
+    },
+    {
+      "path": "app/ycbcr-inspector",
+      "sources": [
+        "examples/ycbcr-inspector/main.gooo"
+      ]
+    }
+  ]
+}

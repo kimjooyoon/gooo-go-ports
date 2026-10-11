@@ -19,6 +19,7 @@
 | 2f | `unicode.IsLetter`·`IsDigit`와 [식별자 문자 분류](../examples/identifier-rune/README.md) | Unicode 17.0.0 전체 범위·stride를 고정 원본에서 재생성, 실제 importing과 저장 재실행, 수정 없는 생성 Go로 0..U+10FFFF 전수 비교. int32 나머지는 별도 유한 검사 |
 | 2g | `image.Rectangle.Empty`·`Overlaps`·`Intersect`·`Union`과 [잘라내기 영역 계산](../examples/crop-planner/README.md) | 네 signed int64 좌표 레코드 입력·출력, 빈·뒤집힌·접촉 사각형과 정밀 정수 경계의 독립 Go 비교 및 저장 재실행. 좌표 정규화 없이 원본 메서드 호출 |
 | 2h | `unicode.SimpleFold`와 [두 rune의 단순 접기 비교](../examples/simple-fold/README.md) | ASCII·특수 순환·case range를 고정 원본에서 재생성, 전체 int32 입력 보존, 1/2/3/4-member 순환·고정점·영역 밖 identity 확장의 독립 Go 비교와 저장 재실행. 수정 없는 생성 Go로 Unicode 구간 전수 비교 |
+| 2i | `image/color.RGBToYCbCr`·`YCbCrToRGB`와 [YCbCr 왕복 검사](../examples/ycbcr-inspector/README.md) | 세 uint8 입력 전체 범위, 원본 계수·반올림·채널 포화 보존. 경계·회색·표본의 독립 Go 비교와 저장 재실행, 수정 없는 생성 함수의 각 256³ 입력 전수 비교. 소비 앱은 중간 채널과 복원 차이를 표시 |
 | 3 | `strings.Index`/`Count`, UTF-8 순회 등 반복이 필요한 문자열 함수 조사 | `for`/`range`, 바이트 읽기, 루프 종료·입력 제한의 재현. Text 슬라이싱 지원만으로 문자열 전체 지원을 선언하지 않음 |
 | 4 | `encoding/hex`의 제한된 인코딩·디코딩부터 바이트 패키지 확장 | byte 배열/슬라이스, 출력 구성, 잘못된 문자와 길이에 대한 오류 계약, 비트 연산 또는 검증된 산술 표현 |
 | 5 | Google의 `google/uuid` 파싱·표시·버전/variant 부분 이식 | 원본 형식별 입력과 오류를 보존하고 16바이트 값을 표현할 타입, 반복, 인덱싱, hex 처리가 확보될 것 |
