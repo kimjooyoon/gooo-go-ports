@@ -37,6 +37,7 @@ Experimental tooling: [Compiler Explorer adapter and Linux verification](tools/c
 for inspecting generated Go. Upstream hosted support is under review.
 
 한국어 안내: 설치 없이 [튜토리얼 실행](https://kimjooyoon.github.io/gooo-go-ports/tutorial.html),
+[브라우저에서 소스 수정·Go 생성](https://kimjooyoon.github.io/gooo-go-ports/codegen/),
 [로컬에서 코드 수정](#run-and-edit-locally), [다른 프로젝트에 가져오기](#다른-gooo-프로그램에서-가져오기) 중에서 시작하세요.
 
 ## Run and edit locally

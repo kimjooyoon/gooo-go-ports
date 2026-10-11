@@ -31,6 +31,11 @@
         <button id="probe-retry" type="button" hidden>Retry compiler load</button>
       </div>
       <p class="hint">Selecting a saved sample preloads its source. You can edit it below; samples themselves stay unchanged.</p>
+      <ol class="hint" aria-label="Try a first edit">
+        <li>Choose <strong>clamp</strong> under <strong>Saved sample</strong>. <span lang="ko">Saved sample에서 clamp를 선택하세요.</span></li>
+        <li>In <strong>Source</strong>, change <code>return 0</code> to <code>return 7</code> inside <code>computes</code>. <span lang="ko">Source의 computes 안에서 return 0을 return 7로 바꾸세요.</span></li>
+        <li>Click <strong>Generate Go</strong> and find <code>return 7</code> in <strong>Generated Go</strong>. <span lang="ko">Generate Go를 누르고 생성된 Go 코드의 return 7을 확인하세요.</span></li>
+      </ol>
       <p id="probe-status" role="status" aria-live="polite">Loading the compiler…</p>
     </section>
 
@@ -50,6 +55,7 @@
     <section class="diagnostics" aria-label="Generation error">
       <h2>Error</h2>
       <pre id="probe-error" aria-label="Generation error" role="alert"></pre>
+      <p class="hint"><a href="https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml">Report a problem · <span lang="ko">문제 제보</span></a>. Opening the form attaches no source or compiler response. <span lang="ko">제보 양식을 열어도 소스나 컴파일러 응답은 첨부되지 않습니다.</span></p>
     </section>
 
     <details class="report">

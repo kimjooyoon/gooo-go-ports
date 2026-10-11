@@ -1,17 +1,18 @@
-name: Loading, setup, or function problem
-description: Report a failed first run or an unexpected result in the demos, text inspector, crop planner, or native ports.
+name: Loading, setup, code generation, or function problem
+description: Report a failed first run or an unexpected result in the Gooo source editor, demos, text inspector, crop planner, or native ports.
 body:
   - type: markdown
     attributes:
       value: |
         Describe where you got stuck. A working demo, shared input link, inspection report, or build metadata is not required.
-        English and Korean reports are welcome. Inspection JSON contains the exact original text. Review any text, files, or logs you choose to share before submitting this public issue. Nothing is attached or submitted automatically.
+        English and Korean reports are welcome. Inspection JSON contains the exact original text. The source editor's Raw compiler response includes generated Go and selected Gooo code; it is not a receipt of executing the generated program. Share only public data: review source code, paths, text, files, and logs before submitting this public issue. Opening this form uploads, attaches, and submits nothing automatically.
   - type: dropdown
     id: entry-point
     attributes:
       label: Where did you try it?
       options:
         - Public browser demo
+        - Gooo source editor
         - Unicode text inspector
         - Rectangle crop planner
         - Downloaded browser demo
@@ -23,7 +24,7 @@ body:
     id: steps
     attributes:
       label: Page URL or command and steps
-      description: For a function result, include its name and exact input if you reached that point. For a text inspection, describe your steps and include only input you choose to make public. For a loading failure, the page address is enough.
+      description: For source editing, include the activity name and minimal public source if possible. A visible error is enough if you cannot share the source. For a function result, include its name and exact input if you reached that point. For a text inspection, include only input you choose to make public. For a loading failure, the page address is enough.
     validations:
       required: true
   - type: textarea
@@ -46,5 +47,5 @@ body:
   - type: textarea
     id: supporting-details
     attributes:
-      label: Shared input link, inspection report, or additional details (optional)
-      description: The function demo offers Copy link to this input; include its actual result above. A completed text inspection offers Download inspection JSON, which includes the exact original text and results. Review any file before sharing it publicly. Logs and build metadata are optional.
+      label: Shared input link, compiler response, inspection report, or additional details (optional)
+      description: The function demo offers Copy link to this input; include its actual result above. A completed text inspection offers Download inspection JSON with the exact original text and results. The source editor offers Raw compiler response with generated Go, selected Gooo code, and compiler diagnostics; it does not prove generated program execution. Review any code, paths, or files before sharing them publicly. Logs and build metadata are optional.

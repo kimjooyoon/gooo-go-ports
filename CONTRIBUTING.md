@@ -6,9 +6,16 @@
 ## Report a problem
 
 Use the [problem report form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml)
-for a page that will not load, a failed first install, or an unexpected function or text-inspection result.
+for a page that will not load, a failed first install, or an unexpected code-generation,
+function, or text-inspection result.
 Include the page URL or command, what you saw, and your browser/operating system if known.
 For a function result, include its name, exact integer inputs, and the result you expected.
+For the [Gooo source editor](https://kimjooyoon.github.io/gooo-go-ports/codegen/),
+choose **Gooo source editor** in the form and include the activity name and minimal
+public source if possible. A visible error is enough if you cannot share the source.
+Its optional **Raw compiler response** includes generated Go, selected Gooo code,
+and the compiler report; it is not a receipt of executing the generated program.
+Review any source code and paths before sharing them publicly.
 If the demo works, **Copy link to this input** can help reproduce the input; it does not
 include the result. For a completed text inspection, **Download inspection JSON** provides
 an optional file with the exact original text, results, and program identity. Review it
@@ -20,6 +27,10 @@ failure, the page URL and visible error are enough.
 처음 설치하거나 데모를 여는 단계에서 막혀도 같은 양식으로 제보할 수 있습니다.
 한국어·영어 모두 괜찮습니다. 페이지 주소 또는 실행 명령, 실제 오류나 결과를 적어 주세요.
 버전을 알면 릴리스 이름이나 리비전을 덧붙이고, 공유 링크는 데모가 동작할 때만 넣으면 됩니다.
+Gooo 소스 편집기는 양식에서 **Gooo source editor**를 선택하고, 가능하면 activity 이름과
+공개 가능한 최소 소스를 적어 주세요. 소스를 공유하기 어렵다면 보이는 오류만으로도 괜찮습니다.
+**Raw compiler response**에는 생성된 Go, 선택한 Gooo 코드와 컴파일러 보고서가 들어 있으며,
+생성된 프로그램의 실행 증명은 아닙니다. 코드와 경로를 확인한 뒤 공유할 내용을 선택해 주세요.
 텍스트 검사 JSON은 원래 입력 전체를 포함하므로 내용을 확인한 뒤 공개해도 되는 자료만
 선택해서 첨부해 주세요. 보고서 없이 페이지 주소와 오류만 제보해도 됩니다.
 
