@@ -1,0 +1,57 @@
+{
+  "domain": "Unicode scalar values U+0000..U+10FFFF excluding U+D800..U+DFFF",
+  "examined": 1112064,
+  "is_space_trim_disagreements": 0,
+  "runtime": "go1.27.2",
+  "samples": [
+    {
+      "code_point": "U+0085",
+      "is_space": true,
+      "trim_empty": true
+    },
+    {
+      "code_point": "U+FEFF",
+      "is_space": false,
+      "trim_empty": false
+    },
+    {
+      "code_point": "U+200B",
+      "is_space": false,
+      "trim_empty": false
+    },
+    {
+      "code_point": "U+00A0",
+      "is_space": true,
+      "trim_empty": true
+    }
+  ],
+  "unicode_version": "17.0.0",
+  "whitespace_code_points": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    32,
+    133,
+    160,
+    5760,
+    8192,
+    8193,
+    8194,
+    8195,
+    8196,
+    8197,
+    8198,
+    8199,
+    8200,
+    8201,
+    8202,
+    8232,
+    8233,
+    8239,
+    8287,
+    12288
+  ],
+  "whitespace_count": 25
+}

@@ -36,6 +36,8 @@ Go and Unicode 17.0.0. Enter its numeric value or paste one code point without t
 The native [whitespace inspector](examples/whitespace-inspector/README.md) also reports
 scalar validity, ASCII whitespace membership, and UTF-8/UTF-16 lengths.
 This classification does not determine whether a character is visible or safe.
+See the [reproducible Go–JavaScript whitespace comparison](docs/whitespace-comparison/README.md)
+for the `U+0085` and `U+FEFF` differences in blank-input checks.
 
 The [Unicode text inspector](https://kimjooyoon.github.io/gooo-go-ports/text-inspector.html)
 combines six existing compiled Gooo functions for a whole pasted input. It shows

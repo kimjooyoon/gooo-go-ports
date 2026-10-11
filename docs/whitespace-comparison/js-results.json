@@ -1,0 +1,89 @@
+{
+  "runtime": "v22.23.1",
+  "v8": "12.4.254.21-node.56",
+  "unicode_version": "17.0",
+  "domain": "Unicode scalar values U+0000..U+10FFFF excluding U+D800..U+DFFF",
+  "examined": 1112064,
+  "whitespace_code_points": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    32,
+    160,
+    5760,
+    8192,
+    8193,
+    8194,
+    8195,
+    8196,
+    8197,
+    8198,
+    8199,
+    8200,
+    8201,
+    8202,
+    8232,
+    8233,
+    8239,
+    8287,
+    12288,
+    65279
+  ],
+  "whitespace_count": 25,
+  "unicode_property_code_points": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    32,
+    133,
+    160,
+    5760,
+    8192,
+    8193,
+    8194,
+    8195,
+    8196,
+    8197,
+    8198,
+    8199,
+    8200,
+    8201,
+    8202,
+    8232,
+    8233,
+    8239,
+    8287,
+    12288
+  ],
+  "trim_regexp_disagreements": 0,
+  "samples": [
+    {
+      "code_point": "U+0085",
+      "trim_empty": false,
+      "regexp_space": false,
+      "unicode_white_space": true
+    },
+    {
+      "code_point": "U+FEFF",
+      "trim_empty": true,
+      "regexp_space": true,
+      "unicode_white_space": false
+    },
+    {
+      "code_point": "U+200B",
+      "trim_empty": false,
+      "regexp_space": false,
+      "unicode_white_space": false
+    },
+    {
+      "code_point": "U+00A0",
+      "trim_empty": true,
+      "regexp_space": true,
+      "unicode_white_space": true
+    }
+  ]
+}

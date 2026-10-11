@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "runtime_versions": [
+    "go1.27.2",
+    "v22.23.1"
+  ],
+  "scalar_values_per_runtime": 1112064,
+  "go_only": [
+    "U+0085"
+  ],
+  "javascript_only": [
+    "U+FEFF"
+  ],
+  "shared_whitespace_count": 24,
+  "javascript_unicode_property_matches_go": true,
+  "manual_examples": 4,
+  "commands": [
+    "GOTOOLCHAIN=go1.27.2 go run main.go > go-results.json",
+    "node compare.cjs > js-results.json",
+    "python3 verify.py"
+  ],
+  "source_and_result_sha256": {
+    "main.go": "4be64312b18f4cf2b2d5f1f0877212fd4b5e7772988d411757d94b335f77b789",
+    "compare.cjs": "f732670886a02f6e32e96d8ae50b48b54fa6a518c0d98f4da10143fc876a111b",
+    "verify.py": "d503a22b294a4ffd83f467e5c2e483ada7e23a798007110469cb43829ba0356b",
+    "go-results.json": "1673e7c8e121a29342fab8826596b8aff773d5fa2f975dc4f367c8956e894781",
+    "js-results.json": "2b60e9d0d55b653f2143d5457774d7d44c09c9a44128605846df13090ba45aa1"
+  },
+  "scope": "Exact installed versions, one-scalar strings. No multi-character normalization, grapheme, invalid UTF-8, performance, production incident, or security guarantee. This compares Go and JavaScript, not an exhaustive Gooo run."
+}
