@@ -44,9 +44,26 @@ mkdir -p out
   > out/simple-fold-replay.json
 ```
 
+These commands save execution and replay receipts in the two JSON files above.
+Open `out/simple-fold.json` and read
+`result.runtime.traces[].deliveries[].actual` for each pair's result. The first
+pair, `A` (65) and `a` (97), produces:
+
+```json
+{
+  "in_rune_domain": true,
+  "equivalent": true,
+  "left_next": 97,
+  "right_next": 65
+}
+```
+
 The 24 supplied input pairs include the examples above, Cherokee and Deseret,
 negative values, surrogate values, int32 limits and integers wider than int32.
-They contain no expected outputs; use the finite verifier for Go comparisons:
+They contain no expected outputs, so the receipt reports `OBSERVED`: execution
+was recorded, but its results were not compared with independent Go outputs.
+Saved replay reproduces those observations; use the finite verifier for Go
+comparisons:
 
 ```sh
 go run ./cmd/verify --out out/simple-fold-finite
