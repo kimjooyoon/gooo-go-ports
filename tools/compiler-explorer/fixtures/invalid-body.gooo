@@ -1,0 +1,4 @@
+package sample
+namespace sample
+entity Integer id "sample://integer"
+activity Clamp(Integer) -> Integer id "sample://clamp" computes "for input > 0 { input = input - 1 }; return input"

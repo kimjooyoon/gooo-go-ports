@@ -1,0 +1,1322 @@
+diff --git a/.github/labeler.yml b/.github/labeler.yml
+index 1a0272d..4ce8170 100644
+--- a/.github/labeler.yml
++++ b/.github/labeler.yml
+@@ -223,6 +223,14 @@
+           - 'lib/compilers/golang.ts'
+           - 'etc/config/go.*.properties'
+ 
++'lang-gooo':
++  - changed-files:
++      - any-glob-to-any-file:
++          - 'lib/compilers/gooo.ts'
++          - 'etc/config/gooo.*.properties'
++          - 'static/modes/gooo-mode.ts'
++          - 'examples/gooo/**'
++
+ 'lang-haskell':
+   - changed-files:
+       - any-glob-to-any-file:
+diff --git a/etc/config/gooo.defaults.properties b/etc/config/gooo.defaults.properties
+new file mode 100644
+index 0000000..b6d72bc
+--- /dev/null
++++ b/etc/config/gooo.defaults.properties
+@@ -0,0 +1,7 @@
++compilers=
++compilerType=gooo
++supportsBinary=false
++supportsExecute=false
++supportsAsmDocs=false
++supportsLibraryCodeFilter=false
++defaultOptions=--activity Clamp
+diff --git a/examples/gooo/default.gooo b/examples/gooo/default.gooo
+new file mode 100644
+index 0000000..f487d4c
+--- /dev/null
++++ b/examples/gooo/default.gooo
+@@ -0,0 +1,5 @@
++// Compiler options: --activity Clamp
++package sample
++namespace sample
++entity Integer id "sample://integer"
++activity Clamp(Integer) -> Integer id "sample://clamp" computes "if input < 0 { return 0 } else { return input }"
+diff --git a/lib/compilers/_all.ts b/lib/compilers/_all.ts
+index efe7f0d..6a37e6c 100644
+--- a/lib/compilers/_all.ts
++++ b/lib/compilers/_all.ts
+@@ -97,6 +97,7 @@ export {GLSLCompiler} from './glsl.js';
+ export {GM2Compiler} from './gm2.js';
+ export {GnuCobolCompiler} from './gnucobol.js';
+ export {GolangCompiler} from './golang.js';
++export {GoooCompiler} from './gooo.js';
+ export {HaskellCompiler} from './haskell.js';
+ export {HelionCompiler} from './helion.js';
+ export {HLSLCompiler} from './hlsl.js';
+diff --git a/lib/compilers/gooo.ts b/lib/compilers/gooo.ts
+new file mode 100644
+index 0000000..286042c
+--- /dev/null
++++ b/lib/compilers/gooo.ts
+@@ -0,0 +1,303 @@
++// Copyright (c) 2026, Compiler Explorer Authors
++// All rights reserved.
++//
++// Redistribution and use in source and binary forms, with or without
++// modification, are permitted provided that the following conditions are met:
++//
++//     * Redistributions of source code must retain the above copyright notice,
++//       this list of conditions and the following disclaimer.
++//
++//     * Redistributions in binary form must reproduce the above copyright
++//       notice, this list of conditions and the following disclaimer in the
++//       documentation and/or other materials provided with the distribution.
++//
++// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
++// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
++// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
++// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
++// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
++// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
++// POSSIBILITY OF SUCH DAMAGE.
++
++import path from 'node:path';
++
++import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
++import type {
++    ActiveTool,
++    BypassCache,
++    CompilationResult,
++    ExecutionOptionsWithEnv,
++    ExecutionParams,
++    FiledataPair,
++} from '../../types/compilation/compilation.interfaces.js';
++import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
++import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
++import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
++import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
++import {BaseCompiler} from '../base-compiler.js';
++import type {CompilationEnvironment} from '../compilation-env.js';
++import type {ClientOptionsType} from '../options-handler.js';
++import {BaseParser} from './argument-parsers.js';
++
++const inactiveBackendOptions = new Set([
++    'executorRequest',
++    'skipAsm',
++    'producePp',
++    'produceAst',
++    'produceStackUsageInfo',
++    'produceOptInfo',
++    'produceGnatDebugTree',
++    'produceGnatDebug',
++    'produceIr',
++    'produceClangir',
++    'produceOptPipeline',
++    'produceDevice',
++    'produceRustMir',
++    'produceRustMacroExp',
++    'produceRustHir',
++    'produceHaskellCore',
++    'produceHaskellStg',
++    'produceHaskellCmm',
++    'produceLeanC',
++    'produceClojureMacroExp',
++    'produceYul',
++]);
++
++class GoooSourceViewInputError extends Error {}
++
++export class GoooCompiler extends BaseCompiler {
++    static get key() {
++        return 'gooo';
++    }
++
++    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
++        super(
++            {
++                ...compilerInfo,
++                versionFlag: ['version'],
++                supportsBinary: false,
++                supportsBinaryObject: false,
++                supportsExecute: false,
++                supportsAsmDocs: false,
++                supportsDemangle: false,
++                supportsIntel: false,
++                intelAsm: '',
++                supportsOptOutput: false,
++                supportsVerboseAsm: false,
++                supportsStackUsageOutput: false,
++                supportsCfg: false,
++                supportsPpView: false,
++                supportsAstView: false,
++                supportsIrView: false,
++                tools: {},
++                libsArr: [],
++                possibleOverrides: [],
++                postProcess: [],
++                disabledFilters: [
++                    'binary',
++                    'binaryObject',
++                    'execute',
++                    'demangle',
++                    'intel',
++                    'labels',
++                    'libraryCode',
++                    'directives',
++                    'commentOnly',
++                    'trim',
++                    'debugCalls',
++                ],
++            },
++            env,
++        );
++    }
++
++    override getArgumentParserClass(): typeof BaseParser {
++        return BaseParser;
++    }
++
++    override getCompilerResultLanguageId(_filters?: ParseFiltersAndOutputOptions): string {
++        return 'go';
++    }
++
++    override isCfgCompiler(): boolean {
++        return false;
++    }
++
++    override initialiseLibraries(_clientOptions: ClientOptionsType): void {
++        this.supportedLibraries = {};
++    }
++
++    override getDefaultExecOptions(): ExecutionOptionsWithEnv {
++        const options = super.getDefaultExecOptions();
++        return {
++            ...options,
++            env: {...options.env, GOOO_LAYA_URL: '', GOOO_LAYA_API_KEY: ''},
++        };
++    }
++
++    private activityFromOptions(options: string[]): string {
++        if (!Array.isArray(options) || options.some(option => typeof option !== 'string')) {
++            throw new GoooSourceViewInputError('Gooo source view requires only --activity NAME as string arguments');
++        }
++        const activity =
++            options.length === 2 && options[0] === '--activity'
++                ? options[1]
++                : options.length === 1 && options[0].startsWith('--activity=')
++                  ? options[0].slice('--activity='.length)
++                  : '';
++        // Match the Gooo lexer's Unicode letter/digit identifier contract.
++        if (!/^[_\p{L}][_\p{L}\p{Nd}]*$/u.test(activity)) {
++            throw new GoooSourceViewInputError(
++                'Gooo source view requires only --activity NAME, with a valid activity name',
++            );
++        }
++        return activity;
++    }
++
++    private checkSourceViewOptions(
++        filters: ParseFiltersAndOutputOptions,
++        backendOptions: Record<string, any>,
++        libraries: SelectedLibraryVersion[],
++        overrides: ConfiguredOverrides,
++    ): void {
++        if (filters.binary || filters.binaryObject || filters.execute) {
++            throw new GoooSourceViewInputError('Gooo source view does not support binary output or execution');
++        }
++        if (libraries.length > 0 || overrides.length > 0) {
++            throw new GoooSourceViewInputError('Gooo source view does not support libraries or compiler overrides');
++        }
++        if (this.compiler.options.trim()) {
++            throw new GoooSourceViewInputError(
++                'Gooo source view does not support additional configured compiler options',
++            );
++        }
++
++        for (const [name, value] of Object.entries(backendOptions)) {
++            if (name === 'overrides' && Array.isArray(value) && value.length === 0) continue;
++            if (inactiveBackendOptions.has(name) && (value === false || value === null || value === undefined)) {
++                continue;
++            }
++            if (
++                name === 'produceGccDump' &&
++                value !== null &&
++                typeof value === 'object' &&
++                !Array.isArray(value) &&
++                (value.opened === false || value.opened === undefined)
++            ) {
++                continue;
++            }
++            if (name === 'produceCfg' && (value === false || (value?.asm === false && value?.ir === false))) {
++                continue;
++            }
++            throw new GoooSourceViewInputError(`Gooo source view does not support backend option ${name}`);
++        }
++    }
++
++    override prepareArguments(
++        userOptions: string[],
++        filters: ParseFiltersAndOutputOptions,
++        backendOptions: Record<string, any>,
++        inputFilename: string,
++        _outputFilename: string,
++        libraries: SelectedLibraryVersion[],
++        overrides: ConfiguredOverrides,
++    ): string[] {
++        this.checkSourceViewOptions(filters, backendOptions, libraries, overrides);
++        return ['body-codegen', '--activity', this.activityFromOptions(userOptions), inputFilename];
++    }
++
++    override async compile(
++        source: string,
++        options: string[],
++        backendOptions: Record<string, any>,
++        filters: ParseFiltersAndOutputOptions,
++        bypassCache: BypassCache,
++        tools: ActiveTool[],
++        executeParameters: ExecutionParams,
++        libraries: SelectedLibraryVersion[],
++        files: FiledataPair[],
++    ): Promise<CompilationResult> {
++        try {
++            this.activityFromOptions(options);
++            this.checkSourceViewOptions(filters, backendOptions, libraries, backendOptions.overrides || []);
++            if (tools.length > 0 || files.length > 0) {
++                throw new GoooSourceViewInputError('Gooo source view supports one source file and no tools');
++            }
++        } catch (error) {
++            if (!(error instanceof GoooSourceViewInputError)) throw error;
++            return {
++                code: 1,
++                timedOut: false,
++                okToCache: false,
++                languageId: this.getCompilerResultLanguageId(),
++                asm: [],
++                stdout: [],
++                stderr: [{text: error.message}],
++            };
++        }
++        return super.compile(
++            source,
++            options,
++            backendOptions,
++            filters,
++            bypassCache,
++            tools,
++            executeParameters,
++            libraries,
++            files,
++        );
++    }
++
++    override async runCompiler(
++        compiler: string,
++        options: string[],
++        inputFilename: string,
++        execOptions: ExecutionOptionsWithEnv,
++        _filters?: ParseFiltersAndOutputOptions,
++    ): Promise<CompilationResult> {
++        if (options.length !== 4 || options[0] !== 'body-codegen' || options[3] !== inputFilename) {
++            throw new Error('Invalid Gooo source view arguments');
++        }
++        this.activityFromOptions(options.slice(1, 3));
++        const childOptions = {
++            ...execOptions,
++            customCwd: execOptions.customCwd || path.dirname(inputFilename),
++            env: {...execOptions.env, GOOO_LAYA_URL: '', GOOO_LAYA_API_KEY: ''},
++        };
++        const output = await this.exec(compiler, options, childOptions);
++        const failed = output.code !== 0 || output.timedOut || output.truncated;
++        return {
++            ...this.transformToCompilationResult(output, inputFilename),
++            code: failed && output.code === 0 ? -1 : output.code,
++            languageId: this.getCompilerResultLanguageId(),
++            stdout: [],
++            asm: failed ? '<Compilation failed>' : output.stdout,
++        };
++    }
++
++    override async postProcess(
++        result: CompilationResult,
++        _outputFilename: string,
++        _filters: ParseFiltersAndOutputOptions,
++        _produceOptRemarks = false,
++    ): Promise<[CompilationResult, [], []]> {
++        if (result.code !== 0) result.asm = '<Compilation failed>';
++        return [result, [], []];
++    }
++
++    override async processAsm(
++        result: CompilationResult,
++        _filters: ParseFiltersAndOutputOptions,
++        _options: string[],
++    ): Promise<ParsedAsmResult> {
++        return {
++            asm: typeof result.asm === 'string' ? result.asm.split('\n').map(text => ({text})) : result.asm || [],
++            languageId: 'go',
++            filteredCount: 0,
++        };
++    }
++}
+diff --git a/lib/handlers/api.ts b/lib/handlers/api.ts
+index fe22582..dd6c296 100644
+--- a/lib/handlers/api.ts
++++ b/lib/handlers/api.ts
+@@ -191,6 +191,7 @@ export class ApiHandler {
+             if (this.options) {
+                 newLangObj.defaultCompiler = this.options.options.defaultCompiler[unwrap(lang).id];
+                 newLangObj.defaultLibs = this.options.options.defaultLibs[unwrap(lang).id];
++                newLangObj.defaultOptions = this.options.options.compileOptions[unwrap(lang).id];
+             }
+             return newLangObj;
+         });
+diff --git a/lib/languages.ts b/lib/languages.ts
+index 403d439..e717900 100644
+--- a/lib/languages.ts
++++ b/lib/languages.ts
+@@ -525,6 +525,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
+         monacoDisassembly: null,
+         digitSeparator: '_',
+     },
++    gooo: {
++        name: 'Gooo',
++        monaco: 'gooo',
++        extensions: ['.gooo'],
++        alias: [],
++        logoFilename: 'gooo.svg',
++        logoFilenameDark: 'gooo-dark.svg',
++        formatter: null,
++        previewFilter: null,
++        monacoDisassembly: null,
++    },
+     haskell: {
+         name: 'Haskell',
+         monaco: 'haskell',
+diff --git a/public/logos/gooo-dark.svg b/public/logos/gooo-dark.svg
+new file mode 100644
+index 0000000..e7f237a
+--- /dev/null
++++ b/public/logos/gooo-dark.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 64"><text x="2" y="47" font-family="sans-serif" font-weight="700" font-size="48" fill="#8ee4ac">gooo.</text></svg>
+diff --git a/public/logos/gooo.svg b/public/logos/gooo.svg
+new file mode 100644
+index 0000000..454558d
+--- /dev/null
++++ b/public/logos/gooo.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 64"><text x="2" y="47" font-family="sans-serif" font-weight="700" font-size="48" fill="#153e2b">gooo.</text></svg>
+diff --git a/static/modes/_all.ts b/static/modes/_all.ts
+index be88de0..68e306b 100644
+--- a/static/modes/_all.ts
++++ b/static/modes/_all.ts
+@@ -48,6 +48,7 @@ import './erlang-mode';
+ import './fortran-mode';
+ import './gccdump-rtl-gimple-mode';
+ import './glsl-mode';
++import './gooo-mode';
+ import './haskell-mode';
+ import './hlsl-mode';
+ import './hook-mode';
+diff --git a/static/modes/gooo-mode.ts b/static/modes/gooo-mode.ts
+new file mode 100644
+index 0000000..a60627d
+--- /dev/null
++++ b/static/modes/gooo-mode.ts
+@@ -0,0 +1,78 @@
++// Copyright (c) 2026, Compiler Explorer Authors
++// All rights reserved.
++//
++// Redistribution and use in source and binary forms, with or without
++// modification, are permitted provided that the following conditions are met:
++//
++//     * Redistributions of source code must retain the above copyright notice,
++//       this list of conditions and the following disclaimer.
++//     * Redistributions in binary form must reproduce the above copyright
++//       notice, this list of conditions and the following disclaimer in the
++//       documentation and/or other materials provided with the distribution.
++//
++// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
++// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
++// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
++// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
++// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
++// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
++// POSSIBILITY OF SUCH DAMAGE.
++import * as monaco from 'monaco-editor';
++
++monaco.languages.register({id: 'gooo'});
++monaco.languages.setMonarchTokensProvider('gooo', {
++    keywords: [
++        'package',
++        'namespace',
++        'import',
++        'entity',
++        'fields',
++        'field',
++        'id',
++        'type',
++        'activity',
++        'computes',
++        'required',
++        'optional',
++        'one',
++        'many',
++    ],
++    typeKeywords: ['integer', 'boolean', 'string'],
++    tokenizer: {
++        root: [
++            [/\/\/.*$/, 'comment'],
++            [/\/\*/, 'comment', '@comment'],
++            [
++                /[a-zA-Z_][a-zA-Z0-9_]*/,
++                {
++                    cases: {'@keywords': 'keyword', '@typeKeywords': 'type', '@default': 'identifier'},
++                },
++            ],
++            [/-?[0-9]+/, 'number'],
++            [/"/, 'string', '@quoted'],
++            [/`/, 'string', '@raw'],
++            [/->/, 'operator'],
++            [/[{}()[\]]/, '@brackets'],
++            [/[,:;]/, 'delimiter'],
++            [/[ \t\r\n]+/, 'white'],
++        ],
++        quoted: [
++            [/[^\\"]+/, 'string'],
++            [/\\./, 'string.escape'],
++            [/"/, 'string', '@pop'],
++        ],
++        raw: [
++            [/[^`]+/, 'string'],
++            [/`/, 'string', '@pop'],
++        ],
++        comment: [
++            [/[^/*]+/, 'comment'],
++            [/\*\//, 'comment', '@pop'],
++            [/[/*]/, 'comment'],
++        ],
++    },
++});
+diff --git a/static/panes/compiler.ts b/static/panes/compiler.ts
+index 84ca95d..01765f3 100644
+--- a/static/panes/compiler.ts
++++ b/static/panes/compiler.ts
+@@ -159,6 +159,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
+     private needsCompile: boolean;
+     private deviceViewOpen: boolean;
+     private options: string;
++    private optionsChangedBeforeInitialStateLoad = false;
+     private source: string;
+     private assembly: Assembly[];
+     private lastResult: CompilationResult | null;
+@@ -352,6 +353,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
+ 
+     private async postInit(state: MonacoPaneState & CompilerState) {
+         await this.initLangAndCompiler(state);
++        if (state.options === undefined && !this.optionsChangedBeforeInitialStateLoad) {
++            this.options =
++                languagesService.getLanguagesOrFail()[this.currentLangId as LanguageKey]?.defaultOptions ?? '';
++            this.optionsField.val(this.options);
++        }
+         // The lang/compiler are now resolved from our own state. Only after this point may we
+         // react to languageChange broadcasts; an earlier one (e.g. the editor's initial firstTime
+         // broadcast, which can arrive while the await above is still pending) would otherwise reset
+@@ -3138,7 +3144,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
+ 
+         // "input" rather than "keyup": it covers every edit, including the ones that
+         // involve no keystroke at all (middle-click paste, drag and drop, autofill).
+-        this.optionsField.on('change', optionsChange).on('input', optionsChange);
++        this.optionsField.on('change input', e => {
++            if (!this.initialStateLoaded) {
++                this.optionsChangedBeforeInitialStateLoad = true;
++                this.options = unwrapString($(e.target).val());
++            }
++            optionsChange(e);
++        });
+ 
+         this.mouseMoveThrottledFunction = _.throttle(this.onMouseMove.bind(this), 50);
+         this.editor.onMouseMove(e => {
+@@ -3188,6 +3200,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
+ 
+     onOptionsChange(options: string): void {
+         if (this.options !== options) {
++            if (!this.initialStateLoaded) this.optionsChangedBeforeInitialStateLoad = true;
+             this.options = options;
+             this.updateState();
+             this.compile();
+@@ -3825,7 +3838,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
+     updateCompilersSelector(info: {options?: string}) {
+         if (this.compilerPicker instanceof CompilerPicker)
+             this.compilerPicker.update(this.currentLangId ?? '', this.compiler?.id ?? '');
+-        this.options = info.options || '';
++        this.options =
++            info.options ??
++            languagesService.getLanguagesOrFail()[this.currentLangId as LanguageKey]?.defaultOptions ??
++            '';
+         this.optionsField.val(this.options);
+     }
+ }
+diff --git a/static/services/languages.service.ts b/static/services/languages.service.ts
+index 6f1f653..3eac081 100644
+--- a/static/services/languages.service.ts
++++ b/static/services/languages.service.ts
+@@ -74,6 +74,7 @@ export class LanguagesService {
+         'digitSeparator',
+         'defaultCompiler',
+         'defaultLibs',
++        'defaultOptions',
+     ];
+ 
+     private async fetchLanguages(): Promise<LanguageMap> {
+diff --git a/static/tests/panes/compiler-tests.ts b/static/tests/panes/compiler-tests.ts
+index b0f8879..682c784 100644
+--- a/static/tests/panes/compiler-tests.ts
++++ b/static/tests/panes/compiler-tests.ts
+@@ -22,10 +22,20 @@
+ // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ // POSSIBILITY OF SUCH DAMAGE.
+ 
++import $ from 'jquery';
+ import * as monaco from 'monaco-editor';
+ import {afterEach, describe, expect, it, vi} from 'vitest';
+ 
++import type {CompilerState} from '../../panes/compiler.interfaces.js';
+ import {Compiler} from '../../panes/compiler.js';
++import * as fetchJson from '../../services/fetch-json.js';
++import {type LanguageMap, LanguagesService, languagesService} from '../../services/languages.service.js';
++
++vi.mock('../../widgets/compiler-picker.js', () => ({
++    CompilerPicker: class {
++        update = vi.fn();
++    },
++}));
+ 
+ describe('Compiler output editor', () => {
+     afterEach(() => {
+@@ -50,3 +60,124 @@ describe('Compiler output editor', () => {
+         );
+     });
+ });
++
++describe('Compiler default options', () => {
++    afterEach(() => {
++        vi.clearAllTimers();
++        vi.useRealTimers();
++        vi.restoreAllMocks();
++        $(document).off('keyup.editable').off('click');
++    });
++
++    function compilerWithOptions(initialOptions: string) {
++        vi.spyOn(languagesService, 'getLanguagesOrFail').mockReturnValue({
++            gooo: {id: 'gooo', defaultOptions: '--activity Clamp'},
++        } as LanguageMap);
++        const compiler = Object.create(Compiler.prototype) as Compiler;
++        const optionsField = $('<input>').val(initialOptions);
++        const sentOptions: string[] = [];
++        Object.assign(compiler, {
++            options: initialOptions,
++            optionsChangedBeforeInitialStateLoad: false,
++            initialStateLoaded: false,
++            optionsField,
++            filters: {on: vi.fn()},
++            fullTimingInfo: $('<div>'),
++            compileClearCache: $('<button>'),
++            compilerLicenseButton: $('<button>'),
++            libsButton: $('<button>'),
++            editor: {onMouseMove: vi.fn(), onDidChangeCursorSelection: vi.fn(), onMouseUp: vi.fn()},
++            hub: {deferred: false},
++            eventHub: {emit: vi.fn()},
++            sourceEditorId: 1,
++            initLangAndCompiler: vi.fn(async () => {
++                Reflect.set(compiler, 'currentLangId', 'gooo');
++            }),
++            initLibraries: vi.fn(),
++            sendCompiler: vi.fn(() => sentOptions.push(Reflect.get(compiler, 'options'))),
++            updateCompilerInfo: vi.fn(),
++            updateButtons: vi.fn(),
++            initToolButtons: vi.fn(),
++            updateState: vi.fn(),
++            compile: vi.fn(),
++            undefer: vi.fn(),
++        });
++        return {compiler, optionsField, displayedOptions: () => optionsField.val(), sentOptions};
++    }
++
++    it('requests default options with language metadata', async () => {
++        const fetch = vi
++            .spyOn(fetchJson, 'fetchJson')
++            .mockResolvedValue([{id: 'gooo', defaultOptions: '--activity Clamp'}]);
++        const service = new LanguagesService();
++
++        expect((await service.getLanguages()).gooo?.defaultOptions).toBe('--activity Clamp');
++        expect(fetch).toHaveBeenCalledWith(expect.stringContaining(',defaultOptions&hash='));
++    });
++
++    it.each([
++        [undefined, '--activity Clamp'],
++        ['', ''],
++        ['--activity Double', '--activity Double'],
++    ])('initializes stored options %s as %s before sending the compiler', async (storedOptions, expectedOptions) => {
++        const fixture = compilerWithOptions(storedOptions ?? '');
++        const state: CompilerState = {compiler: 'gooolocal', options: storedOptions};
++
++        await Reflect.get(fixture.compiler, 'postInit').call(fixture.compiler, state);
++
++        expect(fixture.displayedOptions()).toBe(expectedOptions);
++        expect(fixture.sentOptions).toEqual([expectedOptions]);
++    });
++
++    it.each([
++        [['--activity Double'], '--activity Double'],
++        [['--activity Double', ''], ''],
++    ])('preserves raw options input before the debounce runs: %s', async (edits, expectedOptions) => {
++        vi.useFakeTimers();
++        const fixture = compilerWithOptions('');
++        fixture.compiler.initCallbacks();
++        const optionsChanged = vi.spyOn(fixture.compiler, 'onOptionsChange');
++        let finishInit = () => {};
++        Reflect.set(
++            fixture.compiler,
++            'initLangAndCompiler',
++            () =>
++                new Promise<void>(resolve => {
++                    finishInit = () => {
++                        Reflect.set(fixture.compiler, 'currentLangId', 'gooo');
++                        resolve();
++                    };
++                }),
++        );
++        const initializing = Reflect.get(fixture.compiler, 'postInit').call(fixture.compiler, {
++            compiler: 'gooolocal',
++        });
++
++        vi.advanceTimersByTime(100);
++        for (const edit of edits) {
++            fixture.optionsField.val(edit).trigger('input');
++        }
++        vi.advanceTimersByTime(100);
++        expect(optionsChanged).not.toHaveBeenCalled();
++        finishInit();
++        await initializing;
++
++        expect(fixture.displayedOptions()).toBe(expectedOptions);
++        expect(fixture.sentOptions[fixture.sentOptions.length - 1]).toBe(expectedOptions);
++        expect(optionsChanged).not.toHaveBeenCalled();
++    });
++
++    it.each([
++        [undefined, '--activity Clamp'],
++        ['', ''],
++        ['--activity Double', '--activity Double'],
++    ])('restores language options %s as %s', (storedOptions, expectedOptions) => {
++        const fixture = compilerWithOptions('--activity Other');
++        Reflect.set(fixture.compiler, 'currentLangId', 'gooo');
++
++        fixture.compiler.updateCompilersSelector({options: storedOptions});
++
++        expect(fixture.displayedOptions()).toBe(expectedOptions);
++        expect(Reflect.get(fixture.compiler, 'options')).toBe(expectedOptions);
++    });
++});
+diff --git a/test/gooo-tests.ts b/test/gooo-tests.ts
+new file mode 100644
+index 0000000..bf05735
+--- /dev/null
++++ b/test/gooo-tests.ts
+@@ -0,0 +1,531 @@
++// Copyright (c) 2026, Compiler Explorer Authors
++// All rights reserved.
++//
++// Redistribution and use in source and binary forms, with or without
++// modification, are permitted provided that the following conditions are met:
++//
++//     * Redistributions of source code must retain the above copyright notice,
++//       this list of conditions and the following disclaimer.
++//
++//     * Redistributions in binary form must reproduce the above copyright
++//       notice, this list of conditions and the following disclaimer in the
++//       documentation and/or other materials provided with the distribution.
++//
++// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
++// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
++// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
++// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
++// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
++// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
++// POSSIBILITY OF SUCH DAMAGE.
++
++import fs from 'node:fs/promises';
++import path from 'node:path';
++
++import {afterEach, beforeAll, beforeEach, describe, expect, it, vi} from 'vitest';
++
++import type {CompilationEnvironment} from '../lib/compilation-env.js';
++import {GoooCompiler} from '../lib/compilers/gooo.js';
++import {BypassCache} from '../types/compilation/compilation.interfaces.js';
++import {CompilerOverrideType} from '../types/compilation/compiler-overrides.interfaces.js';
++import type {CompilerInfo} from '../types/compiler.interfaces.js';
++import type {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
++import type {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
++import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
++
++const languages = {gooo: {id: 'gooo'}};
++let environment: CompilationEnvironment;
++const dirPath = path.resolve('/tmp/ce-gooo');
++const inputFilename = path.join(dirPath, 'example.gooo');
++const outputFilename = path.join(dirPath, 'output.s');
++const generatedGo =
++    'package sample\n\n' +
++    '//gooo:generated:start id="sample://clamp" kind="activity"\n' +
++    'func Clamp(input int64) int64 {\n' +
++    '\t// Keep this comment and the indentation.\n' +
++    '\treturn input  // trailing comment\n' +
++    '}\n\n' +
++    '//gooo:generated:end id="sample://clamp" kind="activity"\n';
++
++const initialCompilerPaneOptions = JSON.parse(
++    JSON.stringify({
++        producePp: null,
++        produceAst: undefined,
++        produceGccDump: {
++            opened: undefined,
++            pass: undefined,
++            treeDump: undefined,
++            rtlDump: undefined,
++            ipaDump: undefined,
++            dumpFlags: undefined,
++            libraryFunctions: false,
++        },
++        produceOptInfo: false,
++        produceStackUsageInfo: undefined,
++        produceCfg: false,
++        produceGnatDebugTree: undefined,
++        produceGnatDebug: undefined,
++        produceIr: null,
++        produceClangir: null,
++        produceOptPipeline: null,
++        produceDevice: false,
++        produceRustMir: undefined,
++        produceRustMacroExp: undefined,
++        produceRustHir: undefined,
++        produceHaskellCore: undefined,
++        produceHaskellStg: undefined,
++        produceHaskellCmm: undefined,
++        produceLeanC: null,
++        produceClojureMacroExp: undefined,
++        produceYul: null,
++        overrides: [],
++    }),
++) as Record<string, any>;
++
++function makeCompiler(info: Partial<CompilerInfo> = {}) {
++    return new GoooCompiler(
++        makeFakeCompilerInfo({
++            id: 'localGooo',
++            exe: 'gooo',
++            lang: 'gooo',
++            options: '',
++            ldPath: [],
++            libPath: [],
++            ...info,
++        }),
++        environment,
++    );
++}
++
++function execResult(overrides: Partial<UnprocessedExecResult> = {}): UnprocessedExecResult {
++    return {
++        code: 0,
++        okToCache: true,
++        filenameTransform: filename => filename,
++        stdout: generatedGo,
++        stderr: '',
++        execTime: 1,
++        timedOut: false,
++        truncated: false,
++        ...overrides,
++    };
++}
++
++describe('Gooo source view', () => {
++    let compiler: GoooCompiler;
++
++    beforeAll(() => {
++        environment = makeCompilationEnvironment({languages});
++    });
++
++    beforeEach(() => {
++        compiler = makeCompiler();
++    });
++
++    afterEach(() => {
++        vi.restoreAllMocks();
++        vi.unstubAllEnvs();
++    });
++
++    function prepareArguments(
++        options: string[],
++        backendOptions: Record<string, any> = {},
++        filters: ParseFiltersAndOutputOptions = {},
++    ) {
++        return compiler.prepareArguments(options, filters, backendOptions, inputFilename, outputFilename, [], []);
++    }
++
++    // Source generation arguments
++    it.each([
++        {options: ['--activity', 'Clamp'], name: 'Clamp'},
++        {options: ['--activity=Double'], name: 'Double'},
++        {options: ['--activity', '계산_２'], name: '계산_２'},
++    ])('should forward only the selected activity $name and input file', ({options, name}) => {
++        expect(prepareArguments(options)).toEqual(['body-codegen', '--activity', name, inputFilename]);
++    });
++
++    it.each(
++        [
++            [],
++            ['--activity'],
++            ['--activity='],
++            ['--activity', 'Clamp', '--json'],
++            ['--activity', 'Clamp', '--out', 'other.go'],
++            ['--activity', 'Clamp', '--source', 'other.gooo'],
++            ['--activity', 'Clamp', '--model', 'remote-model'],
++            ['--activity', 'Clamp', '--activity', 'Double'],
++            ['body-compose', '--activity', 'Clamp'],
++            ['--activity', 'Clamp; echo unexpected'],
++        ].map(options => ({options})),
++    )('should reject missing or additional user options: $options', ({options}) => {
++        expect(() => prepareArguments(options)).toThrow('requires only --activity NAME');
++    });
++
++    it('should accept inactive options sent by the compiler pane', () => {
++        expect(
++            prepareArguments(['--activity', 'Clamp'], {
++                producePp: null,
++                produceAst: false,
++                produceGccDump: {opened: false, treeDump: true, pass: 'some-pass'},
++                produceCfg: false,
++                produceOptInfo: false,
++                produceStackUsageInfo: false,
++                produceIr: null,
++                overrides: [],
++            }),
++        ).toEqual(['body-codegen', '--activity', 'Clamp', inputFilename]);
++    });
++
++    it.each([
++        {produceAst: true},
++        {produceIr: {}},
++        {produceGccDump: {opened: true}},
++        {produceGccDump: {opened: 'false'}},
++        {produceGccDump: {opened: null}},
++        {produceGccDump: {opened: 0}},
++        {produceGccDump: []},
++        {produceGccDump: 'false'},
++        {produceGccDump: null},
++        {produceCfg: {asm: true, ir: false}},
++        {skipAsm: true},
++        {customOutputFilename: 'elsewhere.go'},
++        {cmakeArgs: '--json'},
++        {unexpected: false},
++        {overrides: [{name: CompilerOverrideType.env, values: [{name: 'GOOO_LAYA_URL', value: 'remote'}]}]},
++    ])('should reject unsupported backend options: %j', backendOptions => {
++        expect(() => prepareArguments(['--activity', 'Clamp'], backendOptions)).toThrow('does not support');
++    });
++
++    it('should reject library and compiler override arguments', () => {
++        expect(() =>
++            compiler.prepareArguments(
++                ['--activity', 'Clamp'],
++                {},
++                {},
++                inputFilename,
++                outputFilename,
++                [{id: 'some-library', version: '1'}],
++                [],
++            ),
++        ).toThrow('does not support libraries or compiler overrides');
++        expect(() =>
++            compiler.prepareArguments(
++                ['--activity', 'Clamp'],
++                {},
++                {},
++                inputFilename,
++                outputFilename,
++                [],
++                [{name: CompilerOverrideType.arch, value: 'aarch64'}],
++            ),
++        ).toThrow('does not support libraries or compiler overrides');
++    });
++
++    it('should reject configured flags instead of silently dropping them', () => {
++        compiler = makeCompiler({options: '--json'});
++        expect(() => prepareArguments(['--activity', 'Clamp'])).toThrow('additional configured compiler options');
++    });
++
++    it.each(['binary', 'binaryObject', 'execute'])('should reject requested %s mode before running a child', mode => {
++        const exec = vi.spyOn(compiler, 'exec');
++        expect(() => prepareArguments(['--activity', 'Clamp'], {}, {[mode]: true})).toThrow(
++            'does not support binary output or execution',
++        );
++        expect(exec).not.toHaveBeenCalled();
++    });
++
++    it('should disable execution and assembly capabilities even when configured', () => {
++        const configured = makeCompiler({
++            supportsExecute: true,
++            supportsBinary: true,
++            supportsBinaryObject: true,
++            supportsIntel: true,
++            intelAsm: '-masm=intel',
++            supportsCfg: true,
++            supportsAsmDocs: true,
++        });
++        expect(GoooCompiler.key).toBe('gooo');
++        expect(configured.getCompilerResultLanguageId()).toBe('go');
++        expect(configured.isCfgCompiler()).toBe(false);
++        for (const capability of [
++            'supportsExecute',
++            'supportsBinary',
++            'supportsBinaryObject',
++            'supportsIntel',
++            'supportsCfg',
++            'supportsAsmDocs',
++        ] as const) {
++            expect(configured.compiler[capability]).toBe(false);
++        }
++        expect(configured.compiler.disabledFilters).toContain('commentOnly');
++        expect(configured.compiler.disabledFilters).toContain('trim');
++        expect(configured.compiler.tools).toEqual({});
++        expect(configured.compiler.possibleOverrides).toEqual([]);
++    });
++
++    // Compiler output and child process environment
++    it('should preserve generated Go comments, tabs, blank lines and trailing whitespace', async () => {
++        const go = generatedGo + '\n\t \n';
++        const exec = vi.spyOn(compiler, 'exec').mockResolvedValue(execResult({stdout: go}));
++        const result = await compiler.runCompiler(
++            compiler.compiler.exe,
++            prepareArguments(['--activity', 'Clamp']),
++            inputFilename,
++            compiler.getDefaultExecOptions(),
++        );
++        const [processed] = await compiler.postProcess(result, outputFilename, {});
++        const parsed = await compiler.processAsm(processed, compiler.getDefaultFilters(), ['--activity', 'Clamp']);
++
++        expect(result.code).toBe(0);
++        expect(result.languageId).toBe('go');
++        expect(result.stdout).toEqual([]);
++        expect(result.asm).toBe(go);
++        expect(parsed.asm.map(line => line.text).join('\n')).toBe(go);
++        expect(parsed.languageId).toBe('go');
++        expect(exec.mock.calls[0][1]).toEqual(['body-codegen', '--activity', 'Clamp', inputFilename]);
++    });
++
++    it('should keep diagnostics and discard failed generation stdout', async () => {
++        vi.spyOn(compiler, 'exec').mockResolvedValue(
++            execResult({code: 1, stdout: generatedGo, stderr: 'body-codegen: activity "Absent" not found\n'}),
++        );
++        const result = await compiler.runCompiler(
++            compiler.compiler.exe,
++            prepareArguments(['--activity', 'Absent']),
++            inputFilename,
++            compiler.getDefaultExecOptions(),
++        );
++        expect(result.code).toBe(1);
++        expect(result.asm).toBe('<Compilation failed>');
++        expect(result.stdout).toEqual([]);
++        expect(result.stderr).toEqual([{text: 'body-codegen: activity "Absent" not found'}]);
++    });
++
++    it.each([{timedOut: true}, {truncated: true}])('should discard incomplete generated source: %j', async status => {
++        vi.spyOn(compiler, 'exec').mockResolvedValue(execResult(status));
++        const result = await compiler.runCompiler(
++            compiler.compiler.exe,
++            prepareArguments(['--activity', 'Clamp']),
++            inputFilename,
++            compiler.getDefaultExecOptions(),
++        );
++        expect(result.code).not.toBe(0);
++        expect(result.asm).toBe('<Compilation failed>');
++    });
++
++    it('should blank model settings in child environments without mutating the caller', async () => {
++        vi.stubEnv('GOOO_LAYA_URL', 'test-inherited-url');
++        vi.stubEnv('GOOO_LAYA_API_KEY', 'test-inherited-key');
++        const defaults = compiler.getDefaultExecOptions();
++        expect(defaults.env.GOOO_LAYA_URL).toBe('');
++        expect(defaults.env.GOOO_LAYA_API_KEY).toBe('');
++
++        const execOptions = {...defaults, env: {KEEP: 'value', GOOO_LAYA_URL: 'request-url', GOOO_LAYA_API_KEY: 'key'}};
++        const exec = vi.spyOn(compiler, 'exec').mockResolvedValue(execResult());
++        await compiler.runCompiler(
++            compiler.compiler.exe,
++            prepareArguments(['--activity', 'Clamp']),
++            inputFilename,
++            execOptions,
++        );
++        expect(exec.mock.calls[0][2].env).toEqual({KEEP: 'value', GOOO_LAYA_URL: '', GOOO_LAYA_API_KEY: ''});
++        expect(execOptions.env.GOOO_LAYA_URL).toBe('request-url');
++        expect(process.env.GOOO_LAYA_URL).toBe('test-inherited-url');
++    });
++
++    it('should probe the version with the version subcommand and blank model settings', async () => {
++        compiler = makeCompiler({versionFlag: ['--version']});
++        const exec = vi
++            .spyOn(compiler, 'execCompilerCached')
++            .mockResolvedValue(execResult({stdout: 'gooo 0.6.29-dev'}));
++        expect(await compiler.getVersion()).toEqual({stdout: 'gooo 0.6.29-dev', stderr: '', code: 0});
++        expect(exec.mock.calls[0][1]).toEqual(['version']);
++        expect(exec.mock.calls[0][2]?.env.GOOO_LAYA_URL).toBe('');
++        expect(exec.mock.calls[0][2]?.env.GOOO_LAYA_API_KEY).toBe('');
++    });
++
++    it('should reject alternate child commands even if called directly', async () => {
++        const exec = vi.spyOn(compiler, 'exec');
++        await expect(
++            compiler.runCompiler(
++                compiler.compiler.exe,
++                ['body-compose', '--activity', 'Clamp', inputFilename],
++                inputFilename,
++                compiler.getDefaultExecOptions(),
++            ),
++        ).rejects.toThrow('Invalid Gooo source view arguments');
++        expect(exec).not.toHaveBeenCalled();
++    });
++
++    // Full compilation lifecycle
++    it('should compile the initial compiler pane request after undefined fields are removed by JSON', async () => {
++        vi.spyOn(compiler, 'newTempDir').mockResolvedValue(dirPath);
++        vi.spyOn(fs, 'writeFile').mockResolvedValue();
++        vi.spyOn(fs, 'stat').mockRejectedValue(new Error('No output file'));
++        vi.spyOn(fs, 'rm').mockResolvedValue();
++        const exec = vi.spyOn(compiler, 'exec').mockResolvedValue(execResult());
++        expect(initialCompilerPaneOptions.produceGccDump).toEqual({libraryFunctions: false});
++        expect(Object.hasOwn(initialCompilerPaneOptions, 'produceAst')).toBe(false);
++
++        const result = await compiler.compile(
++            'source',
++            ['--activity', 'Clamp'],
++            initialCompilerPaneOptions,
++            {},
++            BypassCache.Compilation,
++            [],
++            {args: [], stdin: '', runtimeTools: []},
++            [],
++            [],
++        );
++
++        expect(result.code).toBe(0);
++        expect(result.stderr).toEqual([]);
++        expect((result.asm as {text: string}[]).map(line => line.text).join('\n')).toBe(generatedGo);
++        expect(exec.mock.calls[0][1]).toEqual(['body-codegen', '--activity', 'Clamp', inputFilename]);
++        expect(exec.mock.calls[0][2].env?.GOOO_LAYA_URL).toBe('');
++        expect(exec.mock.calls[0][2].env?.GOOO_LAYA_API_KEY).toBe('');
++    });
++
++    it('should replace successful source with diagnostics on error and accept a later changed request', async () => {
++        vi.spyOn(compiler, 'newTempDir').mockResolvedValue(dirPath);
++        const writeFile = vi.spyOn(fs, 'writeFile').mockResolvedValue();
++        vi.spyOn(fs, 'stat').mockRejectedValue(new Error('No output file'));
++        vi.spyOn(fs, 'rm').mockResolvedValue();
++        const readFile = vi.spyOn(fs, 'readFile');
++        const exec = vi
++            .spyOn(compiler, 'exec')
++            .mockResolvedValueOnce(execResult())
++            .mockResolvedValueOnce(execResult({code: 1, stdout: '', stderr: 'invalid activity body\n'}))
++            .mockResolvedValueOnce(execResult({stdout: generatedGo.replace('return input', 'return 7')}));
++        const compile = (source: string, activity: string) =>
++            compiler.compile(source, ['--activity', activity], {}, {}, BypassCache.Compilation, [], {}, [], []);
++
++        const success = await compile('first source', 'Clamp');
++        const invalidOptions = await compiler.compile('source', [], {}, {}, BypassCache.None, [], {}, [], []);
++        const failure = await compile('invalid source', 'Absent');
++        const changed = await compile('changed source', 'Double');
++
++        expect(success.code).toBe(0);
++        expect((success.asm as {text: string}[]).map(line => line.text).join('\n')).toBe(generatedGo);
++        expect(invalidOptions.code).toBe(1);
++        expect(invalidOptions.asm).toEqual([]);
++        expect(invalidOptions.stderr[0].text).toContain('requires only --activity NAME');
++        expect(failure.code).toBe(1);
++        expect(failure.asm).toEqual([{text: '<Compilation failed>'}]);
++        expect(failure.stderr).toEqual([{text: 'invalid activity body'}]);
++        expect(changed.code).toBe(0);
++        expect((changed.asm as {text: string}[]).map(line => line.text).join('\n')).toContain('return 7');
++        expect(exec.mock.calls.map(call => call[1])).toEqual([
++            ['body-codegen', '--activity', 'Clamp', inputFilename],
++            ['body-codegen', '--activity', 'Absent', inputFilename],
++            ['body-codegen', '--activity', 'Double', inputFilename],
++        ]);
++        expect(writeFile.mock.calls.map(call => call[1])).toEqual(['first source', 'invalid source', 'changed source']);
++        expect(writeFile.mock.calls.every(call => call[0] === inputFilename)).toBe(true);
++        expect(readFile).not.toHaveBeenCalled();
++    });
++
++    it('should keep concurrent request outputs and activities independent', async () => {
++        const exec = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
++            await Promise.resolve();
++            return execResult({stdout: args[2] === 'Clamp' ? generatedGo : 'package other\nfunc Double() {}\n'});
++        });
++        const results = await Promise.all(
++            ['Clamp', 'Double'].map(name =>
++                compiler.runCompiler(
++                    compiler.compiler.exe,
++                    prepareArguments(['--activity', name]),
++                    inputFilename,
++                    compiler.getDefaultExecOptions(),
++                ),
++            ),
++        );
++        expect(results[0].asm).toBe(generatedGo);
++        expect(results[1].asm).toBe('package other\nfunc Double() {}\n');
++        expect(exec.mock.calls.map(call => call[1][2])).toEqual(['Clamp', 'Double']);
++    });
++
++    it.each([
++        {name: 'missing selector', options: [], message: 'requires only --activity NAME'},
++        {
++            name: 'non-string selector',
++            options: ['--activity', null] as unknown as string[],
++            message: 'requires only --activity NAME',
++        },
++        {
++            name: 'unsupported user flag',
++            options: ['--activity', 'Clamp', '--json'],
++            message: 'requires only --activity NAME',
++        },
++        {name: 'binary mode', filters: {binary: true}, message: 'binary output or execution'},
++        {name: 'binary object mode', filters: {binaryObject: true}, message: 'binary output or execution'},
++        {name: 'execution', filters: {execute: true}, message: 'binary output or execution'},
++        {
++            name: 'backend option',
++            backendOptions: {produceAst: true},
++            message: 'does not support backend option produceAst',
++        },
++        {
++            name: 'opened GCC dump view',
++            backendOptions: {produceGccDump: {opened: true}},
++            message: 'does not support backend option produceGccDump',
++        },
++        {
++            name: 'invalid GCC dump view flag',
++            backendOptions: {produceGccDump: {opened: 'false'}},
++            message: 'does not support backend option produceGccDump',
++        },
++        {
++            name: 'library',
++            libraries: [{id: 'library', version: '1'}],
++            message: 'does not support libraries or compiler overrides',
++        },
++        {
++            name: 'environment override',
++            backendOptions: {
++                overrides: [{name: CompilerOverrideType.env, values: [{name: 'GOOO_LAYA_URL', value: 'remote'}]}],
++            },
++            message: 'does not support libraries or compiler overrides',
++        },
++        {name: 'tool', tools: [{id: 'tool', args: [], stdin: ''}], message: 'one source file and no tools'},
++        {
++            name: 'additional file',
++            files: [{filename: 'extra.gooo', contents: 'extra source'}],
++            message: 'one source file and no tools',
++        },
++    ])('should return a compiler diagnostic for $name without starting a child', async request => {
++        const exec = vi.spyOn(compiler, 'exec');
++        const result = await compiler.compile(
++            'source',
++            request.options || ['--activity', 'Clamp'],
++            request.backendOptions || {},
++            request.filters || {},
++            BypassCache.None,
++            request.tools || [],
++            {},
++            request.libraries || [],
++            request.files || [],
++        );
++        expect(result.code).toBe(1);
++        expect(result.languageId).toBe('go');
++        expect(result.asm).toEqual([]);
++        expect(result.stdout).toEqual([]);
++        expect(result.stderr).toEqual([{text: expect.stringContaining(request.message)}]);
++        expect(exec).not.toHaveBeenCalled();
++    });
++
++    it('should propagate unexpected compiler faults', async () => {
++        const fault = new Error('Unexpected compiler fault');
++        vi.spyOn(compiler, 'checkOptions').mockImplementation(() => {
++            throw fault;
++        });
++        await expect(
++            compiler.compile('source', ['--activity', 'Clamp'], {}, {}, BypassCache.None, [], {}, [], []),
++        ).rejects.toBe(fault);
++    });
++});
+diff --git a/test/handlers/api-tests.ts b/test/handlers/api-tests.ts
+index 2b14bc4..e9c0934 100644
+--- a/test/handlers/api-tests.ts
++++ b/test/handlers/api-tests.ts
+@@ -103,6 +103,13 @@ describe('API handling', () => {
+         app.use('/api', apiHandler.handle);
+         apiHandler.setCompilers(compilers);
+         apiHandler.setLanguages(languages);
++        apiHandler.setOptions({
++            options: {
++                defaultCompiler: {},
++                defaultLibs: {},
++                compileOptions: {'c++': '-O2', pascal: '-O3'},
++            },
++        } as unknown as ClientOptionsHandler);
+     });
+ 
+     it('should respond to plain text compiler requests', async () => {
+@@ -166,6 +173,16 @@ describe('API handling', () => {
+             .expect('Content-Type', /json/)
+             .expect(200, [languages['c++'], languages.pascal]);
+     });
++    it('should include language default options in filtered JSON requests', async () => {
++        await request(app)
++            .get('/api/languages?fields=id,defaultOptions')
++            .set('Accept', 'application/json')
++            .expect('Content-Type', /json/)
++            .expect(200, [
++                {id: 'c++', defaultOptions: '-O2'},
++                {id: 'pascal', defaultOptions: '-O3'},
++            ]);
++    });
+     it('should mark list responses as varying on Accept', async () => {
+         const res = await request(app).get('/api/languages').set('Accept', 'application/json').expect(200);
+         expect(res.headers.vary).toMatch(/\bAccept\b/);
+diff --git a/types/languages.interfaces.ts b/types/languages.interfaces.ts
+index e239223..864dfd9 100644
+--- a/types/languages.interfaces.ts
++++ b/types/languages.interfaces.ts
+@@ -63,6 +63,7 @@ export type LanguageKey =
+     | 'gimple'
+     | 'glsl'
+     | 'go'
++    | 'gooo'
+     | 'haskell'
+     | 'hlsl'
+     | 'helion'
+@@ -156,6 +157,8 @@ export interface Language {
+     defaultCompiler?: string;
+     /** Default libraries for the language. This is populated when handed to the frontend. */
+     defaultLibs?: string;
++    /** Default compiler options for the language. This is populated when handed to the frontend. */
++    defaultOptions?: string;
+     digitSeparator?: string;
+     /** Hint to display when no assembly is generated (e.g., for inlined functions) */
+     noAsmHint?: string;

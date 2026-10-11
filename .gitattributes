@@ -1,0 +1,2 @@
+# Unified diff context lines include a space; preserve the pinned patch bytes.
+tools/compiler-explorer/gooo-source-view.patch whitespace=-blank-at-eol

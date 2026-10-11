@@ -1,0 +1,8 @@
+package sample
+
+//gooo:generated:start id="sample://double" kind="activity"
+func Double(input int64) int64 {
+	return input * 2
+}
+
+//gooo:generated:end id="sample://double" kind="activity"

@@ -1,0 +1,12 @@
+package sample
+
+//gooo:generated:start id="sample://clamp" kind="activity"
+func Clamp(input int64) int64 {
+	if input < 0 {
+		return 7
+	} else {
+		return input
+	}
+}
+
+//gooo:generated:end id="sample://clamp" kind="activity"
