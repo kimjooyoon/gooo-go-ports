@@ -478,7 +478,16 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: gooo-go-ports-evidence
-          path: out/
+          # Keep receipts and diagnostics; Go build caches are regenerable.
+          path: |
+            out/
+            !out/ci/simple-fold-exhaustive/cache/**
+            !out/ci/ycbcr-exhaustive-RGBToYCbCr/cache/**
+            !out/ci/ycbcr-exhaustive-YCbCrToRGB/cache/**
+            !out/ci/case-mapping-exhaustive-To/cache/**
+            !out/ci/case-mapping-exhaustive-ToUpper/cache/**
+            !out/ci/case-mapping-exhaustive-ToLower/cache/**
+            !out/ci/case-mapping-exhaustive-ToTitle/cache/**
           if-no-files-found: warn
           retention-days: 14
 
