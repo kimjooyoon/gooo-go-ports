@@ -57,13 +57,18 @@ reference outputs or prove correctness for all inputs.
 
 Extract the bundle and enter the directory containing `limits.gooo`, `main.gooo`,
 `gooo.workspace.json`, `inputs.json`, `README.md` and `NOTICE`. Keep the files
-together, then build the exact compiler used by this example:
+together, then fetch a shallow snapshot of the exact compiler used by this
+example and build it. Run the commands in order in the same shell, and stop if
+a command fails. Start without an existing `compiler` directory:
 
 ```sh
 export GOTOOLCHAIN=go1.27.2
 export GOWORK=off
-git clone https://github.com/kimjooyoon/meta-ontology-go.git compiler
-git -C compiler checkout 90ff2bb5aeffc2ac553496b646d14db1e8d33fdb
+mkdir compiler
+git -C compiler init
+git -C compiler remote add origin https://github.com/kimjooyoon/meta-ontology-go.git
+git -C compiler fetch --depth=1 origin 90ff2bb5aeffc2ac553496b646d14db1e8d33fdb
+git -C compiler checkout --detach FETCH_HEAD
 cd compiler
 go build -o ../gooo ./cmd/gooo
 cd ..
