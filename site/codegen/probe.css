@@ -23,6 +23,10 @@ textarea, pre { font: .82rem/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas,
 textarea { width: 100%; min-height: 390px; resize: vertical; border: 1px solid #c4ced9; border-radius: 6px; padding: 14px; background: #fff; color: #18202b; }
 pre { margin: 0; padding: 14px; border: 1px solid #c4ced9; border-radius: 6px; overflow: auto; background: #fff; white-space: pre; }
 #probe-output { min-height: 390px; max-height: 700px; }
+#probe-download-go { margin-bottom: 10px; }
+#probe-download-status { margin: 0 0 10px; }
+#probe-download-response { margin-top: 10px; }
+#probe-download-status.error { color: #922d25; }
 .diagnostics { margin-top: 22px; }
 #probe-error { min-height: 46px; white-space: pre-wrap; overflow-wrap: anywhere; color: #922d25; }
 details { margin-top: 20px; border: 1px solid #d5dde5; border-radius: 6px; padding: 14px; background: #fff; }

@@ -47,6 +47,8 @@
       </section>
       <section aria-label="Generated Go">
         <h2>Generated Go</h2>
+        <button id="probe-download-go" type="button" disabled>Download generated Go</button>
+        <p id="probe-download-status" class="hint" role="status" aria-live="polite" hidden></p>
         <pre id="probe-output" aria-label="Generated Go" tabindex="0"></pre>
         <p id="probe-result-binding" class="hint"></p>
       </section>
@@ -61,6 +63,8 @@
     <details class="report">
       <summary>Raw compiler response</summary>
       <p class="hint">The bridge response contains the compiler report. This original JSON text preserves int64 numbers and the engine's own provenance fields.</p>
+      <button id="probe-download-response" type="button" disabled>Download response JSON</button>
+      <p class="hint">Both downloads use the current successful result. <span lang="ko">현재 입력의 생성이 성공하면 Go 코드와 원본 응답 JSON을 저장할 수 있습니다.</span> The response includes selected Gooo code and the compiler report; review code and paths before sharing it.</p>
       <pre id="probe-report" aria-label="Raw compiler response" tabindex="0"></pre>
     </details>
 

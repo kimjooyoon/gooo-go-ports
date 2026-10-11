@@ -13,7 +13,9 @@ For a function result, include its name, exact integer inputs, and the result yo
 For the [Gooo source editor](https://kimjooyoon.github.io/gooo-go-ports/codegen/),
 choose **Gooo source editor** in the form and include the activity name and minimal
 public source if possible. A visible error is enough if you cannot share the source.
-Its optional **Raw compiler response** includes generated Go, selected Gooo code,
+After a successful generation, **Download generated Go** saves the current Go code
+and **Download response JSON** saves the unmodified **Raw compiler response**.
+The optional response includes generated Go, selected Gooo code,
 and the compiler report; it is not a receipt of executing the generated program.
 Review any source code and paths before sharing them publicly.
 If the demo works, **Copy link to this input** can help reproduce the input; it does not
@@ -29,7 +31,8 @@ failure, the page URL and visible error are enough.
 버전을 알면 릴리스 이름이나 리비전을 덧붙이고, 공유 링크는 데모가 동작할 때만 넣으면 됩니다.
 Gooo 소스 편집기는 양식에서 **Gooo source editor**를 선택하고, 가능하면 activity 이름과
 공개 가능한 최소 소스를 적어 주세요. 소스를 공유하기 어렵다면 보이는 오류만으로도 괜찮습니다.
-**Raw compiler response**에는 생성된 Go, 선택한 Gooo 코드와 컴파일러 보고서가 들어 있으며,
+생성이 성공하면 **Download generated Go**로 현재 Go 코드를, **Download response JSON**으로
+원본 응답을 저장할 수 있습니다. **Raw compiler response**에는 생성된 Go, 선택한 Gooo 코드와 컴파일러 보고서가 들어 있으며,
 생성된 프로그램의 실행 증명은 아닙니다. 코드와 경로를 확인한 뒤 공유할 내용을 선택해 주세요.
 텍스트 검사 JSON은 원래 입력 전체를 포함하므로 내용을 확인한 뒤 공개해도 되는 자료만
 선택해서 첨부해 주세요. 보고서 없이 페이지 주소와 오류만 제보해도 됩니다.

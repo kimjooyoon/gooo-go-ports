@@ -7,6 +7,9 @@
   const casesInput = byID("probe-cases");
   const generateButton = byID("probe-generate");
   const retryButton = byID("probe-retry");
+  const downloadGoButton = byID("probe-download-go");
+  const downloadResponseButton = byID("probe-download-response");
+  const downloadStatus = byID("probe-download-status");
   const output = byID("probe-output");
   const errorOutput = byID("probe-error");
   const reportOutput = byID("probe-report");
@@ -23,10 +26,18 @@
   let activeRequest = null;
   let initializationTimer = null;
   let generationTimer = null;
+  let completedGeneration = null;
+  const downloadUrls = new Map();
 
   function status(message) { statusOutput.textContent = message; }
 
   function clearOutputs() {
+    completedGeneration = null;
+    downloadGoButton.disabled = true;
+    downloadResponseButton.disabled = true;
+    downloadStatus.textContent = "";
+    downloadStatus.className = "hint";
+    downloadStatus.hidden = true;
     output.textContent = "";
     errorOutput.textContent = "";
     reportOutput.textContent = "";
@@ -37,6 +48,58 @@
   function refreshControls() {
     generateButton.disabled = !metadata || !fixturesReady || preparing || !!activeRequest;
     casesInput.disabled = !fixturesReady;
+    downloadGoButton.disabled = !canDownload();
+    downloadResponseButton.disabled = !canDownload();
+  }
+
+  function canDownload() {
+    return !!(metadata && !preparing && !activeRequest && completedGeneration &&
+      completedGeneration.revision === revision &&
+      completedGeneration.inputSource === sourceInput.value &&
+      completedGeneration.activity === activityInput.value);
+  }
+
+  function revokeDownload(url) {
+    if (!downloadUrls.has(url)) return;
+    const timer = downloadUrls.get(url);
+    if (timer !== null) clearTimeout(timer);
+    downloadUrls.delete(url);
+    window.URL.revokeObjectURL(url);
+  }
+
+  function downloadResult(kind) {
+    if (!canDownload()) return;
+    const filename = kind === "go" ? "gooo-generated.go" : "gooo-compiler-response.json";
+    const content = kind === "go" ? completedGeneration.generatedGo : completedGeneration.responseJSON;
+    let url = null;
+    let link = null;
+    let requested = false;
+    downloadStatus.className = "hint";
+    try {
+      // Use the original strings: JSON serialization would round int64 tokens.
+      const blob = new Blob([content], { type: kind === "go" ? "text/plain;charset=utf-8" : "application/json;charset=utf-8" });
+      url = window.URL.createObjectURL(blob);
+      downloadUrls.set(url, null);
+      link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.hidden = true;
+      document.body.append(link);
+      link.click();
+      requested = true;
+      downloadStatus.textContent = `Download requested. Check your browser's downloads for ${filename}.`;
+    } catch {
+      downloadStatus.className = "hint error";
+      downloadStatus.textContent = "The download could not be started. Your generated result is still shown. Try again.";
+    } finally {
+      if (link) link.remove();
+      if (url !== null) {
+        // Allow the browser to start reading the immutable Blob before release.
+        if (requested) downloadUrls.set(url, setTimeout(() => revokeDownload(url), 1000));
+        else revokeDownload(url);
+      }
+      downloadStatus.hidden = false;
+    }
   }
 
   function clearProvenance() {
@@ -137,6 +200,7 @@
         response.activity !== request.activity || response.compiler_pin !== metadata.compiler_pin ||
         response.bridge_source_sha256 !== metadata.bridge_source_sha256 ||
         response.native_execution !== false || response.model_calls !== false || typeof response.ok !== "boolean" ||
+        (response.ok && typeof response.source !== "string") ||
         typeof message.responseJSON !== "string") {
       stopWorker("Compiler response failed request or provenance binding checks. No output was displayed.");
       return;
@@ -150,6 +214,9 @@
     output.textContent = response.source;
     // Preserve numeric tokens and the engine's provenance without a JS round trip.
     reportOutput.textContent = message.responseJSON;
+    completedGeneration = { revision: request.revision, inputSource: request.source, activity: request.activity,
+      generatedGo: response.source, responseJSON: message.responseJSON };
+    refreshControls();
     byID("probe-result-binding").textContent = `Activity: ${request.activity} · Source: ${request.sourceSha} · Request: ${request.id}`;
     byID("probe-engine-provenance").textContent = typeof response.report?.compiler_source_sha === "string" ? response.report.compiler_source_sha : "See the unmodified compiler report.";
     status(`Generated Go for ${request.activity}. Native execution: false. Model calls: false.`);
@@ -320,7 +387,11 @@
   casesInput.addEventListener("change", chooseFixture);
   generateButton.addEventListener("click", generate);
   retryButton.addEventListener("click", startWorker);
+  downloadGoButton.addEventListener("click", () => downloadResult("go"));
+  downloadResponseButton.addEventListener("click", () => downloadResult("response"));
   window.addEventListener("pagehide", () => {
+    clearOutputs();
+    for (const url of [...downloadUrls.keys()]) revokeDownload(url);
     clearTimeout(initializationTimer);
     clearTimeout(generationTimer);
     if (worker) worker.terminate();
