@@ -225,11 +225,22 @@ func TestYCbCrExhaustiveReportBinding(t *testing.T) {
 }
 
 func TestYCbCrNativeExhaustiveRunsUnchangedSource(t *testing.T) {
+	cache, err := newNativeBuildCache(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := cache.close(); err != nil {
+			t.Error(err)
+		}
+	})
 	// These must not escape into the isolated compiler or execution environment.
 	t.Setenv("GOFLAGS", "-toolexec=/does-not-exist")
 	t.Setenv("GOTOOLCHAIN", "not-a-toolchain")
 	t.Setenv("GOOS", "invalid-target")
 	t.Setenv("GOWORK", "/does-not-exist")
+	t.Setenv("GOCACHE", "/must-not-use-caller-cache")
+	t.Setenv("GOCACHEPROG", "/must-not-use-caller-cache-program")
 	t.Setenv("GOOO_YCBCR_REPORT", "/must-not-write-here")
 	for _, operation := range []string{"RGBToYCbCr", "YCbCrToRGB"} {
 		t.Run(operation, func(t *testing.T) {
@@ -239,7 +250,7 @@ func TestYCbCrNativeExhaustiveRunsUnchangedSource(t *testing.T) {
 			defer cancel()
 			dir := filepath.Join(t.TempDir(), "check")
 			raw := mustJSON(t, ycbcrFixture(source, operation))
-			got, err := checkYCbCrExhaustive(ctx, dir, raw, digest, operation)
+			got, err := checkYCbCrExhaustive(ctx, dir, raw, digest, operation, cache)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -253,7 +264,7 @@ func TestYCbCrNativeExhaustiveRunsUnchangedSource(t *testing.T) {
 			if proof, err := os.ReadFile(filepath.Join(dir, "native-test.txt")); err != nil || len(proof) == 0 {
 				t.Fatal("native process proof was not saved", err)
 			}
-			if _, err := checkYCbCrExhaustive(ctx, dir, raw, digest, operation); err == nil {
+			if _, err := checkYCbCrExhaustive(ctx, dir, raw, digest, operation, cache); err == nil {
 				t.Fatal("reused existing evidence directory")
 			}
 			if err := os.WriteFile(filepath.Join(dir, "native", "generated.go"), []byte(source+"\n"), 0644); err != nil {
@@ -275,7 +286,7 @@ func TestYCbCrNativeExhaustiveRejectsLastTupleMismatch(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 			defer cancel()
 			dir := filepath.Join(t.TempDir(), "check")
-			_, err := checkYCbCrExhaustive(ctx, dir, mustJSON(t, ycbcrFixture(source, operation)), contentDigest([]byte(source)), operation)
+			_, err := checkYCbCrExhaustive(ctx, dir, mustJSON(t, ycbcrFixture(source, operation)), contentDigest([]byte(source)), operation, nil)
 			if err == nil || !strings.Contains(err.Error(), operation+"(255,255,255)") {
 				t.Fatal("failed to reject final tuple before narrowing output", err)
 			}

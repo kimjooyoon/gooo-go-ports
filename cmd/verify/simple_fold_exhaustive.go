@@ -63,7 +63,7 @@ func expectedSimpleFoldExhaustive(generated string) simpleFoldExhaustiveReport {
 // does not duplicate the receipt/source-workspace/producer validator.
 // The Unicode range is exhaustive, including surrogates. All other observations
 // are finite samples. This does not check every signed rune or consumer pair.
-func checkSimpleFoldExhaustive(ctx context.Context, dir string, raw []byte, expectedGenerated string) (simpleFoldExhaustiveReport, error) {
+func checkSimpleFoldExhaustive(ctx context.Context, dir string, raw []byte, expectedGenerated string, cache *nativeBuildCache) (simpleFoldExhaustiveReport, error) {
 	var zero simpleFoldExhaustiveReport
 	if runtime.Version() != "go1.27.2" || unicode.Version != "17.0.0" {
 		return zero, fmt.Errorf("SimpleFold exhaustive check requires Go 1.27.2 / Unicode 17.0.0")
@@ -84,7 +84,15 @@ func checkSimpleFoldExhaustive(ctx context.Context, dir string, raw []byte, expe
 		return zero, fmt.Errorf("SimpleFold requires a fresh evidence directory: %w", err)
 	}
 	native := filepath.Join(dir, "native")
-	for _, path := range []string{native, filepath.Join(dir, "cache"), filepath.Join(dir, "tmp"), filepath.Join(dir, "gopath")} {
+	cacheDir, err := cache.directory(filepath.Join(dir, "cache"))
+	if err != nil {
+		return zero, err
+	}
+	paths := []string{native, filepath.Join(dir, "tmp"), filepath.Join(dir, "gopath")}
+	if cache == nil {
+		paths = append(paths, cacheDir)
+	}
+	for _, path := range paths {
 		if err := os.Mkdir(path, 0755); err != nil {
 			return zero, err
 		}
@@ -103,7 +111,7 @@ func checkSimpleFoldExhaustive(ctx context.Context, dir string, raw []byte, expe
 	}
 	reportPath := filepath.Join(dir, "exhaustive.json")
 	cmd := exec.CommandContext(ctx, filepath.Join(runtime.GOROOT(), "bin", "go"), "test", "-count=1", "-timeout=90s", "-run", "^TestSimpleFoldExhaustive$", "-v", ".")
-	cmd.Dir, cmd.Env = native, simpleFoldGoEnvironment(dir, reportPath)
+	cmd.Dir, cmd.Env = native, simpleFoldGoEnvironment(dir, reportPath, cacheDir)
 	output, runErr := cmd.CombinedOutput()
 	if err := os.WriteFile(filepath.Join(dir, "native-test.txt"), output, 0644); err != nil {
 		return zero, err
@@ -233,14 +241,14 @@ func makeSimpleFoldExhaustiveHarness(function, generated string) ([]byte, error)
 	return out.Bytes(), err
 }
 
-func simpleFoldGoEnvironment(dir, report string) []string {
+func simpleFoldGoEnvironment(dir, report, cacheDir string) []string {
 	// Do not inherit GOFLAGS/-toolexec, GOENV configuration, alternate toolchain,
 	// loader injection or any provider credentials from the caller's environment.
 	return []string{
 		"PATH=" + filepath.Join(runtime.GOROOT(), "bin") + string(os.PathListSeparator) + "/usr/bin" + string(os.PathListSeparator) + "/bin",
 		"GOROOT=" + runtime.GOROOT(), "GOTOOLCHAIN=local", "GOENV=off", "GOWORK=off", "GOFLAGS=",
 		"GOOS=" + runtime.GOOS, "GOARCH=" + runtime.GOARCH, "CGO_ENABLED=0", "GOPROXY=off", "GOSUMDB=off",
-		"GOCACHE=" + filepath.Join(dir, "cache"), "GOPATH=" + filepath.Join(dir, "gopath"),
+		"GOCACHE=" + cacheDir, "GOPATH=" + filepath.Join(dir, "gopath"),
 		"GOTMPDIR=" + filepath.Join(dir, "tmp"), "TMPDIR=" + filepath.Join(dir, "tmp"),
 		"GOOO_SIMPLE_FOLD_REPORT=" + report,
 	}

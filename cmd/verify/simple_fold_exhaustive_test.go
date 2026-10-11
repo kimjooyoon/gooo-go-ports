@@ -184,7 +184,7 @@ func TestSimpleFoldNativeExhaustiveRunsUnchangedSource(t *testing.T) {
 	t.Setenv("GOWORK", "/does-not-exist")
 	t.Setenv("GOOO_SIMPLE_FOLD_REPORT", "/must-not-write-here")
 	dir := filepath.Join(t.TempDir(), "check")
-	got, err := checkSimpleFoldExhaustive(ctx, dir, mustJSON(t, simpleFoldFixture(text)), digest)
+	got, err := checkSimpleFoldExhaustive(ctx, dir, mustJSON(t, simpleFoldFixture(text)), digest, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -194,7 +194,7 @@ func TestSimpleFoldNativeExhaustiveRunsUnchangedSource(t *testing.T) {
 	if raw, err := os.ReadFile(filepath.Join(dir, "native", "generated.go")); err != nil || string(raw) != text {
 		t.Fatal("source was not copied byte for byte", err)
 	}
-	if _, err := checkSimpleFoldExhaustive(ctx, dir, mustJSON(t, simpleFoldFixture(text)), digest); err == nil {
+	if _, err := checkSimpleFoldExhaustive(ctx, dir, mustJSON(t, simpleFoldFixture(text)), digest, nil); err == nil {
 		t.Fatal("reused existing evidence directory")
 	}
 	if err := os.WriteFile(filepath.Join(dir, "native", "generated.go"), []byte(text+"\n"), 0644); err != nil {
@@ -212,7 +212,7 @@ func TestSimpleFoldNativeExhaustiveRejectsLateMismatch(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	dir := filepath.Join(t.TempDir(), "check")
-	if _, err := checkSimpleFoldExhaustive(ctx, dir, mustJSON(t, simpleFoldFixture(text)), contentDigest([]byte(text))); err == nil || !strings.Contains(err.Error(), "SimpleFold(1114111)") {
+	if _, err := checkSimpleFoldExhaustive(ctx, dir, mustJSON(t, simpleFoldFixture(text)), contentDigest([]byte(text)), nil); err == nil || !strings.Contains(err.Error(), "SimpleFold(1114111)") {
 		t.Fatal("did not reject final-range mismatch", err)
 	}
 	if _, err := os.Stat(filepath.Join(dir, "exhaustive.json")); !os.IsNotExist(err) {
@@ -225,7 +225,7 @@ func TestSimpleFoldNativeExhaustiveRejectsNarrowedExtension(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	dir := filepath.Join(t.TempDir(), "check")
-	if _, err := checkSimpleFoldExhaustive(ctx, dir, mustJSON(t, simpleFoldFixture(text)), contentDigest([]byte(text))); err == nil || !strings.Contains(err.Error(), "int64 extension SimpleFold(-9223372036854775808)") {
+	if _, err := checkSimpleFoldExhaustive(ctx, dir, mustJSON(t, simpleFoldFixture(text)), contentDigest([]byte(text)), nil); err == nil || !strings.Contains(err.Error(), "int64 extension SimpleFold(-9223372036854775808)") {
 		t.Fatal("did not reject narrowed extension after all original rune checks", err)
 	}
 	if _, err := os.Stat(filepath.Join(dir, "exhaustive.json")); !os.IsNotExist(err) {

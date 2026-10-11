@@ -233,11 +233,22 @@ func caseMappingSyntheticSource(operation, extra, fallback, invalidPrefix string
 }
 
 func TestCaseMappingNativeExhaustiveRunsUnchangedSource(t *testing.T) {
+	cache, err := newNativeBuildCache(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := cache.close(); err != nil {
+			t.Error(err)
+		}
+	})
 	// Host poisoning must not enter the isolated, stdlib-only verifier module.
 	t.Setenv("GOFLAGS", "-toolexec=/does-not-exist")
 	t.Setenv("GOTOOLCHAIN", "not-a-toolchain")
 	t.Setenv("GOOS", "invalid-target")
 	t.Setenv("GOWORK", "/does-not-exist")
+	t.Setenv("GOCACHE", "/must-not-use-caller-cache")
+	t.Setenv("GOCACHEPROG", "/must-not-use-caller-cache-program")
 	t.Setenv("GOOO_CASE_MAPPING_REPORT", "/must-not-write-here")
 	for _, operation := range []string{"To", "ToUpper", "ToLower", "ToTitle"} {
 		t.Run(operation, func(t *testing.T) {
@@ -247,7 +258,7 @@ func TestCaseMappingNativeExhaustiveRunsUnchangedSource(t *testing.T) {
 			defer cancel()
 			dir := filepath.Join(t.TempDir(), "check")
 			raw := mustJSON(t, caseMappingFixture(source, operation))
-			got, err := checkCaseMappingExhaustive(ctx, dir, raw, digest, operation)
+			got, err := checkCaseMappingExhaustive(ctx, dir, raw, digest, operation, cache)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -264,7 +275,7 @@ func TestCaseMappingNativeExhaustiveRunsUnchangedSource(t *testing.T) {
 			if b, err := os.ReadFile(path); err != nil || string(b) != source {
 				t.Fatal("source not preserved byte-for-byte", err)
 			}
-			if _, err := checkCaseMappingExhaustive(ctx, dir, raw, digest, operation); err == nil {
+			if _, err := checkCaseMappingExhaustive(ctx, dir, raw, digest, operation, cache); err == nil {
 				t.Fatal("reused existing evidence directory")
 			}
 			if err := os.WriteFile(path, []byte(source+"\n"), 0644); err != nil {
@@ -289,7 +300,7 @@ func TestCaseMappingNativeExhaustiveRejectsSemanticTampering(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 			defer cancel()
 			dir := filepath.Join(t.TempDir(), "check")
-			_, err := checkCaseMappingExhaustive(ctx, dir, mustJSON(t, caseMappingFixture(source, "To")), contentDigest([]byte(source)), "To")
+			_, err := checkCaseMappingExhaustive(ctx, dir, mustJSON(t, caseMappingFixture(source, "To")), contentDigest([]byte(source)), "To", nil)
 			if err == nil || !strings.Contains(err.Error(), test.message) {
 				t.Fatal("did not reject semantic tampering at expected comparison", err)
 			}

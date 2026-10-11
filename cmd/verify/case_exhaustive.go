@@ -99,7 +99,7 @@ func expectedCaseMappingExhaustive(generated, operation string) (caseMappingExha
 // with inspect and inspectReplayBinding, and pass checked.Generated. Generated
 // Go is copied byte-for-byte. Only 0..10FFFF is exhaustive; all other int32 rune
 // observations, int64 extensions and invalid case values are finite samples.
-func checkCaseMappingExhaustive(ctx context.Context, dir string, raw []byte, expectedGenerated, operation string) (caseMappingExhaustiveReport, error) {
+func checkCaseMappingExhaustive(ctx context.Context, dir string, raw []byte, expectedGenerated, operation string, cache *nativeBuildCache) (caseMappingExhaustiveReport, error) {
 	var zero caseMappingExhaustiveReport
 	if runtime.Version() != "go1.27.2" || unicode.Version != "17.0.0" || strconv.IntSize != 64 {
 		return zero, fmt.Errorf("case mapping exhaustive check requires 64-bit Go 1.27.2 / Unicode 17.0.0")
@@ -120,7 +120,15 @@ func checkCaseMappingExhaustive(ctx context.Context, dir string, raw []byte, exp
 		return zero, fmt.Errorf("case mapping requires a fresh evidence directory: %w", err)
 	}
 	native := filepath.Join(dir, "native")
-	for _, path := range []string{native, filepath.Join(dir, "cache"), filepath.Join(dir, "tmp"), filepath.Join(dir, "gopath")} {
+	cacheDir, err := cache.directory(filepath.Join(dir, "cache"))
+	if err != nil {
+		return zero, err
+	}
+	paths := []string{native, filepath.Join(dir, "tmp"), filepath.Join(dir, "gopath")}
+	if cache == nil {
+		paths = append(paths, cacheDir)
+	}
+	for _, path := range paths {
 		if err := os.Mkdir(path, 0755); err != nil {
 			return zero, err
 		}
@@ -139,7 +147,7 @@ func checkCaseMappingExhaustive(ctx context.Context, dir string, raw []byte, exp
 	}
 	reportPath := filepath.Join(dir, "exhaustive.json")
 	cmd := exec.CommandContext(ctx, filepath.Join(runtime.GOROOT(), "bin", "go"), "test", "-count=1", "-timeout=90s", "-run", "^TestCaseMappingExhaustive$", "-v", ".")
-	cmd.Dir, cmd.Env = native, caseMappingGoEnvironment(dir, reportPath)
+	cmd.Dir, cmd.Env = native, caseMappingGoEnvironment(dir, reportPath, cacheDir)
 	output, runErr := cmd.CombinedOutput()
 	if err := os.WriteFile(filepath.Join(dir, "native-test.txt"), output, 0644); err != nil {
 		return zero, err
@@ -175,11 +183,11 @@ func makeCaseMappingExhaustiveHarness(function, generated, operation string) ([]
 	return out.Bytes(), err
 }
 
-func caseMappingGoEnvironment(dir, report string) []string {
+func caseMappingGoEnvironment(dir, report, cacheDir string) []string {
 	// Reuse the existing hermetic stdlib-only Go environment, with a distinct
 	// report variable so this evidence cannot be confused with SimpleFold.
 	env := []string{}
-	for _, entry := range simpleFoldGoEnvironment(dir, "") {
+	for _, entry := range simpleFoldGoEnvironment(dir, "", cacheDir) {
 		if !strings.HasPrefix(entry, "GOOO_SIMPLE_FOLD_REPORT=") {
 			env = append(env, entry)
 		}

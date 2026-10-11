@@ -193,6 +193,15 @@ func run() error {
 		}
 		workspaces[s.Package+":"+s.Activity] = workspace
 	}
+	cache, err := newNativeBuildCache(root)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := cache.close(); err != nil {
+			fmt.Fprintln(os.Stderr, "native build cache cleanup:", err)
+		}
+	}()
 	reports := []observation{}
 	var foldingExhaustive simpleFoldExhaustiveReport
 	ycbcrExhaustive := map[string]ycbcrExhaustiveReport{}
@@ -331,20 +340,20 @@ func run() error {
 				return err
 			}
 			if s.Package == "go/unicode" && s.Activity == "SimpleFold" && r.Batches == 0 {
-				foldingExhaustive, err = checkSimpleFoldExhaustive(ctx, filepath.Join(root, "simple-fold-exhaustive"), raw, original.Generated)
+				foldingExhaustive, err = checkSimpleFoldExhaustive(ctx, filepath.Join(root, "simple-fold-exhaustive"), raw, original.Generated, cache)
 				if err != nil {
 					return err
 				}
 			}
 			if s.Package == "go/image/color" && (s.Activity == "RGBToYCbCr" || s.Activity == "YCbCrToRGB") && r.Batches == 0 {
-				exhaustive, err := checkYCbCrExhaustive(ctx, filepath.Join(root, "ycbcr-exhaustive-"+s.Activity), raw, original.Generated, s.Activity)
+				exhaustive, err := checkYCbCrExhaustive(ctx, filepath.Join(root, "ycbcr-exhaustive-"+s.Activity), raw, original.Generated, s.Activity, cache)
 				if err != nil {
 					return err
 				}
 				ycbcrExhaustive[s.Activity] = exhaustive
 			}
 			if s.Package == "go/unicode" && (s.Activity == "To" || s.Activity == "ToUpper" || s.Activity == "ToLower" || s.Activity == "ToTitle") && r.Batches == 0 {
-				exhaustive, err := checkCaseMappingExhaustive(ctx, filepath.Join(root, "case-mapping-exhaustive-"+s.Activity), raw, original.Generated, s.Activity)
+				exhaustive, err := checkCaseMappingExhaustive(ctx, filepath.Join(root, "case-mapping-exhaustive-"+s.Activity), raw, original.Generated, s.Activity, cache)
 				if err != nil {
 					return err
 				}

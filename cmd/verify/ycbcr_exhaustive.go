@@ -85,7 +85,7 @@ type ycbcrGeneratedABI struct {
 // bindings with inspect and inspectReplayBinding, then supply checked.Generated.
 // This covers all 256^3 byte triples for one conversion, not images, codecs,
 // out-of-domain int64 inputs, browser execution or lossless round trips.
-func checkYCbCrExhaustive(ctx context.Context, dir string, raw []byte, expectedGenerated, operation string) (ycbcrExhaustiveReport, error) {
+func checkYCbCrExhaustive(ctx context.Context, dir string, raw []byte, expectedGenerated, operation string, cache *nativeBuildCache) (ycbcrExhaustiveReport, error) {
 	var zero ycbcrExhaustiveReport
 	if runtime.Version() != "go1.27.2" {
 		return zero, fmt.Errorf("YCbCr exhaustive check requires Go 1.27.2")
@@ -106,7 +106,15 @@ func checkYCbCrExhaustive(ctx context.Context, dir string, raw []byte, expectedG
 		return zero, fmt.Errorf("YCbCr requires a fresh evidence directory: %w", err)
 	}
 	native := filepath.Join(dir, "native")
-	for _, path := range []string{native, filepath.Join(dir, "cache"), filepath.Join(dir, "tmp"), filepath.Join(dir, "gopath")} {
+	cacheDir, err := cache.directory(filepath.Join(dir, "cache"))
+	if err != nil {
+		return zero, err
+	}
+	paths := []string{native, filepath.Join(dir, "tmp"), filepath.Join(dir, "gopath")}
+	if cache == nil {
+		paths = append(paths, cacheDir)
+	}
+	for _, path := range paths {
 		if err := os.Mkdir(path, 0755); err != nil {
 			return zero, err
 		}
@@ -125,7 +133,7 @@ func checkYCbCrExhaustive(ctx context.Context, dir string, raw []byte, expectedG
 	}
 	reportPath := filepath.Join(dir, "exhaustive.json")
 	cmd := exec.CommandContext(ctx, filepath.Join(runtime.GOROOT(), "bin", "go"), "test", "-count=1", "-timeout=90s", "-run", "^TestYCbCrExhaustive$", "-v", ".")
-	cmd.Dir, cmd.Env = native, ycbcrGoEnvironment(dir, reportPath)
+	cmd.Dir, cmd.Env = native, ycbcrGoEnvironment(dir, reportPath, cacheDir)
 	output, runErr := cmd.CombinedOutput()
 	if err := os.WriteFile(filepath.Join(dir, "native-test.txt"), output, 0644); err != nil {
 		return zero, err
@@ -385,10 +393,10 @@ func makeYCbCrExhaustiveHarness(abi ycbcrGeneratedABI, generated, operation stri
 	return out.Bytes(), err
 }
 
-func ycbcrGoEnvironment(dir, report string) []string {
+func ycbcrGoEnvironment(dir, report, cacheDir string) []string {
 	// Reuse the hermetic Go environment, replacing its unrelated report variable.
 	env := []string{}
-	for _, entry := range simpleFoldGoEnvironment(dir, "") {
+	for _, entry := range simpleFoldGoEnvironment(dir, "", cacheDir) {
 		if !strings.HasPrefix(entry, "GOOO_SIMPLE_FOLD_REPORT=") {
 			env = append(env, entry)
 		}
