@@ -43,13 +43,17 @@ func allNativeSuites(t *testing.T) []suite {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return append(append(append(append(append(append(append(suites, unicode.Suites...), colors.Suites...), rotations.Suites...), durations.Suites...), whitespace.Suites...), classification.Suites...), geometry.Suites...)
+	folding, err := simpleFoldCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return append(append(append(append(append(append(append(append(suites, unicode.Suites...), colors.Suites...), rotations.Suites...), durations.Suites...), whitespace.Suites...), classification.Suites...), geometry.Suites...), folding.Suites...)
 }
 
 func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 	contracts := nativeActivityContracts()
 	suites := allNativeSuites(t)
-	if len(contracts) != 35 || len(suites) != 35 {
+	if len(contracts) != 37 || len(suites) != 37 {
 		t.Fatal("contract/suite roster changed")
 	}
 	seen := map[string]bool{}
@@ -90,7 +94,7 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 			}
 			// Generated classifications share the package's reviewed entity declarations.
 			declarations := source
-			if contract.Source == "ports/unicode/classification.gooo" {
+			if contract.Source == "ports/unicode/classification.gooo" || contract.Source == "ports/unicode/simple_fold.gooo" {
 				declarations, err = os.ReadFile("../../ports/unicode/space.gooo")
 				if err != nil {
 					t.Fatal(err)
@@ -111,7 +115,11 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	added := geometry.PortReferenceCases + geometry.ConsumerReferenceCases
+	folding, err := simpleFoldCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	added := geometry.PortReferenceCases + geometry.ConsumerReferenceCases + folding.PortReferenceCases + folding.PortExtensionCases + folding.ConsumerReferenceCases + folding.ConsumerRejectionCases
 	if total != 24770+added {
 		t.Fatalf("corpus changed: %d", total)
 	}

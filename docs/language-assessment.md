@@ -13,7 +13,7 @@
 
 ## 이번에 옮기는 동작
 
-Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **25개 함수**를 Gooo 활동으로 표현한다.
+Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **26개 함수**를 Gooo 활동으로 표현한다.
 패키지 전체, HTTP 서버, 문자열 인코더 전체 또는 Go API와의 바이너리 호환을 주장하지 않는다.
 
 | 원본 | Gooo 원본 | 표현 방법과 호환 범위 |
@@ -21,6 +21,7 @@ Go 1.27.2의 공개 소스와 동작을 읽고, 다음 **25개 함수**를 Gooo 
 | `net/http.StatusText` | [http.gooo](../ports/net/http.gooo) | 상태 코드별 텍스트를 `if`로 선택. 등록되지 않은 코드는 빈 문자열 |
 | `unicode.IsLetter`, `IsDigit` | [classification.gooo](../ports/unicode/classification.gooo) | Unicode 17.0.0의 Letter 647범위·Digit 72범위를 균형 분기로 생성. stride·원래 signed int32 입력을 보존하고 int32 밖은 false 확장 계약 |
 | `unicode.IsSpace` | [space.gooo](../ports/unicode/space.gooo) | Unicode 17.0.0 White_Space의 25개 값을 범위·동등 비교로 표현. 전체 signed int32 입력을 보존하고 int32 밖은 false 확장 계약 |
+| `unicode.SimpleFold` | [simple_fold.gooo](../ports/unicode/simple_fold.gooo) | 고정 ASCII 표·특수 순환·case range delta를 분기로 생성. 다음 순환 멤버 및 invalid int32 identity 보존; int32 밖은 별도 identity 확장 |
 | `unicode/utf8.ValidRune`, `RuneLen` | [utf8.gooo](../ports/unicode/utf8.gooo) | 코드 포인트 경계와 서로게이트 구간 비교. Go `rune` 입력 범위를 Integer로 전달 |
 | `unicode/utf8.RuneStart` | 같은 파일 | Go `byte` 범위인 0..255에서 연속 바이트 구간 128..191 제외. 범위 밖은 별도 확장 계약인 false |
 | `unicode/utf16.IsSurrogate`, `RuneLen` | [utf16.gooo](../ports/unicode/utf16.gooo) | 범위 비교로 서로게이트와 UTF-16 길이를 판별 |
@@ -91,6 +92,15 @@ native 실행·저장 재실행을 통과했다. 정식 생성물은 간결한 �
 확인하며, signed int32 전체를 전수 검사했다고 표현하지 않는다.
 
 ## 확인한 언어 기능
+
+`SimpleFold`는 같은 고정 `letter.go`·`tables.go`를 사용한다. 생성기는 공개되지 않은
+`asciiFold`·`caseOrbit` 원본 리터럴을 읽고, `CaseRanges`의 범위와 delta를 Gooo 분기로
+옮긴다. ASCII 처리 다음 특수 순환을 먼저 찾고, 해당 항목이 없을 때만 lower/upper
+delta를 적용한다. `UpperLower` 교대 구간의 parity는 코드 포인트 자체가 아닌
+원본 범위 시작점과의 차이로 구한다. 실행 시 Go Unicode 함수를 호출하지 않는다.
+입력 범위는 전체 signed int32이며 음수·서로게이트·U+10FFFF 초과 입력도 보존한다.
+int32 밖 Integer는 값을 그대로 반환하는 확장으로 분리한다. 자세한 API와 두 rune
+비교 범위는 [예제](../examples/simple-fold/README.md)에 있다.
 
 사각형 네 메서드는 [고정 geom.go](https://github.com/golang/go/blob/022c8636110ebac86a9b88724cda168ed713c21f/src/image/geom.go)의
 비교와 복사만 사용한다. 중첩 `Min`, `Max`의 Point 표현은 네 Integer 필드로 바꾸되

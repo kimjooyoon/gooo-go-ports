@@ -19,6 +19,8 @@ type activityContract struct {
 func nativeActivityContracts() map[string]activityContract {
 	i := integerEntity
 	return map[string]activityContract{
+		"go/unicode:SimpleFold":               {"ports/unicode/simple_fold.gooo", "gooo://go/unicode/SimpleFold", []string{i}},
+		"app/simple-fold:Compare":             {"examples/simple-fold/main.gooo", "gooo://go-ports/examples/simple-fold/compare", []string{i, i}},
 		"go/image:RectangleEmpty":             {"ports/image/geometry.gooo", "gooo://go/image/rectangle-empty", []string{rectangleEntity}},
 		"go/image:RectangleOverlaps":          {"ports/image/geometry.gooo", "gooo://go/image/rectangle-overlaps", []string{rectangleEntity, rectangleEntity}},
 		"go/image:RectangleIntersect":         {"ports/image/geometry.gooo", "gooo://go/image/rectangle-intersect", []string{rectangleEntity, rectangleEntity}},

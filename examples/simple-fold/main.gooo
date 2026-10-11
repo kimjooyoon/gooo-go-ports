@@ -1,0 +1,25 @@
+// Compare two original rune values under Unicode simple case folding.
+// This is not whole-string, locale-aware, normalization or full case folding.
+package simple_fold
+namespace gooo_ports_examples_simple_fold
+import unicode "go/unicode"
+entity Integer id "gooo://std/integer"
+entity FoldComparison id "gooo://go-ports/examples/simple-fold/comparison" fields {
+    field in_rune_domain id "gooo://go-ports/examples/simple-fold/comparison/in-rune-domain" type boolean required one
+    field equivalent id "gooo://go-ports/examples/simple-fold/comparison/equivalent" type boolean required one
+    field left_next id "gooo://go-ports/examples/simple-fold/comparison/left-next" type integer required one
+    field right_next id "gooo://go-ports/examples/simple-fold/comparison/right-next" type integer required one
+}
+
+// The pinned Go 1.27.2 / Unicode 17.0.0 data has a maximum cycle of four.
+// The verifier checks this bound over 0..U+10FFFF. Other int32
+// values are identity mappings. Three successors plus the original suffice.
+activity Compare(Integer, Integer) -> FoldComparison id "gooo://go-ports/examples/simple-fold/compare" computes `if input0 < -2147483648 || input0 > 2147483647 || input1 < -2147483648 || input1 > 2147483647 {
+    return FoldComparison{in_rune_domain: false, equivalent: false, left_next: input0, right_next: input1}
+}
+let left_next = unicode.SimpleFold(input0)
+let right_next = unicode.SimpleFold(input1)
+let left_second = unicode.SimpleFold(left_next)
+let left_third = unicode.SimpleFold(left_second)
+let equivalent = input0 == input1 || left_next == input1 || left_second == input1 || left_third == input1
+return FoldComparison{in_rune_domain: true, equivalent: equivalent, left_next: left_next, right_next: right_next}`

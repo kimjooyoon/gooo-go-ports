@@ -4,7 +4,7 @@
 describing what programs should do and inspecting how they are built and run.
 This independent ecosystem project implements selected Go standard-library functions in Gooo,
 with independent Go reference outputs and saved replay. The current scope is
-25 HTTP, Unicode, 8-bit integer, color, duration, and rectangle functions, nine native importing examples,
+26 HTTP, Unicode, 8-bit integer, color, duration, and rectangle functions, ten native importing examples,
 and an importing browser dispatcher.
 Use Go 1.27.2, Git, and a POSIX shell on macOS or Linux: run `./tools/bootstrap.sh`, then
 `go run ./cmd/verify --out out/first` from this repository. The output directory must be new.
@@ -60,6 +60,14 @@ To use these ports outside this repository, follow the complete
 separate application from a fixed snapshot, copies both required source files,
 and saves an execution record for replay.
 
+The native [simple case-fold comparison](examples/simple-fold/README.md) imports
+`unicode.SimpleFold` to compare two rune values and show each value's next member
+in its Unicode simple-folding cycle. For example, `K`, `k`, and the Kelvin sign
+`K` belong to one three-member cycle. This preserves the pinned Go rules for
+special cycles and invalid Unicode values; it is a per-rune API, not whole-string
+folding, normalization, or locale-sensitive text comparison. The browser tools
+continue to provide their existing 21 functions.
+
 The native [crop planner](examples/crop-planner/README.md) imports the rectangle
 package and clips a requested region to image bounds. Rectangle records preserve
 all four signed 64-bit coordinates, including reversed and empty rectangles. The
@@ -92,7 +100,7 @@ with the page URL or command and what happened. A working demo or shared input l
 is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수·색상 변환·시간 간격·사각형 함수 25개를 제공합니다.
+현재 Go 표준 라이브러리의 HTTP·Unicode·8비트 정수·색상 변환·시간 간격·사각형 함수 26개를 제공합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -107,6 +115,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | `go/net/http` | `StatusText` | Go의 상태 코드 62개와 설명. 미등록 코드는 빈 문자열 |
 | `go/unicode` | `IsLetter`, `IsDigit` | Unicode 17.0.0 전체 Letter(L)·decimal digit(Nd) 범위와 stride 보존. 원본 표에서 결정적으로 Gooo 분기 생성 |
 | `go/unicode` | `IsSpace` | Unicode 17.0.0 White_Space 속성의 25개 코드 포인트 판정. 전체 signed int32 rune 입력 유지 |
+| `go/unicode` | `SimpleFold` | Unicode 17.0.0 단순 대소문자 접기의 다음 순환 멤버. ASCII·특수 순환·case range 우선순위 및 전체 int32 입력 보존. Native 전용 |
 | `go/unicode/utf8` | `ValidRune`, `RuneLen` | Unicode 유효 코드 포인트 판정과 UTF-8 바이트 수 |
 | `go/unicode/utf8` | `RuneStart` | 0..255의 바이트가 continuation byte가 아닌지 판정. 전체 문자열 유효성 검사는 아님 |
 | `go/unicode/utf16` | `IsSurrogate`, `RuneLen` | 서로게이트 판정과 UTF-16 코드 단위 수 |
@@ -122,6 +131,11 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 Gooo 확장 동작으로 false를 반환하지만 원본과의 동등성 집계에는 넣지 않습니다.
 `IsSpace`, `IsLetter`, `IsDigit`도 int32 밖의 정수는 별도 확장 계약으로 false를 반환합니다. int32 안의 음수,
 서로게이트, Unicode 최댓값보다 큰 수는 원본 API 입력이며 결과는 false입니다.
+`SimpleFold`는 int32 안의 음수·서로게이트·Unicode 범위 밖 입력을 Go처럼 그대로 반환합니다.
+int32 밖 Integer도 그대로 반환하는 별도 확장 계약이며, Go rune 변환이나 원본 동등성 집계에 넣지 않습니다.
+두 rune 비교 예제의 `in_rune_domain`은 int32 범위를 뜻합니다. 유효 Unicode 스칼라 판정이 아니며,
+같은 잘못된 Unicode 값 두 개도 같은 고정점으로 비교됩니다. `İ`·`ı`는 각각 고정점이고,
+`K → k → K → K` 등의 특수 순환을 단순 소문자 변환으로 대체하지 않습니다.
 NEL(U+0085)은 공백이고 BOM(U+FEFF)·ZERO WIDTH SPACE(U+200B)는 공백이 아닙니다.
 JavaScript의 `\s`·`trim`과는 다른 판정이며, 보이지 않는 문자 전체를 탐지하지 않습니다.
 `go/math/bits`의 여섯 함수는 바이트 영역 밖에서 별도 확장 동작인 -1을 반환합니다.
@@ -351,7 +365,10 @@ manifest 기준 상대 파일 경로를 등록합니다. import 자체가 패키
 문자·숫자 분류 두 포트는 원본 비교 **5,043건**·int32 밖 확장 **24건**, 식별자 문자 소비 앱은
 원본 비교 **4,570건**·확장 **12건**을 추가한 **24,770건**도 유지합니다.
 사각형 네 포트의 원본 비교 **1,711건**과 잘라내기 소비 앱 **486건**을 추가해,
-전체 native 검사는 **26,967건**, 이식 함수는 **25개**입니다. 사각형의 네 좌표는
+기존 native 검사 **26,967건**도 유지합니다. SimpleFold는 원본 비교 **3,505건**과
+int32 밖 identity 확장 **11건**, 두 rune 소비 앱은 원본 비교 **497건**과 영역 밖
+거부 **34건**을 추가합니다. 전체 native 검사는 **31,014건**, 이식 함수는 **26개**입니다.
+사각형의 네 좌표는
 각각 전체 signed int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
 시간 간격은 두 입력의 전체 int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
 기존 영역 밖 거부 사례는 Go 동등성 집계가 아닙니다.
@@ -383,6 +400,8 @@ manifest 기준 상대 파일 경로를 등록합니다. import 자체가 패키
 | RectangleEmpty | 253 | 작은 좌표 격자, 네 필드 각각의 int64·정밀도 경계, 극값 사각형, 고정 표본 |
 | RectangleOverlaps / RectangleIntersect / RectangleUnion | 각 486 | 작은 좌표 조합, 포함·접촉·분리·다른 빈 표현의 양방향 입력, 여덟 좌표 각각의 경계와 고정 표본 |
 | CropPlan consumer | 486 | 같은 원래 사각형 두 개로 교집합의 네 좌표·픽셀 존재 여부 비교 |
+| unicode.SimpleFold | 3,505 + 11 | 모든 변경 코드 포인트, Latin-1, 원본 case range 경계, invalid Unicode·int32 경계·표본, 별도 int64 identity 확장 |
+| Simple-fold Compare consumer | 497 + 34 | 모든 3/4-member 순환의 순서 있는 쌍, 이름 있는 고정점·2-member 순환, 다른 순환·invalid 값·표본, 별도 영역 밖 거부 |
 
 별도 `go run ./cmd/check-unicode --out out/unicode-exhaustive`는 실제 importing 프로그램의
 수정하지 않은 생성 Go를 빌드해 **0..U+10FFFF의 1,114,112개 입력**에서 두 분류 함수를
@@ -391,8 +410,14 @@ manifest 기준 상대 파일 경로를 등록합니다. import 자체가 패키
 signed int32 전체 전수 검사 또는 전체 Unicode 패키지 호환성을 주장하지 않습니다.
 재생성 방법과 API 의미는 [식별자 문자 예제](examples/identifier-rune/README.md)에 있습니다.
 
-Gooo 실행 입력 상한에 맞춰 총 **363개 배치**를 실행합니다. 기존 295개 배치를 유지하고,
-사각형 포트와 잘라내기 소비 앱의 68개 배치를 추가합니다.
+`cmd/verify`는 SimpleFold의 검증된 실행·재실행에서 생성 Go를 한 바이트도 바꾸지 않고
+별도 검사기로 빌드합니다. **0..U+10FFFF의 1,114,112개 입력**을 원본 SimpleFold와
+비교하며 결과를 `simple-fold-exhaustive/`와 요약의 `simple_fold_exhaustive`에 기록합니다.
+이 검사는 위 유한 영수증 집계와 별개이고, 전체 int32 또는 모든 두-rune 쌍을
+전수 검사했다는 뜻이 아닙니다. 정수 영역 밖 샘플도 따로 집계합니다.
+
+Gooo 실행 입력 상한에 맞춰 총 **400개 배치**를 실행합니다. 기존 363개 배치를 유지하고,
+SimpleFold 포트 28개·소비 앱 9개 배치를 추가합니다.
 Unicode 앱과 색상 포트는 64건 이하, 색상 소비 앱은 32건 이하입니다.
 사각형의 단항 연산은 64건 이하, 이항 연산과 소비 앱은 32건 이하입니다.
 새 레코드 기대값도 들여쓴 JSON과 마지막 개행을 포함해 32KiB 한도를 검사합니다.

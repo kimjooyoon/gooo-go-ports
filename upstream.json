@@ -24,6 +24,15 @@
   },
   "ports": [
     {
+      "source": "src/unicode/letter.go",
+      "supporting_sources": ["src/unicode/tables.go"],
+      "target": "ports/unicode/simple_fold.gooo",
+      "symbols": ["SimpleFold"],
+      "unicode_version": "17.0.0",
+      "generator": "cmd/gen-simple-fold",
+      "api_mapping": "Complete pinned ASCII folding, special case orbits and case-range delta rules are lowered to Gooo branches. Signed int32 rune inputs preserve SimpleFold's successor and identity behavior, including invalid Unicode values. Outside-int32 Integer values return the original input as a separate identity extension, without narrowing. Scalar declarations are shared with space.gooo."
+    },
+    {
       "source": "src/image/geom.go",
       "target": "ports/image/geometry.gooo",
       "symbols": ["Rectangle.Empty", "Rectangle.Overlaps", "Rectangle.Intersect", "Rectangle.Union"],

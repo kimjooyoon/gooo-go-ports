@@ -25,6 +25,14 @@ func whitespaceResultContract(s suite) resultContract {
 		return geometry
 	}
 	switch s.Package + ":" + s.Activity {
+	case "go/unicode:SimpleFold":
+		return resultContract{Entity: integerEntity}
+	case "app/simple-fold:Compare":
+		const entity = "gooo://go-ports/examples/simple-fold/comparison"
+		return resultContract{Entity: entity, Fields: []recordFieldContract{
+			{"in_rune_domain", entity + "/in-rune-domain"}, {"equivalent", entity + "/equivalent"},
+			{"left_next", entity + "/left-next"}, {"right_next", entity + "/right-next"},
+		}}
 	case "go/unicode:IsSpace", "go/unicode:IsLetter", "go/unicode:IsDigit":
 		return resultContract{Entity: "gooo://std/boolean"}
 	case "app/identifier-rune:Classify":
