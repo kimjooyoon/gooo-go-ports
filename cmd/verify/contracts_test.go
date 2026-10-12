@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func allNativeSuites(t *testing.T) []suite {
+func original57NativeSuites(t *testing.T) []suite {
 	t.Helper()
 	suites, err := corpus()
 	if err != nil {
@@ -87,6 +87,16 @@ func allNativeSuites(t *testing.T) []suite {
 	return append(all, parsed.Suite)
 }
 
+func allNativeSuites(t *testing.T) []suite {
+	t.Helper()
+	all := original57NativeSuites(t)
+	containment, err := containmentCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return append(all, containment.Suites...)
+}
+
 func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 	contracts := nativeActivityContracts()
 	catalog, err := freezeVerificationCatalog("../../verification-catalog.json")
@@ -94,7 +104,7 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	suites := allNativeSuites(t)
-	if len(contracts) != 57 || len(suites) != 57 {
+	if len(contracts) != 59 || len(suites) != 59 {
 		t.Fatal("contract/suite roster changed")
 	}
 	seen := map[string]bool{}
@@ -213,6 +223,11 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	added += parsed.ReferenceCases
+	containment, err := containmentCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	added += containment.PortReferenceCases + containment.ConsumerReferenceCases
 	if total != 24770+added {
 		t.Fatalf("corpus changed: %d", total)
 	}

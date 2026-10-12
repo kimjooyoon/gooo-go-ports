@@ -12,7 +12,7 @@ func rectangleFieldContracts(entity string) []recordFieldContract {
 
 func geometryResultContract(s suite) resultContract {
 	switch s.Package + ":" + s.Activity {
-	case "go/image:RectangleEmpty", "go/image:RectangleOverlaps":
+	case "go/image:RectangleEmpty", "go/image:RectangleOverlaps", "go/image:RectangleIn", "example/fits-crop:FitsCrop":
 		return resultContract{Entity: "gooo://std/boolean"}
 	case "go/image:RectangleIntersect", "go/image:RectangleUnion", "go/image:RectangleCanon":
 		return resultContract{Entity: rectangleEntity, Fields: rectangleFieldContracts(rectangleEntity)}

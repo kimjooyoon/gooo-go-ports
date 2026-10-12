@@ -38,6 +38,8 @@ jobs:
           python3 tools/check-drag-crop-example_test.py
           python3 tools/check-fixed-pixel-bounds_test.py
           python3 -B tools/check-alpha-matte_test.py -v
+          python3 -B tools/check-fits-crop_test.py -v
+          python3 -B tools/check-fits-crop-inputs_test.py -v
       - name: Check pinned Unicode table generation
         run: |
           go run ./cmd/gen-unicode --check
@@ -72,6 +74,7 @@ jobs:
           ./.gooo check examples/case-inspector/main.gooo
           ./.gooo check examples/fixed-pixel-bounds/main.gooo
           ./.gooo check examples/crop-planner/drag_crop.gooo
+          ./.gooo check examples/fits-crop/main.gooo
           ./.gooo check ports/google/uuid/quote.gooo
           ./.gooo check ports/google/uuid/validate.gooo
           ./.gooo check ports/google/uuid/text/parse_canonical.gooo
@@ -85,7 +88,7 @@ jobs:
             .schema == "gooo/go-ports-differential/v1" and
             .go_version == "go1.27.2" and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
-            .ported_functions == 39 and .consumer_programs == 16 and .consumer_activities == 18 and
+            .ported_functions == 40 and .consumer_programs == 17 and .consumer_activities == 19 and
             .uuid_port_reference_cases == 21745 and .uuid_consumer_reference_cases == 21745 and
             .uuid_parse_reference_cases == 21867 and .uuid_parse_legacy_reference_inputs == 21745 and
             .uuid_parse_anchor_inputs == 136 and .uuid_parse_added_reference_inputs == 122 and
@@ -102,6 +105,10 @@ jobs:
             .classification_port_reference_cases == 5043 and .classification_port_rejection_cases == 24 and
             .classification_consumer_reference_cases == 4570 and .classification_consumer_rejection_cases == 12 and
             .geometry_port_reference_cases == 1711 and .geometry_consumer_reference_cases == 486 and
+            .rectangle_in_reference_cases == 570 and .fits_crop_reference_cases == 570 and
+            .containment_baseline_reference_inputs == 486 and .containment_added_reference_inputs == 84 and
+            .rectangle_in_reference_cases == (.containment_baseline_reference_inputs + .containment_added_reference_inputs) and
+            .fits_crop_reference_cases == (.containment_baseline_reference_inputs + .containment_added_reference_inputs) and
             .fixed_port_reference_cases == 1664 and .fixed_port_rejection_cases == 16 and
             .fixed_consumer_reference_cases == 471 and .fixed_consumer_domain_rejection_cases == 33 and
             .fixed_consumer_overflow_rejection_cases == 6 and
@@ -131,11 +138,17 @@ jobs:
               .value.unicode_range_inputs == 1114112 and .value.mismatches == 0) and
             .case_mapping_exhaustive.To.unicode_range_comparisons == 3342336 and
             ([.case_mapping_exhaustive[].unicode_range_comparisons] | add) == 6684672 and
-            .cases == 130702 and .passed == 130702 and
-            (.runs | length) == 57 and
-            ([.runs[].cases] | add) == 130702 and ([.runs[].batches] | add) == 1741 and
+            .cases == 131842 and .passed == 131842 and
+            (.runs | length) == 59 and
+            ([.runs[].cases] | add) == 131842 and ([.runs[].batches] | add) == 1777 and
+            ([.runs[:57][].cases] | add) == 130702 and ([.runs[:57][].batches] | add) == 1741 and
             ([.runs[:56][].cases] | add) == 108835 and ([.runs[:56][].batches] | add) == 1416 and
+            .runs[56].package == "go/github.com/google/uuid/text" and .runs[56].activity == "ParseCanonical" and
             .runs[56].cases == 21867 and .runs[56].batches == 325 and
+            .runs[57].package == "go/image" and .runs[57].activity == "RectangleIn" and
+            .runs[57].cases == 570 and .runs[57].passed == 570 and .runs[57].batches == 18 and
+            .runs[58].package == "example/fits-crop" and .runs[58].activity == "FitsCrop" and
+            .runs[58].cases == 570 and .runs[58].passed == 570 and .runs[58].batches == 18 and
             ([.runs[:54][].cases] | add) == 65345 and ([.runs[:54][].batches] | add) == 882 and
             all(.runs[]; .passed == .cases and .replay_equal == true)
           ' out/ci/summary.json
@@ -474,6 +487,27 @@ jobs:
             --inputs examples/crop-planner/drag_inputs.json \
             drag-crop.workspace.json > out/drag-crop-replay.json
           python3 tools/check-drag-crop-example.py out/drag-crop-example.json out/drag-crop-replay.json
+      - name: Execute and replay the native FitsCrop example
+        run: |
+          ./.gooo package execute --json --inputs examples/fits-crop/inputs.json \
+            fits-crop.workspace.json > out/fits-crop-example.json
+          ./.gooo package replay --json --receipt out/fits-crop-example.json \
+            --inputs examples/fits-crop/inputs.json \
+            fits-crop.workspace.json > out/fits-crop-replay.json
+          python3 -B tools/check-fits-crop.py out/fits-crop-example.json out/fits-crop-replay.json
+          GOOO_FITS_CROP_EXECUTION="$PWD/out/fits-crop-example.json" \
+            GOOO_FITS_CROP_REPLAY="$PWD/out/fits-crop-replay.json" \
+            python3 -B tools/check-fits-crop_test.py -v
+      - name: Observe malformed FitsCrop inputs through the actual CLI
+        run: |
+          python3 -B tools/check-fits-crop-inputs.py out/fits-crop-input-rejections
+          jq -e '
+            .status == "PASS" and .planned_framework_inputs == 90 and
+            .observed_framework_rejections == 90 and .go_reference_cases == 0 and
+            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+            (.cases | length) == 90 and (.failures | length) == 0 and
+            all(.cases[]; .rejection_verified == true and .exit_code == 1 and .timed_out == false)
+          ' out/fits-crop-input-rejections/summary.json
       - name: Verify the offline decision-policy experiment
         run: |
           ./examples/decision-policy-pilot/run.sh

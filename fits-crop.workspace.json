@@ -1,0 +1,21 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "example/fits-crop",
+    "activity": "FitsCrop"
+  },
+  "packages": [
+    {
+      "path": "go/image",
+      "sources": [
+        "ports/image/geometry.gooo"
+      ]
+    },
+    {
+      "path": "example/fits-crop",
+      "sources": [
+        "examples/fits-crop/main.gooo"
+      ]
+    }
+  ]
+}

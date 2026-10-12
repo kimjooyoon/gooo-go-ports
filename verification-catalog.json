@@ -111,6 +111,12 @@
       ]
     },
     {
+      "path": "example/fits-crop",
+      "sources": [
+        "examples/fits-crop/main.gooo"
+      ]
+    },
+    {
       "path": "app/simple-fold",
       "sources": [
         "examples/simple-fold/main.gooo"

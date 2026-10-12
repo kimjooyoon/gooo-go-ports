@@ -128,7 +128,7 @@ func TestNRGBACorpusCoverageBudgetAndBaseline(t *testing.T) {
 	if total > 5000 {
 		t.Fatal("finite NRGBA workload exceeds reviewed 5000-case budget", total)
 	}
-	all := allNativeSuites(t)
+	all := original57NativeSuites(t)
 	var documents []any
 	oldCases := 0
 	if len(all) != 57 {

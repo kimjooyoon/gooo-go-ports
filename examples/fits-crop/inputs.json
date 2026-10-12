@@ -1,0 +1,201 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "example/fits-crop:FitsCrop.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 10,
+        "max_y": 10
+      },
+      "example/fits-crop:FitsCrop.input1": {
+        "min_x": 2,
+        "min_y": 2,
+        "max_x": 8,
+        "max_y": 8
+      }
+    },
+    {
+      "example/fits-crop:FitsCrop.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 0,
+        "max_y": 0
+      },
+      "example/fits-crop:FitsCrop.input1": {
+        "min_x": 20,
+        "min_y": 20,
+        "max_x": 20,
+        "max_y": 21
+      }
+    },
+    {
+      "example/fits-crop:FitsCrop.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 10,
+        "max_y": 10
+      },
+      "example/fits-crop:FitsCrop.input1": {
+        "min_x": -1,
+        "min_y": 2,
+        "max_x": 8,
+        "max_y": 8
+      }
+    },
+    {
+      "example/fits-crop:FitsCrop.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 10,
+        "max_y": 10
+      },
+      "example/fits-crop:FitsCrop.input1": {
+        "min_x": 2,
+        "min_y": -1,
+        "max_x": 8,
+        "max_y": 8
+      }
+    },
+    {
+      "example/fits-crop:FitsCrop.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 10,
+        "max_y": 10
+      },
+      "example/fits-crop:FitsCrop.input1": {
+        "min_x": 2,
+        "min_y": 2,
+        "max_x": 11,
+        "max_y": 8
+      }
+    },
+    {
+      "example/fits-crop:FitsCrop.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 10,
+        "max_y": 10
+      },
+      "example/fits-crop:FitsCrop.input1": {
+        "min_x": 2,
+        "min_y": 2,
+        "max_x": 8,
+        "max_y": 11
+      }
+    },
+    {
+      "example/fits-crop:FitsCrop.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 10,
+        "max_y": 10
+      },
+      "example/fits-crop:FitsCrop.input1": {
+        "min_x": 10,
+        "min_y": 2,
+        "max_x": 11,
+        "max_y": 8
+      }
+    },
+    {
+      "example/fits-crop:FitsCrop.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 10,
+        "max_y": 10
+      },
+      "example/fits-crop:FitsCrop.input1": {
+        "min_x": 42,
+        "min_y": 2,
+        "max_x": 42,
+        "max_y": 8
+      }
+    },
+    {
+      "example/fits-crop:FitsCrop.input0": {
+        "min_x": 0,
+        "min_y": 0,
+        "max_x": 10,
+        "max_y": 10
+      },
+      "example/fits-crop:FitsCrop.input1": {
+        "min_x": 2,
+        "min_y": 42,
+        "max_x": 8,
+        "max_y": 42
+      }
+    },
+    {
+      "example/fits-crop:FitsCrop.input0": {
+        "min_x": -9223372036854775808,
+        "min_y": -9223372036854775808,
+        "max_x": 9223372036854775807,
+        "max_y": 9223372036854775807
+      },
+      "example/fits-crop:FitsCrop.input1": {
+        "min_x": 9223372036854775807,
+        "min_y": 0,
+        "max_x": -9223372036854775808,
+        "max_y": 1
+      }
+    },
+    {
+      "example/fits-crop:FitsCrop.input0": {
+        "min_x": -9223372036854775808,
+        "min_y": -9223372036854775808,
+        "max_x": 9223372036854775807,
+        "max_y": 9223372036854775807
+      },
+      "example/fits-crop:FitsCrop.input1": {
+        "min_x": 0,
+        "min_y": 9223372036854775807,
+        "max_x": 1,
+        "max_y": -9223372036854775808
+      }
+    },
+    {
+      "example/fits-crop:FitsCrop.input0": {
+        "min_x": 9223372036854775807,
+        "min_y": 9223372036854775807,
+        "max_x": -9223372036854775808,
+        "max_y": -9223372036854775808
+      },
+      "example/fits-crop:FitsCrop.input1": {
+        "min_x": 1,
+        "min_y": 1,
+        "max_x": 2,
+        "max_y": 2
+      }
+    },
+    {
+      "example/fits-crop:FitsCrop.input0": {
+        "min_x": -9223372036854775808,
+        "min_y": -9223372036854775808,
+        "max_x": 9223372036854775807,
+        "max_y": 9223372036854775807
+      },
+      "example/fits-crop:FitsCrop.input1": {
+        "min_x": -9223372036854775808,
+        "min_y": -9223372036854775808,
+        "max_x": 9223372036854775807,
+        "max_y": 9223372036854775807
+      }
+    },
+    {
+      "example/fits-crop:FitsCrop.input0": {
+        "min_x": 9007199254740993,
+        "min_y": -9007199254740993,
+        "max_x": 9007199254740996,
+        "max_y": -9007199254740988
+      },
+      "example/fits-crop:FitsCrop.input1": {
+        "min_x": 9007199254740992,
+        "min_y": -9007199254740992,
+        "max_x": 9007199254740996,
+        "max_y": -9007199254740991
+      }
+    }
+  ]
+}

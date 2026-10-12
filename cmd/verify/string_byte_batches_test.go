@@ -91,7 +91,7 @@ func TestStringByteBatchBoundCountsEscapesIndentationAndFinalLF(t *testing.T) {
 }
 
 func TestStringByteAdditionKeepsLegacy62241CasesAnd833BatchBoundaries(t *testing.T) {
-	all := allNativeSuites(t)
+	all := original57NativeSuites(t)
 	if len(all) != 57 || !isStringByteSuite(all[52]) || !isStringByteSuite(all[53]) {
 		t.Fatal("new suites must be appended after the original 52")
 	}

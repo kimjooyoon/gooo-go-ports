@@ -72,5 +72,8 @@ func nativeBatchSize(s suite) int {
 			batchSize = geometryUnaryBatchSize
 		}
 	}
+	if s.Package == fitsCropPackage {
+		batchSize = fitsCropBatchSize
+	}
 	return batchSize
 }

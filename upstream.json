@@ -78,15 +78,17 @@
         "Rectangle.Empty",
         "Rectangle.Overlaps",
         "Rectangle.Intersect",
-        "Rectangle.Union"
+        "Rectangle.Union",
+        "Rectangle.In"
       ],
       "target_activities": [
         "RectangleEmpty",
         "RectangleOverlaps",
         "RectangleIntersect",
-        "RectangleUnion"
+        "RectangleUnion",
+        "RectangleIn"
       ],
-      "api_mapping": "Rectangle receiver is the first record argument. Go Min.X, Min.Y, Max.X, Max.Y map to required Integer fields min_x, min_y, max_x, max_y without normalization. Each coordinate preserves the full signed int64 Go int domain on amd64/arm64. Empty and reversed rectangles remain valid inputs; no coordinate arithmetic, narrowing, or domain extension."
+      "api_mapping": "Rectangle receiver is the first record argument. Go Min.X, Min.Y, Max.X, Max.Y map to required Integer fields min_x, min_y, max_x, max_y without normalization. Each coordinate preserves the full signed int64 Go int domain on amd64/arm64. Empty and reversed rectangles remain valid inputs; no coordinate arithmetic, narrowing, or domain extension. RectangleIn returns true for every empty or reversed receiver, regardless of the second rectangle, and allows equal maximum edges for nonempty containment. FitsCrop is a separate importing consumer that rejects empty requests before calling RectangleIn; it does not alter the port semantics."
     },
     {
       "source": "src/image/geom.go",

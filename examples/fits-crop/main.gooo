@@ -1,0 +1,8 @@
+// Accept a requested crop only when it is nonempty and fits the original bounds.
+// This validates coordinates only; it does not clip or process image pixels.
+package fits_crop
+namespace gooo_ports_examples_fits_crop
+import geometry "go/image"
+
+// input0 is the original bounds; input1 is the original requested crop.
+activity FitsCrop(Rectangle, Rectangle) -> Boolean id "gooo://example/fits-crop/fits-crop" computes `return !geometry.RectangleEmpty(input1) && geometry.RectangleIn(input1, input0)`

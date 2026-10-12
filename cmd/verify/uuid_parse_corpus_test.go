@@ -103,7 +103,7 @@ func TestUUIDParseCorpusRetainsLegacyInputsAndParserAnchors(t *testing.T) {
 }
 
 func TestUUIDParsePreservesEstablished56SuiteAndBatchCounts(t *testing.T) {
-	suites := allNativeSuites(t)
+	suites := original57NativeSuites(t)
 	if len(suites) != 57 || !isUUIDParseSuite(suites[56]) {
 		t.Fatal("parser must be a new final suite")
 	}

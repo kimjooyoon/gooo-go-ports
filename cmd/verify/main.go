@@ -161,6 +161,11 @@ func run() error {
 		return err
 	}
 	suites = append(suites, uuidParse.Suite)
+	containment, err := containmentCorpus()
+	if err != nil {
+		return err
+	}
+	suites = append(suites, containment.Suites...)
 	if *out == "" {
 		return fmt.Errorf("provide --out for a new evidence directory")
 	}
@@ -360,7 +365,12 @@ func run() error {
 		"classification_port_reference_cases": classification.PortReferenceCases, "classification_port_rejection_cases": classification.PortRejectionCases,
 		"classification_consumer_reference_cases": classification.ConsumerReferenceCases, "classification_consumer_rejection_cases": classification.ConsumerRejectionCases,
 		"geometry_port_reference_cases": geometry.PortReferenceCases, "geometry_consumer_reference_cases": geometry.ConsumerReferenceCases,
-		"canon_port_reference_cases": canonical.PortReferenceCases, "drag_crop_consumer_reference_cases": canonical.ConsumerReferenceCases,
+		"rectangle_in_reference_cases":          containment.PortReferenceCases,
+		"fits_crop_reference_cases":             containment.ConsumerReferenceCases,
+		"containment_baseline_reference_inputs": containment.BaselineReferenceInputs,
+		"containment_added_reference_inputs":    containment.AddedReferenceInputs,
+		"containment_scope":                     "RectangleIn independently compares original image.Rectangle.In over raw signed-int64 Rectangle literals on 64-bit Go, including empty/reversed receivers and exact extrema. FitsCrop separately compares !requested.Empty() && requested.In(bounds), rejecting empty requests instead of clipping them. No image.Rect construction, normalization, subtraction, narrowing or coordinate-domain extension is used. Original 57 suites, 130702 case documents and 1741 batch boundaries remain unchanged. Both appended suites use the existing 32-row geometry binary policy and check actual serialized JSON plus final LF within 32KiB. They use finite original geometry inputs plus named containment/edge/empty/extreme/precision pairs; they do not claim all Rectangle pairs, image/GIF processing or production safety.",
+		"canon_port_reference_cases":            canonical.PortReferenceCases, "drag_crop_consumer_reference_cases": canonical.ConsumerReferenceCases,
 		"simple_fold_port_reference_cases": folding.PortReferenceCases, "simple_fold_port_extension_cases": folding.PortExtensionCases,
 		"simple_fold_consumer_reference_cases": folding.ConsumerReferenceCases, "simple_fold_consumer_rejection_cases": folding.ConsumerRejectionCases,
 		"ycbcr_port_reference_cases": ycbcr.PortReferenceCases, "ycbcr_port_rejection_cases": ycbcr.PortRejectionCases,

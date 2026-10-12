@@ -3,10 +3,12 @@
 [Gooo](https://github.com/kimjooyoon/meta-ontology-go) is an experimental language for
 describing what programs should do and inspecting how they are built and run.
 This independent ecosystem project implements selected Go standard-library, x/image and Google UUID functions in Gooo,
-with independent Go reference outputs and saved replay: 35 standard-library ports,
+with independent Go reference outputs and saved replay: 36 standard-library ports,
 two ports from golang.org/x/image and two Google UUID adaptations. The current scope is
-39 HTTP, Unicode, byte-search, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, sixteen native importing consumer programs,
+40 HTTP, Unicode, byte-search, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, seventeen native importing consumer programs (nineteen activities),
 and an importing browser dispatcher.
+The new RectangleIn/FitsCrop reference suites are integrated; their full native
+execute/replay observations are pending.
 
 ## Start here
 
@@ -201,6 +203,14 @@ not load or modify image files. This separate browser program composes the
 existing `RectangleIntersect` and `RectangleEmpty` ports; it adds no new port
 and leaves the 21-function demo's input and shared-link formats unchanged.
 
+The native [FitsCrop example](examples/fits-crop/README.md) returns whether a
+nonempty requested rectangle already fits inside the supplied bounds. It imports
+`RectangleEmpty` and the new `RectangleIn`; it does not clip or normalize the
+request. Go considers every empty or reversed receiver inside any rectangle,
+so `RectangleIn` can return true while `FitsCrop` returns false. Equal exclusive
+maximum edges are allowed, and all four coordinates retain their original signed
+64-bit values. This example runs locally; the browser programs are unchanged.
+
 The experimental [drag-selection crop planner](docs/drag-crop.md) interprets the requested
 rectangle as two unordered drag corners. Choose **Two-corner selection** in the
 browser crop planner: (200,200) to (100,100) selects the same region as the reverse
@@ -238,7 +248,7 @@ with the page URL or command and what happened. A working demo or shared input l
 is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-현재 Go 표준 라이브러리, x/image와 Google UUID의 HTTP·Unicode·바이트 검색·UUID 형식 검사·파싱·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 API 39개를 표현합니다.
+현재 Go 표준 라이브러리, x/image와 Google UUID의 HTTP·Unicode·바이트 검색·UUID 형식 검사·파싱·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 API 40개를 표현합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -268,6 +278,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | `go/image/color` | `NRGBAToRGBA` | Go `NRGBA.RGBA` 수신 객체의 네 uint8 채널을 레코드로 전달. 알파가 곱해진 16비트 RGB와 확장 알파를 `RGBA16` 레코드로 반환. Native 전용 |
 | `go/time` | `DurationRound`, `DurationTruncate` | Go Duration 메서드의 수신 객체를 첫 인수로 전달. 두 signed int64 나노초 입력의 반올림·절삭과 범위 초과 시 포화 |
 | `go/image` | `RectangleEmpty`, `RectangleOverlaps`, `RectangleIntersect`, `RectangleUnion`, `RectangleCanon` | 수신 사각형을 첫 레코드 인수로 전달. Go의 네 좌표를 signed int64 필드로 보존하며 기존 네 활동은 빈·뒤집힌 입력을 정규화하지 않음. `RectangleCanon`만 뒤집힌 축을 비교·교환. Native에서 다섯 함수를 실행하며 [브라우저 crop](examples/crop-planner/README.md)은 `Intersect` + `Empty`를 조합 |
+| `go/image` | `RectangleIn` | 첫 수신 사각형이 두 번째 사각형에 포함되는지 원래 signed int64 좌표로 판정. 빈·뒤집힌 수신 사각형은 항상 true이며 같은 exclusive 최댓값을 허용. 정규화·좌표 산술 없음; native 전용 |
 | `go/golang.org/x/image/math/fixed` | `Int26_6Floor`, `Int26_6Ceil` | signed int32 Q26.6 원시 좌표의 정수 경계. 원본 overflow를 보존하며 반환값은 `{in_fixed_domain, value}` 레코드. Native 전용 |
 
 원본의 `rune` 입력은 int32 범위를 Gooo Integer로 전달합니다. `byte` 호환 범위는
@@ -576,9 +587,19 @@ JSON의 잘못된 UTF-8·단독 surrogate가 원래 바이트 그대로 거부�
 오류 시 부분 값과 오류 상태를 함께 보존합니다. 기존 UUID 입력 **21,745건**에
 추가 anchor 136개의 중복을 제거해 **122건**을 더한 **21,867건**을 비교합니다.
 38바이트 외곽 문자, 실패한 hex 쌍의 부분 반환, hyphen 오류 우선순위, UTF-8 접두 인용,
-길이와 byte 패턴을 포함하며 현재 corpus 합계는 **130,702건·57개 suite**입니다.
+길이와 byte 패턴을 포함하며 이 단계의 corpus 합계는 **130,702건·57개 suite**입니다.
 Go의 binary UUID 타입이나 임의 byte 입력 `ParseBytes`를 노출하는 API는 아닙니다.
 
+새 `RectangleIn`과 [FitsCrop](examples/fits-crop/README.md)는 각각 기존 사각형 이항 입력
+**486건**과 추가 입력 **84건**을 합친 **570건**을 참조 코퍼스로 사용합니다.
+`RectangleIn(requested, bounds)`는 빈 요청에도 true를 반환하지만, 소비 앱은
+`!requested.Empty()`를 먼저 요구하므로 빈·뒤집힌 요청을 false로 판정합니다.
+네 경계의 초과, 포함·접촉·분리, 동일한 exclusive 최댓값, 빈 컨테이너와 int64·정밀도 경계를
+다룹니다. 현재 검증 catalog는 **131,842건·59개 suite**이며 새 두 suite의 전체 native
+실행·저장재실행 관찰은 확인 대기 중입니다. 이미지나 GIF를 처리하는 기능은 아닙니다.
+기존 57개 suite의 case-document 바이트·SHA와 1,741개 배치 경계는 유지합니다.
+공유 `geometry.gooo`에 선언을 추가하여 소스 해시는 바뀝니다. 기존 활동의 ID·body를
+보존하고 새 소스 식별자로 실행·저장재실행을 검사하며, 이전 receipt identity를 재사용하지 않습니다.
 
 사각형의 네 좌표는
 각각 전체 signed int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
@@ -616,6 +637,8 @@ Go의 binary UUID 타입이나 임의 byte 입력 `ParseBytes`를 노출하는 A
 | CropPlan consumer | 486 | 같은 원래 사각형 두 개로 교집합의 네 좌표·픽셀 존재 여부 비교 |
 | RectangleCanon | 371 | 기존 단항 좌표 격자·경계·표본과 모든 관측된 canonical 결과를 다시 입력하여 멱등성 비교 |
 | DragCropPlan | 501 | 기존 두 레코드 격자·경계·표본과 네 드래그 방향, clipping·접촉·퇴화·int64 경계 |
+| RectangleIn | 570 | 기존 사각형 이항 입력 486건과 추가 84건; 원래 receiver의 빈·뒤집힌 상태, 네 경계와 동일한 exclusive 최대 좌표를 비교 |
+| FitsCrop consumer | 570 | 같은 bounds/requested 쌍에서 비어 있지 않은 요청의 완전 포함만 허용; clipping·정규화 없이 독립 Go 조건식으로 비교 |
 | unicode.SimpleFold | 3,505 + 11 | 모든 변경 코드 포인트, Latin-1, 원본 case range 경계, invalid Unicode·int32 경계·표본, 별도 int64 identity 확장 |
 | Simple-fold Compare consumer | 497 + 34 | 모든 3/4-member 순환의 순서 있는 쌍, 이름 있는 고정점·2-member 순환, 다른 순환·invalid 값·표본, 별도 영역 밖 거부 |
 | Color RGBToYCbCr | 924 + 24 | RGB 경계 격자·모든 회색·반올림 경계·고정 표본, 별도 영역 밖 거부 |
@@ -652,11 +675,13 @@ byte 3성분 입력을 Go 원본과 비교합니다. 총 **33,554,432번**의 �
 생성 소스 해시·도구체인·결과를 기록합니다. 소비 앱의 모든 RGB 왕복을 실행하거나
 이미지 압축·색상 프로파일을 검증한 것으로 해석하지 않습니다.
 
-Gooo 실행 입력 상한에 맞춰 총 **1,741개 배치**를 실행합니다. 기존 833개 배치와
+Gooo 실행 입력 상한에 맞춰 현재 catalog를 총 **1,777개 배치**로 나눕니다. 기존 833개 배치와
 그 경계를 유지하며 IndexByte 21개·Search 소비 앱 28개 배치를 추가합니다.
 IndexByte·Search와 UUID의 세 suite는 128행 이하에서 실제 JSON 30,000바이트 상한에 맞춰 최대 접두 배치를 선택합니다.
 UUID Validate 257개·Inspect 277개 배치를 추가하며 이전 882배치의 경계는 바뀌지 않습니다.
-ParseCanonical의 325개 배치를 더하며 기존 1,416개 배치의 입력·소스·경계는 그대로 유지합니다.
+ParseCanonical을 추가했던 단계에서는 325개 배치를 더하고 기존 1,416개 배치의 입력·소스·경계를 유지했습니다.
+RectangleIn과 FitsCrop은 각각 18개 배치를 더하며 기존 1,741개 배치의 case JSON 바이트와
+행 경계를 보존합니다. 공유 사각형 소스의 새 해시는 새 실행·저장재실행에 연결합니다.
 기존 YCbCr까지의 465개 배치를 유지하고,
 Canon 6개·드래그 선택 소비 활동 16개, x/image Floor/Ceil 각각 14개와 픽셀 경계 소비 활동
 16개 배치까지의 기존 531개를 보존합니다. case mapping 네 포트 131개와 새 소비 앱 57개
@@ -680,6 +705,12 @@ Dispatch 계약과 입력 타입·소스 연결을 확인합니다.
 `python3 tools/check-rectangle-inputs.py out/rectangle-input-rejections`는 양쪽 인수에서
 누락·문자열·소수·int64 초과·null·추가 필드·중복 JSON 키의 거부 18건을 재현합니다.
 이는 컴파일러 입력 검증이며 위 Go 원본 비교 수나 영역 밖 확장 수에 합산하지 않습니다.
+새 `tools/check-fits-crop.py`는 문서의 14개 input-only 기록을 원래 int64 입력·Boolean 값·
+소스/프로그램/producer와 저장재실행에 연결합니다. 이 기록의 판정은 `OBSERVED`이며
+기대값을 공급하지 않은 입력에 correctness score를 만들지 않습니다.
+`tools/check-fits-crop-inputs.py`는 별도 90개 malformed 입력을 실제 CLI에 전달하도록 구성되어
+있습니다. 반환된 진단·stage·counter만 보존하며, runtime 정보가 없다고 모델 호출이나
+native 실행 횟수를 0으로 간주하지 않습니다. 이 거부 관찰도 위 원본 비교 수에 합산하지 않습니다.
 검사 도중 소스가 바뀌어도 처음 읽은 동일한 소스 스냅샷을 모든 배치에 사용합니다.
 고정 컴파일러는 한 생성 프로그램의 레코드 타입을 16개로 제한하므로, 검증기는
 전체 소스 목록에서 공통 포트와 해당 배치의 소비 앱만 작업공간에 넣습니다.
@@ -756,6 +787,7 @@ Floor/Ceil로 바꾸고 기존 RectangleIntersect로 잘라냅니다. 기존 35,
 알파 합성 예제까지의 36개 포트·14개 소비 프로그램·16개 소비 활동은 유지하며,
 바이트 검색까지의 37개 포트·15개 소비 프로그램·17개 소비 활동을 유지합니다.
 Google UUID Validate와 importing inspector까지의 38개 포트·16개 소비 프로그램·18개 소비 활동을 유지합니다.
-별도 ParseCanonical Text API를 추가한 현재 총계는 39개 포트·16개 소비 프로그램·18개 소비 활동입니다.
+별도 ParseCanonical Text API까지의 39개 포트·16개 소비 프로그램·18개 소비 활동을 유지합니다.
+RectangleIn과 FitsCrop을 추가한 현재 총계는 40개 포트·17개 소비 프로그램·19개 소비 활동입니다.
 원본 int32 전체의 동작을 구현하되 2^32 전수 검사를 주장하지 않습니다.
 브라우저 21함수와 두 crop 모드는 그대로입니다.

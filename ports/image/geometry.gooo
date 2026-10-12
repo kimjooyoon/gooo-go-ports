@@ -51,3 +51,8 @@ if min_y > input1.min_y { min_y = input1.min_y }
 if max_x < input1.max_x { max_x = input1.max_x }
 if max_y < input1.max_y { max_y = input1.max_y }
 return Rectangle{min_x: min_x, min_y: min_y, max_x: max_x, max_y: max_y}`
+
+// Every empty receiver is inside every rectangle; equal maximum edges fit.
+// Preserve original signed coordinates and compare only, without normalization.
+activity RectangleIn(Rectangle, Rectangle) -> Boolean id "gooo://go/image/rectangle-in" computes `if RectangleEmpty(input0) { return true }
+return input1.min_x <= input0.min_x && input0.max_x <= input1.max_x && input1.min_y <= input0.min_y && input0.max_y <= input1.max_y`
