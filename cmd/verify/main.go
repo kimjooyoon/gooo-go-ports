@@ -44,7 +44,11 @@ func run() error {
 	compiler := flag.String("compiler", "./.gooo", "pinned compiler executable")
 	out := flag.String("out", "", "new evidence directory (must not exist)")
 	browser := flag.String("browser-fixtures", "", "write independent browser oracle fixtures to a new JSON file")
+	workers := flag.Int("workers", 1, "native suites to verify concurrently (1..4; default serial)")
 	flag.Parse()
+	if err := validateNativeSuiteWorkers(*workers); err != nil {
+		return err
+	}
 	if *out != "" && *browser != "" {
 		return fmt.Errorf("choose either --out or --browser-fixtures")
 	}
@@ -205,13 +209,16 @@ func run() error {
 	if err := os.WriteFile(filepath.Join(root, "verification-catalog.json"), catalog.Raw, 0644); err != nil {
 		return err
 	}
-	workspaces := map[string]suiteWorkspace{}
-	for _, s := range suites {
+	if err := validateSuiteEvidenceDirectories(root, suites); err != nil {
+		return err
+	}
+	workspaces := make([]suiteWorkspace, len(suites))
+	for index, s := range suites {
 		workspace, err := catalog.workspaceForSuite(s)
 		if err != nil {
 			return err
 		}
-		workspaces[s.Package+":"+s.Activity] = workspace
+		workspaces[index] = workspace
 	}
 	cache, err := newNativeBuildCache(root)
 	if err != nil {
@@ -226,99 +233,30 @@ func run() error {
 	var foldingExhaustive simpleFoldExhaustiveReport
 	ycbcrExhaustive := map[string]ycbcrExhaustiveReport{}
 	mappingExhaustive := map[string]caseMappingExhaustiveReport{}
-	for _, s := range suites {
-		selected := workspaces[s.Package+":"+s.Activity]
-		r := observation{Package: s.Package, Activity: s.Activity, Domain: s.Domain, Cases: len(s.Cases), ReplayEqual: true}
-		batchSize := nativeBatchSize(s)
-		for start := 0; start < len(s.Cases); {
-			end, err := nativeBatchEnd(s, start, batchSize)
-			if err != nil {
-				return err
-			}
-			batch := s
-			batch.Cases = s.Cases[start:end]
-			dir := filepath.Join(root, strings.ReplaceAll(s.Package, "/", "-")+"-"+s.Activity, fmt.Sprintf("%03d", r.Batches))
-			if err = os.MkdirAll(dir, 0755); err != nil {
-				return err
-			}
-			for _, source := range selected.Names {
-				b := selected.Sources[source]
-				path := filepath.Join(dir, source)
-				if err = os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-					return err
-				}
-				if err = os.WriteFile(path, b, 0644); err != nil {
-					return err
-				}
-			}
-			workspace := filepath.Join(dir, "gooo.workspace.json")
-			cases := filepath.Join(dir, "cases.json")
-			if err = save(workspace, selected.Manifest); err != nil {
-				return err
-			}
-			if err = save(cases, caseDocument(batch)); err != nil {
-				return err
-			}
-			manifestSHA, err := digestFile(workspace)
-			if err != nil {
-				return err
-			}
-			casesSHA, err := digestFile(cases)
-			if err != nil {
-				return err
-			}
-			identity := expectedIdentity{CompilerRevision: lock.CompilerRevision, GoVersion: lock.GoVersion, ManifestDigest: "sha256:" + manifestSHA, CasesDigest: "sha256:" + casesSHA, Sources: selected.Identities}
-			receipt := filepath.Join(dir, "execution.json")
-			raw, err = execute(ctx, *compiler, receipt, "package", "execute", "--json", "--cases", cases, workspace)
-			if err != nil {
-				return err
-			}
-			original, err := inspect(raw, batch, false, identity)
-			if err != nil {
-				return fmt.Errorf("%s: %w", receipt, err)
-			}
-			replayPath := filepath.Join(dir, "replay.json")
-			raw, err = execute(ctx, *compiler, replayPath, "package", "replay", "--json", "--receipt", receipt, "--cases", cases, workspace)
-			if err != nil {
-				return err
-			}
-			replay, err := inspect(raw, batch, true, identity)
-			if err != nil {
-				return fmt.Errorf("%s: %w", replayPath, err)
-			}
-			h, err := digestFile(receipt)
-			if err != nil {
-				return err
-			}
-			if err := inspectReplayBinding(original, replay, "sha256:"+h); err != nil {
-				return err
-			}
-			if s.Package == "go/unicode" && s.Activity == "SimpleFold" && r.Batches == 0 {
-				foldingExhaustive, err = checkSimpleFoldExhaustive(ctx, filepath.Join(root, "simple-fold-exhaustive"), raw, original.Generated, cache)
-				if err != nil {
-					return err
-				}
-			}
-			if s.Package == "go/image/color" && (s.Activity == "RGBToYCbCr" || s.Activity == "YCbCrToRGB") && r.Batches == 0 {
-				exhaustive, err := checkYCbCrExhaustive(ctx, filepath.Join(root, "ycbcr-exhaustive-"+s.Activity), raw, original.Generated, s.Activity, cache)
-				if err != nil {
-					return err
-				}
-				ycbcrExhaustive[s.Activity] = exhaustive
-			}
-			if s.Package == "go/unicode" && (s.Activity == "To" || s.Activity == "ToUpper" || s.Activity == "ToLower" || s.Activity == "ToTitle") && r.Batches == 0 {
-				exhaustive, err := checkCaseMappingExhaustive(ctx, filepath.Join(root, "case-mapping-exhaustive-"+s.Activity), raw, original.Generated, s.Activity, cache)
-				if err != nil {
-					return err
-				}
-				mappingExhaustive[s.Activity] = exhaustive
-			}
-			r.Batches++
-			r.Passed += len(batch.Cases)
-			start = end
+	verifier := newNativeSuiteVerifier(ctx, *compiler, root, lock, cache)
+	results, err := runNativeSuites(ctx, suites, *workers, func(ctx context.Context, index int, s suite) (nativeSuiteResult, error) {
+		result, err := verifier.verify(ctx, s, workspaces[index])
+		if err == nil {
+			r := result.Observation
+			fmt.Printf("%s:%s %d/%d; %d batches; replay identical\n", r.Package, r.Activity, r.Passed, r.Cases, r.Batches)
 		}
+		return result, err
+	})
+	if err != nil {
+		return err
+	}
+	for _, result := range results {
+		r := result.Observation
 		reports = append(reports, r)
-		fmt.Printf("%s:%s %d/%d; %d batches; replay identical\n", r.Package, r.Activity, r.Passed, r.Cases, r.Batches)
+		if result.SimpleFold != nil {
+			foldingExhaustive = *result.SimpleFold
+		}
+		if result.YCbCr != nil {
+			ycbcrExhaustive[r.Activity] = *result.YCbCr
+		}
+		if result.CaseMapping != nil {
+			mappingExhaustive[r.Activity] = *result.CaseMapping
+		}
 	}
 	total, passed, portedFunctions, consumerActivities := 0, 0, 0, 0
 	consumerPrograms := map[string]bool{}
@@ -334,7 +272,8 @@ func run() error {
 	}
 	return save(filepath.Join(root, "summary.json"), map[string]any{
 		"schema": "gooo/go-ports-differential/v1", "go_version": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH,
-		"compiler_revision": lock.CompilerRevision, "source_sha256": catalog.Hashes,
+		"native_suite_workers": *workers,
+		"compiler_revision":    lock.CompilerRevision, "source_sha256": catalog.Hashes,
 		"verification_catalog_sha256": contentDigest(catalog.Raw),
 		"ported_functions":            portedFunctions, "consumer_programs": len(consumerPrograms), "consumer_activities": consumerActivities,
 		"uuid_port_reference_cases": uuids.PortReferenceCases, "uuid_consumer_reference_cases": uuids.ConsumerReferenceCases,
