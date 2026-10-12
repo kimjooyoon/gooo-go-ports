@@ -27,8 +27,9 @@ of `가` at offset `1`. Searching for a continuation byte is permitted. The
 consumer does not normalize text, count code points or graphemes, or provide a
 whole-string Unicode validator.
 
-With Go 1.27.2 on PATH and Gooo 0.6.32-dev from clean compiler source
-`83928fa4538245abe33b08549da47f8cbdc50ed2`, run from the repository root:
+With Git, a POSIX shell and a Go installation that supports toolchain selection,
+run from the repository root. Bootstrap prepares Gooo 0.6.32-dev from clean compiler
+source `83928fa4538245abe33b08549da47f8cbdc50ed2` using Go 1.27.2:
 
 ```sh
 export GOTOOLCHAIN=go1.27.2
@@ -36,12 +37,18 @@ export GOWORK=off
 ./tools/bootstrap.sh
 mkdir -p out/string-byte-search
 ./.gooo package execute --json --inputs examples/string-byte-search/inputs.json \
-  --go "$(command -v go)" string-byte-search.workspace.json \
+  string-byte-search.workspace.json \
   > out/string-byte-search/execution.json
 ./.gooo package replay --json --receipt out/string-byte-search/execution.json \
-  --inputs examples/string-byte-search/inputs.json --go "$(command -v go)" \
+  --inputs examples/string-byte-search/inputs.json \
   string-byte-search.workspace.json > out/string-byte-search/replay.json
 ```
+
+The native commands select an installed Go 1.27.2 executable, including the
+toolchain cached by bootstrap. A Go launcher on PATH may still report an older
+version when native execution disables automatic toolchain switching. If you
+select Go explicitly with `--go`, use the actual Go 1.27.2 executable rather than
+that launcher.
 
 The 17 [input-only examples](inputs.json) include empty and repeated text,
 an absent byte, NUL, UTF-8 leading and continuation bytes, the exact 1,024-byte
