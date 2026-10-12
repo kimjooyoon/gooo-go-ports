@@ -1,4 +1,8 @@
-# 기여하기
+# Contributing / 기여하기
+
+This repository studies original Go behavior and expresses it in Gooo. It records
+inputs, results, and limits from a user's perspective, separately from work on the
+language compiler.
 
 이 저장소는 원본 Go 프로그램의 동작을 읽고 Gooo로 표현하는 작업장입니다.
 언어 컴파일러의 구현과는 별도로, 실제 이용자 관점의 입력·결과·제약을 축적합니다.
@@ -37,6 +41,43 @@ Gooo 소스 편집기는 양식에서 **Gooo source editor**를 선택하고, �
 텍스트 검사 JSON은 원래 입력 전체를 포함하므로 내용을 확인한 뒤 공개해도 되는 자료만
 선택해서 첨부해 주세요. 보고서 없이 페이지 주소와 오류만 제보해도 됩니다.
 
+You can start with a documentation correction or a concrete problem report using
+the form above. Point to the affected page or command and describe the correction
+or observed problem. For documentation changes, cite existing source or evidence
+and describe what you checked; a text edit is not a new execution observation.
+Reports and contributions in English or Korean are welcome.
+
+문서 수정이나 위 양식을 통한 구체적인 문제 제보부터 참여할 수 있습니다.
+관련 페이지나 명령과 수정할 내용 또는 관찰한 문제를 적어 주세요.
+문서 변경은 기존 소스나 근거를 연결하고 확인한 내용을 설명합니다.
+문장 수정 자체를 새로운 실행 관찰로 기록하지 않습니다.
+
+## Contribute a port
+
+1. Record the upstream repository, files, commit, functions, and license. Preserve
+   upstream copyright and license notices when copying or adapting source, and
+   check each project's license separately.
+2. Implement the calculation in Gooo under `ports/` with a unique stable ID.
+   Document API differences such as integer width, string encoding, failure
+   values, and multiple returns. A wrapper that returns values computed in Go
+   does not count as a Gooo port.
+3. Register the port and a real importing example's package paths and sources in
+   `verification-catalog.json`, and add a separate runnable workspace for the
+   example. The verifier freezes all source bytes before placing shared ports
+   and the selected consumer in each execution workspace. The pinned compiler
+   allows at most 16 record types per program, so do not accumulate every example
+   in the default `gooo.workspace.json`. Also register ports needed by the default
+   example in that workspace.
+4. Add inputs that use the original Go implementation as an independent oracle.
+   Include normal, boundary, and invalid inputs, and fix the seed for random
+   samples. Check the original input type's domain before converting values.
+5. Update `upstream.json` and the API inventory. Add exact source hashes for new
+   upstream files. Preserve observation and compiler/toolchain pins unless this
+   contribution deliberately updates those pinned sources and identities.
+6. Run the validation commands below and record input counts, actual matches,
+   failures, and scope. Do not edit generated code or execution receipts to make
+   a result appear successful.
+
 ## 포트에 기여하기
 
 1. 원본 저장소와 파일, 커밋, 함수, 라이선스를 기록합니다. 원본을 복사하거나 변형하면
@@ -56,7 +97,29 @@ Gooo 소스 편집기는 양식에서 **Gooo source editor**를 선택하고, �
 6. 아래 검사를 실행한 뒤 입력 수, 실제 일치 수, 실패 사례와 범위를 기록합니다.
    생성 코드와 실행 receipt를 직접 수정해 성공한 결과를 만들지 않습니다.
 
+Verify actual original inputs and outputs, entry and source bindings, producer
+and compiler/Go identities, and the execution's own saved replay. A `PASS` label
+alone is insufficient. Finite function observations do not establish whole-package
+compatibility.
+
+실제 원본 입력·출력, entry와 source 연결, producer와 컴파일러·Go 식별자,
+해당 실행의 저장 재실행을 검증합니다. `PASS` 표지만으로는 충분하지 않으며,
+함수의 유한 관찰로 패키지 전체 호환성을 주장하지 않습니다.
+
+Run these commands from the repository root on macOS or Linux in the same shell,
+with Python 3 and Go toolchain selection support or Go 1.27.2. The selected Go
+toolchain and pinned compiler may be downloaded on the first run. Stop if a
+command fails. Repeat the exports when continuing in a new shell.
+
+macOS 또는 Linux의 저장소 루트에서 Python 3와 도구 체인 선택을 지원하는 Go
+또는 Go 1.27.2를 사용해 같은 셸에서 순서대로 실행합니다. 첫 실행은 선택한 Go
+도구 체인과 고정 컴파일러를 다운로드할 수 있습니다. 명령이 실패하면 중단하고,
+새 셸에서 이어갈 때는 두 환경변수를 다시 설정합니다.
+
 ```sh
+export GOTOOLCHAIN=go1.27.2
+export GOWORK=off
+test "$(go env GOVERSION)" = go1.27.2
 ./tools/bootstrap.sh
 test -z "$(gofmt -l cmd)"
 go vet ./...
@@ -65,14 +128,41 @@ python3 tools/bootstrap.test.py
 python3 tools/receipt_json_test.py
 python3 tools/check-drag-crop-example_test.py
 python3 tools/check-fixed-pixel-bounds_test.py
+python3 -B tools/check-alpha-matte_test.py -v
+python3 -B tools/check-fits-crop_test.py -v
+python3 -B tools/check-fits-crop-inputs_test.py -v
+go run ./cmd/gen-unicode --check
+go run ./cmd/gen-simple-fold --check
+go run ./cmd/gen-case-mapping --check
+python3 tools/gen-uuid-quote.py --check
 go run ./cmd/verify --out out/contribution
 ./tools/probe.sh --out out/contribution-probes
 ```
 
+The Python receipt tests above may skip checks that require actual example
+receipts. The [CI workflow](.github/workflows/ci.yml) also executes the importing
+examples and supplies their saved execution/replay files to those checks; a
+skipped test does not verify a receipt.
+
+위 Python receipt 검사는 실제 예제 receipt가 필요한 항목을 건너뛸 수 있습니다.
+[CI workflow](.github/workflows/ci.yml)는 importing 예제도 실행하고 저장한 실행·재실행
+파일을 해당 검사에 전달합니다. 건너뛴 검사를 receipt 검증으로 기록하지 않습니다.
+
+For an unsupported behavior, add a small failing example under `probes/`.
+Describe the desired Go behavior, actual Gooo diagnostic, pinned version, and
+the port blocked by that limit. When compiler support arrives, turn the failing
+probe into a successful regression case and execute the port for comparison.
+Declaration checking or source generation alone does not establish native
+execution or correct behavior on the supplied inputs.
+
+If contributing to the compiler, follow its own `AGENTS.md` and `agent/* -> dev`
+process. Evidence prepared here can support a separate related issue or PR.
+
 현재 지원되지 않는 동작은 작은 실패 예제를 `probes/`에 추가합니다.
 원하는 Go 동작, 실제 Gooo 진단, 고정 버전, 이 제한으로 막히는 포트를 함께 설명합니다.
 컴파일러의 새로운 지원이 들어오면 해당 실패 probe를 성공 회귀 사례로 바꾸고
-이식 함수를 실행해 비교합니다. 단순 파서 성공을 구현 지원으로 취급하지 않습니다.
+이식 함수를 실행해 비교합니다. 선언 검사나 소스 생성 성공만으로 native 실행이나
+제공한 입력에서의 올바른 동작이 확인됐다고 취급하지 않습니다.
 
 컴파일러에 기여하는 경우 그 저장소의 `AGENTS.md`와 `agent/* -> dev` 절차를 따릅니다.
 이 저장소의 준비된 자료를 근거로 관련 이슈나 PR을 별도로 작성할 수 있습니다.
