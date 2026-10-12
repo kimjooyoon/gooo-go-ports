@@ -155,7 +155,8 @@
     {
       "path": "go/strings",
       "sources": [
-        "ports/strings/search.gooo"
+        "ports/strings/search.gooo",
+        "ports/strings/literal.gooo"
       ]
     },
     {
@@ -186,6 +187,12 @@
       "path": "go/github.com/google/uuid/text",
       "sources": [
         "ports/google/uuid/text/parse_canonical.gooo"
+      ]
+    },
+    {
+      "path": "app/literal-text-report",
+      "sources": [
+        "examples/literal-text-report/main.gooo"
       ]
     }
   ]

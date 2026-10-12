@@ -19,6 +19,9 @@ type activityContract struct {
 func nativeActivityContracts() map[string]activityContract {
 	i := integerEntity
 	return map[string]activityContract{
+		literalTextPackage + ":Index":            {"ports/strings/literal.gooo", "gooo://go/strings/Index", []string{textEntity, textEntity}},
+		literalTextPackage + ":Count":            {"ports/strings/literal.gooo", "gooo://go/strings/Count", []string{textEntity, textEntity}},
+		literalTextConsumerPackage + ":Report":   {"examples/literal-text-report/main.gooo", "gooo://go-ports/examples/literal-text-report/report", []string{textEntity, textEntity}},
 		uuidParsePackage + ":ParseCanonical":     {"ports/google/uuid/text/parse_canonical.gooo", "gooo://github.com/google/uuid/text/parse-canonical", []string{textEntity}},
 		uuidPackage + ":Validate":                {"ports/google/uuid/validate.gooo", "gooo://github.com/google/uuid/Validate", []string{textEntity}},
 		uuidConsumerPackage + ":Inspect":         {"examples/uuid-format-inspector/main.gooo", "gooo://go-ports/examples/uuid-format-inspector/inspect", []string{textEntity}},

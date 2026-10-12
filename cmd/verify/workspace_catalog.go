@@ -82,8 +82,10 @@ var catalogImport = regexp.MustCompile(`(?m)^[\t ]*import[\t ]+(?:[A-Za-z_][A-Za
 // The prior suites retain their original go/* packages and only their own
 // consumer. Validation suites select the original UUID/quote sources and their
 // own consumer. ParseCanonical adds only its own Text source to those sources.
-// This preserves all prior source rosters and keeps unrelated records
-// out of the pinned compiler's 16-record ABI. All bytes come from one snapshot.
+// Literal Text suites select only search+literal and their own optional Report
+// consumer; literal.gooo is excluded from every prior suite. This preserves all
+// prior source rosters and keeps unrelated records out of the pinned compiler's
+// 16-record ABI. All bytes come from one snapshot.
 func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, error) {
 	w := suiteWorkspace{Sources: map[string][]byte{}}
 	w.Manifest.Schema = "gooo/package-workspace-manifest/v1"
@@ -94,6 +96,9 @@ func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, e
 	}
 	selected := map[string]bool{}
 	for _, pkg := range f.Catalog.Packages {
+		if isLiteralTextSuite(s) && pkg.Path != "go/strings" && pkg.Path != s.Package {
+			continue
+		}
 		isUUIDPackage := pkg.Path == uuidPackage || pkg.Path == uuidPackage+"/internal/quote" || pkg.Path == uuidParsePackage
 		if strings.HasPrefix(pkg.Path, "go/") && isUUIDPackage != isUUIDSuite(s) {
 			continue
@@ -104,9 +109,25 @@ func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, e
 		if !strings.HasPrefix(pkg.Path, "go/") && pkg.Path != s.Package {
 			continue
 		}
-		selected[pkg.Path] = true
-		w.Manifest.Packages = append(w.Manifest.Packages, sourcePackage{Path: pkg.Path, Sources: append([]string(nil), pkg.Sources...)})
+		names := make([]string, 0, len(pkg.Sources))
 		for _, name := range pkg.Sources {
+			if name == "ports/strings/literal.gooo" && !isLiteralTextSuite(s) {
+				continue
+			}
+			names = append(names, name)
+		}
+		if isLiteralTextSuite(s) {
+			want := []string{"ports/strings/search.gooo", "ports/strings/literal.gooo"}
+			if pkg.Path == "app/literal-text-report" {
+				want = []string{"examples/literal-text-report/main.gooo"}
+			}
+			if !equalSourceNames(names, want) {
+				return w, fmt.Errorf("literal Text workspace has unexpected sources for %s", pkg.Path)
+			}
+		}
+		selected[pkg.Path] = true
+		w.Manifest.Packages = append(w.Manifest.Packages, sourcePackage{Path: pkg.Path, Sources: names})
+		for _, name := range names {
 			raw, exists := f.Sources[name]
 			if !exists || strings.TrimPrefix(contentDigest(raw), "sha256:") != f.Hashes[name] {
 				return w, fmt.Errorf("missing or altered frozen source %s", name)
@@ -130,4 +151,16 @@ func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, e
 		}
 	}
 	return w, nil
+}
+
+func equalSourceNames(got, want []string) bool {
+	if len(got) != len(want) {
+		return false
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			return false
+		}
+	}
+	return true
 }

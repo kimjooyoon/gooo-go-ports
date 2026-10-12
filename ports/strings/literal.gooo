@@ -1,0 +1,57 @@
+// Copyright 2009 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license reproduced in third_party/GO-LICENSE.
+// Go 1.27.2 strings.Index and Count contracts at
+// 022c8636110ebac86a9b88724cda168ed713c21f.
+// src/strings/strings.go SHA256:
+// a81bdf73a308277c322e35d0c602e3813f57b6f769c091f8f8962c8884a45ea3.
+// Supporting src/internal/stringslite/strings.go SHA256:
+// 3ed7df2eeabb5427d44b95e6cfe66ef03e13f1c969ad08050a4a0e89d43b8af2.
+// Supporting src/unicode/utf8/utf8.go SHA256:
+// 3c145ee25fd7631ebbc670fd1236e8c163ca30ae8913c796489efbf3f267ad54.
+//
+// Modification: replace the original optimized/general traversal with one
+// guarded forward scan of at most 1024 byte positions. A separate next-match
+// threshold preserves Count's non-overlap rule without changing the counter.
+// Empty substrings preserve Index == 0 and Count == rune count + 1. Counting
+// non-continuation bytes equals rune counting only for the stated valid UTF-8
+// Text domain. Native input decoding enforces <=1024 bytes per argument.
+// No arbitrary-byte Go strings, regex, normalization or whole-package claim.
+// Text and Integer declarations are shared with search.gooo.
+package strings
+namespace gooo_ports_strings
+
+activity Index(Text, Text) -> Integer id "gooo://go/strings/Index" computes `let needle_length = int64(len(input1))
+if needle_length == 0 { return 0 }
+let text_length = int64(len(input0))
+let offset = 0
+for offset = 0; offset < 1024; offset = offset + 1 {
+    let end = offset + needle_length
+    if end > text_length { return -1 }
+    if input0[offset:end] == input1 { return offset }
+}
+return -1`
+
+activity Count(Text, Text) -> Integer id "gooo://go/strings/Count" computes `let text_length = int64(len(input0))
+let needle_length = int64(len(input1))
+let count = 0
+if needle_length == 0 { count = 1 }
+let next_match = 0
+let offset = 0
+for offset = 0; offset < 1024; offset = offset + 1 {
+    if offset >= text_length { return count }
+    if needle_length == 0 {
+        let value = int64(input0[offset])
+        if value < 128 || value >= 192 { count = count + 1 }
+    } else {
+        if offset >= next_match {
+            let end = offset + needle_length
+            if end > text_length { return count }
+            if input0[offset:end] == input1 {
+                count = count + 1
+                next_match = end
+            }
+        }
+    }
+}
+return count`
