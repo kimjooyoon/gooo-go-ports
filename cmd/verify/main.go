@@ -170,6 +170,11 @@ func run() error {
 		return err
 	}
 	suites = append(suites, containment.Suites...)
+	literalText, err := literalTextCorpus()
+	if err != nil {
+		return err
+	}
+	suites = append(suites, literalText.Suites...)
 	if *out == "" {
 		return fmt.Errorf("provide --out for a new evidence directory")
 	}
@@ -284,6 +289,13 @@ func run() error {
 		"uuid_parse_added_reference_inputs":  uuidParse.AddedReferenceInputs,
 		"uuid_parse_scope":                   "A separate ParseCanonical(Text) API maps original google/uuid v1.6.0 Parse plus returned UUID.String, exact error and IsInvalidLengthError to required parsed/canonical_uuid/error/invalid_length fields. The returned canonical UUID preserves all 16 bytes even when an error occurs, including raw 32-byte failed-byte assignment and standard-form partial returns. Parse accepts 38-byte outer delimiters without Validate's brace gate. Decoded valid UTF-8 Text is bounded to 1024 bytes; original JSON wire bytes are not preserved through decoder replacement. All prior 56 suites, 108835 cases, 1416 batch boundaries and source rosters remain unchanged. Only this new isolated UUID/quote/Text workspace adds finite source-bound comparisons and saved replay; its actual serialized case JSON is bounded to 30000 bytes. No binary UUID method set, ParseBytes, UUID generation, full-module, exhaustive-string-domain, production or performance claim.",
 		"uuid_scope":                         "Original google/uuid v1.6.0 Validate accepts four representations and returns exact errors and IsInvalidLengthError classification, mapped to a required result record. References use valid UTF-8 decoded Text of at most 1024 bytes; raw invalid JSON UTF-8/surrogates may be replaced by the core JSON decoder and are not preserved or explicitly rejected. First-nine-byte prefix quoting is computed in Gooo, including truncated runes, using complete pinned Go IsPrint tables. Finite ASCII-position mutations, URN case variants, lengths, Unicode/control prefixes and deterministic samples are not all strings. No Parse, UUID generation, version/variant restriction or whole-library compatibility claim. The importing consumer adds exact UTF-8 byte length. Prior54 suites,65345 cases and882 batch boundaries are preserved; only new UUID suites add serialized-byte bounded batches.",
+		"literal_index_reference_cases":      literalText.IndexReferenceCases,
+		"literal_count_reference_cases":      literalText.CountReferenceCases,
+		"literal_report_reference_cases":     literalText.ReportReferenceCases,
+		"literal_text_category_candidates":   literalText.Roster.CategoryCandidates,
+		"literal_text_category_added":        literalText.Roster.CategoryAdded,
+		"literal_text_scope":                 literalText.Suites[0].Domain,
+		"literal_finite_provenance_scope":    "Finite Index/Count/Report suites use the generic verifier's exact original input/source/producer/output and saved outer-receipt binding checks. Inner prior_result_sha256, full generation-report provenance and composition/runtime typed-plan equality are NOT_CHECKED by this finite path. The separate required input-only24 Report checker provides those stronger bindings for its independently reviewed pinned profile; it does not replace this full finite corpus.",
 		"string_byte_port_reference_cases":   byteSearch.PortReferenceCases, "string_byte_port_extension_cases": byteSearch.PortExtensionCases,
 		"string_byte_consumer_reference_cases": byteSearch.ConsumerReferenceCases, "string_byte_consumer_extension_cases": byteSearch.ConsumerExtensionCases,
 		"string_byte_scope":          "Six valid UTF-8 Text inputs, including empty, repeated ASCII, embedded NUL, multibyte text and exactly 1024 bytes, are crossed with every byte needle 0..255. The independent Go strings.IndexByte oracle preserves first-match byte offsets, including UTF-8 continuation bytes. Sixteen original out-of-byte int64 needles per activity are separately counted extensions, rejected before narrowing: offset -1 and, for the consumer, found=false, in_byte_domain=false and unchanged byte length. This does not cover arbitrary invalid UTF-8 Go strings, longer native Text, all strings, rune search, full strings-package compatibility or performance.",

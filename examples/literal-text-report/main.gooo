@@ -1,0 +1,19 @@
+// Inspect a supplied diagnostic snippet and literal phrase. Ported search and
+// counting execute in Gooo; the original inputs are echoed for JSON export.
+package literal_text_report
+namespace gooo_ports_examples_literal_text_report
+import strings "go/strings"
+entity Text id "gooo://std/text"
+entity Integer id "gooo://std/integer"
+entity LiteralTextReport id "gooo://go-ports/examples/literal-text-report/result" fields {
+    field text id "gooo://go-ports/examples/literal-text-report/result/text" type string required one
+    field needle id "gooo://go-ports/examples/literal-text-report/result/needle" type string required one
+    field first_byte_offset id "gooo://go-ports/examples/literal-text-report/result/first-byte-offset" type integer required one
+    field found id "gooo://go-ports/examples/literal-text-report/result/found" type boolean required one
+    field non_overlapping_count id "gooo://go-ports/examples/literal-text-report/result/non-overlapping-count" type integer required one
+    field text_byte_length id "gooo://go-ports/examples/literal-text-report/result/text-byte-length" type integer required one
+    field needle_byte_length id "gooo://go-ports/examples/literal-text-report/result/needle-byte-length" type integer required one
+}
+activity Report(Text, Text) -> LiteralTextReport id "gooo://go-ports/examples/literal-text-report/report" computes `let offset = strings.Index(input0, input1)
+let count = strings.Count(input0, input1)
+return LiteralTextReport{text: input0, needle: input1, first_byte_offset: offset, found: offset >= 0, non_overlapping_count: count, text_byte_length: int64(len(input0)), needle_byte_length: int64(len(input1))}`

@@ -31,6 +31,11 @@ func whitespaceResultContract(s suite) resultContract {
 		return geometry
 	}
 	switch s.Package + ":" + s.Activity {
+	case literalTextPackage + ":Index", literalTextPackage + ":Count":
+		return resultContract{Entity: integerEntity}
+	case literalTextConsumerPackage + ":Report":
+		const e = literalTextResultEntity
+		return resultContract{Entity: e, Fields: []recordFieldContract{{"text", e + "/text"}, {"needle", e + "/needle"}, {"first_byte_offset", e + "/first-byte-offset"}, {"found", e + "/found"}, {"non_overlapping_count", e + "/non-overlapping-count"}, {"text_byte_length", e + "/text-byte-length"}, {"needle_byte_length", e + "/needle-byte-length"}}}
 	case stringBytePackage + ":IndexByte":
 		return resultContract{Entity: integerEntity}
 	case stringByteConsumerPackage + ":Search":

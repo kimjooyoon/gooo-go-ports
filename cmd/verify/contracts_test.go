@@ -87,7 +87,7 @@ func original57NativeSuites(t *testing.T) []suite {
 	return append(all, parsed.Suite)
 }
 
-func allNativeSuites(t *testing.T) []suite {
+func original59NativeSuites(t *testing.T) []suite {
 	t.Helper()
 	all := original57NativeSuites(t)
 	containment, err := containmentCorpus()
@@ -97,6 +97,16 @@ func allNativeSuites(t *testing.T) []suite {
 	return append(all, containment.Suites...)
 }
 
+func allNativeSuites(t *testing.T) []suite {
+	t.Helper()
+	all := original59NativeSuites(t)
+	literal, err := literalTextCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return append(all, literal.Suites...)
+}
+
 func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 	contracts := nativeActivityContracts()
 	catalog, err := freezeVerificationCatalog("../../verification-catalog.json")
@@ -104,7 +114,7 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	suites := allNativeSuites(t)
-	if len(contracts) != 59 || len(suites) != 59 {
+	if len(contracts) != 62 || len(suites) != 62 {
 		t.Fatal("contract/suite roster changed")
 	}
 	seen := map[string]bool{}
@@ -134,7 +144,12 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		}
 		for i, input := range inputs {
 			if contract.InputEntities[i] == textEntity {
-				if strings.TrimSpace(input) != "Text" || !strings.Contains(string(source), `entity Text id "`+textEntity+`"`) {
+				declarations := source
+				if contract.Source == "ports/strings/literal.gooo" && s.Package == literalTextPackage && (s.Activity == "Index" || s.Activity == "Count") {
+					// Only these trusted same-package activities share search.gooo.
+					declarations = catalog.Sources["ports/strings/search.gooo"]
+				}
+				if strings.TrimSpace(input) != "Text" || !strings.Contains(string(declarations), `entity Text id "`+textEntity+`"`) {
 					t.Fatal("contract Text input entity differs from source", key)
 				}
 				continue
@@ -228,6 +243,11 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	added += containment.PortReferenceCases + containment.ConsumerReferenceCases
+	literal, err := literalTextCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	added += literal.IndexReferenceCases + literal.CountReferenceCases + literal.ReportReferenceCases
 	if total != 24770+added {
 		t.Fatalf("corpus changed: %d", total)
 	}

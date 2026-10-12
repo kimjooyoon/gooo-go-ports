@@ -26,7 +26,7 @@
 | 2k | `unicode.To`·`ToUpper`·`ToLower`·`ToTitle`과 [한 rune의 세 변환 비교](../examples/case-inspector/README.md) | CaseRanges 전체를 하나의 Gooo 구현으로 공유, range 시작점 기준 교대 parity와 별도 title delta 보존. 원래 signed int32 rune와 64비트 case 입력, invalid case 우선순위, Unicode 밖 identity를 독립 Go 원본 및 저장 재실행과 비교. 수정 없는 생성 Go의 Unicode 구간 전수 비교는 유한 영수증과 별도 집계 |
 | 2l | `color.NRGBA.RGBA`와 [한 픽셀 알파 합성](../examples/alpha-matte/README.md) | 네 uint8 수신 필드와 premultiplied 16비트 결과, 알파 0의 숨은 RGB·중간 알파·정수 버림 보존. 불투명 RGB 배경에 대한 소비자 결과를 실제 Go `draw.Draw`의 최적·일반 경로와 비교하고 저장 재실행. 전체 이미지 처리·선형 광량 합성·uint8⁴ 전수 검사는 범위 밖 |
 | 2m | Google `google/uuid.Validate`와 [UUID 형식 검사](../examples/uuid-format-inspector/README.md) | v1.6.0 원본 네 표기·오류 우선순위·정확한 문구·길이 오류 분류를 명시적 레코드로 보존. 원본 31파일 h1·컴파일된 오라클 소스·라이선스, Text 최대 1,024바이트와 내부 prefix quoting, 각각 21,745건 원본 비교와 저장 재실행. Parse·생성·UUID byte 값은 별도 범위 |
-| 3 | `strings.Index`/`Count`, UTF-8 순회 등 반복이 필요한 문자열 함수 조사 | `for`/`range`, 바이트 읽기, 루프 종료·입력 제한의 재현. Text 슬라이싱 지원만으로 문자열 전체 지원을 선언하지 않음 |
+| 3 | bounded `strings.Index`·`Count`와 [Literal Text Report](../examples/literal-text-report/README.md), 이후 UTF-8 순회 | 두 decoded UTF-8 Text 각각 1,024바이트 이내에서 byte offset·비중첩·빈 needle code point 수+1 보존. 고정 839 컴파일러의 실제 24쌍 pilot·저장 재실행과 독립 검토된 checker 보존. 세 suite의 9,313쌍씩은 필수 유한 검증 범위이며 완료 실행은 해당 소스의 CI/native 보고서에서 확인. UTF-8 순회·출력 구성은 별도 다음 범위 |
 | 4 | `encoding/hex`의 제한된 인코딩·디코딩부터 바이트 패키지 확장 | byte 배열/슬라이스, 출력 구성, 잘못된 문자와 길이에 대한 오류 계약, 비트 연산 또는 검증된 산술 표현 |
 | 5 | Google의 `google/uuid` 파싱·표시·버전/variant 부분 이식 | 원본 형식별 입력과 오류를 보존하고 16바이트 값을 표현할 타입, 반복, 인덱싱, hex 처리가 확보될 것 |
 | 6 | UUID 생성, I/O·동시성·상태가 필요한 라이브러리 검토 | 난수·시계·외부 효과의 출처와 실패 모델, 상태·인터페이스·error 표현을 먼저 설계하고 순수 계산과 경계를 분리 |
@@ -85,3 +85,14 @@ hex·UUID 전체 이식과 외부 고객 수요는 별도 과제다. 초기 거�
 비트 연산은 이 요청의 범위에 포함하지 않았다. 컴파일러 변경은 해당 저장소의
 [기여 계약](https://github.com/kimjooyoon/meta-ontology-go/blob/366ee6ef8f9d2b9b57331dfd26b6f908c0289851/AGENTS.md)에
 맞춰 별도 검증한다.
+
+## Literal Text 검색 보고서
+
+Go 1.27.2·Gooo 0.6.32-dev/839 핀에서 `Index`와 `Count`는 Gooo의 길이 제한 forward
+scan으로 구현했고 Report가 두 함수를 가져와 입력·결과 JSON을 만듭니다. 독립 Go 오라클은
+소비자 계산을 대체하지 않습니다. 실제 24쌍 pilot·저장 재실행과 repaired checker 독립 검토가
+완료됐으며, 작성한 9,313쌍씩의 세 suite와 137/137/281개 직렬화 배치는 필수 유한 검증
+범위입니다. 완료 실행 결과는 해당 소스의 CI/native 보고서에서 확인합니다.
+기존 59 suite·131,842건·1,777배치를 보존하는 통합 테스트가 있습니다.
+임의 Go byte string·1,024바이트 초과·정규식·정규화·전체 strings 패키지는 지원 범위가 아닙니다.
+기존 UTF-8 순회 probe 기록과 hex·UUID byte 값의 선행 조건은 유지합니다.

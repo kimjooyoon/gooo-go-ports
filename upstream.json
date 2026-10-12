@@ -25,7 +25,8 @@
     "LICENSE": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
     "src/strings/strings.go": "a81bdf73a308277c322e35d0c602e3813f57b6f769c091f8f8962c8884a45ea3",
     "src/strconv/quote.go": "6602960ec8777de9926c1d02fbf5cb0828d4aefa38083865f4af17b6892c09a2",
-    "src/strconv/isprint.go": "e6f4b35fbf38f9c9c8b251e5d3cf94daa880789cb89825f11f9734ba4a42e9ff"
+    "src/strconv/isprint.go": "e6f4b35fbf38f9c9c8b251e5d3cf94daa880789cb89825f11f9734ba4a42e9ff",
+    "src/internal/stringslite/strings.go": "3ed7df2eeabb5427d44b95e6cfe66ef03e13f1c969ad08050a4a0e89d43b8af2"
   },
   "ports": [
     {
@@ -224,6 +225,26 @@
         "path": "examples/bounded-text-search/search.gooo.fixture",
         "license": "MIT notice retained in target source"
       }
+    },
+    {
+      "source": "src/strings/strings.go",
+      "supporting_sources": [
+        "src/internal/stringslite/strings.go",
+        "src/unicode/utf8/utf8.go"
+      ],
+      "target": "ports/strings/literal.gooo",
+      "supporting_targets": [
+        "ports/strings/search.gooo"
+      ],
+      "symbols": [
+        "Index",
+        "Count"
+      ],
+      "target_activities": [
+        "Index",
+        "Count"
+      ],
+      "api_mapping": "Each Go string maps to decoded valid UTF-8 Text <=1024 bytes. Index preserves first literal byte offset or -1, including empty needle returning 0. Count preserves non-overlapping matches and empty needle returning Unicode code-point count plus 1. A guarded literal-bound scan uses Text slices/equality; a separate next-match threshold prevents overlap without reassigning the loop counter. No arbitrary-byte Go strings, normalization, regex, whole strings package or performance claim. Index and Count share the bounded literal-text corpus and feed the importing Report consumer. Source-derived coverage specifies the required finite checks; completed execution evidence must identify its exact source and compiler pins."
     }
   ],
   "external_sources": [

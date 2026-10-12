@@ -160,7 +160,7 @@ func TestContainmentCoverageOriginalInputsAndSerializedBatches(t *testing.T) {
 		newBatches += batches
 		t.Logf("%s:%s cases=%d batches=%d maxbytes=%d", s.Package, s.Activity, len(s.Cases), batches, maximum)
 	}
-	all := allNativeSuites(t)
+	all := original59NativeSuites(t)
 	ports, consumerActivities := 0, 0
 	programs := map[string]bool{}
 	for _, s := range all {
@@ -283,7 +283,7 @@ func TestContainmentStandalone14LiteralObservationsMatchOriginalGo(t *testing.T)
 
 func TestContainmentPreservesAllOriginal57CaseBytesAndBatchBoundaries(t *testing.T) {
 	legacy := original57NativeSuites(t)
-	all := allNativeSuites(t)
+	all := original59NativeSuites(t)
 	if len(legacy) != 57 || len(all) != len(legacy)+2 || !reflect.DeepEqual(all[:len(legacy)], legacy) {
 		t.Fatal("new suites must append after the original57 without changing indices")
 	}

@@ -49,6 +49,7 @@ jobs:
           python3 -B tools/check-alpha-matte_test.py -v
           python3 -B tools/check-fits-crop_test.py -v
           python3 -B tools/check-fits-crop-inputs_test.py -v
+          python3 -B tools/check-literal-text-inputs_test.py -v
           python3 -B tools/classify-ci-scope_test.py -v
           python3 -B tools/check-ci-scope-workflow_test.py -v
       - name: Check pinned Unicode table generation
@@ -91,6 +92,9 @@ jobs:
           ./.gooo check ports/google/uuid/text/parse_canonical.gooo
           ./.gooo check examples/uuid-format-inspector/main.gooo
           ./.gooo check ports/time/duration.gooo
+          ./.gooo check ports/strings/search.gooo
+          ./.gooo check ports/strings/literal.gooo
+          ./.gooo check examples/literal-text-report/main.gooo
       - name: Retain unsupported-body probes
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
@@ -104,7 +108,7 @@ jobs:
             .native_suite_workers == 2 and
             .go_version == "go1.27.2" and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
-            .ported_functions == 40 and .consumer_programs == 17 and .consumer_activities == 19 and
+            .ported_functions == 42 and .consumer_programs == 18 and .consumer_activities == 20 and
             .uuid_port_reference_cases == 21745 and .uuid_consumer_reference_cases == 21745 and
             .uuid_parse_reference_cases == 21867 and .uuid_parse_legacy_reference_inputs == 21745 and
             .uuid_parse_anchor_inputs == 136 and .uuid_parse_added_reference_inputs == 122 and
@@ -147,6 +151,9 @@ jobs:
             .nrgba_consumer_reference_cases == 2158 and .nrgba_consumer_rejection_cases == 104 and
             .string_byte_port_reference_cases == 1536 and .string_byte_port_extension_cases == 16 and
             .string_byte_consumer_reference_cases == 1536 and .string_byte_consumer_extension_cases == 16 and
+            .literal_index_reference_cases == 9313 and .literal_count_reference_cases == 9313 and
+            .literal_report_reference_cases == 9313 and
+            (.literal_finite_provenance_scope | contains("Inner prior_result_sha256, full generation-report provenance and composition/runtime typed-plan equality are NOT_CHECKED")) and
             (.case_mapping_exhaustive | keys) == ["To", "ToLower", "ToTitle", "ToUpper"] and
             all(.case_mapping_exhaustive | to_entries[];
               .key == .value.operation and .value.schema == "gooo/case-mapping-exhaustive-native/v1" and
@@ -154,9 +161,10 @@ jobs:
               .value.unicode_range_inputs == 1114112 and .value.mismatches == 0) and
             .case_mapping_exhaustive.To.unicode_range_comparisons == 3342336 and
             ([.case_mapping_exhaustive[].unicode_range_comparisons] | add) == 6684672 and
-            .cases == 131842 and .passed == 131842 and
-            (.runs | length) == 59 and
-            ([.runs[].cases] | add) == 131842 and ([.runs[].batches] | add) == 1777 and
+            .cases == 159781 and .passed == 159781 and
+            (.runs | length) == 62 and
+            ([.runs[].cases] | add) == 159781 and ([.runs[].batches] | add) == 2332 and
+            ([.runs[:59][].cases] | add) == 131842 and ([.runs[:59][].batches] | add) == 1777 and
             ([.runs[:57][].cases] | add) == 130702 and ([.runs[:57][].batches] | add) == 1741 and
             ([.runs[:56][].cases] | add) == 108835 and ([.runs[:56][].batches] | add) == 1416 and
             .runs[56].package == "go/github.com/google/uuid/text" and .runs[56].activity == "ParseCanonical" and
@@ -165,6 +173,12 @@ jobs:
             .runs[57].cases == 570 and .runs[57].passed == 570 and .runs[57].batches == 18 and
             .runs[58].package == "example/fits-crop" and .runs[58].activity == "FitsCrop" and
             .runs[58].cases == 570 and .runs[58].passed == 570 and .runs[58].batches == 18 and
+            .runs[59].package == "go/strings" and .runs[59].activity == "Index" and
+            .runs[59].cases == 9313 and .runs[59].passed == 9313 and .runs[59].batches == 137 and
+            .runs[60].package == "go/strings" and .runs[60].activity == "Count" and
+            .runs[60].cases == 9313 and .runs[60].passed == 9313 and .runs[60].batches == 137 and
+            .runs[61].package == "app/literal-text-report" and .runs[61].activity == "Report" and
+            .runs[61].cases == 9313 and .runs[61].passed == 9313 and .runs[61].batches == 281 and
             ([.runs[:54][].cases] | add) == 65345 and ([.runs[:54][].batches] | add) == 882 and
             all(.runs[]; .passed == .cases and .replay_equal == true)
           ' out/ci/summary.json
@@ -529,6 +543,63 @@ jobs:
           GOOO_FITS_CROP_EXECUTION="$PWD/out/fits-crop-example.json" \
             GOOO_FITS_CROP_REPLAY="$PWD/out/fits-crop-replay.json" \
             python3 -B tools/check-fits-crop_test.py -v
+      - name: Execute and replay the literal text report
+        if: steps.change-scope.outputs.docs_only != 'true'
+        run: |
+          mkdir -p out/literal-text-report
+          ./.gooo package execute --json --go "$(go env GOROOT)/bin/go" \
+            --inputs examples/literal-text-report/inputs.json \
+            literal-text-report.workspace.json > out/literal-text-report/execution.json
+          ./.gooo package replay --json --go "$(go env GOROOT)/bin/go" \
+            --receipt out/literal-text-report/execution.json \
+            --inputs examples/literal-text-report/inputs.json \
+            literal-text-report.workspace.json > out/literal-text-report/replay.json
+          go run ./cmd/check-literal-text-report --snapshot . \
+            --inputs examples/literal-text-report/inputs.json \
+            --execution out/literal-text-report/execution.json \
+            --replay out/literal-text-report/replay.json \
+            --compiler-build out/compiler-build.json \
+            --out out/literal-text-report/checked-report.json
+          # This input-only receipt remains OBSERVED with no finite expectations.
+          # Its independent 24-result checker is separate from the full corpus.
+          jq -e '
+            .schema == "gooo/workspace-body-execution-receipt/v1" and .decision == "OBSERVED" and
+            .result.runtime.finite_total == 0 and .result.runtime.finite_passed == 0 and
+            .result.runtime.model_calls == 0
+          ' out/literal-text-report/execution.json out/literal-text-report/replay.json
+          jq -e '
+            def sha: test("^sha256:[0-9a-f]{64}$");
+            .schema == "gooo/literal-text-report-checked/v1" and
+            .decision == "PASS_FINITE_GO_ORACLE_AND_SAVED_REPLAY" and
+            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+            .compiler_version == "0.6.32-dev" and .go_version == "go1.27.2" and
+            .native_observed_cases == 24 and .independent_go_oracle_cases == 24 and
+            .saved_replay_observed_cases == 24 and .native_receipt_expectation_cases == 0 and
+            (.results | length) == 24 and
+            (.source_bindings | keys) == ["examples/literal-text-report/main.gooo", "ports/strings/literal.gooo", "ports/strings/search.gooo"] and
+            all(.source_bindings[]; .source_digest | sha) and
+            all([.manifest_digest, .inputs_digest, .execution_sha256, .replay_sha256,
+                 .prior_result_sha256, .generated_sha256, .driver_sha256][]; sha)
+          ' out/literal-text-report/checked-report.json
+      - name: Observe malformed literal Text inputs through the actual CLI
+        if: steps.change-scope.outputs.docs_only != 'true'
+        run: |
+          python3 -B tools/check-literal-text-inputs.py out/literal-text-input-rejections
+          jq -e '
+            .schema == "gooo/literal-text-input-rejections/v1" and .status == "PASS" and
+            .planned_framework_inputs == 84 and .observed_framework_rejections == 84 and
+            .go_reference_cases == 0 and
+            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+            .compiler_version == "0.6.32-dev" and .go_version == "go1.27.2" and
+            (.planned_by_entry | keys) == ["app/literal-text-report:Report", "go/strings:Count", "go/strings:Index"] and
+            .planned_by_entry == .observed_by_entry and all(.observed_by_entry[]; . == 28) and
+            (.cases | length) == 84 and (.failures | length) == 0 and
+            all(.cases[]; .rejection_verified == true and .exit_code == 1 and .timed_out == false and
+              .verified_rejection_stage == .expected_rejection_stage and
+              .result_present == false and .runtime_present == false and
+              .actual_runtime_stage == "NOT_REPORTED" and .observed_counters == "NOT_REPORTED" and
+              .observed_build == "NOT_REPORTED" and .observed_runs == "NOT_REPORTED")
+          ' out/literal-text-input-rejections/summary.json
       - name: Observe malformed FitsCrop inputs through the actual CLI
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |

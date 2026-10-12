@@ -14,7 +14,7 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(frozen.Catalog.Packages) != 30 || len(frozen.Sources) != 37 {
+	if len(frozen.Catalog.Packages) != 31 || len(frozen.Sources) != 39 {
 		t.Fatal("complete reviewed catalog roster changed")
 	}
 	allIdentities, err := snapshotSourceIdentities(frozen.Catalog.Packages, frozen.Sources)
@@ -62,6 +62,9 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 			wantConsumers = 0
 		}
 		wantPorts := 10
+		if isLiteralTextSuite(s) {
+			wantPorts = 1
+		}
 		if isUUIDSuite(s) {
 			wantPorts = 2
 		}
@@ -85,6 +88,130 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 		image.Packages[0].Sources[0].Digest = contentDigest([]byte("altered"))
 		if err := inspectWorkspace(image, s, contract, selected.Identities); err == nil {
 			t.Fatal("accepted altered selected-source digest")
+		}
+	}
+}
+
+func TestLiteralTextWorkspacesUseOnlyFrozenSearchLiteralAndOptionalReport(t *testing.T) {
+	frozen, err := freezeVerificationCatalog("../../verification-catalog.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	const search = "ports/strings/search.gooo"
+	const literal = "ports/strings/literal.gooo"
+	const report = "examples/literal-text-report/main.gooo"
+	// These raw hashes come from the independently frozen native pilot, not
+	// from the catalog selection under test.
+	wantHashes := map[string]string{
+		search:  "sha256:39e0371cb71ee050dfc6d96c92bca2e5b61efc22927f70f3c15506e1599baf01",
+		literal: "sha256:4aebcc74d3c2ad965be5881095cf3afc80bd7e0c85fbe0b5848900bd25e425b5",
+		report:  "sha256:96d4c80d00b2627a2787c3fa7a9af68de91e8239cd456f10c6ff69dbeb87f77d",
+	}
+	for _, s := range []suite{{Package: "go/strings", Activity: "Index"}, {Package: "go/strings", Activity: "Count"}, {Package: "app/literal-text-report", Activity: "Report"}} {
+		t.Run(s.Activity, func(t *testing.T) {
+			selected, err := frozen.workspaceForSuite(s)
+			if err != nil {
+				t.Fatal(err)
+			}
+			wantPackages := []sourcePackage{{Path: "go/strings", Sources: []string{search, literal}}}
+			wantNames := []string{search, literal}
+			if s.Activity == "Report" {
+				wantPackages = append(wantPackages, sourcePackage{Path: s.Package, Sources: []string{report}})
+				wantNames = append(wantNames, report)
+			}
+			if !reflect.DeepEqual(selected.Manifest.Packages, wantPackages) || !reflect.DeepEqual(selected.Names, wantNames) || len(selected.Sources) != len(wantNames) || len(selected.Identities) != len(wantNames) {
+				t.Fatal("literal workspace source closure differs", selected.Manifest.Packages, selected.Names)
+			}
+			for _, name := range wantNames {
+				if contentDigest(selected.Sources[name]) != wantHashes[name] {
+					t.Fatal("literal workspace differs from the frozen pilot", name)
+				}
+			}
+		})
+	}
+	for _, s := range []suite{{Package: "go/strings", Activity: "IndexByte"}, {Package: "go/strings", Activity: "Report"}, {Package: "app/literal-text-report", Activity: "Count"}, {Package: "other", Activity: "Index"}} {
+		if isLiteralTextSuite(s) {
+			t.Fatal("literal selector matched a different identity", s)
+		}
+	}
+}
+
+func TestLiteralTextWorkspaceRejectsMissingExtraReorderedAndAlteredSources(t *testing.T) {
+	const search = "ports/strings/search.gooo"
+	const literal = "ports/strings/literal.gooo"
+	const report = "examples/literal-text-report/main.gooo"
+	for name, mutate := range map[string]func(*frozenVerificationCatalog){
+		"absent literal":      func(f *frozenVerificationCatalog) { delete(f.Sources, literal) },
+		"absent declaration":  func(f *frozenVerificationCatalog) { delete(f.Sources, search) },
+		"absent Report":       func(f *frozenVerificationCatalog) { delete(f.Sources, report) },
+		"altered literal":     func(f *frozenVerificationCatalog) { f.Sources[literal][0] ^= 1 },
+		"altered declaration": func(f *frozenVerificationCatalog) { f.Sources[search][0] ^= 1 },
+		"altered Report":      func(f *frozenVerificationCatalog) { f.Sources[report][0] ^= 1 },
+		"extra port source": func(f *frozenVerificationCatalog) {
+			for i := range f.Catalog.Packages {
+				if f.Catalog.Packages[i].Path == "go/strings" {
+					f.Catalog.Packages[i].Sources = append(f.Catalog.Packages[i].Sources, "ports/time/duration.gooo")
+				}
+			}
+		},
+		"extra consumer source": func(f *frozenVerificationCatalog) {
+			for i := range f.Catalog.Packages {
+				if f.Catalog.Packages[i].Path == "app/literal-text-report" {
+					f.Catalog.Packages[i].Sources = append(f.Catalog.Packages[i].Sources, "examples/response.gooo")
+				}
+			}
+		},
+		"reordered port sources": func(f *frozenVerificationCatalog) {
+			for i := range f.Catalog.Packages {
+				if f.Catalog.Packages[i].Path == "go/strings" {
+					f.Catalog.Packages[i].Sources = []string{literal, search}
+				}
+			}
+		},
+		"unrelated consumer dependency": func(f *frozenVerificationCatalog) {
+			f.Sources[report] = append(f.Sources[report], []byte("\nimport other \"app/response\"\n")...)
+			f.Hashes[report] = strings.TrimPrefix(contentDigest(f.Sources[report]), "sha256:")
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			frozen, err := freezeVerificationCatalog("../../verification-catalog.json")
+			if err != nil {
+				t.Fatal(err)
+			}
+			mutate(&frozen)
+			if _, err := frozen.workspaceForSuite(suite{Package: "app/literal-text-report", Activity: "Report"}); err == nil {
+				t.Fatal("accepted incomplete, altered, or unrelated literal closure")
+			}
+		})
+	}
+}
+
+func TestLiteralTextSourcesAreExcludedBeforeLegacyHashSelection(t *testing.T) {
+	frozen, err := freezeVerificationCatalog("../../verification-catalog.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	legacy := []suite{
+		{Package: "go/net/http", Activity: "StatusText"},
+		{Package: "go/strings", Activity: "IndexByte"},
+		{Package: uuidPackage, Activity: "Validate"},
+		{Package: uuidParsePackage, Activity: "ParseCanonical"},
+	}
+	before := make([]suiteWorkspace, len(legacy))
+	for i, s := range legacy {
+		before[i], err = frozen.workspaceForSuite(s)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	// The old suites must not copy or hash either unrelated new source.
+	// Initial catalog freezing still checks every file before selection.
+	frozen.Sources["ports/strings/literal.gooo"][0] ^= 1
+	delete(frozen.Sources, "examples/literal-text-report/main.gooo")
+	for i, s := range legacy {
+		after, err := frozen.workspaceForSuite(s)
+		if err != nil || !reflect.DeepEqual(before[i], after) {
+			t.Fatal("new literal source affected a prior workspace", s, err)
 		}
 	}
 }
