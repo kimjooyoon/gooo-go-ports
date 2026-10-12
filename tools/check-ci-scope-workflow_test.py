@@ -16,7 +16,9 @@ WORKFLOW = Path(__file__).resolve().parent.parent / ".github/workflows/ci.yml"
 FULL = "steps.change-scope.outputs.docs_only != 'true'"
 DOCS = "steps.change-scope.outputs.docs_only == 'true'"
 HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
-BROWSER_SHA = "1758a34814e826318f6d5950f40d0726d61621dcb5ec4797b1a2b7e625032e26"
+# Reviewed browser delta: add UUID ParseCanonical smoke after literal search.
+# Events, native skip guards and deployment dependencies stay byte-identical.
+BROWSER_SHA = "a97b7ac0ba9703e23c1f8a3acc09eba372b77c70085723ce798b20deb6172afa"
 COMMON = {
     "Classify the exact checked PR tree", "Check the Go observer",
     "Check pinned Unicode table generation",

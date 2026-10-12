@@ -1,0 +1,7 @@
+/* Share the established accessible input, result and responsive styles. */
+@import url('./literal-search.css');
+.uuid-parse-page .literal-input-grid { grid-template-columns: minmax(0, 1fr) }
+.uuid-parse-page .literal-input { max-width: 100% }
+.uuid-parse-page .literal-output > div:nth-child(2) dd { font-size: clamp(13px, 2.4vw, 18px) }
+.uuid-result-note { padding: 12px 15px; border: 1px solid var(--line); border-radius: 6px; background: #f8faf3; font-size: 14px; line-height: 1.6 }
+.uuid-result-note.error { border-color: #d9b9ae; background: #fff6ee; color: var(--error) }

@@ -1,0 +1,73 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"syscall/js"
+	"unicode/utf8"
+)
+
+func uuidParseFailure(message string) string {
+	raw, _ := json.Marshal(map[string]any{"ok": false, "error": message})
+	return string(raw)
+}
+func main() {
+	compute := js.FuncOf(func(_ js.Value, args []js.Value) (result any) {
+		defer func() {
+			if recover() != nil {
+				result = uuidParseFailure("The compiled program failed. No result was retained.")
+			}
+		}()
+		if len(args) != 1 || args[0].Type() != js.TypeString {
+			return uuidParseFailure("Expected one text string.")
+		}
+		// syscall/js TextEncoder replaces unpaired UTF-16 surrogates with U+FFFD,
+		// matching the native JSON decoder. The page retains original code units.
+		input := args[0].String()
+		if !utf8.ValidString(input) || len(input) > 1024 {
+			return uuidParseFailure("The decoded input must fit in 1,024 UTF-8 bytes.")
+		}
+		// UUID decoding and error computation remain in the unchanged generated Gooo.
+		raw, err := json.Marshal(GoooComposedActivity0(input))
+		if err != nil {
+			return uuidParseFailure("Cannot encode the compiled result.")
+		}
+		var output struct {
+			Parsed        *bool   `json:"parsed"`
+			CanonicalUUID *string `json:"canonical_uuid"`
+			Error         *string `json:"error"`
+			InvalidLength *bool   `json:"invalid_length"`
+		}
+		decoder := json.NewDecoder(bytes.NewReader(raw))
+		decoder.DisallowUnknownFields()
+		if decoder.Decode(&output) != nil || decoder.Decode(new(any)) != io.EOF || output.Parsed == nil || output.CanonicalUUID == nil || output.Error == nil || output.InvalidLength == nil {
+			return uuidParseFailure("The compiled program returned an invalid four-field record.")
+		}
+		canonical := *output.CanonicalUUID
+		if len(canonical) != 36 || !utf8.ValidString(*output.Error) || len(*output.Error) > 240 || *output.Parsed != (*output.Error == "") || *output.InvalidLength && *output.Parsed {
+			return uuidParseFailure("The compiled result is outside its declared field domain.")
+		}
+		// This is a result-shape check, never a parser gate: a false parsed value
+		// can carry exactly the same canonical text as a successfully parsed input.
+		for i := 0; i < len(canonical); i++ {
+			if i == 8 || i == 13 || i == 18 || i == 23 {
+				if canonical[i] != '-' {
+					return uuidParseFailure("The compiled canonical field has an invalid shape.")
+				}
+				continue
+			}
+			if !(canonical[i] >= '0' && canonical[i] <= '9' || canonical[i] >= 'a' && canonical[i] <= 'f') {
+				return uuidParseFailure("The compiled canonical field has an invalid shape.")
+			}
+		}
+		encoded, err := json.Marshal(map[string]any{"ok": true, "inputs": []string{input}, "output": map[string]any{"parsed": *output.Parsed, "canonical_uuid": canonical, "error": *output.Error, "invalid_length": *output.InvalidLength}})
+		if err != nil {
+			return uuidParseFailure("Cannot encode the browser result.")
+		}
+		return string(encoded)
+	})
+	js.Global().Set("goooUUIDParse", compute)
+	js.Global().Set("goooUUIDParseReady", true)
+	select {}
+}

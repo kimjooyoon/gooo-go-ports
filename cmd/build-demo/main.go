@@ -36,7 +36,11 @@ func run() error {
 	out := flag.String("out", "", "new build directory beneath this repository")
 	compilerRoot := flag.String("compiler-root", ".compiler", "clean pinned compiler checkout used only by the browser codegen overlay")
 	codegenOnly := flag.Bool("codegen-only", false, "build and verify only the editable browser body-codegen page")
+	uuidParseOnly := flag.Bool("uuid-parse-only", false, "build and verify only the compiled Google UUID Text parser page")
 	flag.Parse()
+	if *codegenOnly && *uuidParseOnly {
+		return fmt.Errorf("choose at most one isolated build mode")
+	}
 	if *out == "" {
 		return fmt.Errorf("provide --out for a new build directory")
 	}
@@ -112,6 +116,25 @@ func run() error {
 		fmt.Printf("Built %s/codegen; actual compiler-library code generation, no generated-Go execution\n", site)
 		return nil
 	}
+	if *uuidParseOnly {
+		if err := buildUUIDParseDemo(ctx, site, dir, lock); err != nil {
+			return err
+		}
+		if err := copyFile(filepath.Join(runtime.GOROOT(), "lib/wasm/wasm_exec.js"), filepath.Join(site, "wasm_exec.js")); err != nil {
+			return err
+		}
+		for _, name := range []string{"style.css", "literal-search.css", "literal-search-protocol.js", "uuid-parse.html", "uuid-parse.css", "uuid-parse.js", "uuid-parse-protocol.js", "uuid-parse-worker.js", "LICENSE", "NOTICE", "third_party/GO-LICENSE", "third_party/google-uuid/LICENSE"} {
+			from := name
+			if !strings.HasPrefix(name, "third_party/") && name != "LICENSE" && name != "NOTICE" {
+				from = filepath.Join("site", name)
+			}
+			if err := copyFile(from, filepath.Join(site, name)); err != nil {
+				return err
+			}
+		}
+		fmt.Printf("Built %s/uuid-parse.html; compiled Gooo ParseCanonical, unsigned browser observations\n", site)
+		return nil
+	}
 	var ws struct {
 		Packages []struct {
 			Sources []string `json:"sources"`
@@ -173,6 +196,9 @@ func run() error {
 	if err := buildLiteralSearchDemo(ctx, site, dir, lock); err != nil {
 		return err
 	}
+	if err := buildUUIDParseDemo(ctx, site, dir, lock); err != nil {
+		return err
+	}
 	if err := buildCodegenDemo(ctx, site, dir, lock, *compilerRoot); err != nil {
 		return err
 	}
@@ -181,7 +207,12 @@ func run() error {
 			return err
 		}
 	}
-	for _, name := range []string{"LICENSE", "NOTICE", "third_party/GO-LICENSE", "upstream.json", manifest} {
+	for _, name := range []string{"uuid-parse.html", "uuid-parse.css", "uuid-parse.js", "uuid-parse-protocol.js", "uuid-parse-worker.js"} {
+		if err := copyFile(filepath.Join("site", name), filepath.Join(site, name)); err != nil {
+			return err
+		}
+	}
+	for _, name := range []string{"LICENSE", "NOTICE", "third_party/GO-LICENSE", "third_party/google-uuid/LICENSE", "upstream.json", manifest} {
 		if err := copyFile(name, filepath.Join(site, name)); err != nil {
 			return err
 		}

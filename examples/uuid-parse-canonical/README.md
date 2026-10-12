@@ -5,6 +5,12 @@ Text adaptation. The result contains `parsed`, `canonical_uuid`, `error` and
 `invalid_length`. Check `parsed` before using the returned text: an original
 parse error can still return a nonzero UUID value with a correctly shaped string.
 
+To try the same unchanged Gooo activity without installing a compiler, open the
+[UUID parse inspector](https://kimjooyoon.github.io/gooo-go-ports/uuid-parse.html).
+It displays all four fields and can download the supplied input and result as
+an unsigned browser observation. The native execution and saved replay below
+produce a different kind of record.
+
 Use Git, a POSIX shell and a Go installation with toolchain selection support.
 From this repository's root, build the pinned Gooo 0.6.32-dev compiler with
 Go 1.27.2, then execute and replay the example:
