@@ -206,6 +206,7 @@ entity Boolean id "gooo://std/boolean"
 activity Valid(Integer) -&gt; Boolean id "gooo://example/checker/valid" computes `return utf8.ValidRune(input)`</code></pre>
           <p><code>Valid</code> takes an <code>Integer</code> and returns a <code>Boolean</code>. Its <code>computes</code> body calls the imported Unicode port. The complete guide includes the workspace, inputs, and saved replay.</p>
           <p>For a graphics example, read <a href="./fixed-point-bounds.html">how subpixel bounds become pixel coordinates</a>, including empty selections and the original Go ceiling overflow.</p>
+          <p>For UUID format checking, <a href="https://github.com/kimjooyoon/gooo-go-ports/blob/2c29317d69b8a0c561e66bf901116aeff40d8b1f/examples/uuid-format-inspector/README.md">run the Google UUID inspector locally</a> to see the original format error and UTF-8 byte length. <a href="https://github.com/kimjooyoon/gooo-go-ports/archive/2c29317d69b8a0c561e66bf901116aeff40d8b1f.tar.gz">Download its fixed source</a> and follow the guide; setup needs Git and Go. This example is not included in the browser tools.</p>
           <div class="language-links">
             <a class="text-link" href="https://github.com/kimjooyoon/meta-ontology-go">Explore the Gooo language <span aria-hidden="true">↗</span></a>
             <a class="text-link" href="https://github.com/kimjooyoon/gooo-go-ports/blob/main/docs/use-in-your-project.md">Use a port in your project <span aria-hidden="true">↗</span></a>
