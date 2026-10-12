@@ -1,0 +1,45 @@
+.literal-intro { max-width: 820px; padding: 38px 0 30px }
+.literal-intro h1 { margin: 0 0 16px; font-size: clamp(34px, 6vw, 60px); line-height: 1.08; letter-spacing: -1.7px }
+.literal-intro > p { max-width: 720px }
+.literal-runtime { color: var(--green); font-size: 13px }
+.literal-runtime.error, .literal-input-status.error, .literal-download-status.error { color: var(--error) }
+.literal-input-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border: 1px solid var(--line); border-radius: 8px; background: var(--white); overflow: hidden }
+.literal-input { padding: 28px; min-width: 0 }
+.literal-input + .literal-input { border-left: 1px solid var(--line) }
+.literal-input label { display: block; margin: 0 0 7px; font-size: 13px; font-weight: 650 }
+.literal-input select { width: 100%; margin: 0 0 20px; padding: 10px; border: 1px solid #bdc8bc; background: var(--white); color: var(--ink) }
+.literal-input textarea { display: block; width: 100%; min-width: 0; resize: vertical; padding: 12px; font: 17px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; color: var(--ink); border: 1px solid #bdc8bc; border-radius: 6px; background: var(--white) }
+.literal-input textarea[aria-invalid="true"] { border-color: var(--error) }
+.literal-input textarea:focus-visible, .literal-preview:focus-visible { outline: 3px solid #79ae89; outline-offset: 4px }
+.literal-input h2 { margin: 18px 0 8px; font-size: 14px }
+.literal-help { font-size: 12px; line-height: 1.65; color: var(--muted); overflow-wrap: anywhere }
+.literal-input-status { min-height: 1.6em; font-size: 13px; overflow-wrap: anywhere }
+.literal-preview { margin: 0; padding: 14px; max-height: 210px; min-height: 65px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: #f8faf3; font: 13px/1.75 ui-monospace, SFMono-Regular, Consolas, monospace; direction: ltr; unicode-bidi: isolate }
+.literal-bound .literal-preview { background: #fff6ee }
+.literal-presets, .literal-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 20px 0 }
+.literal-presets button { padding: 7px 10px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-size: 12px; text-align: left }
+.literal-presets button:hover { border-color: var(--green) }
+.literal-actions .primary-button { width: auto }
+.literal-results { margin: 38px 0 }
+.literal-results h2, .literal-method h2 { font-size: 20px; letter-spacing: -.4px }
+#literal-progress { color: var(--muted); font-size: 13px }
+.literal-error { padding: 12px 15px; border: 1px solid #d9b9ae; background: #fff6ee; border-radius: 6px; color: var(--error); overflow-wrap: anywhere }
+.literal-output { border: 1px solid var(--line); border-radius: 6px; background: var(--white) }
+.literal-output > div { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(0, 2fr); gap: 16px; padding: 12px 18px; border-bottom: 1px solid var(--line) }
+.literal-output > div:last-child { border-bottom: 0 }
+.literal-output dt { font-size: 13px; color: var(--muted) }
+.literal-output dd { margin: 0; min-width: 0; overflow-wrap: anywhere; font: 14px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; direction: ltr; unicode-bidi: isolate }
+.literal-download-status { font-size: 13px; overflow-wrap: anywhere }
+.literal-method { max-width: 850px; padding: 28px 0 14px; border-top: 1px solid var(--line) }
+.literal-method p { font-size: 14px; overflow-wrap: anywhere }
+.literal-method .literal-help { font-size: 12px }
+@media (max-width: 700px) {
+  .literal-input-grid { grid-template-columns: 1fr }
+  .literal-input + .literal-input { border-left: 0; border-top: 1px solid var(--line) }
+  .literal-input { padding: 20px }
+  .literal-intro { padding-top: 20px }
+}
+@media (max-width: 430px) {
+  .literal-output > div { grid-template-columns: 1fr; gap: 4px; padding: 12px }
+  .literal-actions .secondary-button, #literal-download { white-space: normal; max-width: 100% }
+}

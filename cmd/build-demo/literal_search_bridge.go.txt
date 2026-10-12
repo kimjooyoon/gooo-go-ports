@@ -1,0 +1,82 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"strconv"
+	"syscall/js"
+	"unicode/utf8"
+)
+
+func literalFailure(message string) string {
+	raw, _ := json.Marshal(map[string]any{"ok": false, "error": message})
+	return string(raw)
+}
+func main() {
+	compute := js.FuncOf(func(_ js.Value, args []js.Value) (result any) {
+		defer func() {
+			if recover() != nil {
+				result = literalFailure("The compiled program failed. No result was retained.")
+			}
+		}()
+		if len(args) != 2 || args[0].Type() != js.TypeString || args[1].Type() != js.TypeString {
+			return literalFailure("Expected a text string and a phrase string.")
+		}
+		// syscall/js uses TextEncoder: unpaired UTF-16 surrogates become U+FFFD,
+		// matching the native JSON decoder. The app retains original code units.
+		text, needle := args[0].String(), args[1].String()
+		if !utf8.ValidString(text) || !utf8.ValidString(needle) || len(text) > 1024 || len(needle) > 1024 {
+			return literalFailure("Each decoded input must fit in 1,024 UTF-8 bytes.")
+		}
+		// Calculations stay in the unchanged importing Gooo activity.
+		raw, err := json.Marshal(GoooComposedActivity0(text, needle))
+		if err != nil {
+			return literalFailure("Cannot encode the compiled result.")
+		}
+		var output struct {
+			Text                *string      `json:"text"`
+			Needle              *string      `json:"needle"`
+			FirstByteOffset     *json.Number `json:"first_byte_offset"`
+			Found               *bool        `json:"found"`
+			NonOverlappingCount *json.Number `json:"non_overlapping_count"`
+			TextByteLength      *json.Number `json:"text_byte_length"`
+			NeedleByteLength    *json.Number `json:"needle_byte_length"`
+		}
+		decoder := json.NewDecoder(bytes.NewReader(raw))
+		decoder.DisallowUnknownFields()
+		if err = decoder.Decode(&output); err != nil || decoder.Decode(new(any)) != io.EOF ||
+			output.Text == nil || output.Needle == nil || output.FirstByteOffset == nil || output.Found == nil ||
+			output.NonOverlappingCount == nil || output.TextByteLength == nil || output.NeedleByteLength == nil {
+			return literalFailure("The compiled program returned an invalid seven-field record.")
+		}
+		if *output.Text != text || *output.Needle != needle || !utf8.ValidString(*output.Text) || !utf8.ValidString(*output.Needle) || len(*output.Text) > 1024 || len(*output.Needle) > 1024 {
+			return literalFailure("The compiled result does not retain the bound inputs.")
+		}
+		values := []*json.Number{output.FirstByteOffset, output.NonOverlappingCount, output.TextByteLength, output.NeedleByteLength}
+		integers := make([]int64, len(values))
+		for i, value := range values {
+			n, err := value.Int64()
+			if err != nil || strconv.FormatInt(n, 10) != value.String() {
+				return literalFailure("The compiled program returned an invalid integer.")
+			}
+			integers[i] = n
+		}
+		if integers[0] < -1 || integers[0] > int64(len(text)) || *output.Found != (integers[0] >= 0) ||
+			integers[1] < 0 || integers[1] > 1025 || integers[2] != int64(len(text)) || integers[3] != int64(len(needle)) {
+			return literalFailure("The compiled record is outside its declared result domain.")
+		}
+		response := map[string]any{"ok": true, "inputs": []string{text, needle}, "output": map[string]any{
+			"text": *output.Text, "needle": *output.Needle, "first_byte_offset": output.FirstByteOffset.String(), "found": *output.Found,
+			"non_overlapping_count": output.NonOverlappingCount.String(), "text_byte_length": output.TextByteLength.String(), "needle_byte_length": output.NeedleByteLength.String(),
+		}}
+		encoded, err := json.Marshal(response)
+		if err != nil {
+			return literalFailure("Cannot encode the browser result.")
+		}
+		return string(encoded)
+	})
+	js.Global().Set("goooLiteralSearch", compute)
+	js.Global().Set("goooLiteralSearchReady", true)
+	select {}
+}

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Find literal text and count non-overlapping matches with compiled Gooo ports of Go strings.Index and strings.Count.">
+  <meta name="theme-color" content="#f5f3eb">
+  <title>Literal text search — Gooo ports</title>
+  <link rel="canonical" href="https://kimjooyoon.github.io/gooo-go-ports/literal-search.html">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./literal-search.css">
+  <script defer src="./literal-search-protocol.js"></script>
+  <script defer src="./literal-search.js"></script>
+</head>
+<body class="literal-search-page">
+  <a class="skip-link" href="#literal-form">Skip to search input</a>
+  <div class="page-shell">
+    <header class="masthead">
+      <a class="wordmark" href="https://github.com/kimjooyoon/meta-ontology-go" aria-label="Gooo language on GitHub">gooo<span class="wordmark-dot" aria-hidden="true">.</span></a>
+      <span class="masthead-caption">The Go ports lab / experimental</span>
+      <nav class="repository-links" aria-label="Related pages">
+        <a class="text-link" href="./">Function demo</a>
+        <a class="text-link" href="./text-inspector.html">Text inspector</a>
+        <a class="text-link" href="./tutorial.html">Learn Gooo</a>
+        <a class="text-link" href="https://github.com/kimjooyoon/meta-ontology-go">Gooo language ↗</a>
+      </nav>
+    </header>
+    <main>
+      <section class="literal-intro" aria-labelledby="literal-title">
+        <p class="eyebrow">LITERAL STRINGS / COMPILED GOOO</p>
+        <h1 id="literal-title">Find text. Count matches.</h1>
+        <p>Search a short text with Go’s literal, case-sensitive rules, executed by the Gooo port. The first position is a UTF-8 byte offset; the count uses non-overlapping matches.</p>
+        <p class="literal-runtime" id="literal-runtime" role="status">Loading the compiled search program…</p>
+        <button id="literal-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+      </section>
+      <form id="literal-form" novalidate>
+        <div class="literal-input-grid">
+          <section class="literal-input" aria-labelledby="literal-text-label">
+            <label for="literal-text-mode">Text input format</label>
+            <select id="literal-text-mode"><option value="text">Text</option><option value="json">JSON string — explicit escapes</option></select>
+            <label id="literal-text-label" for="literal-text">Text — type or paste</label>
+            <textarea id="literal-text" rows="5" spellcheck="false" aria-describedby="literal-input-policy literal-text-source literal-text-status"></textarea>
+            <p id="literal-text-source" class="literal-help"></p>
+            <p id="literal-text-status" class="literal-input-status" role="status"></p>
+            <h2>Original decoded input</h2>
+            <pre id="literal-text-preview" class="literal-preview" tabindex="0" aria-label="Exact original text as escaped UTF-16"></pre>
+            <div id="literal-text-bound-wrap" class="literal-bound" hidden>
+              <h2>Bound input sent to Gooo</h2>
+              <pre id="literal-text-bound" class="literal-preview" tabindex="0" aria-label="Exact bound text as escaped UTF-16"></pre>
+            </div>
+          </section>
+          <section class="literal-input" aria-labelledby="literal-needle-label">
+            <label for="literal-needle-mode">Needle input format</label>
+            <select id="literal-needle-mode"><option value="text">Text</option><option value="json">JSON string — explicit escapes</option></select>
+            <label id="literal-needle-label" for="literal-needle">Needle — type or paste</label>
+            <textarea id="literal-needle" rows="5" spellcheck="false" aria-describedby="literal-input-policy literal-needle-source literal-needle-status"></textarea>
+            <p id="literal-needle-source" class="literal-help"></p>
+            <p id="literal-needle-status" class="literal-input-status" role="status"></p>
+            <h2>Original decoded input</h2>
+            <pre id="literal-needle-preview" class="literal-preview" tabindex="0" aria-label="Exact original needle as escaped UTF-16"></pre>
+            <div id="literal-needle-bound-wrap" class="literal-bound" hidden>
+              <h2>Bound input sent to Gooo</h2>
+              <pre id="literal-needle-bound" class="literal-preview" tabindex="0" aria-label="Exact bound needle as escaped UTF-16"></pre>
+            </div>
+          </section>
+        </div>
+        <p id="literal-input-policy" class="literal-help">Each decoded input may contain up to 1,024 UTF-8 bytes. Empty strings are valid. Input is never trimmed or Unicode-normalized. Unpaired UTF-16 surrogates become U+FFFD during UTF-8 binding; a leading U+FEFF is preserved. Paste or drop replaces the whole input and preserves the text delivered by your browser before editor line-ending conversion. JSON string mode can supply exact escapes such as <code>"\r\n\uD800"</code>; JSON notation is limited to 8,192 UTF-16 code units.</p>
+        <div class="literal-presets" aria-label="Search examples">
+          <button type="button" data-literal-preset="bytes">Korean text / byte offset</button>
+          <button type="button" data-literal-preset="overlap">Non-overlapping matches</button>
+          <button type="button" data-literal-preset="empty">Empty needle</button>
+          <button type="button" data-literal-preset="surrogates">Surrogates, BOM and CRLF</button>
+        </div>
+        <div class="literal-actions">
+          <button id="literal-run" type="submit" class="primary-button" disabled>Search text</button>
+          <button id="literal-cancel" type="button" class="secondary-button" hidden>Cancel search</button>
+          <button id="literal-clear" type="button" class="secondary-button">Clear inputs</button>
+        </div>
+      </form>
+      <section class="literal-results" aria-labelledby="literal-results-title">
+        <h2 id="literal-results-title">Compiled result</h2>
+        <p id="literal-progress" role="status">No search has run.</p>
+        <p id="literal-result-error" class="literal-error" role="alert" hidden></p>
+        <div id="literal-output-wrap" hidden><dl id="literal-output" class="literal-output"></dl></div>
+        <div id="literal-download-controls" hidden>
+          <button id="literal-download" type="button" class="secondary-button" disabled>Download browser observation JSON</button>
+          <p class="literal-help">Includes captured input, original and bound UTF-16 code units, all seven returned fields, and build hashes. This browser observation is not a native execution receipt or signed attestation.</p>
+          <p id="literal-download-status" class="literal-download-status" role="status" hidden></p>
+        </div>
+      </section>
+      <section class="literal-method" aria-labelledby="literal-method-title">
+        <h2 id="literal-method-title">Search rules</h2>
+        <p><code>Index</code> returns the first matching UTF-8 byte offset, or <code>-1</code> when absent. For example, finding <code>x</code> in <code>가x가</code> returns byte offset <code>3</code>. A byte offset is not a JavaScript character index.</p>
+        <p><code>Count</code> counts non-overlapping occurrences. An empty needle has first offset <code>0</code> and count equal to the number of Unicode code points in the bound text plus one. Combining marks and emoji sequences may contain several code points. Search is literal and case-sensitive; it does not apply regular expressions, grapheme segmentation or normalization.</p>
+        <p>The page runs the compiled Gooo <code>Report</code> activity in a Worker after verifying its WebAssembly byte count and SHA-256 against the build manifest. Input conversion and transport validation use JavaScript; search and count come from the compiled ports.</p>
+        <p id="literal-program" class="literal-help">Waiting for the verified program manifest.</p>
+        <p><a class="text-link" href="./literal-search/bound-source/examples/literal-text-report/main.gooo">Read the Gooo Report source</a> · <a class="text-link" href="https://github.com/kimjooyoon/gooo-go-ports/tree/main/ports/strings">Read the string ports ↗</a> · <a class="text-link" href="https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml">Report a problem ↗</a></p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
