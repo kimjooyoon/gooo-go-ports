@@ -21,6 +21,9 @@ type resultContract struct {
 // Existing activities retain their contracts; these new result identities also
 // bind the record's semantic field IDs, order and values to independent Go output.
 func whitespaceResultContract(s suite) resultContract {
+	if uuid := uuidResultContract(s); uuid.Entity != "" {
+		return uuid
+	}
 	if color := nrgbaResultContract(s); color.Entity != "" {
 		return color
 	}

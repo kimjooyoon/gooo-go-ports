@@ -145,6 +145,9 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 			if len(d.Inputs) != 0 || !equalValue(d.Input, row.Inputs[0]) {
 				return fail("single input")
 			}
+			if isUUIDSuite(s) && len(d.InputFields) != 0 {
+				return fail("UUID Text input has record fields")
+			}
 			if err := inspectNRGBAInputFields(contract.InputEntities[0], d.InputFields, row.Inputs[0]); err != nil {
 				return fail(err.Error())
 			}

@@ -1,0 +1,41 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "app/uuid-format-inspector:Inspect": "00112233-4455-6677-8899-aabbccddeeff"
+    },
+    {
+      "app/uuid-format-inspector:Inspect": "{00112233-4455-6677-8899-aabbccddeeff}"
+    },
+    {
+      "app/uuid-format-inspector:Inspect": "URN:uUiD:00112233-4455-6677-8899-AABBCCDDEEFF"
+    },
+    {
+      "app/uuid-format-inspector:Inspect": "00112233445566778899AABBCCDDEEFF"
+    },
+    {
+      "app/uuid-format-inspector:Inspect": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "app/uuid-format-inspector:Inspect": "ffffffff-ffff-ffff-ffff-ffffffffffff"
+    },
+    {
+      "app/uuid-format-inspector:Inspect": "[00112233-4455-6677-8899-aabbccddeeff}"
+    },
+    {
+      "app/uuid-format-inspector:Inspect": "0011223304455-6677-8899-aabbccddeeff"
+    },
+    {
+      "app/uuid-format-inspector:Inspect": "g0112233-4455-6677-8899-aabbccddeeff"
+    },
+    {
+      "app/uuid-format-inspector:Inspect": "urn:guid:g0112233-4455-6677-8899-aabbccddeeff"
+    },
+    {
+      "app/uuid-format-inspector:Inspect": "abcdefgh가aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "app/uuid-format-inspector:Inspect": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ]
+}

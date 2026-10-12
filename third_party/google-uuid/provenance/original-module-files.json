@@ -1,0 +1,136 @@
+{
+  "schema": "gooo/google-uuid-original-module-files/v1",
+  "module": "github.com/google/uuid",
+  "version": "v1.6.0",
+  "revision": "0f11ee6918f41a04c201eceeadf612a377bc7fbc",
+  "original_module_h1": "h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=",
+  "original_module_zip_sha256": "d0f02f377217f42702e259684e06441edbf5140dddcc34ba9bea56038b38a6ed",
+  "original_file_count": 31,
+  "original_files": {
+    ".github/CODEOWNERS": {
+      "bytes": 265,
+      "sha256": "decd4bcb186b10c7c372ec8802ea7051d8821b52c49018576957a9083c65d4a8"
+    },
+    ".github/release-please.yml": {
+      "bytes": 38,
+      "sha256": "47dc24c37e2e40c6b43da7e2509160e08ec2ed8dc90b28cb28ba2c9472a59c95"
+    },
+    ".github/workflows/apidiff.yaml": {
+      "bytes": 585,
+      "sha256": "0667f5debb9002ed795216e35e6e2dfdd052fbda292b098b4970eb94f1241998"
+    },
+    ".github/workflows/tests.yaml": {
+      "bytes": 381,
+      "sha256": "8e746116acab51c1eb3b6e56aeef058d48b1f8ecf4b8b724084b0f09afa61a67"
+    },
+    "CHANGELOG.md": {
+      "bytes": 1648,
+      "sha256": "e4edc025a0776ce0c480c6eeddbe55d2dbc94694065b19b367bb3e24b4c0e1f0"
+    },
+    "CONTRIBUTING.md": {
+      "bytes": 956,
+      "sha256": "c1e068afdc267d5cd61688fdcd16ba53b9ee2cde273053ab2991e95cbf419497"
+    },
+    "CONTRIBUTORS": {
+      "bytes": 105,
+      "sha256": "d69e90a1901a669b3cc34dc07e99d60c8627d73c88dd374de488fec4fefd7118"
+    },
+    "LICENSE": {
+      "bytes": 1480,
+      "sha256": "0a8d61ed3cbfd5312326e8126c31ce9c627a283adc99131b56896d29ada04b2d"
+    },
+    "README.md": {
+      "bytes": 839,
+      "sha256": "af83b920f323cc6e0296cfe01154a4e8a902fc6630d3154925d919f77b1c624c"
+    },
+    "dce.go": {
+      "bytes": 2072,
+      "sha256": "6a4b89e7f6165a673e76f00bebaabf8d0d7eb4356a672c6cb771d95a45fb2695"
+    },
+    "doc.go": {
+      "bytes": 407,
+      "sha256": "0b286e2af61ede9f58d2455781ea254284c477b7fce2447aab3203992cc51f9f"
+    },
+    "go.mod": {
+      "bytes": 30,
+      "sha256": "73da47b6338b00a082fd451aa35a3273d3adc09b8e9bba98dab01091e402af6e"
+    },
+    "hash.go": {
+      "bytes": 1963,
+      "sha256": "afe975c3f3e8b9a972c66165f06e978cc5c2f8ea5a4809dae4c46b4cfebbadce"
+    },
+    "json_test.go": {
+      "bytes": 2485,
+      "sha256": "926ba4423017608e600f815ca73c03deb00225b036fe2fa3ed3f8970545bd2de"
+    },
+    "marshal.go": {
+      "bytes": 907,
+      "sha256": "933eb226d049268e17809fd37f777c650b9ec8cb3fa988534b792610a64dcc43"
+    },
+    "node.go": {
+      "bytes": 2323,
+      "sha256": "73a93d192ca24078e0f93b8c1675e13adb442421252d3974d697b0821c4832cf"
+    },
+    "node_js.go": {
+      "bytes": 498,
+      "sha256": "334b6ac9f50339341696319aaf9b912ea8007d0aacf0e909a48a0bb02d982d6d"
+    },
+    "node_net.go": {
+      "bytes": 949,
+      "sha256": "78e274b465de8da8690f4ab06281f41025b142c1d093e337fda1d6726b35662b"
+    },
+    "null.go": {
+      "bytes": 2461,
+      "sha256": "791638f42d54fcf07ac752df6b2df92593f7da308f944465e2cda443dc3346cf"
+    },
+    "null_test.go": {
+      "bytes": 5041,
+      "sha256": "4c39d6fa1f64f1f98792f22f58c1468114b9de879ae83ec7b8f4128442cde5c5"
+    },
+    "seq_test.go": {
+      "bytes": 1443,
+      "sha256": "6ad9e9722a9add93984ce7e1d2eeb8dcd72c32134f06bb4b0b7c7ef293338585"
+    },
+    "sql.go": {
+      "bytes": 1459,
+      "sha256": "29281b11e8f97f1ddf73d087854cb401ba42a87c4f59ce45fc69763a4d927f2f"
+    },
+    "sql_test.go": {
+      "bytes": 2376,
+      "sha256": "fd85e05f2d1779639689877366779e0275826e4fcd8d9a03382e4ab822826353"
+    },
+    "time.go": {
+      "bytes": 3795,
+      "sha256": "e07999a07de5b667dd1dd5792b544ea933e7e839eca03b3469527f86a8bc2881"
+    },
+    "util.go": {
+      "bytes": 1920,
+      "sha256": "755f50afafb13dd89ae6177da7eb6dc31ae650ece2f9ba52821021e9f8de044e"
+    },
+    "uuid.go": {
+      "bytes": 9633,
+      "sha256": "0edec8e34c6b6fe0db31b71a29069a09ed832e3fd04ee0175916b58f2b60e5c1"
+    },
+    "uuid_test.go": {
+      "bytes": 23287,
+      "sha256": "facfccf9bba767c4bb9dc6a46503d49645b2afb3659083eb8ba43b772f3bb85a"
+    },
+    "version1.go": {
+      "bytes": 1257,
+      "sha256": "38a2c229a2aad4bb72d45529304f210b1f31e8ef60bbd2605690a10f0d8a8242"
+    },
+    "version4.go": {
+      "bytes": 2057,
+      "sha256": "f252aeb4028659d83cbf7b037d4524f7c9b76cde1fdca1f6f7de310dab6f4dcd"
+    },
+    "version6.go": {
+      "bytes": 2213,
+      "sha256": "013cc9f4a9e606746d38d53f8e651b9222f5042fde567484588ec1d7a0c54905"
+    },
+    "version7.go": {
+      "bytes": 3371,
+      "sha256": "8002748cc22a032c3782b42f7653a947189b8566c50d246b4a3beb2e075f8d62"
+    }
+  },
+  "scope": "Exactly original upstream module31files. Added Gooo Go Ports source_digest.go and provenance files are excluded from the original upstream h1."
+}

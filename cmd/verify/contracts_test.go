@@ -74,7 +74,12 @@ func allNativeSuites(t *testing.T) []suite {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return append(all, byteSearch.Suites...)
+	all = append(all, byteSearch.Suites...)
+	uuids, err := uuidCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return append(all, uuids.Suites...)
 }
 
 func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
@@ -84,7 +89,7 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	suites := allNativeSuites(t)
-	if len(contracts) != 54 || len(suites) != 54 {
+	if len(contracts) != 56 || len(suites) != 56 {
 		t.Fatal("contract/suite roster changed")
 	}
 	seen := map[string]bool{}
@@ -193,6 +198,11 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	added += byteSearch.PortReferenceCases + byteSearch.PortExtensionCases + byteSearch.ConsumerReferenceCases + byteSearch.ConsumerExtensionCases
+	uuids, err := uuidCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	added += uuids.PortReferenceCases + uuids.ConsumerReferenceCases
 	if total != 24770+added {
 		t.Fatalf("corpus changed: %d", total)
 	}

@@ -2,10 +2,10 @@
 
 [Gooo](https://github.com/kimjooyoon/meta-ontology-go) is an experimental language for
 describing what programs should do and inspecting how they are built and run.
-This independent ecosystem project implements selected Go standard-library and x/image functions in Gooo,
-with independent Go reference outputs and saved replay: 35 standard-library ports
-and two ports from golang.org/x/image. The current scope is
-37 HTTP, Unicode, byte-search, 8-bit integer, color, duration, rectangle and fixed-point functions, fifteen native importing examples,
+This independent ecosystem project implements selected Go standard-library, x/image and Google UUID functions in Gooo,
+with independent Go reference outputs and saved replay: 35 standard-library ports,
+two ports from golang.org/x/image and one from github.com/google/uuid. The current scope is
+38 HTTP, Unicode, byte-search, UUID format, 8-bit integer, color, duration, rectangle and fixed-point functions, sixteen native importing examples,
 and an importing browser dispatcher.
 
 ## Start here
@@ -139,6 +139,16 @@ length. An Integer outside 0..255 returns -1 as a separate extension. This is
 not whole-string Unicode searching, arbitrary Go byte-string support, or the
 whole `strings` package; the existing 21-function browser tools are unchanged.
 
+The native [UUID format inspector](examples/uuid-format-inspector/README.md) imports
+Google's `github.com/google/uuid` v1.6.0 `Validate` port. It accepts the original
+hyphenated, URN, braced and plain-hex forms over valid UTF-8 Text of at most
+1,024 bytes, preserving exact error text and the original length-error classification.
+The inspector adds the original UTF-8 byte length. All checks and error formatting
+run in Gooo, including a multibyte character cut by the first-nine-byte URN prefix.
+This is a format check, without UUID generation or parsing into a binary UUID.
+See [API mapping, source and limits](docs/google-uuid.md). The existing browser
+library tools remain unchanged; this port and inspector run locally.
+
 The native [simple case-fold comparison](examples/simple-fold/README.md) imports
 `unicode.SimpleFold` to compare two rune values and show each value's next member
 in its Unicode simple-folding cycle. For example, `K`, `k`, and the Kelvin sign
@@ -221,7 +231,7 @@ with the page URL or command and what happened. A working demo or shared input l
 is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-현재 Go 표준 라이브러리와 x/image의 HTTP·Unicode·바이트 검색·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 함수 37개를 표현합니다.
+현재 Go 표준 라이브러리, x/image와 Google UUID의 HTTP·Unicode·바이트 검색·UUID 형식·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 함수 38개를 표현합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -235,6 +245,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | --- | --- | --- |
 | `go/net/http` | `StatusText` | Go의 상태 코드 62개와 설명. 미등록 코드는 빈 문자열 |
 | `go/strings` | `IndexByte` | UTF-8 Text 최대 1,024바이트에서 0..255 byte의 첫 위치 또는 -1. 원본 바이트 offset과 길이 보존; 영역 밖 Integer는 별도 -1 확장. Native 전용 |
+| `go/github.com/google/uuid` | `Validate` | 원본 네 표기와 정확한 오류·길이 오류 분류를 `{valid,error,invalid_length}`로 보존. 유효한 UTF-8 Text 최대 1,024바이트; native 전용 |
 | `go/unicode` | `IsLetter`, `IsDigit` | Unicode 17.0.0 전체 Letter(L)·decimal digit(Nd) 범위와 stride 보존. 원본 표에서 결정적으로 Gooo 분기 생성 |
 | `go/unicode` | `IsSpace` | Unicode 17.0.0 White_Space 속성의 25개 코드 포인트 판정. 전체 signed int32 rune 입력 유지 |
 | `go/unicode` | `SimpleFold` | Unicode 17.0.0 단순 대소문자 접기의 다음 순환 멤버. ASCII·특수 순환·case range 우선순위 및 전체 int32 입력 보존. Native 전용 |
@@ -543,9 +554,17 @@ NRGBA 포트의 원본 비교 **2,696건**·영역 밖 거부 **32건**, 알파 
 Go `draw.Draw`의 NRGBA→RGBA 최적 경로와 일반 인터페이스 경로를 함께 확인합니다.
 바이트 검색 포트와 소비 예제는 각각 문자열 6개와 전체 byte 256개의 원본 비교
 **1,536건**과 needle 영역 밖 확장 **16건**을 추가합니다. native 검증 코퍼스는
-총 **65,345건·54개 suite**입니다. 기존 833개 배치 경계는 유지하며, 새 두 suite만
+기존 **65,345건·54개 suite**를 이룹니다. 기존 833개 배치 경계는 유지하며, 이 두 suite는
 실제 직렬화 JSON 30,000바이트와 128행 상한을 함께 적용해 전체 **882배치**로 실행합니다.
 범위는 유효한 UTF-8 Text 최대 1,024바이트이며 임의 Go 바이트 문자열 전체가 아닙니다.
+Google UUID `Validate`와 가져오기 예제는 각각 **21,745건**의 독립 원본 비교를 더합니다.
+원본 9개 사례, 네 표기의 각 ASCII 위치 변경, 128개 URN 대소문자 조합,
+0..1,024바이트 길이, Unicode·제어 문자와 접두 바이트 절단, 고정 표본을 포함합니다.
+정확한 오류 문구와 길이 오류 분류까지 비교하는 현재 합계는 **108,835건·56개 suite**입니다.
+기존 54개 suite의 입력·소스 묶음과 882배치 경계를 유지하고 UUID 534배치를 추가합니다.
+JSON의 잘못된 UTF-8·단독 surrogate가 원래 바이트 그대로 거부되거나 보존된다는 뜻은 아닙니다.
+원래 유효한 UTF-8 문자열로 오라클을 호출하며, 일반 Go byte string·전체 UUID 패키지는 범위 밖입니다.
+
 
 사각형의 네 좌표는
 각각 전체 signed int64 범위를 받으며 영역 밖 확장 계약이 없습니다.
@@ -619,9 +638,10 @@ byte 3성분 입력을 Go 원본과 비교합니다. 총 **33,554,432번**의 �
 생성 소스 해시·도구체인·결과를 기록합니다. 소비 앱의 모든 RGB 왕복을 실행하거나
 이미지 압축·색상 프로파일을 검증한 것으로 해석하지 않습니다.
 
-Gooo 실행 입력 상한에 맞춰 총 **882개 배치**를 실행합니다. 기존 833개 배치와
+Gooo 실행 입력 상한에 맞춰 총 **1,416개 배치**를 실행합니다. 기존 833개 배치와
 그 경계를 유지하며 IndexByte 21개·Search 소비 앱 28개 배치를 추가합니다.
-새 두 suite는 128행 이하에서 실제 JSON 30,000바이트 상한에 맞춰 최대 접두 배치를 선택합니다.
+IndexByte·Search와 UUID의 두 suite는 128행 이하에서 실제 JSON 30,000바이트 상한에 맞춰 최대 접두 배치를 선택합니다.
+UUID Validate 257개·Inspect 277개 배치를 추가하며 이전 882배치의 경계는 바뀌지 않습니다.
 기존 YCbCr까지의 465개 배치를 유지하고,
 Canon 6개·드래그 선택 소비 활동 16개, x/image Floor/Ceil 각각 14개와 픽셀 경계 소비 활동
 16개 배치까지의 기존 531개를 보존합니다. case mapping 네 포트 131개와 새 소비 앱 57개
@@ -719,6 +739,7 @@ Floor/Ceil로 바꾸고 기존 RectangleIntersect로 잘라냅니다. 기존 35,
 31개 포트는 보존됩니다. 픽셀 경계는 12번째 소비 예제이며, 이후 case mapping 네 포트와
 13번째 소비 예제까지의 총계는 35개 포트·15개 소비 활동입니다. 이후 NRGBA 변환과
 알파 합성 예제까지의 36개 포트·14개 소비 프로그램·16개 소비 활동은 유지하며,
-바이트 검색을 더한 현재 총계는 37개 포트·15개 소비 프로그램·17개 소비 활동입니다.
+바이트 검색까지의 37개 포트·15개 소비 프로그램·17개 소비 활동을 유지합니다.
+Google UUID Validate와 importing inspector를 추가한 현재 총계는 38개 포트·16개 소비 프로그램·18개 소비 활동입니다.
 원본 int32 전체의 동작을 구현하되 2^32 전수 검사를 주장하지 않습니다.
 브라우저 21함수와 두 crop 모드는 그대로입니다.

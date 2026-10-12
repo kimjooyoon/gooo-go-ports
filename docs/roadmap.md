@@ -25,6 +25,7 @@
 | 2j | `image.Rectangle.Canon`과 [방향 독립 드래그 선택](drag-crop.md) | 전체 signed int64 좌표·퇴화 위치 보존, 원본 좌표와 canonical 출력의 유한 멱등성 비교. 선택 영역만 정규화하며 기존 CropPlan은 변경하지 않음. Canon 371건·드래그 활동 501건의 native 실행과 저장 재실행 |
 | 2k | `unicode.To`·`ToUpper`·`ToLower`·`ToTitle`과 [한 rune의 세 변환 비교](../examples/case-inspector/README.md) | CaseRanges 전체를 하나의 Gooo 구현으로 공유, range 시작점 기준 교대 parity와 별도 title delta 보존. 원래 signed int32 rune와 64비트 case 입력, invalid case 우선순위, Unicode 밖 identity를 독립 Go 원본 및 저장 재실행과 비교. 수정 없는 생성 Go의 Unicode 구간 전수 비교는 유한 영수증과 별도 집계 |
 | 2l | `color.NRGBA.RGBA`와 [한 픽셀 알파 합성](../examples/alpha-matte/README.md) | 네 uint8 수신 필드와 premultiplied 16비트 결과, 알파 0의 숨은 RGB·중간 알파·정수 버림 보존. 불투명 RGB 배경에 대한 소비자 결과를 실제 Go `draw.Draw`의 최적·일반 경로와 비교하고 저장 재실행. 전체 이미지 처리·선형 광량 합성·uint8⁴ 전수 검사는 범위 밖 |
+| 2m | Google `google/uuid.Validate`와 [UUID 형식 검사](../examples/uuid-format-inspector/README.md) | v1.6.0 원본 네 표기·오류 우선순위·정확한 문구·길이 오류 분류를 명시적 레코드로 보존. 원본 31파일 h1·컴파일된 오라클 소스·라이선스, Text 최대 1,024바이트와 내부 prefix quoting, 각각 21,745건 원본 비교와 저장 재실행. Parse·생성·UUID byte 값은 별도 범위 |
 | 3 | `strings.Index`/`Count`, UTF-8 순회 등 반복이 필요한 문자열 함수 조사 | `for`/`range`, 바이트 읽기, 루프 종료·입력 제한의 재현. Text 슬라이싱 지원만으로 문자열 전체 지원을 선언하지 않음 |
 | 4 | `encoding/hex`의 제한된 인코딩·디코딩부터 바이트 패키지 확장 | byte 배열/슬라이스, 출력 구성, 잘못된 문자와 길이에 대한 오류 계약, 비트 연산 또는 검증된 산술 표현 |
 | 5 | Google의 `google/uuid` 파싱·표시·버전/variant 부분 이식 | 원본 형식별 입력과 오류를 보존하고 16바이트 값을 표현할 타입, 반복, 인덱싱, hex 처리가 확보될 것 |
@@ -41,6 +42,8 @@ Parse와 Validate의 허용 형식·오류가 다르므로 하나의 느슨한 �
 [version4.go](https://github.com/google/uuid/blob/v1.6.0/version4.go)의 난수 생성은
 `io.Reader`와 실패 결과를 포함한다. 초기 파싱 포트의 범위에 생성 기능까지 포함하지 않는다.
 실제 착수 시 원본 커밋과 라이선스를 고정하고 현재 구현과 달라진 내용을 다시 확인한다.
+현재 첫 컴포넌트인 [Validate 이식](google-uuid.md)은 `0f11ee6918f41a04c201eceeadf612a377bc7fbc`를 고정한다.
+배열 반환이 없는 format 검사부터 네 표기와 오류 관측을 보존하며, 위 Parse·표시·variant·생성 단계 전체가 완료됐다는 뜻은 아니다.
 
 ## 포트마다 남길 근거
 

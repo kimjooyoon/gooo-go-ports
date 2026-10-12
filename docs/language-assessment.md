@@ -175,3 +175,15 @@ Go int 반환은 명시적 `{in_fixed_domain,value}` 레코드로 바뀝니다.
 [소비 예제](../examples/fixed-pixel-bounds/README.md)는 raw 빈 선택을 변환 전에 처리하고
 nonempty 최대 좌표의 Ceil overflow는 거부한 뒤 기존 RectangleIntersect를 사용합니다.
 폰트·픽셀 처리는 포함하지 않으며, 원본 fixed.go는 별도 BSD 고지와 SHA를 보존한 Go 오라클입니다.
+
+
+## 현재 핀의 Google UUID 검증
+
+현재 0.6.32-dev에서는 [Google UUID Validate](google-uuid.md)의 네 표기와 오류를 Gooo로 표현합니다.
+고정 횟수 반복, Text byte 읽기·슬라이싱·문자열 연결, 정수 나눗셈과 레코드 반환을 사용합니다.
+Go `error`는 `valid,error,invalid_length`로 명시적으로 바꾸며 정확한 Error()와 길이 오류 분류를 비교합니다.
+`fmt.Sprintf` 같은 호스트 formatter 호출로 계산을 우회하지 않습니다. 길이는 Gooo digit slice로 만들고,
+first-nine-byte quoting은 고정 Go의 전체 IsPrint 표와 원본 escape 규칙을 Gooo helper로 낮춥니다.
+위의 초기 문법 거절 기록과 일반 bitwise·배열·I/O 경계는 별도 역사·후속 과제입니다.
+이 Text API는 유효한 UTF-8 최대 1,024바이트이며, raw JSON의 잘못된 인코딩은 Go decoder가 교체할 수 있습니다.
+임의 Go bytes 보존이나 잘못된 UTF-8 wire의 명시적 거부를 주장하지 않습니다.

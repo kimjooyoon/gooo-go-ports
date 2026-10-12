@@ -188,7 +188,7 @@ func TestCaseMappingNamedSemanticsAndPresetCoverage(t *testing.T) {
 
 func TestCaseMappingActualSerializedBatchesAndBaselinePreserved(t *testing.T) {
 	all := allNativeSuites(t)
-	if len(all) != 54 {
+	if len(all) != 56 {
 		t.Fatal("native suite roster")
 	}
 	documents := []any{}

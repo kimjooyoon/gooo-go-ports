@@ -157,6 +157,24 @@
       "sources": [
         "examples/string-byte-search/main.gooo"
       ]
+    },
+    {
+      "path": "go/github.com/google/uuid/internal/quote",
+      "sources": [
+        "ports/google/uuid/quote.gooo"
+      ]
+    },
+    {
+      "path": "go/github.com/google/uuid",
+      "sources": [
+        "ports/google/uuid/validate.gooo"
+      ]
+    },
+    {
+      "path": "app/uuid-format-inspector",
+      "sources": [
+        "examples/uuid-format-inspector/main.gooo"
+      ]
     }
   ]
 }

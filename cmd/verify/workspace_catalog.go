@@ -79,9 +79,10 @@ func freezeVerificationCatalog(path string) (frozenVerificationCatalog, error) {
 
 var catalogImport = regexp.MustCompile(`(?m)^[\t ]*import[\t ]+(?:[A-Za-z_][A-Za-z_0-9]*[\t ]+)?"([^"\r\n]+)"`)
 
-// Every suite retains all go/* port packages, but only its own consumer. This
-// keeps unrelated consumer records out of the pinned compiler's 16-record ABI.
-// All bytes are copied from the initial snapshot, never reread during batches.
+// The prior suites retain their original go/* packages and only their own
+// consumer. UUID suites select the independent UUID/quote module and their own
+// consumer. This preserves the prior source rosters and keeps unrelated records
+// out of the pinned compiler's 16-record ABI. All bytes come from one snapshot.
 func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, error) {
 	w := suiteWorkspace{Sources: map[string][]byte{}}
 	w.Manifest.Schema = "gooo/package-workspace-manifest/v1"
@@ -92,6 +93,10 @@ func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, e
 	}
 	selected := map[string]bool{}
 	for _, pkg := range f.Catalog.Packages {
+		isUUIDPackage := pkg.Path == uuidPackage || pkg.Path == uuidPackage+"/internal/quote"
+		if strings.HasPrefix(pkg.Path, "go/") && isUUIDPackage != isUUIDSuite(s) {
+			continue
+		}
 		if !strings.HasPrefix(pkg.Path, "go/") && pkg.Path != s.Package {
 			continue
 		}

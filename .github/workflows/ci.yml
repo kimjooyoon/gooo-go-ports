@@ -12,7 +12,7 @@ permissions:
 jobs:
   native-ports:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     env:
       GOTOOLCHAIN: local
       GOWORK: 'off'
@@ -27,7 +27,10 @@ jobs:
           cache: false
       - name: Check the Go observer
         run: |
-          test -z "$(git ls-files -z '*.go' | xargs -0 -r gofmt -l)"
+          # Upstream UUID archive files stay byte-exact; its added hash wrapper
+          # is ours and remains subject to the normal formatter check.
+          test -z "$(git ls-files -z '*.go' ':(exclude)third_party/google-uuid/**' | xargs -0 -r gofmt -l)"
+          test -z "$(gofmt -l third_party/google-uuid/source_digest.go)"
           go vet ./...
           go test -race ./...
           python3 tools/bootstrap.test.py
@@ -40,6 +43,7 @@ jobs:
           go run ./cmd/gen-unicode --check
           go run ./cmd/gen-simple-fold --check
           go run ./cmd/gen-case-mapping --check
+          python3 tools/gen-uuid-quote.py --check
       - name: Build and identify the pinned compiler from a clean checkout
         run: |
           mkdir -p out
@@ -68,6 +72,9 @@ jobs:
           ./.gooo check examples/case-inspector/main.gooo
           ./.gooo check examples/fixed-pixel-bounds/main.gooo
           ./.gooo check examples/crop-planner/drag_crop.gooo
+          ./.gooo check ports/google/uuid/quote.gooo
+          ./.gooo check ports/google/uuid/validate.gooo
+          ./.gooo check examples/uuid-format-inspector/main.gooo
           ./.gooo check ports/time/duration.gooo
           sh tools/probe.sh --out out/probes
       - name: Compare the ports with Go and replay every batch
@@ -77,7 +84,10 @@ jobs:
             .schema == "gooo/go-ports-differential/v1" and
             .go_version == "go1.27.2" and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
-            .ported_functions == 37 and .consumer_programs == 15 and .consumer_activities == 17 and
+            .ported_functions == 38 and .consumer_programs == 16 and .consumer_activities == 18 and
+            .uuid_port_reference_cases == 21745 and .uuid_consumer_reference_cases == 21745 and
+            .uuid_module_revision == "0f11ee6918f41a04c201eceeadf612a377bc7fbc" and
+            .uuid_module_h1 == "h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=" and
             .legacy_cases == 3147 and .unicode_reference_cases == 334 and .unicode_rejection_cases == 12 and
             .color_port_reference_cases == 1300 and .color_port_rejection_cases == 56 and
             .color_consumer_reference_cases == 637 and .color_consumer_rejection_cases == 24 and
@@ -118,9 +128,10 @@ jobs:
               .value.unicode_range_inputs == 1114112 and .value.mismatches == 0) and
             .case_mapping_exhaustive.To.unicode_range_comparisons == 3342336 and
             ([.case_mapping_exhaustive[].unicode_range_comparisons] | add) == 6684672 and
-            .cases == 65345 and .passed == 65345 and
-            (.runs | length) == 54 and
-            ([.runs[].cases] | add) == 65345 and ([.runs[].batches] | add) == 882 and
+            .cases == 108835 and .passed == 108835 and
+            (.runs | length) == 56 and
+            ([.runs[].cases] | add) == 108835 and ([.runs[].batches] | add) == 1416 and
+            ([.runs[:54][].cases] | add) == 65345 and ([.runs[:54][].batches] | add) == 882 and
             all(.runs[]; .passed == .cases and .replay_equal == true)
           ' out/ci/summary.json
       - name: Execute and replay the Unicode case inspector

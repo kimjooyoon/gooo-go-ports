@@ -12,15 +12,15 @@ func isStringByteSuite(s suite) bool {
 		(s.Package == stringByteConsumerPackage && s.Activity == "Search")
 }
 
-// Only the new Text suites adapt to serialized bytes. Existing suites retain
-// their exact row-based boundaries. Match save's MarshalIndent and final LF,
+// Text suites adapt to serialized bytes. Existing suites retain their exact
+// boundaries. Match save's MarshalIndent and final LF,
 // rather than estimating from Text length or compact JSON.
 func nativeBatchEnd(s suite, start, rowLimit int) (int, error) {
 	if start < 0 || start >= len(s.Cases) || rowLimit < 1 || rowLimit > 128 {
 		return 0, fmt.Errorf("invalid native batch start or row limit")
 	}
 	end := min(start+rowLimit, len(s.Cases))
-	if !isStringByteSuite(s) {
+	if !isStringByteSuite(s) && !isUUIDSuite(s) {
 		return end, nil
 	}
 	low, high, best := start+1, end, start

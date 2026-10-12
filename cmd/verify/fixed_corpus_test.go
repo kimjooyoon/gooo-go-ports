@@ -142,7 +142,7 @@ func TestFixedOracleBytesAndLicense(t *testing.T) {
 	if err := readJSON("../../upstream.json", &lock); err != nil {
 		t.Fatal(err)
 	}
-	if err := verifyFixedOracle("../..", lock.ExternalSources); err != nil {
+	if err := verifyFixedOracle("../..", externalSourcesForModule(lock.ExternalSources, "golang.org/x/image")); err != nil {
 		t.Fatal(err)
 	}
 	for _, name := range []string{"third_party/x-image/math/fixed/fixed.go", "third_party/x-image/LICENSE"} {
@@ -163,7 +163,7 @@ func TestFixedOracleBytesAndLicense(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		if err := verifyFixedOracle(dir, lock.ExternalSources); err == nil {
+		if err := verifyFixedOracle(dir, externalSourcesForModule(lock.ExternalSources, "golang.org/x/image")); err == nil {
 			t.Fatal("accepted changed upstream", name)
 		}
 	}
@@ -174,7 +174,7 @@ func TestFixedExternalSourceLockRejectsMissingDuplicateAndAlteredMetadata(t *tes
 	if err := readJSON("../../upstream.json", &lock); err != nil {
 		t.Fatal(err)
 	}
-	if err := verifyFixedExternalSources(lock.ExternalSources); err != nil {
+	if err := verifyFixedExternalSources(externalSourcesForModule(lock.ExternalSources, "golang.org/x/image")); err != nil {
 		t.Fatal(err)
 	}
 	for _, sources := range [][]externalSource{nil, {}, append(append([]externalSource{}, lock.ExternalSources...), lock.ExternalSources...)} {

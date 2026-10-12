@@ -1,0 +1,79 @@
+// Copyright 2016 Google Inc. All rights reserved.
+// Copyright 2018 Google Inc. All rights reserved.
+// Use of this source code is governed by the BSD-style license preserved in
+// third_party/google-uuid/LICENSE.
+// Validate and hexadecimal-domain behavior adapted from google/uuid v1.6.0,
+// revision0f11ee6918f41a04c201eceeadf612a377bc7fbc, uuid.go and util.go.
+// API mapping: nil/error -> {valid,error,invalid_length}, retaining exact error
+// text and original IsInvalidLengthError classification. Native input scope is
+// valid UTF-8 Go strings carried by Text, up to1024bytes; not arbitrary Go bytes.
+// Length and first9byte quoting are computed in Gooo with source-owned helpers.
+package uuid
+namespace gooo_ports_google_uuid
+import quote "go/github.com/google/uuid/internal/quote"
+entity Text id "gooo://std/text"
+entity Integer id "gooo://std/integer"
+entity Boolean id "gooo://std/boolean"
+entity ValidationResult id "gooo://github.com/google/uuid/validation-result" fields {
+ field valid id "gooo://github.com/google/uuid/validation-result/valid" type boolean required one
+ field error id "gooo://github.com/google/uuid/validation-result/error" type string required one
+ field invalid_length id "gooo://github.com/google/uuid/validation-result/invalid-length" type boolean required one
+}
+activity DecimalLength(Text) -> Text id "gooo://github.com/google/uuid/decimal-length" computes `let length = int64(len(input))
+let digits = "0123456789"
+let ones = length % 10
+let result = digits[ones:ones + 1]
+if length >= 10 {
+ let tens = (length / 10) % 10
+ result = digits[tens:tens + 1] + result
+}
+if length >= 100 {
+ let hundreds = (length / 100) % 10
+ result = digits[hundreds:hundreds + 1] + result
+}
+if length >= 1000 {
+ let thousands = length / 1000
+ result = digits[thousands:thousands + 1] + result
+}
+return result`
+activity HexDigit(Integer) -> Boolean id "gooo://github.com/google/uuid/is-hex-byte" computes `return (input >= 48 && input <= 57) || (input >= 65 && input <= 70) || (input >= 97 && input <= 102)`
+// The9byte ASCII target urn:uuid: has no nonASCII Unicode simple-fold orbit.
+activity URNPrefix(Text) -> Boolean id "gooo://github.com/google/uuid/urn-prefix" computes `return (int64(input[0]) == 117 || int64(input[0]) == 85) && (int64(input[1]) == 114 || int64(input[1]) == 82) && (int64(input[2]) == 110 || int64(input[2]) == 78) && int64(input[3]) == 58 && (int64(input[4]) == 117 || int64(input[4]) == 85) && (int64(input[5]) == 117 || int64(input[5]) == 85) && (int64(input[6]) == 105 || int64(input[6]) == 73) && (int64(input[7]) == 100 || int64(input[7]) == 68) && int64(input[8]) == 58`
+activity Validate(Text) -> ValidationResult id "gooo://github.com/google/uuid/Validate" computes `let length = int64(len(input))
+if length != 32 && length != 36 && length != 38 && length != 45 {
+ return ValidationResult{valid: false, error: "invalid UUID length: " + DecimalLength(input), invalid_length: true}
+}
+let text = input
+if length == 45 {
+ if !URNPrefix(input) {
+  return ValidationResult{valid: false, error: "invalid urn prefix: " + quote.QuotePrefix9(input), invalid_length: false}
+ }
+ text = input[9:]
+}
+if length == 38 {
+ if int64(input[0]) != 123 || int64(input[37]) != 125 {
+  return ValidationResult{valid: false, error: "invalid bracketed UUID format", invalid_length: false}
+ }
+ text = input[1:37]
+}
+if length == 32 {
+ let offset = 0
+ for offset = 0; offset < 32; offset = offset + 1 {
+  if !HexDigit(int64(text[offset])) {
+   return ValidationResult{valid: false, error: "invalid UUID format", invalid_length: false}
+  }
+ }
+ return ValidationResult{valid: true, error: "", invalid_length: false}
+}
+if int64(text[8]) != 45 || int64(text[13]) != 45 || int64(text[18]) != 45 || int64(text[23]) != 45 {
+ return ValidationResult{valid: false, error: "invalid UUID format", invalid_length: false}
+}
+let offset = 0
+for offset = 0; offset < 36; offset = offset + 1 {
+ if offset != 8 && offset != 13 && offset != 18 && offset != 23 {
+  if !HexDigit(int64(text[offset])) {
+   return ValidationResult{valid: false, error: "invalid UUID format", invalid_length: false}
+  }
+ }
+}
+return ValidationResult{valid: true, error: "", invalid_length: false}`

@@ -26,16 +26,21 @@ type fixedObservations struct {
 // The oracle calls unchanged upstream methods. Its embedded source also binds
 // the implementation compiled into this verifier, not merely a later disk copy.
 type externalSource struct {
-	Module     string   `json:"module"`
-	Repository string   `json:"repository"`
-	Revision   string   `json:"revision"`
-	Source     string   `json:"source"`
-	SourceSHA  string   `json:"source_sha256"`
-	OracleCopy string   `json:"oracle_copy"`
-	License    string   `json:"license"`
-	LicenseSHA string   `json:"license_sha256"`
-	Target     string   `json:"target"`
-	Symbols    []string `json:"symbols"`
+	Module            string            `json:"module"`
+	Repository        string            `json:"repository"`
+	Revision          string            `json:"revision"`
+	Source            string            `json:"source"`
+	SourceSHA         string            `json:"source_sha256"`
+	OracleCopy        string            `json:"oracle_copy"`
+	License           string            `json:"license"`
+	LicenseSHA        string            `json:"license_sha256"`
+	Target            string            `json:"target"`
+	Symbols           []string          `json:"symbols"`
+	Version           string            `json:"version,omitempty"`
+	ModuleH1          string            `json:"module_h1,omitempty"`
+	SupportingSources []string          `json:"supporting_sources,omitempty"`
+	SupportingSHA     map[string]string `json:"supporting_source_sha256,omitempty"`
+	SupportingTargets []string          `json:"supporting_targets,omitempty"`
 }
 
 // The reviewed external source contract is independent of the supplied lock.

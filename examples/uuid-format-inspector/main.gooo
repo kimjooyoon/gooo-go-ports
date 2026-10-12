@@ -1,0 +1,14 @@
+// This importing example inspects UUID format and original UTF-8 byte length.
+// Validation and exact error formatting remain in the imported Gooo port.
+package uuid_format_inspector
+namespace gooo_ports_examples_uuid_format_inspector
+import uuid "go/github.com/google/uuid"
+entity Text id "gooo://std/text"
+entity Report id "gooo://go-ports/examples/uuid-format-inspector/report" fields {
+    field valid id "gooo://go-ports/examples/uuid-format-inspector/report/valid" type boolean required one
+    field error id "gooo://go-ports/examples/uuid-format-inspector/report/error" type string required one
+    field invalid_length id "gooo://go-ports/examples/uuid-format-inspector/report/invalid-length" type boolean required one
+    field byte_length id "gooo://go-ports/examples/uuid-format-inspector/report/byte-length" type integer required one
+}
+activity Inspect(Text) -> Report id "gooo://go-ports/examples/uuid-format-inspector/inspect" computes `let result = uuid.Validate(input)
+return Report{valid: result.valid, error: result.error, invalid_length: result.invalid_length, byte_length: int64(len(input))}`
