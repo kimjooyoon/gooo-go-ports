@@ -106,6 +106,26 @@ compatibility.
 해당 실행의 저장 재실행을 검증합니다. `PASS` 표지만으로는 충분하지 않으며,
 함수의 유한 관찰로 패키지 전체 호환성을 주장하지 않습니다.
 
+Only pull requests that change the contents of the existing root `README.md`
+and/or `CONTRIBUTING.md` qualify for documentation CI. Basic Go, Python,
+generator, compiler identity and declaration checks, and the full browser job
+still run. The native-ports job omits differential/exhaustive validation,
+unsupported-body probes, native examples, malformed-input checks and policy
+execution. All other changes,
+main-branch runs and tag runs retain the full checks. The documentation-scope
+artifact explicitly records the omissions and is not a new native port execution
+receipt. The commands below remain the full validation checklist for port and
+executable changes.
+
+저장소 루트의 기존 `README.md`와/또는 `CONTRIBUTING.md` 내용만 바꾸는 PR만
+문서 CI 대상입니다. 기본 Go·Python·생성기·컴파일러 식별자·선언 검사와 전체
+브라우저 작업은 그대로 실행합니다. native-ports 작업에서는 differential·전수
+검증, 지원하지 않는 본문 구문 검사, native 예제, 잘못된 입력 검사와 정책 실행을
+생략합니다.
+그 밖의 변경, main 브랜치 실행과 태그 실행은 전체 검사를 유지합니다.
+문서 범위 artifact는 생략한 검사를 명시하며 새로운 native 포트 실행 receipt가
+아닙니다. 아래 명령은 포트와 실행 동작 변경에 대한 전체 검증 목록으로 유지합니다.
+
 Run these commands from the repository root on macOS or Linux in the same shell,
 with Python 3 and Go toolchain selection support or Go 1.27.2. The selected Go
 toolchain and pinned compiler may be downloaded on the first run. Stop if a
