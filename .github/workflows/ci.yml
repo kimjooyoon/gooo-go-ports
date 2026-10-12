@@ -21,6 +21,15 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - name: Classify the exact checked PR tree
+        id: change-scope
+        run: |
+          python3 -B tools/classify-ci-scope.py \
+            --event-name "$GITHUB_EVENT_NAME" --event-path "$GITHUB_EVENT_PATH" \
+            --expected-head "$GITHUB_SHA" --summary out/ci-scope.json \
+            --github-output "$GITHUB_OUTPUT"
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
           go-version: '1.27.2'
@@ -40,6 +49,8 @@ jobs:
           python3 -B tools/check-alpha-matte_test.py -v
           python3 -B tools/check-fits-crop_test.py -v
           python3 -B tools/check-fits-crop-inputs_test.py -v
+          python3 -B tools/classify-ci-scope_test.py -v
+          python3 -B tools/check-ci-scope-workflow_test.py -v
       - name: Check pinned Unicode table generation
         run: |
           go run ./cmd/gen-unicode --check
@@ -57,7 +68,7 @@ jobs:
             .source_status == "CLEAN_VCS" and .vcs_modified == "false" and
             .go_version == "go1.27.2" and .native_go_required == "go1.27.2"
           ' out/compiler-build.json
-      - name: Check Gooo declarations and retain unsupported-body probes
+      - name: Check Gooo declarations
         run: |
           ./.gooo check ports/net/http.gooo
           ./.gooo check ports/unicode/utf8.gooo
@@ -80,8 +91,12 @@ jobs:
           ./.gooo check ports/google/uuid/text/parse_canonical.gooo
           ./.gooo check examples/uuid-format-inspector/main.gooo
           ./.gooo check ports/time/duration.gooo
+      - name: Retain unsupported-body probes
+        if: steps.change-scope.outputs.docs_only != 'true'
+        run: |
           sh tools/probe.sh --out out/probes
       - name: Compare the ports with Go and replay every batch
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           go run ./cmd/verify --out out/ci
           jq -e '
@@ -153,6 +168,7 @@ jobs:
             all(.runs[]; .passed == .cases and .replay_equal == true)
           ' out/ci/summary.json
       - name: Execute and replay the Unicode case inspector
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           ./.gooo package execute --json --inputs examples/case-inspector/inputs.json \
             case-inspector.workspace.json > out/case-inspector.json
@@ -189,6 +205,7 @@ jobs:
           assert execution["result"]["composition"]["source"] == replay["result"]["composition"]["source"]
           PY
       - name: Execute and replay the alpha matte example
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           ./.gooo package execute --json --inputs examples/alpha-matte/inputs.json \
             alpha-matte.workspace.json > out/alpha-matte.json
@@ -197,6 +214,7 @@ jobs:
             alpha-matte.workspace.json > out/alpha-matte-replay.json
           python3 -B tools/check-alpha-matte.py out/alpha-matte.json out/alpha-matte-replay.json
       - name: Execute and verify fixed-point bounds example
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           ./.gooo package execute --json --inputs examples/fixed-pixel-bounds/inputs.json \
             fixed-pixel-bounds.workspace.json > out/fixed-pixel-bounds.json
@@ -205,8 +223,10 @@ jobs:
             fixed-pixel-bounds.workspace.json > out/fixed-pixel-bounds-replay.json
           python3 tools/check-fixed-pixel-bounds.py out/fixed-pixel-bounds.json out/fixed-pixel-bounds-replay.json
       - name: Exhaustively compare generated Unicode classifications
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: go run ./cmd/check-unicode --out out/unicode-exhaustive
       - name: Execute and replay the input-only importing example
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           ./.gooo package execute --json --inputs examples/inputs.json \
             gooo.workspace.json > out/example.json
@@ -230,6 +250,7 @@ jobs:
              [.[1].result.runtime.traces[].deliveries[] | {input, inputs, actual}])
           ' out/example.json out/example-replay.json
       - name: Execute and replay the byte-summary input-only example
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           ./.gooo package execute --json --inputs examples/byte-summary/inputs.json \
             byte-summary.workspace.json > out/byte-example.json
@@ -253,6 +274,7 @@ jobs:
              [.[1].result.runtime.traces[].deliveries[] | {input, inputs, actual}])
           ' out/byte-example.json out/byte-replay.json
       - name: Execute and replay the byte-rotation input-only example
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           ./.gooo package execute --json --inputs examples/byte-rotation/inputs.json \
             byte-rotation.workspace.json > out/rotation-example.json
@@ -295,6 +317,7 @@ jobs:
               assert observed["actual"] == rerun["actual"]
           PY
       - name: Execute and replay Unicode inspector input-only examples
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           for kind in scalar pair; do
             inputs="examples/unicode-inspector/${kind}-inputs.json"
@@ -318,6 +341,7 @@ jobs:
             ' "out/unicode-${kind}.json" "out/unicode-${kind}-replay.json"
           done
       - name: Execute and replay the color inspector input-only example
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           ./.gooo package execute --json --inputs examples/color-inspector/inputs.json \
             color-inspector.workspace.json > out/color-example.json
@@ -339,6 +363,7 @@ jobs:
              [.[1].result.runtime.traces[].deliveries[] | {input, inputs, actual}])
           ' out/color-example.json out/color-replay.json
       - name: Execute and replay the YCbCr inspector input-only example
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           ./.gooo package execute --json --inputs examples/ycbcr-inspector/inputs.json \
             ycbcr-inspector.workspace.json > out/ycbcr-example.json
@@ -347,6 +372,7 @@ jobs:
             ycbcr-inspector.workspace.json > out/ycbcr-replay.json
           python3 tools/check-ycbcr-example.py out/ycbcr-example.json out/ycbcr-replay.json
       - name: Execute and replay the duration quantizer input-only example
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           ./.gooo package execute --json --inputs examples/duration-quantizer/inputs.json \
             duration-quantizer.workspace.json > out/duration-example.json
@@ -403,6 +429,7 @@ jobs:
           assert results[0] == results[1]
           PY
       - name: Execute and replay the whitespace inspector input-only example
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           ./.gooo package execute --json --inputs examples/whitespace-inspector/inputs.json \
             whitespace-inspector.workspace.json > out/whitespace-example.json
@@ -471,6 +498,7 @@ jobs:
           assert execution["result"]["composition"]["source"] == replay["result"]["composition"]["source"]
           PYTHON
       - name: Execute and replay the rectangle crop planner
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           ./.gooo package execute --json --inputs examples/crop-planner/inputs.json \
             crop-planner.workspace.json > out/crop-example.json
@@ -480,6 +508,7 @@ jobs:
           python3 tools/check-crop-example.py out/crop-example.json out/crop-replay.json
           python3 tools/check-rectangle-inputs.py out/rectangle-input-rejections
       - name: Execute and replay the direction-independent drag crop planner
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           ./.gooo package execute --json --inputs examples/crop-planner/drag_inputs.json \
             drag-crop.workspace.json > out/drag-crop-example.json
@@ -488,6 +517,7 @@ jobs:
             drag-crop.workspace.json > out/drag-crop-replay.json
           python3 tools/check-drag-crop-example.py out/drag-crop-example.json out/drag-crop-replay.json
       - name: Execute and replay the native FitsCrop example
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           ./.gooo package execute --json --inputs examples/fits-crop/inputs.json \
             fits-crop.workspace.json > out/fits-crop-example.json
@@ -499,6 +529,7 @@ jobs:
             GOOO_FITS_CROP_REPLAY="$PWD/out/fits-crop-replay.json" \
             python3 -B tools/check-fits-crop_test.py -v
       - name: Observe malformed FitsCrop inputs through the actual CLI
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           python3 -B tools/check-fits-crop-inputs.py out/fits-crop-input-rejections
           jq -e '
@@ -509,6 +540,7 @@ jobs:
             all(.cases[]; .rejection_verified == true and .exit_code == 1 and .timed_out == false)
           ' out/fits-crop-input-rejections/summary.json
       - name: Verify the offline decision-policy experiment
+        if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           ./examples/decision-policy-pilot/run.sh
           pilot_evidence=( "$PWD/examples/decision-policy-pilot/out"/run-* )
@@ -518,7 +550,7 @@ jobs:
             go -C examples/decision-policy-pilot test -race -count=1 ./...
           ./examples/decision-policy-pilot/run.sh --verify "${pilot_evidence[0]}"
       - name: Upload offline policy experiment evidence
-        if: always()
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: decision-policy-pilot-evidence
@@ -526,7 +558,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
       - name: Upload execution and diagnostic evidence
-        if: always()
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: gooo-go-ports-evidence
@@ -541,6 +573,25 @@ jobs:
             !out/ci/case-mapping-exhaustive-ToLower/cache/**
             !out/ci/case-mapping-exhaustive-ToTitle/cache/**
           if-no-files-found: warn
+          retention-days: 14
+
+      - name: Report documentation-only native scope
+        if: steps.change-scope.outputs.docs_only == 'true'
+        run: |
+          printf '%s\n' \
+            'Root README/CONTRIBUTING content-only PR: common checks, compiler identity and declarations ran.' \
+            'This native-ports job did not run differential, exhaustive, probe, native-example or policy commands.' \
+            'No new native-port execution/replay receipts were produced; existing observations are not rebound to this commit.' \
+            'The browser-demo job retains its separate full build, checks and receipts.' | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Preserve documentation scope and compiler identity
+        if: always() && steps.change-scope.outputs.docs_only == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: gooo-go-ports-documentation-scope
+          path: |
+            out/ci-scope.json
+            out/compiler-build.json
+          if-no-files-found: error
           retention-days: 14
 
   browser-demo:
