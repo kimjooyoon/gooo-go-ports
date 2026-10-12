@@ -79,8 +79,19 @@ establishes uniqueness, authorization or a particular UUID version.
 
 Follow the [execute and saved replay example](../examples/uuid-parse-canonical/README.md).
 It includes the permissive wrapped form and the distinct partial values from
-raw and hyphenated parse failures. This API runs in the local native toolchain;
-the existing 21-function browser tools do not include it.
+raw and hyphenated parse failures. You can also use the separate
+[UUID parse inspector](https://kimjooyoon.github.io/gooo-go-ports/uuid-parse.html)
+without installing a compiler. It runs the unchanged Gooo activity as WebAssembly
+and displays all four fields, including the UUID value returned on failure.
+The existing 21-function dispatcher and its comparison counts are unchanged.
+
+The browser accepts Text or a JSON string, preserves whitespace and a leading
+BOM, and records original UTF-16 units separately from the decoded UTF-8 Text
+sent to Gooo. Lone UTF-16 surrogates become U+FFFD at that boundary. The 1,024-byte
+limit applies after decoding; larger inputs are rejected before execution and
+are distinct from the parser's `invalid_length` result. Browser downloads are
+unsigned observations bound to the supplied input and program metadata. They
+are not native execution receipts or security attestations.
 
 Read [parse_canonical.gooo](../ports/google/uuid/text/parse_canonical.gooo) and
 the [original source, checksums and licenses](google-uuid.md#source-checksums-and-licenses).

@@ -21,6 +21,7 @@ retains its original source and counts.
 | Try Gooo without installing anything | [Interactive tutorial](https://kimjooyoon.github.io/gooo-go-ports/tutorial.html) | Change a score and label, see the returned record, and read the two Gooo source files |
 | Edit source and save generated Go in the browser | [Gooo code editor](https://kimjooyoon.github.io/gooo-go-ports/codegen/) | Edit one source file and generate Go for one activity; save the current Go code or original response JSON. Generated Go is not executed |
 | Find a literal phrase without installing anything | [Literal search](https://kimjooyoon.github.io/gooo-go-ports/literal-search.html) | Supply two strings, see the first UTF-8 byte position and non-overlapping count, and save an honest browser observation |
+| Inspect Google's UUID parser return behavior | [UUID parse inspector](https://kimjooyoon.github.io/gooo-go-ports/uuid-parse.html) | Supply text, inspect success and the returned UUID even on failure, and save all four fields with the bound input |
 | Edit and run Gooo code locally | [Run and edit locally](#run-and-edit-locally) | Install the pinned compiler, then change the tutorial's condition and rerun it |
 | Search a diagnostic phrase locally | [Literal-text report](examples/literal-text-report/README.md) | Supply text and a phrase; export the first byte offset, non-overlapping count and both original inputs |
 | Use a port in another project | [Import walkthrough](docs/use-in-your-project.md) | Build a separate application that imports `utf8.ValidRune` from a fixed source snapshot |
@@ -176,7 +177,9 @@ uses a separate `ParseCanonical` Text API to preserve Google's `Parse` return
 value through `UUID.String()`, plus the original error and length-error class.
 An error can still return a nonzero UUID value, so check `parsed` before using
 `canonical_uuid`. The parser's permissive 38-byte wrappers differ from the
-`Validate` format check. See the [API mapping and scope](docs/google-uuid-parse-canonical.md).
+`Validate` format check. The separate [browser inspector](https://kimjooyoon.github.io/gooo-go-ports/uuid-parse.html)
+runs this unchanged activity and exports unsigned observations. See the
+[API mapping and scope](docs/google-uuid-parse-canonical.md).
 
 The native [simple case-fold comparison](examples/simple-fold/README.md) imports
 `unicode.SimpleFold` to compare two rune values and show each value's next member
@@ -377,6 +380,7 @@ node tools/browser-smoke.cjs out/browser/site
 node tools/drag-crop-browser-smoke.cjs out/browser/site
 node tools/tutorial-browser-smoke.cjs out/browser/site
 node tools/literal-search-smoke.cjs out/browser/site
+node tools/uuid-parse-smoke.cjs out/browser/site
 node tools/browser-codegen-smoke.cjs out/browser/site/codegen out/browser/codegen-evidence
 node --test tools/share-link.test.cjs tools/share-app.test.cjs
 python3 -m http.server 8766 --bind 127.0.0.1 --directory out/browser/site
@@ -386,6 +390,8 @@ python3 -m http.server 8766 --bind 127.0.0.1 --directory out/browser/site
 소스 편집기는 `/codegen/`에 있습니다. 생성 검사에서는 16개 예제와 저장되지 않은
 새 편집 소스를 실제 컴파일러·WebAssembly와 비교하며, 생성한 Go는 실행하지 않습니다.
 편집기만 빌드하려면 새 출력 경로와 `--codegen-only`를 사용하면 됩니다.
+UUID 파싱 화면만 빌드하려면 `--uuid-parse-only`와 새 출력 경로를 사용하고,
+그 경로의 `site/`를 위와 같이 HTTP로 제공합니다. 이 두 전용 빌드 모드는 함께 사용할 수 없습니다.
 다른 정적 HTTP 서버를 사용해도 됩니다. `--out` 디렉터리는 새 경로여야 합니다.
 여러 배포본을 로컬에서 열 때는 버전별 디렉터리와 URL을 유지하세요. 같은 URL의
 파일을 교체했다면 캐시를 무시하고 새로고침해 HTML과 스크립트를 다시 받습니다.
@@ -414,6 +420,15 @@ Two-corner selection 모드는 별도 `drag-crop/crop.wasm`의 `DragCropPlan`을
 [native 실행 안내](examples/learn-gooo/README.md)를 따릅니다. 정수는 int64 전체 범위를
 보존하며 Text 입력과 반환 필드의 1,024 UTF-8 바이트 제한을 각각 검사합니다.
 이 예제의 실행·재실행 기록과 브라우저 비교는 기존 Go 포트 호환성 집계에 포함하지 않습니다.
+
+별도 [UUID 파싱 화면](https://kimjooyoon.github.io/gooo-go-ports/uuid-parse.html)은
+기존 Google UUID `ParseCanonical` Gooo 코드를 변경 없이 WebAssembly로 실행합니다.
+입력은 공백을 제거하거나 정규화하지 않은, 최대 1,024 UTF-8 바이트의 Text입니다.
+`parsed`, `canonical_uuid`, `error`, `invalid_length`를 성공·실패 모두 표시합니다.
+raw hex 파싱 오류의 반환 UUID가 정상 입력의 값과 같아도 `parsed: false`이면 실패입니다.
+다운로드는 원본 UTF-16 입력과 실제로 전달한 Text를 담는 서명 없는 브라우저 관측이며,
+native 실행 영수증이나 보안 인증이 아닙니다. 이 화면의 유한 비교는 기존 16,036건 브라우저
+함수 집계와 분리되며, 42개 포트나 native 소비 프로그램 수를 늘리지 않습니다.
 
 브라우저 생성용 사례 **261개**도 기대 결과와 함께 native 실행·저장된 프로그램 재실행을 검증합니다.
 입력 파일당 128개·32 KiB 제한을 지키도록 실제 JSON 바이트 크기로 나누며 사례를 생략하지 않습니다.

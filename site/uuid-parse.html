@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Inspect Google UUID Parse and returned String behavior through the compiled Gooo Text adaptation, including partial returns on error.">
+  <meta name="theme-color" content="#f5f3eb">
+  <title>UUID canonical parsing — Gooo ports</title>
+  <link rel="canonical" href="https://kimjooyoon.github.io/gooo-go-ports/uuid-parse.html">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./uuid-parse.css">
+  <script defer src="./literal-search-protocol.js"></script>
+  <script defer src="./uuid-parse-protocol.js"></script>
+  <script defer src="./uuid-parse.js"></script>
+</head>
+<body class="uuid-parse-page">
+  <a class="skip-link" href="#uuid-form">Skip to UUID input</a>
+  <div class="page-shell">
+    <header class="masthead">
+      <a class="wordmark" href="https://github.com/kimjooyoon/meta-ontology-go" aria-label="Gooo language on GitHub">gooo<span class="wordmark-dot" aria-hidden="true">.</span></a>
+      <span class="masthead-caption">The Go ports lab / experimental</span>
+      <nav class="repository-links" aria-label="Related pages">
+        <a class="text-link" href="./">Function demo</a>
+        <a class="text-link" href="./literal-search.html">Literal search</a>
+        <a class="text-link" href="./text-inspector.html">Text inspector</a>
+        <a class="text-link" href="./tutorial.html">Learn Gooo</a>
+      </nav>
+    </header>
+    <main>
+      <section class="literal-intro" aria-labelledby="uuid-title">
+        <p class="eyebrow">UUID PARSING / COMPILED GOOO</p>
+        <h1 id="uuid-title">Parse a UUID. See every returned field.</h1>
+        <p>Inspect Google UUID <code>Parse</code> and the returned UUID’s <code>String</code> through Gooo. Parsing can fail while returning a partial UUID with correctly shaped text. Check <code>parsed</code> before using the returned value.</p>
+        <p class="literal-runtime" id="uuid-runtime" role="status">Loading the compiled UUID parser…</p>
+        <button id="uuid-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+      </section>
+      <form id="uuid-form" novalidate>
+        <div class="literal-input-grid">
+          <section class="literal-input" aria-labelledby="uuid-input-label">
+            <label for="uuid-input-mode">Input format</label>
+            <select id="uuid-input-mode"><option value="text">Text</option><option value="json">JSON string — explicit escapes</option></select>
+            <label id="uuid-input-label" for="uuid-input">UUID text — type or paste</label>
+            <textarea id="uuid-input" rows="4" spellcheck="false" aria-describedby="uuid-input-policy uuid-input-source uuid-input-status"></textarea>
+            <p id="uuid-input-source" class="literal-help"></p>
+            <p id="uuid-input-status" class="literal-input-status" role="status"></p>
+            <h2>Original decoded input</h2>
+            <pre id="uuid-input-preview" class="literal-preview" tabindex="0" aria-label="Exact original input as escaped UTF-16"></pre>
+            <div id="uuid-input-bound-wrap" class="literal-bound" hidden>
+              <h2>Bound input sent to Gooo</h2>
+              <pre id="uuid-input-bound" class="literal-preview" tabindex="0" aria-label="Exact bound input as escaped UTF-16"></pre>
+            </div>
+          </section>
+        </div>
+        <p id="uuid-input-policy" class="literal-help">The decoded input may contain up to 1,024 UTF-8 bytes. Empty text is accepted as an input and produces a parser length error. Input is never trimmed or Unicode-normalized. Unpaired UTF-16 surrogates become U+FFFD during UTF-8 binding; a leading U+FEFF is preserved. Paste or drop replaces the whole input and preserves text delivered by your browser before editor line-ending conversion. JSON string mode supplies exact escapes such as <code>"\r\n\uD800"</code>; notation is limited to 8,192 UTF-16 code units.</p>
+        <div class="literal-presets" aria-label="UUID parser examples">
+          <button type="button" data-uuid-preset="canonical">Canonical / uppercase</button>
+          <button type="button" data-uuid-preset="raw">Raw hexadecimal</button>
+          <button type="button" data-uuid-preset="wrapped">Permissive square brackets</button>
+          <button type="button" data-uuid-preset="raw-error">Raw error / failed byte retained</button>
+          <button type="button" data-uuid-preset="standard-error">Hyphenated error / failed byte omitted</button>
+          <button type="button" data-uuid-preset="zero">Successfully parsed zero UUID</button>
+          <button type="button" data-uuid-preset="surrogates">Surrogates, BOM and CRLF</button>
+        </div>
+        <div class="literal-actions">
+          <button id="uuid-run" type="submit" class="primary-button" disabled>Parse UUID text</button>
+          <button id="uuid-cancel" type="button" class="secondary-button" hidden>Cancel parsing</button>
+          <button id="uuid-clear" type="button" class="secondary-button">Clear input</button>
+        </div>
+      </form>
+      <section class="literal-results" aria-labelledby="uuid-results-title">
+        <h2 id="uuid-results-title">Compiled result</h2>
+        <p id="uuid-progress" role="status">No parsing has run.</p>
+        <p id="uuid-result-error" class="literal-error" role="alert" hidden></p>
+        <p id="uuid-result-note" class="uuid-result-note" role="status" hidden></p>
+        <div id="uuid-output-wrap" hidden><dl id="uuid-output" class="literal-output"></dl></div>
+        <div id="uuid-download-controls" hidden>
+          <button id="uuid-download" type="button" class="secondary-button" disabled>Download browser observation JSON</button>
+          <p class="literal-help">Includes captured input, original and bound UTF-16 code units, all four returned fields, and build hashes. Parser errors retain the returned UUID. This browser observation is not a native execution receipt or signed attestation.</p>
+          <p id="uuid-download-status" class="literal-download-status" role="status" hidden></p>
+        </div>
+      </section>
+      <section class="literal-method" aria-labelledby="uuid-method-title">
+        <h2 id="uuid-method-title">What the parser returns</h2>
+        <p><code>parsed</code> reports whether the original parser error was nil. <code>canonical_uuid</code> is the returned UUID’s lowercase text on success and error. <code>error</code> preserves the original error text; it is empty on success. <code>invalid_length</code> preserves the original length-error classification.</p>
+        <p>The parser accepts hyphenated, raw hexadecimal, case-insensitive <code>urn:uuid:</code>, and 38-byte wrapped input. For 38 bytes, it examines the middle 36 bytes and permits arbitrary outer delimiters, including square brackets. This follows <code>Parse</code>; the separate <code>Validate</code> operation has different rules.</p>
+        <p>The last invalid pair <code>0g</code> in raw text can leave a returned byte of <code>ff</code>; the same hyphenated failure leaves that byte at <code>00</code>. Both calls have <code>parsed: false</code>. A correctly shaped returned UUID does not establish parser success.</p>
+        <p>The page calls the unchanged compiled Gooo <code>ParseCanonical</code> activity in a Worker after verifying WebAssembly size and SHA-256 against the build manifest. JavaScript handles input binding and transport. This Text adaptation does not expose Go’s binary UUID array, <code>ParseBytes</code> or full-library compatibility. Parsing does not establish uniqueness, authorization or a particular UUID version.</p>
+        <p id="uuid-program" class="literal-help">Waiting for the verified program manifest.</p>
+        <p><a class="text-link" href="./uuid-parse/bound-source/ports/google/uuid/text/parse_canonical.gooo">Read the bound Gooo parser</a> · <a class="text-link" href="./uuid-parse/upstream.json">Source versions and hashes</a> · <a class="text-link" href="./uuid-parse/third_party/google-uuid/LICENSE">Google UUID license</a> · <a class="text-link" href="https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml">Report a problem ↗</a></p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
