@@ -12,12 +12,26 @@ func TestExternalOracleRosterAndUUIDMetadata(t *testing.T) {
 	if err := readJSON("../../upstream.json", &lock); err != nil {
 		t.Fatal(err)
 	}
+	if len(lock.ExternalSources) != 3 {
+		t.Fatal("expected one fixed and two UUID adaptation rows")
+	}
 	if err := verifyExternalOracles("../..", lock.ExternalSources); err != nil {
 		t.Fatal(err)
 	}
-	for _, sources := range [][]externalSource{nil, lock.ExternalSources[:1], append(append([]externalSource{}, lock.ExternalSources...), lock.ExternalSources[1])} {
+	fixed := externalSourcesForModule(lock.ExternalSources, "golang.org/x/image")
+	uuidSources := externalSourcesForModule(lock.ExternalSources, "github.com/google/uuid")
+	if len(fixed) != 1 || len(uuidSources) != 2 {
+		t.Fatal("module/target roster differs")
+	}
+	for _, sources := range [][]externalSource{
+		nil, fixed, uuidSources,
+		{fixed[0], uuidSources[0]}, {fixed[0], uuidSources[1]},
+		{fixed[0], fixed[0], uuidSources[0]},
+		{uuidSources[0], uuidSources[1], uuidSources[0]},
+		append(append([]externalSource{}, lock.ExternalSources...), uuidSources[0]),
+	} {
 		if err := verifyExternalOracles("../..", sources); err == nil {
-			t.Fatal("accepted missing or duplicated module")
+			t.Fatal("accepted missing/duplicated module or target")
 		}
 	}
 	unknown := append([]externalSource{}, lock.ExternalSources...)
@@ -25,25 +39,44 @@ func TestExternalOracleRosterAndUUIDMetadata(t *testing.T) {
 	if err := verifyExternalOracles("../..", unknown); err == nil {
 		t.Fatal("accepted unknown module")
 	}
-	original := externalSourcesForModule(lock.ExternalSources, "github.com/google/uuid")[0]
-	for _, field := range []string{"Module", "Repository", "Revision", "Version", "ModuleH1", "Source", "SourceSHA", "OracleCopy", "License", "LicenseSHA", "Target"} {
-		mutated := original
-		reflect.ValueOf(&mutated).Elem().FieldByName(field).SetString("wrong")
-		if err := verifyUUIDOracle("../..", []externalSource{mutated}); err == nil {
-			t.Fatal("accepted changed UUID metadata", field)
+	for _, sources := range [][]externalSource{nil, uuidSources[:1], {uuidSources[0], uuidSources[0]}, {uuidSources[1], uuidSources[1]}} {
+		if err := verifyUUIDOracle("../..", sources); err == nil {
+			t.Fatal("accepted missing or duplicated UUID target")
 		}
 	}
-	for _, change := range []func(*externalSource){
-		func(s *externalSource) { s.Symbols = []string{"Parse"} },
-		func(s *externalSource) { s.SupportingSources = nil },
-		func(s *externalSource) { s.SupportingSHA = map[string]string{"util.go": "wrong"} },
-		func(s *externalSource) { s.SupportingTargets = nil },
-	} {
-		mutated := original
-		change(&mutated)
-		if err := verifyUUIDOracle("../..", []externalSource{mutated}); err == nil {
-			t.Fatal("accepted changed UUID support roster")
+	for index, original := range uuidSources {
+		for _, field := range []string{"Module", "Repository", "Revision", "Version", "ModuleH1", "Source", "SourceSHA", "OracleCopy", "License", "LicenseSHA", "Target"} {
+			t.Run(original.Target+"/"+field, func(t *testing.T) {
+				mutated := append([]externalSource{}, uuidSources...)
+				reflect.ValueOf(&mutated[index]).Elem().FieldByName(field).SetString("wrong")
+				if err := verifyUUIDOracle("../..", mutated); err == nil {
+					t.Fatal("accepted changed UUID metadata", field)
+				}
+			})
 		}
+		for _, change := range []func(*externalSource){
+			func(s *externalSource) { s.Symbols = []string{"Parse"} },
+			func(s *externalSource) { s.SupportingSources = nil },
+			func(s *externalSource) { s.SupportingSources = []string{"util.go", "uuid.go"} },
+			func(s *externalSource) { s.SupportingSHA = map[string]string{"util.go": "wrong"} },
+			func(s *externalSource) {
+				s.SupportingSHA = map[string]string{"util.go": uuidUtilSHA, "other": uuidSourceSHA}
+			},
+			func(s *externalSource) { s.SupportingTargets = nil },
+			func(s *externalSource) {
+				s.SupportingTargets = []string{"ports/google/uuid/quote.gooo", "ports/google/uuid/text/parse_canonical.gooo"}
+			},
+		} {
+			mutated := append([]externalSource{}, uuidSources...)
+			change(&mutated[index])
+			if err := verifyUUIDOracle("../..", mutated); err == nil {
+				t.Fatal("accepted changed UUID support roster", original.Target)
+			}
+		}
+	}
+	// Row order is irrelevant; the two exact target contracts remain required.
+	if err := verifyUUIDOracle("../..", []externalSource{uuidSources[1], uuidSources[0]}); err != nil {
+		t.Fatal(err)
 	}
 }
 

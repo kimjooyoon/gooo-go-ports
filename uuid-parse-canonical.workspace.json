@@ -1,0 +1,21 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "go/github.com/google/uuid/text",
+    "activity": "ParseCanonical"
+  },
+  "packages": [
+    {
+      "path": "go/github.com/google/uuid/internal/quote",
+      "sources": ["ports/google/uuid/quote.gooo"]
+    },
+    {
+      "path": "go/github.com/google/uuid",
+      "sources": ["ports/google/uuid/validate.gooo"]
+    },
+    {
+      "path": "go/github.com/google/uuid/text",
+      "sources": ["ports/google/uuid/text/parse_canonical.gooo"]
+    }
+  ]
+}

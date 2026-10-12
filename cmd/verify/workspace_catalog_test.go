@@ -14,7 +14,7 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(frozen.Catalog.Packages) != 28 || len(frozen.Sources) != 35 {
+	if len(frozen.Catalog.Packages) != 29 || len(frozen.Sources) != 36 {
 		t.Fatal("complete reviewed catalog roster changed")
 	}
 	allIdentities, err := snapshotSourceIdentities(frozen.Catalog.Packages, frozen.Sources)
@@ -64,6 +64,14 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 		wantPorts := 10
 		if isUUIDSuite(s) {
 			wantPorts = 2
+		}
+		if isUUIDParseSuite(s) {
+			wantPorts = 3
+			if !reflect.DeepEqual(selected.Names, []string{"ports/google/uuid/quote.gooo", "ports/google/uuid/validate.gooo", "ports/google/uuid/text/parse_canonical.gooo"}) {
+				t.Fatal("parser workspace lacks exact quote/validation-helper/Text closure", selected.Names)
+			}
+		} else if _, exists := selected.Sources["ports/google/uuid/text/parse_canonical.gooo"]; exists {
+			t.Fatal("new parser source leaked into a prior workspace")
 		}
 		if ports != wantPorts || consumers != wantConsumers {
 			t.Fatal("selected package roster differs", ports, consumers)

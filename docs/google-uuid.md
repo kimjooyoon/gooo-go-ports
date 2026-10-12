@@ -67,6 +67,11 @@ already-valid UTF-8 Go strings so original decoded inputs are preserved exactly.
 Arbitrary invalid-byte Go strings, longer strings, UUID generation, `Parse`,
 randomness, binary UUID values and full-module compatibility are outside this API.
 
+For the original `Parse` return value expressed through `UUID.String()`, use the
+separate [ParseCanonical Text adaptation](google-uuid-parse-canonical.md).
+It preserves partial UUID values on error and follows the parser's permissive
+38-byte wrapper behavior; it does not change this `Validate` contract.
+
 ## Source, checksums and licenses
 
 The original module ZIP is 31,981 bytes with SHA256

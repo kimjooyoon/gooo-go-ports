@@ -1,0 +1,288 @@
+// Copyright 2018 Google Inc. All rights reserved.
+// Original xtob behavior: Copyright 2016 Google Inc. All rights reserved.
+// Adapted from google/uuid v1.6.0 Parse and UUID.String at
+// revision 0f11ee6918f41a04c201eceeadf612a377bc7fbc.
+// BSD-style license: third_party/google-uuid/LICENSE.
+// This separate Text API preserves the returned UUID as canonical text on both
+// success and error. Inputs are decoded valid UTF-8 Text of at most 1024 bytes.
+// It is not the Go binary UUID method set or the arbitrary-byte ParseBytes API.
+package uuidtext
+namespace gooo_ports_google_uuid_text
+import uuid "go/github.com/google/uuid"
+import quote "go/github.com/google/uuid/internal/quote"
+entity Text id "gooo://std/text"
+entity Integer id "gooo://std/integer"
+entity Boolean id "gooo://std/boolean"
+entity ParseCanonicalResult id "gooo://github.com/google/uuid/text/parse-canonical-result" fields {
+ field parsed id "gooo://github.com/google/uuid/text/parse-canonical-result/parsed" type boolean required one
+ field canonical_uuid id "gooo://github.com/google/uuid/text/parse-canonical-result/canonical-uuid" type string required one
+ field error id "gooo://github.com/google/uuid/text/parse-canonical-result/error" type string required one
+ field invalid_length id "gooo://github.com/google/uuid/text/parse-canonical-result/invalid-length" type boolean required one
+}
+activity HexValue(Integer) -> Integer id "gooo://github.com/google/uuid/text/hex-value" computes `if input >= 48 && input <= 57 { return input - 48 }
+if input >= 65 && input <= 70 { return input - 55 }
+if input >= 97 && input <= 102 { return input - 87 }
+return 255`
+activity ByteHex(Integer) -> Text id "gooo://github.com/google/uuid/text/byte-hex" computes `let digits = "0123456789abcdef"
+let high = (input / 16) % 16
+let low = input % 16
+return digits[high:high + 1] + digits[low:low + 1]`
+activity ParseCanonical(Text) -> ParseCanonicalResult id "gooo://github.com/google/uuid/text/parse-canonical" computes `let length = int64(len(input))
+let canonical = "00000000-0000-0000-0000-000000000000"
+if length != 32 && length != 36 && length != 38 && length != 45 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID length: " + uuid.DecimalLength(input), invalid_length: true}
+}
+let text = input
+if length == 45 {
+ if !uuid.URNPrefix(input) {
+  return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid urn prefix: " + quote.QuotePrefix9(input), invalid_length: false}
+ }
+ text = input[9:]
+}
+if length == 38 { text = input[1:37] }
+if length != 32 {
+ if int64(text[8]) != 45 || int64(text[13]) != 45 || int64(text[18]) != 45 || int64(text[23]) != 45 {
+  return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+ }
+}
+let offset0 = 0
+if length == 32 { offset0 = 0 }
+let high0 = HexValue(int64(text[offset0]))
+let low0 = HexValue(int64(text[offset0 + 1]))
+if length != 32 && (high0 == 255 || low0 == 255) {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+// Original xtob's byte-width shift/or: invalid low nibble yields 255;
+// invalid high nibble with valid low retains 0xf0|low. Raw 32-byte parsing commits this byte.
+let byte0 = (high0 % 16) * 16 + low0
+if low0 == 255 { byte0 = 255 }
+canonical = canonical[:0] + ByteHex(byte0) + canonical[2:]
+if high0 == 255 || low0 == 255 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+let offset1 = 2
+if length == 32 { offset1 = 2 }
+let high1 = HexValue(int64(text[offset1]))
+let low1 = HexValue(int64(text[offset1 + 1]))
+if length != 32 && (high1 == 255 || low1 == 255) {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+// Original xtob's byte-width shift/or: invalid low nibble yields 255;
+// invalid high nibble with valid low retains 0xf0|low. Raw 32-byte parsing commits this byte.
+let byte1 = (high1 % 16) * 16 + low1
+if low1 == 255 { byte1 = 255 }
+canonical = canonical[:2] + ByteHex(byte1) + canonical[4:]
+if high1 == 255 || low1 == 255 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+let offset2 = 4
+if length == 32 { offset2 = 4 }
+let high2 = HexValue(int64(text[offset2]))
+let low2 = HexValue(int64(text[offset2 + 1]))
+if length != 32 && (high2 == 255 || low2 == 255) {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+// Original xtob's byte-width shift/or: invalid low nibble yields 255;
+// invalid high nibble with valid low retains 0xf0|low. Raw 32-byte parsing commits this byte.
+let byte2 = (high2 % 16) * 16 + low2
+if low2 == 255 { byte2 = 255 }
+canonical = canonical[:4] + ByteHex(byte2) + canonical[6:]
+if high2 == 255 || low2 == 255 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+let offset3 = 6
+if length == 32 { offset3 = 6 }
+let high3 = HexValue(int64(text[offset3]))
+let low3 = HexValue(int64(text[offset3 + 1]))
+if length != 32 && (high3 == 255 || low3 == 255) {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+// Original xtob's byte-width shift/or: invalid low nibble yields 255;
+// invalid high nibble with valid low retains 0xf0|low. Raw 32-byte parsing commits this byte.
+let byte3 = (high3 % 16) * 16 + low3
+if low3 == 255 { byte3 = 255 }
+canonical = canonical[:6] + ByteHex(byte3) + canonical[8:]
+if high3 == 255 || low3 == 255 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+let offset4 = 9
+if length == 32 { offset4 = 8 }
+let high4 = HexValue(int64(text[offset4]))
+let low4 = HexValue(int64(text[offset4 + 1]))
+if length != 32 && (high4 == 255 || low4 == 255) {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+// Original xtob's byte-width shift/or: invalid low nibble yields 255;
+// invalid high nibble with valid low retains 0xf0|low. Raw 32-byte parsing commits this byte.
+let byte4 = (high4 % 16) * 16 + low4
+if low4 == 255 { byte4 = 255 }
+canonical = canonical[:9] + ByteHex(byte4) + canonical[11:]
+if high4 == 255 || low4 == 255 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+let offset5 = 11
+if length == 32 { offset5 = 10 }
+let high5 = HexValue(int64(text[offset5]))
+let low5 = HexValue(int64(text[offset5 + 1]))
+if length != 32 && (high5 == 255 || low5 == 255) {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+// Original xtob's byte-width shift/or: invalid low nibble yields 255;
+// invalid high nibble with valid low retains 0xf0|low. Raw 32-byte parsing commits this byte.
+let byte5 = (high5 % 16) * 16 + low5
+if low5 == 255 { byte5 = 255 }
+canonical = canonical[:11] + ByteHex(byte5) + canonical[13:]
+if high5 == 255 || low5 == 255 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+let offset6 = 14
+if length == 32 { offset6 = 12 }
+let high6 = HexValue(int64(text[offset6]))
+let low6 = HexValue(int64(text[offset6 + 1]))
+if length != 32 && (high6 == 255 || low6 == 255) {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+// Original xtob's byte-width shift/or: invalid low nibble yields 255;
+// invalid high nibble with valid low retains 0xf0|low. Raw 32-byte parsing commits this byte.
+let byte6 = (high6 % 16) * 16 + low6
+if low6 == 255 { byte6 = 255 }
+canonical = canonical[:14] + ByteHex(byte6) + canonical[16:]
+if high6 == 255 || low6 == 255 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+let offset7 = 16
+if length == 32 { offset7 = 14 }
+let high7 = HexValue(int64(text[offset7]))
+let low7 = HexValue(int64(text[offset7 + 1]))
+if length != 32 && (high7 == 255 || low7 == 255) {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+// Original xtob's byte-width shift/or: invalid low nibble yields 255;
+// invalid high nibble with valid low retains 0xf0|low. Raw 32-byte parsing commits this byte.
+let byte7 = (high7 % 16) * 16 + low7
+if low7 == 255 { byte7 = 255 }
+canonical = canonical[:16] + ByteHex(byte7) + canonical[18:]
+if high7 == 255 || low7 == 255 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+let offset8 = 19
+if length == 32 { offset8 = 16 }
+let high8 = HexValue(int64(text[offset8]))
+let low8 = HexValue(int64(text[offset8 + 1]))
+if length != 32 && (high8 == 255 || low8 == 255) {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+// Original xtob's byte-width shift/or: invalid low nibble yields 255;
+// invalid high nibble with valid low retains 0xf0|low. Raw 32-byte parsing commits this byte.
+let byte8 = (high8 % 16) * 16 + low8
+if low8 == 255 { byte8 = 255 }
+canonical = canonical[:19] + ByteHex(byte8) + canonical[21:]
+if high8 == 255 || low8 == 255 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+let offset9 = 21
+if length == 32 { offset9 = 18 }
+let high9 = HexValue(int64(text[offset9]))
+let low9 = HexValue(int64(text[offset9 + 1]))
+if length != 32 && (high9 == 255 || low9 == 255) {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+// Original xtob's byte-width shift/or: invalid low nibble yields 255;
+// invalid high nibble with valid low retains 0xf0|low. Raw 32-byte parsing commits this byte.
+let byte9 = (high9 % 16) * 16 + low9
+if low9 == 255 { byte9 = 255 }
+canonical = canonical[:21] + ByteHex(byte9) + canonical[23:]
+if high9 == 255 || low9 == 255 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+let offset10 = 24
+if length == 32 { offset10 = 20 }
+let high10 = HexValue(int64(text[offset10]))
+let low10 = HexValue(int64(text[offset10 + 1]))
+if length != 32 && (high10 == 255 || low10 == 255) {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+// Original xtob's byte-width shift/or: invalid low nibble yields 255;
+// invalid high nibble with valid low retains 0xf0|low. Raw 32-byte parsing commits this byte.
+let byte10 = (high10 % 16) * 16 + low10
+if low10 == 255 { byte10 = 255 }
+canonical = canonical[:24] + ByteHex(byte10) + canonical[26:]
+if high10 == 255 || low10 == 255 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+let offset11 = 26
+if length == 32 { offset11 = 22 }
+let high11 = HexValue(int64(text[offset11]))
+let low11 = HexValue(int64(text[offset11 + 1]))
+if length != 32 && (high11 == 255 || low11 == 255) {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+// Original xtob's byte-width shift/or: invalid low nibble yields 255;
+// invalid high nibble with valid low retains 0xf0|low. Raw 32-byte parsing commits this byte.
+let byte11 = (high11 % 16) * 16 + low11
+if low11 == 255 { byte11 = 255 }
+canonical = canonical[:26] + ByteHex(byte11) + canonical[28:]
+if high11 == 255 || low11 == 255 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+let offset12 = 28
+if length == 32 { offset12 = 24 }
+let high12 = HexValue(int64(text[offset12]))
+let low12 = HexValue(int64(text[offset12 + 1]))
+if length != 32 && (high12 == 255 || low12 == 255) {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+// Original xtob's byte-width shift/or: invalid low nibble yields 255;
+// invalid high nibble with valid low retains 0xf0|low. Raw 32-byte parsing commits this byte.
+let byte12 = (high12 % 16) * 16 + low12
+if low12 == 255 { byte12 = 255 }
+canonical = canonical[:28] + ByteHex(byte12) + canonical[30:]
+if high12 == 255 || low12 == 255 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+let offset13 = 30
+if length == 32 { offset13 = 26 }
+let high13 = HexValue(int64(text[offset13]))
+let low13 = HexValue(int64(text[offset13 + 1]))
+if length != 32 && (high13 == 255 || low13 == 255) {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+// Original xtob's byte-width shift/or: invalid low nibble yields 255;
+// invalid high nibble with valid low retains 0xf0|low. Raw 32-byte parsing commits this byte.
+let byte13 = (high13 % 16) * 16 + low13
+if low13 == 255 { byte13 = 255 }
+canonical = canonical[:30] + ByteHex(byte13) + canonical[32:]
+if high13 == 255 || low13 == 255 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+let offset14 = 32
+if length == 32 { offset14 = 28 }
+let high14 = HexValue(int64(text[offset14]))
+let low14 = HexValue(int64(text[offset14 + 1]))
+if length != 32 && (high14 == 255 || low14 == 255) {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+// Original xtob's byte-width shift/or: invalid low nibble yields 255;
+// invalid high nibble with valid low retains 0xf0|low. Raw 32-byte parsing commits this byte.
+let byte14 = (high14 % 16) * 16 + low14
+if low14 == 255 { byte14 = 255 }
+canonical = canonical[:32] + ByteHex(byte14) + canonical[34:]
+if high14 == 255 || low14 == 255 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+let offset15 = 34
+if length == 32 { offset15 = 30 }
+let high15 = HexValue(int64(text[offset15]))
+let low15 = HexValue(int64(text[offset15 + 1]))
+if length != 32 && (high15 == 255 || low15 == 255) {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+// Original xtob's byte-width shift/or: invalid low nibble yields 255;
+// invalid high nibble with valid low retains 0xf0|low. Raw 32-byte parsing commits this byte.
+let byte15 = (high15 % 16) * 16 + low15
+if low15 == 255 { byte15 = 255 }
+canonical = canonical[:34] + ByteHex(byte15) + canonical[36:]
+if high15 == 255 || low15 == 255 {
+ return ParseCanonicalResult{parsed: false, canonical_uuid: canonical, error: "invalid UUID format", invalid_length: false}
+}
+return ParseCanonicalResult{parsed: true, canonical_uuid: canonical, error: "", invalid_length: false}`

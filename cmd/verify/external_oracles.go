@@ -66,7 +66,7 @@ func externalSourcesForModule(sources []externalSource, module string) []externa
 }
 
 func verifyExternalOracles(root string, sources []externalSource) error {
-	if len(sources) != 2 {
+	if len(sources) != 3 {
 		return fmt.Errorf("external oracle module roster")
 	}
 	for _, s := range sources {
@@ -81,13 +81,28 @@ func verifyExternalOracles(root string, sources []externalSource) error {
 }
 
 func verifyUUIDOracle(root string, sources []externalSource) error {
-	if len(sources) != 1 {
+	if len(sources) != 2 {
 		return fmt.Errorf("UUID external source roster")
 	}
-	s := sources[0]
-	if s.Module != "github.com/google/uuid" || s.Repository != "https://github.com/google/uuid" || s.Version != "v1.6.0" || s.Revision != uuidRevision || s.ModuleH1 != uuidModuleH1 || s.Source != "uuid.go" || s.SourceSHA != uuidSourceSHA || s.OracleCopy != "third_party/google-uuid/uuid.go" || s.License != "third_party/google-uuid/LICENSE" || s.LicenseSHA != uuidLicenseSHA || s.Target != "ports/google/uuid/validate.gooo" || !slices.Equal(s.Symbols, []string{"Validate"}) || !slices.Equal(s.SupportingSources, []string{"util.go"}) || !reflect.DeepEqual(s.SupportingSHA, map[string]string{"util.go": uuidUtilSHA}) || !slices.Equal(s.SupportingTargets, []string{"ports/google/uuid/quote.gooo"}) {
-		return fmt.Errorf("UUID source identity, paths, symbols or digests differ")
+	// Exactly two reviewed adaptations share one original module. Both rows
+	// independently bind immutable source identity; duplicate targets cannot
+	// substitute for the Validate or Text ParseCanonical contract.
+	targets := map[string]struct{ symbols, supportingTargets []string }{
+		"ports/google/uuid/validate.gooo":             {[]string{"Validate"}, []string{"ports/google/uuid/quote.gooo"}},
+		"ports/google/uuid/text/parse_canonical.gooo": {[]string{"Parse", "UUID.String"}, []string{"ports/google/uuid/validate.gooo", "ports/google/uuid/quote.gooo"}},
 	}
+	seen := map[string]bool{}
+	for _, s := range sources {
+		target, known := targets[s.Target]
+		if !known || seen[s.Target] {
+			return fmt.Errorf("UUID target roster differs")
+		}
+		seen[s.Target] = true
+		if s.Module != "github.com/google/uuid" || s.Repository != "https://github.com/google/uuid" || s.Version != "v1.6.0" || s.Revision != uuidRevision || s.ModuleH1 != uuidModuleH1 || s.Source != "uuid.go" || s.SourceSHA != uuidSourceSHA || s.OracleCopy != "third_party/google-uuid/uuid.go" || s.License != "third_party/google-uuid/LICENSE" || s.LicenseSHA != uuidLicenseSHA || !slices.Equal(s.Symbols, target.symbols) || !slices.Equal(s.SupportingSources, []string{"util.go"}) || !reflect.DeepEqual(s.SupportingSHA, map[string]string{"util.go": uuidUtilSHA}) || !slices.Equal(s.SupportingTargets, target.supportingTargets) {
+			return fmt.Errorf("UUID source identity, paths, symbols or digests differ")
+		}
+	}
+
 	expected := map[string]string{"uuid.go": uuidSourceSHA, "util.go": uuidUtilSHA, "LICENSE": uuidLicenseSHA}
 	if !reflect.DeepEqual(uuid.PinnedSourceSHA256(), expected) {
 		return fmt.Errorf("compiled original UUID oracle source differs")

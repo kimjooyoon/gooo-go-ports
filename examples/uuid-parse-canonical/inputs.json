@@ -1,0 +1,41 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "go/github.com/google/uuid/text:ParseCanonical": "00112233-4455-6677-8899-aabbccddeeff"
+    },
+    {
+      "go/github.com/google/uuid/text:ParseCanonical": "00112233-4455-6677-8899-AABBCCDDEEFF"
+    },
+    {
+      "go/github.com/google/uuid/text:ParseCanonical": "00112233445566778899aabbccddeeff"
+    },
+    {
+      "go/github.com/google/uuid/text:ParseCanonical": "UrN:UuId:00112233-4455-6677-8899-aabbccddeeff"
+    },
+    {
+      "go/github.com/google/uuid/text:ParseCanonical": "{00112233-4455-6677-8899-aabbccddeeff}"
+    },
+    {
+      "go/github.com/google/uuid/text:ParseCanonical": "[00112233-4455-6677-8899-aabbccddeeff]"
+    },
+    {
+      "go/github.com/google/uuid/text:ParseCanonical": "!00112233-4455-6677-8899-aabbccddeeff?"
+    },
+    {
+      "go/github.com/google/uuid/text:ParseCanonical": "00112233445566778899aabbccddee0g"
+    },
+    {
+      "go/github.com/google/uuid/text:ParseCanonical": "00112233-4455-6677-8899-aabbccddee0g"
+    },
+    {
+      "go/github.com/google/uuid/text:ParseCanonical": "g0112233445566778899aabbccddeeff"
+    },
+    {
+      "go/github.com/google/uuid/text:ParseCanonical": ""
+    },
+    {
+      "go/github.com/google/uuid/text:ParseCanonical": "not:uuid:00112233-4455-6677-8899-aabbccddeeff"
+    }
+  ]
+}

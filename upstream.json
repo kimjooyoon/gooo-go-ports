@@ -269,6 +269,37 @@
         "Validate"
       ],
       "api_mapping": "Go nil/error maps to the required valid/error/invalid_length record. Four upstream formats, exact Error() messages and IsInvalidLengthError classification are preserved for original valid UTF-8 decoded Text <=1024 bytes. Prefix formatting, including the first nine bytes cutting a rune, is computed in Gooo with pinned Go quote/IsPrint semantics. Raw invalid JSON bytes/surrogates may be replaced by the compiler JSON decoder; arbitrary-byte Go strings and longer decoded Text are unsupported. No Parse, UUID generation, version/variant restriction, identity/uniqueness validation or whole-module compatibility. The module h1 binds the original31 archive files; the clearly identified added embed/hash wrapper is not part of that upstream archive."
+    },
+    {
+      "module": "github.com/google/uuid",
+      "repository": "https://github.com/google/uuid",
+      "version": "v1.6.0",
+      "revision": "0f11ee6918f41a04c201eceeadf612a377bc7fbc",
+      "module_h1": "h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=",
+      "source": "uuid.go",
+      "source_sha256": "0edec8e34c6b6fe0db31b71a29069a09ed832e3fd04ee0175916b58f2b60e5c1",
+      "supporting_sources": [
+        "util.go"
+      ],
+      "supporting_source_sha256": {
+        "util.go": "755f50afafb13dd89ae6177da7eb6dc31ae650ece2f9ba52821021e9f8de044e"
+      },
+      "oracle_copy": "third_party/google-uuid/uuid.go",
+      "license": "third_party/google-uuid/LICENSE",
+      "license_sha256": "0a8d61ed3cbfd5312326e8126c31ce9c627a283adc99131b56896d29ada04b2d",
+      "target": "ports/google/uuid/text/parse_canonical.gooo",
+      "supporting_targets": [
+        "ports/google/uuid/validate.gooo",
+        "ports/google/uuid/quote.gooo"
+      ],
+      "symbols": [
+        "Parse",
+        "UUID.String"
+      ],
+      "target_activities": [
+        "ParseCanonical"
+      ],
+      "api_mapping": "Separate Text ParseCanonical composition adapts the original Parse return value plus UUID.String into parsed/canonical_uuid/error/invalid_length. It preserves the returned lowercase UUID text on both success and error, including partial UUID bytes and the raw32 failed-byte commit difference. The 38-byte form follows Parse middle-byte behavior rather than Validate brace validation. Original valid UTF-8 decoded Text <=1024 bytes is the stated domain; arbitrary-byte Go strings, binary UUID values, ParseBytes and full Parse or whole-module compatibility are not provided. Existing DecimalLength/URNPrefix and internal quote helpers are shared without changing Validate. Original uuid.go/util.go/LICENSE hashes, compiled source embeds and the exact original31-file module h1 remain the same; added wrappers/provenance remain outside that upstream archive."
     }
   ]
 }

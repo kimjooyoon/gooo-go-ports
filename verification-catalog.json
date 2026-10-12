@@ -175,6 +175,12 @@
       "sources": [
         "examples/uuid-format-inspector/main.gooo"
       ]
+    },
+    {
+      "path": "go/github.com/google/uuid/text",
+      "sources": [
+        "ports/google/uuid/text/parse_canonical.gooo"
+      ]
     }
   ]
 }

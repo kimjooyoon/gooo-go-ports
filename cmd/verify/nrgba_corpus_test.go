@@ -131,7 +131,7 @@ func TestNRGBACorpusCoverageBudgetAndBaseline(t *testing.T) {
 	all := allNativeSuites(t)
 	var documents []any
 	oldCases := 0
-	if len(all) != 56 {
+	if len(all) != 57 {
 		t.Fatal("native suite roster")
 	}
 	for _, s := range all[:50] {

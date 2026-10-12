@@ -4,8 +4,8 @@
 describing what programs should do and inspecting how they are built and run.
 This independent ecosystem project implements selected Go standard-library, x/image and Google UUID functions in Gooo,
 with independent Go reference outputs and saved replay: 35 standard-library ports,
-two ports from golang.org/x/image and one from github.com/google/uuid. The current scope is
-38 HTTP, Unicode, byte-search, UUID format, 8-bit integer, color, duration, rectangle and fixed-point functions, sixteen native importing examples,
+two ports from golang.org/x/image and two Google UUID adaptations. The current scope is
+39 HTTP, Unicode, byte-search, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, sixteen native importing consumer programs,
 and an importing browser dispatcher.
 
 ## Start here
@@ -149,6 +149,13 @@ This is a format check, without UUID generation or parsing into a binary UUID.
 See [API mapping, source and limits](docs/google-uuid.md). The existing browser
 library tools remain unchanged; this port and inspector run locally.
 
+The native [UUID canonical parsing example](examples/uuid-parse-canonical/README.md)
+uses a separate `ParseCanonical` Text API to preserve Google's `Parse` return
+value through `UUID.String()`, plus the original error and length-error class.
+An error can still return a nonzero UUID value, so check `parsed` before using
+`canonical_uuid`. The parser's permissive 38-byte wrappers differ from the
+`Validate` format check. See the [API mapping and scope](docs/google-uuid-parse-canonical.md).
+
 The native [simple case-fold comparison](examples/simple-fold/README.md) imports
 `unicode.SimpleFold` to compare two rune values and show each value's next member
 in its Unicode simple-folding cycle. For example, `K`, `k`, and the Kelvin sign
@@ -231,7 +238,7 @@ with the page URL or command and what happened. A working demo or shared input l
 is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-현재 Go 표준 라이브러리, x/image와 Google UUID의 HTTP·Unicode·바이트 검색·UUID 형식·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 함수 38개를 표현합니다.
+현재 Go 표준 라이브러리, x/image와 Google UUID의 HTTP·Unicode·바이트 검색·UUID 형식 검사·파싱·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 API 39개를 표현합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -560,10 +567,17 @@ Go `draw.Draw`의 NRGBA→RGBA 최적 경로와 일반 인터페이스 경로를
 Google UUID `Validate`와 가져오기 예제는 각각 **21,745건**의 독립 원본 비교를 더합니다.
 원본 9개 사례, 네 표기의 각 ASCII 위치 변경, 128개 URN 대소문자 조합,
 0..1,024바이트 길이, Unicode·제어 문자와 접두 바이트 절단, 고정 표본을 포함합니다.
-정확한 오류 문구와 길이 오류 분류까지 비교하는 현재 합계는 **108,835건·56개 suite**입니다.
+정확한 오류 문구와 길이 오류 분류까지 비교하는 이 단계의 합계는 **108,835건·56개 suite**입니다.
 기존 54개 suite의 입력·소스 묶음과 882배치 경계를 유지하고 UUID 534배치를 추가합니다.
 JSON의 잘못된 UTF-8·단독 surrogate가 원래 바이트 그대로 거부되거나 보존된다는 뜻은 아닙니다.
 원래 유효한 UTF-8 문자열로 오라클을 호출하며, 일반 Go byte string·전체 UUID 패키지는 범위 밖입니다.
+
+별도 `ParseCanonical` Text 조합 API는 원본 `Parse`의 반환 UUID를 `String()`으로 표현하고,
+오류 시 부분 값과 오류 상태를 함께 보존합니다. 기존 UUID 입력 **21,745건**에
+추가 anchor 136개의 중복을 제거해 **122건**을 더한 **21,867건**을 비교합니다.
+38바이트 외곽 문자, 실패한 hex 쌍의 부분 반환, hyphen 오류 우선순위, UTF-8 접두 인용,
+길이와 byte 패턴을 포함하며 현재 corpus 합계는 **130,702건·57개 suite**입니다.
+Go의 binary UUID 타입이나 임의 byte 입력 `ParseBytes`를 노출하는 API는 아닙니다.
 
 
 사각형의 네 좌표는
@@ -638,10 +652,11 @@ byte 3성분 입력을 Go 원본과 비교합니다. 총 **33,554,432번**의 �
 생성 소스 해시·도구체인·결과를 기록합니다. 소비 앱의 모든 RGB 왕복을 실행하거나
 이미지 압축·색상 프로파일을 검증한 것으로 해석하지 않습니다.
 
-Gooo 실행 입력 상한에 맞춰 총 **1,416개 배치**를 실행합니다. 기존 833개 배치와
+Gooo 실행 입력 상한에 맞춰 총 **1,741개 배치**를 실행합니다. 기존 833개 배치와
 그 경계를 유지하며 IndexByte 21개·Search 소비 앱 28개 배치를 추가합니다.
-IndexByte·Search와 UUID의 두 suite는 128행 이하에서 실제 JSON 30,000바이트 상한에 맞춰 최대 접두 배치를 선택합니다.
+IndexByte·Search와 UUID의 세 suite는 128행 이하에서 실제 JSON 30,000바이트 상한에 맞춰 최대 접두 배치를 선택합니다.
 UUID Validate 257개·Inspect 277개 배치를 추가하며 이전 882배치의 경계는 바뀌지 않습니다.
+ParseCanonical의 325개 배치를 더하며 기존 1,416개 배치의 입력·소스·경계는 그대로 유지합니다.
 기존 YCbCr까지의 465개 배치를 유지하고,
 Canon 6개·드래그 선택 소비 활동 16개, x/image Floor/Ceil 각각 14개와 픽셀 경계 소비 활동
 16개 배치까지의 기존 531개를 보존합니다. case mapping 네 포트 131개와 새 소비 앱 57개
@@ -740,6 +755,7 @@ Floor/Ceil로 바꾸고 기존 RectangleIntersect로 잘라냅니다. 기존 35,
 13번째 소비 예제까지의 총계는 35개 포트·15개 소비 활동입니다. 이후 NRGBA 변환과
 알파 합성 예제까지의 36개 포트·14개 소비 프로그램·16개 소비 활동은 유지하며,
 바이트 검색까지의 37개 포트·15개 소비 프로그램·17개 소비 활동을 유지합니다.
-Google UUID Validate와 importing inspector를 추가한 현재 총계는 38개 포트·16개 소비 프로그램·18개 소비 활동입니다.
+Google UUID Validate와 importing inspector까지의 38개 포트·16개 소비 프로그램·18개 소비 활동을 유지합니다.
+별도 ParseCanonical Text API를 추가한 현재 총계는 39개 포트·16개 소비 프로그램·18개 소비 활동입니다.
 원본 int32 전체의 동작을 구현하되 2^32 전수 검사를 주장하지 않습니다.
 브라우저 21함수와 두 crop 모드는 그대로입니다.

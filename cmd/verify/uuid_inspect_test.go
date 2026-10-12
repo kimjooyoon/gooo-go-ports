@@ -19,6 +19,8 @@ func TestUUIDResultContractsAndSourceFieldTypesAreIndependent(t *testing.T) {
 			[]string{"valid", "error", "invalid_length"}, []string{"valid", "error", "invalid-length"}, []string{"boolean", "string", "boolean"}},
 		{suite{Package: uuidConsumerPackage, Activity: "Inspect"}, uuidReportEntity,
 			[]string{"valid", "error", "invalid_length", "byte_length"}, []string{"valid", "error", "invalid-length", "byte-length"}, []string{"boolean", "string", "boolean", "integer"}},
+		{suite{Package: uuidParsePackage, Activity: "ParseCanonical"}, uuidParseResultEntity,
+			[]string{"parsed", "canonical_uuid", "error", "invalid_length"}, []string{"parsed", "canonical-uuid", "error", "invalid-length"}, []string{"boolean", "string", "string", "boolean"}},
 	} {
 		if !isUUIDSuite(row.s) {
 			t.Fatal("UUID suite missing")

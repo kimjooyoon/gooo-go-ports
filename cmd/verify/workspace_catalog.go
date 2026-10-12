@@ -80,8 +80,9 @@ func freezeVerificationCatalog(path string) (frozenVerificationCatalog, error) {
 var catalogImport = regexp.MustCompile(`(?m)^[\t ]*import[\t ]+(?:[A-Za-z_][A-Za-z_0-9]*[\t ]+)?"([^"\r\n]+)"`)
 
 // The prior suites retain their original go/* packages and only their own
-// consumer. UUID suites select the independent UUID/quote module and their own
-// consumer. This preserves the prior source rosters and keeps unrelated records
+// consumer. Validation suites select the original UUID/quote sources and their
+// own consumer. ParseCanonical adds only its own Text source to those sources.
+// This preserves all prior source rosters and keeps unrelated records
 // out of the pinned compiler's 16-record ABI. All bytes come from one snapshot.
 func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, error) {
 	w := suiteWorkspace{Sources: map[string][]byte{}}
@@ -93,8 +94,11 @@ func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, e
 	}
 	selected := map[string]bool{}
 	for _, pkg := range f.Catalog.Packages {
-		isUUIDPackage := pkg.Path == uuidPackage || pkg.Path == uuidPackage+"/internal/quote"
+		isUUIDPackage := pkg.Path == uuidPackage || pkg.Path == uuidPackage+"/internal/quote" || pkg.Path == uuidParsePackage
 		if strings.HasPrefix(pkg.Path, "go/") && isUUIDPackage != isUUIDSuite(s) {
+			continue
+		}
+		if pkg.Path == uuidParsePackage && !isUUIDParseSuite(s) {
 			continue
 		}
 		if !strings.HasPrefix(pkg.Path, "go/") && pkg.Path != s.Package {
