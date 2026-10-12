@@ -691,6 +691,7 @@ jobs:
           node tools/crop-browser-smoke.cjs out/browser/site | tee out/browser/crop-smoke.json
           node tools/drag-crop-browser-smoke.cjs out/browser/site | tee out/browser/drag-crop-smoke.json
           node tools/tutorial-browser-smoke.cjs out/browser/site | tee out/browser/tutorial-smoke.json
+          node tools/literal-search-smoke.cjs out/browser/site | tee out/browser/literal-search-smoke.json
           node tools/source-view-smoke.cjs out/browser/site | tee out/browser/source-view-smoke.json
           node tools/browser-codegen-smoke.cjs out/browser/site/codegen out/browser/codegen-evidence | tee out/browser/codegen-smoke.json
         shell: bash --noprofile --norc -e -o pipefail {0}

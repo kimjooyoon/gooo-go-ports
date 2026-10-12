@@ -16,7 +16,7 @@ WORKFLOW = Path(__file__).resolve().parent.parent / ".github/workflows/ci.yml"
 FULL = "steps.change-scope.outputs.docs_only != 'true'"
 DOCS = "steps.change-scope.outputs.docs_only == 'true'"
 HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
-BROWSER_SHA = "61f6f69d2a9c95fd79212ac83cd60245503920a2825b24f0b1614f36e3409431"
+BROWSER_SHA = "1758a34814e826318f6d5950f40d0726d61621dcb5ec4797b1a2b7e625032e26"
 COMMON = {
     "Classify the exact checked PR tree", "Check the Go observer",
     "Check pinned Unicode table generation",

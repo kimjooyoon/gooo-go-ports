@@ -90,6 +90,49 @@ Offsets and lengths count UTF-8 bytes. The importing consumer's entry is
 replay report `OBSERVED` with `finite_total=0`. The separate checker checks every
 returned record against Go, preserving those original receipt counters.
 
+## Search in the browser
+
+The [literal search page](https://kimjooyoon.github.io/gooo-go-ports/literal-search.html)
+runs this same, unchanged Gooo consumer as a separate precompiled Go WebAssembly
+module. Supply a text and phrase in Text mode, or enter each as one JSON string.
+Pasting or dropping text captures its value before the textarea can normalize
+CR or CRLF. The escaped previews show the exact captured strings.
+
+The input binding matches native Go JSON string decoding: unpaired UTF-16
+surrogates become U+FFFD. Both the captured and bound strings remain visible and
+are preserved in the downloaded observation. BOM, NUL, CR/LF, combining marks
+and composed/decomposed Unicode remain distinct; no trimming or normalization
+occurs. Each bound argument must fit in 1,024 UTF-8 bytes. Larger inputs are
+rejected as a whole rather than shortened. This does not preserve a file's
+invalid UTF-8 bytes or malformed JSON wire encoding.
+
+The first position is a **UTF-8 byte offset**, not a JavaScript UTF-16 character
+index. With `가x가` and `x`, it is `3`. The count does not overlap matches: with
+`aaaaa` and `aa`, it is `2`. An empty phrase returns position `0` and one plus
+the Unicode code-point count; an empty text and phrase therefore return count `1`.
+
+Text and results stay in the tab. The page loads static program assets, sends
+neither input to a server, and does not put them into a share URL. Editing an
+input clears earlier results and its download. Failed, cancelled, timed-out or
+superseded work cannot present a partial result as completed.
+
+**Download observation JSON** preserves the captured input spelling, original
+UTF-16 units, bound inputs, all seven returned fields and the program hashes and
+pins. Its schema is `gooo/literal-search-observation/v1` and its kind is
+`browser-observation`. It is unsigned and is not a native execution receipt,
+saved native replay, signed attestation or Go-reference comparison. Sharing the
+downloaded file is a separate action controlled by its recipient.
+
+The browser build checks the original 24 input tuples and a separate 24-tuple
+boundary roster with the independent pinned Go reference, native execution and
+the existing strong saved-replay checker. The supplemental roster covers UTF-16
+surrogate replacement, UTF-8 byte positions, exact 1,024-byte inputs, BOM,
+controls, non-overlap and Unicode distinctions. It does not alter the 62-suite
+native verification corpus. The browser smoke then exercises the actual shipped
+Wasm callbacks for all 48 tuples plus six outside-domain, 24 wrong-type and
+three arity rejections. Unit tests separately check input capture, Worker
+program/request identity, stale-result prevention and failures.
+
 ## Source and validation scope
 
 The original contracts are [Go strings.Index and Count](https://github.com/golang/go/blob/022c8636110ebac86a9b88724cda168ed713c21f/src/strings/strings.go),

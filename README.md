@@ -20,6 +20,7 @@ retains its original source and counts.
 | --- | --- | --- |
 | Try Gooo without installing anything | [Interactive tutorial](https://kimjooyoon.github.io/gooo-go-ports/tutorial.html) | Change a score and label, see the returned record, and read the two Gooo source files |
 | Edit source and save generated Go in the browser | [Gooo code editor](https://kimjooyoon.github.io/gooo-go-ports/codegen/) | Edit one source file and generate Go for one activity; save the current Go code or original response JSON. Generated Go is not executed |
+| Find a literal phrase without installing anything | [Literal search](https://kimjooyoon.github.io/gooo-go-ports/literal-search.html) | Supply two strings, see the first UTF-8 byte position and non-overlapping count, and save an honest browser observation |
 | Edit and run Gooo code locally | [Run and edit locally](#run-and-edit-locally) | Install the pinned compiler, then change the tutorial's condition and rerun it |
 | Search a diagnostic phrase locally | [Literal-text report](examples/literal-text-report/README.md) | Supply text and a phrase; export the first byte offset, non-overlapping count and both original inputs |
 | Use a port in another project | [Import walkthrough](docs/use-in-your-project.md) | Build a separate application that imports `utf8.ValidRune` from a fixed source snapshot |
@@ -153,7 +154,12 @@ JSON. Each decoded valid UTF-8 argument can contain NUL and multibyte characters
 and is limited to 1,024 bytes. Matching is case-sensitive and non-overlapping;
 an empty phrase returns offset 0 and Unicode code-point count plus one. Unicode
 normalization, arbitrary-byte Go strings and regular expressions are outside
-this API. The browser tools retain their current functions.
+this API. The [literal search page](https://kimjooyoon.github.io/gooo-go-ports/literal-search.html)
+runs this unchanged importing consumer as a separate precompiled WebAssembly
+program. Inputs stay local. It shows the captured strings and the decoded strings
+sent to Gooo, including explicit replacement of lone UTF-16 surrogates with U+FFFD.
+The downloaded JSON is a browser observation, separate from the checked native
+report. The existing 21-function dispatcher and Unicode inspector are unchanged.
 
 The native [UUID format inspector](examples/uuid-format-inspector/README.md) imports
 Google's `github.com/google/uuid` v1.6.0 `Validate` port. It accepts the original
@@ -370,6 +376,7 @@ go run ./cmd/build-demo --out out/browser
 node tools/browser-smoke.cjs out/browser/site
 node tools/drag-crop-browser-smoke.cjs out/browser/site
 node tools/tutorial-browser-smoke.cjs out/browser/site
+node tools/literal-search-smoke.cjs out/browser/site
 node tools/browser-codegen-smoke.cjs out/browser/site/codegen out/browser/codegen-evidence
 node --test tools/share-link.test.cjs tools/share-app.test.cjs
 python3 -m http.server 8766 --bind 127.0.0.1 --directory out/browser/site
