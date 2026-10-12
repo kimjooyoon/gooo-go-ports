@@ -7,8 +7,8 @@ with independent Go reference outputs and saved replay: 36 standard-library port
 two ports from golang.org/x/image and two Google UUID adaptations. The current scope is
 40 HTTP, Unicode, byte-search, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, seventeen native importing consumer programs (nineteen activities),
 and an importing browser dispatcher.
-The new RectangleIn/FitsCrop reference suites are integrated; their full native
-execute/replay observations are pending.
+The RectangleIn/FitsCrop suites have completed finite native execution and saved
+replay with an independent raw-receipt audit; see the [verification evidence](evidence/rectangle-in-fits-crop-20261012.json).
 
 ## Start here
 
@@ -595,8 +595,9 @@ Go의 binary UUID 타입이나 임의 byte 입력 `ParseBytes`를 노출하는 A
 `RectangleIn(requested, bounds)`는 빈 요청에도 true를 반환하지만, 소비 앱은
 `!requested.Empty()`를 먼저 요구하므로 빈·뒤집힌 요청을 false로 판정합니다.
 네 경계의 초과, 포함·접촉·분리, 동일한 exclusive 최댓값, 빈 컨테이너와 int64·정밀도 경계를
-다룹니다. 현재 검증 catalog는 **131,842건·59개 suite**이며 새 두 suite의 전체 native
-실행·저장재실행 관찰은 확인 대기 중입니다. 이미지나 GIF를 처리하는 기능은 아닙니다.
+다룹니다. **131,842건·59개 suite**의 전체 native 비교가 일치했고 **1,777개 배치**의
+저장재실행과 독립 raw receipt 감사를 확인했습니다. [실행 증거](evidence/rectangle-in-fits-crop-20261012.json)에
+새 두 suite의 각 570건·18배치와 별도 거부 관찰을 기록합니다. 이미지나 GIF를 처리하는 기능은 아닙니다.
 기존 57개 suite의 case-document 바이트·SHA와 1,741개 배치 경계는 유지합니다.
 공유 `geometry.gooo`에 선언을 추가하여 소스 해시는 바뀝니다. 기존 활동의 ID·body를
 보존하고 새 소스 식별자로 실행·저장재실행을 검사하며, 이전 receipt identity를 재사용하지 않습니다.

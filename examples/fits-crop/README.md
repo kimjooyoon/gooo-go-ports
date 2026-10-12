@@ -65,6 +65,12 @@ The finite differential corpus and replay check cover declared boundary cases
 and deterministic samples; they do not establish all rectangle-pair behavior,
 available image storage, or whole-package compatibility.
 
+The [native verification evidence](../../evidence/rectangle-in-fits-crop-20261012.json)
+records 570 original Go comparisons and 18 saved-replay batches for each activity,
+within the completed 59-suite run and its independent raw-receipt audit. The 14
+documented input-only rows also executed and replayed with `OBSERVED` receipts;
+malformed-input rejection checks remain separate from Go reference cases.
+
 ## Documented inputs
 
 The fourteen rows in `inputs.json` have these independent Boolean expectations.

@@ -1,0 +1,135 @@
+{
+  "schema": "gooo/rectangle-in-fits-crop-evidence/v1",
+  "status": "VERIFIED_FINITE_NATIVE_AND_SAVED_REPLAY",
+  "verified_at_utc": "2026-10-12T09:30:27.405655+00:00",
+  "execution_source_revision": "20c1d8704c4055d82e0a4c1953d6553346fd88a2",
+  "execution_source_tree": "afb5c35b04433487f6c3a92a465b0e1078ad214b",
+  "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+  "compiler_version": "0.6.32-dev",
+  "compiler_binary_sha256": "0cec2563bc21cb6686f1b6f845c9509c061c8211ba4fb1204d9c17d4dd0bb3f7",
+  "decision_runtime_version": "v0.2.41-experimental",
+  "go_version": "go1.27.2",
+  "go_binary_sha256": "516c1fbb53b5f8f4852f0c3c379d45bcff53a1032e5cd1a9ca1738f03ba07cb1",
+  "go_revision": "022c8636110ebac86a9b88724cda168ed713c21f",
+  "observed_platform": "darwin/arm64",
+  "ported_functions": 40,
+  "consumer_programs": 17,
+  "consumer_activities": 19,
+  "cases": 131842,
+  "passed": 131842,
+  "suites": 59,
+  "batches": 1777,
+  "runs": [
+    {
+      "package": "go/image",
+      "activity": "RectangleIn",
+      "domain": "570 finite original pairs of four-field signed-int64 Rectangle records on 64-bit Go; receiver input0, container input1; independent image.Rectangle.In oracle. Empty/reversed receivers are inside any container; equal maximum edges are allowed; nonempty receivers do not fit empty containers. Original 486 geometry tuples remain a prefix, with named equal/contained/crossed/touching/disjoint/empty/reversed/extreme/precision pairs added in both directions and exact tuple deduplication. No coordinate arithmetic, normalization, narrowing, domain extension, image/GIF processing or exhaustive pair-domain claim.",
+      "cases": 570,
+      "batches": 18,
+      "passed": 570,
+      "replay_equal": true
+    },
+    {
+      "package": "example/fits-crop",
+      "activity": "FitsCrop",
+      "domain": "570 finite original Rectangle pairs; bounds input0, requested input1. Independent original image.Rectangle.Empty and In calls return true only for a nonempty requested rectangle wholly inside bounds. This is a separate no-clipping acceptance policy: port empty-receiver true is not consumer acceptance. Raw coordinates and existing CropPlan/DragCropPlan behavior are unchanged; no pixel processing or exhaustive pair-domain claim.",
+      "cases": 570,
+      "batches": 18,
+      "passed": 570,
+      "replay_equal": true
+    }
+  ],
+  "original57": {
+    "suites": 57,
+    "cases": 130702,
+    "batches": 1741,
+    "case_JSON_bytes_and_batch_boundaries_preserved": true,
+    "case_documents_compact_sha256": "de0f08d3b4d6569fa6546833f192a117b18c763eee6fc137d2d98397ea27434e",
+    "batch_roster_sha256": "deca7076df082d6abcdb1cbde0bff5976912070a27d07839f035a5d99119fb97"
+  },
+  "containment_reference_inputs": {
+    "original_geometry_prefix": 486,
+    "added_unique_pairs": 84,
+    "each_new_suite": 570,
+    "each_new_suite_batches": 18,
+    "row_limit": 32
+  },
+  "source_sha256": {
+    "ports/image/geometry.gooo": "b9a6fb784f5a8451099c2e4b64e2e9515e20b1603bcaccab3d707bcbb8ea48cc",
+    "examples/fits-crop/main.gooo": "091d6b888903bfb0e2b3c487153720b5203d49c05eca6f6981a33e91583563d4"
+  },
+  "geometry_source_change": {
+    "previous_raw_sha256": "da6cd5599e1c11dae4509dd226dd0aa461b8e0d1eb7c6e5c228ef62d0ee5ea83",
+    "new_raw_sha256": "b9a6fb784f5a8451099c2e4b64e2e9515e20b1603bcaccab3d707bcbb8ea48cc",
+    "old_3180_bytes_preserved_as_exact_prefix": true,
+    "old_receipt_source_identity_reused": false
+  },
+  "source_paths": {
+    "manifest": "fits-crop.workspace.json",
+    "inputs": "examples/fits-crop/inputs.json",
+    "source_catalog": "verification-catalog.json",
+    "consumer_guide": "examples/fits-crop/README.md",
+    "upstream_provenance": "upstream.json",
+    "license": "third_party/GO-LICENSE"
+  },
+  "upstream_geometry_source": {
+    "path": "src/image/geom.go",
+    "sha256": "7cc4be83e978cc172e0ebb9713a6afd77ccf3ceb82d9cbc6f79082e698884ec2",
+    "license_sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+  },
+  "verification_catalog_sha256": "sha256:6c5083d292df0127d74c76b58a21aef0d7619e5db18dd19b45a58a907417017f",
+  "raw_audit": {
+    "passed": true,
+    "execution_receipts": 1777,
+    "saved_replay_receipts": 1777,
+    "original_inputs_results_field_types_IDs_order_verified": true,
+    "source_manifest_program_producer_tool_and_own_parent_bindings_verified": true,
+    "model_calls_observed_in_all_runtime_and_replay_receipts": 0,
+    "proof_sha256": "4895342d24099578efd3549d9ba770cd9c1359cbcc22121585648a32d641a154",
+    "raw_batch_hashes_sha256": "31d48c5c0a2f056f346fdcfaef116eb80f4f6be7a31a0e5cbf54dbabfc4ca7b3"
+  },
+  "standalone": {
+    "input_rows": 14,
+    "decision": "OBSERVED",
+    "finite_total": 0,
+    "finite_passed": 0,
+    "model_calls": 0,
+    "correctness_score_supplied": false,
+    "execute_and_saved_replay_checked": true,
+    "execution_receipt_sha256": "68b656eba7077024ec2ef5e467c3818507c6e528cdee848653ca8280589aeab1",
+    "replay_receipt_sha256": "eb19a772f1e5ac57e0254bdf9fbe62d8434fbfbc9c5f2ed53429aa267a8d494c",
+    "targeted_actual_receipt_tamper_checks": 54,
+    "detached_replay_checks": 1,
+    "duplicate_receipt_key_checks": 6
+  },
+  "malformed_input_observations": {
+    "framework_rejections": 90,
+    "go_reference_cases": 0,
+    "duplicate_wire_cases_included": 8,
+    "decision": "FAIL_CLOSED",
+    "exit_code": 1,
+    "timeouts": 0,
+    "runtime_and_counters": "absent in all 90 returned receipts",
+    "native_execution_count": null,
+    "model_calls": null,
+    "missing_runtime_does_not_imply_zero": true
+  },
+  "proof_sha256": {
+    "full_summary": "0e620f764ec73cb7a629552aa23767fa0eecbe6c0c5c4fa78a080e96d4202af4",
+    "full_validation": "aca49193bc03f4ed864ae06beb4699c3c30c227311799e97c52956d305171142",
+    "required_checks": "1b416a7f0aa3220211e91df9de61c399a06b7b7bce112feb0b6d739405ae8edb",
+    "standalone_and_negative_guards": "61422bf3430b6ec1d049c12360c3460d20e2e9b50468f5d224332872a82229ed"
+  },
+  "required_checks": {
+    "status": "PASS",
+    "checks": [
+      "pinned Go format",
+      "go vet ./...",
+      "go test -race ./...",
+      "pinned Unicode generators",
+      "Python observers",
+      "Gooo declarations and boundary probes"
+    ]
+  },
+  "scope": "Finite native observations and own saved replay, with an independent raw-receipt audit. RectangleIn uses original signed-int64 records on 64-bit Go; empty/reversed receivers are inside any container and equal exclusive maxima are allowed. FitsCrop separately rejects empty requests without clipping or normalization. The new 570+570 references call original Go Empty/In; aggregate older suites retain their explicit extension/rejection contracts. No exhaustive rectangle-pair, image/GIF processing, whole-library compatibility, customer adoption or production-safety claim. Malformed-input observations are separate and missing runtime metadata does not create zero counters."
+}
