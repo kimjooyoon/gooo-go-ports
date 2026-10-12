@@ -99,6 +99,10 @@ def validate(text):
         require(field(named[name], "if") == FULL, "missing full-execution guard: " + name)
     for name in UPLOADS:
         require(field(named[name], "if") == "always() && " + FULL, "native artifact can upload on docs path: " + name)
+    comparison = named["Compare the ports with Go and replay every batch"]
+    require("go run ./cmd/verify --workers 2 --out out/ci" in comparison
+            and ".native_suite_workers == 2 and" in comparison,
+            "full native CI must exercise and bind the two-worker setting")
     require(field(named["Report documentation-only native scope"], "if") == DOCS, "docs log guard")
     doc_artifact = named["Preserve documentation scope and compiler identity"]
     require(field(doc_artifact, "if") == "always() && " + DOCS, "docs artifact guard")
@@ -145,6 +149,12 @@ class WorkflowScopeTests(unittest.TestCase):
 
     def test_real_workflow_policy(self):
         validate(self.text)
+
+    def test_full_native_ci_binds_two_workers(self):
+        for before, after in (("--workers 2 --out out/ci", "--workers 1 --out out/ci"),
+                              (".native_suite_workers == 2 and", ".native_suite_workers == 1 and")):
+            with self.subTest(before=before), self.assertRaises(ValueError):
+                validate(self.text.replace(before, after, 1))
 
     def test_each_heavy_step_and_native_upload_requires_its_guard(self):
         named, _ = named_steps(self.text)

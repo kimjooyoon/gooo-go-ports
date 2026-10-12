@@ -416,6 +416,15 @@ bootstrap은 고정한 컴파일러를 `.compiler/`에 받아 `.gooo`를 빌드�
 `execution.json`, `replay.json`, 입력 파일과 Gooo 소스에 남습니다.
 `--out`에는 기존에 없는 디렉터리를 지정합니다.
 
+The verifier defaults to one suite at a time. `--workers 2` runs up to two
+suites concurrently; the accepted range is 1–4. Each suite keeps its original
+batch boundaries and execution, inspection, saved replay, and receipt-binding
+checks. The summary keeps corpus order and records the configured worker limit
+as `native_suite_workers`. A failing suite stops later suites between complete
+batches, and every started worker finishes before the private build cache is
+removed. Full native CI exercises two workers and retains every corpus and
+exhaustive check.
+
 ### Bootstrap recovery
 
 The current bootstrap stages downloads and builds before installing `.compiler`
