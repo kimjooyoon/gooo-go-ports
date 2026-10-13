@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io"
 	"strconv"
 	"unicode/utf8"
 )
@@ -53,44 +52,22 @@ func validateObject(raw []byte, api bool) error {
 			fields[name] = false
 		}
 	}
-	decoder := json.NewDecoder(bytes.NewReader(raw))
-	start, err := decoder.Token()
-	if err != nil || start != json.Delim('{') {
+	keys := make([]string, 0, len(fields))
+	for name := range fields {
+		keys = append(keys, name)
+	}
+	object, err := strictObject(raw, keys, len(keys))
+	if err != nil {
 		return invalid
 	}
-	seen := map[string]bool{}
-	for decoder.More() {
-		keyToken, err := decoder.Token()
-		if err != nil {
-			return invalid
-		}
-		key, ok := keyToken.(string)
-		boolean, exists := fields[key]
-		if !ok || !exists || seen[key] {
-			return invalid
-		}
-		seen[key] = true
-		var value json.RawMessage
-		if decoder.Decode(&value) != nil {
-			return invalid
-		}
-		if boolean {
+	for key, value := range object {
+		if fields[key] {
 			if !bytes.Equal(value, []byte("true")) && !bytes.Equal(value, []byte("false")) {
 				return invalid
 			}
-		} else {
-			var text string
-			if len(value) == 0 || value[0] != '"' || !validUnicodeEscapes(value) || json.Unmarshal(value, &text) != nil || len(text) > MaxTextBytes {
-				return invalid
-			}
+		} else if _, err := strictString(value, MaxTextBytes); err != nil {
+			return invalid
 		}
-	}
-	end, err := decoder.Token()
-	if err != nil || end != json.Delim('}') || len(seen) != len(fields) {
-		return invalid
-	}
-	if _, err := decoder.Token(); err != io.EOF {
-		return invalid
 	}
 	return nil
 }

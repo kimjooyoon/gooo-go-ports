@@ -23,7 +23,7 @@ CANONICAL = {'canonical/scalar_access.gooo':'ports/cel/scalar_access.gooo',
              'canonical/source-pin.json':'examples/cel-api-policy/oracle/source-pin.json'}
 CONFIGS = [('scalar','cel-scalar.workspace.json','go/cel.dev/cel-go/codelab','ScalarAccess','gooo://cel-example/scalar-access','(bool,string,bool,string)','AccessDecision'),
            ('api','cel-api-policy.workspace.json','app/cel-api-policy','APIAccess','gooo://api-example/api-access','(bool,string,bool,string,bool,string,string,string,string)','ApiDecision')]
-FILES = list(CANONICAL) + ['compiler.json','adapter_generated.go','model.go','bridge.go','bindings.go','input.go','cmd/evaluate/main.go','generate.py']
+FILES = list(CANONICAL) + ['compiler.json','adapter_generated.go','model.go','bridge.go','bindings.go','input.go','cmd/evaluate/main.go','replay.go','proof_input.go','cmd/host/main.go','generate.py']
 for prefix,*_ in CONFIGS:
     FILES += ['receipts/'+prefix+'-'+suffix for suffix in ['seed-inputs.json','execution.json','replay.json','lowered.gooo','body-codegen.json']]
     FILES += ['internal/'+prefix+'/generated.go']

@@ -58,9 +58,75 @@ workspace input transport has separate limits described below.
 
 The returned hash bindings cover the canonical source/workspace mirrors, actual
 compiler-owned lowering and seed execution/replay, body-codegen reports,
-projections, transport and adapter. Hash consistency does not authenticate an
-issuer or sign an executable. `generate.py --check` additionally compares the
-mirrors with the canonical repository sources.
+projections, transport, adapter and the saved-proof verifier/host example. Hash
+consistency identifies the **same bound source generation** and its generation
+producer. It does not identify a later host executable's binary or build
+toolchain, authenticate an issuer, or establish that supplied facts occurred.
+`generate.py --check` additionally compares mirrors with the canonical repository
+sources.
+
+## Save and verify a historical API decision in an ordinary Go host
+
+The exported `EvaluateAPI(APIFacts)` returns an `APIProof` containing raw facts,
+all fifteen observations and complete source bindings. `DecodeAPIProof` strictly
+decodes a saved proof. `VerifyAPIProof(APIProof)` validates the current embedded
+generation first, requires the exact compiler pin, generation-manifest digest
+and complete asset roster, then re-evaluates the facts through the generated
+Gooo policy and compares **all fifteen fields**. A changed decision returns
+`ErrAPIDecisionMismatch`; a different bound source generation returns
+`ErrAPIGenerationMismatch` before evaluating saved facts.
+
+The result is `HISTORICALLY_CONSISTENT` with scope
+`same_bound_source_generation`. A historical allow is an observation of saved
+facts, **not current authorization**. Replay has no current-fact provider,
+authentication provider, dispatcher or effect callback. Missing-field raw
+placeholders are preserved, domain-checked and ignored exactly as in the policy;
+changing an inactive placeholder may legitimately remain consistent. A caller
+who changes both facts and observations consistently can construct another
+accepted unsigned proof. This checks consistency, not factual history or issuer
+trust.
+
+[`cmd/host`](cmd/host/main.go) is a runnable Go embedding example. It evaluates a
+synthetic allow/deny observation, exclusively creates a new `0600` proof in a
+caller-selected private directory, then reloads it in another process. It refuses
+existing targets, permissive files and a symlink at the proof or final parent.
+The caller must own/trust the directory and its ancestors; this example does not
+authenticate filesystem ownership. Its instrumented current-fact provider and
+effect method remain at zero calls, and application state remains unchanged for
+both saved allow and deny observations. Raw group/principal/tenant facts belong
+in private storage, not a public API response or automatic upload.
+
+From the repository root with Go 1.27.2 already selected:
+
+```sh
+umask 077
+proof_dir="$(mktemp -d)"
+go -C examples/cel-api-policy build -trimpath -o "$proof_dir/host" ./cmd/host
+go -C examples/cel-api-policy build -trimpath -o "$proof_dir/evaluate" ./cmd/evaluate
+"$proof_dir/host" -mode save -decision allow -proof "$proof_dir/allow.json"
+"$proof_dir/host" -mode save -decision deny -proof "$proof_dir/deny.json"
+env PATH="" "$proof_dir/host" -mode verify -proof "$proof_dir/allow.json"
+env PATH="" "$proof_dir/host" -mode verify -proof "$proof_dir/deny.json"
+"$proof_dir/evaluate" -mode original-api \
+  < examples/cel-api-policy/api-demo.json > "$proof_dir/api-batch.json"
+env PATH="" "$proof_dir/evaluate" -mode replay-api < "$proof_dir/api-batch.json"
+```
+
+Compilation/setup happens before replay. The prebuilt host's fresh reload needs
+no Gooo compiler, CEL evaluator, dependency/toolchain downloads or network calls.
+`replay-api` accepts a JSON array of 1..1024 complete proofs, at most 4 MiB. Every
+nested envelope/fact/decision/binding field has an exact type and key; asset maps
+have bounded string keys/values and must match the complete generation roster
+before replay succeeds. Duplicate keys (including escaped duplicates), missing,
+unknown, `null`, wrong types, trailing JSON, invalid UTF-8, isolated surrogates and
+oversized text are refused. A malformed or inconsistent later member fails the
+whole batch without partial result output.
+
+This first version deliberately requires the same bound source generation.
+Changes to bound runtime code change the generation even when policy outputs
+match. Proofs from the preceding PR #73 source generation are explicitly
+rejected. Archived-artifact replay, schema migration, signatures and current
+authorization are separate features.
 
 ## Reproduce the independent checks
 
@@ -108,8 +174,16 @@ batching. These overlapping workspace and native checks are **not** added
 together as unique cases or to the repository's existing port corpus.
 
 Checks also include fresh generation, race-enabled native tests, vet, strict JSON
-and typed-domain refusal, each of 25 bound-asset tamper cases, manifest tampering,
-and rehashed source/projection inconsistencies.
+and typed-domain refusal, each of 28 embedded-asset and 28 saved binding-digest
+tamper cases, manifest tampering, and rehashed source/projection inconsistencies.
+All 32 authored API cases are saved/strictly decoded/replayed and compared with
+their independent fifteen-field records. Separate replay checks change every
+decision field, all nine active raw facts and generation identities, exercise
+the nested malformed schema and transactional batch refusal, preserve absent
+placeholder behavior, reject the prior generation, and demonstrate consistent
+synthetic forgery as a trust limit. Two private save/reload pairs execute the
+actual prebuilt Go host in fresh processes with an empty executable search path.
+These repeated observations do not add unique cases to the existing port corpus.
 
 Original Google source/license pins and the independently executed oracle are in
 [`oracle/`](oracle/README.md). Source attribution is in [NOTICE.md](NOTICE.md).

@@ -629,6 +629,7 @@ jobs:
           go -C examples/cel-api-policy/oracle mod download
           python3 examples/cel-api-policy/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/cel-api-policy"
           jq -e '.schema == "gooo/cel-public-native-verification/v1" and .status == "FINITE_REAL_CEL_IMPORTED_NATIVE_AND_REPLAY_PASS"' out/cel-api-policy/verification.json
+          jq -e '.saved_api_replay.status == "SAME_SOURCE_GENERATION_HISTORICAL_REPLAY_PASS" and .saved_api_replay.independent_cases == 32 and .saved_api_replay.decision_fields_compared == 15 and .saved_api_replay.saved_decision_mutations_rejected == 15 and .saved_api_replay.saved_binding_asset_mutations_rejected == 28 and .saved_api_replay.active_fact_mutations_rejected == 9 and .saved_api_replay.prior_generation_rejected == true and .saved_api_replay.consistent_synthetic_proof_accepted == true and .saved_api_replay.consumer.fresh_process_save_reload_pairs == 2 and .saved_api_replay.consumer.current_provider_calls == 0 and .saved_api_replay.consumer.effect_calls == 0 and .saved_api_replay.consumer.application_state_unchanged == true' out/cel-api-policy/verification.json
       - name: Upload offline policy experiment evidence
         if: always() && steps.change-scope.outputs.docs_only != 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
