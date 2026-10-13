@@ -120,13 +120,19 @@ def main():
     ap=argparse.ArgumentParser();ap.add_argument('--compiler',type=Path,required=True);ap.add_argument('--go',type=Path,required=True);ap.add_argument('--out',type=Path,default=ROOT/'out/verification');args=ap.parse_args()
     args.compiler=args.compiler.resolve();args.go=args.go.resolve();out=args.out.resolve();out.mkdir(parents=True,exist_ok=True);out.chmod(0o700)
     env=os.environ.copy();env.update(GOTOOLCHAIN='local',GOWORK='off',GOPROXY='off',GOSUMDB='off');commands=[]
-    def run(label,cmd,data=None,cwd=ROOT,expect=0):
-        before=datetime.datetime.now(datetime.timezone.utc).isoformat();r=subprocess.run([str(x) for x in cmd],input=data,cwd=cwd,env=env,capture_output=True,timeout=60)
-        for name,raw in [('stdout',r.stdout),('stderr',r.stderr)]:p=out/(label+'.'+name);p.write_bytes(raw);p.chmod(0o600)
-        commands.append({'label':label,'command':[str(x) for x in cmd],'started_at_utc':before,'finished_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'exit_code':r.returncode,'stdout':ident(out/(label+'.stdout')),'stderr':ident(out/(label+'.stderr'))})
+    def run(label,cmd,data=None,cwd=ROOT,expect=0,timeout=60):
+        before=datetime.datetime.now(datetime.timezone.utc).isoformat();failure=None
+        try:
+            r=subprocess.run([str(x) for x in cmd],input=data,cwd=cwd,env=env,capture_output=True,timeout=timeout)
+            stdout,stderr,exit_code=r.stdout,r.stderr,r.returncode
+        except subprocess.TimeoutExpired as exc:
+            stdout,stderr,exit_code=exc.stdout or b'',exc.stderr or b'',None;failure=exc
+        for name,raw in [('stdout',stdout),('stderr',stderr)]:p=out/(label+'.'+name);p.write_bytes(raw);p.chmod(0o600)
+        commands.append({'label':label,'command':[str(x) for x in cmd],'started_at_utc':before,'finished_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'exit_code':exit_code,'timed_out':failure is not None,'timeout_seconds':timeout,'stdout':ident(out/(label+'.stdout')),'stderr':ident(out/(label+'.stderr'))})
         (out/'commands.json').write_bytes(encoded(commands));(out/'commands.json').chmod(0o600)
-        if r.returncode!=expect:raise RuntimeError(label+' failed; inspect retained private outputs')
-        return r.stdout
+        if failure is not None:raise RuntimeError(label+' timed out; inspect retained private outputs') from failure
+        if exit_code!=expect:raise RuntimeError(label+' failed; inspect retained private outputs')
+        return stdout
     run('verifier-helper-tests',['python3','-B','-m','unittest','-v','verify_test'])
     generation=json.loads((ROOT/'generation.json').read_bytes());assert generation['schema']=='gooo/agentmesh-native-generation/v1' and generation['origin']=='fresh_pinned_generation','fresh generator execution is required before public verification'
     source=json.loads((ROOT/'source-pin.json').read_bytes());assert source['revision']=='9fd1a41a15174df0aaef601c942410c2116bff91'
@@ -151,7 +157,9 @@ def main():
     assert len(fresh['impact_matches'])==16
     for r,c in zip(fresh['impact_matches'],impacts):assert r['name']==c['name'] and r['before_match']==c['want']['before_match'] and r['after_match']==c['want']['after_match']
     run('fresh-generation-check',['python3',ROOT/'generate.py','--compiler',args.compiler,'--go',args.go,'--out',out/'fresh-generation','--check'])
-    tests=run('go-tests',[args.go,'test','-json','-race','./...']);run('go-vet',[args.go,'vet','./...']);run('oracle-vet',[args.go,'vet','./...'],cwd=ROOT/'oracle')
+    # A clean CI runner may spend more than one minute compiling race instrumentation.
+    # Keep the full test suite and a finite deadline; other commands retain 60 seconds.
+    tests=run('go-tests',[args.go,'test','-json','-race','./...'],timeout=300);run('go-vet',[args.go,'vet','./...']);run('oracle-vet',[args.go,'vet','./...'],cwd=ROOT/'oracle')
     run('cli-build',[args.go,'build','-trimpath','-o',out/'evaluate','./cmd/evaluate'])
     matcher=json.loads(run('native-matcher',[out/'evaluate','-mode','matcher'],encoded([{k:r[k] for k in ['pattern','req_type','req_name']} for r in rows])))
     impact=json.loads(run('native-impact',[out/'evaluate','-mode','impact'],encoded([{k:r[k] for k in ['before','after','req_type','req_name']} for r in impacts])))

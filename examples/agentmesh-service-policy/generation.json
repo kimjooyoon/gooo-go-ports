@@ -71,7 +71,7 @@
     "upstream/api/tar.go.txt": "sha256:c9dd15177aaf004fead707f163efbe6b78ae4967d1f8d2a95dfef04662b650d9",
     "upstream/api/tar_test.go.txt": "sha256:c0ae9963596372c8553287c75ea3971cd0097f7aa8df32683925d3eafcb3d045",
     "verification_checks.py": "sha256:06ca9980cb7feab27be0819627472e76e369d0f243ea84f0e455e37c366c91e3",
-    "verify.py": "sha256:6b26d6cac2eb4189664772f18a0e7cdabbabc3f9da21a3a53fa0d28ce9ef3583"
+    "verify.py": "sha256:207828c62c1a11d374e22352975bfc08ff39ca095879045b232a79c214cc74c7"
   },
   "origin": "fresh_pinned_generation",
   "public_sources": {
