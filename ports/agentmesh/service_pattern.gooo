@@ -1,0 +1,45 @@
+// Copyright 2026 Google LLC. Apache-2.0; see upstream/LICENSE.
+// Adapted from MatchServicePattern in google/agentmesh api/tar.go at
+// 9fd1a41a15174df0aaef601c942410c2116bff91. Canonical ASCII-only prototype.
+// Full pattern and request components are bounded to 128 bytes by host validator.
+package service_pattern
+namespace gooo_agentmesh_prototype
+entity Text id "gooo://std/text"
+entity Boolean id "gooo://std/boolean"
+activity MatchServicePattern(Text, Text, Text) -> Boolean id "gooo://agentmesh-prototype/match-service-pattern" computes `
+if input0 == "" || input1 == "" || input2 == "" { return false }
+if input0 == "*" { return true }
+let split = -1
+let offset = 0
+for offset = 0; offset < 128; offset = offset + 1 {
+ let end = offset + 3
+ if end <= int64(len(input0)) {
+  if input0[offset:end] == "://" { if split == -1 { split = offset } }
+ }
+}
+if split < 0 { return false }
+let nameStart = split + 3
+let patternType = input0[0:split]
+let patternName = input0[nameStart:int64(len(input0))]
+if patternType != input1 || patternName == "" { return false }
+if patternName == "*" { return true }
+let patternLength = int64(len(patternName))
+let requestLength = int64(len(input2))
+if patternLength >= 2 {
+ if patternName[0:2] == "*." {
+  let suffix = patternName[1:patternLength]
+  let suffixLength = int64(len(suffix))
+  if requestLength < suffixLength { return false }
+  let suffixStart = requestLength - suffixLength
+  return input2[suffixStart:requestLength] == suffix
+ }
+ let tailStart = patternLength - 2
+ if patternName[tailStart:patternLength] == ".*" {
+  let prefixEnd = patternLength - 1
+  let prefix = patternName[0:prefixEnd]
+  if requestLength < prefixEnd { return false }
+  return input2[0:prefixEnd] == prefix
+ }
+}
+return input2 == patternName
+`

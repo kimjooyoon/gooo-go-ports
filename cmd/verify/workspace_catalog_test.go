@@ -14,7 +14,7 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(frozen.Catalog.Packages) != 33 || len(frozen.Sources) != 41 {
+	if len(frozen.Catalog.Packages) != 35 || len(frozen.Sources) != 43 {
 		t.Fatal("complete reviewed catalog roster changed")
 	}
 	allIdentities, err := snapshotSourceIdentities(frozen.Catalog.Packages, frozen.Sources)
@@ -34,6 +34,11 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 		}
 		if _, exists := selected.Sources["examples/cel-api-policy/main.gooo"]; exists {
 			t.Fatal("bounded CEL consumer leaked into an unrelated legacy workspace")
+		}
+		for _, name := range []string{"ports/agentmesh/service_pattern.gooo", "examples/agentmesh-service-policy/impact.gooo"} {
+			if _, exists := selected.Sources[name]; exists {
+				t.Fatal("bounded AgentMesh source leaked into an unrelated legacy workspace", name)
+			}
 		}
 		var serialized map[string]json.RawMessage
 		if err := json.Unmarshal(mustJSON(t, selected.Manifest), &serialized); err != nil || len(serialized) != 3 || serialized["schema"] == nil || serialized["entry"] == nil || serialized["packages"] == nil {

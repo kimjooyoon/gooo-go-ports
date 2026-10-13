@@ -1,0 +1,26 @@
+[
+  {
+    "before": "mcp://a",
+    "after": "mcp://*",
+    "req_type": "mcp",
+    "req_name": "b"
+  },
+  {
+    "before": "mcp://*",
+    "after": "mcp://a",
+    "req_type": "mcp",
+    "req_name": "b"
+  },
+  {
+    "before": "mcp://a",
+    "after": "mcp://a",
+    "req_type": "mcp",
+    "req_name": "a"
+  },
+  {
+    "before": "mcp://a",
+    "after": "mcp://a",
+    "req_type": "mcp",
+    "req_name": "b"
+  }
+]

@@ -97,6 +97,8 @@ jobs:
           ./.gooo check examples/literal-text-report/main.gooo
           ./.gooo check ports/cel/scalar_access.gooo
           ./.gooo check examples/cel-api-policy/main.gooo
+          ./.gooo check ports/agentmesh/service_pattern.gooo
+          ./.gooo check examples/agentmesh-service-policy/impact.gooo
       - name: Retain unsupported-body probes
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
@@ -630,6 +632,11 @@ jobs:
           python3 examples/cel-api-policy/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/cel-api-policy"
           jq -e '.schema == "gooo/cel-public-native-verification/v1" and .status == "FINITE_REAL_CEL_IMPORTED_NATIVE_AND_REPLAY_PASS"' out/cel-api-policy/verification.json
           jq -e '.saved_api_replay.status == "SAME_SOURCE_GENERATION_HISTORICAL_REPLAY_PASS" and .saved_api_replay.independent_cases == 32 and .saved_api_replay.decision_fields_compared == 15 and .saved_api_replay.saved_decision_mutations_rejected == 15 and .saved_api_replay.saved_binding_asset_mutations_rejected == 28 and .saved_api_replay.active_fact_mutations_rejected == 9 and .saved_api_replay.prior_generation_rejected == true and .saved_api_replay.consistent_synthetic_proof_accepted == true and .saved_api_replay.consumer.fresh_process_save_reload_pairs == 2 and .saved_api_replay.consumer.current_provider_calls == 0 and .saved_api_replay.consumer.effect_calls == 0 and .saved_api_replay.consumer.application_state_unchanged == true' out/cel-api-policy/verification.json
+      - name: Verify the Agent Mesh service-pattern adaptation
+        if: steps.change-scope.outputs.docs_only != 'true'
+        run: |
+          python3 -B examples/agentmesh-service-policy/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/agentmesh-service-policy"
+          jq -e '.schema == "gooo/agentmesh-native-verification/v1" and .status == "FINITE_FRESH_ORACLE_NATIVE_WORKSPACE_REPLAY_PASS" and .matcher.upstream_cases == 12 and .matcher.total_cases == 63 and .original_impact.cases == 16 and .original_impact.fields_compared == 3 and (.workspace_batches | length) == 5 and ([.workspace_batches[].case_count] | add) == 79 and .bound_assets == .asset_tamper_refusals and .strict_json.max_count == 1024 and .strict_json.max_batch_bytes == 1048576 and .strict_json.max_component_bytes == 128 and .verifier_helper_contracts.native_array_cardinality == true and .verifier_helper_contracts.all_raw_impact_facts_and_strict_types == true and .verifier_helper_contracts.complete_typed_workspace_delivery_identity == true and .verifier_helper_contracts.optimized_python_refused == true' out/agentmesh-service-policy/verification.json
       - name: Upload offline policy experiment evidence
         if: always() && steps.change-scope.outputs.docs_only != 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

@@ -172,9 +172,11 @@ func TestLegacy445CatalogSourcesManifestsInputsCasesAndBatchesRemainIdentical(t 
 	expectedCatalog.Packages = append(expectedCatalog.Packages,
 		sourcePackage{Path: "go/cel.dev/cel-go/codelab", Sources: []string{"ports/cel/scalar_access.gooo"}},
 		sourcePackage{Path: "app/cel-api-policy", Sources: []string{"examples/cel-api-policy/main.gooo"}},
+		sourcePackage{Path: "go/google/agentmesh/api", Sources: []string{"ports/agentmesh/service_pattern.gooo"}},
+		sourcePackage{Path: "app/service-grant-impact", Sources: []string{"examples/agentmesh-service-policy/impact.gooo"}},
 	)
-	if !reflect.DeepEqual(frozen.Catalog, expectedCatalog) || len(frozen.Sources) != len(fixture.Sources)+4 {
-		t.Fatal("catalog changed beyond the reviewed literal and CEL sources")
+	if !reflect.DeepEqual(frozen.Catalog, expectedCatalog) || len(frozen.Sources) != len(fixture.Sources)+6 {
+		t.Fatal("catalog changed beyond the reviewed literal, CEL and AgentMesh sources")
 	}
 	sources := map[string]legacy445Source{}
 	for _, old := range fixture.Sources {

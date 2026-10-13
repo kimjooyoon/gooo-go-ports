@@ -1,0 +1,245 @@
+{
+  "schema": "gooo/body-composition-cases/v1",
+  "cases": [
+    {
+      "inputs": {
+        "app/service-grant-impact:CompareServiceGrant.input0": "mcp://a",
+        "app/service-grant-impact:CompareServiceGrant.input1": "mcp://a",
+        "app/service-grant-impact:CompareServiceGrant.input2": "mcp",
+        "app/service-grant-impact:CompareServiceGrant.input3": "a"
+      },
+      "expected": {
+        "app/service-grant-impact:CompareServiceGrant": {
+          "before_match": true,
+          "after_match": true,
+          "change": "UNCHANGED_ALLOW"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-impact:CompareServiceGrant.input0": "mcp://a",
+        "app/service-grant-impact:CompareServiceGrant.input1": "mcp://a",
+        "app/service-grant-impact:CompareServiceGrant.input2": "mcp",
+        "app/service-grant-impact:CompareServiceGrant.input3": "b"
+      },
+      "expected": {
+        "app/service-grant-impact:CompareServiceGrant": {
+          "before_match": false,
+          "after_match": false,
+          "change": "UNCHANGED_DENY"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-impact:CompareServiceGrant.input0": "mcp://a",
+        "app/service-grant-impact:CompareServiceGrant.input1": "mcp://*",
+        "app/service-grant-impact:CompareServiceGrant.input2": "mcp",
+        "app/service-grant-impact:CompareServiceGrant.input3": "b"
+      },
+      "expected": {
+        "app/service-grant-impact:CompareServiceGrant": {
+          "before_match": false,
+          "after_match": true,
+          "change": "WIDENED"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-impact:CompareServiceGrant.input0": "mcp://*",
+        "app/service-grant-impact:CompareServiceGrant.input1": "mcp://a",
+        "app/service-grant-impact:CompareServiceGrant.input2": "mcp",
+        "app/service-grant-impact:CompareServiceGrant.input3": "b"
+      },
+      "expected": {
+        "app/service-grant-impact:CompareServiceGrant": {
+          "before_match": true,
+          "after_match": false,
+          "change": "REVOKED"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-impact:CompareServiceGrant.input0": "mcp://a",
+        "app/service-grant-impact:CompareServiceGrant.input1": "egress://*",
+        "app/service-grant-impact:CompareServiceGrant.input2": "mcp",
+        "app/service-grant-impact:CompareServiceGrant.input3": "a"
+      },
+      "expected": {
+        "app/service-grant-impact:CompareServiceGrant": {
+          "before_match": true,
+          "after_match": false,
+          "change": "REVOKED"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-impact:CompareServiceGrant.input0": "mcp://*.a",
+        "app/service-grant-impact:CompareServiceGrant.input1": "mcp://a",
+        "app/service-grant-impact:CompareServiceGrant.input2": "mcp",
+        "app/service-grant-impact:CompareServiceGrant.input3": "a"
+      },
+      "expected": {
+        "app/service-grant-impact:CompareServiceGrant": {
+          "before_match": false,
+          "after_match": true,
+          "change": "WIDENED"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-impact:CompareServiceGrant.input0": "mcp://a.*",
+        "app/service-grant-impact:CompareServiceGrant.input1": "mcp://*",
+        "app/service-grant-impact:CompareServiceGrant.input2": "mcp",
+        "app/service-grant-impact:CompareServiceGrant.input3": "a"
+      },
+      "expected": {
+        "app/service-grant-impact:CompareServiceGrant": {
+          "before_match": false,
+          "after_match": true,
+          "change": "WIDENED"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-impact:CompareServiceGrant.input0": "*",
+        "app/service-grant-impact:CompareServiceGrant.input1": "mcp://*",
+        "app/service-grant-impact:CompareServiceGrant.input2": "egress",
+        "app/service-grant-impact:CompareServiceGrant.input3": "a"
+      },
+      "expected": {
+        "app/service-grant-impact:CompareServiceGrant": {
+          "before_match": true,
+          "after_match": false,
+          "change": "REVOKED"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-impact:CompareServiceGrant.input0": "*",
+        "app/service-grant-impact:CompareServiceGrant.input1": "*",
+        "app/service-grant-impact:CompareServiceGrant.input2": "",
+        "app/service-grant-impact:CompareServiceGrant.input3": "a"
+      },
+      "expected": {
+        "app/service-grant-impact:CompareServiceGrant": {
+          "before_match": false,
+          "after_match": false,
+          "change": "UNCHANGED_DENY"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-impact:CompareServiceGrant.input0": "*",
+        "app/service-grant-impact:CompareServiceGrant.input1": "*",
+        "app/service-grant-impact:CompareServiceGrant.input2": "mcp",
+        "app/service-grant-impact:CompareServiceGrant.input3": ""
+      },
+      "expected": {
+        "app/service-grant-impact:CompareServiceGrant": {
+          "before_match": false,
+          "after_match": false,
+          "change": "UNCHANGED_DENY"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-impact:CompareServiceGrant.input0": "",
+        "app/service-grant-impact:CompareServiceGrant.input1": "*",
+        "app/service-grant-impact:CompareServiceGrant.input2": "mcp",
+        "app/service-grant-impact:CompareServiceGrant.input3": "a"
+      },
+      "expected": {
+        "app/service-grant-impact:CompareServiceGrant": {
+          "before_match": false,
+          "after_match": true,
+          "change": "WIDENED"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-impact:CompareServiceGrant.input0": "mcp://X",
+        "app/service-grant-impact:CompareServiceGrant.input1": "mcp://x",
+        "app/service-grant-impact:CompareServiceGrant.input2": "mcp",
+        "app/service-grant-impact:CompareServiceGrant.input3": "X"
+      },
+      "expected": {
+        "app/service-grant-impact:CompareServiceGrant": {
+          "before_match": true,
+          "after_match": false,
+          "change": "REVOKED"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-impact:CompareServiceGrant.input0": "mcp://a",
+        "app/service-grant-impact:CompareServiceGrant.input1": "*",
+        "app/service-grant-impact:CompareServiceGrant.input2": "mcp",
+        "app/service-grant-impact:CompareServiceGrant.input3": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expected": {
+        "app/service-grant-impact:CompareServiceGrant": {
+          "before_match": false,
+          "after_match": true,
+          "change": "WIDENED"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-impact:CompareServiceGrant.input0": "mcp://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "app/service-grant-impact:CompareServiceGrant.input1": "mcp://*",
+        "app/service-grant-impact:CompareServiceGrant.input2": "mcp",
+        "app/service-grant-impact:CompareServiceGrant.input3": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expected": {
+        "app/service-grant-impact:CompareServiceGrant": {
+          "before_match": true,
+          "after_match": true,
+          "change": "UNCHANGED_ALLOW"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-impact:CompareServiceGrant.input0": "mcp://*.a",
+        "app/service-grant-impact:CompareServiceGrant.input1": "mcp://a.*",
+        "app/service-grant-impact:CompareServiceGrant.input2": "mcp",
+        "app/service-grant-impact:CompareServiceGrant.input3": "b.a"
+      },
+      "expected": {
+        "app/service-grant-impact:CompareServiceGrant": {
+          "before_match": true,
+          "after_match": false,
+          "change": "REVOKED"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-impact:CompareServiceGrant.input0": "mcp://*.a",
+        "app/service-grant-impact:CompareServiceGrant.input1": "mcp://a.*",
+        "app/service-grant-impact:CompareServiceGrant.input2": "mcp",
+        "app/service-grant-impact:CompareServiceGrant.input3": "a.b"
+      },
+      "expected": {
+        "app/service-grant-impact:CompareServiceGrant": {
+          "before_match": false,
+          "after_match": true,
+          "change": "WIDENED"
+        }
+      }
+    }
+  ]
+}

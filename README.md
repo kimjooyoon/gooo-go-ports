@@ -14,6 +14,15 @@ checker. Its source-derived finite coverage is specified below; inspect the
 current CI/native reports for completed execution results. Historical evidence
 retains its original source and counts.
 
+The separate [Agent Mesh service-pattern example](examples/agentmesh-service-policy/README.md)
+adds a bounded adaptation of `MatchServicePattern` and an original three-field
+comparison for one supplied request before and after a pattern change. Its
+63 matcher cases (including 12 upstream tests) and 16 original impact cases are
+separate from the 42 APIs and the existing native corpus above. `WIDENED` means
+that this supplied request became allowed; it is not a global grant-inclusion
+proof or a current authorization. Gooo computes the matches and impact without
+per-call human approval; the host owns trusted facts and any actual effects.
+
 ## Start here
 
 | What would you like to do? | Start with | What you can change |
@@ -892,3 +901,7 @@ RectangleIn과 FitsCrop까지의 총계 40개 포트·17개 소비 프로그램�
 새 Index·Count와 Literal Text Report를 포함한 소스 목록은 42개 포트·18개 소비 프로그램·20개 소비 활동입니다.
 원본 int32 전체의 동작을 구현하되 2^32 전수 검사를 주장하지 않습니다.
 브라우저 21함수와 두 crop 모드는 그대로입니다.
+
+The bounded Agent Mesh adaptation separately retains its original Apache 2.0
+license and source attribution in [the port notice](ports/agentmesh/NOTICE.md)
+and [the example notice](examples/agentmesh-service-policy/NOTICE.md).

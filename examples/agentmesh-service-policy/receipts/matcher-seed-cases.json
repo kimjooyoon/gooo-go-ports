@@ -1,0 +1,165 @@
+{
+  "schema": "gooo/body-composition-cases/v1",
+  "cases": [
+    {
+      "inputs": {
+        "go/google/agentmesh/api:MatchServicePattern.input0": "*",
+        "go/google/agentmesh/api:MatchServicePattern.input1": "mcp",
+        "go/google/agentmesh/api:MatchServicePattern.input2": "calculator"
+      },
+      "expected": {
+        "go/google/agentmesh/api:MatchServicePattern": true
+      }
+    },
+    {
+      "inputs": {
+        "go/google/agentmesh/api:MatchServicePattern.input0": "*",
+        "go/google/agentmesh/api:MatchServicePattern.input1": "egress",
+        "go/google/agentmesh/api:MatchServicePattern.input2": "api.github.com"
+      },
+      "expected": {
+        "go/google/agentmesh/api:MatchServicePattern": true
+      }
+    },
+    {
+      "inputs": {
+        "go/google/agentmesh/api:MatchServicePattern.input0": "mcp://*",
+        "go/google/agentmesh/api:MatchServicePattern.input1": "mcp",
+        "go/google/agentmesh/api:MatchServicePattern.input2": "calculator"
+      },
+      "expected": {
+        "go/google/agentmesh/api:MatchServicePattern": true
+      }
+    },
+    {
+      "inputs": {
+        "go/google/agentmesh/api:MatchServicePattern.input0": "mcp://*",
+        "go/google/agentmesh/api:MatchServicePattern.input1": "inference",
+        "go/google/agentmesh/api:MatchServicePattern.input2": "calculator"
+      },
+      "expected": {
+        "go/google/agentmesh/api:MatchServicePattern": false
+      }
+    },
+    {
+      "inputs": {
+        "go/google/agentmesh/api:MatchServicePattern.input0": "mcp://calculator",
+        "go/google/agentmesh/api:MatchServicePattern.input1": "mcp",
+        "go/google/agentmesh/api:MatchServicePattern.input2": "calculator"
+      },
+      "expected": {
+        "go/google/agentmesh/api:MatchServicePattern": true
+      }
+    },
+    {
+      "inputs": {
+        "go/google/agentmesh/api:MatchServicePattern.input0": "mcp://calculator",
+        "go/google/agentmesh/api:MatchServicePattern.input1": "mcp",
+        "go/google/agentmesh/api:MatchServicePattern.input2": "other"
+      },
+      "expected": {
+        "go/google/agentmesh/api:MatchServicePattern": false
+      }
+    },
+    {
+      "inputs": {
+        "go/google/agentmesh/api:MatchServicePattern.input0": "egress://*.googleapis.com",
+        "go/google/agentmesh/api:MatchServicePattern.input1": "egress",
+        "go/google/agentmesh/api:MatchServicePattern.input2": "bigquery.googleapis.com"
+      },
+      "expected": {
+        "go/google/agentmesh/api:MatchServicePattern": true
+      }
+    },
+    {
+      "inputs": {
+        "go/google/agentmesh/api:MatchServicePattern.input0": "egress://*.googleapis.com",
+        "go/google/agentmesh/api:MatchServicePattern.input1": "egress",
+        "go/google/agentmesh/api:MatchServicePattern.input2": "googleapis.com"
+      },
+      "expected": {
+        "go/google/agentmesh/api:MatchServicePattern": false
+      }
+    },
+    {
+      "inputs": {
+        "go/google/agentmesh/api:MatchServicePattern.input0": "egress://*.googleapis.com",
+        "go/google/agentmesh/api:MatchServicePattern.input1": "egress",
+        "go/google/agentmesh/api:MatchServicePattern.input2": "evilgoogleapis.com"
+      },
+      "expected": {
+        "go/google/agentmesh/api:MatchServicePattern": false
+      }
+    },
+    {
+      "inputs": {
+        "go/google/agentmesh/api:MatchServicePattern.input0": "inference://gemini.*",
+        "go/google/agentmesh/api:MatchServicePattern.input1": "inference",
+        "go/google/agentmesh/api:MatchServicePattern.input2": "gemini.pro"
+      },
+      "expected": {
+        "go/google/agentmesh/api:MatchServicePattern": true
+      }
+    },
+    {
+      "inputs": {
+        "go/google/agentmesh/api:MatchServicePattern.input0": "inference://gemini.*",
+        "go/google/agentmesh/api:MatchServicePattern.input1": "inference",
+        "go/google/agentmesh/api:MatchServicePattern.input2": "gemini"
+      },
+      "expected": {
+        "go/google/agentmesh/api:MatchServicePattern": false
+      }
+    },
+    {
+      "inputs": {
+        "go/google/agentmesh/api:MatchServicePattern.input0": "inference://gemini.*",
+        "go/google/agentmesh/api:MatchServicePattern.input1": "inference",
+        "go/google/agentmesh/api:MatchServicePattern.input2": "gemini2.pro"
+      },
+      "expected": {
+        "go/google/agentmesh/api:MatchServicePattern": false
+      }
+    },
+    {
+      "inputs": {
+        "go/google/agentmesh/api:MatchServicePattern.input0": "*",
+        "go/google/agentmesh/api:MatchServicePattern.input1": "",
+        "go/google/agentmesh/api:MatchServicePattern.input2": "x"
+      },
+      "expected": {
+        "go/google/agentmesh/api:MatchServicePattern": false
+      }
+    },
+    {
+      "inputs": {
+        "go/google/agentmesh/api:MatchServicePattern.input0": "*",
+        "go/google/agentmesh/api:MatchServicePattern.input1": "mcp",
+        "go/google/agentmesh/api:MatchServicePattern.input2": ""
+      },
+      "expected": {
+        "go/google/agentmesh/api:MatchServicePattern": false
+      }
+    },
+    {
+      "inputs": {
+        "go/google/agentmesh/api:MatchServicePattern.input0": "",
+        "go/google/agentmesh/api:MatchServicePattern.input1": "mcp",
+        "go/google/agentmesh/api:MatchServicePattern.input2": "x"
+      },
+      "expected": {
+        "go/google/agentmesh/api:MatchServicePattern": false
+      }
+    },
+    {
+      "inputs": {
+        "go/google/agentmesh/api:MatchServicePattern.input0": "mcp://x",
+        "go/google/agentmesh/api:MatchServicePattern.input1": "mcp",
+        "go/google/agentmesh/api:MatchServicePattern.input2": "x"
+      },
+      "expected": {
+        "go/google/agentmesh/api:MatchServicePattern": true
+      }
+    }
+  ]
+}

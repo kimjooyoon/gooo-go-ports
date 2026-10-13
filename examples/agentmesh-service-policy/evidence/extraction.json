@@ -1,0 +1,27 @@
+{
+  "source_repository": "https://github.com/google/agentmesh",
+  "revision": "9fd1a41a15174df0aaef601c942410c2116bff91",
+  "files": {
+    "api/tar.go": {
+      "bytes": 23835,
+      "sha256": "c9dd15177aaf004fead707f163efbe6b78ae4967d1f8d2a95dfef04662b650d9"
+    },
+    "api/network.go": {
+      "bytes": 23000,
+      "sha256": "1566324585ec8aade80744dd241432e3e009ad59c9273f6c460b67708a9757ce"
+    },
+    "api/tar_test.go": {
+      "bytes": 15257,
+      "sha256": "c0ae9963596372c8553287c75ea3971cd0097f7aa8df32683925d3eafcb3d045"
+    },
+    "LICENSE": {
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    }
+  },
+  "exact_function_bytes": {
+    "MatchServicePattern": "f312e0f86d2caec319c2867e3e9b9dfc3e8111cb55ff26588752aadb1c0f059b",
+    "ParseServiceTarget": "307512a57ec48c01af7b43fb888b2d5d23a6d937bf5bc1c1d20d1e65824a42a9"
+  },
+  "exact_regexp_assignment": "rfc3986URIRegex = regexp.MustCompile(`^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?`)"
+}
