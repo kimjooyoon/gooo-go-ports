@@ -218,6 +218,12 @@
       "sources": [
         "examples/agentmesh-service-policy/impact.gooo"
       ]
+    },
+    {
+      "path": "app/service-grant-refinement",
+      "sources": [
+        "examples/agentmesh-service-policy/refinement.gooo"
+      ]
     }
   ]
 }

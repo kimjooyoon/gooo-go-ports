@@ -22,6 +22,12 @@ separate from the 42 APIs and the existing native corpus above. `WIDENED` means
 that this supplied request became allowed; it is not a global grant-inclusion
 proof or a current authorization. Gooo computes the matches and impact without
 per-call human approval; the host owns trusted facts and any actual effects.
+The original [single-pattern refinement analyzer](examples/agentmesh-service-policy/refinement.md)
+also compares the two whole patterns within that bounded grammar. It returns a
+recognized subset rule or a concrete newly admitted request checked by the
+imported matcher. For example, changing `mcp://*.x` to `mcp://a.*` produces
+`mcp://a.y`: testing only the shared request `mcp://a.x` would miss the widening.
+This pure decision does not apply a policy change or establish caller authority.
 
 ## Start here
 

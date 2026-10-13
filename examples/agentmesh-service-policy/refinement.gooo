@@ -1,0 +1,137 @@
+// Original single-pattern refinement over the host-validated canonical ASCII
+// domain, not full mesh authorization, availability preservation or a policy applier.
+// Direct Gooo callers must validate BOTH patterns before entry (128 bytes each).
+// Go transports facts; Gooo recognizes subset rules and checks widening witnesses.
+package service_refinement
+namespace gooo_original_service_refinement
+import svc "go/google/agentmesh/api"
+entity Text id "gooo://std/text"
+entity GrantRefinement id "gooo://service-refinement/decision/v1" fields {
+ field status id "gooo://service-refinement/status" type string required one
+ field rule_id id "gooo://service-refinement/rule_id" type string required one
+ field supported_subset id "gooo://service-refinement/supported_subset" type boolean required one
+ field has_witness id "gooo://service-refinement/has_witness" type boolean required one
+ field witness_type id "gooo://service-refinement/witness_type" type string required one
+ field witness_name id "gooo://service-refinement/witness_name" type string required one
+ field before_match id "gooo://service-refinement/before_match" type boolean required one
+ field after_match id "gooo://service-refinement/after_match" type boolean required one
+}
+activity AnalyzeServiceGrant(Text, Text) -> GrantRefinement id "gooo://service-refinement/analyze" computes `
+let rule = ""
+if input1 == "" { rule = "CANDIDATE_EMPTY" } else {
+ if input0 == input1 { rule = "IDENTICAL_PATTERNS" } else { if input0 == "*" { rule = "OLD_GLOBAL" } }
+}
+let oldType = ""
+let candidateType = ""
+let oldBase = ""
+let candidateBase = ""
+let oldKind = "NONE"
+let candidateKind = "NONE"
+let oldSplit = -1
+let candidateSplit = -1
+let offset = 0
+for offset = 0; offset < 128; offset = offset + 1 {
+ let end = offset + 3
+ if end <= int64(len(input0)) {
+  if input0[offset:end] == "://" { if oldSplit == -1 { oldSplit = offset } }
+ }
+ if end <= int64(len(input1)) {
+  if input1[offset:end] == "://" { if candidateSplit == -1 { candidateSplit = offset } }
+ }
+}
+if oldSplit > 0 {
+ oldType = input0[0:oldSplit]
+ let start = oldSplit + 3
+ oldBase = input0[start:int64(len(input0))]
+ oldKind = "EXACT"
+ if oldBase == "*" { oldKind = "TYPED_ALL" } else {
+  let n = int64(len(oldBase))
+  if n >= 2 {
+   if oldBase[0:2] == "*." { oldKind = "SUFFIX"; oldBase = oldBase[2:n] } else {
+    let tail = n - 2
+    if oldBase[tail:n] == ".*" { oldKind = "PREFIX"; oldBase = oldBase[0:tail] }
+   }
+  }
+ }
+}
+if candidateSplit > 0 {
+ candidateType = input1[0:candidateSplit]
+ let start = candidateSplit + 3
+ candidateBase = input1[start:int64(len(input1))]
+ candidateKind = "EXACT"
+ if candidateBase == "*" { candidateKind = "TYPED_ALL" } else {
+  let n = int64(len(candidateBase))
+  if n >= 2 {
+   if candidateBase[0:2] == "*." { candidateKind = "SUFFIX"; candidateBase = candidateBase[2:n] } else {
+    let tail = n - 2
+    if candidateBase[tail:n] == ".*" { candidateKind = "PREFIX"; candidateBase = candidateBase[0:tail] }
+   }
+  }
+ }
+}
+if rule == "" {
+ if oldKind == "TYPED_ALL" && candidateType == oldType { rule = "OLD_TYPED_ALL" }
+}
+if rule == "" {
+ if candidateKind == "EXACT" {
+  if svc.MatchServicePattern(input0, candidateType, candidateBase) { rule = "EXACT_CANDIDATE_ACCEPTED_BY_OLD" }
+ }
+}
+if rule == "" && oldType == candidateType {
+ if oldKind == "PREFIX" && candidateKind == "PREFIX" {
+  if oldBase == candidateBase { rule = "PREFIX_HIERARCHY" } else {
+   let end = int64(len(oldBase)) + 1
+   if int64(len(candidateBase)) >= end {
+    if candidateBase[0:end] == oldBase + "." { rule = "PREFIX_HIERARCHY" }
+   }
+  }
+ }
+ if oldKind == "SUFFIX" && candidateKind == "SUFFIX" {
+  if oldBase == candidateBase { rule = "SUFFIX_HIERARCHY" } else {
+   let n = int64(len(candidateBase))
+   let size = int64(len(oldBase)) + 1
+   if n >= size {
+    let start = n - size
+    if candidateBase[start:n] == "." + oldBase { rule = "SUFFIX_HIERARCHY" }
+   }
+  }
+ }
+}
+let status = "UNPROVEN"
+let supported = false
+if rule != "" { status = "SUPPORTED_SUBSET"; supported = true }
+let witnessed = false
+let witnessType = ""
+let witnessName = ""
+let witnessBefore = false
+let witnessAfter = false
+if rule == "" {
+ let firstType = candidateType
+ let secondType = candidateType
+ let firstName = ""
+ let secondName = ""
+ if input1 == "*" { firstType = "a"; secondType = "b"; firstName = "x"; secondName = "x" }
+ if candidateKind == "TYPED_ALL" { firstName = "x"; secondName = "y" }
+ if candidateKind == "EXACT" { firstName = candidateBase }
+ if candidateKind == "PREFIX" { firstName = candidateBase + ".x"; secondName = candidateBase + ".y" }
+ if candidateKind == "SUFFIX" { firstName = "x." + candidateBase; secondName = "y." + candidateBase }
+ if firstName != "" {
+  let before = svc.MatchServicePattern(input0, firstType, firstName)
+  let after = svc.MatchServicePattern(input1, firstType, firstName)
+  if after && !before {
+   witnessed = true; witnessType = firstType; witnessName = firstName
+   witnessBefore = before; witnessAfter = after
+  }
+ }
+ if !witnessed && secondName != "" {
+  let before = svc.MatchServicePattern(input0, secondType, secondName)
+  let after = svc.MatchServicePattern(input1, secondType, secondName)
+  if after && !before {
+   witnessed = true; witnessType = secondType; witnessName = secondName
+   witnessBefore = before; witnessAfter = after
+  }
+ }
+ if witnessed { status = "WIDENING_WITNESS"; rule = "CHECKED_CANDIDATE_REQUEST" }
+}
+return GrantRefinement{status: status, rule_id: rule, supported_subset: supported, has_witness: witnessed, witness_type: witnessType, witness_name: witnessName, before_match: witnessBefore, after_match: witnessAfter}
+`

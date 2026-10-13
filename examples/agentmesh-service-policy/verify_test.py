@@ -233,5 +233,98 @@ class OptimizedPythonRefusal(unittest.TestCase):
                     self.assertEqual(result.stdout, '')
 
 
+# Synthetic fixtures check verifier rejection paths only; verify.py checks real
+# native execute/replay evidence separately. No compiler output is forged here.
+from verification_checks import (check_native_refinement, check_refinement_decision,
+                                 check_witness_oracle, REFINEMENT_FIELDS)
+REFINEMENT_CASES = json.loads((ROOT / 'refinement-cases.json').read_text())
+
+def refinement_inputs():
+    bindings = copy.deepcopy(FIXTURE['expected_bindings'])
+    cases = copy.deepcopy(REFINEMENT_CASES)
+    actual = [{'facts':{k:c[k] for k in ['before','after']},'decision':copy.deepcopy(c['want']),
+               'bindings':copy.deepcopy(bindings)} for c in cases]
+    return actual,cases,bindings
+
+def refinement_workspace():
+    c=copy.deepcopy(FIXTURE['workspace']['impact'])
+    package='app/service-grant-refinement';activity='AnalyzeServiceGrant';entry=package+':'+activity
+    aid='gooo://service-refinement/analyze';eid='gooo://service-refinement/decision/v1'
+    c['program']['entry'].update(package_path=package,activity=activity)
+    c['program']['workspace_image']['packages']=[{'path':package,'exports':[{'kind':'activity','name':activity,'id':aid,'input_types':['gooo://std/text']*2,'output_type':eid}]}]
+    c['body_report'].update(activity_id=aid,output_type='GrantRefinement',record_types=[{'name':'GrantRefinement','id':eid,'fields':[{'name':n,'id':fid,'type_id':tid} for n,(fid,tid,_) in REFINEMENT_FIELDS.items()]}])
+    row=next(r for r in REFINEMENT_CASES if r['name']=='suffix-to-prefix-second-seed')
+    c['case']={'inputs':{entry+'.input0':row['before'],entry+'.input1':row['after']},'expected':{entry:copy.deepcopy(row['want'])}}
+    c['trace']={'case_index':0,'deliveries':[{'activity_id':aid,'inputs':[{'port':'input0','entity_id':'gooo://std/text','value':row['before']},{'port':'input1','entity_id':'gooo://std/text','value':row['after']}],
+      'actual':copy.deepcopy(row['want']),'expected':copy.deepcopy(row['want']),'passed':True,
+      'actual_fields':[{'id':fid,'name':n,'value':row['want'][n]} for n,(fid,_,_) in REFINEMENT_FIELDS.items()]}]}
+    return c
+
+class RefinementEvidenceChecks(unittest.TestCase):
+    def test_native_complete_contract_accepted(self):check_native_refinement(*refinement_inputs())
+    def test_native_shape_facts_bindings_and_decision_mutations_refused(self):
+        for count in [0,100,102]:
+            args=list(refinement_inputs());args[0]=(args[0]*2)[:count]
+            with self.assertRaises(AssertionError):check_native_refinement(*args)
+        for field in ['before','after']:
+            for value in ['changed',False,1,None]:
+                with self.subTest(field=field,value=value):
+                    args=list(refinement_inputs());args[0][-1]['facts'][field]=value
+                    with self.assertRaises(AssertionError):check_native_refinement(*args)
+        for field,(_,_,kind) in REFINEMENT_FIELDS.items():
+            for mutation in ['wrong','type','missing']:
+                with self.subTest(field=field,mutation=mutation):
+                    args=list(refinement_inputs());d=args[0][-1]['decision']
+                    if mutation=='missing':del d[field]
+                    else:d[field]=(not d[field] if kind is bool else 'changed') if mutation=='wrong' else (int(d[field]) if kind is bool else False)
+                    with self.assertRaises(AssertionError):check_native_refinement(*args)
+        for field in ['compiler_source_sha','generation_sha256','generation_origin','assets']:
+            args=list(refinement_inputs());args[0][-1]['bindings'][field]='changed'
+            with self.assertRaises(AssertionError):check_native_refinement(*args)
+        for target in ['facts','decision','bindings']:
+            args=list(refinement_inputs());args[0][-1][target]['extra']=True
+            with self.assertRaises(AssertionError):check_native_refinement(*args)
+    def test_self_consistent_but_contradictory_decisions_refused(self):
+        for status in ['SUPPORTED_SUBSET','WIDENING_WITNESS','UNPROVEN']:
+            d=next((copy.deepcopy(r['want']) for r in REFINEMENT_CASES if r['want']['status']==status),dict(status='UNPROVEN',rule_id='',supported_subset=False,has_witness=False,witness_type='',witness_name='',before_match=False,after_match=False))
+            check_refinement_decision(d,d)
+            for field in REFINEMENT_FIELDS:
+                bad=copy.deepcopy(d);bad[field]=not bad[field] if type(bad[field]) is bool else ('INVALID' if field in ['status','rule_id'] else ('x' if not bad[field] else ''))
+                with self.subTest(status=status,field=field):
+                    with self.assertRaises(AssertionError):check_refinement_decision(bad,bad)
+        witness=copy.deepcopy(next(r['want'] for r in REFINEMENT_CASES if r['want']['has_witness']))
+        for field in ['witness_type','witness_name']:
+            for value in ['', 'é', 'x/y', 'a'*129]:
+                bad=copy.deepcopy(witness);bad[field]=value
+                with self.assertRaises(AssertionError):check_refinement_decision(bad,bad)
+    def test_workspace_all_eight_typed_fields_and_identity(self):
+        workspace_check('refinement',refinement_workspace());mutations=[]
+        for i in range(8):
+            for key,value in [('id','wrong'),('name','wrong'),('value',None)]:mutations.append((f'field-{i}-{key}',lambda c,i=i,k=key,v=value:c['trace']['deliveries'][0]['actual_fields'][i].__setitem__(k,v)))
+            for key in ['id','name','type_id']:mutations.append((f'schema-{i}-{key}',lambda c,i=i,k=key:c['body_report']['record_types'][0]['fields'][i].__setitem__(k,'wrong')))
+        mutations += [('reordered',lambda c:c['trace']['deliveries'][0]['actual_fields'].reverse()),('missing',lambda c:c['trace']['deliveries'][0]['actual_fields'].pop()),('extra',lambda c:c['trace']['deliveries'][0]['actual_fields'].append(c['trace']['deliveries'][0]['actual_fields'][0])),('activity',lambda c:c['trace']['deliveries'][0].__setitem__('activity_id','wrong')),('entity',lambda c:c['trace']['deliveries'][0]['inputs'][1].__setitem__('entity_id','wrong')),('port',lambda c:c['trace']['deliveries'][0]['inputs'][1].__setitem__('port','input0')),('raw-fact',lambda c:c['trace']['deliveries'][0]['inputs'][1].__setitem__('value','changed')),('record-id',lambda c:c['body_report']['record_types'][0].__setitem__('id','wrong')),('record-name',lambda c:c['body_report']['record_types'][0].__setitem__('name','wrong')),('entry-package',lambda c:c['program']['entry'].__setitem__('package_path','wrong')),('entry-activity',lambda c:c['program']['entry'].__setitem__('activity','wrong'))]
+        for phase in ['execute','replay']:
+            for name,change in mutations:
+                with self.subTest(phase=phase,mutation=name):
+                    c=refinement_workspace();change(c)
+                    with self.assertRaises(AssertionError):workspace_check('refinement',c)
+    def test_witness_oracle_full_request_roster_and_results(self):
+        revision='9fd1a41a15174df0aaef601c942410c2116bff91';requests=[]
+        for row in REFINEMENT_CASES:
+            d=row['want']
+            if d['has_witness']:
+                for side,want in [('before',False),('after',True)]:requests.append(dict(name=row['name']+'/'+side,pattern=row[side],req_type=d['witness_type'],req_name=d['witness_name'],want=want))
+        actual=dict(schema='gooo/agentmesh-matcher-oracle/v1',go_version='go1.27.2',source_revision=revision,observations=[dict({k:r[k] for k in ['name','pattern','req_type','req_name']},matched=r['want']) for r in requests],impact_matches=[])
+        check_witness_oracle(actual,requests,revision)
+        for field in ['name','pattern','req_type','req_name','matched']:
+            changed=copy.deepcopy(actual);changed['observations'][-1][field]=False if field=='matched' else 'wrong'
+            with self.assertRaises(AssertionError):check_witness_oracle(changed,requests,revision)
+        for field in ['source_revision','go_version','schema']:
+            changed=copy.deepcopy(actual);changed[field]='wrong'
+            with self.assertRaises(AssertionError):check_witness_oracle(changed,requests,revision)
+        for count in [0,125,127]:
+            changed=copy.deepcopy(actual);changed['observations']=(changed['observations']*2)[:count]
+            with self.assertRaises(AssertionError):check_witness_oracle(changed,requests,revision)
+
 if __name__ == '__main__':
     unittest.main()

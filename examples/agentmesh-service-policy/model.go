@@ -1,5 +1,5 @@
 // Package servicepolicy transports bounded canonical ASCII facts to generated
-// Gooo service-pattern and request-impact bodies. It authorizes no mesh call.
+// Gooo service-pattern, request-impact and single-grant refinement bodies. It authorizes no mesh call.
 package servicepolicy
 
 type MatcherFacts struct {
@@ -38,4 +38,29 @@ type ImpactProof struct {
 	Facts    ImpactFacts    `json:"facts"`
 	Decision ImpactDecision `json:"decision"`
 	Bindings Bindings       `json:"bindings"`
+}
+
+// RefinementFacts compares one current pattern and one candidate pattern.
+type RefinementFacts struct {
+	Before string `json:"before"`
+	After  string `json:"after"`
+}
+
+// RefinementDecision carries a recognized subset rule or a checked widening
+// request. It does not attest current policy authority or availability.
+type RefinementDecision struct {
+	Status          string `json:"status"`
+	RuleID          string `json:"rule_id"`
+	SupportedSubset bool   `json:"supported_subset"`
+	HasWitness      bool   `json:"has_witness"`
+	WitnessType     string `json:"witness_type"`
+	WitnessName     string `json:"witness_name"`
+	BeforeMatch     bool   `json:"before_match"`
+	AfterMatch      bool   `json:"after_match"`
+}
+
+type RefinementProof struct {
+	Facts    RefinementFacts    `json:"facts"`
+	Decision RefinementDecision `json:"decision"`
+	Bindings Bindings           `json:"bindings"`
 }

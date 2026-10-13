@@ -8,7 +8,7 @@ import (
 )
 
 func TestEveryExactMatcherAndImpactFieldMalformed(t *testing.T) {
-	for _, mode := range []string{"matcher", "impact"} {
+	for _, mode := range []string{"matcher", "impact", "refinement"} {
 		obj := map[string]json.RawMessage{"req_type": []byte(`"mcp"`), "req_name": []byte(`"a"`)}
 		if mode == "matcher" {
 			obj["pattern"] = []byte(`"mcp://a"`)
@@ -16,7 +16,15 @@ func TestEveryExactMatcherAndImpactFieldMalformed(t *testing.T) {
 			obj["before"] = []byte(`"mcp://a"`)
 			obj["after"] = []byte(`"*"`)
 		}
+		if mode == "refinement" {
+			delete(obj, "req_type")
+			delete(obj, "req_name")
+		}
 		decode := func(raw []byte) error {
+			if mode == "refinement" {
+				_, err := DecodeRefinement(raw)
+				return err
+			}
 			if mode == "matcher" {
 				_, err := DecodeMatcher(raw)
 				return err
@@ -72,6 +80,11 @@ func TestEveryExactMatcherAndImpactFieldMalformed(t *testing.T) {
 						t.Fatal("malformed exact field accepted")
 					}
 				})
+			}
+		}
+		for _, fact := range []string{"status", "rule_id", "supported_subset", "has_witness", "witness_type", "witness_name", "before_match", "after_match", "decision", "bindings"} {
+			if err := decode([]byte(strings.TrimSuffix(string(good), "}") + ",\"" + fact + "\":true}")); err == nil {
+				t.Fatal("host-precomputed fact accepted", fact)
 			}
 		}
 		for _, bad := range [][]byte{[]byte("null"), []byte("[]"), []byte("{}"), append(good, []byte(" {}")...), append(good, 0xff), []byte(strings.TrimSuffix(string(good), "}") + `,"unknown":true}`), []byte(strings.TrimSuffix(string(good), "}") + `,"\ud800":true}`)} {

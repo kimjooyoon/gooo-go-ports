@@ -1,0 +1,2085 @@
+[
+  {
+    "name": "matrix-empty-empty",
+    "before": "",
+    "after": "",
+    "before_family": "EMPTY",
+    "after_family": "EMPTY",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "CANDIDATE_EMPTY",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-empty-global",
+    "before": "",
+    "after": "*",
+    "before_family": "EMPTY",
+    "after_family": "GLOBAL",
+    "coverage": [
+      "matrix",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "a",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "matrix-empty-typed_all",
+    "before": "",
+    "after": "mcp://*",
+    "before_family": "EMPTY",
+    "after_family": "TYPED_ALL",
+    "coverage": [
+      "matrix",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "matrix-empty-exact",
+    "before": "",
+    "after": "mcp://a.x",
+    "before_family": "EMPTY",
+    "after_family": "EXACT",
+    "coverage": [
+      "matrix",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "a.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "matrix-empty-prefix",
+    "before": "",
+    "after": "mcp://a.*",
+    "before_family": "EMPTY",
+    "after_family": "PREFIX",
+    "coverage": [
+      "matrix",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "a.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "matrix-empty-suffix",
+    "before": "",
+    "after": "mcp://*.x",
+    "before_family": "EMPTY",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "matrix",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "x.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "matrix-global-empty",
+    "before": "*",
+    "after": "",
+    "before_family": "GLOBAL",
+    "after_family": "EMPTY",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "CANDIDATE_EMPTY",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-global-global",
+    "before": "*",
+    "after": "*",
+    "before_family": "GLOBAL",
+    "after_family": "GLOBAL",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "IDENTICAL_PATTERNS",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-global-typed_all",
+    "before": "*",
+    "after": "mcp://*",
+    "before_family": "GLOBAL",
+    "after_family": "TYPED_ALL",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "OLD_GLOBAL",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-global-exact",
+    "before": "*",
+    "after": "mcp://a.x",
+    "before_family": "GLOBAL",
+    "after_family": "EXACT",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "OLD_GLOBAL",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-global-prefix",
+    "before": "*",
+    "after": "mcp://a.*",
+    "before_family": "GLOBAL",
+    "after_family": "PREFIX",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "OLD_GLOBAL",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-global-suffix",
+    "before": "*",
+    "after": "mcp://*.x",
+    "before_family": "GLOBAL",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "OLD_GLOBAL",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-typed_all-empty",
+    "before": "mcp://*",
+    "after": "",
+    "before_family": "TYPED_ALL",
+    "after_family": "EMPTY",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "CANDIDATE_EMPTY",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-typed_all-global",
+    "before": "mcp://*",
+    "after": "*",
+    "before_family": "TYPED_ALL",
+    "after_family": "GLOBAL",
+    "coverage": [
+      "matrix",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "a",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "matrix-typed_all-typed_all",
+    "before": "mcp://*",
+    "after": "mcp://*",
+    "before_family": "TYPED_ALL",
+    "after_family": "TYPED_ALL",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "IDENTICAL_PATTERNS",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-typed_all-exact",
+    "before": "mcp://*",
+    "after": "mcp://a.x",
+    "before_family": "TYPED_ALL",
+    "after_family": "EXACT",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "OLD_TYPED_ALL",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-typed_all-prefix",
+    "before": "mcp://*",
+    "after": "mcp://a.*",
+    "before_family": "TYPED_ALL",
+    "after_family": "PREFIX",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "OLD_TYPED_ALL",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-typed_all-suffix",
+    "before": "mcp://*",
+    "after": "mcp://*.x",
+    "before_family": "TYPED_ALL",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "OLD_TYPED_ALL",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-exact-empty",
+    "before": "mcp://a.x",
+    "after": "",
+    "before_family": "EXACT",
+    "after_family": "EMPTY",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "CANDIDATE_EMPTY",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-exact-global",
+    "before": "mcp://a.x",
+    "after": "*",
+    "before_family": "EXACT",
+    "after_family": "GLOBAL",
+    "coverage": [
+      "matrix",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "a",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "matrix-exact-typed_all",
+    "before": "mcp://a.x",
+    "after": "mcp://*",
+    "before_family": "EXACT",
+    "after_family": "TYPED_ALL",
+    "coverage": [
+      "matrix",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "matrix-exact-exact",
+    "before": "mcp://a.x",
+    "after": "mcp://a.x",
+    "before_family": "EXACT",
+    "after_family": "EXACT",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "IDENTICAL_PATTERNS",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-exact-prefix",
+    "before": "mcp://a.x",
+    "after": "mcp://a.*",
+    "before_family": "EXACT",
+    "after_family": "PREFIX",
+    "coverage": [
+      "matrix",
+      "seed-2"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "a.y",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "matrix-exact-suffix",
+    "before": "mcp://a.x",
+    "after": "mcp://*.x",
+    "before_family": "EXACT",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "matrix",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "x.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "matrix-prefix-empty",
+    "before": "mcp://a.*",
+    "after": "",
+    "before_family": "PREFIX",
+    "after_family": "EMPTY",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "CANDIDATE_EMPTY",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-prefix-global",
+    "before": "mcp://a.*",
+    "after": "*",
+    "before_family": "PREFIX",
+    "after_family": "GLOBAL",
+    "coverage": [
+      "matrix",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "a",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "matrix-prefix-typed_all",
+    "before": "mcp://a.*",
+    "after": "mcp://*",
+    "before_family": "PREFIX",
+    "after_family": "TYPED_ALL",
+    "coverage": [
+      "matrix",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "matrix-prefix-exact",
+    "before": "mcp://a.*",
+    "after": "mcp://a.x",
+    "before_family": "PREFIX",
+    "after_family": "EXACT",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "EXACT_CANDIDATE_ACCEPTED_BY_OLD",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-prefix-prefix",
+    "before": "mcp://a.*",
+    "after": "mcp://a.*",
+    "before_family": "PREFIX",
+    "after_family": "PREFIX",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "IDENTICAL_PATTERNS",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-prefix-suffix",
+    "before": "mcp://a.*",
+    "after": "mcp://*.x",
+    "before_family": "PREFIX",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "matrix",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "x.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "matrix-suffix-empty",
+    "before": "mcp://*.x",
+    "after": "",
+    "before_family": "SUFFIX",
+    "after_family": "EMPTY",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "CANDIDATE_EMPTY",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-suffix-global",
+    "before": "mcp://*.x",
+    "after": "*",
+    "before_family": "SUFFIX",
+    "after_family": "GLOBAL",
+    "coverage": [
+      "matrix",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "a",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "matrix-suffix-typed_all",
+    "before": "mcp://*.x",
+    "after": "mcp://*",
+    "before_family": "SUFFIX",
+    "after_family": "TYPED_ALL",
+    "coverage": [
+      "matrix",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "matrix-suffix-exact",
+    "before": "mcp://*.x",
+    "after": "mcp://a.x",
+    "before_family": "SUFFIX",
+    "after_family": "EXACT",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "EXACT_CANDIDATE_ACCEPTED_BY_OLD",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "matrix-suffix-prefix",
+    "before": "mcp://*.x",
+    "after": "mcp://a.*",
+    "before_family": "SUFFIX",
+    "after_family": "PREFIX",
+    "coverage": [
+      "matrix",
+      "seed-2"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "a.y",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "matrix-suffix-suffix",
+    "before": "mcp://*.x",
+    "after": "mcp://*.x",
+    "before_family": "SUFFIX",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "matrix"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "IDENTICAL_PATTERNS",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "different-type-typed_all-typed_all",
+    "before": "mcp://*",
+    "after": "rpc://*",
+    "before_family": "TYPED_ALL",
+    "after_family": "TYPED_ALL",
+    "coverage": [
+      "different-type",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "rpc",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "different-type-typed_all-exact",
+    "before": "mcp://*",
+    "after": "rpc://a.x",
+    "before_family": "TYPED_ALL",
+    "after_family": "EXACT",
+    "coverage": [
+      "different-type",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "rpc",
+      "witness_name": "a.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "different-type-typed_all-prefix",
+    "before": "mcp://*",
+    "after": "rpc://a.*",
+    "before_family": "TYPED_ALL",
+    "after_family": "PREFIX",
+    "coverage": [
+      "different-type",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "rpc",
+      "witness_name": "a.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "different-type-typed_all-suffix",
+    "before": "mcp://*",
+    "after": "rpc://*.x",
+    "before_family": "TYPED_ALL",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "different-type",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "rpc",
+      "witness_name": "x.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "different-type-exact-typed_all",
+    "before": "mcp://a.x",
+    "after": "rpc://*",
+    "before_family": "EXACT",
+    "after_family": "TYPED_ALL",
+    "coverage": [
+      "different-type",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "rpc",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "different-type-exact-exact",
+    "before": "mcp://a.x",
+    "after": "rpc://a.x",
+    "before_family": "EXACT",
+    "after_family": "EXACT",
+    "coverage": [
+      "different-type",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "rpc",
+      "witness_name": "a.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "different-type-exact-prefix",
+    "before": "mcp://a.x",
+    "after": "rpc://a.*",
+    "before_family": "EXACT",
+    "after_family": "PREFIX",
+    "coverage": [
+      "different-type",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "rpc",
+      "witness_name": "a.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "different-type-exact-suffix",
+    "before": "mcp://a.x",
+    "after": "rpc://*.x",
+    "before_family": "EXACT",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "different-type",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "rpc",
+      "witness_name": "x.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "different-type-prefix-typed_all",
+    "before": "mcp://a.*",
+    "after": "rpc://*",
+    "before_family": "PREFIX",
+    "after_family": "TYPED_ALL",
+    "coverage": [
+      "different-type",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "rpc",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "different-type-prefix-exact",
+    "before": "mcp://a.*",
+    "after": "rpc://a.x",
+    "before_family": "PREFIX",
+    "after_family": "EXACT",
+    "coverage": [
+      "different-type",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "rpc",
+      "witness_name": "a.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "different-type-prefix-prefix",
+    "before": "mcp://a.*",
+    "after": "rpc://a.*",
+    "before_family": "PREFIX",
+    "after_family": "PREFIX",
+    "coverage": [
+      "different-type",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "rpc",
+      "witness_name": "a.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "different-type-prefix-suffix",
+    "before": "mcp://a.*",
+    "after": "rpc://*.x",
+    "before_family": "PREFIX",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "different-type",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "rpc",
+      "witness_name": "x.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "different-type-suffix-typed_all",
+    "before": "mcp://*.x",
+    "after": "rpc://*",
+    "before_family": "SUFFIX",
+    "after_family": "TYPED_ALL",
+    "coverage": [
+      "different-type",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "rpc",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "different-type-suffix-exact",
+    "before": "mcp://*.x",
+    "after": "rpc://a.x",
+    "before_family": "SUFFIX",
+    "after_family": "EXACT",
+    "coverage": [
+      "different-type",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "rpc",
+      "witness_name": "a.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "different-type-suffix-prefix",
+    "before": "mcp://*.x",
+    "after": "rpc://a.*",
+    "before_family": "SUFFIX",
+    "after_family": "PREFIX",
+    "coverage": [
+      "different-type",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "rpc",
+      "witness_name": "a.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "different-type-suffix-suffix",
+    "before": "mcp://*.x",
+    "after": "rpc://*.x",
+    "before_family": "SUFFIX",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "different-type",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "rpc",
+      "witness_name": "x.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "exact-other-name",
+    "before": "mcp://a.x",
+    "after": "mcp://a.y",
+    "before_family": "EXACT",
+    "after_family": "EXACT",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "a.y",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "prefix-child",
+    "before": "mcp://a.*",
+    "after": "mcp://a.b.*",
+    "before_family": "PREFIX",
+    "after_family": "PREFIX",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "PREFIX_HIERARCHY",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "suffix-child",
+    "before": "mcp://*.x",
+    "after": "mcp://*.a.x",
+    "before_family": "SUFFIX",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "SUFFIX_HIERARCHY",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "prefix-reverse-hierarchy",
+    "before": "mcp://a.b.*",
+    "after": "mcp://a.*",
+    "before_family": "PREFIX",
+    "after_family": "PREFIX",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "a.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "suffix-reverse-hierarchy",
+    "before": "mcp://*.a.x",
+    "after": "mcp://*.x",
+    "before_family": "SUFFIX",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "x.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "prefix-dot-boundary",
+    "before": "mcp://a.*",
+    "after": "mcp://ab.*",
+    "before_family": "PREFIX",
+    "after_family": "PREFIX",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "ab.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "suffix-dot-boundary",
+    "before": "mcp://*.a",
+    "after": "mcp://*.ba",
+    "before_family": "SUFFIX",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "x.ba",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "prefix-own-base-exact",
+    "before": "mcp://a.*",
+    "after": "mcp://a",
+    "before_family": "PREFIX",
+    "after_family": "EXACT",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "a",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "suffix-own-base-exact",
+    "before": "mcp://*.a",
+    "after": "mcp://a",
+    "before_family": "SUFFIX",
+    "after_family": "EXACT",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "a",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "prefix-exact-nested",
+    "before": "mcp://a.*",
+    "after": "mcp://a.b.c",
+    "before_family": "PREFIX",
+    "after_family": "EXACT",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "EXACT_CANDIDATE_ACCEPTED_BY_OLD",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "suffix-exact-nested",
+    "before": "mcp://*.c",
+    "after": "mcp://a.b.c",
+    "before_family": "SUFFIX",
+    "after_family": "EXACT",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "EXACT_CANDIDATE_ACCEPTED_BY_OLD",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "prefix-case-base",
+    "before": "mcp://a.*",
+    "after": "mcp://A.*",
+    "before_family": "PREFIX",
+    "after_family": "PREFIX",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "A.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "suffix-case-base",
+    "before": "mcp://*.a",
+    "after": "mcp://*.A",
+    "before_family": "SUFFIX",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "x.A",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "exact-case-name",
+    "before": "mcp://a",
+    "after": "mcp://A",
+    "before_family": "EXACT",
+    "after_family": "EXACT",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "A",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "case-scheme",
+    "before": "MCP://*",
+    "after": "mcp://*",
+    "before_family": "TYPED_ALL",
+    "after_family": "TYPED_ALL",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "custom-scheme",
+    "before": "z+1.-://*",
+    "after": "z+1.-://A_b-0",
+    "before_family": "TYPED_ALL",
+    "after_family": "EXACT",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "OLD_TYPED_ALL",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "custom-scheme-prefix",
+    "before": "z+1.-://A_b-0.*",
+    "after": "z+1.-://A_b-0.C.*",
+    "before_family": "PREFIX",
+    "after_family": "PREFIX",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "PREFIX_HIERARCHY",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "custom-scheme-suffix",
+    "before": "z+1.-://*.A_b-0",
+    "after": "z+1.-://*.C.A_b-0",
+    "before_family": "SUFFIX",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "SUFFIX_HIERARCHY",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "global-first-seed-trap",
+    "before": "a://*",
+    "after": "*",
+    "before_family": "TYPED_ALL",
+    "after_family": "GLOBAL",
+    "coverage": [
+      "special",
+      "seed-2"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "b",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "global-first-exact-trap",
+    "before": "a://x",
+    "after": "*",
+    "before_family": "EXACT",
+    "after_family": "GLOBAL",
+    "coverage": [
+      "special",
+      "seed-2"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "b",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "global-other-type-first",
+    "before": "b://*",
+    "after": "*",
+    "before_family": "TYPED_ALL",
+    "after_family": "GLOBAL",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "a",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "typed-first-seed-trap",
+    "before": "mcp://x",
+    "after": "mcp://*",
+    "before_family": "EXACT",
+    "after_family": "TYPED_ALL",
+    "coverage": [
+      "special",
+      "seed-2"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "y",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "typed-second-overlap-first",
+    "before": "mcp://y",
+    "after": "mcp://*",
+    "before_family": "EXACT",
+    "after_family": "TYPED_ALL",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "prefix-first-exact-trap",
+    "before": "mcp://a.x",
+    "after": "mcp://a.*",
+    "before_family": "EXACT",
+    "after_family": "PREFIX",
+    "coverage": [
+      "special",
+      "seed-2"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "a.y",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "prefix-second-overlap-first",
+    "before": "mcp://a.y",
+    "after": "mcp://a.*",
+    "before_family": "EXACT",
+    "after_family": "PREFIX",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "a.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "suffix-first-exact-trap",
+    "before": "mcp://x.a",
+    "after": "mcp://*.a",
+    "before_family": "EXACT",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "special",
+      "seed-2"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "y.a",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "suffix-second-overlap-first",
+    "before": "mcp://y.a",
+    "after": "mcp://*.a",
+    "before_family": "EXACT",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "x.a",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "prefix-to-suffix-second-seed",
+    "before": "mcp://x.*",
+    "after": "mcp://*.a",
+    "before_family": "PREFIX",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "special",
+      "seed-2"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "y.a",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "suffix-to-prefix-second-seed",
+    "before": "mcp://*.x",
+    "after": "mcp://a.*",
+    "before_family": "SUFFIX",
+    "after_family": "PREFIX",
+    "coverage": [
+      "special",
+      "seed-2"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "a.y",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "prefix-to-suffix-first-seed",
+    "before": "mcp://y.*",
+    "after": "mcp://*.a",
+    "before_family": "PREFIX",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "x.a",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "suffix-to-prefix-first-seed",
+    "before": "mcp://*.y",
+    "after": "mcp://a.*",
+    "before_family": "SUFFIX",
+    "after_family": "PREFIX",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "mcp",
+      "witness_name": "a.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "empty-before-after",
+    "before": "",
+    "after": "",
+    "before_family": "EMPTY",
+    "after_family": "EMPTY",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "CANDIDATE_EMPTY",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "global-before-empty",
+    "before": "*",
+    "after": "",
+    "before_family": "GLOBAL",
+    "after_family": "EMPTY",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "CANDIDATE_EMPTY",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "global-before-global",
+    "before": "*",
+    "after": "*",
+    "before_family": "GLOBAL",
+    "after_family": "GLOBAL",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "IDENTICAL_PATTERNS",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "prefix-after-empty",
+    "before": "mcp://a.*",
+    "after": "",
+    "before_family": "PREFIX",
+    "after_family": "EMPTY",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "CANDIDATE_EMPTY",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "scheme-dot-canonical",
+    "before": "a.b://*",
+    "after": "a.b://x",
+    "before_family": "TYPED_ALL",
+    "after_family": "EXACT",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "OLD_TYPED_ALL",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "name-multiple-labels",
+    "before": "mcp://a.*",
+    "after": "mcp://a.b_c.d-0",
+    "before_family": "PREFIX",
+    "after_family": "EXACT",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "EXACT_CANDIDATE_ACCEPTED_BY_OLD",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "maximum-exact-pattern-empty",
+    "before": "",
+    "after": "a://nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+    "before_family": "EMPTY",
+    "after_family": "EXACT",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "a",
+      "witness_name": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "maximum-prefix-pattern-empty",
+    "before": "",
+    "after": "a://nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn.*",
+    "before_family": "EMPTY",
+    "after_family": "PREFIX",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "a",
+      "witness_name": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn.x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "maximum-suffix-pattern-empty",
+    "before": "",
+    "after": "a://*.nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+    "before_family": "EMPTY",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "a",
+      "witness_name": "x.nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "maximum-typed-all-pattern-empty",
+    "before": "",
+    "after": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa://*",
+    "before_family": "EMPTY",
+    "after_family": "TYPED_ALL",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "maximum-exact-pattern-identical",
+    "before": "a://nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+    "after": "a://nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+    "before_family": "EXACT",
+    "after_family": "EXACT",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "IDENTICAL_PATTERNS",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "maximum-prefix-pattern-global",
+    "before": "*",
+    "after": "a://nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn.*",
+    "before_family": "GLOBAL",
+    "after_family": "PREFIX",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "OLD_GLOBAL",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "maximum-suffix-pattern-global",
+    "before": "*",
+    "after": "a://*.nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+    "before_family": "GLOBAL",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "OLD_GLOBAL",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "maximum-prefix-second-seed",
+    "before": "a://nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn.x",
+    "after": "a://nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn.*",
+    "before_family": "EXACT",
+    "after_family": "PREFIX",
+    "coverage": [
+      "special",
+      "seed-2"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "a",
+      "witness_name": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn.y",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "maximum-suffix-second-seed",
+    "before": "a://x.nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+    "after": "a://*.nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+    "before_family": "EXACT",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "special",
+      "seed-2"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "a",
+      "witness_name": "y.nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "maximum-scheme-case",
+    "before": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa://*",
+    "after": "Aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa://*",
+    "before_family": "TYPED_ALL",
+    "after_family": "TYPED_ALL",
+    "coverage": [
+      "special",
+      "seed-1"
+    ],
+    "want": {
+      "status": "WIDENING_WITNESS",
+      "rule_id": "CHECKED_CANDIDATE_REQUEST",
+      "supported_subset": false,
+      "has_witness": true,
+      "witness_type": "Aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "witness_name": "x",
+      "before_match": false,
+      "after_match": true
+    }
+  },
+  {
+    "name": "maximum-prefix-hierarchy",
+    "before": "a://n.*",
+    "after": "a://n.mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm.*",
+    "before_family": "PREFIX",
+    "after_family": "PREFIX",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "PREFIX_HIERARCHY",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  },
+  {
+    "name": "maximum-suffix-hierarchy",
+    "before": "a://*.n",
+    "after": "a://*.mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm.n",
+    "before_family": "SUFFIX",
+    "after_family": "SUFFIX",
+    "coverage": [
+      "special"
+    ],
+    "want": {
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "SUFFIX_HIERARCHY",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    }
+  }
+]

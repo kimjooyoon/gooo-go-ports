@@ -9,7 +9,9 @@ Original files and `Copyright 2026 Google LLC` notices are preserved byte-for-by
 as `.go.txt` source archives. The original Apache-2.0 license is preserved in
 `upstream/LICENSE` and `LICENSE-APACHE-2.0`. The standard-library oracle copies
 the exact original function bytes; its wrapper and the original Gooo request-level
-impact composition are distinct from the upstream matcher.
+impact and single-pattern refinement compositions are distinct from the upstream
+matcher. The refinement rules and candidate-witness construction are original
+Gooo code; they are not a Google Agent Mesh API or policy applier.
 
 This example is independently developed. It does not imply Google endorsement
 or complete Agent Mesh compatibility.

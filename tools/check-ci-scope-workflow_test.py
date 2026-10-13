@@ -206,7 +206,7 @@ def validate(text):
         require("./.gooo check " + source in declarations, "literal declaration check missing: " + source)
     for source in ("ports/cel/scalar_access.gooo", "examples/cel-api-policy/main.gooo"):
         require("./.gooo check " + source in declarations, "CEL declaration check missing: " + source)
-    for source in ("ports/agentmesh/service_pattern.gooo", "examples/agentmesh-service-policy/impact.gooo"):
+    for source in ("ports/agentmesh/service_pattern.gooo", "examples/agentmesh-service-policy/impact.gooo", "examples/agentmesh-service-policy/refinement.gooo"):
         require("./.gooo check " + source in declarations, "AgentMesh declaration check missing: " + source)
     mesh = named["Verify the Agent Mesh service-pattern adaptation"]
     require('python3 -B examples/agentmesh-service-policy/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/agentmesh-service-policy"' in mesh,
@@ -219,7 +219,12 @@ def validate(text):
                   '.strict_json.max_component_bytes == 128', '.verifier_helper_contracts.native_array_cardinality == true',
                   '.verifier_helper_contracts.all_raw_impact_facts_and_strict_types == true',
                   '.verifier_helper_contracts.complete_typed_workspace_delivery_identity == true',
-                  '.verifier_helper_contracts.optimized_python_refused == true', 'out/agentmesh-service-policy/verification.json'):
+                  '.verifier_helper_contracts.optimized_python_refused == true',
+                  '.refinement.cases == 101', '.refinement.fields_compared == 8', '.refinement.family_cells == 36',
+                  '.refinement.fresh_oracle_witnesses == 63', '.refinement.fresh_oracle_matcher_observations == 126',
+                  '.refinement.workspace_batches | length) == 7', '.refinement.workspace_batches[].case_count] | add) == 101',
+                  '.verifier_helper_contracts.all_raw_refinement_facts_and_strict_types == true',
+                  '.verifier_helper_contracts.checked_witness_domain == true', 'out/agentmesh-service-policy/verification.json'):
         require(token in mesh, "AgentMesh receipt contract missing: " + token)
     cel = named["Verify the imported CEL API policy"]
     require("go -C examples/cel-api-policy/oracle mod download" in cel,
@@ -370,6 +375,10 @@ class WorkflowScopeTests(unittest.TestCase):
                               ('"FINITE_FRESH_ORACLE_NATIVE_WORKSPACE_REPLAY_PASS"', '"PASS"'),
                               ('.matcher.total_cases == 63', '.matcher.total_cases >= 1'),
                               ('.original_impact.fields_compared == 3', '.original_impact.fields_compared == 1'),
+                              ('.refinement.cases == 101', '.refinement.cases >= 1'),
+                              ('.refinement.fields_compared == 8', '.refinement.fields_compared == 3'),
+                              ('.refinement.fresh_oracle_matcher_observations == 126', '.refinement.fresh_oracle_matcher_observations == 0'),
+                              ('.verifier_helper_contracts.checked_witness_domain == true', '.verifier_helper_contracts.checked_witness_domain == false'),
                               ('.verifier_helper_contracts.complete_typed_workspace_delivery_identity == true', '.verifier_helper_contracts.complete_typed_workspace_delivery_identity == false'),
                               ('out/agentmesh-service-policy/verification.json', 'out/other.json')):
             with self.subTest(before=before), self.assertRaises(ValueError):

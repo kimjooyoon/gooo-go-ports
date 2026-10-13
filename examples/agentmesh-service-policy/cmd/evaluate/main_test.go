@@ -58,3 +58,28 @@ func TestCLICountAndByteBoundaries(t *testing.T) {
 		t.Fatal("1MiB boundary rejected", err)
 	}
 }
+
+func TestCLIRefinementAndWholeBatchRefusal(t *testing.T) {
+	good := `{"before":"mcp://*.x","after":"mcp://a.*"}`
+	var out bytes.Buffer
+	if err := run("refinement", 0, strings.NewReader("["+good+"]"), &out); err != nil {
+		t.Fatal(err)
+	}
+	var result []servicepolicy.RefinementProof
+	if json.Unmarshal(out.Bytes(), &result) != nil || len(result) != 1 {
+		t.Fatal("refinement result shape")
+	}
+	d := result[0].Decision
+	if d.Status != "WIDENING_WITNESS" || d.RuleID != "CHECKED_CANDIDATE_REQUEST" || d.SupportedSubset || !d.HasWitness || d.WitnessType != "mcp" || d.WitnessName != "a.y" || d.BeforeMatch || !d.AfterMatch {
+		t.Fatalf("Gooo second witness differs: %+v", d)
+	}
+	for _, bad := range []string{"[]", "null", "[" + good + ",{}]", "[" + good + `,{"before":"mcp://*.a.*","after":""}]`, "[" + good + `,{"before":"*","after":"mcp://a/path"}]`, "[" + good + `] {}`, strings.Repeat(" ", servicepolicy.MaxBatchBytes+1), "[" + strings.TrimSuffix(strings.Repeat(good+",", servicepolicy.MaxBatchCount+1), ",") + "]"} {
+		out.Reset()
+		if err := run("refinement", 0, strings.NewReader(bad), &out); err == nil {
+			t.Fatal("invalid refinement batch accepted")
+		}
+		if out.Len() != 0 {
+			t.Fatal("partial refinement output escaped whole-batch refusal")
+		}
+	}
+}

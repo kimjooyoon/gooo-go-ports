@@ -9,16 +9,16 @@ from pathlib import Path
 if not __debug__: raise SystemExit("Python optimization disables integrity assertions; run without -O/PYTHONOPTIMIZE")
 ROOT=Path(__file__).resolve().parent
 REPO=ROOT.parents[1]
-CANONICAL={"matcher.gooo":"ports/agentmesh/service_pattern.gooo","upstream/LICENSE":"ports/agentmesh/LICENSE-APACHE-2.0","matcher-workspace.json":"agentmesh-matcher.workspace.json","impact-workspace.json":"service-grant-impact.workspace.json"}
-PUBLIC_SOURCES={"ports/agentmesh/service_pattern.gooo":"matcher.gooo","ports/agentmesh/LICENSE-APACHE-2.0":"upstream/LICENSE","examples/agentmesh-service-policy/impact.gooo":"impact.gooo","agentmesh-matcher.workspace.json":"matcher-workspace.json","service-grant-impact.workspace.json":"impact-workspace.json"}
+CANONICAL={"matcher.gooo":"ports/agentmesh/service_pattern.gooo","upstream/LICENSE":"ports/agentmesh/LICENSE-APACHE-2.0","matcher-workspace.json":"agentmesh-matcher.workspace.json","impact-workspace.json":"service-grant-impact.workspace.json","refinement-workspace.json":"service-grant-refinement.workspace.json"}
+PUBLIC_SOURCES={"ports/agentmesh/service_pattern.gooo":"matcher.gooo","ports/agentmesh/LICENSE-APACHE-2.0":"upstream/LICENSE","examples/agentmesh-service-policy/impact.gooo":"impact.gooo","agentmesh-matcher.workspace.json":"matcher-workspace.json","service-grant-impact.workspace.json":"impact-workspace.json","examples/agentmesh-service-policy/refinement.gooo":"refinement.gooo","service-grant-refinement.workspace.json":"refinement-workspace.json"}
 PIN='83928fa4538245abe33b08549da47f8cbdc50ed2'
 MODULE='github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy'
-FILES=['matcher.gooo','impact.gooo','matcher-workspace.json','impact-workspace.json','source-pin.json','compiler.json','upstream/LICENSE','upstream/api/tar.go.txt','upstream/api/network.go.txt','upstream/api/tar_test.go.txt','evidence/oracle-extracted.go.txt','evidence/extraction.json','evidence/oracle-go.mod.txt','evidence/oracle-command.go.txt','evidence/observations.json','evidence/repository-adaptation.json','matcher-cases.json','impact-cases.json']
-for prefix in ['matcher','impact']:
+FILES=['matcher.gooo','impact.gooo','refinement.gooo','matcher-workspace.json','impact-workspace.json','refinement-workspace.json','source-pin.json','compiler.json','upstream/LICENSE','upstream/api/tar.go.txt','upstream/api/network.go.txt','upstream/api/tar_test.go.txt','evidence/oracle-extracted.go.txt','evidence/extraction.json','evidence/oracle-go.mod.txt','evidence/oracle-command.go.txt','evidence/observations.json','evidence/repository-adaptation.json','matcher-cases.json','impact-cases.json','refinement-cases.json']
+for prefix in ['matcher','impact','refinement']:
     FILES+=['receipts/'+prefix+'-'+suffix for suffix in ['program.json','lowered.gooo','body-codegen.json','seed-cases.json']]+['internal/'+prefix+'/generated.go']
 FILES+=['model.go','domain.go','input.go','bridge.go','bindings.go','adapter_generated.go','cmd/evaluate/main.go','generate.py','verification_checks.py','verify.py','go.mod']
 MIRRORS={'evidence/oracle-extracted.go.txt': 'oracle/extracted.go', 'evidence/extraction.json': 'oracle/extraction.json', 'evidence/oracle-go.mod.txt': 'oracle/go.mod', 'evidence/oracle-command.go.txt': 'oracle/cmd/oracle/main.go', 'evidence/observations.json': 'oracle/observations.json'}
-CONFIGS=[('matcher','go/google/agentmesh/api','MatchServicePattern','gooo://agentmesh-prototype/match-service-pattern','(string,string,string)','bool'),('impact','app/service-grant-impact','CompareServiceGrant','gooo://service-impact/compare','(string,string,string,string)','GrantImpact')]
+CONFIGS=[('matcher','go/google/agentmesh/api','MatchServicePattern','gooo://agentmesh-prototype/match-service-pattern','(string,string,string)','bool'),('impact','app/service-grant-impact','CompareServiceGrant','gooo://service-impact/compare','(string,string,string,string)','GrantImpact'),('refinement','app/service-grant-refinement','AnalyzeServiceGrant','gooo://service-refinement/analyze','(string,string)','GrantRefinement')]
 def digest(raw):return 'sha256:'+hashlib.sha256(raw).hexdigest()
 def encoded(value):return (json.dumps(value,indent=2,sort_keys=True)+'\n').encode()
 def source_digest(raw):
@@ -52,9 +52,9 @@ def main():
             raw=run(prefix+'-execute',[args.compiler,'package','execute','--json','--cases',casepath,'--go',args.go,workspace],cwd=REPO);receipt=json.loads(raw)
             assert receipt['schema']=='gooo/workspace-body-execution-receipt/v1' and receipt['decision']=='PASS' and receipt['manifest_digest']==digest((REPO/workspace).read_bytes()) and receipt['cases_digest']==digest(casepath.read_bytes())
             p=receipt['result']['program'];assert p['schema']=='gooo/workspace-body-program/v1' and p['entry']['package_path']==pkg and p['entry']['activity']==activity and p['entry']['lowered_name']
-            expected={'ports/agentmesh/service_pattern.gooo'}|({'examples/agentmesh-service-policy/impact.gooo'} if prefix=='impact' else set());sources={s['filename']:s['source_digest'] for package in p['workspace_image']['packages'] for s in package['sources']}
+            expected={'ports/agentmesh/service_pattern.gooo'}|({'examples/agentmesh-service-policy/'+prefix+'.gooo'} if prefix!='matcher' else set());sources={s['filename']:s['source_digest'] for package in p['workspace_image']['packages'] for s in package['sources']}
             assert set(sources)==expected and all(sha==source_digest((REPO/name).read_bytes()) for name,sha in sources.items())
-            if prefix=='impact':assert len(p['pure_calls']['sites'])==2 and all(site['caller']=='app/service-grant-impact:CompareServiceGrant' and site['callee']=='go/google/agentmesh/api:MatchServicePattern' for site in p['pure_calls']['sites'])
+            if prefix!='matcher':assert len(p['pure_calls']['sites'])==({'impact':2,'refinement':5}[prefix]) and all(site['caller']==pkg+':'+activity and site['callee']=='go/google/agentmesh/api:MatchServicePattern' for site in p['pure_calls']['sites'])
             rt=receipt['result']['runtime'];assert rt['producer_source_sha']==PIN and rt['go_version'].split()[:3]==['go','version','go1.27.2'] and rt['projection_replayed'] and rt['runtime_replayed'] and rt['finite_passed']==rt['finite_total']==len(rows)
             receipt_path=out/(prefix+'-execute.stdout')
             replay=json.loads(run(prefix+'-replay',[args.compiler,'package','replay','--json','--receipt',receipt_path,'--cases',casepath,'--go',args.go,workspace],cwd=REPO))
@@ -63,6 +63,16 @@ def main():
             bodyraw=run(prefix+'-body-codegen',[args.compiler,'body-codegen','--json','--activity',p['entry']['lowered_name'],lowerfile]);body=json.loads(bodyraw);r=body['report']
             assert r['schema']=='gooo/body-codegen-report/v3' and r['decision']=='PASS' and r['activity']==p['entry']['lowered_name'] and r['activity_id']==activity_id and r['input_type']==input_type and r['output_type']==output_type
             assert r['compiler_source_sha']==PIN and r['source_digest']==digest(lowered) and r['generated_digest']==r['replay_digest']==digest(body['source'].encode()) and r['typecheck_passed'] and r['deterministic_replay'] and r['repository_writes']==0
+            if prefix=='refinement':
+                names=['status','rule_id','supported_subset','has_witness','witness_type','witness_name','before_match','after_match']
+                assert len(r['record_types'])==1 and r['record_types'][0]['name']=='GrantRefinement' and r['record_types'][0]['id']=='gooo://service-refinement/decision/v1'
+                fields=r['record_types'][0]['fields'];assert len(fields)==len(names)
+                for i,f in enumerate(fields):
+                    assert f['name']==names[i] and f['id']=='gooo://service-refinement/'+names[i] and f['type_id']=='urn:gooo:type:'+('boolean' if i in [2,3,6,7] else 'string')
+            public_body=ROOT/'receipts'/(prefix+'-body-codegen.json')
+            # Preserve existing receipt bytes if only excluded timing/environment
+            # metadata changed; all semantic generation data was freshly checked.
+            if public_body.exists() and stable_body(json.loads(public_body.read_bytes()))==stable_body(body):bodyraw=public_body.read_bytes()
             produced['receipts/'+prefix+'-program.json']=encoded(p);produced['receipts/'+prefix+'-lowered.gooo']=lowered;produced['receipts/'+prefix+'-body-codegen.json']=bodyraw
             produced['internal/'+prefix+'/generated.go']=run(prefix+'-gofmt',[args.go.parent/'gofmt'],body['source'].encode());entries[prefix]=p['entry']['lowered_name']
             if args.check:assert stable_body(json.loads((ROOT/'receipts'/(prefix+'-body-codegen.json')).read_bytes()))==stable_body(body)
@@ -71,10 +81,12 @@ package servicepolicy
 import (
  matcher "%s/internal/matcher"
  impact "%s/internal/impact"
+ refinement "%s/internal/refinement"
 )
 func nativeMatcher(f MatcherFacts) bool { return matcher.%s(f.Pattern,f.ReqType,f.ReqName) }
 func nativeImpact(f ImpactFacts) any { return impact.%s(f.Before,f.After,f.ReqType,f.ReqName) }
-'''%(MODULE,MODULE,entries['matcher'],entries['impact'])
+func nativeRefinement(f RefinementFacts) any { return refinement.%s(f.Before,f.After) }
+'''%(MODULE,MODULE,MODULE,entries['matcher'],entries['impact'],entries['refinement'])
     produced['adapter_generated.go']=run('adapter-gofmt',[args.go.parent/'gofmt'],adapter.encode())
     if args.check:
         for name,raw in produced.items():

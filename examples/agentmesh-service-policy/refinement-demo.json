@@ -1,0 +1,18 @@
+[
+  {
+    "before": "mcp://a.*",
+    "after": "mcp://a.b.*"
+  },
+  {
+    "before": "mcp://*.x",
+    "after": "mcp://a.*"
+  },
+  {
+    "before": "",
+    "after": "a://nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"
+  },
+  {
+    "before": "*",
+    "after": ""
+  }
+]

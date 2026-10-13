@@ -4,6 +4,7 @@ package servicepolicy
 import (
 	impact "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy/internal/impact"
 	matcher "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy/internal/matcher"
+	refinement "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy/internal/refinement"
 )
 
 func nativeMatcher(f MatcherFacts) bool {
@@ -11,4 +12,7 @@ func nativeMatcher(f MatcherFacts) bool {
 }
 func nativeImpact(f ImpactFacts) any {
 	return impact.GoooPackage1ActivityCompareServiceGrant(f.Before, f.After, f.ReqType, f.ReqName)
+}
+func nativeRefinement(f RefinementFacts) any {
+	return refinement.GoooPackage1ActivityAnalyzeServiceGrant(f.Before, f.After)
 }
