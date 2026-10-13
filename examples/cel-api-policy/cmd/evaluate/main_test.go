@@ -32,3 +32,44 @@ func TestCLIUsesNativeResultAndValidatesWholeBatch(t *testing.T) {
 		t.Fatal("invalid mode accepted")
 	}
 }
+
+func TestReplayCLIHistoricalResultAndTransactionalFailure(t *testing.T) {
+	f := nativepolicy.APIFacts{Facts: nativepolicy.Facts{GroupPresent: true, GroupValue: "admin", PrincipalPresent: true, PrincipalValue: "synthetic:user"}, Authenticated: true, CallerTenant: "tenant", ResourceTenant: "tenant", RequestedAction: "read", AllowedAction: "read"}
+	p, err := nativepolicy.EvaluateAPI(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, _ := json.Marshal(p)
+	batch := "[" + string(raw) + "]"
+	var out bytes.Buffer
+	if err := run("replay-api", 0, strings.NewReader(batch), &out); err != nil {
+		t.Fatal(err)
+	}
+	var replay []nativepolicy.APIReplay
+	if json.Unmarshal(out.Bytes(), &replay) != nil || len(replay) != 1 || replay[0].Status != "HISTORICALLY_CONSISTENT" || replay[0].Decision != p.Decision {
+		t.Fatal("historical CLI result changed")
+	}
+	p.Decision.Reason = "tampered"
+	badDecision, _ := json.Marshal(p)
+	p.Decision.Reason = "ALLOW"
+	p.Bindings.GenerationSHA256 = "sha256:wrong"
+	badBinding, _ := json.Marshal(p)
+	for label, bad := range map[string]string{
+		"later_schema":   "[" + string(raw) + ",{}]",
+		"later_decision": "[" + string(raw) + "," + string(badDecision) + "]",
+		"later_binding":  "[" + string(raw) + "," + string(badBinding) + "]",
+		"trailing":       batch + " {}", "empty": "[]", "null": "null",
+		"over4MiB": strings.Repeat(" ", nativepolicy.MaxBatchBytes+1),
+		"over1024": "[" + strings.TrimSuffix(strings.Repeat(`{}`+",", nativepolicy.MaxBatchCount+1), ",") + "]",
+	} {
+		t.Run(label, func(t *testing.T) {
+			out.Reset()
+			if err := run("replay-api", 0, strings.NewReader(bad), &out); err == nil {
+				t.Fatal("bad saved batch accepted")
+			}
+			if out.Len() != 0 {
+				t.Fatal("partial historical batch emitted")
+			}
+		})
+	}
+}

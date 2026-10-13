@@ -272,6 +272,14 @@ counts. Authenticating supplied facts and enforcing effects remain application
 responsibilities; this is neither a complete CEL implementation nor a production
 authorization service.
 
+The native example also supports keeping an API decision in a private file and
+verifying it later with `VerifyAPIProof`. Its Go host example re-evaluates all
+fifteen observations through the generated Gooo policy and requires the same
+complete bound source generation. A changed decision or another generation is
+rejected automatically. This checks historical consistency; current identity,
+current permissions and external effects still belong to the host. See the
+[save and replay walkthrough](examples/cel-api-policy/README.md).
+
 For a fixed snapshot, choose an [experimental release](https://github.com/kimjooyoon/gooo-go-ports/releases).
 Each release page lists its included tools and separate source, execution/replay
 evidence, and standalone browser archives, with licenses, provenance, and checksums.

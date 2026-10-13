@@ -17,12 +17,12 @@ const CompilerPin = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 // Canonical mirrors are compared with the original importing workspace by
 // generate.py --check. The original imports are lowered by actual seed execution.
 //
-//go:embed canonical/* receipts/* internal/scalar/generated.go internal/api/generated.go compiler.json adapter_generated.go model.go bridge.go bindings.go input.go cmd/evaluate/main.go generate.py generation.json
+//go:embed canonical/* receipts/* internal/scalar/generated.go internal/api/generated.go compiler.json adapter_generated.go model.go bridge.go bindings.go input.go cmd/evaluate/main.go replay.go proof_input.go cmd/host/main.go generate.py generation.json
 var assets embed.FS
 
 var boundNames = []string{
 	"canonical/scalar_access.gooo", "canonical/main.gooo", "canonical/cel-scalar.workspace.json", "canonical/cel-api-policy.workspace.json",
-	"compiler.json", "adapter_generated.go", "model.go", "bridge.go", "bindings.go", "input.go", "cmd/evaluate/main.go", "generate.py", "canonical/source-pin.json",
+	"compiler.json", "adapter_generated.go", "model.go", "bridge.go", "bindings.go", "input.go", "cmd/evaluate/main.go", "replay.go", "proof_input.go", "cmd/host/main.go", "generate.py", "canonical/source-pin.json",
 	"receipts/scalar-seed-inputs.json", "receipts/scalar-execution.json", "receipts/scalar-replay.json", "receipts/scalar-lowered.gooo", "receipts/scalar-body-codegen.json", "internal/scalar/generated.go",
 	"receipts/api-seed-inputs.json", "receipts/api-execution.json", "receipts/api-replay.json", "receipts/api-lowered.gooo", "receipts/api-body-codegen.json", "internal/api/generated.go",
 }

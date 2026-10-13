@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	mode := flag.String("mode", "scalar", "scalar or original-api; JSON array on stdin")
+	mode := flag.String("mode", "scalar", "scalar, original-api or replay-api; JSON array on stdin")
 	flag.Parse()
 	if err := run(*mode, flag.NArg(), os.Stdin, os.Stdout); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -21,19 +21,33 @@ func main() {
 }
 
 func run(mode string, extra int, input io.Reader, output io.Writer) error {
-	if extra != 0 || (mode != "scalar" && mode != "original-api") {
+	if extra != 0 || (mode != "scalar" && mode != "original-api" && mode != "replay-api") {
 		return fmt.Errorf("invalid evaluator mode or arguments")
 	}
 	if _, err := nativepolicy.SourceBindings(); err != nil {
 		return err
 	}
-	const maxBatch = 4 * 1024 * 1024
+	const maxBatch = nativepolicy.MaxBatchBytes
 	raw, err := io.ReadAll(io.LimitReader(input, maxBatch+1))
 	if err != nil {
 		return err
 	}
 	if len(raw) > maxBatch {
 		return fmt.Errorf("batch exceeds 4 MiB")
+	}
+	if mode == "replay-api" {
+		proofs, err := nativepolicy.DecodeAPIProofBatch(raw)
+		if err != nil {
+			return err
+		}
+		results := make([]nativepolicy.APIReplay, len(proofs))
+		for i, proof := range proofs {
+			results[i], err = nativepolicy.VerifyAPIProof(proof)
+			if err != nil {
+				return fmt.Errorf("saved case %d: %w", i, err)
+			}
+		}
+		return json.NewEncoder(output).Encode(results)
 	}
 	var batch []json.RawMessage
 	if json.Unmarshal(raw, &batch) != nil || len(batch) == 0 || len(batch) > 1024 {

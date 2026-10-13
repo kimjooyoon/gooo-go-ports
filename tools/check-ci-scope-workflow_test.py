@@ -214,6 +214,21 @@ def validate(text):
                   '"FINITE_REAL_CEL_IMPORTED_NATIVE_AND_REPLAY_PASS"',
                   "out/cel-api-policy/verification.json"):
         require(token in cel, "CEL receipt identity check missing: " + token)
+    require('jq -e \'.schema == "gooo/cel-public-native-verification/v1" and .status == "FINITE_REAL_CEL_IMPORTED_NATIVE_AND_REPLAY_PASS"\' out/cel-api-policy/verification.json' in cel,
+            "CEL receipt assertion must read the actual verifier output")
+    for token in ('.saved_api_replay.status == "SAME_SOURCE_GENERATION_HISTORICAL_REPLAY_PASS"',
+                  '.saved_api_replay.independent_cases == 32',
+                  '.saved_api_replay.decision_fields_compared == 15',
+                  '.saved_api_replay.saved_decision_mutations_rejected == 15',
+                  '.saved_api_replay.saved_binding_asset_mutations_rejected == 28',
+                  '.saved_api_replay.active_fact_mutations_rejected == 9',
+                  '.saved_api_replay.prior_generation_rejected == true',
+                  '.saved_api_replay.consistent_synthetic_proof_accepted == true',
+                  '.saved_api_replay.consumer.fresh_process_save_reload_pairs == 2',
+                  '.saved_api_replay.consumer.current_provider_calls == 0',
+                  '.saved_api_replay.consumer.effect_calls == 0',
+                  '.saved_api_replay.consumer.application_state_unchanged == true'):
+        require(token in cel, "Saved API replay check missing: " + token)
     log = named["Report documentation-only native scope"]
     require("No new native-port execution/replay receipts" in log
             and "browser-demo job retains its separate" in log, "misleading execution scope log")
@@ -317,6 +332,13 @@ class WorkflowScopeTests(unittest.TestCase):
                               ('go -C examples/cel-api-policy/oracle mod download', 'go mod download'),
                               ('"FINITE_REAL_CEL_IMPORTED_NATIVE_AND_REPLAY_PASS"', '"PASS"'),
                               ('out/cel-api-policy/verification.json', 'out/other.json')):
+            with self.subTest(before=before), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, chunk.replace(before, after, 1), 1))
+        for before, after in (('"SAME_SOURCE_GENERATION_HISTORICAL_REPLAY_PASS"', '"PASS"'),
+                              ('.saved_api_replay.independent_cases == 32', '.saved_api_replay.independent_cases >= 1'),
+                              ('.saved_api_replay.decision_fields_compared == 15', '.saved_api_replay.decision_fields_compared == 1'),
+                              ('.saved_api_replay.prior_generation_rejected == true', '.saved_api_replay.prior_generation_rejected == false'),
+                              ('.saved_api_replay.consumer.effect_calls == 0', '.saved_api_replay.consumer.effect_calls >= 0')):
             with self.subTest(before=before), self.assertRaises(ValueError):
                 validate(self.text.replace(chunk, chunk.replace(before, after, 1), 1))
         misplaced = self.text.replace("      - name: Check Gooo declarations\n",

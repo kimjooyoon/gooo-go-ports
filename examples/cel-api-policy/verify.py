@@ -28,12 +28,13 @@ def main():
     out=args.out.resolve();out.mkdir(parents=True,exist_ok=True);os.chmod(out,0o700)
     env=os.environ.copy();env.update(GOTOOLCHAIN='local',GOWORK='off',GOPROXY='off',GOSUMDB='off')
     commands=[]
-    def run(label,cmd,data=None,cwd=REPO,expect=0):
+    def run(label,cmd,data=None,cwd=REPO,expect=0,env_override=None):
         started=datetime.datetime.now(datetime.timezone.utc).isoformat()
-        result=subprocess.run([str(x) for x in cmd],input=data,cwd=cwd,env=env,capture_output=True,timeout=60)
+        process_env=env.copy();process_env.update(env_override or {})
+        result=subprocess.run([str(x) for x in cmd],input=data,cwd=cwd,env=process_env,capture_output=True,timeout=60)
         for stream,raw in [('stdout',result.stdout),('stderr',result.stderr)]:
             path=out/(label+'.'+stream);path.write_bytes(raw);os.chmod(path,0o600)
-        commands.append({'label':label,'command':[str(x) for x in cmd],'started_at_utc':started,'finished_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'exit_code':result.returncode,'stdout':ident(out/(label+'.stdout')),'stderr':ident(out/(label+'.stderr'))})
+        commands.append({'label':label,'command':[str(x) for x in cmd],'started_at_utc':started,'finished_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'exit_code':result.returncode,'environment_overrides':env_override or {},'stdout':ident(out/(label+'.stdout')),'stderr':ident(out/(label+'.stderr'))})
         if result.returncode!=expect:raise RuntimeError(label+' unexpected process exit; inspect retained diagnostics')
         return result.stdout
     go_version=run('go-version',[args.go,'version']).decode().strip();assert go_version.split()[:3]==['go','version','go1.27.2']
@@ -74,6 +75,34 @@ def main():
             assert row['facts']==ref['facts'] and row['decision']==ref[key],ref['id']
             assert len(row['decision'])==expected_fields[name] and row['bindings']['assets']==json.loads((ROOT/'generation.json').read_bytes())['assets'] and row['bindings']['compiler_source_sha']==PIN
             assert row['bindings']['generation_sha256']=='sha256:'+digest((ROOT/'generation.json').read_bytes())
+    saved_replay=json.loads(run('native-api-proof-replay',[out/'evaluate','-mode','replay-api'],encoded(api)))
+    assert len(saved_replay)==len(api_rows)==32
+    for result, proof, reference in zip(saved_replay,api,api_rows):
+        assert result['schema']=='gooo/api-proof-replay/v1' and result['status']=='HISTORICALLY_CONSISTENT' and result['scope']=='same_bound_source_generation'
+        assert result['verified_decision_fields']==15 and result['decision']==proof['decision']==reference['expected'] and result['bindings']==proof['bindings']
+    previous_raw=(ROOT/'testdata/previous-generation.json').read_bytes();previous=json.loads(previous_raw)
+    assert previous['schema']=='gooo/cel-public-generation/v1' and len(previous['assets'])==25
+    previous_proof=json.loads(json.dumps(api[0]));previous_proof['bindings']={'compiler_source_sha':PIN,'assets':previous['assets'],'generation_sha256':'sha256:'+digest(previous_raw)}
+    prior_output=run('previous-generation-proof-rejected',[out/'evaluate','-mode','replay-api'],encoded([previous_proof]),expect=1)
+    assert prior_output==b'' and 'does not match this bound source generation' in (out/'previous-generation-proof-rejected.stderr').read_text()
+    run('host-build',[args.go,'build','-trimpath','-o',out/'host','./cmd/host'],cwd=ROOT)
+    host_private=out/'host-private';host_private.mkdir(exist_ok=True);os.chmod(host_private,0o700)
+    empty_path=out/'empty-executable-path';empty_path.mkdir(exist_ok=True);os.chmod(empty_path,0o700)
+    consumer=[]
+    for decision in ['allow','deny']:
+        proof_path=host_private/(decision+'.json')
+        # The host owns an exclusive new0600 file; a rerun must use another out
+        # directory, not overwrite a caller's retained proof.
+        saved=json.loads(run('host-save-'+decision,[out/'host','-mode','save','-proof',proof_path,'-decision',decision],cwd=host_private,env_override={'PATH':str(empty_path)}))
+        assert saved['status']=='SAVED_PRIVATE_SYNTHETIC_PROOF' and saved['bindings']==api[0]['bindings']
+        assert saved['current_provider_calls']==saved['effect_calls']==0 and saved['state_before']==saved['state_after']==42
+        assert (proof_path.stat().st_mode & 0o777)==0o600
+        stored=json.loads(proof_path.read_bytes());assert stored['bindings']==saved['bindings'] and stored['decision']['allowed']==(decision=='allow')
+        verified=json.loads(run('host-verify-'+decision,[out/'host','-mode','verify','-proof',proof_path],cwd=host_private,env_override={'PATH':str(empty_path)}))
+        assert verified['status']=='VERIFIED_HISTORY_ONLY' and verified['historical']['status']=='HISTORICALLY_CONSISTENT'
+        assert verified['historical']['decision']==stored['decision'] and verified['bindings']==verified['historical']['bindings']==stored['bindings']
+        assert verified['current_provider_calls']==verified['effect_calls']==0 and verified['state_before']==verified['state_after']==42
+        consumer.append({'saved_observation':decision,'proof':ident(proof_path),'save_process':ident(out/('host-save-'+decision+'.stdout')),'fresh_reload_process':ident(out/('host-verify-'+decision+'.stdout')),'private_file_mode':'0600','current_provider_calls':0,'effect_calls':0,'state_before':42,'state_after':42})
     def check_framework_record(record,casefile,selected,entry,prefix):
         assert record['schema']=='gooo/workspace-body-execution-receipt/v1' and record['decision']=='PASS'
         workspace='cel-scalar.workspace.json' if prefix=='scalar' else 'cel-api-policy.workspace.json'
@@ -136,10 +165,22 @@ def main():
     path=out/'scalar-text1025-inputs.json';path.write_bytes(encoded({'schema':'gooo/body-composition-inputs/v1','inputs':[{entry+'.input'+str(i):v for i,v in enumerate(vals)}]}));os.chmod(path,0o600)
     rejected=json.loads(run('scalar-text1025-probe',[args.compiler,'package','execute','--json','--inputs',path,'--go',args.go,'cel-scalar.workspace.json'],expect=1))
     assert rejected['decision']=='FAIL_CLOSED' and 'at most 1024 UTF-8 bytes' in rejected['error']
-    events=[json.loads(line) for line in tests.splitlines()];tamper=[e['Test'] for e in events if e.get('Action')=='pass' and e.get('Test','').startswith('TestEveryBoundAssetTamperRejected/')];assert len(tamper)==25
-    assert any(e.get('Action')=='pass' and e.get('Test')=='TestManifestTamperRejected' for e in events)
-    evidence={'schema':'gooo/cel-public-native-verification/v1','status':'FINITE_REAL_CEL_IMPORTED_NATIVE_AND_REPLAY_PASS','finished_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'go_version':go_version,'compiler_source_sha':PIN,'fresh_real_cel':{'case_count':52,'output_fields_compared':8,'source':ident(ROOT/'oracle/source-pin.json'),'baseline_unchanged':ident(ROOT/'oracle/observations.json'),'current_execution':ident(out/'fresh-real-cel-oracle.stdout')},'original_api':{'case_count':32,'output_fields_compared':15,'reference':ident(ROOT/'oracle/api-composition-cases.json'),'native_output':ident(out/'native-api.stdout')},'workspace_execution':suites,'framework_full_suite_size_probes':full_suite_probes,'framework_text1025_probe':rejected,'bindings':{'bound_assets':25,'all_asset_tamper_refusals':25,'manifest_tamper_refused':True,'generation':ident(ROOT/'generation.json')},'checks':{'fresh_compiler_owned_import_lowering':'PASS','fresh_projection_check':'PASS','go_test_race':'PASS','go_vet':'PASS','strict_raw_json_unicode_domain':'PASS'},'commands':commands,'limits':['One bounded codelab expression; not a generic CEL interpreter or exported upstream API','Native strictJSON adapter has65536byte validUTF8 limit; framework1024text and32KiB JSON transport gates are separate','32 original API tuples are authored expectations, not CEL authentication/API-effect evidence','Authentication/trusted context/current-state enforcement and atomic external effects remain host responsibilities','Hash consistency is not issuer authentication or executable signature','Finite84native and80overlappingworkspace tuples do not prove whole-domain or production safety']}
+    events=[json.loads(line) for line in tests.splitlines()]
+    passed=[e['Test'] for e in events if e.get('Action')=='pass' and 'Test' in e]
+    generation=json.loads((ROOT/'generation.json').read_bytes());asset_count=len(generation['assets']);assert asset_count==28
+    def passed_count(prefix):return sum(name.startswith(prefix+'/') for name in passed)
+    assert passed_count('TestEveryBoundAssetTamperRejected')==asset_count
+    assert passed_count('TestEverySavedBindingAssetTamperRejected')==asset_count
+    assert passed_count('TestEverySavedDecisionFieldTamperRejected')==15
+    assert passed_count('TestEveryActiveSavedFactMismatch')==9
+    assert passed_count('TestSavedAllIndependentAPIObservations')==32
+    assert passed_count('TestSavedBindingIdentityAndRosterRejectedBeforeFacts')==5
+    for name in ['TestManifestTamperRejected','TestSavedAbsentPlaceholdersPreservedAndIgnored','TestConsistentSyntheticForgeryIsNotIssuerAuthentication','TestPreviousGenerationRejectedExplicitly','TestSavedSchemaRejectsEveryMissingNullWrongDuplicateField','TestSavedAssetMapRejectsMalformedEntries','TestSavedEnvelopeUnicodeSizeAndTrailingRefused','TestSavedBatchLimitsAndLaterMalformedMember','TestReplayCLIHistoricalResultAndTransactionalFailure','TestHistoricalAllowedAndDeniedNeverCallCurrentProviderOrEffect','TestHostPrivateSaveReloadAndExistingFileRefusal']:
+        assert name in passed,name+' did not pass'
+    saved_evidence={'status':'SAME_SOURCE_GENERATION_HISTORICAL_REPLAY_PASS','independent_cases':32,'decision_fields_compared':15,'saved_decision_mutations_rejected':15,'saved_binding_asset_mutations_rejected':asset_count,'binding_identity_and_roster_mutations_rejected':5,'active_fact_mutations_rejected':9,'prior_generation_rejected':True,'consistent_synthetic_proof_accepted':True,'absent_raw_placeholders_preserved_and_domain_checked':True,'strict_schema_subtests':passed_count('TestSavedSchemaRejectsEveryMissingNullWrongDuplicateField'),'strict_asset_subtests':passed_count('TestSavedAssetMapRejectsMalformedEntries'),'unicode_size_trailing_subtests':passed_count('TestSavedEnvelopeUnicodeSizeAndTrailingRefused'),'transactional_cli_subtests':passed_count('TestReplayCLIHistoricalResultAndTransactionalFailure'),'native_replay_output':ident(out/'native-api-proof-replay.stdout'),'previous_generation_fixture':ident(ROOT/'testdata/previous-generation.json'),'consumer':{'fresh_process_save_reload_pairs':2,'current_provider_calls':0,'effect_calls':0,'application_state_unchanged':True,'runtime_environment':{'PATH':str(empty_path),'GOTOOLCHAIN':'local','GOWORK':'off','GOPROXY':'off','GOSUMDB':'off'},'runtime_processes_only_prebuilt_host':True,'pairs':consumer}}
+    evidence={'schema':'gooo/cel-public-native-verification/v1','status':'FINITE_REAL_CEL_IMPORTED_NATIVE_AND_REPLAY_PASS','finished_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'go_version':go_version,'compiler_source_sha':PIN,'fresh_real_cel':{'case_count':52,'output_fields_compared':8,'source':ident(ROOT/'oracle/source-pin.json'),'baseline_unchanged':ident(ROOT/'oracle/observations.json'),'current_execution':ident(out/'fresh-real-cel-oracle.stdout')},'original_api':{'case_count':32,'output_fields_compared':15,'reference':ident(ROOT/'oracle/api-composition-cases.json'),'native_output':ident(out/'native-api.stdout')},'saved_api_replay':saved_evidence,'workspace_execution':suites,'framework_full_suite_size_probes':full_suite_probes,'framework_text1025_probe':rejected,'bindings':{'bound_assets':asset_count,'all_asset_tamper_refusals':asset_count,'manifest_tamper_refused':True,'generation':ident(ROOT/'generation.json')},'checks':{'fresh_compiler_owned_import_lowering':'PASS','fresh_projection_check':'PASS','go_test_race':'PASS','go_vet':'PASS','strict_raw_json_unicode_domain':'PASS','saved_api_proof_verification':'PASS'},'commands':commands,'limits':['One bounded codelab expression; not a generic CEL interpreter or exported upstream API','Native strictJSON adapter has65536byte validUTF8 limit; framework1024text and32KiB JSON transport gates are separate','32 original API tuples are authored expectations, not CEL authentication/API-effect evidence','Historical saved proof replay is not current authorization and invokes no current-fact provider or external effect','Exact bindings identify source generation and generation producer, not host binary identity, later build toolchain, issuer authentication or factual history','A consistently forged unsigned synthetic proof can pass; different source generations are explicitly rejected','Finite84native and80overlappingworkspace tuples do not prove whole-domain or production safety']}
+
     proof=out/'verification.json';proof.write_bytes(encoded(evidence));os.chmod(proof,0o600)
-    print('PASS: fresh real-CEL52x8; importing workspaces48+32 and saved replay; native52x8+32x15; 25 bound-asset tamper refusals')
+    print('PASS: fresh real-CEL52x8; importing workspaces48+32 and saved replay; native52x8+32x15; saved API32x15; 28 asset tamper refusals; private host allow/deny reload without current lookup/effects')
 
 if __name__=='__main__':main()
