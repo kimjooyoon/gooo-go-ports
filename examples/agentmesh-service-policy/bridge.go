@@ -1,6 +1,9 @@
 package servicepolicy
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"errors"
+)
 
 func EvaluateMatcher(f MatcherFacts) (MatcherProof, error) {
 	b, err := SourceBindings()
@@ -30,4 +33,36 @@ func EvaluateImpact(f ImpactFacts) (ImpactProof, error) {
 		return ImpactProof{}, err
 	}
 	return ImpactProof{Facts: f, Decision: d, Bindings: b}, nil
+}
+
+func EvaluateRefinement(f RefinementFacts) (RefinementProof, error) {
+	b, err := SourceBindings()
+	if err != nil {
+		return RefinementProof{}, err
+	}
+	if err := ValidateRefinement(f); err != nil {
+		return RefinementProof{}, err
+	}
+	encoded, err := json.Marshal(nativeRefinement(f))
+	if err != nil {
+		return RefinementProof{}, err
+	}
+	// Require every field, including the false/empty no-witness sentinel fields.
+	var fields map[string]json.RawMessage
+	if json.Unmarshal(encoded, &fields) != nil || len(fields) != 8 {
+		return RefinementProof{}, errors.New("invalid Gooo refinement record shape")
+	}
+	for _, key := range []string{"status", "rule_id", "supported_subset", "has_witness", "witness_type", "witness_name", "before_match", "after_match"} {
+		if _, ok := fields[key]; !ok || string(fields[key]) == "null" {
+			return RefinementProof{}, errors.New("invalid Gooo refinement record field")
+		}
+	}
+	var d RefinementDecision
+	if err := json.Unmarshal(encoded, &d); err != nil {
+		return RefinementProof{}, err
+	}
+	if err := validateRefinementDecision(d); err != nil {
+		return RefinementProof{}, err
+	}
+	return RefinementProof{Facts: f, Decision: d, Bindings: b}, nil
 }

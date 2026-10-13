@@ -1,0 +1,239 @@
+{
+  "schema": "gooo/body-composition-cases/v1",
+  "cases": [
+    {
+      "inputs": {
+        "app/service-grant-refinement:AnalyzeServiceGrant.input0": "",
+        "app/service-grant-refinement:AnalyzeServiceGrant.input1": ""
+      },
+      "expected": {
+        "app/service-grant-refinement:AnalyzeServiceGrant": {
+          "status": "SUPPORTED_SUBSET",
+          "rule_id": "CANDIDATE_EMPTY",
+          "supported_subset": true,
+          "has_witness": false,
+          "witness_type": "",
+          "witness_name": "",
+          "before_match": false,
+          "after_match": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-refinement:AnalyzeServiceGrant.input0": "mcp://a",
+        "app/service-grant-refinement:AnalyzeServiceGrant.input1": "mcp://a"
+      },
+      "expected": {
+        "app/service-grant-refinement:AnalyzeServiceGrant": {
+          "status": "SUPPORTED_SUBSET",
+          "rule_id": "IDENTICAL_PATTERNS",
+          "supported_subset": true,
+          "has_witness": false,
+          "witness_type": "",
+          "witness_name": "",
+          "before_match": false,
+          "after_match": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-refinement:AnalyzeServiceGrant.input0": "*",
+        "app/service-grant-refinement:AnalyzeServiceGrant.input1": "mcp://a"
+      },
+      "expected": {
+        "app/service-grant-refinement:AnalyzeServiceGrant": {
+          "status": "SUPPORTED_SUBSET",
+          "rule_id": "OLD_GLOBAL",
+          "supported_subset": true,
+          "has_witness": false,
+          "witness_type": "",
+          "witness_name": "",
+          "before_match": false,
+          "after_match": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-refinement:AnalyzeServiceGrant.input0": "mcp://*",
+        "app/service-grant-refinement:AnalyzeServiceGrant.input1": "mcp://a.*"
+      },
+      "expected": {
+        "app/service-grant-refinement:AnalyzeServiceGrant": {
+          "status": "SUPPORTED_SUBSET",
+          "rule_id": "OLD_TYPED_ALL",
+          "supported_subset": true,
+          "has_witness": false,
+          "witness_type": "",
+          "witness_name": "",
+          "before_match": false,
+          "after_match": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-refinement:AnalyzeServiceGrant.input0": "mcp://a.*",
+        "app/service-grant-refinement:AnalyzeServiceGrant.input1": "mcp://a.b"
+      },
+      "expected": {
+        "app/service-grant-refinement:AnalyzeServiceGrant": {
+          "status": "SUPPORTED_SUBSET",
+          "rule_id": "EXACT_CANDIDATE_ACCEPTED_BY_OLD",
+          "supported_subset": true,
+          "has_witness": false,
+          "witness_type": "",
+          "witness_name": "",
+          "before_match": false,
+          "after_match": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-refinement:AnalyzeServiceGrant.input0": "mcp://a.*",
+        "app/service-grant-refinement:AnalyzeServiceGrant.input1": "mcp://a.b.*"
+      },
+      "expected": {
+        "app/service-grant-refinement:AnalyzeServiceGrant": {
+          "status": "SUPPORTED_SUBSET",
+          "rule_id": "PREFIX_HIERARCHY",
+          "supported_subset": true,
+          "has_witness": false,
+          "witness_type": "",
+          "witness_name": "",
+          "before_match": false,
+          "after_match": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-refinement:AnalyzeServiceGrant.input0": "mcp://*.a",
+        "app/service-grant-refinement:AnalyzeServiceGrant.input1": "mcp://*.b.a"
+      },
+      "expected": {
+        "app/service-grant-refinement:AnalyzeServiceGrant": {
+          "status": "SUPPORTED_SUBSET",
+          "rule_id": "SUFFIX_HIERARCHY",
+          "supported_subset": true,
+          "has_witness": false,
+          "witness_type": "",
+          "witness_name": "",
+          "before_match": false,
+          "after_match": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-refinement:AnalyzeServiceGrant.input0": "",
+        "app/service-grant-refinement:AnalyzeServiceGrant.input1": "*"
+      },
+      "expected": {
+        "app/service-grant-refinement:AnalyzeServiceGrant": {
+          "status": "WIDENING_WITNESS",
+          "rule_id": "CHECKED_CANDIDATE_REQUEST",
+          "supported_subset": false,
+          "has_witness": true,
+          "witness_type": "a",
+          "witness_name": "x",
+          "before_match": false,
+          "after_match": true
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-refinement:AnalyzeServiceGrant.input0": "a://*",
+        "app/service-grant-refinement:AnalyzeServiceGrant.input1": "*"
+      },
+      "expected": {
+        "app/service-grant-refinement:AnalyzeServiceGrant": {
+          "status": "WIDENING_WITNESS",
+          "rule_id": "CHECKED_CANDIDATE_REQUEST",
+          "supported_subset": false,
+          "has_witness": true,
+          "witness_type": "b",
+          "witness_name": "x",
+          "before_match": false,
+          "after_match": true
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-refinement:AnalyzeServiceGrant.input0": "mcp://x",
+        "app/service-grant-refinement:AnalyzeServiceGrant.input1": "mcp://*"
+      },
+      "expected": {
+        "app/service-grant-refinement:AnalyzeServiceGrant": {
+          "status": "WIDENING_WITNESS",
+          "rule_id": "CHECKED_CANDIDATE_REQUEST",
+          "supported_subset": false,
+          "has_witness": true,
+          "witness_type": "mcp",
+          "witness_name": "y",
+          "before_match": false,
+          "after_match": true
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-refinement:AnalyzeServiceGrant.input0": "mcp://b",
+        "app/service-grant-refinement:AnalyzeServiceGrant.input1": "mcp://a"
+      },
+      "expected": {
+        "app/service-grant-refinement:AnalyzeServiceGrant": {
+          "status": "WIDENING_WITNESS",
+          "rule_id": "CHECKED_CANDIDATE_REQUEST",
+          "supported_subset": false,
+          "has_witness": true,
+          "witness_type": "mcp",
+          "witness_name": "a",
+          "before_match": false,
+          "after_match": true
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-refinement:AnalyzeServiceGrant.input0": "mcp://*.x",
+        "app/service-grant-refinement:AnalyzeServiceGrant.input1": "mcp://a.*"
+      },
+      "expected": {
+        "app/service-grant-refinement:AnalyzeServiceGrant": {
+          "status": "WIDENING_WITNESS",
+          "rule_id": "CHECKED_CANDIDATE_REQUEST",
+          "supported_subset": false,
+          "has_witness": true,
+          "witness_type": "mcp",
+          "witness_name": "a.y",
+          "before_match": false,
+          "after_match": true
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/service-grant-refinement:AnalyzeServiceGrant.input0": "mcp://x.*",
+        "app/service-grant-refinement:AnalyzeServiceGrant.input1": "mcp://*.a"
+      },
+      "expected": {
+        "app/service-grant-refinement:AnalyzeServiceGrant": {
+          "status": "WIDENING_WITNESS",
+          "rule_id": "CHECKED_CANDIDATE_REQUEST",
+          "supported_subset": false,
+          "has_witness": true,
+          "witness_type": "mcp",
+          "witness_name": "y.a",
+          "before_match": false,
+          "after_match": true
+        }
+      }
+    }
+  ]
+}

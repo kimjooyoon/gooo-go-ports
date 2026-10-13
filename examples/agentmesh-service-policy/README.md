@@ -1,4 +1,4 @@
-# Service-pattern matches and request-level grant change impact in Gooo
+# Service-pattern matches, change impact and refinement in Gooo
 
 This example adapts one pure function from
 [Google Agent Mesh](https://github.com/google/agentmesh/tree/9fd1a41a15174df0aaef601c942410c2116bff91):
@@ -13,6 +13,13 @@ states are `WIDENED`, `REVOKED`, `UNCHANGED_ALLOW` and `UNCHANGED_DENY`.
 `WIDENED` describes this request only; it does not prove global grant inclusion,
 find every widened request, or authorize an actual mesh call. No human approval
 step or current-state/effect callback is present in these pure calculations.
+
+For a comparison of the two whole patterns, use the original
+[refinement analyzer](refinement.md). Gooo recognizes seven subset rules and
+otherwise constructs up to two candidate requests, checking each against both
+patterns through the imported matcher. It reports a checked widening witness or
+`UNPROVEN`; absence of a witness never becomes a subset certificate. This is a
+separate calculation from the four request-level impact states above.
 
 This is **not the complete Agent Mesh authorization engine**. It includes no
 Biscuit/OIDC/token verification, roles, task attenuation, HTTP/MCP/A2A wire
@@ -54,6 +61,7 @@ mkdir -p out
 go build -trimpath -o ./out/evaluate ./cmd/evaluate
 ./out/evaluate -mode matcher < matcher-demo.json
 ./out/evaluate -mode impact < impact-demo.json
+./out/evaluate -mode refinement < refinement-demo.json
 ```
 
 The module is
@@ -63,6 +71,13 @@ Go host can import it and call `EvaluateMatcher(MatcherFacts)` or
 raw facts, three generated observations and complete source bindings. Runtime
 evaluation calls the generated native Gooo projections, not a compiler or the Go
 reference oracle. It makes no network calls.
+
+`EvaluateRefinement(RefinementFacts{Before: old, After: candidate})` returns the
+two raw patterns, all eight `RefinementDecision` fields and source bindings.
+`DecodeRefinement` accepts exactly the `before` and `after` string fields. Both
+patterns are validated before generated evaluation, including empty-candidate
+and global-old shortcuts. Any returned witness is checked against the same
+transport grammar. See the [outcome contract and inclusion matrix](refinement.md).
 
 The CLI accepts a JSON array of 1..1024 exact string-only fact objects, at most
 1 MiB. Extra/duplicate keys (including escaped duplicates), missing fields,
@@ -92,10 +107,13 @@ the compiler-owned lowered bytes. It writes path-free program snapshots, exact
 native projections and a complete asset manifest. Its check mode compares a
 fresh route with saved sources and producer fields, normalizing only route
 latency and the producing process's GOOS/GOARCH observation.
+Regeneration preserves an existing public body-codegen record byte-for-byte
+when only those two observational fields differ. Its original metadata stays
+intact; the fresh command output remains separately available under `--out`.
 
 `generation.json` binds a fresh generation to the canonical
 [`ports/agentmesh/service_pattern.gooo`](../../ports/agentmesh/service_pattern.gooo),
-the original `impact.gooo`, their actual repository workspaces, and the preserved
+the original `impact.gooo` and `refinement.gooo`, their actual repository workspaces, and the preserved
 Apache license. The local matcher and workspace files are exact source mirrors;
 `generate.py` and its check mode refuse divergence. Public runtime bindings require
 `fresh_pinned_generation`. The retained research prototype remains separate.
@@ -110,6 +128,12 @@ observations and separately executes/replays 63 matcher and 16 impact workspace
 tuples in deterministic batches of at most 16. These are overlapping observations,
 not 158 unique cases. It also checks strict transport, count/byte boundaries,
 every embedded asset mutation and rehashed source/projection inconsistencies.
+The refinement corpus adds 101 cases covering all 36 family combinations,
+conditional inclusion rules, both witness seeds and boundary inputs. All eight
+decision fields are compared through native execution and seven workspace/replay
+batches. The extracted upstream oracle independently checks both matches for
+each of the 63 emitted witnesses. These 126 oracle observations and the repeated
+workspace cases are checks on the same corpus, not extra independent cases.
 Pure verifier regressions additionally reject truncated arrays, altered raw facts,
 Boolean-to-number substitutions, and changed activity/port/entity/field identities.
 Those small historical trace fixtures test the verifier; they are not fresh

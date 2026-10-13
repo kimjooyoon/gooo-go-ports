@@ -7,7 +7,7 @@ accepted as a newly verified public integration by this script.
 import argparse,datetime,hashlib,json,os,re,subprocess
 from pathlib import Path
 if not __debug__: raise SystemExit("Python optimization disables integrity assertions; run without -O/PYTHONOPTIMIZE")
-from verification_checks import check_native_rows, check_workspace_trace
+from verification_checks import check_native_rows, check_workspace_trace, check_native_refinement, check_witness_oracle
 ROOT=Path(__file__).resolve().parent
 REPO=ROOT.parents[1]
 PIN='83928fa4538245abe33b08549da47f8cbdc50ed2'
@@ -39,6 +39,8 @@ def main():
         assert original==actual and sha(actual)==source['exact_function_bytes'][name]
     regex=source['exact_regexp_assignment'];assert ('var '+regex) in (ROOT/'oracle/extracted.go').read_text() and regex in (ROOT/'upstream/api/network.go.txt').read_text()
     cases=json.loads((ROOT/'matcher-cases.json').read_bytes());impacts=json.loads((ROOT/'impact-cases.json').read_bytes());assert len(cases)==63 and len(impacts)==16
+    refinements=json.loads((ROOT/'refinement-cases.json').read_bytes());assert len(refinements)==101
+    family_cells={(r['before_family'],r['after_family']) for r in refinements if 'matrix' in r['coverage']};assert len(family_cells)==36
     tests=(ROOT/'upstream/api/tar_test.go.txt').read_text();start=tests.index('func TestMatchServicePattern(');end=tests.index('\nfunc ',start+1);body=tests[start:end]
     official=[(a,b,c,d=='true') for a,b,c,d in re.findall(r'\{"([^"\n]*)", "([^"\n]*)", "([^"\n]*)", (true|false)\}',body)]
     assert len(official)==12 and [(r['pattern'],r['req_type'],r['req_name'],r['want']) for r in cases[:12]]==official and all(r['upstream'] for r in cases[:12])
@@ -53,15 +55,31 @@ def main():
     run('cli-build',[args.go,'build','-trimpath','-o',out/'evaluate','./cmd/evaluate'])
     matcher=json.loads(run('native-matcher',[out/'evaluate','-mode','matcher'],encoded([{k:r[k] for k in ['pattern','req_type','req_name']} for r in rows])))
     impact=json.loads(run('native-impact',[out/'evaluate','-mode','impact'],encoded([{k:r[k] for k in ['before','after','req_type','req_name']} for r in impacts])))
+    refinement=json.loads(run('native-refinement',[out/'evaluate','-mode','refinement'],encoded([{k:r[k] for k in ['before','after']} for r in refinements])))
     expected_bindings={'compiler_source_sha':PIN,'generation_sha256':'sha256:'+sha((ROOT/'generation.json').read_bytes()),'generation_origin':'fresh_pinned_generation','assets':generation['assets']}
     check_native_rows(matcher,impact,rows,impacts,expected_bindings)
+    check_native_refinement(refinement,refinements,expected_bindings)
+    witness_requests=[]
+    for actual,case in zip(refinement,refinements):
+        d=actual['decision']
+        if d['has_witness']:
+            for side,want in [('before',False),('after',True)]:
+                witness_requests.append({'name':case['name']+'/'+side,'pattern':actual['facts'][side],'req_type':d['witness_type'],'req_name':d['witness_name'],'want':want})
+    assert len(witness_requests)==126
+    witness_casefile=out/'refinement-witness-oracle-cases.json';witness_casefile.write_bytes(encoded(witness_requests));witness_casefile.chmod(0o600)
+    witness_oracle=json.loads(run('fresh-extracted-witness-oracle',[args.go,'run','./cmd/oracle','-cases',witness_casefile,'-impact-cases',ROOT/'impact-cases.json'],cwd=ROOT/'oracle'))
+    check_witness_oracle(witness_oracle,witness_requests,source['revision'])
+    assert witness_oracle['impact_matches']==fresh['impact_matches']
+    refinement_states={key:sum(r['decision']['status']==key for r in refinement) for key in ['SUPPORTED_SUBSET','WIDENING_WITNESS','UNPROVEN']}
+    assert refinement_states=={'SUPPORTED_SUBSET':38,'WIDENING_WITNESS':63,'UNPROVEN':0}
+
     states=sorted(set(row['decision']['change'] for row in impact));assert states==['REVOKED','UNCHANGED_ALLOW','UNCHANGED_DENY','WIDENED']
-    batches=[]
-    for prefix,values,entry,fields in [('matcher',rows,'go/google/agentmesh/api:MatchServicePattern',['pattern','req_type','req_name']),('impact',impacts,'app/service-grant-impact:CompareServiceGrant',['before','after','req_type','req_name'])]:
+    batches=[];refinement_batches=[]
+    for prefix,values,entry,fields in [('matcher',rows,'go/google/agentmesh/api:MatchServicePattern',['pattern','req_type','req_name']),('impact',impacts,'app/service-grant-impact:CompareServiceGrant',['before','after','req_type','req_name']),('refinement',refinements,'app/service-grant-refinement:AnalyzeServiceGrant',['before','after'])]:
         for offset in range(0,len(values),16):
             selected=values[offset:offset+16];corpus={'schema':'gooo/body-composition-cases/v1','cases':[{'inputs':{entry+'.input'+str(i):r[k] for i,k in enumerate(fields)},'expected':{entry:r['matched'] if prefix=='matcher' else r['want']}} for r in selected]}
             label=prefix+'-'+str(offset//16);casefile=out/(label+'-cases.json');casefile.write_bytes(encoded(corpus));casefile.chmod(0o600);assert casefile.stat().st_size<=32768
-            workspace='agentmesh-matcher.workspace.json' if prefix=='matcher' else 'service-grant-impact.workspace.json';raw=run(label+'-execute',[args.compiler,'package','execute','--json','--cases',casefile,'--go',args.go,workspace],cwd=REPO);execute=json.loads(raw)
+            workspace={'matcher':'agentmesh-matcher.workspace.json','impact':'service-grant-impact.workspace.json','refinement':'service-grant-refinement.workspace.json'}[prefix];raw=run(label+'-execute',[args.compiler,'package','execute','--json','--cases',casefile,'--go',args.go,workspace],cwd=REPO);execute=json.loads(raw)
             replay=json.loads(run(label+'-replay',[args.compiler,'package','replay','--json','--receipt',out/(label+'-execute.stdout'),'--cases',casefile,'--go',args.go,workspace],cwd=REPO))
             snapshot=json.loads((ROOT/'receipts'/(prefix+'-program.json')).read_bytes())
             for result in [execute,replay]:
@@ -73,11 +91,11 @@ def main():
                 for index,(trace,case) in enumerate(zip(rt['traces'],corpus['cases'])):
                     check_workspace_trace(prefix,trace,index,case,snapshot,json.loads((ROOT/'receipts'/(prefix+'-body-codegen.json')).read_bytes())['report'])
             assert replay['replayed_from_sha256']=='sha256:'+sha(raw)
-            batches.append({'case_count':len(selected),'cases':ident(casefile),'execution':ident(out/(label+'-execute.stdout')),'replay':ident(out/(label+'-replay.stdout'))})
+            (refinement_batches if prefix=='refinement' else batches).append({'case_count':len(selected),'cases':ident(casefile),'execution':ident(out/(label+'-execute.stdout')),'replay':ident(out/(label+'-replay.stdout'))})
     events=[json.loads(line) for line in tests.splitlines()];passed=[r['Test'] for r in events if r.get('Action')=='pass' and 'Test' in r]
     assert sum(name.startswith('TestEveryBoundAssetTamperRejected/') for name in passed)==len(generation['assets'])
-    for name in ['TestEveryExactMatcherAndImpactFieldMalformed','TestUnsupportedDomainRefusalsAndBoundaries','TestCLIUsesGeneratedGoooAndWholeBatchRefusal','TestRehashedSourceProjectionAndGenerationTamperRejected','TestCLICountAndByteBoundaries']:assert name in passed
-    proof={'schema':'gooo/agentmesh-native-verification/v1','status':'FINITE_FRESH_ORACLE_NATIVE_WORKSPACE_REPLAY_PASS','finished_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'source_revision':source['revision'],'compiler_source_sha':PIN,'go_version':go_version,'matcher':{'upstream_cases':12,'total_cases':63,'fresh_oracle':ident(out/'fresh-extracted-upstream-oracle.stdout'),'native':ident(out/'native-matcher.stdout')},'original_impact':{'cases':16,'fields_compared':3,'states':states,'native':ident(out/'native-impact.stdout')},'strict_json':{'every_field_mutations':sum(name.startswith('TestEveryExactMatcherAndImpactFieldMalformed/') for name in passed),'transactional_later_failure':True,'max_count':1024,'max_batch_bytes':1048576,'max_component_bytes':128},'verifier_helper_contracts':{'native_array_cardinality':True,'all_raw_impact_facts_and_strict_types':True,'complete_typed_workspace_delivery_identity':True,'optimized_python_refused':True},'public_sources':generation['public_sources'],'bound_assets':len(generation['assets']),'asset_tamper_refusals':len(generation['assets']),'workspace_batches':batches,'commands':commands,'limits':['Canonical printable ASCII scheme/name domain only; no full URI parser','Threefield per-request impact; not whole-policy inclusion or live authorization','No CEL eligibility/role checks/token trust/current-state provider/effect dispatcher/private APIProof replay','Source hashes identify consistency under trusted executable, not issuer/build/binary attestation','Finite79 native observations overlap79workspace cases and do not prove whole-domain or production safety']}
+    for name in ['TestEveryExactMatcherAndImpactFieldMalformed','TestUnsupportedDomainRefusalsAndBoundaries','TestCLIUsesGeneratedGoooAndWholeBatchRefusal','TestRehashedSourceProjectionAndGenerationTamperRejected','TestCLICountAndByteBoundaries','TestSinglePatternRefinementMatrixAndWitnesses','TestRefinementValidatesBothPatternsBeforeShortcuts','TestRefinementOutputContradictionsRefused','TestCLIRefinementAndWholeBatchRefusal','TestRefinementRehashedProgramIdentityTamperRejected']:assert name in passed
+    proof={'schema':'gooo/agentmesh-native-verification/v1','status':'FINITE_FRESH_ORACLE_NATIVE_WORKSPACE_REPLAY_PASS','finished_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'source_revision':source['revision'],'compiler_source_sha':PIN,'go_version':go_version,'matcher':{'upstream_cases':12,'total_cases':63,'fresh_oracle':ident(out/'fresh-extracted-upstream-oracle.stdout'),'native':ident(out/'native-matcher.stdout')},'original_impact':{'cases':16,'fields_compared':3,'states':states,'native':ident(out/'native-impact.stdout')},'refinement':{'cases':101,'fields_compared':8,'family_cells':36,'states':refinement_states,'fresh_oracle_witnesses':63,'fresh_oracle_matcher_observations':126,'fresh_oracle':ident(out/'fresh-extracted-witness-oracle.stdout'),'oracle_cases':ident(witness_casefile),'native':ident(out/'native-refinement.stdout'),'workspace_batches':refinement_batches},'strict_json':{'every_field_mutations':sum(name.startswith('TestEveryExactMatcherAndImpactFieldMalformed/') for name in passed),'transactional_later_failure':True,'max_count':1024,'max_batch_bytes':1048576,'max_component_bytes':128},'verifier_helper_contracts':{'native_array_cardinality':True,'all_raw_impact_facts_and_strict_types':True,'complete_typed_workspace_delivery_identity':True,'all_raw_refinement_facts_and_strict_types':True,'checked_witness_domain':True,'optimized_python_refused':True},'public_sources':generation['public_sources'],'bound_assets':len(generation['assets']),'asset_tamper_refusals':len(generation['assets']),'workspace_batches':batches,'commands':commands,'limits':['Canonical printable ASCII scheme/name domain only; no full URI parser','Threefield per-request impact plus single-pattern refinement; not role unions, live authorization, availability preservation or automatic application','No CEL eligibility/role checks/token trust/current-state provider/effect dispatcher/private APIProof replay','Source hashes identify consistency under trusted executable, not issuer/build/binary attestation','Finite79 old and101 refinement native observations overlap their180workspace cases;126fresh witness matcher observations validate63witnesses. This is not proof of compiler correctness or production safety']}
     (out/'verification.json').write_bytes(encoded(proof));(out/'verification.json').chmod(0o600)
-    print('PASS: fresh upstream63matcher;16originalthreefield impacts; actual imported workspace execute/replay; strict native wrapper and complete bindings')
+    print('PASS: fresh upstream63matcher;16originalthreefield impacts; 101single-pattern refinement decisions and63fresh-oracle checked witnesses; actual imported workspace execute/replay; strict native wrapper and complete bindings')
 if __name__=='__main__':main()

@@ -93,3 +93,14 @@ func DecodeImpact(raw []byte) (ImpactFacts, error) {
 	}
 	return f, ValidateImpact(f)
 }
+
+func DecodeRefinement(raw []byte) (RefinementFacts, error) {
+	if err := decodeFacts(raw, []string{"before", "after"}); err != nil {
+		return RefinementFacts{}, err
+	}
+	var f RefinementFacts
+	if err := json.Unmarshal(raw, &f); err != nil {
+		return RefinementFacts{}, err
+	}
+	return f, ValidateRefinement(f)
+}

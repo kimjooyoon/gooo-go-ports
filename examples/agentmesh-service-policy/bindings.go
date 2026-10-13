@@ -15,15 +15,16 @@ const CompilerPin = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 // These are consistency checks in a trusted executable, not signature/issuer or
 // later host-binary attestations. The source pin preserves exact Google bytes.
 //
-//go:embed matcher.gooo impact.gooo *-workspace.json source-pin.json compiler.json generation.json receipts/* internal/matcher/generated.go internal/impact/generated.go upstream/LICENSE upstream/api/*.txt evidence/oracle-extracted.go.txt evidence/extraction.json evidence/oracle-go.mod.txt evidence/oracle-command.go.txt evidence/observations.json matcher-cases.json impact-cases.json model.go domain.go input.go bridge.go bindings.go adapter_generated.go cmd/evaluate/main.go generate.py verification_checks.py verify.py evidence/repository-adaptation.json go.mod
+//go:embed matcher.gooo impact.gooo refinement.gooo *-workspace.json source-pin.json compiler.json generation.json receipts/* internal/matcher/generated.go internal/impact/generated.go internal/refinement/generated.go upstream/LICENSE upstream/api/*.txt evidence/oracle-extracted.go.txt evidence/extraction.json evidence/oracle-go.mod.txt evidence/oracle-command.go.txt evidence/observations.json matcher-cases.json impact-cases.json refinement-cases.json model.go domain.go input.go bridge.go bindings.go adapter_generated.go cmd/evaluate/main.go generate.py verification_checks.py verify.py evidence/repository-adaptation.json go.mod
 var assets embed.FS
 
 var boundNames = []string{
-	"matcher.gooo", "impact.gooo", "matcher-workspace.json", "impact-workspace.json", "source-pin.json", "compiler.json",
+	"matcher.gooo", "impact.gooo", "refinement.gooo", "matcher-workspace.json", "impact-workspace.json", "refinement-workspace.json", "source-pin.json", "compiler.json",
 	"upstream/LICENSE", "upstream/api/tar.go.txt", "upstream/api/network.go.txt", "upstream/api/tar_test.go.txt",
-	"evidence/oracle-extracted.go.txt", "evidence/extraction.json", "evidence/oracle-go.mod.txt", "evidence/oracle-command.go.txt", "evidence/observations.json", "matcher-cases.json", "impact-cases.json",
+	"evidence/oracle-extracted.go.txt", "evidence/extraction.json", "evidence/oracle-go.mod.txt", "evidence/oracle-command.go.txt", "evidence/observations.json", "matcher-cases.json", "impact-cases.json", "refinement-cases.json",
 	"receipts/matcher-program.json", "receipts/matcher-lowered.gooo", "receipts/matcher-body-codegen.json", "receipts/matcher-seed-cases.json", "internal/matcher/generated.go",
 	"receipts/impact-program.json", "receipts/impact-lowered.gooo", "receipts/impact-body-codegen.json", "receipts/impact-seed-cases.json", "internal/impact/generated.go",
+	"receipts/refinement-program.json", "receipts/refinement-lowered.gooo", "receipts/refinement-body-codegen.json", "receipts/refinement-seed-cases.json", "internal/refinement/generated.go",
 	"model.go", "domain.go", "input.go", "bridge.go", "bindings.go", "adapter_generated.go", "cmd/evaluate/main.go", "generate.py", "verification_checks.py", "verify.py", "evidence/repository-adaptation.json", "go.mod",
 }
 
@@ -42,7 +43,9 @@ type programRecord struct {
 	} `json:"entry"`
 	Lowered string `json:"lowered_gooo_source"`
 	Image   struct {
-		Entry struct {
+		Schema    string   `json:"schema"`
+		InitOrder []string `json:"init_order"`
+		Entry     struct {
 			Package  string   `json:"package_path"`
 			Source   string   `json:"source"`
 			Activity string   `json:"activity"`
@@ -100,11 +103,13 @@ func checkBindings(files map[string][]byte, manifest []byte) (Bindings, error) {
 		}
 	}
 	publicSources := map[string]string{
-		"ports/agentmesh/service_pattern.gooo":          "matcher.gooo",
-		"ports/agentmesh/LICENSE-APACHE-2.0":            "upstream/LICENSE",
-		"examples/agentmesh-service-policy/impact.gooo": "impact.gooo",
-		"agentmesh-matcher.workspace.json":              "matcher-workspace.json",
-		"service-grant-impact.workspace.json":           "impact-workspace.json",
+		"ports/agentmesh/service_pattern.gooo":              "matcher.gooo",
+		"ports/agentmesh/LICENSE-APACHE-2.0":                "upstream/LICENSE",
+		"examples/agentmesh-service-policy/impact.gooo":     "impact.gooo",
+		"agentmesh-matcher.workspace.json":                  "matcher-workspace.json",
+		"service-grant-impact.workspace.json":               "impact-workspace.json",
+		"examples/agentmesh-service-policy/refinement.gooo": "refinement.gooo",
+		"service-grant-refinement.workspace.json":           "refinement-workspace.json",
 	}
 	if len(g.PublicSources) != len(publicSources) {
 		return Bindings{}, invalid
@@ -185,6 +190,7 @@ func checkBindings(files map[string][]byte, manifest []byte) (Bindings, error) {
 	}{
 		{"matcher", "go/google/agentmesh/api", "MatchServicePattern", "gooo://agentmesh-prototype/match-service-pattern", "(string,string,string)", "bool", 3},
 		{"impact", "app/service-grant-impact", "CompareServiceGrant", "gooo://service-impact/compare", "(string,string,string,string)", "GrantImpact", 4},
+		{"refinement", "app/service-grant-refinement", "AnalyzeServiceGrant", "gooo://service-refinement/analyze", "(string,string)", "GrantRefinement", 2},
 	} {
 		var p programRecord
 		if json.Unmarshal(files["receipts/"+config.Prefix+"-program.json"], &p) != nil || p.Schema != "gooo/workspace-body-program/v1" || p.Entry.Package != config.Package || p.Entry.Activity != config.Activity || p.Entry.Lowered == "" || !bytes.Equal([]byte(p.Lowered), files["receipts/"+config.Prefix+"-lowered.gooo"]) {
@@ -193,10 +199,10 @@ func checkBindings(files map[string][]byte, manifest []byte) (Bindings, error) {
 		entries[config.Prefix] = p.Entry.Lowered
 		ie := p.Image.Entry
 		expectedOutput := "Boolean"
-		if config.Prefix == "impact" {
-			expectedOutput = "GrantImpact"
+		if config.Prefix != "matcher" {
+			expectedOutput = config.Output
 		}
-		if ie.Package != config.Package || ie.Source != map[string]string{"matcher": "ports/agentmesh/service_pattern.gooo", "impact": "examples/agentmesh-service-policy/impact.gooo"}[config.Prefix] || ie.Activity != config.Activity || ie.Output != expectedOutput || len(ie.Inputs) != config.N {
+		if ie.Package != config.Package || ie.Source != map[string]string{"matcher": "ports/agentmesh/service_pattern.gooo", "impact": "examples/agentmesh-service-policy/impact.gooo", "refinement": "examples/agentmesh-service-policy/refinement.gooo"}[config.Prefix] || ie.Activity != config.Activity || ie.Output != expectedOutput || len(ie.Inputs) != config.N {
 			return Bindings{}, invalid
 		}
 		for _, typ := range ie.Inputs {
@@ -205,15 +211,30 @@ func checkBindings(files map[string][]byte, manifest []byte) (Bindings, error) {
 			}
 		}
 		expectedSources := map[string]string{"ports/agentmesh/service_pattern.gooo": "matcher.gooo"}
-		if config.Prefix == "impact" {
-			expectedSources["examples/agentmesh-service-policy/impact.gooo"] = "impact.gooo"
+		if config.Prefix != "matcher" {
+			expectedSources["examples/agentmesh-service-policy/"+config.Prefix+".gooo"] = config.Prefix + ".gooo"
+		}
+		if p.Image.Schema != "gooo/package-runtime-image/v1" || len(p.Image.Packages) != len(expectedSources) || len(p.Image.InitOrder) != len(expectedSources) || p.Image.InitOrder[0] != "go/google/agentmesh/api" || (config.Prefix != "matcher" && p.Image.InitOrder[1] != config.Package) {
+			return Bindings{}, invalid
 		}
 		seen := map[string]bool{}
+		seenPackages := map[string]bool{}
 		for _, pkg := range p.Image.Packages {
-			if pkg.Path != "go/google/agentmesh/api" && (config.Prefix != "impact" || pkg.Path != "app/service-grant-impact") {
+			if seenPackages[pkg.Path] || len(pkg.Sources) != 1 {
 				return Bindings{}, invalid
 			}
+			seenPackages[pkg.Path] = true
+			if pkg.Path != "go/google/agentmesh/api" && (config.Prefix == "matcher" || pkg.Path != config.Package) {
+				return Bindings{}, invalid
+			}
+			expectedFilename := "ports/agentmesh/service_pattern.gooo"
+			if pkg.Path != "go/google/agentmesh/api" {
+				expectedFilename = "examples/agentmesh-service-policy/" + config.Prefix + ".gooo"
+			}
 			for _, s := range pkg.Sources {
+				if s.Filename != expectedFilename {
+					return Bindings{}, invalid
+				}
 				if expectedSources[s.Filename] == "" || seen[s.Filename] || s.Digest != sourceDigest(files[expectedSources[s.Filename]]) {
 					return Bindings{}, invalid
 				}
@@ -221,12 +242,27 @@ func checkBindings(files map[string][]byte, manifest []byte) (Bindings, error) {
 			}
 			n := 3
 			activity, id, output := "MatchServicePattern", "gooo://agentmesh-prototype/match-service-pattern", "gooo://std/boolean"
-			if pkg.Path == "app/service-grant-impact" {
-				n = 4
-				activity, id, output = "CompareServiceGrant", "gooo://service-impact/compare", "gooo://service-impact/decision/v1"
+			if config.Prefix != "matcher" && pkg.Path == config.Package {
+				n = config.N
+				activity, id = config.Activity, config.ID
+				output = "gooo://service-" + config.Prefix + "/decision/v1"
 			}
+			entities := map[string]string{"Text": "gooo://std/text", "Boolean": "gooo://std/boolean"}
+			if pkg.Path != "go/google/agentmesh/api" {
+				entities = map[string]string{"Text": "gooo://std/text", config.Output: output}
+			}
+			seenEntities := map[string]bool{}
 			activities := 0
 			for _, e := range pkg.Exports {
+				if e.Kind == "entity" {
+					expectedID, known := entities[e.Name]
+					if !known || expectedID != e.ID || seenEntities[e.Name] || len(e.Inputs) != 0 || e.Output != "" {
+						return Bindings{}, invalid
+					}
+					seenEntities[e.Name] = true
+				} else if e.Kind != "activity" {
+					return Bindings{}, invalid
+				}
 				if e.Kind == "activity" {
 					activities++
 					if e.Name != activity || e.ID != id || len(e.Inputs) != n || e.Output != output {
@@ -239,19 +275,23 @@ func checkBindings(files map[string][]byte, manifest []byte) (Bindings, error) {
 					}
 				}
 			}
-			if activities != 1 {
+			if activities != 1 || len(seenEntities) != len(entities) || len(pkg.Exports) != len(entities)+1 {
 				return Bindings{}, invalid
 			}
 		}
 		if len(seen) != len(expectedSources) {
 			return Bindings{}, invalid
 		}
-		if config.Prefix == "impact" {
-			if len(p.PureCalls.Sites) != 2 {
+		if config.Prefix != "matcher" {
+			count := 2
+			if config.Prefix == "refinement" {
+				count = 5
+			}
+			if len(p.PureCalls.Sites) != count {
 				return Bindings{}, invalid
 			}
 			for _, s := range p.PureCalls.Sites {
-				if s.Caller != "app/service-grant-impact:CompareServiceGrant" || s.Callee != "go/google/agentmesh/api:MatchServicePattern" {
+				if s.Caller != config.Package+":"+config.Activity || s.Callee != "go/google/agentmesh/api:MatchServicePattern" {
 					return Bindings{}, invalid
 				}
 			}
@@ -298,6 +338,20 @@ func checkBindings(files map[string][]byte, manifest []byte) (Bindings, error) {
 			if len(r.Records) != 0 {
 				return Bindings{}, invalid
 			}
+		} else if config.Prefix == "refinement" {
+			if len(r.Records) != 1 || r.Records[0].Name != "GrantRefinement" || r.Records[0].ID != "gooo://service-refinement/decision/v1" || len(r.Records[0].Fields) != 8 {
+				return Bindings{}, invalid
+			}
+			names := []string{"status", "rule_id", "supported_subset", "has_witness", "witness_type", "witness_name", "before_match", "after_match"}
+			for i, f := range r.Records[0].Fields {
+				typ := "urn:gooo:type:string"
+				if i == 2 || i == 3 || i == 6 || i == 7 {
+					typ = "urn:gooo:type:boolean"
+				}
+				if f.Name != names[i] || f.ID != "gooo://service-refinement/"+names[i] || f.Type != typ {
+					return Bindings{}, invalid
+				}
+			}
 		} else {
 			if len(r.Records) != 1 || r.Records[0].Name != "GrantImpact" || r.Records[0].ID != "gooo://service-impact/decision/v1" || len(r.Records[0].Fields) != 3 {
 				return Bindings{}, invalid
@@ -315,23 +369,25 @@ func checkBindings(files map[string][]byte, manifest []byte) (Bindings, error) {
 			}
 		}
 	}
-	adapter, err := format.Source([]byte(adapterSource(entries["matcher"], entries["impact"])))
+	adapter, err := format.Source([]byte(adapterSource(entries["matcher"], entries["impact"], entries["refinement"])))
 	if err != nil || !bytes.Equal(adapter, files["adapter_generated.go"]) {
 		return Bindings{}, invalid
 	}
 	return Bindings{CompilerSourceSHA: CompilerPin, GenerationSHA256: digest(manifest), GenerationOrigin: g.Origin, Assets: g.Assets}, nil
 }
 
-func adapterSource(matcher, impact string) string {
+func adapterSource(matcher, impact, refinement string) string {
 	return fmt.Sprintf(`// Code generated from pinned compiler-owned entry identities; DO NOT EDIT.
 package servicepolicy
 import (
  matcher "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy/internal/matcher"
  impact "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy/internal/impact"
+ refinement "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy/internal/refinement"
 )
 func nativeMatcher(f MatcherFacts) bool { return matcher.%s(f.Pattern,f.ReqType,f.ReqName) }
 func nativeImpact(f ImpactFacts) any { return impact.%s(f.Before,f.After,f.ReqType,f.ReqName) }
-`, matcher, impact)
+func nativeRefinement(f RefinementFacts) any { return refinement.%s(f.Before,f.After) }
+`, matcher, impact, refinement)
 }
 func digest(raw []byte) string       { return fmt.Sprintf("sha256:%x", sha256.Sum256(raw)) }
 func sourceDigest(raw []byte) string { encoded, _ := json.Marshal(string(raw)); return digest(encoded) }
