@@ -372,8 +372,8 @@
       "package_path": "go/google/agentmesh/api",
       "consumer_source": "examples/agentmesh-service-policy/impact.gooo",
       "consumer_package": "app/service-grant-impact",
-      "matcher_workspace": "agentmesh-matcher.workspace.json",
-      "consumer_workspace": "service-grant-impact.workspace.json",
+      "matcher_workspace": "agentmesh-matcher-raw.workspace.json",
+      "consumer_workspace": "service-grant-impact-raw.workspace.json",
       "api_mapping": "One pure MatchServicePattern adaptation, constrained to canonical ASCII strings of at most 128 bytes, case-sensitive type names with URI-scheme syntax, and dot-separated names. Empty request components match false. Unsupported URI forms are rejected by the native validator without a Go fallback. The original three-field impact is for one supplied request before and after a pattern change; it provides no token verification, roles, current authorization, global grant inclusion or effects. The 63 matcher tuples include 12 official cases; 16 original impact cases remain separate from the existing 42 APIs and 62 legacy suites."
     }
   ]

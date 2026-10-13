@@ -326,5 +326,129 @@ class RefinementEvidenceChecks(unittest.TestCase):
             changed=copy.deepcopy(actual);changed['observations']=(changed['observations']*2)[:count]
             with self.assertRaises(AssertionError):check_witness_oracle(changed,requests,revision)
 
+from verification_checks import CHECKED, check_checked_decision, check_native_checked, check_domain_trace
+CHECKED_CASES=json.loads((ROOT/'checked-cases.json').read_text())
+
+
+def checked_context(kind):
+    config=CHECKED[kind];entry=config['package']+':'+config['activity']
+    row=next(r for r in CHECKED_CASES if r['api']==kind)
+    c=refinement_workspace();c['program']['entry'].update(package_path=config['package'],activity=config['activity'])
+    c['program']['workspace_image']['packages']=[{'path':config['package'],'exports':[{'kind':'activity','name':config['activity'],'id':config['activity_id'],'input_types':['gooo://std/text']*len(config['inputs']),'output_type':config['record_id']}]}]
+    c['body_report'].update(activity_id=config['activity_id'],output_type=config['record'],record_types=[{'name':config['record'],'id':config['record_id'],'fields':[{'name':n,'id':fid,'type_id':tid}for n,(fid,tid,_)in config['fields'].items()]}])
+    c['case']={'inputs':{entry+'.input'+str(i):row['facts'][k]for i,k in enumerate(config['inputs'])},'expected':{entry:copy.deepcopy(row['want'])}}
+    c['trace']={'case_index':0,'deliveries':[{'activity_id':config['activity_id'],'inputs':[{'port':'input'+str(i),'entity_id':'gooo://std/text','value':row['facts'][k]}for i,k in enumerate(config['inputs'])],
+      'actual':copy.deepcopy(row['want']),'expected':copy.deepcopy(row['want']),'passed':True,
+      'actual_fields':[{'id':fid,'name':n,'value':row['want'][n]}for n,(fid,_,_)in config['fields'].items()]}]}
+    return c
+
+
+class CheckedDomainEvidenceChecks(unittest.TestCase):
+    def test_all_checked_fixture_decisions_have_complete_typed_contracts(self):
+        self.assertEqual(len(CHECKED_CASES),250)
+        for r in CHECKED_CASES:check_checked_decision(r['api'],r['want'],r['want'])
+        for kind in CHECKED:workspace_check('checked-'+kind,checked_context(kind))
+
+    def test_each_checked_field_type_identity_and_raw_facts_refused(self):
+        for kind,config in CHECKED.items():
+            for i,(name,(_,_,typ)) in enumerate(config['fields'].items()):
+                for where in ['actual','expected','actual_fields','schema']:
+                    with self.subTest(kind=kind,field=name,where=where):
+                        c=checked_context(kind);d=c['trace']['deliveries'][0]
+                        if where in ['actual','expected']:d[where][name]=0 if typ is bool else False
+                        elif where=='actual_fields':d['actual_fields'][i]['id']='gooo://wrong/field'
+                        else:c['body_report']['record_types'][0]['fields'][i]['type_id']='wrong'
+                        with self.assertRaises(AssertionError):workspace_check('checked-'+kind,c)
+            for i,key in enumerate(config['inputs']):
+                c=checked_context(kind);c['trace']['deliveries'][0]['inputs'][i]['value']='changed-but-same-decision'
+                with self.assertRaises(AssertionError):workspace_check('checked-'+kind,c)
+
+    def test_coherent_raw_downgrade_or_activity_entity_mismatch_refused(self):
+        for kind in CHECKED:
+            for mutation in ['entry','activity_id','record_id','missing-field','extra-field','reordered','bool-status']:
+                with self.subTest(kind=kind,mutation=mutation):
+                    c=checked_context(kind);d=c['trace']['deliveries'][0];e=c['program']['workspace_image']['packages'][0]['exports'][0]
+                    if mutation=='entry':c['program']['entry'].update(package_path='go/google/agentmesh/api',activity='MatchServicePattern')
+                    elif mutation=='activity_id':e['id']=d['activity_id']=c['body_report']['activity_id']='raw://downgrade'
+                    elif mutation=='record_id':e['output_type']=c['body_report']['record_types'][0]['id']='gooo://std/boolean'
+                    elif mutation=='missing-field':d['actual_fields'].pop()
+                    elif mutation=='extra-field':d['actual_fields'].append(copy.deepcopy(d['actual_fields'][0]))
+                    elif mutation=='reordered':d['actual_fields'].reverse()
+                    else:d['actual']['domain_status']=True
+                    with self.assertRaises(AssertionError):workspace_check('checked-'+kind,c)
+
+    def test_invalid_sentinels_cannot_be_relabelled_as_normal_denial(self):
+        for kind,config in CHECKED.items():
+            base=copy.deepcopy(next(r['want']for r in CHECKED_CASES if r['api']==kind and r['want']['domain_status']=='INVALID_INPUT'))
+            for name,(_,_,typ) in config['fields'].items():
+                bad=copy.deepcopy(base)
+                if name=='domain_status':bad[name]='VALID_INPUT'
+                elif name=='invalid_field':bad[name]=''
+                elif name=='change':bad[name]='UNCHANGED_DENY'
+                elif name=='status':bad[name]='UNPROVEN'
+                else:bad[name]=True if typ is bool else 'stale'
+                with self.subTest(kind=kind,field=name):
+                    with self.assertRaises(AssertionError):check_checked_decision(kind,bad,bad)
+
+    def test_checked_native_exact_roster_bindings_and_facts(self):
+        bindings=copy.deepcopy(FIXTURE['expected_bindings'])
+        values=[dict(facts=copy.deepcopy(r['facts']),decision=copy.deepcopy(r['want']),bindings=copy.deepcopy(bindings))for r in CHECKED_CASES]
+        check_native_checked(values,CHECKED_CASES,bindings)
+        for mutation in ['missing','extra','facts','binding','decision-type']:
+            with self.subTest(mutation=mutation):
+                actual=copy.deepcopy(values)
+                if mutation=='missing':actual.pop()
+                elif mutation=='extra':actual.append(copy.deepcopy(actual[0]))
+                elif mutation=='facts':actual[-1]['facts']['before']='changed'
+                elif mutation=='binding':actual[-1]['bindings']['generation_origin']='unknown'
+                else:actual[-1]['decision']['supported_subset']=0
+                with self.assertRaises(AssertionError):check_native_checked(actual,CHECKED_CASES,bindings)
+
+    def test_domain_scalar_port_identity_and_boolean_type(self):
+        activity='ValidateServicePattern';entry='gooo/service-domain:'+activity;aid='gooo://service-domain/pattern'
+        c=copy.deepcopy(FIXTURE['workspace']['matcher']);c['program']['entry'].update(package_path='gooo/service-domain',activity=activity)
+        c['program']['workspace_image']['packages']=[{'path':'gooo/service-domain','exports':[{'name':activity,'kind':'activity','id':aid,'input_types':['gooo://std/text'],'output_type':'gooo://std/boolean'}]}]
+        c['body_report'].update(activity_id=aid,input_type='string',output_type='bool');c['case']={'inputs':{entry:'mcp://a/path'},'expected':{entry:False}}
+        c['trace']={'case_index':0,'deliveries':[dict(activity_id=aid,input='mcp://a/path',actual=False,expected=False,passed=True)]}
+        def check(x):check_domain_trace(activity,x['trace'],0,x['case'],x['program'],x['body_report'])
+        check(c)
+        for mutation in ['actual','input','port','entity','entry','case-key','empty','absent']:
+            d=copy.deepcopy(c)
+            if mutation=='actual':d['trace']['deliveries'][0]['actual']=0
+            elif mutation=='input':d['trace']['deliveries'][0]['input']='changed'
+            elif mutation=='entry':d['program']['entry']['activity']='MatchServicePattern'
+            elif mutation=='entity':d['program']['workspace_image']['packages'][0]['exports'][0]['input_types']=['gooo://wrong/text']
+            elif mutation=='port':d['trace']['deliveries'][0]['inputs']=[{'port':'input0','entity_id':'gooo://std/text','value':'mcp://a/path'}]
+            elif mutation=='case-key':d['case']['inputs']={entry+'.input0':'mcp://a/path'}
+            elif mutation=='empty':d['trace']['deliveries'][0]['input']=''
+            else:del d['trace']['deliveries'][0]['input']
+            with self.assertRaises(AssertionError):check(d)
+        c['case']['inputs'][entry]='';c['trace']['deliveries'][0]['input']='';check(c)
+
+
+
+class FrozenDomainReferenceChecks(unittest.TestCase):
+    def test_exact_baseline_and_coherently_rehashed_forgery_refusal(self):
+        import hashlib
+        from verification_checks import check_domain_reference
+        original=json.loads((ROOT/'domain-reference.json').read_text());check_domain_reference(original)
+        for mode in ['function','declarations','full-source','source-sha','baseline']:
+            with self.subTest(mode=mode):
+                r=copy.deepcopy(original)
+                if mode=='function':
+                    r['functions']['validType']='func validType(value string) bool { return true }'
+                    r['function_sha256']['validType']=hashlib.sha256(r['functions']['validType'].encode()).hexdigest()
+                elif mode=='declarations':
+                    r['declarations']=r['declarations'].replace('128','129')
+                    r['declarations_sha256']=hashlib.sha256(r['declarations'].encode()).hexdigest()
+                elif mode=='full-source':
+                    r['source']=r['source'].replace('128','129')
+                    r['source_sha256']=hashlib.sha256(r['source'].encode()).hexdigest()
+                    r['source_bytes']=len(r['source'].encode())
+                elif mode=='source-sha':r['source_sha256']='0'*64
+                else:r['baseline_commit']='0'*40
+                with self.assertRaises(AssertionError):check_domain_reference(r)
+
+
 if __name__ == '__main__':
     unittest.main()

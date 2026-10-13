@@ -72,10 +72,13 @@
   },
   "public_placement": {
     "canonical_matcher": "ports/agentmesh/service_pattern.gooo",
+    "checked_impact_workspace": "service-grant-impact.workspace.json",
+    "checked_matcher_workspace": "agentmesh-matcher.workspace.json",
+    "checked_refinement_workspace": "service-grant-refinement.workspace.json",
     "impact_source": "examples/agentmesh-service-policy/impact.gooo",
-    "impact_workspace": "service-grant-impact.workspace.json",
+    "impact_workspace": "service-grant-impact-raw.workspace.json",
     "matcher_mirror": "matcher.gooo",
-    "matcher_workspace": "agentmesh-matcher.workspace.json"
+    "matcher_workspace": "agentmesh-matcher-raw.workspace.json"
   },
   "retained_reference": {
     "bytes": 6708,

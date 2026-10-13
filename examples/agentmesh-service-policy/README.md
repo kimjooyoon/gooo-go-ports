@@ -4,8 +4,9 @@ This example adapts one pure function from
 [Google Agent Mesh](https://github.com/google/agentmesh/tree/9fd1a41a15174df0aaef601c942410c2116bff91):
 `api.MatchServicePattern`. It also composes that adaptation twice in an original
 Gooo activity that compares the old and candidate pattern for the **same supplied
-request**. Gooo computes every match and all three impact fields. Go validates
-the bounded transport domain, carries facts and checks source consistency.
+request**. Gooo computes every match, all three impact fields and the input
+grammar checks. The default Gooo workspaces and ordinary Go APIs use checked
+entrypoints. Go preserves exact JSON Text, carries facts and checks source consistency.
 
 For a request `mcp://weather`, changing `mcp://calculator` to `mcp://*` reports
 `before_match=false`, `after_match=true`, `change=WIDENED`. The four request-level
@@ -41,14 +42,20 @@ preserve case and the wildcard's dot boundary: `*.example` does not match
 
 Paths, query/fragment, user info, ports, legacy `type:name`, mixed wildcards,
 empty interior dot labels, non-ASCII/control characters and oversized components
-are refused before generated execution. The full upstream parser accepts forms
-outside this transport domain; they are deliberately not passed through a Go
-fallback. This Gooo adaptation is not a complete RFC 3986 parser.
+are refused by [Gooo predicates](domain.gooo) before the core matcher or analyzer
+runs, including empty/global/identical-pattern shortcuts. The full upstream parser
+accepts forms outside this domain; they are not passed through a Go fallback.
+This Gooo adaptation is not a complete RFC 3986 parser.
 
-The canonical domain is a precondition of the Gooo port. The native Go API
-and CLI enforce it. Direct Gooo imports and workspace Text inputs do not
-enforce this grammar; the workspace observations below use validated corpus
-inputs. Importers must preserve that precondition.
+The default workspaces return `domain_status=VALID_INPUT` with an empty
+`invalid_field`, or `domain_status=INVALID_INPUT` with the first invalid argument
+name. On invalid input, match fields are false sentinels; impact `change` and
+refinement `status` are `INVALID_INPUT`. They are not computed denial,
+`UNCHANGED_DENY` or `UNPROVEN`. Require exactly `VALID_INPUT` before interpreting
+semantic fields. Unknown, incomplete or contradictory records are errors.
+
+The original low-level Gooo functions retain their canonical-input precondition
+for compatibility. Use the checked entries below for direct Gooo imports.
 
 ## Use the generated ordinary Go library and stdin CLI
 
@@ -75,17 +82,81 @@ reference oracle. It makes no network calls.
 `EvaluateRefinement(RefinementFacts{Before: old, After: candidate})` returns the
 two raw patterns, all eight `RefinementDecision` fields and source bindings.
 `DecodeRefinement` accepts exactly the `before` and `after` string fields. Both
-patterns are validated before generated evaluation, including empty-candidate
-and global-old shortcuts. Any returned witness is checked against the same
-transport grammar. See the [outcome contract and inclusion matrix](refinement.md).
+patterns are validated inside generated Gooo before core evaluation, including
+empty-candidate and global-old shortcuts. Any returned witness is checked against
+the same Gooo grammar. See the [outcome contract and inclusion matrix](refinement.md).
+
+For a typed refusal, call `EvaluateMatcherChecked`, `EvaluateImpactChecked` or
+`EvaluateRefinementChecked`. Each returns `Facts`, a checked `Decision`, and
+`Bindings`. A represented malformed string produces `INVALID_INPUT`; malformed
+UTF-8, source-binding or record-shape failures return an error. The existing
+`Evaluate*`, `Validate*`, `Decode*` and CLI keep invalid-input errors and their
+normal-input proof shapes while using generated Gooo checks. No production Go
+regex duplicates the grammar.
 
 The CLI accepts a JSON array of 1..1024 exact string-only fact objects, at most
 1 MiB. Extra/duplicate keys (including escaped duplicates), missing fields,
-`null`, wrong types, trailing JSON, malformed UTF-8, surrogate/non-ASCII/control
-text and out-of-domain syntax are refused. Every member is decoded and evaluated
+`null`, wrong types, trailing JSON, malformed UTF-8 and unpaired surrogate
+escapes are refused by structural decoding. Valid Unicode, paired surrogate
+escapes, escaped controls and oversized components reach the Gooo grammar check
+and are refused there. Each fact object is limited to 4,096 serialized bytes.
+Every member is decoded and evaluated
 before output; a bad later member emits no partial result. Facts may identify
 private services: keep saved output in a caller-owned private location and review
 it before sharing.
+
+## Direct Gooo workspace migration
+
+The existing three workspace filenames now select checked entries. This is an
+intentional output-schema change for direct workspace callers. The native
+`Evaluate*` and CLI normal-input proof shapes remain compatible.
+
+| Default root workspace | Entry (`package:activity`) | Output |
+| --- | --- | --- |
+| `agentmesh-matcher.workspace.json` | `gooo/service-policy/checked-matcher:MatchServicePatternChecked` | 3 fields: domain status, invalid field, matched |
+| `service-grant-impact.workspace.json` | `gooo/service-policy/checked-impact:CompareServiceGrantChecked` | 5 fields: domain status, invalid field, original 3 impact fields |
+| `service-grant-refinement.workspace.json` | `gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked` | 10 fields: domain status, invalid field, original 8 refinement fields |
+
+Input ports are the full entry in the table plus `.input0`, `.input1`, etc.; the
+output port is the entry itself. Matcher inputs are `(pattern, req_type, req_name)`,
+impact inputs `(before, after, req_type, req_name)`, and refinement inputs
+`(before, after)`. Validation follows that order and reports the first failure.
+The activity IDs are `gooo://service-policy/checked-{matcher,impact,refinement}/evaluate/v1`;
+the record IDs use the same prefix with `/decision/v1`.
+
+For example, a raw refinement input with `before="mcp://a/path"` and `after=""`
+returns this record before the core's empty-candidate shortcut can run:
+
+```json
+{"domain_status":"INVALID_INPUT","invalid_field":"before","status":"INVALID_INPUT","rule_id":"","supported_subset":false,"has_witness":false,"witness_type":"","witness_name":"","before_match":false,"after_match":false}
+```
+
+Use the pinned compiler and Go 1.27.2 from the repository root:
+
+```sh
+go_tool="$(go env GOROOT)/bin/go"
+./.gooo package execute --json --go "$go_tool" \
+  --cases examples/agentmesh-service-policy/receipts/checked-matcher-seed-cases.json \
+  agentmesh-matcher.workspace.json
+./.gooo package execute --json --go "$go_tool" \
+  --cases examples/agentmesh-service-policy/receipts/checked-impact-seed-cases.json \
+  service-grant-impact.workspace.json
+./.gooo package execute --json --go "$go_tool" \
+  --cases examples/agentmesh-service-policy/receipts/checked-refinement-seed-cases.json \
+  service-grant-refinement.workspace.json
+```
+
+Compatibility is explicit: `agentmesh-matcher-raw.workspace.json`,
+`service-grant-impact-raw.workspace.json` and
+`service-grant-refinement-raw.workspace.json` preserve the original Boolean,
+3-field and 8-field results. They require already-canonical input; malformed-input
+safety does not apply to these raw routes. The corresponding local mirrors use
+`matcher-raw-workspace.json`, `impact-raw-workspace.json` and
+`refinement-raw-workspace.json`. Previous contracts are pinned at
+[matcher](https://github.com/kimjooyoon/gooo-go-ports/blob/0c6a55f7021128358be05615f033c4f8c7678bef/agentmesh-matcher.workspace.json),
+[impact](https://github.com/kimjooyoon/gooo-go-ports/blob/0c6a55f7021128358be05615f033c4f8c7678bef/service-grant-impact.workspace.json)
+and [refinement](https://github.com/kimjooyoon/gooo-go-ports/blob/0c6a55f7021128358be05615f033c4f8c7678bef/service-grant-refinement.workspace.json).
+Historical receipts keep their original identities and do not establish checked execution.
 
 ## Regenerate and independently verify
 
@@ -113,7 +184,8 @@ intact; the fresh command output remains separately available under `--out`.
 
 `generation.json` binds a fresh generation to the canonical
 [`ports/agentmesh/service_pattern.gooo`](../../ports/agentmesh/service_pattern.gooo),
-the original `impact.gooo` and `refinement.gooo`, their actual repository workspaces, and the preserved
+the original `impact.gooo` and `refinement.gooo`, the new domain predicates and
+checked entries, their exact default/raw repository workspaces, and the preserved
 Apache license. The local matcher and workspace files are exact source mirrors;
 `generate.py` and its check mode refuse divergence. Public runtime bindings require
 `fresh_pinned_generation`. The retained research prototype remains separate.
@@ -134,6 +206,14 @@ decision fields are compared through native execution and seven workspace/replay
 batches. The extracted upstream oracle independently checks both matches for
 each of the 63 emitted witnesses. These 126 oracle observations and the repeated
 workspace cases are checks on the same corpus, not extra independent cases.
+The migrated default workspace observations also compare every domain field.
+A separate checked corpus exercises malformed-pattern cross-products, shortcut
+traps, first-invalid ordering, Unicode and independent length bounds directly
+through Gooo and native checked APIs. Predicate observations include all 128 ASCII
+values in four positions and explicit boundary cases, compared with a frozen
+pre-migration Go reference used only by verification. Native validation is not
+used as a prefilter for direct Gooo malformed-input cases.
+
 Pure verifier regressions additionally reject truncated arrays, altered raw facts,
 Boolean-to-number substitutions, and changed activity/port/entity/field identities.
 Those small historical trace fixtures test the verifier; they are not fresh

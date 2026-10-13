@@ -8,7 +8,8 @@ admitted requests. For example, both `mcp://*.x` and `mcp://a.*` accept
 patterns and returns that concrete witness. Gooo parses the families, selects a
 justified subset rule, builds candidate requests and calls the actual imported
 [`MatchServicePattern`](../../ports/agentmesh/service_pattern.gooo) for the old
-and candidate patterns. Go validates the transport/domain and carries the
+and candidate patterns. The default `AnalyzeServiceGrantChecked` entry validates
+both raw patterns in Gooo before calling that core. Go preserves transport and carries the
 result; the production host contains no replacement inclusion or matching
 algorithm. No human approval step, model call or effect dispatch is involved.
 
@@ -42,8 +43,13 @@ The ordinary Go API is
 It executes generated Gooo code without a compiler or network call at runtime.
 To reproduce execution with Gooo itself, the root workspace is
 [`service-grant-refinement.workspace.json`](../../service-grant-refinement.workspace.json).
-The generator and verifier in this directory produce fresh native, workspace
-and saved-replay evidence with the pinned compiler.
+That default now returns ten fields, adding `domain_status` and `invalid_field`
+to the eight semantic fields. Require `domain_status=VALID_INPUT` before using
+them. The native `EvaluateRefinement` API retains its eight-field decision and
+returns an error for invalid input; `EvaluateRefinementChecked` exposes the
+explicit domain result. See the [direct workspace migration](README.md#direct-gooo-workspace-migration).
+The generator and verifier produce fresh native, workspace and saved-replay evidence
+with the pinned compiler.
 
 ## Outcomes and input contract
 
@@ -66,9 +72,14 @@ validated, even when one would select an empty/global shortcut. An emitted
 witness must also satisfy the request grammar. Duplicate, missing, non-string
 and extra fields, including caller-supplied decisions, are errors.
 
-This grammar remains a caller precondition for direct Gooo Text/workspace calls.
-The native Go entry point enforces it. The analyzer is not a general URI parser,
-and its conclusions do not extend to raw out-of-domain Text.
+The checked Gooo entry and default workspace enforce this grammar themselves.
+An invalid pattern returns `domain_status=INVALID_INPUT`, `status=INVALID_INPUT`,
+and the first invalid field (`before`, then `after`); all other fields are empty
+or false sentinels. It does not return a subset theorem, widening witness or
+`UNPROVEN`. The low-level `AnalyzeServiceGrant` and explicit
+`service-grant-refinement-raw.workspace.json` retain the caller precondition.
+The analyzer is not a general URI parser, and its conclusions do not extend to
+out-of-domain Text passed directly to that raw compatibility entry.
 
 ## Six-family inclusion matrix
 

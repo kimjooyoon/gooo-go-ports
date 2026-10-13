@@ -1,0 +1,25 @@
+// Original Gooo canonical-domain boundary; no external service or policy effect.
+// Raw compatibility functions remain preconditioned; this checked entry is the default.
+package checked_refinement
+namespace gooo_original_checked_refinement
+import domain "gooo/service-domain"
+import core "app/service-grant-refinement"
+entity Text id "gooo://std/text"
+entity CheckedRefinementDecision id "gooo://service-policy/checked-refinement/decision/v1" fields {
+ field domain_status id "gooo://service-policy/checked-refinement/domain_status" type string required one
+ field invalid_field id "gooo://service-policy/checked-refinement/invalid_field" type string required one
+ field status id "gooo://service-policy/checked-refinement/status" type string required one
+ field rule_id id "gooo://service-policy/checked-refinement/rule_id" type string required one
+ field supported_subset id "gooo://service-policy/checked-refinement/supported_subset" type boolean required one
+ field has_witness id "gooo://service-policy/checked-refinement/has_witness" type boolean required one
+ field witness_type id "gooo://service-policy/checked-refinement/witness_type" type string required one
+ field witness_name id "gooo://service-policy/checked-refinement/witness_name" type string required one
+ field before_match id "gooo://service-policy/checked-refinement/before_match" type boolean required one
+ field after_match id "gooo://service-policy/checked-refinement/after_match" type boolean required one
+}
+activity AnalyzeServiceGrantChecked(Text, Text) -> CheckedRefinementDecision id "gooo://service-policy/checked-refinement/evaluate/v1" computes `
+if !domain.ValidateServicePattern(input0) { return CheckedRefinementDecision{domain_status: "INVALID_INPUT", invalid_field: "before", status: "INVALID_INPUT", rule_id: "", supported_subset: false, has_witness: false, witness_type: "", witness_name: "", before_match: false, after_match: false} }
+if !domain.ValidateServicePattern(input1) { return CheckedRefinementDecision{domain_status: "INVALID_INPUT", invalid_field: "after", status: "INVALID_INPUT", rule_id: "", supported_subset: false, has_witness: false, witness_type: "", witness_name: "", before_match: false, after_match: false} }
+let result = core.AnalyzeServiceGrant(input0, input1)
+return CheckedRefinementDecision{domain_status: "VALID_INPUT", invalid_field: "", status: result.status, rule_id: result.rule_id, supported_subset: result.supported_subset, has_witness: result.has_witness, witness_type: result.witness_type, witness_name: result.witness_name, before_match: result.before_match, after_match: result.after_match}
+`

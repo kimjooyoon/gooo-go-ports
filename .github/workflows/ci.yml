@@ -100,6 +100,10 @@ jobs:
           ./.gooo check ports/agentmesh/service_pattern.gooo
           ./.gooo check examples/agentmesh-service-policy/impact.gooo
           ./.gooo check examples/agentmesh-service-policy/refinement.gooo
+          ./.gooo check examples/agentmesh-service-policy/domain.gooo
+          ./.gooo check examples/agentmesh-service-policy/checked_matcher.gooo
+          ./.gooo check examples/agentmesh-service-policy/checked_impact.gooo
+          ./.gooo check examples/agentmesh-service-policy/checked_refinement.gooo
       - name: Retain unsupported-body probes
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
@@ -637,7 +641,54 @@ jobs:
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
           python3 -B examples/agentmesh-service-policy/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/agentmesh-service-policy"
-          jq -e '.schema == "gooo/agentmesh-native-verification/v1" and .status == "FINITE_FRESH_ORACLE_NATIVE_WORKSPACE_REPLAY_PASS" and .matcher.upstream_cases == 12 and .matcher.total_cases == 63 and .original_impact.cases == 16 and .original_impact.fields_compared == 3 and (.workspace_batches | length) == 5 and ([.workspace_batches[].case_count] | add) == 79 and .bound_assets == .asset_tamper_refusals and .strict_json.max_count == 1024 and .strict_json.max_batch_bytes == 1048576 and .strict_json.max_component_bytes == 128 and .verifier_helper_contracts.native_array_cardinality == true and .verifier_helper_contracts.all_raw_impact_facts_and_strict_types == true and .verifier_helper_contracts.complete_typed_workspace_delivery_identity == true and .verifier_helper_contracts.optimized_python_refused == true and .refinement.cases == 101 and .refinement.fields_compared == 8 and .refinement.family_cells == 36 and .refinement.fresh_oracle_witnesses == 63 and .refinement.fresh_oracle_matcher_observations == 126 and (.refinement.workspace_batches | length) == 7 and ([.refinement.workspace_batches[].case_count] | add) == 101 and .verifier_helper_contracts.all_raw_refinement_facts_and_strict_types == true and .verifier_helper_contracts.checked_witness_domain == true' out/agentmesh-service-policy/verification.json
+          jq -e '
+            .schema == "gooo/agentmesh-native-verification/v1"
+            and .status == "FINITE_FRESH_ORACLE_NATIVE_WORKSPACE_REPLAY_PASS"
+            and .matcher.upstream_cases == 12
+            and .matcher.total_cases == 63
+            and .original_impact.cases == 16
+            and .original_impact.fields_compared == 3
+            and (.workspace_batches | length) == 5
+            and ([.workspace_batches[].case_count] | add) == 79
+            and .bound_assets == .asset_tamper_refusals
+            and .strict_json.max_count == 1024
+            and .strict_json.max_batch_bytes == 1048576
+            and .strict_json.max_component_bytes == 128
+            and .verifier_helper_contracts.native_array_cardinality == true
+            and .verifier_helper_contracts.all_raw_impact_facts_and_strict_types == true
+            and .verifier_helper_contracts.complete_typed_workspace_delivery_identity == true
+            and .verifier_helper_contracts.optimized_python_refused == true
+            and .refinement.cases == 101
+            and .refinement.fields_compared == 8
+            and .refinement.family_cells == 36
+            and .refinement.fresh_oracle_witnesses == 63
+            and .refinement.fresh_oracle_matcher_observations == 126
+            and (.refinement.workspace_batches | length) == 7
+            and ([.refinement.workspace_batches[].case_count] | add) == 101
+            and .verifier_helper_contracts.all_raw_refinement_facts_and_strict_types == true
+            and .verifier_helper_contracts.checked_witness_domain == true
+            and .domain.cases == 662
+            and .domain.ascii_predicate_observations == 512
+            and .domain.native_matches_frozen_oracle == true
+            and (.domain.workspace_batches | length) == 11
+            and ([.domain.workspace_batches[].case_count] | add) == 662
+            and .checked.additional_cases == 250
+            and .checked.invalid_cases == 243
+            and .checked.valid_cases == 7
+            and .checked.preserved_valid_cases == 180
+            and .checked.native_cases == 430
+            and .checked.fields == {matcher:3,impact:5,refinement:10}
+            and (.checked.workspace_batches | length) == 17
+            and ([.checked.workspace_batches[].case_count] | add) == 250
+            and .checked.direct_raw_text_without_go_grammar_prefilter == true
+            and .checked.first_invalid_argument_verified == true
+            and (.checked.raw_compatibility | length) == 3
+            and ([.checked.raw_compatibility[].case_count] | add) == 45
+            and .verifier_helper_contracts.checked_typed_records == true
+            and .verifier_helper_contracts.checked_default_workspace_routing == true
+            and .verifier_helper_contracts.raw_compatibility_explicit == true
+            and .verifier_helper_contracts.direct_domain_execution == true
+          ' out/agentmesh-service-policy/verification.json
       - name: Upload offline policy experiment evidence
         if: always() && steps.change-scope.outputs.docs_only != 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

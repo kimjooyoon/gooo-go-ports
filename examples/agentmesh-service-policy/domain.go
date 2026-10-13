@@ -1,63 +1,76 @@
 package servicepolicy
 
-import (
-	"errors"
-	"regexp"
-	"strings"
-)
+import "errors"
 
 const MaxComponentBytes = 128
 
-var scheme = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9+.-]*$`)
-var name = regexp.MustCompile(`^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*$`)
+// Grammar belongs to Gooo. These adapters call the pinned compiler's generated
+// predicate bodies, including ASCII and independent 128-byte bounds.
+func validType(value string) bool    { return nativeValidType(value) }
+func validName(value string) bool    { return nativeValidName(value) }
+func validPattern(value string) bool { return nativeValidPattern(value) }
 
-// This validates transport syntax only. It computes no service match or impact.
-func validType(value string) bool {
-	return len(value) <= MaxComponentBytes && (value == "" || scheme.MatchString(value))
+func firstInvalidMatcher(f MatcherFacts) string {
+	if !validPattern(f.Pattern) {
+		return "pattern"
+	}
+	if !validType(f.ReqType) {
+		return "req_type"
+	}
+	if !validName(f.ReqName) {
+		return "req_name"
+	}
+	return ""
 }
-func validName(value string) bool {
-	return len(value) <= MaxComponentBytes && (value == "" || name.MatchString(value))
+
+func firstInvalidImpact(f ImpactFacts) string {
+	if !validPattern(f.Before) {
+		return "before"
+	}
+	if !validPattern(f.After) {
+		return "after"
+	}
+	if !validType(f.ReqType) {
+		return "req_type"
+	}
+	if !validName(f.ReqName) {
+		return "req_name"
+	}
+	return ""
 }
-func validPattern(value string) bool {
-	if len(value) > MaxComponentBytes {
-		return false
+
+func firstInvalidRefinement(f RefinementFacts) string {
+	if !validPattern(f.Before) {
+		return "before"
 	}
-	if value == "" || value == "*" {
-		return true
+	if !validPattern(f.After) {
+		return "after"
 	}
-	typ, part, found := strings.Cut(value, "://")
-	if !found || !scheme.MatchString(typ) || part == "" {
-		return false
-	}
-	if part == "*" {
-		return true
-	}
-	if strings.HasPrefix(part, "*.") {
-		part = part[2:]
-	} else if strings.HasSuffix(part, ".*") {
-		part = part[:len(part)-2]
-	}
-	return name.MatchString(part)
+	return ""
+}
+
+func invalidInput(field string) error {
+	return errors.New("outside canonical ASCII service-pattern domain (128 bytes per component): " + field)
 }
 
 func ValidateMatcher(f MatcherFacts) error {
-	if !validPattern(f.Pattern) || !validType(f.ReqType) || !validName(f.ReqName) {
-		return errors.New("outside canonical ASCII service-pattern domain (128 bytes per component)")
+	if field := firstInvalidMatcher(f); field != "" {
+		return invalidInput(field)
 	}
 	return nil
 }
 
 func ValidateImpact(f ImpactFacts) error {
-	if err := ValidateMatcher(MatcherFacts{Pattern: f.Before, ReqType: f.ReqType, ReqName: f.ReqName}); err != nil {
-		return err
+	if field := firstInvalidImpact(f); field != "" {
+		return invalidInput(field)
 	}
-	return ValidateMatcher(MatcherFacts{Pattern: f.After, ReqType: f.ReqType, ReqName: f.ReqName})
+	return nil
 }
 
-// ValidateRefinement validates both raw patterns before Gooo takes any shortcut.
+// ValidateRefinement delegates syntax to Gooo without running the analyzer.
 func ValidateRefinement(f RefinementFacts) error {
-	if !validPattern(f.Before) || !validPattern(f.After) {
-		return errors.New("outside canonical ASCII service-pattern domain (128 bytes per component)")
+	if field := firstInvalidRefinement(f); field != "" {
+		return invalidInput(field)
 	}
 	return nil
 }
@@ -86,4 +99,61 @@ func validateRefinementDecision(d RefinementDecision) error {
 		}
 	}
 	return invalid
+}
+
+func validateDomainDecision(status, field, expectedInvalid string) error {
+	if expectedInvalid == "" && status == "VALID_INPUT" && field == "" {
+		return nil
+	}
+	if expectedInvalid != "" && status == "INVALID_INPUT" && field == expectedInvalid {
+		return nil
+	}
+	return errors.New("inconsistent Gooo input-domain decision")
+}
+
+func validateCheckedMatcherDecision(f MatcherFacts, d CheckedMatcherDecision) error {
+	if err := validateDomainDecision(d.DomainStatus, d.InvalidField, firstInvalidMatcher(f)); err != nil {
+		return err
+	}
+	if d.DomainStatus == "INVALID_INPUT" && d.Matched {
+		return errors.New("invalid Gooo matcher refusal sentinel")
+	}
+	return nil
+}
+
+func validateCheckedImpactDecision(f ImpactFacts, d CheckedImpactDecision) error {
+	if err := validateDomainDecision(d.DomainStatus, d.InvalidField, firstInvalidImpact(f)); err != nil {
+		return err
+	}
+	if d.DomainStatus == "INVALID_INPUT" {
+		if d.BeforeMatch || d.AfterMatch || d.Change != "INVALID_INPUT" {
+			return errors.New("invalid Gooo impact refusal sentinel")
+		}
+		return nil
+	}
+	want := "UNCHANGED_DENY"
+	if d.BeforeMatch && d.AfterMatch {
+		want = "UNCHANGED_ALLOW"
+	} else if d.BeforeMatch {
+		want = "REVOKED"
+	} else if d.AfterMatch {
+		want = "WIDENED"
+	}
+	if d.Change != want {
+		return errors.New("inconsistent Gooo impact decision")
+	}
+	return nil
+}
+
+func validateCheckedRefinementDecision(f RefinementFacts, d CheckedRefinementDecision) error {
+	if err := validateDomainDecision(d.DomainStatus, d.InvalidField, firstInvalidRefinement(f)); err != nil {
+		return err
+	}
+	if d.DomainStatus == "INVALID_INPUT" {
+		if d.RefinementDecision != (RefinementDecision{Status: "INVALID_INPUT"}) {
+			return errors.New("invalid Gooo refinement refusal sentinel")
+		}
+		return nil
+	}
+	return validateRefinementDecision(d.RefinementDecision)
 }

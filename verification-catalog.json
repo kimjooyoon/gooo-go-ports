@@ -224,6 +224,30 @@
       "sources": [
         "examples/agentmesh-service-policy/refinement.gooo"
       ]
+    },
+    {
+      "path": "gooo/service-domain",
+      "sources": [
+        "examples/agentmesh-service-policy/domain.gooo"
+      ]
+    },
+    {
+      "path": "gooo/service-policy/checked-matcher",
+      "sources": [
+        "examples/agentmesh-service-policy/checked_matcher.gooo"
+      ]
+    },
+    {
+      "path": "gooo/service-policy/checked-impact",
+      "sources": [
+        "examples/agentmesh-service-policy/checked_impact.gooo"
+      ]
+    },
+    {
+      "path": "gooo/service-policy/checked-refinement",
+      "sources": [
+        "examples/agentmesh-service-policy/checked_refinement.gooo"
+      ]
     }
   ]
 }

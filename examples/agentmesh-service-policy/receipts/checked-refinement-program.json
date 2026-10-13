@@ -1,0 +1,357 @@
+{
+  "activities": [
+    {
+      "activity": "AnalyzeServiceGrantChecked",
+      "lowered_name": "GoooPackage5ActivityAnalyzeServiceGrantChecked",
+      "package_path": "gooo/service-policy/checked-refinement"
+    }
+  ],
+  "entry": {
+    "activity": "AnalyzeServiceGrantChecked",
+    "lowered_name": "GoooPackage5ActivityAnalyzeServiceGrantChecked",
+    "package_path": "gooo/service-policy/checked-refinement"
+  },
+  "lowered_gooo_source": "package gooo_workspace\nnamespace gooo_workspace\n\nentity Text id \"gooo://std/text\"\nentity Boolean id \"gooo://std/boolean\"\nentity GrantRefinement id \"gooo://service-refinement/decision/v1\" fields {\n    field status id \"gooo://service-refinement/status\" type string required one\n    field rule_id id \"gooo://service-refinement/rule_id\" type string required one\n    field supported_subset id \"gooo://service-refinement/supported_subset\" type boolean required one\n    field has_witness id \"gooo://service-refinement/has_witness\" type boolean required one\n    field witness_type id \"gooo://service-refinement/witness_type\" type string required one\n    field witness_name id \"gooo://service-refinement/witness_name\" type string required one\n    field before_match id \"gooo://service-refinement/before_match\" type boolean required one\n    field after_match id \"gooo://service-refinement/after_match\" type boolean required one\n}\nentity CheckedRefinementDecision id \"gooo://service-policy/checked-refinement/decision/v1\" fields {\n    field domain_status id \"gooo://service-policy/checked-refinement/domain_status\" type string required one\n    field invalid_field id \"gooo://service-policy/checked-refinement/invalid_field\" type string required one\n    field status id \"gooo://service-policy/checked-refinement/status\" type string required one\n    field rule_id id \"gooo://service-policy/checked-refinement/rule_id\" type string required one\n    field supported_subset id \"gooo://service-policy/checked-refinement/supported_subset\" type boolean required one\n    field has_witness id \"gooo://service-policy/checked-refinement/has_witness\" type boolean required one\n    field witness_type id \"gooo://service-policy/checked-refinement/witness_type\" type string required one\n    field witness_name id \"gooo://service-policy/checked-refinement/witness_name\" type string required one\n    field before_match id \"gooo://service-policy/checked-refinement/before_match\" type boolean required one\n    field after_match id \"gooo://service-policy/checked-refinement/after_match\" type boolean required one\n}\nactivity GoooPackage0ActivityMatchServicePattern(Text, Text, Text) -> Boolean id \"gooo://agentmesh-prototype/match-service-pattern\" computes \"\\nif input0 == \\\"\\\" || input1 == \\\"\\\" || input2 == \\\"\\\" { return false }\\nif input0 == \\\"*\\\" { return true }\\nlet split = -1\\nlet offset = 0\\nfor offset = 0; offset < 128; offset = offset + 1 {\\n let end = offset + 3\\n if end <= int64(len(input0)) {\\n  if input0[offset:end] == \\\"://\\\" { if split == -1 { split = offset } }\\n }\\n}\\nif split < 0 { return false }\\nlet nameStart = split + 3\\nlet patternType = input0[0:split]\\nlet patternName = input0[nameStart:int64(len(input0))]\\nif patternType != input1 || patternName == \\\"\\\" { return false }\\nif patternName == \\\"*\\\" { return true }\\nlet patternLength = int64(len(patternName))\\nlet requestLength = int64(len(input2))\\nif patternLength >= 2 {\\n if patternName[0:2] == \\\"*.\\\" {\\n  let suffix = patternName[1:patternLength]\\n  let suffixLength = int64(len(suffix))\\n  if requestLength < suffixLength { return false }\\n  let suffixStart = requestLength - suffixLength\\n  return input2[suffixStart:requestLength] == suffix\\n }\\n let tailStart = patternLength - 2\\n if patternName[tailStart:patternLength] == \\\".*\\\" {\\n  let prefixEnd = patternLength - 1\\n  let prefix = patternName[0:prefixEnd]\\n  if requestLength < prefixEnd { return false }\\n  return input2[0:prefixEnd] == prefix\\n }\\n}\\nreturn input2 == patternName\\n\"\nactivity GoooPackage1ActivityAnalyzeServiceGrant(Text, Text) -> GrantRefinement id \"gooo://service-refinement/analyze\" computes \"\\nlet rule = \\\"\\\"\\nif input1 == \\\"\\\" { rule = \\\"CANDIDATE_EMPTY\\\" } else {\\n if input0 == input1 { rule = \\\"IDENTICAL_PATTERNS\\\" } else { if input0 == \\\"*\\\" { rule = \\\"OLD_GLOBAL\\\" } }\\n}\\nlet oldType = \\\"\\\"\\nlet candidateType = \\\"\\\"\\nlet oldBase = \\\"\\\"\\nlet candidateBase = \\\"\\\"\\nlet oldKind = \\\"NONE\\\"\\nlet candidateKind = \\\"NONE\\\"\\nlet oldSplit = -1\\nlet candidateSplit = -1\\nlet offset = 0\\nfor offset = 0; offset < 128; offset = offset + 1 {\\n let end = offset + 3\\n if end <= int64(len(input0)) {\\n  if input0[offset:end] == \\\"://\\\" { if oldSplit == -1 { oldSplit = offset } }\\n }\\n if end <= int64(len(input1)) {\\n  if input1[offset:end] == \\\"://\\\" { if candidateSplit == -1 { candidateSplit = offset } }\\n }\\n}\\nif oldSplit > 0 {\\n oldType = input0[0:oldSplit]\\n let start = oldSplit + 3\\n oldBase = input0[start:int64(len(input0))]\\n oldKind = \\\"EXACT\\\"\\n if oldBase == \\\"*\\\" { oldKind = \\\"TYPED_ALL\\\" } else {\\n  let n = int64(len(oldBase))\\n  if n >= 2 {\\n   if oldBase[0:2] == \\\"*.\\\" { oldKind = \\\"SUFFIX\\\"; oldBase = oldBase[2:n] } else {\\n    let tail = n - 2\\n    if oldBase[tail:n] == \\\".*\\\" { oldKind = \\\"PREFIX\\\"; oldBase = oldBase[0:tail] }\\n   }\\n  }\\n }\\n}\\nif candidateSplit > 0 {\\n candidateType = input1[0:candidateSplit]\\n let start = candidateSplit + 3\\n candidateBase = input1[start:int64(len(input1))]\\n candidateKind = \\\"EXACT\\\"\\n if candidateBase == \\\"*\\\" { candidateKind = \\\"TYPED_ALL\\\" } else {\\n  let n = int64(len(candidateBase))\\n  if n >= 2 {\\n   if candidateBase[0:2] == \\\"*.\\\" { candidateKind = \\\"SUFFIX\\\"; candidateBase = candidateBase[2:n] } else {\\n    let tail = n - 2\\n    if candidateBase[tail:n] == \\\".*\\\" { candidateKind = \\\"PREFIX\\\"; candidateBase = candidateBase[0:tail] }\\n   }\\n  }\\n }\\n}\\nif rule == \\\"\\\" {\\n if oldKind == \\\"TYPED_ALL\\\" && candidateType == oldType { rule = \\\"OLD_TYPED_ALL\\\" }\\n}\\nif rule == \\\"\\\" {\\n if candidateKind == \\\"EXACT\\\" {\\n  if GoooPackage0ActivityMatchServicePattern(input0, candidateType, candidateBase) { rule = \\\"EXACT_CANDIDATE_ACCEPTED_BY_OLD\\\" }\\n }\\n}\\nif rule == \\\"\\\" && oldType == candidateType {\\n if oldKind == \\\"PREFIX\\\" && candidateKind == \\\"PREFIX\\\" {\\n  if oldBase == candidateBase { rule = \\\"PREFIX_HIERARCHY\\\" } else {\\n   let end = int64(len(oldBase)) + 1\\n   if int64(len(candidateBase)) >= end {\\n    if candidateBase[0:end] == oldBase + \\\".\\\" { rule = \\\"PREFIX_HIERARCHY\\\" }\\n   }\\n  }\\n }\\n if oldKind == \\\"SUFFIX\\\" && candidateKind == \\\"SUFFIX\\\" {\\n  if oldBase == candidateBase { rule = \\\"SUFFIX_HIERARCHY\\\" } else {\\n   let n = int64(len(candidateBase))\\n   let size = int64(len(oldBase)) + 1\\n   if n >= size {\\n    let start = n - size\\n    if candidateBase[start:n] == \\\".\\\" + oldBase { rule = \\\"SUFFIX_HIERARCHY\\\" }\\n   }\\n  }\\n }\\n}\\nlet status = \\\"UNPROVEN\\\"\\nlet supported = false\\nif rule != \\\"\\\" { status = \\\"SUPPORTED_SUBSET\\\"; supported = true }\\nlet witnessed = false\\nlet witnessType = \\\"\\\"\\nlet witnessName = \\\"\\\"\\nlet witnessBefore = false\\nlet witnessAfter = false\\nif rule == \\\"\\\" {\\n let firstType = candidateType\\n let secondType = candidateType\\n let firstName = \\\"\\\"\\n let secondName = \\\"\\\"\\n if input1 == \\\"*\\\" { firstType = \\\"a\\\"; secondType = \\\"b\\\"; firstName = \\\"x\\\"; secondName = \\\"x\\\" }\\n if candidateKind == \\\"TYPED_ALL\\\" { firstName = \\\"x\\\"; secondName = \\\"y\\\" }\\n if candidateKind == \\\"EXACT\\\" { firstName = candidateBase }\\n if candidateKind == \\\"PREFIX\\\" { firstName = candidateBase + \\\".x\\\"; secondName = candidateBase + \\\".y\\\" }\\n if candidateKind == \\\"SUFFIX\\\" { firstName = \\\"x.\\\" + candidateBase; secondName = \\\"y.\\\" + candidateBase }\\n if firstName != \\\"\\\" {\\n  let before = GoooPackage0ActivityMatchServicePattern(input0, firstType, firstName)\\n  let after = GoooPackage0ActivityMatchServicePattern(input1, firstType, firstName)\\n  if after && !before {\\n   witnessed = true; witnessType = firstType; witnessName = firstName\\n   witnessBefore = before; witnessAfter = after\\n  }\\n }\\n if !witnessed && secondName != \\\"\\\" {\\n  let before = GoooPackage0ActivityMatchServicePattern(input0, secondType, secondName)\\n  let after = GoooPackage0ActivityMatchServicePattern(input1, secondType, secondName)\\n  if after && !before {\\n   witnessed = true; witnessType = secondType; witnessName = secondName\\n   witnessBefore = before; witnessAfter = after\\n  }\\n }\\n if witnessed { status = \\\"WIDENING_WITNESS\\\"; rule = \\\"CHECKED_CANDIDATE_REQUEST\\\" }\\n}\\nreturn GrantRefinement{status: status, rule_id: rule, supported_subset: supported, has_witness: witnessed, witness_type: witnessType, witness_name: witnessName, before_match: witnessBefore, after_match: witnessAfter}\\n\"\nactivity GoooPackage2ActivityValidateServiceType(Text) -> Boolean id \"gooo://service-domain/type\" computes \"\\nlet n = int64(len(input))\\nif n > 128 { return false }\\nif n == 0 { return true }\\nlet first = int64(input[0])\\nif !((first >= 65 && first <= 90) || (first >= 97 && first <= 122)) { return false }\\nlet offset = 0\\nfor offset = 0; offset < 128; offset = offset + 1 {\\n if offset < n {\\n  let b = int64(input[offset])\\n  let alpha = (b >= 65 && b <= 90) || (b >= 97 && b <= 122)\\n  let digit = b >= 48 && b <= 57\\n  if !alpha && !digit && b != 43 && b != 45 && b != 46 { return false }\\n }\\n}\\nreturn true\\n\"\nactivity GoooPackage3ActivityValidateServiceName(Text) -> Boolean id \"gooo://service-domain/name\" computes \"\\nlet n = int64(len(input))\\nif n > 128 { return false }\\nif n == 0 { return true }\\nlet previousDot = true\\nlet offset = 0\\nfor offset = 0; offset < 128; offset = offset + 1 {\\n if offset < n {\\n  let b = int64(input[offset])\\n  if b == 46 {\\n   if previousDot { return false }\\n   previousDot = true\\n  } else {\\n   let alpha = (b >= 65 && b <= 90) || (b >= 97 && b <= 122)\\n   let digit = b >= 48 && b <= 57\\n   if !alpha && !digit && b != 45 && b != 95 { return false }\\n   previousDot = false\\n  }\\n }\\n}\\nreturn !previousDot\\n\"\nactivity GoooPackage4ActivityValidateServicePattern(Text) -> Boolean id \"gooo://service-domain/pattern\" computes \"\\nlet n = int64(len(input))\\nif n > 128 { return false }\\nif input == \\\"\\\" || input == \\\"*\\\" { return true }\\nlet split = -1\\nlet offset = 0\\nfor offset = 0; offset < 128; offset = offset + 1 {\\n let end = offset + 3\\n if end <= n {\\n  if input[offset:end] == \\\"://\\\" { if split == -1 { split = offset } }\\n }\\n}\\nif split <= 0 { return false }\\nlet typ = input[0:split]\\nif !GoooPackage2ActivityValidateServiceType(typ) { return false }\\nlet start = split + 3\\nlet part = input[start:n]\\nlet size = int64(len(part))\\nif size == 0 { return false }\\nif part == \\\"*\\\" { return true }\\nif size >= 2 {\\n if part[0:2] == \\\"*.\\\" { part = part[2:size] } else {\\n  let tail = size - 2\\n  if part[tail:size] == \\\".*\\\" { part = part[0:tail] }\\n }\\n}\\nif part == \\\"\\\" { return false }\\nreturn GoooPackage3ActivityValidateServiceName(part)\\n\"\nactivity GoooPackage5ActivityAnalyzeServiceGrantChecked(Text, Text) -> CheckedRefinementDecision id \"gooo://service-policy/checked-refinement/evaluate/v1\" computes \"\\nif !GoooPackage4ActivityValidateServicePattern(input0) { return CheckedRefinementDecision{domain_status: \\\"INVALID_INPUT\\\", invalid_field: \\\"before\\\", status: \\\"INVALID_INPUT\\\", rule_id: \\\"\\\", supported_subset: false, has_witness: false, witness_type: \\\"\\\", witness_name: \\\"\\\", before_match: false, after_match: false} }\\nif !GoooPackage4ActivityValidateServicePattern(input1) { return CheckedRefinementDecision{domain_status: \\\"INVALID_INPUT\\\", invalid_field: \\\"after\\\", status: \\\"INVALID_INPUT\\\", rule_id: \\\"\\\", supported_subset: false, has_witness: false, witness_type: \\\"\\\", witness_name: \\\"\\\", before_match: false, after_match: false} }\\nlet result = GoooPackage1ActivityAnalyzeServiceGrant(input0, input1)\\nreturn CheckedRefinementDecision{domain_status: \\\"VALID_INPUT\\\", invalid_field: \\\"\\\", status: result.status, rule_id: result.rule_id, supported_subset: result.supported_subset, has_witness: result.has_witness, witness_type: result.witness_type, witness_name: result.witness_name, before_match: result.before_match, after_match: result.after_match}\\n\"\n",
+  "pure_calls": {
+    "activities": [
+      {
+        "activity": {
+          "activity": "AnalyzeServiceGrant",
+          "lowered_name": "GoooPackage1ActivityAnalyzeServiceGrant",
+          "package_path": "app/service-grant-refinement"
+        },
+        "activity_id": "gooo-original-service-refinement://activity/analyze-service-grant",
+        "lowered_activity_id": "gooo-workspace://activity/gooo-package1activity-analyze-service-grant",
+        "source": "examples/agentmesh-service-policy/refinement.gooo",
+        "source_body_sha256": "sha256:a85a77229b1c1d578d2687cac3e9aa541fa40a20946ecc67ac6ddfd0f08eb2fb"
+      },
+      {
+        "activity": {
+          "activity": "MatchServicePattern",
+          "lowered_name": "GoooPackage0ActivityMatchServicePattern",
+          "package_path": "go/google/agentmesh/api"
+        },
+        "activity_id": "gooo-agentmesh-prototype://activity/match-service-pattern",
+        "lowered_activity_id": "gooo-workspace://activity/gooo-package0activity-match-service-pattern",
+        "source": "ports/agentmesh/service_pattern.gooo",
+        "source_body_sha256": "sha256:eff57dfbb7c96a29ec5199e1369c9329a576461408450d40957c19a0e26d6ec5"
+      },
+      {
+        "activity": {
+          "activity": "ValidateServiceName",
+          "lowered_name": "GoooPackage3ActivityValidateServiceName",
+          "package_path": "gooo/service-domain"
+        },
+        "activity_id": "gooo-original-service-domain://activity/validate-service-name",
+        "lowered_activity_id": "gooo-workspace://activity/gooo-package3activity-validate-service-name",
+        "source": "examples/agentmesh-service-policy/domain.gooo",
+        "source_body_sha256": "sha256:2c2d688b983a870dc27276d7580658c2ffd4f2d44978b13c006a0a98a2cb34ba"
+      },
+      {
+        "activity": {
+          "activity": "ValidateServicePattern",
+          "lowered_name": "GoooPackage4ActivityValidateServicePattern",
+          "package_path": "gooo/service-domain"
+        },
+        "activity_id": "gooo-original-service-domain://activity/validate-service-pattern",
+        "lowered_activity_id": "gooo-workspace://activity/gooo-package4activity-validate-service-pattern",
+        "source": "examples/agentmesh-service-policy/domain.gooo",
+        "source_body_sha256": "sha256:a0716357ea138ff593f1c5ef4116949978f402fb5e4e5d66c8e4d028dcd1e2ba"
+      },
+      {
+        "activity": {
+          "activity": "ValidateServiceType",
+          "lowered_name": "GoooPackage2ActivityValidateServiceType",
+          "package_path": "gooo/service-domain"
+        },
+        "activity_id": "gooo-original-service-domain://activity/validate-service-type",
+        "lowered_activity_id": "gooo-workspace://activity/gooo-package2activity-validate-service-type",
+        "source": "examples/agentmesh-service-policy/domain.gooo",
+        "source_body_sha256": "sha256:d2971b3397a0ca639fa987cd80754f1083cc469bf34af13c451d6ec108696890"
+      },
+      {
+        "activity": {
+          "activity": "AnalyzeServiceGrantChecked",
+          "lowered_name": "GoooPackage5ActivityAnalyzeServiceGrantChecked",
+          "package_path": "gooo/service-policy/checked-refinement"
+        },
+        "activity_id": "gooo-original-checked-refinement://activity/analyze-service-grant-checked",
+        "lowered_activity_id": "gooo-workspace://activity/gooo-package5activity-analyze-service-grant-checked",
+        "source": "examples/agentmesh-service-policy/checked_refinement.gooo",
+        "source_body_sha256": "sha256:1b9aaeb900aa15d39e2c5a5fdb7aa9632f09794830baa848cbc56768629ecdeb"
+      }
+    ],
+    "schema": "gooo/workspace-pure-calls/v1",
+    "sites": [
+      {
+        "callee": "gooo/service-domain:ValidateServicePattern",
+        "caller": "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked",
+        "end_byte": 34,
+        "start_byte": 5,
+        "surface": "computes"
+      },
+      {
+        "callee": "gooo/service-domain:ValidateServicePattern",
+        "caller": "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked",
+        "end_byte": 330,
+        "start_byte": 301,
+        "surface": "computes"
+      },
+      {
+        "callee": "app/service-grant-refinement:AnalyzeServiceGrant",
+        "caller": "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked",
+        "end_byte": 629,
+        "start_byte": 605,
+        "surface": "computes"
+      },
+      {
+        "callee": "gooo/service-domain:ValidateServiceType",
+        "caller": "gooo/service-domain:ValidateServicePattern",
+        "end_byte": 375,
+        "start_byte": 356,
+        "surface": "computes"
+      },
+      {
+        "callee": "gooo/service-domain:ValidateServiceName",
+        "caller": "gooo/service-domain:ValidateServicePattern",
+        "end_byte": 740,
+        "start_byte": 721,
+        "surface": "computes"
+      },
+      {
+        "callee": "go/google/agentmesh/api:MatchServicePattern",
+        "caller": "app/service-grant-refinement:AnalyzeServiceGrant",
+        "end_byte": 1806,
+        "start_byte": 1783,
+        "surface": "computes"
+      },
+      {
+        "callee": "go/google/agentmesh/api:MatchServicePattern",
+        "caller": "app/service-grant-refinement:AnalyzeServiceGrant",
+        "end_byte": 3387,
+        "start_byte": 3364,
+        "surface": "computes"
+      },
+      {
+        "callee": "go/google/agentmesh/api:MatchServicePattern",
+        "caller": "app/service-grant-refinement:AnalyzeServiceGrant",
+        "end_byte": 3455,
+        "start_byte": 3432,
+        "surface": "computes"
+      },
+      {
+        "callee": "go/google/agentmesh/api:MatchServicePattern",
+        "caller": "app/service-grant-refinement:AnalyzeServiceGrant",
+        "end_byte": 3710,
+        "start_byte": 3687,
+        "surface": "computes"
+      },
+      {
+        "callee": "go/google/agentmesh/api:MatchServicePattern",
+        "caller": "app/service-grant-refinement:AnalyzeServiceGrant",
+        "end_byte": 3780,
+        "start_byte": 3757,
+        "surface": "computes"
+      }
+    ]
+  },
+  "schema": "gooo/workspace-body-program/v1",
+  "scope": "entry and explicit bind producers with source-resolved pure activity calls; original package identities map to lowered names; finite native observations",
+  "workspace_image": {
+    "digest": "sha256:2444c28458474a532376488d47749e6b27a7fc7f6f3347b69929c934d1c650d6",
+    "entry": {
+      "activity": "AnalyzeServiceGrantChecked",
+      "inputs": [
+        "Text",
+        "Text"
+      ],
+      "output": "CheckedRefinementDecision",
+      "package_path": "gooo/service-policy/checked-refinement",
+      "source": "examples/agentmesh-service-policy/checked_refinement.gooo"
+    },
+    "init_order": [
+      "go/google/agentmesh/api",
+      "app/service-grant-refinement",
+      "gooo/service-domain",
+      "gooo/service-policy/checked-refinement"
+    ],
+    "packages": [
+      {
+        "declarations": 3,
+        "exports": [
+          {
+            "id": "gooo://agentmesh-prototype/match-service-pattern",
+            "input_types": [
+              "gooo://std/text",
+              "gooo://std/text",
+              "gooo://std/text"
+            ],
+            "kind": "activity",
+            "name": "MatchServicePattern",
+            "output_type": "gooo://std/boolean"
+          },
+          {
+            "id": "gooo://std/boolean",
+            "kind": "entity",
+            "name": "Boolean"
+          },
+          {
+            "id": "gooo://std/text",
+            "kind": "entity",
+            "name": "Text"
+          }
+        ],
+        "imports": null,
+        "name": "service_pattern",
+        "namespace": "gooo_agentmesh_prototype",
+        "path": "go/google/agentmesh/api",
+        "semantic_digest": "sha256:e5f18ee41e1df26f3d01aea45f829544c7c7d424e986a6bfccc3c7684e6f4b02",
+        "sources": [
+          {
+            "declarations": 3,
+            "filename": "ports/agentmesh/service_pattern.gooo",
+            "semantic_digest": "sha256:df7cb8312cbb5ce5bf093f862977c04b3e3a2b4ee45b3d36787cb9aa61530f6f",
+            "source_digest": "sha256:6408e92880e220549cb05ffe4a319e029de9bc19c93d27d87226ef7b0f5804b1"
+          }
+        ]
+      },
+      {
+        "declarations": 3,
+        "exports": [
+          {
+            "id": "gooo://service-refinement/analyze",
+            "input_types": [
+              "gooo://std/text",
+              "gooo://std/text"
+            ],
+            "kind": "activity",
+            "name": "AnalyzeServiceGrant",
+            "output_type": "gooo://service-refinement/decision/v1"
+          },
+          {
+            "id": "gooo://service-refinement/decision/v1",
+            "kind": "entity",
+            "name": "GrantRefinement"
+          },
+          {
+            "id": "gooo://std/text",
+            "kind": "entity",
+            "name": "Text"
+          }
+        ],
+        "imports": [
+          "go/google/agentmesh/api"
+        ],
+        "name": "service_refinement",
+        "namespace": "gooo_original_service_refinement",
+        "path": "app/service-grant-refinement",
+        "semantic_digest": "sha256:970177fccf4e0ad8aa634b43c2a63407d4d88938fbca893539195fcfcd3d788e",
+        "sources": [
+          {
+            "declarations": 3,
+            "filename": "examples/agentmesh-service-policy/refinement.gooo",
+            "semantic_digest": "sha256:2b5babe40495c305d203f0fb8dd247c73743ff9c410eea05b12d2f878e1981b5",
+            "source_digest": "sha256:82e58403c9ec3ae931eca08cbb566455662b7651a594c13ee41bab5e943d86a1"
+          }
+        ]
+      },
+      {
+        "declarations": 5,
+        "exports": [
+          {
+            "id": "gooo://service-domain/name",
+            "input_types": [
+              "gooo://std/text"
+            ],
+            "kind": "activity",
+            "name": "ValidateServiceName",
+            "output_type": "gooo://std/boolean"
+          },
+          {
+            "id": "gooo://service-domain/pattern",
+            "input_types": [
+              "gooo://std/text"
+            ],
+            "kind": "activity",
+            "name": "ValidateServicePattern",
+            "output_type": "gooo://std/boolean"
+          },
+          {
+            "id": "gooo://service-domain/type",
+            "input_types": [
+              "gooo://std/text"
+            ],
+            "kind": "activity",
+            "name": "ValidateServiceType",
+            "output_type": "gooo://std/boolean"
+          },
+          {
+            "id": "gooo://std/boolean",
+            "kind": "entity",
+            "name": "Boolean"
+          },
+          {
+            "id": "gooo://std/text",
+            "kind": "entity",
+            "name": "Text"
+          }
+        ],
+        "imports": null,
+        "name": "service_domain",
+        "namespace": "gooo_original_service_domain",
+        "path": "gooo/service-domain",
+        "semantic_digest": "sha256:ada1db226063a755e1f525249047aa4b8f02a170663f7fd30829d76e3aa0326f",
+        "sources": [
+          {
+            "declarations": 5,
+            "filename": "examples/agentmesh-service-policy/domain.gooo",
+            "semantic_digest": "sha256:55cb022c611ece43dedf1c6f46dffd287dc301154de41a72bad60baa5ae47cb4",
+            "source_digest": "sha256:dfa16f26428c75bf7a69ced8c6212e5f3774a721d41a22a1bdbc853d9b8f5f35"
+          }
+        ]
+      },
+      {
+        "declarations": 3,
+        "exports": [
+          {
+            "id": "gooo://service-policy/checked-refinement/evaluate/v1",
+            "input_types": [
+              "gooo://std/text",
+              "gooo://std/text"
+            ],
+            "kind": "activity",
+            "name": "AnalyzeServiceGrantChecked",
+            "output_type": "gooo://service-policy/checked-refinement/decision/v1"
+          },
+          {
+            "id": "gooo://service-policy/checked-refinement/decision/v1",
+            "kind": "entity",
+            "name": "CheckedRefinementDecision"
+          },
+          {
+            "id": "gooo://std/text",
+            "kind": "entity",
+            "name": "Text"
+          }
+        ],
+        "imports": [
+          "app/service-grant-refinement",
+          "gooo/service-domain"
+        ],
+        "name": "checked_refinement",
+        "namespace": "gooo_original_checked_refinement",
+        "path": "gooo/service-policy/checked-refinement",
+        "semantic_digest": "sha256:0504067298c7680db966d18066b7ebced4d84b2f81c4eb165ca8307a22363ca4",
+        "sources": [
+          {
+            "declarations": 3,
+            "filename": "examples/agentmesh-service-policy/checked_refinement.gooo",
+            "semantic_digest": "sha256:fa08859696edb9b7ee762ddbab3ee9bbd767ccb6426680fe0bd6bdfe51d039b9",
+            "source_digest": "sha256:4c3c5bee2e08d502b162781af8337adf3bd7cfd4fe3ef859e11703bbd6e46c11"
+          }
+        ]
+      }
+    ],
+    "schema": "gooo/package-runtime-image/v1"
+  }
+}

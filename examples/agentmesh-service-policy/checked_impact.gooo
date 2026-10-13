@@ -1,0 +1,22 @@
+// Original Gooo canonical-domain boundary; no external service or policy effect.
+// Raw compatibility functions remain preconditioned; this checked entry is the default.
+package checked_impact
+namespace gooo_original_checked_impact
+import domain "gooo/service-domain"
+import core "app/service-grant-impact"
+entity Text id "gooo://std/text"
+entity CheckedImpactDecision id "gooo://service-policy/checked-impact/decision/v1" fields {
+ field domain_status id "gooo://service-policy/checked-impact/domain_status" type string required one
+ field invalid_field id "gooo://service-policy/checked-impact/invalid_field" type string required one
+ field before_match id "gooo://service-policy/checked-impact/before_match" type boolean required one
+ field after_match id "gooo://service-policy/checked-impact/after_match" type boolean required one
+ field change id "gooo://service-policy/checked-impact/change" type string required one
+}
+activity CompareServiceGrantChecked(Text, Text, Text, Text) -> CheckedImpactDecision id "gooo://service-policy/checked-impact/evaluate/v1" computes `
+if !domain.ValidateServicePattern(input0) { return CheckedImpactDecision{domain_status: "INVALID_INPUT", invalid_field: "before", before_match: false, after_match: false, change: "INVALID_INPUT"} }
+if !domain.ValidateServicePattern(input1) { return CheckedImpactDecision{domain_status: "INVALID_INPUT", invalid_field: "after", before_match: false, after_match: false, change: "INVALID_INPUT"} }
+if !domain.ValidateServiceType(input2) { return CheckedImpactDecision{domain_status: "INVALID_INPUT", invalid_field: "req_type", before_match: false, after_match: false, change: "INVALID_INPUT"} }
+if !domain.ValidateServiceName(input3) { return CheckedImpactDecision{domain_status: "INVALID_INPUT", invalid_field: "req_name", before_match: false, after_match: false, change: "INVALID_INPUT"} }
+let result = core.CompareServiceGrant(input0, input1, input2, input3)
+return CheckedImpactDecision{domain_status: "VALID_INPUT", invalid_field: "", before_match: result.before_match, after_match: result.after_match, change: result.change}
+`

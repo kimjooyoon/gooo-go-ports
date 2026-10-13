@@ -1,0 +1,19 @@
+// Original Gooo canonical-domain boundary; no external service or policy effect.
+// Raw compatibility functions remain preconditioned; this checked entry is the default.
+package checked_matcher
+namespace gooo_original_checked_matcher
+import domain "gooo/service-domain"
+import core "go/google/agentmesh/api"
+entity Text id "gooo://std/text"
+entity CheckedMatcherDecision id "gooo://service-policy/checked-matcher/decision/v1" fields {
+ field domain_status id "gooo://service-policy/checked-matcher/domain_status" type string required one
+ field invalid_field id "gooo://service-policy/checked-matcher/invalid_field" type string required one
+ field matched id "gooo://service-policy/checked-matcher/matched" type boolean required one
+}
+activity MatchServicePatternChecked(Text, Text, Text) -> CheckedMatcherDecision id "gooo://service-policy/checked-matcher/evaluate/v1" computes `
+if !domain.ValidateServicePattern(input0) { return CheckedMatcherDecision{domain_status: "INVALID_INPUT", invalid_field: "pattern", matched: false} }
+if !domain.ValidateServiceType(input1) { return CheckedMatcherDecision{domain_status: "INVALID_INPUT", invalid_field: "req_type", matched: false} }
+if !domain.ValidateServiceName(input2) { return CheckedMatcherDecision{domain_status: "INVALID_INPUT", invalid_field: "req_name", matched: false} }
+let result = core.MatchServicePattern(input0, input1, input2)
+return CheckedMatcherDecision{domain_status: "VALID_INPUT", invalid_field: "", matched: result}
+`

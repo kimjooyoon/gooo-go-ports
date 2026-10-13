@@ -28,6 +28,8 @@ recognized subset rule or a concrete newly admitted request checked by the
 imported matcher. For example, changing `mcp://*.x` to `mcp://a.*` produces
 `mcp://a.y`: testing only the shared request `mcp://a.x` would miss the widening.
 This pure decision does not apply a policy change or establish caller authority.
+Its default Gooo workspaces validate the input grammar themselves and distinguish
+`INVALID_INPUT` from a computed denial. See the [checked workspace migration](examples/agentmesh-service-policy/README.md#direct-gooo-workspace-migration) for the explicit result schemas and raw compatibility routes.
 
 ## Start here
 

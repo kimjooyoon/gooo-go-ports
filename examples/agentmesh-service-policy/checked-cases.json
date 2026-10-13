@@ -1,0 +1,5221 @@
+[
+  {
+    "name": "contract-global-invalid-type",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "bad/type",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_type",
+      "matched": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-global-invalid-name",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "mcp",
+      "req_name": "bad/name"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_name",
+      "matched": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-empty-pattern-invalid-type",
+    "api": "matcher",
+    "facts": {
+      "pattern": "",
+      "req_type": "1mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_type",
+      "matched": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-empty-request-must-not-hide-bad-pattern",
+    "api": "matcher",
+    "facts": {
+      "pattern": "mcp://a/path",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "pattern",
+      "matched": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-exact-looking-invalid-equality",
+    "api": "matcher",
+    "facts": {
+      "pattern": "mcp://a/path",
+      "req_type": "mcp",
+      "req_name": "a/path"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "pattern",
+      "matched": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-type-129",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_type",
+      "matched": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-name-129",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "mcp",
+      "req_name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_name",
+      "matched": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-first-invalid-in-argument-order",
+    "api": "matcher",
+    "facts": {
+      "pattern": "mcp:a",
+      "req_type": "1mcp",
+      "req_name": "a..b"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "pattern",
+      "matched": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-both-global-invalid-type",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "*",
+      "req_type": "bad/type",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_type",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-both-global-invalid-name",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "*",
+      "req_type": "mcp",
+      "req_name": "a/path"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_name",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-invalid-before-must-not-be-revoked",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a/path",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "a/path"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-invalid-after-must-not-be-widened",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://a/path",
+      "req_type": "mcp",
+      "req_name": "a/path"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-identical-invalid-must-not-be-unchanged",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a/path",
+      "after": "mcp://a/path",
+      "req_type": "mcp",
+      "req_name": "a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-empty-both-must-still-check-request",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "a..b"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_name",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-empty-request-must-check-after",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://*.a.*",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-candidate-empty-invalid-before",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://*.a.*",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-identical-invalid-patterns",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a/path",
+      "after": "mcp://a/path"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-global-old-invalid-candidate",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a/path"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-typed-all-invalid-exact",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://*",
+      "after": "mcp://a/path"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-typed-all-invalid-prefix",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://*",
+      "after": "mcp://a..b.*"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-invalid-old-suffix",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://*.a.*",
+      "after": "mcp://x.a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-prefix-hierarchy-malformed-base",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a.*",
+      "after": "mcp://a..b.*"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-suffix-hierarchy-malformed-base",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://*.a",
+      "after": "mcp://*.b..a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-first-128-prefix-cannot-hide-129th",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "a://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-oversized-identical",
+    "api": "refinement",
+    "facts": {
+      "before": "a://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "after": "a://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-double-invalid-precedence",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp:a",
+      "after": "mcp://a/path"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-empty-request-is-valid-deny",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "VALID_INPUT",
+      "invalid_field": "",
+      "matched": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-empty-pattern-is-valid-deny",
+    "api": "matcher",
+    "facts": {
+      "pattern": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "VALID_INPUT",
+      "invalid_field": "",
+      "matched": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-independent-128-component-caps",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "req_name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "want": {
+      "domain_status": "VALID_INPUT",
+      "invalid_field": "",
+      "matched": true
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-custom-scheme-dots-are-allowed",
+    "api": "matcher",
+    "facts": {
+      "pattern": "a..://x",
+      "req_type": "a..",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "VALID_INPUT",
+      "invalid_field": "",
+      "matched": true
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-scheme-case-is-significant",
+    "api": "matcher",
+    "facts": {
+      "pattern": "MCP://a",
+      "req_type": "mcp",
+      "req_name": "a"
+    },
+    "want": {
+      "domain_status": "VALID_INPUT",
+      "invalid_field": "",
+      "matched": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-same-request-widened",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://calculator",
+      "after": "mcp://*",
+      "req_type": "mcp",
+      "req_name": "weather"
+    },
+    "want": {
+      "domain_status": "VALID_INPUT",
+      "invalid_field": "",
+      "before_match": false,
+      "after_match": true,
+      "change": "WIDENED"
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "contract-empty-candidate-still-subset-not-availability",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "VALID_INPUT",
+      "invalid_field": "",
+      "status": "SUPPORTED_SUBSET",
+      "rule_id": "CANDIDATE_EMPTY",
+      "supported_subset": true,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "contract"
+    ]
+  },
+  {
+    "name": "cross-refinement-0-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp:a",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-0-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp:a",
+      "after": "mcp:a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-0-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp:a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-0-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp:a",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-0-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp:a",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-0-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp:a",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-0-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp:a",
+      "after": "mcp:a",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-0-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp:a",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-1-0",
+    "api": "refinement",
+    "facts": {
+      "before": "://a",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-1-1",
+    "api": "refinement",
+    "facts": {
+      "before": "://a",
+      "after": "://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-1-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-1-3",
+    "api": "refinement",
+    "facts": {
+      "before": "://a",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-1-0",
+    "api": "impact",
+    "facts": {
+      "before": "://a",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-1-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "://a",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-1-2",
+    "api": "impact",
+    "facts": {
+      "before": "://a",
+      "after": "://a",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-1-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "://a",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-2-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-2-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://",
+      "after": "mcp://"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-2-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-2-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-2-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-2-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-2-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://",
+      "after": "mcp://",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-2-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-3-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a/path",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-3-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a/path",
+      "after": "mcp://a/path"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-3-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a/path"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-3-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a/path",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-3-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a/path",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-3-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://a/path",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-3-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a/path",
+      "after": "mcp://a/path",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-3-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a/path",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-4-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a?q=x",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-4-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a?q=x",
+      "after": "mcp://a?q=x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-4-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a?q=x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-4-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a?q=x",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-4-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a?q=x",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-4-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://a?q=x",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-4-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a?q=x",
+      "after": "mcp://a?q=x",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-4-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a?q=x",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-5-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a#x",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-5-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a#x",
+      "after": "mcp://a#x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-5-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a#x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-5-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a#x",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-5-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a#x",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-5-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://a#x",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-5-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a#x",
+      "after": "mcp://a#x",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-5-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a#x",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-6-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://user@a",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-6-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://user@a",
+      "after": "mcp://user@a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-6-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://user@a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-6-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://user@a",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-6-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://user@a",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-6-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://user@a",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-6-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://user@a",
+      "after": "mcp://user@a",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-6-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://user@a",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-7-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a:443",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-7-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a:443",
+      "after": "mcp://a:443"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-7-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a:443"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-7-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a:443",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-7-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a:443",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-7-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://a:443",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-7-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a:443",
+      "after": "mcp://a:443",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-7-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a:443",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-8-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://*.a.*",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-8-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://*.a.*",
+      "after": "mcp://*.a.*"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-8-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://*.a.*"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-8-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://*.a.*",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-8-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://*.a.*",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-8-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://*.a.*",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-8-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://*.a.*",
+      "after": "mcp://*.a.*",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-8-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://*.a.*",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-9-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://*.*",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-9-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://*.*",
+      "after": "mcp://*.*"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-9-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://*.*"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-9-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://*.*",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-9-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://*.*",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-9-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://*.*",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-9-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://*.*",
+      "after": "mcp://*.*",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-9-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://*.*",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-10-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a*b",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-10-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a*b",
+      "after": "mcp://a*b"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-10-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a*b"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-10-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a*b",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-10-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a*b",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-10-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://a*b",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-10-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a*b",
+      "after": "mcp://a*b",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-10-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a*b",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-11-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a..b",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-11-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a..b",
+      "after": "mcp://a..b"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-11-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a..b"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-11-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a..b",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-11-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a..b",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-11-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://a..b",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-11-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a..b",
+      "after": "mcp://a..b",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-11-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a..b",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-12-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://.a",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-12-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://.a",
+      "after": "mcp://.a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-12-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://.a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-12-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://.a",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-12-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://.a",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-12-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://.a",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-12-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://.a",
+      "after": "mcp://.a",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-12-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://.a",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-13-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a.",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-13-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a.",
+      "after": "mcp://a."
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-13-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a."
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-13-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a.",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-13-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a.",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-13-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://a.",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-13-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a.",
+      "after": "mcp://a.",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-13-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a.",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-14-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://*.",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-14-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://*.",
+      "after": "mcp://*."
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-14-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://*."
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-14-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://*.",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-14-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://*.",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-14-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://*.",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-14-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://*.",
+      "after": "mcp://*.",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-14-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://*.",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-15-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://.*",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-15-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://.*",
+      "after": "mcp://.*"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-15-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://.*"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-15-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://.*",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-15-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://.*",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-15-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://.*",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-15-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://.*",
+      "after": "mcp://.*",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-15-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://.*",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-16-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a://b",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-16-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a://b",
+      "after": "mcp://a://b"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-16-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a://b"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-16-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a://b",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-16-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a://b",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-16-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://a://b",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-16-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a://b",
+      "after": "mcp://a://b",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-16-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a://b",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-17-0",
+    "api": "refinement",
+    "facts": {
+      "before": "1mcp://x",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-17-1",
+    "api": "refinement",
+    "facts": {
+      "before": "1mcp://x",
+      "after": "1mcp://x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-17-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "1mcp://x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-17-3",
+    "api": "refinement",
+    "facts": {
+      "before": "1mcp://x",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-17-0",
+    "api": "impact",
+    "facts": {
+      "before": "1mcp://x",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-17-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "1mcp://x",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-17-2",
+    "api": "impact",
+    "facts": {
+      "before": "1mcp://x",
+      "after": "1mcp://x",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-17-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "1mcp://x",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-18-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://\u00e9",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-18-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://\u00e9",
+      "after": "mcp://\u00e9"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-18-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://\u00e9"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-18-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://\u00e9",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-18-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://\u00e9",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-18-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://\u00e9",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-18-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://\u00e9",
+      "after": "mcp://\u00e9",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-18-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://\u00e9",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-19-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a\u0000b",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-19-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a\u0000b",
+      "after": "mcp://a\u0000b"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-19-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a\u0000b"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-refinement-19-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a\u0000b",
+      "after": "mcp://a"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-19-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a\u0000b",
+      "after": "",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-19-1",
+    "api": "impact",
+    "facts": {
+      "before": "",
+      "after": "mcp://a\u0000b",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-19-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a\u0000b",
+      "after": "mcp://a\u0000b",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "cross-impact-19-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a\u0000b",
+      "req_type": "",
+      "req_name": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "malformed-cross-product"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-pattern-0",
+    "api": "matcher",
+    "facts": {
+      "pattern": "mcp://\u00e9",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "pattern",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-pattern-1",
+    "api": "matcher",
+    "facts": {
+      "pattern": "mcp://\ud55c",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "pattern",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-pattern-2",
+    "api": "matcher",
+    "facts": {
+      "pattern": "mcp://\ud83d\ude00",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "pattern",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-pattern-3",
+    "api": "matcher",
+    "facts": {
+      "pattern": "mcp://a\u0080b",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "pattern",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-pattern-4",
+    "api": "matcher",
+    "facts": {
+      "pattern": "mcp://a\u007fb",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "pattern",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-pattern-5",
+    "api": "matcher",
+    "facts": {
+      "pattern": "mcp://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "pattern",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-req_type-0",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "\u00e9",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_type",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-req_type-1",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "\ud55c",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_type",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-req_type-2",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "\ud83d\ude00",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_type",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-req_type-3",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "a\u0080b",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_type",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-req_type-4",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "a\u007fb",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_type",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-req_type-5",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_type",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-req_name-0",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "mcp",
+      "req_name": "\u00e9"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_name",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-req_name-1",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "mcp",
+      "req_name": "\ud55c"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_name",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-req_name-2",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "mcp",
+      "req_name": "\ud83d\ude00"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_name",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-req_name-3",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "mcp",
+      "req_name": "a\u0080b"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_name",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-req_name-4",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "mcp",
+      "req_name": "a\u007fb"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_name",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-matcher-req_name-5",
+    "api": "matcher",
+    "facts": {
+      "pattern": "*",
+      "req_type": "mcp",
+      "req_name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_name",
+      "matched": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "all-invalid-matcher",
+    "api": "matcher",
+    "facts": {
+      "pattern": "bad/value",
+      "req_type": "bad/value",
+      "req_name": "bad/value"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "pattern",
+      "matched": false
+    },
+    "coverage": [
+      "precedence"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-before-0",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://\u00e9",
+      "after": "*",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-before-1",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://\ud55c",
+      "after": "*",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-before-2",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://\ud83d\ude00",
+      "after": "*",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-before-3",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a\u0080b",
+      "after": "*",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-before-4",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://a\u007fb",
+      "after": "*",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-before-5",
+    "api": "impact",
+    "facts": {
+      "before": "mcp://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "after": "*",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-after-0",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://\u00e9",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-after-1",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://\ud55c",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-after-2",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://\ud83d\ude00",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-after-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a\u0080b",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-after-4",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a\u007fb",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-after-5",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "mcp://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "req_type": "mcp",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-req_type-0",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "*",
+      "req_type": "\u00e9",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_type",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-req_type-1",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "*",
+      "req_type": "\ud55c",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_type",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-req_type-2",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "*",
+      "req_type": "\ud83d\ude00",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_type",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-req_type-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "*",
+      "req_type": "a\u0080b",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_type",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-req_type-4",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "*",
+      "req_type": "a\u007fb",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_type",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-req_type-5",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "*",
+      "req_type": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "req_name": "x"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_type",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-req_name-0",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "*",
+      "req_type": "mcp",
+      "req_name": "\u00e9"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_name",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-req_name-1",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "*",
+      "req_type": "mcp",
+      "req_name": "\ud55c"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_name",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-req_name-2",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "*",
+      "req_type": "mcp",
+      "req_name": "\ud83d\ude00"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_name",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-req_name-3",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "*",
+      "req_type": "mcp",
+      "req_name": "a\u0080b"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_name",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-req_name-4",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "*",
+      "req_type": "mcp",
+      "req_name": "a\u007fb"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_name",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-impact-req_name-5",
+    "api": "impact",
+    "facts": {
+      "before": "*",
+      "after": "*",
+      "req_type": "mcp",
+      "req_name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "req_name",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "all-invalid-impact",
+    "api": "impact",
+    "facts": {
+      "before": "bad/value",
+      "after": "bad/value",
+      "req_type": "bad/value",
+      "req_name": "bad/value"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "before_match": false,
+      "after_match": false,
+      "change": "INVALID_INPUT"
+    },
+    "coverage": [
+      "precedence"
+    ]
+  },
+  {
+    "name": "raw-invalid-refinement-before-0",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://\u00e9",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-refinement-before-1",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://\ud55c",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-refinement-before-2",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://\ud83d\ude00",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-refinement-before-3",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a\u0080b",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-refinement-before-4",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://a\u007fb",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-refinement-before-5",
+    "api": "refinement",
+    "facts": {
+      "before": "mcp://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "after": ""
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-refinement-after-0",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://\u00e9"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-refinement-after-1",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://\ud55c"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-refinement-after-2",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://\ud83d\ude00"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-refinement-after-3",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a\u0080b"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-refinement-after-4",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://a\u007fb"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "raw-invalid-refinement-after-5",
+    "api": "refinement",
+    "facts": {
+      "before": "*",
+      "after": "mcp://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "after",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "direct-raw-text"
+    ]
+  },
+  {
+    "name": "all-invalid-refinement",
+    "api": "refinement",
+    "facts": {
+      "before": "bad/value",
+      "after": "bad/value"
+    },
+    "want": {
+      "domain_status": "INVALID_INPUT",
+      "invalid_field": "before",
+      "status": "INVALID_INPUT",
+      "rule_id": "",
+      "supported_subset": false,
+      "has_witness": false,
+      "witness_type": "",
+      "witness_name": "",
+      "before_match": false,
+      "after_match": false
+    },
+    "coverage": [
+      "precedence"
+    ]
+  }
+]
