@@ -1,0 +1,20 @@
+[
+  {
+    "group_present": true,
+    "group_value": "admin",
+    "principal_present": true,
+    "principal_value": "user:me@acme.co"
+  },
+  {
+    "group_present": true,
+    "group_value": "admin",
+    "principal_present": true,
+    "principal_value": "other:me@acme.co"
+  },
+  {
+    "group_present": true,
+    "group_value": "admin",
+    "principal_present": true,
+    "principal_value": ""
+  }
+]

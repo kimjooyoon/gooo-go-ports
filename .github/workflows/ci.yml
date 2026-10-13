@@ -95,6 +95,8 @@ jobs:
           ./.gooo check ports/strings/search.gooo
           ./.gooo check ports/strings/literal.gooo
           ./.gooo check examples/literal-text-report/main.gooo
+          ./.gooo check ports/cel/scalar_access.gooo
+          ./.gooo check examples/cel-api-policy/main.gooo
       - name: Retain unsupported-body probes
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
@@ -621,6 +623,12 @@ jobs:
           PILOT_EVIDENCE="${pilot_evidence[0]}" \
             go -C examples/decision-policy-pilot test -race -count=1 ./...
           ./examples/decision-policy-pilot/run.sh --verify "${pilot_evidence[0]}"
+      - name: Verify the imported CEL API policy
+        if: steps.change-scope.outputs.docs_only != 'true'
+        run: |
+          go -C examples/cel-api-policy/oracle mod download
+          python3 examples/cel-api-policy/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/cel-api-policy"
+          jq -e '.schema == "gooo/cel-public-native-verification/v1" and .status == "FINITE_REAL_CEL_IMPORTED_NATIVE_AND_REPLAY_PASS"' out/cel-api-policy/verification.json
       - name: Upload offline policy experiment evidence
         if: always() && steps.change-scope.outputs.docs_only != 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

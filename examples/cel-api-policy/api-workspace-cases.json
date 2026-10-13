@@ -1,0 +1,1029 @@
+{
+  "schema": "gooo/body-composition-cases/v1",
+  "cases": [
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": true,
+          "reason": "ALLOW",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": false,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "NOT_AUTHENTICATED",
+          "authenticated": false,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-b",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "TENANT_MISMATCH",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": false,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "read"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "ACTION_MISMATCH",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": false,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": false,
+        "app/cel-api-policy:APIAccess.input1": "",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "other:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "ACCESS_ERROR",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": false,
+          "access_error": true,
+          "access_result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "viewer",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "other:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "ACCESS_DENIED",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": false,
+          "access_error": false,
+          "access_result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": false,
+        "app/cel-api-policy:APIAccess.input1": "",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "other:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": false,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-b",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "read"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "NOT_AUTHENTICATED",
+          "authenticated": false,
+          "tenant_present": true,
+          "tenant_matched": false,
+          "action_present": true,
+          "action_matched": false,
+          "access_allowed": false,
+          "access_error": true,
+          "access_result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": false,
+        "app/cel-api-policy:APIAccess.input1": "",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "other:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-b",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "read"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "TENANT_MISMATCH",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": false,
+          "action_present": true,
+          "action_matched": false,
+          "access_allowed": false,
+          "access_error": true,
+          "access_result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": false,
+        "app/cel-api-policy:APIAccess.input1": "",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "other:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "read"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "ACTION_MISMATCH",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": false,
+          "access_allowed": false,
+          "access_error": true,
+          "access_result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": false,
+        "app/cel-api-policy:APIAccess.input1": "",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": true,
+          "reason": "ALLOW",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": false,
+          "principal_matched": true,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": false,
+        "app/cel-api-policy:APIAccess.input1": "",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": false,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-b",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "read"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "NOT_AUTHENTICATED",
+          "authenticated": false,
+          "tenant_present": true,
+          "tenant_matched": false,
+          "action_present": true,
+          "action_matched": false,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": false,
+          "principal_matched": true,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": false,
+        "app/cel-api-policy:APIAccess.input1": "",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-b",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "TENANT_MISMATCH",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": false,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": false,
+          "principal_matched": true,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": false,
+        "app/cel-api-policy:APIAccess.input1": "",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "read"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "ACTION_MISMATCH",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": false,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": false,
+          "principal_matched": true,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": false,
+        "app/cel-api-policy:APIAccess.input3": "",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": true,
+          "reason": "ALLOW",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": true,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "viewer",
+        "app/cel-api-policy:APIAccess.input2": false,
+        "app/cel-api-policy:APIAccess.input3": "",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "ACCESS_DENIED",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": false,
+          "access_error": false,
+          "access_result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": true,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": false,
+        "app/cel-api-policy:APIAccess.input1": "",
+        "app/cel-api-policy:APIAccess.input2": false,
+        "app/cel-api-policy:APIAccess.input3": "",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "ACCESS_ERROR",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": false,
+          "access_error": true,
+          "access_result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": true,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "",
+        "app/cel-api-policy:APIAccess.input6": "",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "TENANT_UNSPECIFIED",
+          "authenticated": true,
+          "tenant_present": false,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "TENANT_UNSPECIFIED",
+          "authenticated": true,
+          "tenant_present": false,
+          "tenant_matched": false,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "TENANT_UNSPECIFIED",
+          "authenticated": true,
+          "tenant_present": false,
+          "tenant_matched": false,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "",
+        "app/cel-api-policy:APIAccess.input8": ""
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "ACTION_UNSPECIFIED",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": false,
+          "action_matched": true,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "ACTION_UNSPECIFIED",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": false,
+          "action_matched": false,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": ""
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "ACTION_UNSPECIFIED",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": false,
+          "action_matched": false,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": false,
+        "app/cel-api-policy:APIAccess.input1": "",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "other:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": false,
+        "app/cel-api-policy:APIAccess.input5": "",
+        "app/cel-api-policy:APIAccess.input6": "",
+        "app/cel-api-policy:APIAccess.input7": "",
+        "app/cel-api-policy:APIAccess.input8": ""
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "NOT_AUTHENTICATED",
+          "authenticated": false,
+          "tenant_present": false,
+          "tenant_matched": true,
+          "action_present": false,
+          "action_matched": true,
+          "access_allowed": false,
+          "access_error": true,
+          "access_result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": false,
+        "app/cel-api-policy:APIAccess.input1": "",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "other:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "",
+        "app/cel-api-policy:APIAccess.input6": "",
+        "app/cel-api-policy:APIAccess.input7": "",
+        "app/cel-api-policy:APIAccess.input8": ""
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "TENANT_UNSPECIFIED",
+          "authenticated": true,
+          "tenant_present": false,
+          "tenant_matched": true,
+          "action_present": false,
+          "action_matched": true,
+          "access_allowed": false,
+          "access_error": true,
+          "access_result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": false,
+        "app/cel-api-policy:APIAccess.input1": "",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "other:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-b",
+        "app/cel-api-policy:APIAccess.input7": "",
+        "app/cel-api-policy:APIAccess.input8": ""
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "TENANT_MISMATCH",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": false,
+          "action_present": false,
+          "action_matched": true,
+          "access_allowed": false,
+          "access_error": true,
+          "access_result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": false,
+        "app/cel-api-policy:APIAccess.input1": "",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "other:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "",
+        "app/cel-api-policy:APIAccess.input8": ""
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "ACTION_UNSPECIFIED",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": false,
+          "action_matched": true,
+          "access_allowed": false,
+          "access_error": true,
+          "access_result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "\u79df\u6237",
+        "app/cel-api-policy:APIAccess.input6": "\u79df\u6237",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": true,
+          "reason": "ALLOW",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "t\u00e9nant",
+        "app/cel-api-policy:APIAccess.input6": "te\u0301nant",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "TENANT_MISMATCH",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": false,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant\u0000a",
+        "app/cel-api-policy:APIAccess.input6": "tenant\u0000a",
+        "app/cel-api-policy:APIAccess.input7": "write",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": true,
+          "reason": "ALLOW",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "write\n",
+        "app/cel-api-policy:APIAccess.input8": "write"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": false,
+          "reason": "ACTION_MISMATCH",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": false,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": "tenant-a",
+        "app/cel-api-policy:APIAccess.input6": "tenant-a",
+        "app/cel-api-policy:APIAccess.input7": "\u5199\u5165",
+        "app/cel-api-policy:APIAccess.input8": "\u5199\u5165"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": true,
+          "reason": "ALLOW",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "app/cel-api-policy:APIAccess.input0": true,
+        "app/cel-api-policy:APIAccess.input1": "admin",
+        "app/cel-api-policy:APIAccess.input2": true,
+        "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+        "app/cel-api-policy:APIAccess.input4": true,
+        "app/cel-api-policy:APIAccess.input5": " ",
+        "app/cel-api-policy:APIAccess.input6": " ",
+        "app/cel-api-policy:APIAccess.input7": "\n",
+        "app/cel-api-policy:APIAccess.input8": "\n"
+      },
+      "expected": {
+        "app/cel-api-policy:APIAccess": {
+          "allowed": true,
+          "reason": "ALLOW",
+          "authenticated": true,
+          "tenant_present": true,
+          "tenant_matched": true,
+          "action_present": true,
+          "action_matched": true,
+          "access_allowed": true,
+          "access_error": false,
+          "access_result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    }
+  ]
+}

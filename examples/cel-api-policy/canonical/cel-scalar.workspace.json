@@ -1,0 +1,15 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "go/cel.dev/cel-go/codelab",
+    "activity": "ScalarAccess"
+  },
+  "packages": [
+    {
+      "path": "go/cel.dev/cel-go/codelab",
+      "sources": [
+        "ports/cel/scalar_access.gooo"
+      ]
+    }
+  ]
+}

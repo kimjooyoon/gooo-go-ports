@@ -1,0 +1,28 @@
+{
+  "schema": "gooo-original-api-independent-spec/v1",
+  "status": "AUTHORED_FINITE_API_EXPECTATIONS_NOT_API_EXECUTION",
+  "declared_contract": "Original API composition from root, not upstream CEL codelab",
+  "decision_reason_priority": [
+    "NOT_AUTHENTICATED",
+    "TENANT_UNSPECIFIED",
+    "TENANT_MISMATCH",
+    "ACTION_UNSPECIFIED",
+    "ACTION_MISMATCH",
+    "ACCESS_ERROR",
+    "ACCESS_DENIED",
+    "ALLOW"
+  ],
+  "tenant_present": "both raw tenant strings nonempty",
+  "action_present": "both raw action strings nonempty",
+  "admission": "all original context guards plus real CEL scalar ALLOW",
+  "case_count": 32,
+  "baseline_observations_file": "observations.json",
+  "baseline_observations_sha256": "b39dcd6649866f5dd3648eb17443eb8d621f64f11b771dbc364b887b3d863f3f",
+  "independence": "Authored from declared API contract and actual CEL scalar tuples; native source/generated source not read. Each expected priority and control observation is stated explicitly rather than produced by a copied native formula.",
+  "limits": [
+    "Authentication remains host fact; no token signature/authentication implementation or real tenancy proof",
+    "Exact equality and nonempty guards do not certify names or allow actions",
+    "Unknowns, non-string dynamic group, general CEL, real API effects out of scope",
+    "Original API tuples are authored expectations awaiting native comparison, not upstream runtime results"
+  ]
+}

@@ -47,12 +47,13 @@ HEAVY = {
     "Execute and replay the literal text report",
     "Observe malformed literal Text inputs through the actual CLI",
     "Verify the offline decision-policy experiment",
+    "Verify the imported CEL API policy",
 }
 UPLOADS = {"Upload offline policy experiment evidence", "Upload execution and diagnostic evidence"}
 DOC_STEPS = {"Report documentation-only native scope", "Preserve documentation scope and compiler identity"}
 NATIVE_COMMAND = re.compile(
     r"(?:\.gooo\s+package\s+(?:execute|replay)|\./cmd/(?:verify|check-unicode|check-literal-text-report)\b|"
-    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh)"
+    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py)"
 )
 LITERAL_COMMANDS = {
     "Execute and replay the literal text report": {
@@ -110,7 +111,7 @@ def validate(text):
     require(hashlib.sha256(header.encode()).hexdigest() == HEADER_SHA, "events or permissions changed")
     require(hashlib.sha256(browser.encode()).hexdigest() == BROWSER_SHA, "browser/deployment behavior changed")
     named, unnamed = named_steps(text)
-    require(len(HEAVY) == 21, "full-scope native step count changed")
+    require(len(HEAVY) == 22, "full-scope native step count changed")
     require(set(named) == COMMON | HEAVY | UPLOADS | DOC_STEPS, "step roster changed without guard review")
     require(len(unnamed) == 2 and all(field(c, "if") is None for c in unnamed), "checkout/Go setup became conditional")
     require("fetch-depth: 0" in unnamed[0], "exact PR parents must be available")
@@ -202,6 +203,17 @@ def validate(text):
             and "tools/probe.sh" not in declarations, "declaration/probe separation")
     for source in ("ports/strings/search.gooo", "ports/strings/literal.gooo", "examples/literal-text-report/main.gooo"):
         require("./.gooo check " + source in declarations, "literal declaration check missing: " + source)
+    for source in ("ports/cel/scalar_access.gooo", "examples/cel-api-policy/main.gooo"):
+        require("./.gooo check " + source in declarations, "CEL declaration check missing: " + source)
+    cel = named["Verify the imported CEL API policy"]
+    require("go -C examples/cel-api-policy/oracle mod download" in cel,
+            "fresh CI runner must fetch pinned oracle dependencies before offline verification")
+    require('python3 examples/cel-api-policy/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/cel-api-policy"' in cel,
+            "CEL verifier must bind the pinned compiler and matching Go tool")
+    for token in ('"gooo/cel-public-native-verification/v1"',
+                  '"FINITE_REAL_CEL_IMPORTED_NATIVE_AND_REPLAY_PASS"',
+                  "out/cel-api-policy/verification.json"):
+        require(token in cel, "CEL receipt identity check missing: " + token)
     log = named["Report documentation-only native scope"]
     require("No new native-port execution/replay receipts" in log
             and "browser-demo job retains its separate" in log, "misleading execution scope log")
@@ -296,6 +308,21 @@ class WorkflowScopeTests(unittest.TestCase):
             validate(self.text.replace("  browser-demo:\n", extra + "  browser-demo:\n", 1))
         with self.assertRaises(ValueError):
             validate(self.text.replace("needs: [native-ports, browser-demo]", "needs: [browser-demo]"))
+
+    def test_cel_native_verifier_cannot_use_another_producer_or_skip_receipt(self):
+        named, _ = named_steps(self.text)
+        chunk = named["Verify the imported CEL API policy"]
+        for before, after in (('--compiler "$PWD/.gooo"', '--compiler /tmp/gooo'),
+                              ('--go "$(go env GOROOT)/bin/go"', '--go /usr/bin/go'),
+                              ('go -C examples/cel-api-policy/oracle mod download', 'go mod download'),
+                              ('"FINITE_REAL_CEL_IMPORTED_NATIVE_AND_REPLAY_PASS"', '"PASS"'),
+                              ('out/cel-api-policy/verification.json', 'out/other.json')):
+            with self.subTest(before=before), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, chunk.replace(before, after, 1), 1))
+        misplaced = self.text.replace("      - name: Check Gooo declarations\n",
+                                      "      - name: Check Gooo declarations\n        run: python3 examples/cel-api-policy/verify.py\n", 1)
+        with self.assertRaises(ValueError):
+            validate(misplaced)
 
     def test_docs_artifact_cannot_include_native_receipts(self):
         named, _ = named_steps(self.text)

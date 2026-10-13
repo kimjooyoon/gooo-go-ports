@@ -324,5 +324,30 @@
       ],
       "api_mapping": "Separate Text ParseCanonical composition adapts the original Parse return value plus UUID.String into parsed/canonical_uuid/error/invalid_length. It preserves the returned lowercase UUID text on both success and error, including partial UUID bytes and the raw32 failed-byte commit difference. The 38-byte form follows Parse middle-byte behavior rather than Validate brace validation. Original valid UTF-8 decoded Text <=1024 bytes is the stated domain; arbitrary-byte Go strings, binary UUID values, ParseBytes and full Parse or whole-module compatibility are not provided. Existing DecimalLength/URNPrefix and internal quote helpers are shared without changing Validate. Original uuid.go/util.go/LICENSE hashes, compiled source embeds and the exact original31-file module h1 remain the same; added wrappers/provenance remain outside that upstream archive."
     }
+  ],
+  "bounded_cel_adaptations": [
+    {
+      "id": "cel-codelab-auth-or/v1",
+      "repository": "google/cel-go",
+      "revision": "6d32ef54e4f124929730b15d5eb9b9205da58992",
+      "source": "codelab/solution/codelab.go",
+      "source_sha256": "330450d7be943314025d6430ec5e5484d107f8ce196baf0a5c60092dcd777244",
+      "source_bytes": 16886,
+      "source_copy": "examples/cel-api-policy/oracle/upstream/codelab.go.txt",
+      "source_symbol": "exercise3",
+      "package_path": "go/cel.dev/cel-go/codelab",
+      "target": "ports/cel/scalar_access.gooo",
+      "target_activity": "ScalarAccess",
+      "license": "ports/cel/LICENSE-APACHE-2.0",
+      "license_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "runtime_module": "cel.dev/cel-go",
+      "runtime_version": "v0.32.0",
+      "runtime_revision": "f2039bc647bca407d882d90436fc8b91bab1ae62",
+      "consumer_package": "app/cel-api-policy",
+      "consumer_source": "examples/cel-api-policy/main.gooo",
+      "consumer_workspace": "cel-api-policy.workspace.json",
+      "scalar_workspace": "cel-scalar.workspace.json",
+      "api_mapping": "One typed-protobuf codelab Boolean rule is adapted to raw group/principal presence and valid UTF-8 text with explicit ALLOW/DENY/ERROR records. Missing group lookup errors unless the named-principal branch is true; omitted proto principal defaults to empty. Adapter presence diagnostics are not CEL field-presence observations. Generic CEL expressions, unknowns, non-string group values, arbitrary missing auth/request objects, exact error object identity and authentication are outside this finite adaptation. Native CLI text limit: 65,536 bytes; workspace route limit: 1,024 bytes. This rule and its original importing API composition are counted separately from the 42 existing ported APIs and existing native corpus."
+    }
   ]
 }

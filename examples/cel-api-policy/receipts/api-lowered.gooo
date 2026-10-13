@@ -1,0 +1,34 @@
+package gooo_workspace
+namespace gooo_workspace
+
+entity Boolean id "gooo://std/boolean"
+entity Text id "gooo://std/text"
+entity AccessDecision id "gooo://cel-example/access-decision/v1" fields {
+    field allowed id "gooo://cel-example/access-decision/allowed" type boolean required one
+    field evaluation_error id "gooo://cel-example/access-decision/evaluation-error" type boolean required one
+    field result id "gooo://cel-example/access-decision/result" type string required one
+    field group_matched id "gooo://cel-example/access-decision/group-matched" type boolean required one
+    field principal_matched id "gooo://cel-example/access-decision/principal-matched" type boolean required one
+    field group_missing id "gooo://cel-example/access-decision/group-missing" type boolean required one
+    field principal_defaulted id "gooo://cel-example/access-decision/principal-defaulted" type boolean required one
+    field effective_principal id "gooo://cel-example/access-decision/effective-principal" type string required one
+}
+entity ApiDecision id "gooo://api-example/decision/v1" fields {
+    field allowed id "gooo://api-example/decision/allowed" type boolean required one
+    field reason id "gooo://api-example/decision/reason" type string required one
+    field authenticated id "gooo://api-example/decision/authenticated" type boolean required one
+    field tenant_present id "gooo://api-example/decision/tenant-present" type boolean required one
+    field tenant_matched id "gooo://api-example/decision/tenant-matched" type boolean required one
+    field action_present id "gooo://api-example/decision/action-present" type boolean required one
+    field action_matched id "gooo://api-example/decision/action-matched" type boolean required one
+    field access_allowed id "gooo://api-example/decision/access-allowed" type boolean required one
+    field access_error id "gooo://api-example/decision/access-error" type boolean required one
+    field access_result id "gooo://api-example/decision/access-result" type string required one
+    field group_matched id "gooo://api-example/decision/group-matched" type boolean required one
+    field principal_matched id "gooo://api-example/decision/principal-matched" type boolean required one
+    field group_missing id "gooo://api-example/decision/group-missing" type boolean required one
+    field principal_defaulted id "gooo://api-example/decision/principal-defaulted" type boolean required one
+    field effective_principal id "gooo://api-example/decision/effective-principal" type string required one
+}
+activity GoooPackage0ActivityScalarAccess(Boolean, Text, Boolean, Text) -> AccessDecision id "gooo://cel-example/scalar-access" computes "\nlet effectivePrincipal = input3\nif !input2 { effectivePrincipal = \"\" }\nlet groupMatched = input0 && input1 == \"admin\"\nlet principalMatched = effectivePrincipal == \"user:me@acme.co\"\nlet allowed = groupMatched || principalMatched\nlet evaluationError = !input0 && !principalMatched\nlet result = \"DENY\"\nif evaluationError { result = \"ERROR_NO_SUCH_KEY_GROUP\" }\nif allowed { result = \"ALLOW\" }\nreturn AccessDecision{allowed: allowed, evaluation_error: evaluationError, result: result, group_matched: groupMatched, principal_matched: principalMatched, group_missing: !input0, principal_defaulted: !input2, effective_principal: effectivePrincipal}\n"
+activity GoooPackage1ActivityAPIAccess(Boolean, Text, Boolean, Text, Boolean, Text, Text, Text, Text) -> ApiDecision id "gooo://api-example/api-access" computes "\nlet access = GoooPackage0ActivityScalarAccess(input0, input1, input2, input3)\nlet tenantPresent = input5 != \"\" && input6 != \"\"\nlet tenantMatched = input5 == input6\nlet actionPresent = input7 != \"\" && input8 != \"\"\nlet actionMatched = input7 == input8\nlet allowed = input4 && tenantPresent && tenantMatched && actionPresent && actionMatched && access.allowed\nlet reason = \"ALLOW\"\nif !input4 { reason = \"NOT_AUTHENTICATED\" } else {\n if !tenantPresent { reason = \"TENANT_UNSPECIFIED\" } else {\n  if !tenantMatched { reason = \"TENANT_MISMATCH\" } else {\n   if !actionPresent { reason = \"ACTION_UNSPECIFIED\" } else {\n    if !actionMatched { reason = \"ACTION_MISMATCH\" } else {\n     if access.evaluation_error { reason = \"ACCESS_ERROR\" } else {\n      if !access.allowed { reason = \"ACCESS_DENIED\" }\n     }\n    }\n   }\n  }\n }\n}\nreturn ApiDecision{allowed: allowed, reason: reason, authenticated: input4, tenant_present: tenantPresent, tenant_matched: tenantMatched, action_present: actionPresent, action_matched: actionMatched, access_allowed: access.allowed, access_error: access.evaluation_error, access_result: access.result, group_matched: access.group_matched, principal_matched: access.principal_matched, group_missing: access.group_missing, principal_defaulted: access.principal_defaulted, effective_principal: access.effective_principal}\n"

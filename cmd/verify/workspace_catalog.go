@@ -96,6 +96,11 @@ func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, e
 	}
 	selected := map[string]bool{}
 	for _, pkg := range f.Catalog.Packages {
+		// The bounded CEL rule has its own typed-Boolean verifier and importing
+		// workspace. It must not alter any legacy suite's frozen source roster.
+		if pkg.Path == "go/cel.dev/cel-go/codelab" {
+			continue
+		}
 		if isLiteralTextSuite(s) && pkg.Path != "go/strings" && pkg.Path != s.Package {
 			continue
 		}
