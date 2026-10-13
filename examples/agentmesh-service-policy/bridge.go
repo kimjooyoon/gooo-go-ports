@@ -152,3 +152,28 @@ func decodeDecision(value any, keys []string, target any) error {
 	}
 	return json.Unmarshal(encoded, target)
 }
+
+// EvaluateGrantUpdate asks the original Gooo composition whether one candidate
+// grant is a recognized subset and preserves one required request. It performs
+// no state transition. INVALID_INPUT and REFUSED remain explicit decisions;
+// transport, source-binding and malformed generated-result failures are errors.
+func EvaluateGrantUpdate(f GrantUpdateFacts) (GrantUpdateProof, error) {
+	values := []string{f.Before, f.After, f.RequiredType, f.RequiredName}
+	if err := exactNativeText(values...); err != nil {
+		return GrantUpdateProof{}, err
+	}
+	for _, value := range values {
+		if len(value) > 1<<20 {
+			return GrantUpdateProof{}, errors.New("grant update facts exceed the bounded UTF-8 transport limit")
+		}
+	}
+	b, err := SourceBindings()
+	if err != nil {
+		return GrantUpdateProof{}, err
+	}
+	d, err := decodeGrantUpdateDecision(nativeGrantUpdate(f))
+	if err != nil {
+		return GrantUpdateProof{}, err
+	}
+	return GrantUpdateProof{Facts: f, Decision: d, Bindings: b}, nil
+}

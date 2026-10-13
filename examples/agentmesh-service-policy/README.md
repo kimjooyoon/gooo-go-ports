@@ -22,6 +22,13 @@ patterns through the imported matcher. It reports a checked widening witness or
 `UNPROVEN`; absence of a witness never becomes a subset certificate. This is a
 separate calculation from the four request-level impact states above.
 
+To use those calculations in a state-changing workflow, see the original
+[automatic application example](conditional-apply.md). Its Gooo activity checks
+that a candidate grant is a recognized subset and preserves one configured
+required request. The `apply` package owns the current state, rechecks writer
+authority and revision, and commits the local policy and operation result
+together. The example requires no per-change human confirmation.
+
 This is **not the complete Agent Mesh authorization engine**. It includes no
 Biscuit/OIDC/token verification, roles, task attenuation, HTTP/MCP/A2A wire
 integration, attested identities, live provider lookup or dispatched effect.

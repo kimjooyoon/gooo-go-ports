@@ -5,6 +5,7 @@ import (
 	checkedimpact "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy/internal/checked-impact"
 	checkedmatcher "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy/internal/checked-matcher"
 	checkedrefinement "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy/internal/checked-refinement"
+	conditionalapply "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy/internal/conditional-apply"
 	impact "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy/internal/impact"
 	matcher "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy/internal/matcher"
 	refinement "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy/internal/refinement"
@@ -27,6 +28,9 @@ func nativeImpactChecked(f ImpactFacts) any {
 }
 func nativeRefinementChecked(f RefinementFacts) any {
 	return checkedrefinement.GoooPackage5ActivityAnalyzeServiceGrantChecked(f.Before, f.After)
+}
+func nativeGrantUpdate(f GrantUpdateFacts) any {
+	return conditionalapply.GoooPackage8ActivityAssessServiceGrantUpdate(f.Before, f.After, f.RequiredType, f.RequiredName)
 }
 func nativeValidType(value string) bool {
 	return checkedmatcher.GoooPackage1ActivityValidateServiceType(value)

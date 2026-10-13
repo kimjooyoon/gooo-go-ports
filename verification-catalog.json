@@ -248,6 +248,12 @@
       "sources": [
         "examples/agentmesh-service-policy/checked_refinement.gooo"
       ]
+    },
+    {
+      "path": "gooo/service-policy/conditional-apply",
+      "sources": [
+        "examples/agentmesh-service-policy/conditional_apply.gooo"
+      ]
     }
   ]
 }

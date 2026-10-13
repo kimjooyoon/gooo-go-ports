@@ -1,0 +1,51 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "gooo/service-policy/conditional-apply",
+    "activity": "AssessServiceGrantUpdate"
+  },
+  "packages": [
+    {
+      "path": "gooo/service-domain",
+      "sources": [
+        "examples/agentmesh-service-policy/domain.gooo"
+      ]
+    },
+    {
+      "path": "go/google/agentmesh/api",
+      "sources": [
+        "ports/agentmesh/service_pattern.gooo"
+      ]
+    },
+    {
+      "path": "app/service-grant-impact",
+      "sources": [
+        "examples/agentmesh-service-policy/impact.gooo"
+      ]
+    },
+    {
+      "path": "app/service-grant-refinement",
+      "sources": [
+        "examples/agentmesh-service-policy/refinement.gooo"
+      ]
+    },
+    {
+      "path": "gooo/service-policy/checked-impact",
+      "sources": [
+        "examples/agentmesh-service-policy/checked_impact.gooo"
+      ]
+    },
+    {
+      "path": "gooo/service-policy/checked-refinement",
+      "sources": [
+        "examples/agentmesh-service-policy/checked_refinement.gooo"
+      ]
+    },
+    {
+      "path": "gooo/service-policy/conditional-apply",
+      "sources": [
+        "examples/agentmesh-service-policy/conditional_apply.gooo"
+      ]
+    }
+  ]
+}
