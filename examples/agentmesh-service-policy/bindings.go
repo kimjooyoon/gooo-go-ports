@@ -8,9 +8,11 @@ import (
 	"errors"
 	"fmt"
 	"go/format"
+	"maps"
 	"reflect"
 	"regexp"
 	"strings"
+	"sync"
 )
 
 const CompilerPin = "83928fa4538245abe33b08549da47f8cbdc50ed2"
@@ -174,7 +176,22 @@ type programRecord struct {
 	} `json:"pure_calls"`
 }
 
+// Embedded inputs are immutable for the lifetime of this trusted executable.
+// Cache their full check, including failures, without caching request decisions.
+// OnceValues also preserves a panic for subsequent and concurrent callers.
+var verifiedSourceBindings = sync.OnceValues(loadSourceBindings)
+
 func SourceBindings() (Bindings, error) {
+	bindings, err := verifiedSourceBindings()
+	if err != nil {
+		return Bindings{}, err
+	}
+	// The public map belongs to the caller, never to the private cached result.
+	bindings.Assets = maps.Clone(bindings.Assets)
+	return bindings, nil
+}
+
+func loadSourceBindings() (Bindings, error) {
 	files := map[string][]byte{}
 	for _, name := range boundNames {
 		raw, err := assets.ReadFile(name)

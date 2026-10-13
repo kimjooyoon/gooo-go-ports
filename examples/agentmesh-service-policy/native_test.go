@@ -2,9 +2,147 @@ package servicepolicy
 
 import (
 	"encoding/json"
+	"fmt"
+	"maps"
 	"os"
+	"reflect"
+	"sync"
 	"testing"
 )
+
+func TestSourceBindingsReturnedMapsAreIndependent(t *testing.T) {
+	want, err := SourceBindings()
+	if err != nil {
+		t.Fatal(err)
+	}
+	want.Assets = maps.Clone(want.Assets)
+	matcher := MatcherFacts{Pattern: "mcp://*", ReqType: "mcp", ReqName: "weather"}
+	impact := ImpactFacts{Before: "*", After: "mcp://weather", ReqType: "mcp", ReqName: "weather"}
+	refinement := RefinementFacts{Before: "*", After: "mcp://weather"}
+	update := GrantUpdateFacts{Before: "*", After: "mcp://weather", RequiredType: "mcp", RequiredName: "weather"}
+	for _, tc := range []struct {
+		name string
+		read func() (Bindings, error)
+	}{
+		{"source", SourceBindings},
+		{"matcher", func() (Bindings, error) { p, err := EvaluateMatcher(matcher); return p.Bindings, err }},
+		{"impact", func() (Bindings, error) { p, err := EvaluateImpact(impact); return p.Bindings, err }},
+		{"refinement", func() (Bindings, error) { p, err := EvaluateRefinement(refinement); return p.Bindings, err }},
+		{"checked-matcher", func() (Bindings, error) { p, err := EvaluateMatcherChecked(matcher); return p.Bindings, err }},
+		{"checked-impact", func() (Bindings, error) { p, err := EvaluateImpactChecked(impact); return p.Bindings, err }},
+		{"checked-refinement", func() (Bindings, error) { p, err := EvaluateRefinementChecked(refinement); return p.Bindings, err }},
+		{"grant-update", func() (Bindings, error) { p, err := EvaluateGrantUpdate(update); return p.Bindings, err }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			previous, err := SourceBindings()
+			if err != nil {
+				t.Fatal(err)
+			}
+			previousProof, err := EvaluateGrantUpdate(update)
+			if err != nil {
+				t.Fatal(err)
+			}
+			owned, err := tc.read()
+			if err != nil || !reflect.DeepEqual(owned, want) {
+				t.Fatalf("unexpected original bindings: %+v, %v", owned, err)
+			}
+			owned.Assets["matcher.gooo"] = "sha256:caller-modified"
+			delete(owned.Assets, "model.go")
+			owned.Assets["caller-added"] = "sha256:untrusted"
+			if !reflect.DeepEqual(previous, want) || !reflect.DeepEqual(previousProof.Bindings, want) {
+				t.Fatal("caller map mutation changed an earlier binding or proof")
+			}
+			fresh, err := SourceBindings()
+			if err != nil || !reflect.DeepEqual(fresh, want) {
+				t.Fatalf("caller map mutation contaminated SourceBindings: %+v, %v", fresh, err)
+			}
+			again, err := tc.read()
+			if err != nil || !reflect.DeepEqual(again, want) {
+				t.Fatalf("caller map mutation contaminated a later proof: %+v, %v", again, err)
+			}
+		})
+	}
+}
+
+func TestSourceBindingsConcurrentCallerMapMutation(t *testing.T) {
+	want, err := SourceBindings()
+	if err != nil {
+		t.Fatal(err)
+	}
+	want.Assets = maps.Clone(want.Assets)
+	const workers = 16
+	start := make(chan struct{})
+	failures := make(chan error, workers)
+	var wg sync.WaitGroup
+	for worker := range workers {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			<-start
+			for iteration := range 8 {
+				bindings, err := SourceBindings()
+				if err != nil || !reflect.DeepEqual(bindings, want) {
+					failures <- fmt.Errorf("worker %d source bindings differ: %v", worker, err)
+					return
+				}
+				facts := GrantUpdateFacts{Before: "*", After: "mcp://weather", RequiredType: "mcp", RequiredName: "weather"}
+				status := "ELIGIBLE"
+				if (worker+iteration)%2 != 0 {
+					facts.Before, facts.After = "mcp://weather", "*"
+					status = "REFUSED"
+				}
+				proof, err := EvaluateGrantUpdate(facts)
+				if err != nil || proof.Facts != facts || proof.Decision.Status != status || !reflect.DeepEqual(proof.Bindings, want) {
+					failures <- fmt.Errorf("worker %d evaluation differs: %+v, %v", worker, proof, err)
+					return
+				}
+				bindings.Assets["matcher.gooo"] = "source-caller-change"
+				delete(bindings.Assets, "model.go")
+				bindings.Assets[fmt.Sprintf("source-worker-%d", worker)] = "added"
+				if !reflect.DeepEqual(proof.Bindings, want) {
+					failures <- fmt.Errorf("worker %d source map aliases proof", worker)
+					return
+				}
+				proof.Bindings.Assets["matcher.gooo"] = "proof-caller-change"
+				delete(proof.Bindings.Assets, "model.go")
+				proof.Bindings.Assets[fmt.Sprintf("proof-worker-%d", worker)] = "added"
+			}
+		}()
+	}
+	close(start)
+	wg.Wait()
+	close(failures)
+	for err := range failures {
+		t.Error(err)
+	}
+	fresh, err := SourceBindings()
+	if err != nil || !reflect.DeepEqual(fresh, want) {
+		t.Fatalf("concurrent caller mutation contaminated the cached binding: %+v, %v", fresh, err)
+	}
+}
+
+func TestSourceBindingCacheDoesNotCacheGrantDecisions(t *testing.T) {
+	for round := range 2 {
+		for _, tc := range []struct {
+			name  string
+			facts GrantUpdateFacts
+			want  GrantUpdateDecision
+		}{
+			{"eligible", GrantUpdateFacts{"*", "mcp://weather", "mcp", "weather"}, GrantUpdateDecision{Status: "ELIGIBLE", Reason: "SUBSET_AND_REQUIRED_REQUEST_PRESERVED", RequiredObserved: true, RequiredBeforeMatch: true, RequiredAfterMatch: true, SubsetRuleID: "OLD_GLOBAL"}},
+			{"widening", GrantUpdateFacts{"mcp://weather", "mcp://*", "mcp", "weather"}, GrantUpdateDecision{Status: "REFUSED", Reason: "WIDENING_WITNESS", RequiredObserved: true, RequiredBeforeMatch: true, RequiredAfterMatch: true}},
+			{"required-removed", GrantUpdateFacts{"*", "mcp://calculator", "mcp", "weather"}, GrantUpdateDecision{Status: "REFUSED", Reason: "REQUIRED_REQUEST_REMOVED", RequiredObserved: true, RequiredBeforeMatch: true, SubsetRuleID: "OLD_GLOBAL"}},
+			{"invalid-unicode", GrantUpdateFacts{"*", "mcp://weather", "mcp", "\u2603"}, GrantUpdateDecision{Status: "INVALID_INPUT", Reason: "INVALID_CANONICAL_INPUT", InvalidField: "required_name"}},
+			{"empty-required", GrantUpdateFacts{"*", "mcp://weather", "mcp", ""}, GrantUpdateDecision{Status: "INVALID_INPUT", Reason: "EMPTY_REQUIRED_REQUEST", InvalidField: "required_name"}},
+		} {
+			t.Run(fmt.Sprintf("%d/%s", round, tc.name), func(t *testing.T) {
+				proof, err := EvaluateGrantUpdate(tc.facts)
+				if err != nil || proof.Facts != tc.facts || proof.Decision != tc.want {
+					t.Fatalf("input-specific result changed: %+v, %v; want %+v", proof, err, tc.want)
+				}
+			})
+		}
+	}
+}
 
 // These are retained prior real-upstream observations. verify.py must freshly
 // execute the extracted oracle before public acceptance of this integration.
