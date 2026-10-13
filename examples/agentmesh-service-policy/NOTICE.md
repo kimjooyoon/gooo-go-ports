@@ -13,6 +13,9 @@ impact and single-pattern refinement compositions are distinct from the upstream
 matcher. The refinement rules and candidate-witness construction are original
 Gooo code; they are not a Google Agent Mesh API or policy applier. The canonical
 domain predicates and checked input/result wrappers are also original Gooo code.
+The conditional grant-update activity composes these original checked activities.
+The in-memory application host, revision checks and operation-result recovery
+are independently developed Go integration code, not upstream Agent Mesh APIs.
 
 This example is independently developed. It does not imply Google endorsement
 or complete Agent Mesh compatibility.

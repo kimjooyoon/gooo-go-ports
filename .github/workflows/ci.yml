@@ -104,6 +104,7 @@ jobs:
           ./.gooo check examples/agentmesh-service-policy/checked_matcher.gooo
           ./.gooo check examples/agentmesh-service-policy/checked_impact.gooo
           ./.gooo check examples/agentmesh-service-policy/checked_refinement.gooo
+          ./.gooo check examples/agentmesh-service-policy/conditional_apply.gooo
       - name: Retain unsupported-body probes
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
@@ -688,6 +689,20 @@ jobs:
             and .verifier_helper_contracts.checked_default_workspace_routing == true
             and .verifier_helper_contracts.raw_compatibility_explicit == true
             and .verifier_helper_contracts.direct_domain_execution == true
+            and .conditional_apply.cases == 21
+            and .conditional_apply.native_cases == 21
+            and .conditional_apply.fields_compared == 7
+            and .conditional_apply.states == {ELIGIBLE:6,REFUSED:6,INVALID_INPUT:9}
+            and (.conditional_apply.workspace_batches | length) == 2
+            and ([.conditional_apply.workspace_batches[].case_count] | add) == 21
+            and .conditional_apply.host_demo_cases == 4
+            and (.conditional_apply.host_behavior_tests | length) == 18
+            and .conditional_apply.host_race_checked == true
+            and .conditional_apply.generation_boundary_mutations == 10
+            and .conditional_apply.all_raw_facts_and_strict_types == true
+            and .conditional_apply.complete_typed_workspace_delivery_identity == true
+            and .conditional_apply.source_and_producer_bound == true
+            and .conditional_apply.exact_replay_receipt_identity == true
           ' out/agentmesh-service-policy/verification.json
       - name: Upload offline policy experiment evidence
         if: always() && steps.change-scope.outputs.docs_only != 'true'

@@ -14,7 +14,7 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(frozen.Catalog.Packages) != 40 || len(frozen.Sources) != 48 {
+	if len(frozen.Catalog.Packages) != 41 || len(frozen.Sources) != 49 {
 		t.Fatal("complete reviewed catalog roster changed")
 	}
 	allIdentities, err := snapshotSourceIdentities(frozen.Catalog.Packages, frozen.Sources)
@@ -35,7 +35,7 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 		if _, exists := selected.Sources["examples/cel-api-policy/main.gooo"]; exists {
 			t.Fatal("bounded CEL consumer leaked into an unrelated legacy workspace")
 		}
-		for _, name := range []string{"ports/agentmesh/service_pattern.gooo", "examples/agentmesh-service-policy/impact.gooo", "examples/agentmesh-service-policy/refinement.gooo", "examples/agentmesh-service-policy/domain.gooo", "examples/agentmesh-service-policy/checked_matcher.gooo", "examples/agentmesh-service-policy/checked_impact.gooo", "examples/agentmesh-service-policy/checked_refinement.gooo"} {
+		for _, name := range []string{"ports/agentmesh/service_pattern.gooo", "examples/agentmesh-service-policy/impact.gooo", "examples/agentmesh-service-policy/refinement.gooo", "examples/agentmesh-service-policy/domain.gooo", "examples/agentmesh-service-policy/checked_matcher.gooo", "examples/agentmesh-service-policy/checked_impact.gooo", "examples/agentmesh-service-policy/checked_refinement.gooo", "examples/agentmesh-service-policy/conditional_apply.gooo"} {
 			if _, exists := selected.Sources[name]; exists {
 				t.Fatal("bounded AgentMesh source leaked into an unrelated legacy workspace", name)
 			}

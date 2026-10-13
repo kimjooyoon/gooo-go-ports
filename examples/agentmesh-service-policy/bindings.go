@@ -18,7 +18,7 @@ const CompilerPin = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 // These are consistency checks in a trusted executable, not signature/issuer or
 // later host-binary attestations. The source pin preserves exact Google bytes.
 //
-//go:embed *.gooo *-workspace.json source-pin.json compiler.json generation.json receipts/* internal/*/generated.go upstream/LICENSE upstream/api/*.txt evidence/oracle-extracted.go.txt evidence/extraction.json evidence/oracle-go.mod.txt evidence/oracle-command.go.txt evidence/observations.json *-cases.json domain-reference.json model.go domain.go input.go bridge.go bindings.go adapter_generated.go cmd/evaluate/main.go generate.py verification_checks.py verify.py evidence/repository-adaptation.json go.mod
+//go:embed *.gooo *-workspace.json source-pin.json compiler.json generation.json receipts/* internal/*/generated.go upstream/LICENSE upstream/api/*.txt evidence/oracle-extracted.go.txt evidence/extraction.json evidence/oracle-go.mod.txt evidence/oracle-command.go.txt evidence/observations.json *-cases.json domain-reference.json model.go domain.go input.go bridge.go bindings.go adapter_generated.go cmd/evaluate/main.go generate.py verification_checks.py verify.py evidence/repository-adaptation.json go.mod grant_update.go apply/types.go apply/store.go apply/evaluate.go cmd/apply-demo/main.go verify_grant_update.py grant_update_test.go apply/store_test.go verify_grant_update_test.py
 var assets embed.FS
 
 var boundNames = []string{
@@ -94,6 +94,23 @@ var boundNames = []string{
 	"verification_checks.py",
 	"verify.py",
 	"go.mod",
+	"conditional_apply.gooo",
+	"conditional-apply-workspace.json",
+	"grant-update-cases.json",
+	"receipts/conditional-apply-program.json",
+	"receipts/conditional-apply-lowered.gooo",
+	"receipts/conditional-apply-body-codegen.json",
+	"receipts/conditional-apply-seed-cases.json",
+	"internal/conditional-apply/generated.go",
+	"grant_update.go",
+	"apply/types.go",
+	"apply/store.go",
+	"apply/evaluate.go",
+	"cmd/apply-demo/main.go",
+	"verify_grant_update.py",
+	"grant_update_test.go",
+	"apply/store_test.go",
+	"verify_grant_update_test.py",
 }
 
 type generation struct {
@@ -199,6 +216,8 @@ func checkBindings(files map[string][]byte, manifest []byte) (Bindings, error) {
 		"agentmesh-matcher.workspace.json":                          "matcher-workspace.json",
 		"service-grant-impact.workspace.json":                       "impact-workspace.json",
 		"service-grant-refinement.workspace.json":                   "refinement-workspace.json",
+		"examples/agentmesh-service-policy/conditional_apply.gooo":  "conditional_apply.gooo",
+		"service-grant-apply.workspace.json":                        "conditional-apply-workspace.json",
 	}
 	if len(g.PublicSources) != len(publicSources) {
 		return Bindings{}, invalid
@@ -510,7 +529,7 @@ func activityBody(source []byte, name string) ([]byte, bool) {
 	return []byte(body[1]), true
 }
 func adapterSource(entries, validators map[string]string) string {
-	prefixes := []string{"matcher", "impact", "refinement", "checked-matcher", "checked-impact", "checked-refinement"}
+	prefixes := []string{"matcher", "impact", "refinement", "checked-matcher", "checked-impact", "checked-refinement", "conditional-apply"}
 	var b strings.Builder
 	b.WriteString("// Code generated from pinned compiler-owned entry identities; DO NOT EDIT.\npackage servicepolicy\nimport (\n")
 	for _, prefix := range prefixes {
@@ -518,6 +537,10 @@ func adapterSource(entries, validators map[string]string) string {
 	}
 	b.WriteString(")\n")
 	for _, prefix := range prefixes {
+		if prefix == "conditional-apply" {
+			fmt.Fprintf(&b, "func nativeGrantUpdate(f GrantUpdateFacts) any { return conditionalapply.%s(f.Before,f.After,f.RequiredType,f.RequiredName) }\n", entries[prefix])
+			continue
+		}
 		kind := strings.TrimPrefix(prefix, "checked-")
 		title := strings.ToUpper(kind[:1]) + kind[1:]
 		suffix, out := "", "any"
@@ -655,6 +678,21 @@ const bindingContracts = `{
       },
       "mirror": "checked_refinement.gooo",
       "source": "examples/agentmesh-service-policy/checked_refinement.gooo"
+    },
+    "gooo/service-policy/conditional-apply": {
+      "activities": {
+        "AssessServiceGrantUpdate": {
+          "id": "gooo://service-policy/conditional-apply/assess/v1",
+          "n": 4,
+          "output": "gooo://service-policy/conditional-apply/decision/v1"
+        }
+      },
+      "entities": {
+        "GrantUpdateDecision": "gooo://service-policy/conditional-apply/decision/v1",
+        "Text": "gooo://std/text"
+      },
+      "mirror": "conditional_apply.gooo",
+      "source": "examples/agentmesh-service-policy/conditional_apply.gooo"
     }
   },
   "records": {
@@ -827,6 +865,46 @@ const bindingContracts = `{
         ]
       ],
       "id": "gooo://service-refinement/decision/v1"
+    },
+    "GrantUpdateDecision": {
+      "fields": [
+        [
+          "status",
+          "gooo://service-policy/conditional-apply/status",
+          "string"
+        ],
+        [
+          "reason",
+          "gooo://service-policy/conditional-apply/reason",
+          "string"
+        ],
+        [
+          "invalid_field",
+          "gooo://service-policy/conditional-apply/invalid_field",
+          "string"
+        ],
+        [
+          "required_observed",
+          "gooo://service-policy/conditional-apply/required_observed",
+          "boolean"
+        ],
+        [
+          "required_before_match",
+          "gooo://service-policy/conditional-apply/required_before_match",
+          "boolean"
+        ],
+        [
+          "required_after_match",
+          "gooo://service-policy/conditional-apply/required_after_match",
+          "boolean"
+        ],
+        [
+          "subset_rule_id",
+          "gooo://service-policy/conditional-apply/subset_rule_id",
+          "string"
+        ]
+      ],
+      "id": "gooo://service-policy/conditional-apply/decision/v1"
     }
   },
   "routes": {
@@ -1025,6 +1103,125 @@ const bindingContracts = `{
         "CheckedRefinementDecision"
       ],
       "workspace": "refinement-workspace.json"
+    },
+    "conditional-apply": {
+      "activity": "AssessServiceGrantUpdate",
+      "canonical_workspace": "service-grant-apply.workspace.json",
+      "edges": [
+        [
+          "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate",
+          "gooo/service-policy/checked-impact:CompareServiceGrantChecked"
+        ],
+        [
+          "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate",
+          "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked"
+        ],
+        [
+          "gooo/service-policy/checked-impact:CompareServiceGrantChecked",
+          "gooo/service-domain:ValidateServicePattern"
+        ],
+        [
+          "gooo/service-policy/checked-impact:CompareServiceGrantChecked",
+          "gooo/service-domain:ValidateServicePattern"
+        ],
+        [
+          "gooo/service-policy/checked-impact:CompareServiceGrantChecked",
+          "gooo/service-domain:ValidateServiceType"
+        ],
+        [
+          "gooo/service-policy/checked-impact:CompareServiceGrantChecked",
+          "gooo/service-domain:ValidateServiceName"
+        ],
+        [
+          "gooo/service-policy/checked-impact:CompareServiceGrantChecked",
+          "app/service-grant-impact:CompareServiceGrant"
+        ],
+        [
+          "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked",
+          "gooo/service-domain:ValidateServicePattern"
+        ],
+        [
+          "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked",
+          "gooo/service-domain:ValidateServicePattern"
+        ],
+        [
+          "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked",
+          "app/service-grant-refinement:AnalyzeServiceGrant"
+        ],
+        [
+          "gooo/service-domain:ValidateServicePattern",
+          "gooo/service-domain:ValidateServiceType"
+        ],
+        [
+          "gooo/service-domain:ValidateServicePattern",
+          "gooo/service-domain:ValidateServiceName"
+        ],
+        [
+          "app/service-grant-impact:CompareServiceGrant",
+          "go/google/agentmesh/api:MatchServicePattern"
+        ],
+        [
+          "app/service-grant-impact:CompareServiceGrant",
+          "go/google/agentmesh/api:MatchServicePattern"
+        ],
+        [
+          "app/service-grant-refinement:AnalyzeServiceGrant",
+          "go/google/agentmesh/api:MatchServicePattern"
+        ],
+        [
+          "app/service-grant-refinement:AnalyzeServiceGrant",
+          "go/google/agentmesh/api:MatchServicePattern"
+        ],
+        [
+          "app/service-grant-refinement:AnalyzeServiceGrant",
+          "go/google/agentmesh/api:MatchServicePattern"
+        ],
+        [
+          "app/service-grant-refinement:AnalyzeServiceGrant",
+          "go/google/agentmesh/api:MatchServicePattern"
+        ],
+        [
+          "app/service-grant-refinement:AnalyzeServiceGrant",
+          "go/google/agentmesh/api:MatchServicePattern"
+        ]
+      ],
+      "fields": [
+        "before",
+        "after",
+        "required_type",
+        "required_name"
+      ],
+      "go_output": "GrantUpdateDecision",
+      "id": "gooo://service-policy/conditional-apply/assess/v1",
+      "manifest_packages": [
+        "gooo/service-domain",
+        "go/google/agentmesh/api",
+        "app/service-grant-impact",
+        "app/service-grant-refinement",
+        "gooo/service-policy/checked-impact",
+        "gooo/service-policy/checked-refinement",
+        "gooo/service-policy/conditional-apply"
+      ],
+      "n": 4,
+      "output": "GrantUpdateDecision",
+      "package": "gooo/service-policy/conditional-apply",
+      "packages": [
+        "go/google/agentmesh/api",
+        "app/service-grant-impact",
+        "app/service-grant-refinement",
+        "gooo/service-domain",
+        "gooo/service-policy/checked-impact",
+        "gooo/service-policy/checked-refinement",
+        "gooo/service-policy/conditional-apply"
+      ],
+      "records": [
+        "GrantImpact",
+        "GrantRefinement",
+        "CheckedImpactDecision",
+        "CheckedRefinementDecision",
+        "GrantUpdateDecision"
+      ],
+      "workspace": "conditional-apply-workspace.json"
     },
     "impact": {
       "activity": "CompareServiceGrant",

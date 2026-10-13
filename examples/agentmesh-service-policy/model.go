@@ -104,3 +104,31 @@ type CheckedRefinementProof struct {
 	Decision CheckedRefinementDecision `json:"decision"`
 	Bindings Bindings                  `json:"bindings"`
 }
+
+// GrantUpdateFacts are exact facts for one grant and one required request.
+// Before and the required request are supplied by the trusted application when
+// assessing an actual update; the pure API does not establish their authority.
+type GrantUpdateFacts struct {
+	Before       string `json:"before"`
+	After        string `json:"after"`
+	RequiredType string `json:"required_type"`
+	RequiredName string `json:"required_name"`
+}
+
+// GrantUpdateDecision is the closed seven-field Gooo eligibility result.
+// ELIGIBLE describes the supplied facts, not authentication or a committed write.
+type GrantUpdateDecision struct {
+	Status              string `json:"status"`
+	Reason              string `json:"reason"`
+	InvalidField        string `json:"invalid_field"`
+	RequiredObserved    bool   `json:"required_observed"`
+	RequiredBeforeMatch bool   `json:"required_before_match"`
+	RequiredAfterMatch  bool   `json:"required_after_match"`
+	SubsetRuleID        string `json:"subset_rule_id"`
+}
+
+type GrantUpdateProof struct {
+	Facts    GrantUpdateFacts    `json:"facts"`
+	Decision GrantUpdateDecision `json:"decision"`
+	Bindings Bindings            `json:"bindings"`
+}

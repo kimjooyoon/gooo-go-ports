@@ -31,6 +31,13 @@ This pure decision does not apply a policy change or establish caller authority.
 Its default Gooo workspaces validate the input grammar themselves and distinguish
 `INVALID_INPUT` from a computed denial. See the [checked workspace migration](examples/agentmesh-service-policy/README.md#direct-gooo-workspace-migration) for the explicit result schemas and raw compatibility routes.
 
+The [automatic policy-change example](examples/agentmesh-service-policy/conditional-apply.md)
+composes these Gooo decisions with a Go host that owns current state. It applies
+a change to one in-memory grant only when the candidate is a recognized subset,
+one configured required request stays allowed, and the writer and revision are
+still valid. No per-change human approval is required. The demo also shows a stale
+proposal, a refused expansion, and recovery of a discarded response by operation ID.
+
 ## Start here
 
 | What would you like to do? | Start with | What you can change |
@@ -40,6 +47,7 @@ Its default Gooo workspaces validate the input grammar themselves and distinguis
 | Find a literal phrase without installing anything | [Literal search](https://kimjooyoon.github.io/gooo-go-ports/literal-search.html) | Supply two strings, see the first UTF-8 byte position and non-overlapping count, and save an honest browser observation |
 | Inspect Google's UUID parser return behavior | [UUID parse inspector](https://kimjooyoon.github.io/gooo-go-ports/uuid-parse.html) | Supply text, inspect success and the returned UUID even on failure, and save all four fields with the bound input |
 | Edit and run Gooo code locally | [Run and edit locally](#run-and-edit-locally) | Install the pinned compiler, then change the tutorial's condition and rerun it |
+| Apply a constrained policy change automatically | [Service-grant application](examples/agentmesh-service-policy/conditional-apply.md) | Tighten a local grant, observe conflict and refusal, and recover a recorded result |
 | Search a diagnostic phrase locally | [Literal-text report](examples/literal-text-report/README.md) | Supply text and a phrase; export the first byte offset, non-overlapping count and both original inputs |
 | Use a port in another project | [Import walkthrough](docs/use-in-your-project.md) | Build a separate application that imports `utf8.ValidRune` from a fixed source snapshot |
 

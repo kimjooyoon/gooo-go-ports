@@ -1,0 +1,66 @@
+// Original Gooo composition: pure eligibility over supplied facts.
+// A host must obtain trusted current state and atomically compare it when applying.
+// ELIGIBLE is not caller authorization, a successful write, or service availability.
+package conditional_apply
+namespace gooo_original_conditional_apply
+import impact "gooo/service-policy/checked-impact"
+import refinement "gooo/service-policy/checked-refinement"
+entity Text id "gooo://std/text"
+entity GrantUpdateDecision id "gooo://service-policy/conditional-apply/decision/v1" fields {
+ field status id "gooo://service-policy/conditional-apply/status" type string required one
+ field reason id "gooo://service-policy/conditional-apply/reason" type string required one
+ field invalid_field id "gooo://service-policy/conditional-apply/invalid_field" type string required one
+ field required_observed id "gooo://service-policy/conditional-apply/required_observed" type boolean required one
+ field required_before_match id "gooo://service-policy/conditional-apply/required_before_match" type boolean required one
+ field required_after_match id "gooo://service-policy/conditional-apply/required_after_match" type boolean required one
+ field subset_rule_id id "gooo://service-policy/conditional-apply/subset_rule_id" type string required one
+}
+// Inputs: before, after, required_type, required_name. All are exact raw Text.
+activity AssessServiceGrantUpdate(Text, Text, Text, Text) -> GrantUpdateDecision id "gooo://service-policy/conditional-apply/assess/v1" computes `
+let required = impact.CompareServiceGrantChecked(input0, input1, input2, input3)
+if required.domain_status == "INVALID_INPUT" {
+ let bad = required.invalid_field
+ let knownField = bad == "before" || bad == "after" || bad == "req_type" || bad == "req_name"
+ if bad == "req_type" { bad = "required_type" }
+ if bad == "req_name" { bad = "required_name" }
+ if knownField && !required.before_match && !required.after_match && required.change == "INVALID_INPUT" {
+  return GrantUpdateDecision{status: "INVALID_INPUT", reason: "INVALID_CANONICAL_INPUT", invalid_field: bad, required_observed: false, required_before_match: false, required_after_match: false, subset_rule_id: ""}
+ }
+ return GrantUpdateDecision{status: "REFUSED", reason: "DEPENDENCY_RESULT_INVALID", invalid_field: "", required_observed: false, required_before_match: false, required_after_match: false, subset_rule_id: ""}
+}
+if required.domain_status != "VALID_INPUT" || required.invalid_field != "" {
+ return GrantUpdateDecision{status: "REFUSED", reason: "DEPENDENCY_RESULT_INVALID", invalid_field: "", required_observed: false, required_before_match: false, required_after_match: false, subset_rule_id: ""}
+}
+let impactConsistent = (required.before_match && required.after_match && required.change == "UNCHANGED_ALLOW") || (!required.before_match && !required.after_match && required.change == "UNCHANGED_DENY") || (!required.before_match && required.after_match && required.change == "WIDENED") || (required.before_match && !required.after_match && required.change == "REVOKED")
+if !impactConsistent {
+ return GrantUpdateDecision{status: "REFUSED", reason: "DEPENDENCY_RESULT_INVALID", invalid_field: "", required_observed: false, required_before_match: false, required_after_match: false, subset_rule_id: ""}
+}
+if input2 == "" {
+ return GrantUpdateDecision{status: "INVALID_INPUT", reason: "EMPTY_REQUIRED_REQUEST", invalid_field: "required_type", required_observed: false, required_before_match: false, required_after_match: false, subset_rule_id: ""}
+}
+if input3 == "" {
+ return GrantUpdateDecision{status: "INVALID_INPUT", reason: "EMPTY_REQUIRED_REQUEST", invalid_field: "required_name", required_observed: false, required_before_match: false, required_after_match: false, subset_rule_id: ""}
+}
+if !required.before_match {
+ return GrantUpdateDecision{status: "REFUSED", reason: "CURRENT_REQUIRED_REQUEST_DENIED", invalid_field: "", required_observed: true, required_before_match: required.before_match, required_after_match: required.after_match, subset_rule_id: ""}
+}
+let grant = refinement.AnalyzeServiceGrantChecked(input0, input1)
+if grant.domain_status != "VALID_INPUT" || grant.invalid_field != "" {
+ return GrantUpdateDecision{status: "REFUSED", reason: "DEPENDENCY_RESULT_INVALID", invalid_field: "", required_observed: true, required_before_match: required.before_match, required_after_match: required.after_match, subset_rule_id: ""}
+}
+if grant.status == "WIDENING_WITNESS" && !grant.supported_subset && grant.has_witness && grant.rule_id == "CHECKED_CANDIDATE_REQUEST" && grant.witness_type != "" && grant.witness_name != "" && !grant.before_match && grant.after_match {
+ return GrantUpdateDecision{status: "REFUSED", reason: "WIDENING_WITNESS", invalid_field: "", required_observed: true, required_before_match: required.before_match, required_after_match: required.after_match, subset_rule_id: ""}
+}
+if grant.status == "UNPROVEN" && !grant.supported_subset && !grant.has_witness && grant.rule_id == "" && grant.witness_type == "" && grant.witness_name == "" && !grant.before_match && !grant.after_match {
+ return GrantUpdateDecision{status: "REFUSED", reason: "REFINEMENT_UNPROVEN", invalid_field: "", required_observed: true, required_before_match: required.before_match, required_after_match: required.after_match, subset_rule_id: ""}
+}
+let knownRule = grant.rule_id == "CANDIDATE_EMPTY" || grant.rule_id == "IDENTICAL_PATTERNS" || grant.rule_id == "OLD_GLOBAL" || grant.rule_id == "OLD_TYPED_ALL" || grant.rule_id == "EXACT_CANDIDATE_ACCEPTED_BY_OLD" || grant.rule_id == "PREFIX_HIERARCHY" || grant.rule_id == "SUFFIX_HIERARCHY"
+let subsetConsistent = grant.status == "SUPPORTED_SUBSET" && grant.supported_subset && !grant.has_witness && knownRule && grant.witness_type == "" && grant.witness_name == "" && !grant.before_match && !grant.after_match
+if !subsetConsistent {
+ return GrantUpdateDecision{status: "REFUSED", reason: "DEPENDENCY_RESULT_INVALID", invalid_field: "", required_observed: true, required_before_match: required.before_match, required_after_match: required.after_match, subset_rule_id: ""}
+}
+if !required.after_match {
+ return GrantUpdateDecision{status: "REFUSED", reason: "REQUIRED_REQUEST_REMOVED", invalid_field: "", required_observed: true, required_before_match: required.before_match, required_after_match: required.after_match, subset_rule_id: grant.rule_id}
+}
+return GrantUpdateDecision{status: "ELIGIBLE", reason: "SUBSET_AND_REQUIRED_REQUEST_PRESERVED", invalid_field: "", required_observed: true, required_before_match: required.before_match, required_after_match: required.after_match, subset_rule_id: grant.rule_id}
+`

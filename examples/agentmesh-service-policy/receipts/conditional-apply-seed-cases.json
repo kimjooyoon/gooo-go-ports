@@ -1,0 +1,119 @@
+{
+  "schema": "gooo/body-composition-cases/v1",
+  "cases": [
+    {
+      "inputs": {
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input0": "*",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input1": "mcp://*",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input2": "mcp",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input3": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate": {
+          "status": "ELIGIBLE",
+          "reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_observed": true,
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_GLOBAL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input0": "*",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input1": "",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input2": "mcp",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input3": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate": {
+          "status": "REFUSED",
+          "reason": "REQUIRED_REQUEST_REMOVED",
+          "invalid_field": "",
+          "required_observed": true,
+          "required_before_match": true,
+          "required_after_match": false,
+          "subset_rule_id": "CANDIDATE_EMPTY"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input0": "mcp://calculator",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input1": "mcp://calculator",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input2": "mcp",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input3": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate": {
+          "status": "REFUSED",
+          "reason": "CURRENT_REQUIRED_REQUEST_DENIED",
+          "invalid_field": "",
+          "required_observed": true,
+          "required_before_match": false,
+          "required_after_match": false,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input0": "mcp://*.x",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input1": "mcp://a.*",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input2": "mcp",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input3": "a.x"
+      },
+      "expected": {
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate": {
+          "status": "REFUSED",
+          "reason": "WIDENING_WITNESS",
+          "invalid_field": "",
+          "required_observed": true,
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input0": "broken",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input1": "also-broken",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input2": "1bad",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input3": "a..b"
+      },
+      "expected": {
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate": {
+          "status": "INVALID_INPUT",
+          "reason": "INVALID_CANONICAL_INPUT",
+          "invalid_field": "before",
+          "required_observed": false,
+          "required_before_match": false,
+          "required_after_match": false,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input0": "*",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input1": "*",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input2": "",
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate.input3": ""
+      },
+      "expected": {
+        "gooo/service-policy/conditional-apply:AssessServiceGrantUpdate": {
+          "status": "INVALID_INPUT",
+          "reason": "EMPTY_REQUIRED_REQUEST",
+          "invalid_field": "required_type",
+          "required_observed": false,
+          "required_before_match": false,
+          "required_after_match": false,
+          "subset_rule_id": ""
+        }
+      }
+    }
+  ]
+}

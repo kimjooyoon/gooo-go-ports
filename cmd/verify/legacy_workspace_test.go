@@ -179,9 +179,10 @@ func TestLegacy445CatalogSourcesManifestsInputsCasesAndBatchesRemainIdentical(t 
 		sourcePackage{Path: "gooo/service-policy/checked-matcher", Sources: []string{"examples/agentmesh-service-policy/checked_matcher.gooo"}},
 		sourcePackage{Path: "gooo/service-policy/checked-impact", Sources: []string{"examples/agentmesh-service-policy/checked_impact.gooo"}},
 		sourcePackage{Path: "gooo/service-policy/checked-refinement", Sources: []string{"examples/agentmesh-service-policy/checked_refinement.gooo"}},
+		sourcePackage{Path: "gooo/service-policy/conditional-apply", Sources: []string{"examples/agentmesh-service-policy/conditional_apply.gooo"}},
 	)
-	if !reflect.DeepEqual(frozen.Catalog, expectedCatalog) || len(frozen.Sources) != len(fixture.Sources)+11 {
-		t.Fatal("catalog changed beyond the reviewed literal, CEL, AgentMesh and checked-domain sources")
+	if !reflect.DeepEqual(frozen.Catalog, expectedCatalog) || len(frozen.Sources) != len(fixture.Sources)+12 {
+		t.Fatal("catalog changed beyond the reviewed literal, CEL, AgentMesh, checked-domain and conditional-apply sources")
 	}
 	sources := map[string]legacy445Source{}
 	for _, old := range fixture.Sources {
