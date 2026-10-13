@@ -1,0 +1,15 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "go/google/agentmesh/api",
+    "activity": "MatchServicePattern"
+  },
+  "packages": [
+    {
+      "path": "go/google/agentmesh/api",
+      "sources": [
+        "ports/agentmesh/service_pattern.gooo"
+      ]
+    }
+  ]
+}

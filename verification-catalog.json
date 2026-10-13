@@ -206,6 +206,18 @@
       "sources": [
         "examples/cel-api-policy/main.gooo"
       ]
+    },
+    {
+      "path": "go/google/agentmesh/api",
+      "sources": [
+        "ports/agentmesh/service_pattern.gooo"
+      ]
+    },
+    {
+      "path": "app/service-grant-impact",
+      "sources": [
+        "examples/agentmesh-service-policy/impact.gooo"
+      ]
     }
   ]
 }

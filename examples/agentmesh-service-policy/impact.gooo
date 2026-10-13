@@ -1,0 +1,21 @@
+// Original finite-request policy-change composition, not global grant inclusion.
+package service_impact
+namespace gooo_original_service_impact
+import svc "go/google/agentmesh/api"
+entity Text id "gooo://std/text"
+entity GrantImpact id "gooo://service-impact/decision/v1" fields {
+ field before_match id "gooo://service-impact/before" type boolean required one
+ field after_match id "gooo://service-impact/after" type boolean required one
+ field change id "gooo://service-impact/change" type string required one
+}
+activity CompareServiceGrant(Text, Text, Text, Text) -> GrantImpact id "gooo://service-impact/compare" computes `
+let before = svc.MatchServicePattern(input0, input2, input3)
+let after = svc.MatchServicePattern(input1, input2, input3)
+let change = "UNCHANGED_DENY"
+if before {
+ if after { change = "UNCHANGED_ALLOW" } else { change = "REVOKED" }
+} else {
+ if after { change = "WIDENED" }
+}
+return GrantImpact{before_match: before, after_match: after, change: change}
+`

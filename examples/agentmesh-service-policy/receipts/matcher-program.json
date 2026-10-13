@@ -1,0 +1,76 @@
+{
+  "activities": [
+    {
+      "activity": "MatchServicePattern",
+      "lowered_name": "GoooPackage0ActivityMatchServicePattern",
+      "package_path": "go/google/agentmesh/api"
+    }
+  ],
+  "entry": {
+    "activity": "MatchServicePattern",
+    "lowered_name": "GoooPackage0ActivityMatchServicePattern",
+    "package_path": "go/google/agentmesh/api"
+  },
+  "lowered_gooo_source": "package gooo_workspace\nnamespace gooo_workspace\n\nentity Text id \"gooo://std/text\"\nentity Boolean id \"gooo://std/boolean\"\nactivity GoooPackage0ActivityMatchServicePattern(Text, Text, Text) -> Boolean id \"gooo://agentmesh-prototype/match-service-pattern\" computes \"\\nif input0 == \\\"\\\" || input1 == \\\"\\\" || input2 == \\\"\\\" { return false }\\nif input0 == \\\"*\\\" { return true }\\nlet split = -1\\nlet offset = 0\\nfor offset = 0; offset < 128; offset = offset + 1 {\\n let end = offset + 3\\n if end <= int64(len(input0)) {\\n  if input0[offset:end] == \\\"://\\\" { if split == -1 { split = offset } }\\n }\\n}\\nif split < 0 { return false }\\nlet nameStart = split + 3\\nlet patternType = input0[0:split]\\nlet patternName = input0[nameStart:int64(len(input0))]\\nif patternType != input1 || patternName == \\\"\\\" { return false }\\nif patternName == \\\"*\\\" { return true }\\nlet patternLength = int64(len(patternName))\\nlet requestLength = int64(len(input2))\\nif patternLength >= 2 {\\n if patternName[0:2] == \\\"*.\\\" {\\n  let suffix = patternName[1:patternLength]\\n  let suffixLength = int64(len(suffix))\\n  if requestLength < suffixLength { return false }\\n  let suffixStart = requestLength - suffixLength\\n  return input2[suffixStart:requestLength] == suffix\\n }\\n let tailStart = patternLength - 2\\n if patternName[tailStart:patternLength] == \\\".*\\\" {\\n  let prefixEnd = patternLength - 1\\n  let prefix = patternName[0:prefixEnd]\\n  if requestLength < prefixEnd { return false }\\n  return input2[0:prefixEnd] == prefix\\n }\\n}\\nreturn input2 == patternName\\n\"\n",
+  "schema": "gooo/workspace-body-program/v1",
+  "scope": "explicitly bound workspace activity bodies lowered to one typed Gooo graph; execution requires finite cases and native Go compilation",
+  "workspace_image": {
+    "digest": "sha256:76ee9318a91a816e299a4939af1e2d4b0683f87c4033f811eaceee029bb40fbb",
+    "entry": {
+      "activity": "MatchServicePattern",
+      "inputs": [
+        "Text",
+        "Text",
+        "Text"
+      ],
+      "output": "Boolean",
+      "package_path": "go/google/agentmesh/api",
+      "source": "ports/agentmesh/service_pattern.gooo"
+    },
+    "init_order": [
+      "go/google/agentmesh/api"
+    ],
+    "packages": [
+      {
+        "declarations": 3,
+        "exports": [
+          {
+            "id": "gooo://agentmesh-prototype/match-service-pattern",
+            "input_types": [
+              "gooo://std/text",
+              "gooo://std/text",
+              "gooo://std/text"
+            ],
+            "kind": "activity",
+            "name": "MatchServicePattern",
+            "output_type": "gooo://std/boolean"
+          },
+          {
+            "id": "gooo://std/boolean",
+            "kind": "entity",
+            "name": "Boolean"
+          },
+          {
+            "id": "gooo://std/text",
+            "kind": "entity",
+            "name": "Text"
+          }
+        ],
+        "imports": null,
+        "name": "service_pattern",
+        "namespace": "gooo_agentmesh_prototype",
+        "path": "go/google/agentmesh/api",
+        "semantic_digest": "sha256:e5f18ee41e1df26f3d01aea45f829544c7c7d424e986a6bfccc3c7684e6f4b02",
+        "sources": [
+          {
+            "declarations": 3,
+            "filename": "ports/agentmesh/service_pattern.gooo",
+            "semantic_digest": "sha256:df7cb8312cbb5ce5bf093f862977c04b3e3a2b4ee45b3d36787cb9aa61530f6f",
+            "source_digest": "sha256:6408e92880e220549cb05ffe4a319e029de9bc19c93d27d87226ef7b0f5804b1"
+          }
+        ]
+      }
+    ],
+    "schema": "gooo/package-runtime-image/v1"
+  }
+}

@@ -1,0 +1,194 @@
+[
+  {
+    "name": "impact-0",
+    "before": "mcp://a",
+    "after": "mcp://a",
+    "req_type": "mcp",
+    "req_name": "a",
+    "want": {
+      "before_match": true,
+      "after_match": true,
+      "change": "UNCHANGED_ALLOW"
+    }
+  },
+  {
+    "name": "impact-1",
+    "before": "mcp://a",
+    "after": "mcp://a",
+    "req_type": "mcp",
+    "req_name": "b",
+    "want": {
+      "before_match": false,
+      "after_match": false,
+      "change": "UNCHANGED_DENY"
+    }
+  },
+  {
+    "name": "impact-2",
+    "before": "mcp://a",
+    "after": "mcp://*",
+    "req_type": "mcp",
+    "req_name": "b",
+    "want": {
+      "before_match": false,
+      "after_match": true,
+      "change": "WIDENED"
+    }
+  },
+  {
+    "name": "impact-3",
+    "before": "mcp://*",
+    "after": "mcp://a",
+    "req_type": "mcp",
+    "req_name": "b",
+    "want": {
+      "before_match": true,
+      "after_match": false,
+      "change": "REVOKED"
+    }
+  },
+  {
+    "name": "impact-4",
+    "before": "mcp://a",
+    "after": "egress://*",
+    "req_type": "mcp",
+    "req_name": "a",
+    "want": {
+      "before_match": true,
+      "after_match": false,
+      "change": "REVOKED"
+    }
+  },
+  {
+    "name": "impact-5",
+    "before": "mcp://*.a",
+    "after": "mcp://a",
+    "req_type": "mcp",
+    "req_name": "a",
+    "want": {
+      "before_match": false,
+      "after_match": true,
+      "change": "WIDENED"
+    }
+  },
+  {
+    "name": "impact-6",
+    "before": "mcp://a.*",
+    "after": "mcp://*",
+    "req_type": "mcp",
+    "req_name": "a",
+    "want": {
+      "before_match": false,
+      "after_match": true,
+      "change": "WIDENED"
+    }
+  },
+  {
+    "name": "impact-7",
+    "before": "*",
+    "after": "mcp://*",
+    "req_type": "egress",
+    "req_name": "a",
+    "want": {
+      "before_match": true,
+      "after_match": false,
+      "change": "REVOKED"
+    }
+  },
+  {
+    "name": "impact-8",
+    "before": "*",
+    "after": "*",
+    "req_type": "",
+    "req_name": "a",
+    "want": {
+      "before_match": false,
+      "after_match": false,
+      "change": "UNCHANGED_DENY"
+    }
+  },
+  {
+    "name": "impact-9",
+    "before": "*",
+    "after": "*",
+    "req_type": "mcp",
+    "req_name": "",
+    "want": {
+      "before_match": false,
+      "after_match": false,
+      "change": "UNCHANGED_DENY"
+    }
+  },
+  {
+    "name": "impact-10",
+    "before": "",
+    "after": "*",
+    "req_type": "mcp",
+    "req_name": "a",
+    "want": {
+      "before_match": false,
+      "after_match": true,
+      "change": "WIDENED"
+    }
+  },
+  {
+    "name": "impact-11",
+    "before": "mcp://X",
+    "after": "mcp://x",
+    "req_type": "mcp",
+    "req_name": "X",
+    "want": {
+      "before_match": true,
+      "after_match": false,
+      "change": "REVOKED"
+    }
+  },
+  {
+    "name": "impact-12",
+    "before": "mcp://a",
+    "after": "*",
+    "req_type": "mcp",
+    "req_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "want": {
+      "before_match": false,
+      "after_match": true,
+      "change": "WIDENED"
+    }
+  },
+  {
+    "name": "impact-13",
+    "before": "mcp://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "after": "mcp://*",
+    "req_type": "mcp",
+    "req_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "want": {
+      "before_match": true,
+      "after_match": true,
+      "change": "UNCHANGED_ALLOW"
+    }
+  },
+  {
+    "name": "impact-14",
+    "before": "mcp://*.a",
+    "after": "mcp://a.*",
+    "req_type": "mcp",
+    "req_name": "b.a",
+    "want": {
+      "before_match": true,
+      "after_match": false,
+      "change": "REVOKED"
+    }
+  },
+  {
+    "name": "impact-15",
+    "before": "mcp://*.a",
+    "after": "mcp://a.*",
+    "req_type": "mcp",
+    "req_name": "a.b",
+    "want": {
+      "before_match": false,
+      "after_match": true,
+      "change": "WIDENED"
+    }
+  }
+]

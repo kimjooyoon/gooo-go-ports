@@ -1,0 +1,89 @@
+{
+  "archive_files": [
+    {
+      "bytes": 23835,
+      "filename": "upstream/api/tar.go.txt",
+      "sha256": "c9dd15177aaf004fead707f163efbe6b78ae4967d1f8d2a95dfef04662b650d9",
+      "upstream_path": "api/tar.go"
+    },
+    {
+      "bytes": 23000,
+      "filename": "upstream/api/network.go.txt",
+      "sha256": "1566324585ec8aade80744dd241432e3e009ad59c9273f6c460b67708a9757ce",
+      "upstream_path": "api/network.go"
+    },
+    {
+      "bytes": 15257,
+      "filename": "upstream/api/tar_test.go.txt",
+      "sha256": "c0ae9963596372c8553287c75ea3971cd0097f7aa8df32683925d3eafcb3d045",
+      "upstream_path": "api/tar_test.go"
+    },
+    {
+      "bytes": 11357,
+      "filename": "upstream/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "upstream_path": "LICENSE"
+    }
+  ],
+  "canonical_components": [
+    {
+      "bytes": 1767,
+      "filename": "matcher.gooo",
+      "sha256": "e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d"
+    },
+    {
+      "bytes": 983,
+      "filename": "impact.gooo",
+      "sha256": "e7e84b71beab8661298ed2d6fdd85e8d01586d3546b1c0a7f5f86bb0d155f647"
+    },
+    {
+      "bytes": 9552,
+      "filename": "matcher-cases.json",
+      "sha256": "6b6bade602eda3d07246b41e2098ce522cbd3a26a8b9adb6cf365c3f1a305f74"
+    },
+    {
+      "bytes": 4033,
+      "filename": "impact-cases.json",
+      "sha256": "8f3f6e1dc69eb5767df3d909bf2892c8f42c453bea23b7e5b38f677ba6622ac8"
+    }
+  ],
+  "exact_function_bytes": {
+    "MatchServicePattern": "f312e0f86d2caec319c2867e3e9b9dfc3e8111cb55ff26588752aadb1c0f059b",
+    "ParseServiceTarget": "307512a57ec48c01af7b43fb888b2d5d23a6d937bf5bc1c1d20d1e65824a42a9"
+  },
+  "exact_regexp_assignment": "rfc3986URIRegex = regexp.MustCompile(`^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?`)",
+  "files": {
+    "LICENSE": {
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    "api/network.go": {
+      "bytes": 23000,
+      "sha256": "1566324585ec8aade80744dd241432e3e009ad59c9273f6c460b67708a9757ce"
+    },
+    "api/tar.go": {
+      "bytes": 23835,
+      "sha256": "c9dd15177aaf004fead707f163efbe6b78ae4967d1f8d2a95dfef04662b650d9"
+    },
+    "api/tar_test.go": {
+      "bytes": 15257,
+      "sha256": "c0ae9963596372c8553287c75ea3971cd0097f7aa8df32683925d3eafcb3d045"
+    }
+  },
+  "public_placement": {
+    "canonical_matcher": "ports/agentmesh/service_pattern.gooo",
+    "impact_source": "examples/agentmesh-service-policy/impact.gooo",
+    "impact_workspace": "service-grant-impact.workspace.json",
+    "matcher_mirror": "matcher.gooo",
+    "matcher_workspace": "agentmesh-matcher.workspace.json"
+  },
+  "retained_reference": {
+    "bytes": 6708,
+    "filename": "oracle/observations.json",
+    "scope": "Prior isolated prototype executed exact extracted upstream standard-library oracle; fresh staging execution still required",
+    "sha256": "8fb9bafa24b5da6e5df39a2eb8694e024f57d4525a587455538935658b17e8aa"
+  },
+  "revision": "9fd1a41a15174df0aaef601c942410c2116bff91",
+  "schema": "gooo/agentmesh-source-pin/v1",
+  "source_repository": "https://github.com/google/agentmesh"
+}

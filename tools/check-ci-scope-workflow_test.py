@@ -48,12 +48,13 @@ HEAVY = {
     "Observe malformed literal Text inputs through the actual CLI",
     "Verify the offline decision-policy experiment",
     "Verify the imported CEL API policy",
+    "Verify the Agent Mesh service-pattern adaptation",
 }
 UPLOADS = {"Upload offline policy experiment evidence", "Upload execution and diagnostic evidence"}
 DOC_STEPS = {"Report documentation-only native scope", "Preserve documentation scope and compiler identity"}
 NATIVE_COMMAND = re.compile(
     r"(?:\.gooo\s+package\s+(?:execute|replay)|\./cmd/(?:verify|check-unicode|check-literal-text-report)\b|"
-    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py)"
+    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py)"
 )
 LITERAL_COMMANDS = {
     "Execute and replay the literal text report": {
@@ -111,7 +112,7 @@ def validate(text):
     require(hashlib.sha256(header.encode()).hexdigest() == HEADER_SHA, "events or permissions changed")
     require(hashlib.sha256(browser.encode()).hexdigest() == BROWSER_SHA, "browser/deployment behavior changed")
     named, unnamed = named_steps(text)
-    require(len(HEAVY) == 22, "full-scope native step count changed")
+    require(len(HEAVY) == 23, "full-scope native step count changed")
     require(set(named) == COMMON | HEAVY | UPLOADS | DOC_STEPS, "step roster changed without guard review")
     require(len(unnamed) == 2 and all(field(c, "if") is None for c in unnamed), "checkout/Go setup became conditional")
     require("fetch-depth: 0" in unnamed[0], "exact PR parents must be available")
@@ -205,6 +206,21 @@ def validate(text):
         require("./.gooo check " + source in declarations, "literal declaration check missing: " + source)
     for source in ("ports/cel/scalar_access.gooo", "examples/cel-api-policy/main.gooo"):
         require("./.gooo check " + source in declarations, "CEL declaration check missing: " + source)
+    for source in ("ports/agentmesh/service_pattern.gooo", "examples/agentmesh-service-policy/impact.gooo"):
+        require("./.gooo check " + source in declarations, "AgentMesh declaration check missing: " + source)
+    mesh = named["Verify the Agent Mesh service-pattern adaptation"]
+    require('python3 -B examples/agentmesh-service-policy/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/agentmesh-service-policy"' in mesh,
+            "AgentMesh verifier must bind pinned compiler and Go tool")
+    for token in ('"gooo/agentmesh-native-verification/v1"', '"FINITE_FRESH_ORACLE_NATIVE_WORKSPACE_REPLAY_PASS"',
+                  '.matcher.upstream_cases == 12', '.matcher.total_cases == 63', '.original_impact.cases == 16',
+                  '.original_impact.fields_compared == 3', '.workspace_batches | length) == 5',
+                  '.case_count] | add) == 79', '.bound_assets == .asset_tamper_refusals',
+                  '.strict_json.max_count == 1024', '.strict_json.max_batch_bytes == 1048576',
+                  '.strict_json.max_component_bytes == 128', '.verifier_helper_contracts.native_array_cardinality == true',
+                  '.verifier_helper_contracts.all_raw_impact_facts_and_strict_types == true',
+                  '.verifier_helper_contracts.complete_typed_workspace_delivery_identity == true',
+                  '.verifier_helper_contracts.optimized_python_refused == true', 'out/agentmesh-service-policy/verification.json'):
+        require(token in mesh, "AgentMesh receipt contract missing: " + token)
     cel = named["Verify the imported CEL API policy"]
     require("go -C examples/cel-api-policy/oracle mod download" in cel,
             "fresh CI runner must fetch pinned oracle dependencies before offline verification")
@@ -343,6 +359,23 @@ class WorkflowScopeTests(unittest.TestCase):
                 validate(self.text.replace(chunk, chunk.replace(before, after, 1), 1))
         misplaced = self.text.replace("      - name: Check Gooo declarations\n",
                                       "      - name: Check Gooo declarations\n        run: python3 examples/cel-api-policy/verify.py\n", 1)
+        with self.assertRaises(ValueError):
+            validate(misplaced)
+
+    def test_agentmesh_verifier_cannot_skip_producer_or_typed_receipt_contract(self):
+        named, _ = named_steps(self.text)
+        chunk = named["Verify the Agent Mesh service-pattern adaptation"]
+        for before, after in (('--compiler "$PWD/.gooo"', '--compiler /tmp/gooo'),
+                              ('--go "$(go env GOROOT)/bin/go"', '--go /usr/bin/go'),
+                              ('"FINITE_FRESH_ORACLE_NATIVE_WORKSPACE_REPLAY_PASS"', '"PASS"'),
+                              ('.matcher.total_cases == 63', '.matcher.total_cases >= 1'),
+                              ('.original_impact.fields_compared == 3', '.original_impact.fields_compared == 1'),
+                              ('.verifier_helper_contracts.complete_typed_workspace_delivery_identity == true', '.verifier_helper_contracts.complete_typed_workspace_delivery_identity == false'),
+                              ('out/agentmesh-service-policy/verification.json', 'out/other.json')):
+            with self.subTest(before=before), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, chunk.replace(before, after, 1), 1))
+        misplaced = self.text.replace("      - name: Check Gooo declarations\n",
+                                      "      - name: Check Gooo declarations\n        run: python3 -B examples/agentmesh-service-policy/verify.py\n", 1)
         with self.assertRaises(ValueError):
             validate(misplaced)
 

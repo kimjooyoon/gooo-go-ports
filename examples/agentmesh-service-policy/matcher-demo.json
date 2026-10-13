@@ -1,0 +1,17 @@
+[
+  {
+    "pattern": "egress://*.googleapis.com",
+    "req_type": "egress",
+    "req_name": "bigquery.googleapis.com"
+  },
+  {
+    "pattern": "egress://*.googleapis.com",
+    "req_type": "egress",
+    "req_name": "googleapis.com"
+  },
+  {
+    "pattern": "egress://*.googleapis.com",
+    "req_type": "egress",
+    "req_name": "evilgoogleapis.com"
+  }
+]

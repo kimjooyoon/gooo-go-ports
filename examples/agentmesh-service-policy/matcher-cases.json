@@ -1,0 +1,470 @@
+[
+  {
+    "name": "upstream-0",
+    "pattern": "*",
+    "req_type": "mcp",
+    "req_name": "calculator",
+    "want": true,
+    "upstream": true
+  },
+  {
+    "name": "upstream-1",
+    "pattern": "*",
+    "req_type": "egress",
+    "req_name": "api.github.com",
+    "want": true,
+    "upstream": true
+  },
+  {
+    "name": "upstream-2",
+    "pattern": "mcp://*",
+    "req_type": "mcp",
+    "req_name": "calculator",
+    "want": true,
+    "upstream": true
+  },
+  {
+    "name": "upstream-3",
+    "pattern": "mcp://*",
+    "req_type": "inference",
+    "req_name": "calculator",
+    "want": false,
+    "upstream": true
+  },
+  {
+    "name": "upstream-4",
+    "pattern": "mcp://calculator",
+    "req_type": "mcp",
+    "req_name": "calculator",
+    "want": true,
+    "upstream": true
+  },
+  {
+    "name": "upstream-5",
+    "pattern": "mcp://calculator",
+    "req_type": "mcp",
+    "req_name": "other",
+    "want": false,
+    "upstream": true
+  },
+  {
+    "name": "upstream-6",
+    "pattern": "egress://*.googleapis.com",
+    "req_type": "egress",
+    "req_name": "bigquery.googleapis.com",
+    "want": true,
+    "upstream": true
+  },
+  {
+    "name": "upstream-7",
+    "pattern": "egress://*.googleapis.com",
+    "req_type": "egress",
+    "req_name": "googleapis.com",
+    "want": false,
+    "upstream": true
+  },
+  {
+    "name": "upstream-8",
+    "pattern": "egress://*.googleapis.com",
+    "req_type": "egress",
+    "req_name": "evilgoogleapis.com",
+    "want": false,
+    "upstream": true
+  },
+  {
+    "name": "upstream-9",
+    "pattern": "inference://gemini.*",
+    "req_type": "inference",
+    "req_name": "gemini.pro",
+    "want": true,
+    "upstream": true
+  },
+  {
+    "name": "upstream-10",
+    "pattern": "inference://gemini.*",
+    "req_type": "inference",
+    "req_name": "gemini",
+    "want": false,
+    "upstream": true
+  },
+  {
+    "name": "upstream-11",
+    "pattern": "inference://gemini.*",
+    "req_type": "inference",
+    "req_name": "gemini2.pro",
+    "want": false,
+    "upstream": true
+  },
+  {
+    "name": "boundary-0",
+    "pattern": "*",
+    "req_type": "",
+    "req_name": "x",
+    "want": false,
+    "upstream": false
+  },
+  {
+    "name": "boundary-1",
+    "pattern": "*",
+    "req_type": "mcp",
+    "req_name": "",
+    "want": false,
+    "upstream": false
+  },
+  {
+    "name": "boundary-2",
+    "pattern": "",
+    "req_type": "mcp",
+    "req_name": "x",
+    "want": false,
+    "upstream": false
+  },
+  {
+    "name": "boundary-3",
+    "pattern": "mcp://x",
+    "req_type": "mcp",
+    "req_name": "x",
+    "want": true,
+    "upstream": false
+  },
+  {
+    "name": "boundary-4",
+    "pattern": "mcp://x",
+    "req_type": "MCP",
+    "req_name": "x",
+    "want": false,
+    "upstream": false
+  },
+  {
+    "name": "boundary-5",
+    "pattern": "mcp://X",
+    "req_type": "mcp",
+    "req_name": "x",
+    "want": false,
+    "upstream": false
+  },
+  {
+    "name": "boundary-6",
+    "pattern": "mcp://*.x",
+    "req_type": "mcp",
+    "req_name": "a.x",
+    "want": true,
+    "upstream": false
+  },
+  {
+    "name": "boundary-7",
+    "pattern": "mcp://*.x",
+    "req_type": "mcp",
+    "req_name": "x",
+    "want": false,
+    "upstream": false
+  },
+  {
+    "name": "boundary-8",
+    "pattern": "mcp://a.*",
+    "req_type": "mcp",
+    "req_name": "a.x",
+    "want": true,
+    "upstream": false
+  },
+  {
+    "name": "boundary-9",
+    "pattern": "mcp://a.*",
+    "req_type": "mcp",
+    "req_name": "a",
+    "want": false,
+    "upstream": false
+  },
+  {
+    "name": "boundary-10",
+    "pattern": "mcp://a.*",
+    "req_type": "mcp",
+    "req_name": "ab.x",
+    "want": false,
+    "upstream": false
+  },
+  {
+    "name": "boundary-11",
+    "pattern": "mcp://*",
+    "req_type": "mcp",
+    "req_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "want": true,
+    "upstream": false
+  },
+  {
+    "name": "boundary-12",
+    "pattern": "mcp://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "req_type": "mcp",
+    "req_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "want": true,
+    "upstream": false
+  },
+  {
+    "name": "boundary-13",
+    "pattern": "mcp://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.*",
+    "req_type": "mcp",
+    "req_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.b",
+    "want": true,
+    "upstream": false
+  },
+  {
+    "name": "boundary-14",
+    "pattern": "mcp://*.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "req_type": "mcp",
+    "req_name": "b.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "want": true,
+    "upstream": false
+  },
+  {
+    "name": "cross-0",
+    "pattern": "*",
+    "req_type": "mcp",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-1",
+    "pattern": "*",
+    "req_type": "mcp",
+    "req_name": "b.a",
+    "upstream": false
+  },
+  {
+    "name": "cross-2",
+    "pattern": "*",
+    "req_type": "mcp",
+    "req_name": "a.b",
+    "upstream": false
+  },
+  {
+    "name": "cross-3",
+    "pattern": "*",
+    "req_type": "egress",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-4",
+    "pattern": "*",
+    "req_type": "mcp",
+    "req_name": "",
+    "upstream": false
+  },
+  {
+    "name": "cross-5",
+    "pattern": "*",
+    "req_type": "",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-6",
+    "pattern": "mcp://*",
+    "req_type": "mcp",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-7",
+    "pattern": "mcp://*",
+    "req_type": "mcp",
+    "req_name": "b.a",
+    "upstream": false
+  },
+  {
+    "name": "cross-8",
+    "pattern": "mcp://*",
+    "req_type": "mcp",
+    "req_name": "a.b",
+    "upstream": false
+  },
+  {
+    "name": "cross-9",
+    "pattern": "mcp://*",
+    "req_type": "egress",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-10",
+    "pattern": "mcp://*",
+    "req_type": "mcp",
+    "req_name": "",
+    "upstream": false
+  },
+  {
+    "name": "cross-11",
+    "pattern": "mcp://*",
+    "req_type": "",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-12",
+    "pattern": "mcp://a",
+    "req_type": "mcp",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-13",
+    "pattern": "mcp://a",
+    "req_type": "mcp",
+    "req_name": "b.a",
+    "upstream": false
+  },
+  {
+    "name": "cross-14",
+    "pattern": "mcp://a",
+    "req_type": "mcp",
+    "req_name": "a.b",
+    "upstream": false
+  },
+  {
+    "name": "cross-15",
+    "pattern": "mcp://a",
+    "req_type": "egress",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-16",
+    "pattern": "mcp://a",
+    "req_type": "mcp",
+    "req_name": "",
+    "upstream": false
+  },
+  {
+    "name": "cross-17",
+    "pattern": "mcp://a",
+    "req_type": "",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-18",
+    "pattern": "mcp://*.a",
+    "req_type": "mcp",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-19",
+    "pattern": "mcp://*.a",
+    "req_type": "mcp",
+    "req_name": "b.a",
+    "upstream": false
+  },
+  {
+    "name": "cross-20",
+    "pattern": "mcp://*.a",
+    "req_type": "mcp",
+    "req_name": "a.b",
+    "upstream": false
+  },
+  {
+    "name": "cross-21",
+    "pattern": "mcp://*.a",
+    "req_type": "egress",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-22",
+    "pattern": "mcp://*.a",
+    "req_type": "mcp",
+    "req_name": "",
+    "upstream": false
+  },
+  {
+    "name": "cross-23",
+    "pattern": "mcp://*.a",
+    "req_type": "",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-24",
+    "pattern": "mcp://a.*",
+    "req_type": "mcp",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-25",
+    "pattern": "mcp://a.*",
+    "req_type": "mcp",
+    "req_name": "b.a",
+    "upstream": false
+  },
+  {
+    "name": "cross-26",
+    "pattern": "mcp://a.*",
+    "req_type": "mcp",
+    "req_name": "a.b",
+    "upstream": false
+  },
+  {
+    "name": "cross-27",
+    "pattern": "mcp://a.*",
+    "req_type": "egress",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-28",
+    "pattern": "mcp://a.*",
+    "req_type": "mcp",
+    "req_name": "",
+    "upstream": false
+  },
+  {
+    "name": "cross-29",
+    "pattern": "mcp://a.*",
+    "req_type": "",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-30",
+    "pattern": "egress://a",
+    "req_type": "mcp",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-31",
+    "pattern": "egress://a",
+    "req_type": "mcp",
+    "req_name": "b.a",
+    "upstream": false
+  },
+  {
+    "name": "cross-32",
+    "pattern": "egress://a",
+    "req_type": "mcp",
+    "req_name": "a.b",
+    "upstream": false
+  },
+  {
+    "name": "cross-33",
+    "pattern": "egress://a",
+    "req_type": "egress",
+    "req_name": "a",
+    "upstream": false
+  },
+  {
+    "name": "cross-34",
+    "pattern": "egress://a",
+    "req_type": "mcp",
+    "req_name": "",
+    "upstream": false
+  },
+  {
+    "name": "cross-35",
+    "pattern": "egress://a",
+    "req_type": "",
+    "req_name": "a",
+    "upstream": false
+  }
+]

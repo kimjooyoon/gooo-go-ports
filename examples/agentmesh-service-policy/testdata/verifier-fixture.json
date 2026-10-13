@@ -1,0 +1,290 @@
+{
+ "schema": "gooo/agentmesh-verifier-test-fixture/v1",
+ "fixture_only": true,
+ "scope": "Small projected research records for pure verifier mutation tests. Asset-map bindings are omitted and equal execute/replay first traces stored once. Repeated/transformed unit inputs are not new native observations or fresh/public generation acceptance.",
+ "expected_bindings": {
+  "compiler_source_sha": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+  "generation_sha256": "sha256:ae562e570a5e3bbf9649d240f0b16055b69958fd99a450e794d08db0d5bb040b",
+  "generation_origin": "retained_pinned_prototype"
+ },
+ "native": {
+  "matcher": {
+   "facts": {
+    "pattern": "egress://*.googleapis.com",
+    "req_type": "egress",
+    "req_name": "bigquery.googleapis.com"
+   },
+   "matched": true
+  },
+  "impact": {
+   "facts": {
+    "before": "mcp://a",
+    "after": "mcp://*",
+    "req_type": "mcp",
+    "req_name": "b"
+   },
+   "decision": {
+    "before_match": false,
+    "after_match": true,
+    "change": "WIDENED"
+   }
+  }
+ },
+ "workspace": {
+  "matcher": {
+   "case": {
+    "inputs": {
+     "go/google/agentmesh/api:MatchServicePattern.input0": "*",
+     "go/google/agentmesh/api:MatchServicePattern.input1": "mcp",
+     "go/google/agentmesh/api:MatchServicePattern.input2": "calculator"
+    },
+    "expected": {
+     "go/google/agentmesh/api:MatchServicePattern": true
+    }
+   },
+   "index": 0,
+   "program": {
+    "entry": {
+     "package_path": "go/google/agentmesh/api",
+     "activity": "MatchServicePattern",
+     "lowered_name": "GoooPackage0ActivityMatchServicePattern"
+    },
+    "workspace_image": {
+     "packages": [
+      {
+       "path": "go/google/agentmesh/api",
+       "exports": [
+        {
+         "name": "MatchServicePattern",
+         "kind": "activity",
+         "id": "gooo://agentmesh-prototype/match-service-pattern",
+         "input_types": [
+          "gooo://std/text",
+          "gooo://std/text",
+          "gooo://std/text"
+         ],
+         "output_type": "gooo://std/boolean"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "body_report": {
+    "activity": "GoooPackage0ActivityMatchServicePattern",
+    "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+    "output_type": "bool"
+   },
+   "trace": {
+    "case_index": 0,
+    "deliveries": [
+     {
+      "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+      "inputs": [
+       {
+        "port": "input0",
+        "entity_id": "gooo://std/text",
+        "value": "*"
+       },
+       {
+        "port": "input1",
+        "entity_id": "gooo://std/text",
+        "value": "mcp"
+       },
+       {
+        "port": "input2",
+        "entity_id": "gooo://std/text",
+        "value": "calculator"
+       }
+      ],
+      "actual": true,
+      "expected": true,
+      "passed": true
+     }
+    ]
+   },
+   "phases": [
+    "execute",
+    "replay"
+   ]
+  },
+  "impact": {
+   "case": {
+    "inputs": {
+     "app/service-grant-impact:CompareServiceGrant.input0": "mcp://a",
+     "app/service-grant-impact:CompareServiceGrant.input1": "mcp://a",
+     "app/service-grant-impact:CompareServiceGrant.input2": "mcp",
+     "app/service-grant-impact:CompareServiceGrant.input3": "a"
+    },
+    "expected": {
+     "app/service-grant-impact:CompareServiceGrant": {
+      "after_match": true,
+      "before_match": true,
+      "change": "UNCHANGED_ALLOW"
+     }
+    }
+   },
+   "index": 0,
+   "program": {
+    "entry": {
+     "package_path": "app/service-grant-impact",
+     "activity": "CompareServiceGrant",
+     "lowered_name": "GoooPackage1ActivityCompareServiceGrant"
+    },
+    "workspace_image": {
+     "packages": [
+      {
+       "path": "app/service-grant-impact",
+       "exports": [
+        {
+         "name": "CompareServiceGrant",
+         "kind": "activity",
+         "id": "gooo://service-impact/compare",
+         "input_types": [
+          "gooo://std/text",
+          "gooo://std/text",
+          "gooo://std/text",
+          "gooo://std/text"
+         ],
+         "output_type": "gooo://service-impact/decision/v1"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "body_report": {
+    "activity": "GoooPackage1ActivityCompareServiceGrant",
+    "activity_id": "gooo://service-impact/compare",
+    "output_type": "GrantImpact",
+    "record_types": [
+     {
+      "name": "GrantImpact",
+      "id": "gooo://service-impact/decision/v1",
+      "fields": [
+       {
+        "name": "before_match",
+        "id": "gooo://service-impact/before",
+        "type_id": "urn:gooo:type:boolean"
+       },
+       {
+        "name": "after_match",
+        "id": "gooo://service-impact/after",
+        "type_id": "urn:gooo:type:boolean"
+       },
+       {
+        "name": "change",
+        "id": "gooo://service-impact/change",
+        "type_id": "urn:gooo:type:string"
+       }
+      ]
+     }
+    ]
+   },
+   "trace": {
+    "case_index": 0,
+    "deliveries": [
+     {
+      "activity_id": "gooo://service-impact/compare",
+      "inputs": [
+       {
+        "port": "input0",
+        "entity_id": "gooo://std/text",
+        "value": "mcp://a"
+       },
+       {
+        "port": "input1",
+        "entity_id": "gooo://std/text",
+        "value": "mcp://a"
+       },
+       {
+        "port": "input2",
+        "entity_id": "gooo://std/text",
+        "value": "mcp"
+       },
+       {
+        "port": "input3",
+        "entity_id": "gooo://std/text",
+        "value": "a"
+       }
+      ],
+      "actual": {
+       "after_match": true,
+       "before_match": true,
+       "change": "UNCHANGED_ALLOW"
+      },
+      "actual_fields": [
+       {
+        "id": "gooo://service-impact/before",
+        "name": "before_match",
+        "value": true
+       },
+       {
+        "id": "gooo://service-impact/after",
+        "name": "after_match",
+        "value": true
+       },
+       {
+        "id": "gooo://service-impact/change",
+        "name": "change",
+        "value": "UNCHANGED_ALLOW"
+       }
+      ],
+      "expected": {
+       "after_match": true,
+       "before_match": true,
+       "change": "UNCHANGED_ALLOW"
+      },
+      "passed": true
+     }
+    ]
+   },
+   "phases": [
+    "execute",
+    "replay"
+   ]
+  }
+ },
+ "origins": [
+  {
+   "research_path": "output/growth/api-proof-replay-20261013/agentmesh-staged-cli-matcher.stdout",
+   "sha256": "53097755e1b4a1e9ecf1de4d2311ee865c7b1a73cee9adc5f2a55737e2ebcd4d",
+   "json_pointer": "/0"
+  },
+  {
+   "research_path": "output/growth/api-proof-replay-20261013/agentmesh-staged-cli-impact.stdout",
+   "sha256": "98a2045c6296a8865e09b5aad92b14b02f151746c08363abddbcbdc1800a96e4",
+   "json_pointer": "/0"
+  },
+  {
+   "research_path": "research/adoption/agentmesh-gooo-20261013/out/matcher-0-execute.stdout",
+   "sha256": "3317e8f9fab423142a2b8fdbaef43c5c86ed38d6434f6e48dd7b752ffbea1d07",
+   "json_pointer": "/result/runtime/traces/0"
+  },
+  {
+   "research_path": "research/adoption/agentmesh-gooo-20261013/out/matcher-0-replay.stdout",
+   "sha256": "3a2e3af9cdaec5fa53d81002e0849c5364f2c971ccd3a59846d19c29e95c9fab",
+   "json_pointer": "/result/runtime/traces/0"
+  },
+  {
+   "research_path": "research/adoption/agentmesh-public-staging-20261013/receipts/matcher-body-codegen.json",
+   "sha256": "3858ab97df674182b82459f9139c4dd47f95a56b77d09929ab2ce77b0b09de1a",
+   "json_pointer": "/report"
+  },
+  {
+   "research_path": "research/adoption/agentmesh-gooo-20261013/out/impact-0-execute.stdout",
+   "sha256": "7e04f176e9a9169c99800d93d437b3d8cfde97ec5a230abc0189fdb2c695256b",
+   "json_pointer": "/result/runtime/traces/0"
+  },
+  {
+   "research_path": "research/adoption/agentmesh-gooo-20261013/out/impact-0-replay.stdout",
+   "sha256": "16e9605941592035de7c613e2aa6d27f880986cf2526bb7181ee9c997490c7f4",
+   "json_pointer": "/result/runtime/traces/0"
+  },
+  {
+   "research_path": "research/adoption/agentmesh-public-staging-20261013/receipts/impact-body-codegen.json",
+   "sha256": "07fd920605d922f1d886184751171c232224f07714100d8108b2fef193823ffd",
+   "json_pointer": "/report"
+  }
+ ]
+}
