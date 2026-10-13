@@ -169,8 +169,12 @@ func TestLegacy445CatalogSourcesManifestsInputsCasesAndBatchesRemainIdentical(t 
 		}
 	}
 	expectedCatalog.Packages = append(expectedCatalog.Packages, sourcePackage{Path: "app/literal-text-report", Sources: []string{"examples/literal-text-report/main.gooo"}})
-	if !reflect.DeepEqual(frozen.Catalog, expectedCatalog) || len(frozen.Sources) != len(fixture.Sources)+2 {
-		t.Fatal("catalog changed beyond the two reviewed literal sources")
+	expectedCatalog.Packages = append(expectedCatalog.Packages,
+		sourcePackage{Path: "go/cel.dev/cel-go/codelab", Sources: []string{"ports/cel/scalar_access.gooo"}},
+		sourcePackage{Path: "app/cel-api-policy", Sources: []string{"examples/cel-api-policy/main.gooo"}},
+	)
+	if !reflect.DeepEqual(frozen.Catalog, expectedCatalog) || len(frozen.Sources) != len(fixture.Sources)+4 {
+		t.Fatal("catalog changed beyond the reviewed literal and CEL sources")
 	}
 	sources := map[string]legacy445Source{}
 	for _, old := range fixture.Sources {

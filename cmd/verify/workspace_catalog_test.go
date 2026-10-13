@@ -14,7 +14,7 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(frozen.Catalog.Packages) != 31 || len(frozen.Sources) != 39 {
+	if len(frozen.Catalog.Packages) != 33 || len(frozen.Sources) != 41 {
 		t.Fatal("complete reviewed catalog roster changed")
 	}
 	allIdentities, err := snapshotSourceIdentities(frozen.Catalog.Packages, frozen.Sources)
@@ -28,6 +28,12 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 		}
 		if selected.Manifest.Schema != "gooo/package-workspace-manifest/v1" || selected.Manifest.Entry.Package != s.Package || selected.Manifest.Entry.Activity != s.Activity {
 			t.Fatal("execution manifest or entry differs")
+		}
+		if _, exists := selected.Sources["ports/cel/scalar_access.gooo"]; exists {
+			t.Fatal("bounded CEL rule leaked into an unrelated legacy workspace")
+		}
+		if _, exists := selected.Sources["examples/cel-api-policy/main.gooo"]; exists {
+			t.Fatal("bounded CEL consumer leaked into an unrelated legacy workspace")
 		}
 		var serialized map[string]json.RawMessage
 		if err := json.Unmarshal(mustJSON(t, selected.Manifest), &serialized); err != nil || len(serialized) != 3 || serialized["schema"] == nil || serialized["entry"] == nil || serialized["packages"] == nil {

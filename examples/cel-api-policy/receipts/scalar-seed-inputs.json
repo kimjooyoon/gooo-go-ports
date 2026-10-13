@@ -1,0 +1,11 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+      "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "admin",
+      "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+      "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "user:me@acme.co"
+    }
+  ]
+}

@@ -260,6 +260,18 @@ discussing policy-review and incident-reproduction work, with no live model API,
 real export or production-security claim. Its cases are separate from the port
 compatibility counts. The guide includes a focused request for workflow feedback.
 
+The [CEL API policy example](examples/cel-api-policy/README.md) adapts one pinned
+Google CEL codelab rule into `ports/cel/scalar_access.gooo`. An original Gooo
+consumer imports that rule and combines it with explicit authentication, tenant
+and action facts. The caller receives a decision and reason without a human
+approval step. The example preserves the typed protobuf rule's missing-field
+behavior and compares it with the real CEL runtime. Workspace execution accepts
+strings up to 1,024 bytes; the separate generated native JSON adapter accepts up
+to 65,536 bytes. These finite checks are separate from the 42 API compatibility
+counts. Authenticating supplied facts and enforcing effects remain application
+responsibilities; this is neither a complete CEL implementation nor a production
+authorization service.
+
 For a fixed snapshot, choose an [experimental release](https://github.com/kimjooyoon/gooo-go-ports/releases).
 Each release page lists its included tools and separate source, execution/replay
 evidence, and standalone browser archives, with licenses, provenance, and checksums.
@@ -848,8 +860,11 @@ Gooo **0.6.32-dev** 컴파일러 커밋
 `83928fa4538245abe33b08549da47f8cbdc50ed2`을 고정했습니다.
 테스트의 Go 도구 체인에서도 원본 파일 해시가 일치해야 합니다.
 
-BSD 3-Clause 라이선스입니다. Go 원본 저작권과
+기존 Go 이식 부분은 BSD 3-Clause 라이선스입니다. Go 원본 저작권과
 [원본 라이선스](third_party/GO-LICENSE), [NOTICE](NOTICE)를 보존합니다.
+별도 CEL 규칙과 예제에는 Apache-2.0 조건을 보존하며,
+[CEL 포트 출처](ports/cel/NOTICE.md)와 [예제 라이선스](examples/cel-api-policy/NOTICE.md)에
+Google codelab 원본과 수정 범위를 명시합니다.
 기존 [Gooo standard library](https://github.com/kimjooyoon/gooo-standard-library)의
 기초 숫자·논리·문자열 함수와 함께 사용할 수 있도록 별도 패키지 경로를 사용합니다.
 

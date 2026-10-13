@@ -1,0 +1,35 @@
+[
+  {
+    "group_present": true,
+    "group_value": "admin",
+    "principal_present": true,
+    "principal_value": "user:me@acme.co",
+    "authenticated": true,
+    "caller_tenant": "tenant-a",
+    "resource_tenant": "tenant-a",
+    "requested_action": "write",
+    "allowed_action": "write"
+  },
+  {
+    "group_present": true,
+    "group_value": "admin",
+    "principal_present": true,
+    "principal_value": "user:me@acme.co",
+    "authenticated": false,
+    "caller_tenant": "tenant-a",
+    "resource_tenant": "tenant-a",
+    "requested_action": "write",
+    "allowed_action": "write"
+  },
+  {
+    "group_present": true,
+    "group_value": "admin",
+    "principal_present": true,
+    "principal_value": "user:me@acme.co",
+    "authenticated": true,
+    "caller_tenant": "tenant-a",
+    "resource_tenant": "tenant-b",
+    "requested_action": "write",
+    "allowed_action": "write"
+  }
+]

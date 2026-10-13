@@ -1,0 +1,34 @@
+// Bounded adaptation of Google CEL Go codelab, exercise3 (Logical AND/OR).
+// Copyright 2020 Google LLC. Licensed under the Apache License, Version 2.0.
+// Attribution and exact source pins are retained in NOTICE.md and upstream.json.
+// This returns an explicit observation; it is not a generic CEL interpreter.
+package cel
+namespace gooo_cel_scalar_example
+entity Boolean id "gooo://std/boolean"
+entity Text id "gooo://std/text"
+entity AccessDecision id "gooo://cel-example/access-decision/v1" fields {
+ field allowed id "gooo://cel-example/access-decision/allowed" type boolean required one
+ field evaluation_error id "gooo://cel-example/access-decision/evaluation-error" type boolean required one
+ field result id "gooo://cel-example/access-decision/result" type string required one
+ field group_matched id "gooo://cel-example/access-decision/group-matched" type boolean required one
+ field principal_matched id "gooo://cel-example/access-decision/principal-matched" type boolean required one
+ field group_missing id "gooo://cel-example/access-decision/group-missing" type boolean required one
+ field principal_defaulted id "gooo://cel-example/access-decision/principal-defaulted" type boolean required one
+ field effective_principal id "gooo://cel-example/access-decision/effective-principal" type string required one
+}
+
+// input0/1: claims.group presence/raw text; input2/3: principal presence/raw text.
+// An omitted proto string principal defaults to empty. An absent group map key
+// errors unless the principal operand is true. Both comparisons are Gooo owned.
+activity ScalarAccess(Boolean, Text, Boolean, Text) -> AccessDecision id "gooo://cel-example/scalar-access" computes `
+let effectivePrincipal = input3
+if !input2 { effectivePrincipal = "" }
+let groupMatched = input0 && input1 == "admin"
+let principalMatched = effectivePrincipal == "user:me@acme.co"
+let allowed = groupMatched || principalMatched
+let evaluationError = !input0 && !principalMatched
+let result = "DENY"
+if evaluationError { result = "ERROR_NO_SUCH_KEY_GROUP" }
+if allowed { result = "ALLOW" }
+return AccessDecision{allowed: allowed, evaluation_error: evaluationError, result: result, group_matched: groupMatched, principal_matched: principalMatched, group_missing: !input0, principal_defaulted: !input2, effective_principal: effectivePrincipal}
+`

@@ -1,0 +1,965 @@
+{
+  "schema": "gooo/body-composition-cases/v1",
+  "cases": [
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "admin",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "user:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": true,
+          "evaluation_error": false,
+          "result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "admin",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": true,
+          "evaluation_error": false,
+          "result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "admin",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": ""
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": true,
+          "evaluation_error": false,
+          "result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "admin",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": ""
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": true,
+          "evaluation_error": false,
+          "result": "ALLOW",
+          "group_matched": true,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": true,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "user:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": true,
+          "evaluation_error": false,
+          "result": "ALLOW",
+          "group_matched": false,
+          "principal_matched": true,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": ""
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": ""
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": true,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "user:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": true,
+          "evaluation_error": false,
+          "result": "ALLOW",
+          "group_matched": false,
+          "principal_matched": true,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": true,
+          "result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": ""
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": true,
+          "result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": ""
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": true,
+          "result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": true,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "admin",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "user:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": true,
+          "evaluation_error": false,
+          "result": "ALLOW",
+          "group_matched": false,
+          "principal_matched": true,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "admin",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": true,
+          "result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "user:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": true,
+          "evaluation_error": false,
+          "result": "ALLOW",
+          "group_matched": false,
+          "principal_matched": true,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": true,
+          "result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "\u0000admin",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "user:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": true,
+          "evaluation_error": false,
+          "result": "ALLOW",
+          "group_matched": false,
+          "principal_matched": true,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "\u0000admin",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": true,
+          "result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "\u7ba1\u7406\u5458",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "user:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": true,
+          "evaluation_error": false,
+          "result": "ALLOW",
+          "group_matched": false,
+          "principal_matched": true,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "\u7ba1\u7406\u5458",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": true,
+          "result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "user:me@acme.co",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "user:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": true,
+          "evaluation_error": false,
+          "result": "ALLOW",
+          "group_matched": false,
+          "principal_matched": true,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "user:me@acme.co",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": true,
+          "result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "user:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": true,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "admin",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "user:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": true,
+          "result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": true,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": true,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "admin",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": true,
+          "result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": true,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "\u0000"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": true,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "admin",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "\u0000"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": true,
+          "result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": true,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "\u7528\u6237"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": true,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "admin",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": false,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "\u7528\u6237"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": true,
+          "result": "ERROR_NO_SUCH_KEY_GROUP",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": true,
+          "principal_defaulted": true,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "Admin",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "admin ",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": " admin",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "admin\n",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "admin\u0000",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "adm\u0131n",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "a\u0301dmin",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "\u7ba1\u7406\u8005",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "admin/",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "other:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "other:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": ""
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "User:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "User:me@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "user:me@acme.co "
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co "
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "user:me@acme.co\n"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co\n"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "user:me@acme.co\u0000"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me@acme.co\u0000"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "user:m\u00e9@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:m\u00e9@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "user:me\u0301@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "user:me\u0301@acme.co"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input0": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input1": "viewer",
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input2": true,
+        "go/cel.dev/cel-go/codelab:ScalarAccess.input3": "\u7528\u6237:me@acme.co"
+      },
+      "expected": {
+        "go/cel.dev/cel-go/codelab:ScalarAccess": {
+          "allowed": false,
+          "evaluation_error": false,
+          "result": "DENY",
+          "group_matched": false,
+          "principal_matched": false,
+          "group_missing": false,
+          "principal_defaulted": false,
+          "effective_principal": "\u7528\u6237:me@acme.co"
+        }
+      }
+    }
+  ]
+}

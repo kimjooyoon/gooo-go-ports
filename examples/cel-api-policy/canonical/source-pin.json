@@ -1,0 +1,49 @@
+{
+  "schema": "cel-proto-or-source-pin/v1",
+  "origin_revision": "6d32ef54e4f124929730b15d5eb9b9205da58992",
+  "expression": "request.auth.claims.group == 'admin' || request.auth.principal == 'user:me@acme.co'",
+  "files": [
+    {
+      "filename": "upstream/go.mod.txt",
+      "url": "https://raw.githubusercontent.com/google/cel-go/6d32ef54e4f124929730b15d5eb9b9205da58992/go.mod",
+      "sha256": "7d8b1018a9bee24c811110f7712005213e9b6dc37b7a86ed84f9b08a83163140",
+      "bytes": 538
+    },
+    {
+      "filename": "upstream/codelab.go.txt",
+      "url": "https://raw.githubusercontent.com/google/cel-go/6d32ef54e4f124929730b15d5eb9b9205da58992/codelab/solution/codelab.go",
+      "sha256": "330450d7be943314025d6430ec5e5484d107f8ce196baf0a5c60092dcd777244",
+      "bytes": 16886
+    },
+    {
+      "filename": "upstream/LICENSE",
+      "url": "https://raw.githubusercontent.com/google/cel-go/6d32ef54e4f124929730b15d5eb9b9205da58992/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    }
+  ],
+  "runtime_dependency": {
+    "module": "cel.dev/cel-go",
+    "version": "v0.32.0",
+    "origin": {
+      "VCS": "git",
+      "URL": "https://github.com/cel-expr/cel-go",
+      "Hash": "f2039bc647bca407d882d90436fc8b91bab1ae62",
+      "Ref": "refs/tags/v0.32.0"
+    },
+    "module_sum": "h1:irvpFKr5EuGPyxeME03ERh0rii1TX+BDAnB9eL3IvNk=",
+    "go_mod_sum": "h1:DnVip7tpJSsgZymwfT+m1tnEVy3ivAjSMXPx12YrMkU=",
+    "cached_runtime_files": [
+      {
+        "name": "LICENSE",
+        "bytes": 13053,
+        "sha256": "4cdb9af102dfbb0ca03d87d6f650a505df098646a4080f4665b389ad9c6caa02"
+      },
+      {
+        "name": "go.mod",
+        "bytes": 477,
+        "sha256": "9aa1a892e3be0c8c6a065d13bdbacc5a126f5fd0c53a610e5e08ab9d49698fde"
+      }
+    ]
+  }
+}
