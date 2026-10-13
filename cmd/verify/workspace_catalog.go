@@ -53,7 +53,7 @@ func freezeVerificationCatalog(path string) (frozenVerificationCatalog, error) {
 	}
 	frozen.Raw, frozen.Sources, frozen.Hashes = raw, map[string][]byte{}, map[string]string{}
 	for _, pkg := range frozen.Catalog.Packages {
-		if !(strings.HasPrefix(pkg.Path, "go/") || strings.HasPrefix(pkg.Path, "app/") || strings.HasPrefix(pkg.Path, "example/")) {
+		if !(strings.HasPrefix(pkg.Path, "go/") || strings.HasPrefix(pkg.Path, "gooo/") || strings.HasPrefix(pkg.Path, "app/") || strings.HasPrefix(pkg.Path, "example/")) {
 			return frozen, fmt.Errorf("unsupported verification package %q", pkg.Path)
 		}
 		for _, name := range pkg.Sources {

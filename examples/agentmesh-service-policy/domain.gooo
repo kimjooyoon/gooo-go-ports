@@ -1,0 +1,74 @@
+// Original Gooo canonical service grammar; used by all checked entrypoints.
+// Empty type/name are represented canonical facts; matching still rejects them.
+package service_domain
+namespace gooo_original_service_domain
+entity Text id "gooo://std/text"
+entity Boolean id "gooo://std/boolean"
+activity ValidateServiceType(Text) -> Boolean id "gooo://service-domain/type" computes `
+let n = int64(len(input))
+if n > 128 { return false }
+if n == 0 { return true }
+let first = int64(input[0])
+if !((first >= 65 && first <= 90) || (first >= 97 && first <= 122)) { return false }
+let offset = 0
+for offset = 0; offset < 128; offset = offset + 1 {
+ if offset < n {
+  let b = int64(input[offset])
+  let alpha = (b >= 65 && b <= 90) || (b >= 97 && b <= 122)
+  let digit = b >= 48 && b <= 57
+  if !alpha && !digit && b != 43 && b != 45 && b != 46 { return false }
+ }
+}
+return true
+`
+activity ValidateServiceName(Text) -> Boolean id "gooo://service-domain/name" computes `
+let n = int64(len(input))
+if n > 128 { return false }
+if n == 0 { return true }
+let previousDot = true
+let offset = 0
+for offset = 0; offset < 128; offset = offset + 1 {
+ if offset < n {
+  let b = int64(input[offset])
+  if b == 46 {
+   if previousDot { return false }
+   previousDot = true
+  } else {
+   let alpha = (b >= 65 && b <= 90) || (b >= 97 && b <= 122)
+   let digit = b >= 48 && b <= 57
+   if !alpha && !digit && b != 45 && b != 95 { return false }
+   previousDot = false
+  }
+ }
+}
+return !previousDot
+`
+activity ValidateServicePattern(Text) -> Boolean id "gooo://service-domain/pattern" computes `
+let n = int64(len(input))
+if n > 128 { return false }
+if input == "" || input == "*" { return true }
+let split = -1
+let offset = 0
+for offset = 0; offset < 128; offset = offset + 1 {
+ let end = offset + 3
+ if end <= n {
+  if input[offset:end] == "://" { if split == -1 { split = offset } }
+ }
+}
+if split <= 0 { return false }
+let typ = input[0:split]
+if !ValidateServiceType(typ) { return false }
+let start = split + 3
+let part = input[start:n]
+let size = int64(len(part))
+if size == 0 { return false }
+if part == "*" { return true }
+if size >= 2 {
+ if part[0:2] == "*." { part = part[2:size] } else {
+  let tail = size - 2
+  if part[tail:size] == ".*" { part = part[0:tail] }
+ }
+}
+if part == "" { return false }
+return ValidateServiceName(part)
+`

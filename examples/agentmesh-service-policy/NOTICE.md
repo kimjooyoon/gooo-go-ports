@@ -11,7 +11,8 @@ as `.go.txt` source archives. The original Apache-2.0 license is preserved in
 the exact original function bytes; its wrapper and the original Gooo request-level
 impact and single-pattern refinement compositions are distinct from the upstream
 matcher. The refinement rules and candidate-witness construction are original
-Gooo code; they are not a Google Agent Mesh API or policy applier.
+Gooo code; they are not a Google Agent Mesh API or policy applier. The canonical
+domain predicates and checked input/result wrappers are also original Gooo code.
 
 This example is independently developed. It does not imply Google endorsement
 or complete Agent Mesh compatibility.

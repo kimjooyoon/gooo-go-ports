@@ -1,0 +1,422 @@
+package gooo_workspace
+
+//gooo:generated:start id="gooo://service-policy/checked-refinement/decision/v1" kind="entity"
+type GoooRecord9d003d83477863c3d498fa44b96246cb2d9b8db54ef2d72d163a5bd796f6af64 struct {
+	GoooFieldb9bc7288b80e18695cd2ba3cd55ae0886e7f6db29565e5b9dfd8fa7ba1ad8704 string `json:"domain_status"`
+	GoooField2c45937c0e03d4504ca27156845c813e37b78a54e17cd46b8460249084d2f899 string `json:"invalid_field"`
+	GoooFielde65f454fd5b6723b32117f7bd8595ef15deb2d3eebfdaf2990058ce0b7c7fb38 string `json:"status"`
+	GoooField4e7c9ae8fe957fe6a0f012ce48c75ca7dd8168843318af2eb56479b01164968c string `json:"rule_id"`
+	GoooFieldcc2afc6f81cbe3844a0eae06e83134f93fe219a1547297d8d152bd31d8b2369f bool   `json:"supported_subset"`
+	GoooField43c536994304b4d2b07bf7504a15a5fe8b4d87f3221a7b083d5d517a10087073 bool   `json:"has_witness"`
+	GoooField08b3874cbd90106dd8fd54eb7828cb158f21fde72f0c388c1f3567550ab6f5ea string `json:"witness_type"`
+	GoooField58132c044e2ce842fe1b7255b9eb5238249a9ee43c0873e29554292a38d770e9 string `json:"witness_name"`
+	GoooField05ce321efb8e356a9db821a11acd7e12a8359eddf23b82dd2e55c4d05f0968b5 bool   `json:"before_match"`
+	GoooFielde9bbaf701f1e838fa2bc680ae2e9fd09ad51b00acf4953e05bf3d81388d10068 bool   `json:"after_match"`
+}
+
+//gooo:generated:end id="gooo://service-policy/checked-refinement/decision/v1" kind="entity"
+//gooo:generated:start id="gooo://service-refinement/decision/v1" kind="entity"
+type GoooRecord702bf03e1b9b659de2cca8f66c90d35af72f6f992a24d89cf90ce7c269907367 struct {
+	GoooFieldaf6991124a762ff89da9eae9eccd222db33bb2ddf56b92993d7bd2cf5c9ad354 string `json:"status"`
+	GoooField24698bac43894a5573e5dadbf8c2e52cf44a1615484c51a4d0e675600a8d0454 string `json:"rule_id"`
+	GoooFielda09c15e873f28daf8cbd9c93c478c1480486831d7c55656c7d5491fbf2c52711 bool   `json:"supported_subset"`
+	GoooFieldbba889b4d1fcabf4151fd8dad7f727eb777e045df9c39fff7dc72f4401ec003d bool   `json:"has_witness"`
+	GoooField02e0207ce9dd381ba57b20243ee685352c92be98dc5d7fe8d6e33525e5a3dfbd string `json:"witness_type"`
+	GoooFieldd602c0b83fa88a27ce104dff11a826ceeeb694a927fe062f415d97ce859b53d6 string `json:"witness_name"`
+	GoooFieldabdccd9e95eef4d357adccc51e4976e882b3d7a22d6b8701951a951f3eb4c4cc bool   `json:"before_match"`
+	GoooField25664eeb9a2c3098e71e67b9fbfd995fdeecbd8e091db678ed6d4b66defab7ef bool   `json:"after_match"`
+}
+
+//gooo:generated:end id="gooo://service-refinement/decision/v1" kind="entity"
+//gooo:generated:start id="gooo://service-policy/checked-refinement/evaluate/v1" kind="activity"
+func GoooPackage5ActivityAnalyzeServiceGrantChecked(input0 string, input1 string) GoooRecord9d003d83477863c3d498fa44b96246cb2d9b8db54ef2d72d163a5bd796f6af64 {
+
+	if !GoooPackage4ActivityValidateServicePattern(input0) {
+		return GoooRecord9d003d83477863c3d498fa44b96246cb2d9b8db54ef2d72d163a5bd796f6af64{GoooFieldb9bc7288b80e18695cd2ba3cd55ae0886e7f6db29565e5b9dfd8fa7ba1ad8704: "INVALID_INPUT", GoooField2c45937c0e03d4504ca27156845c813e37b78a54e17cd46b8460249084d2f899: "before", GoooFielde65f454fd5b6723b32117f7bd8595ef15deb2d3eebfdaf2990058ce0b7c7fb38: "INVALID_INPUT", GoooField4e7c9ae8fe957fe6a0f012ce48c75ca7dd8168843318af2eb56479b01164968c: "", GoooFieldcc2afc6f81cbe3844a0eae06e83134f93fe219a1547297d8d152bd31d8b2369f: false, GoooField43c536994304b4d2b07bf7504a15a5fe8b4d87f3221a7b083d5d517a10087073: false, GoooField08b3874cbd90106dd8fd54eb7828cb158f21fde72f0c388c1f3567550ab6f5ea: "", GoooField58132c044e2ce842fe1b7255b9eb5238249a9ee43c0873e29554292a38d770e9: "", GoooField05ce321efb8e356a9db821a11acd7e12a8359eddf23b82dd2e55c4d05f0968b5: false, GoooFielde9bbaf701f1e838fa2bc680ae2e9fd09ad51b00acf4953e05bf3d81388d10068: false}
+	}
+	if !GoooPackage4ActivityValidateServicePattern(input1) {
+		return GoooRecord9d003d83477863c3d498fa44b96246cb2d9b8db54ef2d72d163a5bd796f6af64{GoooFieldb9bc7288b80e18695cd2ba3cd55ae0886e7f6db29565e5b9dfd8fa7ba1ad8704: "INVALID_INPUT", GoooField2c45937c0e03d4504ca27156845c813e37b78a54e17cd46b8460249084d2f899: "after", GoooFielde65f454fd5b6723b32117f7bd8595ef15deb2d3eebfdaf2990058ce0b7c7fb38: "INVALID_INPUT", GoooField4e7c9ae8fe957fe6a0f012ce48c75ca7dd8168843318af2eb56479b01164968c: "", GoooFieldcc2afc6f81cbe3844a0eae06e83134f93fe219a1547297d8d152bd31d8b2369f: false, GoooField43c536994304b4d2b07bf7504a15a5fe8b4d87f3221a7b083d5d517a10087073: false, GoooField08b3874cbd90106dd8fd54eb7828cb158f21fde72f0c388c1f3567550ab6f5ea: "", GoooField58132c044e2ce842fe1b7255b9eb5238249a9ee43c0873e29554292a38d770e9: "", GoooField05ce321efb8e356a9db821a11acd7e12a8359eddf23b82dd2e55c4d05f0968b5: false, GoooFielde9bbaf701f1e838fa2bc680ae2e9fd09ad51b00acf4953e05bf3d81388d10068: false}
+	}
+	var result = GoooPackage1ActivityAnalyzeServiceGrant(input0, input1)
+	return GoooRecord9d003d83477863c3d498fa44b96246cb2d9b8db54ef2d72d163a5bd796f6af64{GoooFieldb9bc7288b80e18695cd2ba3cd55ae0886e7f6db29565e5b9dfd8fa7ba1ad8704: "VALID_INPUT", GoooField2c45937c0e03d4504ca27156845c813e37b78a54e17cd46b8460249084d2f899: "", GoooFielde65f454fd5b6723b32117f7bd8595ef15deb2d3eebfdaf2990058ce0b7c7fb38: result.GoooFieldaf6991124a762ff89da9eae9eccd222db33bb2ddf56b92993d7bd2cf5c9ad354, GoooField4e7c9ae8fe957fe6a0f012ce48c75ca7dd8168843318af2eb56479b01164968c: result.GoooField24698bac43894a5573e5dadbf8c2e52cf44a1615484c51a4d0e675600a8d0454, GoooFieldcc2afc6f81cbe3844a0eae06e83134f93fe219a1547297d8d152bd31d8b2369f: result.GoooFielda09c15e873f28daf8cbd9c93c478c1480486831d7c55656c7d5491fbf2c52711, GoooField43c536994304b4d2b07bf7504a15a5fe8b4d87f3221a7b083d5d517a10087073: result.GoooFieldbba889b4d1fcabf4151fd8dad7f727eb777e045df9c39fff7dc72f4401ec003d, GoooField08b3874cbd90106dd8fd54eb7828cb158f21fde72f0c388c1f3567550ab6f5ea: result.GoooField02e0207ce9dd381ba57b20243ee685352c92be98dc5d7fe8d6e33525e5a3dfbd, GoooField58132c044e2ce842fe1b7255b9eb5238249a9ee43c0873e29554292a38d770e9: result.GoooFieldd602c0b83fa88a27ce104dff11a826ceeeb694a927fe062f415d97ce859b53d6, GoooField05ce321efb8e356a9db821a11acd7e12a8359eddf23b82dd2e55c4d05f0968b5: result.GoooFieldabdccd9e95eef4d357adccc51e4976e882b3d7a22d6b8701951a951f3eb4c4cc, GoooFielde9bbaf701f1e838fa2bc680ae2e9fd09ad51b00acf4953e05bf3d81388d10068: result.GoooField25664eeb9a2c3098e71e67b9fbfd995fdeecbd8e091db678ed6d4b66defab7ef}
+
+}
+
+//gooo:generated:end id="gooo://service-policy/checked-refinement/evaluate/v1" kind="activity"
+//gooo:generated:start id="gooo://service-domain/type" kind="activity"
+func GoooPackage2ActivityValidateServiceType(input string) bool {
+
+	var n = int64(len(input))
+	if n > 128 {
+		return false
+	}
+	if n == 0 {
+		return true
+	}
+	var first = int64(input[0])
+	if !((first >= 65 && first <= 90) || (first >= 97 && first <= 122)) {
+		return false
+	}
+	var offset int64 = 0
+	for offset = 0; offset < 128; offset = offset + 1 {
+		if offset < n {
+			var b = int64(input[offset])
+			var alpha = (b >= 65 && b <= 90) || (b >= 97 && b <= 122)
+			var digit = b >= 48 && b <= 57
+			if !alpha && !digit && b != 43 && b != 45 && b != 46 {
+				return false
+			}
+		}
+	}
+	return true
+
+}
+
+//gooo:generated:end id="gooo://service-domain/type" kind="activity"
+//gooo:generated:start id="gooo://service-domain/name" kind="activity"
+func GoooPackage3ActivityValidateServiceName(input string) bool {
+
+	var n = int64(len(input))
+	if n > 128 {
+		return false
+	}
+	if n == 0 {
+		return true
+	}
+	var previousDot = true
+	var offset int64 = 0
+	for offset = 0; offset < 128; offset = offset + 1 {
+		if offset < n {
+			var b = int64(input[offset])
+			if b == 46 {
+				if previousDot {
+					return false
+				}
+				previousDot = true
+			} else {
+				var alpha = (b >= 65 && b <= 90) || (b >= 97 && b <= 122)
+				var digit = b >= 48 && b <= 57
+				if !alpha && !digit && b != 45 && b != 95 {
+					return false
+				}
+				previousDot = false
+			}
+		}
+	}
+	return !previousDot
+
+}
+
+//gooo:generated:end id="gooo://service-domain/name" kind="activity"
+//gooo:generated:start id="gooo://service-domain/pattern" kind="activity"
+func GoooPackage4ActivityValidateServicePattern(input string) bool {
+
+	var n = int64(len(input))
+	if n > 128 {
+		return false
+	}
+	if input == "" || input == "*" {
+		return true
+	}
+	var split int64 = -1
+	var offset int64 = 0
+	for offset = 0; offset < 128; offset = offset + 1 {
+		var end int64 = offset + 3
+		if end <= n {
+			if input[offset:end] == "://" {
+				if split == -1 {
+					split = offset
+				}
+			}
+		}
+	}
+	if split <= 0 {
+		return false
+	}
+	var typ = input[0:split]
+	if !GoooPackage2ActivityValidateServiceType(typ) {
+		return false
+	}
+	var start int64 = split + 3
+	var part = input[start:n]
+	var size = int64(len(part))
+	if size == 0 {
+		return false
+	}
+	if part == "*" {
+		return true
+	}
+	if size >= 2 {
+		if part[0:2] == "*." {
+			part = part[2:size]
+		} else {
+			var tail = size - 2
+			if part[tail:size] == ".*" {
+				part = part[0:tail]
+			}
+		}
+	}
+	if part == "" {
+		return false
+	}
+	return GoooPackage3ActivityValidateServiceName(part)
+
+}
+
+//gooo:generated:end id="gooo://service-domain/pattern" kind="activity"
+//gooo:generated:start id="gooo://agentmesh-prototype/match-service-pattern" kind="activity"
+func GoooPackage0ActivityMatchServicePattern(input0 string, input1 string, input2 string) bool {
+
+	if input0 == "" || input1 == "" || input2 == "" {
+		return false
+	}
+	if input0 == "*" {
+		return true
+	}
+	var split int64 = -1
+	var offset int64 = 0
+	for offset = 0; offset < 128; offset = offset + 1 {
+		var end int64 = offset + 3
+		if end <= int64(len(input0)) {
+			if input0[offset:end] == "://" {
+				if split == -1 {
+					split = offset
+				}
+			}
+		}
+	}
+	if split < 0 {
+		return false
+	}
+	var nameStart int64 = split + 3
+	var patternType = input0[0:split]
+	var patternName = input0[nameStart:int64(len(input0))]
+	if patternType != input1 || patternName == "" {
+		return false
+	}
+	if patternName == "*" {
+		return true
+	}
+	var patternLength = int64(len(patternName))
+	var requestLength = int64(len(input2))
+	if patternLength >= 2 {
+		if patternName[0:2] == "*." {
+			var suffix = patternName[1:patternLength]
+			var suffixLength = int64(len(suffix))
+			if requestLength < suffixLength {
+				return false
+			}
+			var suffixStart = requestLength - suffixLength
+			return input2[suffixStart:requestLength] == suffix
+		}
+		var tailStart = patternLength - 2
+		if patternName[tailStart:patternLength] == ".*" {
+			var prefixEnd = patternLength - 1
+			var prefix = patternName[0:prefixEnd]
+			if requestLength < prefixEnd {
+				return false
+			}
+			return input2[0:prefixEnd] == prefix
+		}
+	}
+	return input2 == patternName
+
+}
+
+//gooo:generated:end id="gooo://agentmesh-prototype/match-service-pattern" kind="activity"
+//gooo:generated:start id="gooo://service-refinement/analyze" kind="activity"
+func GoooPackage1ActivityAnalyzeServiceGrant(input0 string, input1 string) GoooRecord702bf03e1b9b659de2cca8f66c90d35af72f6f992a24d89cf90ce7c269907367 {
+
+	var rule = ""
+	if input1 == "" {
+		rule = "CANDIDATE_EMPTY"
+	} else {
+		if input0 == input1 {
+			rule = "IDENTICAL_PATTERNS"
+		} else {
+			if input0 == "*" {
+				rule = "OLD_GLOBAL"
+			}
+		}
+	}
+	var oldType = ""
+	var candidateType = ""
+	var oldBase = ""
+	var candidateBase = ""
+	var oldKind = "NONE"
+	var candidateKind = "NONE"
+	var oldSplit int64 = -1
+	var candidateSplit int64 = -1
+	var offset int64 = 0
+	for offset = 0; offset < 128; offset = offset + 1 {
+		var end int64 = offset + 3
+		if end <= int64(len(input0)) {
+			if input0[offset:end] == "://" {
+				if oldSplit == -1 {
+					oldSplit = offset
+				}
+			}
+		}
+		if end <= int64(len(input1)) {
+			if input1[offset:end] == "://" {
+				if candidateSplit == -1 {
+					candidateSplit = offset
+				}
+			}
+		}
+	}
+	if oldSplit > 0 {
+		oldType = input0[0:oldSplit]
+		var start int64 = oldSplit + 3
+		oldBase = input0[start:int64(len(input0))]
+		oldKind = "EXACT"
+		if oldBase == "*" {
+			oldKind = "TYPED_ALL"
+		} else {
+			var n = int64(len(oldBase))
+			if n >= 2 {
+				if oldBase[0:2] == "*." {
+					oldKind = "SUFFIX"
+					oldBase = oldBase[2:n]
+				} else {
+					var tail = n - 2
+					if oldBase[tail:n] == ".*" {
+						oldKind = "PREFIX"
+						oldBase = oldBase[0:tail]
+					}
+				}
+			}
+		}
+	}
+	if candidateSplit > 0 {
+		candidateType = input1[0:candidateSplit]
+		var start int64 = candidateSplit + 3
+		candidateBase = input1[start:int64(len(input1))]
+		candidateKind = "EXACT"
+		if candidateBase == "*" {
+			candidateKind = "TYPED_ALL"
+		} else {
+			var n = int64(len(candidateBase))
+			if n >= 2 {
+				if candidateBase[0:2] == "*." {
+					candidateKind = "SUFFIX"
+					candidateBase = candidateBase[2:n]
+				} else {
+					var tail = n - 2
+					if candidateBase[tail:n] == ".*" {
+						candidateKind = "PREFIX"
+						candidateBase = candidateBase[0:tail]
+					}
+				}
+			}
+		}
+	}
+	if rule == "" {
+		if oldKind == "TYPED_ALL" && candidateType == oldType {
+			rule = "OLD_TYPED_ALL"
+		}
+	}
+	if rule == "" {
+		if candidateKind == "EXACT" {
+			if GoooPackage0ActivityMatchServicePattern(input0, candidateType, candidateBase) {
+				rule = "EXACT_CANDIDATE_ACCEPTED_BY_OLD"
+			}
+		}
+	}
+	if rule == "" && oldType == candidateType {
+		if oldKind == "PREFIX" && candidateKind == "PREFIX" {
+			if oldBase == candidateBase {
+				rule = "PREFIX_HIERARCHY"
+			} else {
+				var end = int64(len(oldBase)) + 1
+				if int64(len(candidateBase)) >= end {
+					if candidateBase[0:end] == oldBase+"." {
+						rule = "PREFIX_HIERARCHY"
+					}
+				}
+			}
+		}
+		if oldKind == "SUFFIX" && candidateKind == "SUFFIX" {
+			if oldBase == candidateBase {
+				rule = "SUFFIX_HIERARCHY"
+			} else {
+				var n = int64(len(candidateBase))
+				var size = int64(len(oldBase)) + 1
+				if n >= size {
+					var start = n - size
+					if candidateBase[start:n] == "."+oldBase {
+						rule = "SUFFIX_HIERARCHY"
+					}
+				}
+			}
+		}
+	}
+	var status = "UNPROVEN"
+	var supported = false
+	if rule != "" {
+		status = "SUPPORTED_SUBSET"
+		supported = true
+	}
+	var witnessed = false
+	var witnessType = ""
+	var witnessName = ""
+	var witnessBefore = false
+	var witnessAfter = false
+	if rule == "" {
+		var firstType = candidateType
+		var secondType = candidateType
+		var firstName = ""
+		var secondName = ""
+		if input1 == "*" {
+			firstType = "a"
+			secondType = "b"
+			firstName = "x"
+			secondName = "x"
+		}
+		if candidateKind == "TYPED_ALL" {
+			firstName = "x"
+			secondName = "y"
+		}
+		if candidateKind == "EXACT" {
+			firstName = candidateBase
+		}
+		if candidateKind == "PREFIX" {
+			firstName = candidateBase + ".x"
+			secondName = candidateBase + ".y"
+		}
+		if candidateKind == "SUFFIX" {
+			firstName = "x." + candidateBase
+			secondName = "y." + candidateBase
+		}
+		if firstName != "" {
+			var before = GoooPackage0ActivityMatchServicePattern(input0, firstType, firstName)
+			var after = GoooPackage0ActivityMatchServicePattern(input1, firstType, firstName)
+			if after && !before {
+				witnessed = true
+				witnessType = firstType
+				witnessName = firstName
+				witnessBefore = before
+				witnessAfter = after
+			}
+		}
+		if !witnessed && secondName != "" {
+			var before = GoooPackage0ActivityMatchServicePattern(input0, secondType, secondName)
+			var after = GoooPackage0ActivityMatchServicePattern(input1, secondType, secondName)
+			if after && !before {
+				witnessed = true
+				witnessType = secondType
+				witnessName = secondName
+				witnessBefore = before
+				witnessAfter = after
+			}
+		}
+		if witnessed {
+			status = "WIDENING_WITNESS"
+			rule = "CHECKED_CANDIDATE_REQUEST"
+		}
+	}
+	return GoooRecord702bf03e1b9b659de2cca8f66c90d35af72f6f992a24d89cf90ce7c269907367{GoooFieldaf6991124a762ff89da9eae9eccd222db33bb2ddf56b92993d7bd2cf5c9ad354: status, GoooField24698bac43894a5573e5dadbf8c2e52cf44a1615484c51a4d0e675600a8d0454: rule, GoooFielda09c15e873f28daf8cbd9c93c478c1480486831d7c55656c7d5491fbf2c52711: supported, GoooFieldbba889b4d1fcabf4151fd8dad7f727eb777e045df9c39fff7dc72f4401ec003d: witnessed, GoooField02e0207ce9dd381ba57b20243ee685352c92be98dc5d7fe8d6e33525e5a3dfbd: witnessType, GoooFieldd602c0b83fa88a27ce104dff11a826ceeeb694a927fe062f415d97ce859b53d6: witnessName, GoooFieldabdccd9e95eef4d357adccc51e4976e882b3d7a22d6b8701951a951f3eb4c4cc: witnessBefore, GoooField25664eeb9a2c3098e71e67b9fbfd995fdeecbd8e091db678ed6d4b66defab7ef: witnessAfter}
+
+}
+
+//gooo:generated:end id="gooo://service-refinement/analyze" kind="activity"

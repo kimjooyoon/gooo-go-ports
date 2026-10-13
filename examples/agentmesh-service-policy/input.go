@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"strconv"
 	"unicode/utf8"
 )
 
@@ -12,7 +13,7 @@ const MaxBatchBytes = 1024 * 1024
 const MaxBatchCount = 1024
 
 func decodeFacts(raw []byte, keys []string) error {
-	invalid := errors.New("expected exact canonical ASCII service facts")
+	invalid := errors.New("expected exact JSON Text service facts")
 	if len(raw) > 4096 || !utf8.Valid(raw) {
 		return invalid
 	}
@@ -35,16 +36,12 @@ func decodeFacts(raw []byte, keys []string) error {
 		key, ok := keyToken.(string)
 		keyRaw := bytes.TrimSpace(raw[start:d.InputOffset()])
 		keyRaw = bytes.TrimSpace(bytes.TrimPrefix(keyRaw, []byte(",")))
-		if !validASCIIJSONString(keyRaw) || !ok || !allowed[key] || seen[key] {
+		if !validJSONString(keyRaw) || !ok || !allowed[key] || seen[key] {
 			return invalid
 		}
 		seen[key] = true
 		var value json.RawMessage
-		if d.Decode(&value) != nil || !validASCIIJSONString(value) {
-			return invalid
-		}
-		var text string
-		if json.Unmarshal(value, &text) != nil || len(text) > MaxComponentBytes {
+		if d.Decode(&value) != nil || !validJSONString(value) {
 			return invalid
 		}
 	}
@@ -58,16 +55,40 @@ func decodeFacts(raw []byte, keys []string) error {
 	return nil
 }
 
-func validASCIIJSONString(raw []byte) bool {
+// Structural decoding must preserve exact Text. ASCII grammar and 128-byte
+// component limits are evaluated by Gooo after decoding, not by this transport.
+func validJSONString(raw []byte) bool {
 	var text string
-	if len(raw) < 2 || raw[0] != '"' || json.Unmarshal(raw, &text) != nil {
+	if len(raw) < 2 || raw[0] != '"' || !utf8.Valid(raw) || json.Unmarshal(raw, &text) != nil {
 		return false
 	}
-	// The actual domain is printable ASCII. All surrogate escapes and replacement
-	// characters are outside it, including encoding/json's lossy replacement.
-	for _, c := range []byte(text) {
-		if c < 0x20 || c > 0x7e {
+	// encoding/json accepts unpaired surrogate escapes by replacing them. Reject
+	// that lossy conversion while allowing genuine Unicode and surrogate pairs.
+	for i := 1; i < len(raw)-1; i++ {
+		if raw[i] != '\\' {
+			continue
+		}
+		if raw[i+1] != 'u' {
+			i++
+			continue
+		}
+		value, err := strconv.ParseUint(string(raw[i+2:i+6]), 16, 16)
+		if err != nil {
 			return false
+		}
+		if value >= 0xd800 && value <= 0xdbff {
+			if i+12 > len(raw)-1 || raw[i+6] != '\\' || raw[i+7] != 'u' {
+				return false
+			}
+			low, err := strconv.ParseUint(string(raw[i+8:i+12]), 16, 16)
+			if err != nil || low < 0xdc00 || low > 0xdfff {
+				return false
+			}
+			i += 11
+		} else if value >= 0xdc00 && value <= 0xdfff {
+			return false
+		} else {
+			i += 5
 		}
 	}
 	return true

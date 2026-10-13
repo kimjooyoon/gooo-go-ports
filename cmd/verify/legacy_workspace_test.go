@@ -175,9 +175,13 @@ func TestLegacy445CatalogSourcesManifestsInputsCasesAndBatchesRemainIdentical(t 
 		sourcePackage{Path: "go/google/agentmesh/api", Sources: []string{"ports/agentmesh/service_pattern.gooo"}},
 		sourcePackage{Path: "app/service-grant-impact", Sources: []string{"examples/agentmesh-service-policy/impact.gooo"}},
 		sourcePackage{Path: "app/service-grant-refinement", Sources: []string{"examples/agentmesh-service-policy/refinement.gooo"}},
+		sourcePackage{Path: "gooo/service-domain", Sources: []string{"examples/agentmesh-service-policy/domain.gooo"}},
+		sourcePackage{Path: "gooo/service-policy/checked-matcher", Sources: []string{"examples/agentmesh-service-policy/checked_matcher.gooo"}},
+		sourcePackage{Path: "gooo/service-policy/checked-impact", Sources: []string{"examples/agentmesh-service-policy/checked_impact.gooo"}},
+		sourcePackage{Path: "gooo/service-policy/checked-refinement", Sources: []string{"examples/agentmesh-service-policy/checked_refinement.gooo"}},
 	)
-	if !reflect.DeepEqual(frozen.Catalog, expectedCatalog) || len(frozen.Sources) != len(fixture.Sources)+7 {
-		t.Fatal("catalog changed beyond the reviewed literal, CEL and AgentMesh sources")
+	if !reflect.DeepEqual(frozen.Catalog, expectedCatalog) || len(frozen.Sources) != len(fixture.Sources)+11 {
+		t.Fatal("catalog changed beyond the reviewed literal, CEL, AgentMesh and checked-domain sources")
 	}
 	sources := map[string]legacy445Source{}
 	for _, old := range fixture.Sources {

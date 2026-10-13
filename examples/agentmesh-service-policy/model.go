@@ -64,3 +64,43 @@ type RefinementProof struct {
 	Decision RefinementDecision `json:"decision"`
 	Bindings Bindings           `json:"bindings"`
 }
+
+// Checked decisions distinguish malformed input from a computed negative match.
+// Interpret semantic fields only when DomainStatus is exactly VALID_INPUT.
+type CheckedMatcherDecision struct {
+	DomainStatus string `json:"domain_status"`
+	InvalidField string `json:"invalid_field"`
+	Matched      bool   `json:"matched"`
+}
+
+type CheckedImpactDecision struct {
+	DomainStatus string `json:"domain_status"`
+	InvalidField string `json:"invalid_field"`
+	BeforeMatch  bool   `json:"before_match"`
+	AfterMatch   bool   `json:"after_match"`
+	Change       string `json:"change"`
+}
+
+type CheckedRefinementDecision struct {
+	DomainStatus string `json:"domain_status"`
+	InvalidField string `json:"invalid_field"`
+	RefinementDecision
+}
+
+type CheckedMatcherProof struct {
+	Facts    MatcherFacts           `json:"facts"`
+	Decision CheckedMatcherDecision `json:"decision"`
+	Bindings Bindings               `json:"bindings"`
+}
+
+type CheckedImpactProof struct {
+	Facts    ImpactFacts           `json:"facts"`
+	Decision CheckedImpactDecision `json:"decision"`
+	Bindings Bindings              `json:"bindings"`
+}
+
+type CheckedRefinementProof struct {
+	Facts    RefinementFacts           `json:"facts"`
+	Decision CheckedRefinementDecision `json:"decision"`
+	Bindings Bindings                  `json:"bindings"`
+}

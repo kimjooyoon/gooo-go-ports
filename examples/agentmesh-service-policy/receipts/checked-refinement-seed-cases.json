@@ -1,0 +1,185 @@
+{
+  "schema": "gooo/body-composition-cases/v1",
+  "cases": [
+    {
+      "inputs": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input0": "",
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input1": ""
+      },
+      "expected": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked": {
+          "domain_status": "VALID_INPUT",
+          "invalid_field": "",
+          "status": "SUPPORTED_SUBSET",
+          "rule_id": "CANDIDATE_EMPTY",
+          "supported_subset": true,
+          "has_witness": false,
+          "witness_type": "",
+          "witness_name": "",
+          "before_match": false,
+          "after_match": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input0": "mcp://a",
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input1": "mcp://a"
+      },
+      "expected": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked": {
+          "domain_status": "VALID_INPUT",
+          "invalid_field": "",
+          "status": "SUPPORTED_SUBSET",
+          "rule_id": "IDENTICAL_PATTERNS",
+          "supported_subset": true,
+          "has_witness": false,
+          "witness_type": "",
+          "witness_name": "",
+          "before_match": false,
+          "after_match": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input0": "*",
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input1": "mcp://a"
+      },
+      "expected": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked": {
+          "domain_status": "VALID_INPUT",
+          "invalid_field": "",
+          "status": "SUPPORTED_SUBSET",
+          "rule_id": "OLD_GLOBAL",
+          "supported_subset": true,
+          "has_witness": false,
+          "witness_type": "",
+          "witness_name": "",
+          "before_match": false,
+          "after_match": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input0": "mcp://*",
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input1": "mcp://a.*"
+      },
+      "expected": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked": {
+          "domain_status": "VALID_INPUT",
+          "invalid_field": "",
+          "status": "SUPPORTED_SUBSET",
+          "rule_id": "OLD_TYPED_ALL",
+          "supported_subset": true,
+          "has_witness": false,
+          "witness_type": "",
+          "witness_name": "",
+          "before_match": false,
+          "after_match": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input0": "bad/value",
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input1": "mcp://a"
+      },
+      "expected": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked": {
+          "domain_status": "INVALID_INPUT",
+          "invalid_field": "before",
+          "status": "INVALID_INPUT",
+          "rule_id": "",
+          "supported_subset": false,
+          "has_witness": false,
+          "witness_type": "",
+          "witness_name": "",
+          "before_match": false,
+          "after_match": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input0": "mcp://a",
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input1": "bad/value"
+      },
+      "expected": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked": {
+          "domain_status": "INVALID_INPUT",
+          "invalid_field": "after",
+          "status": "INVALID_INPUT",
+          "rule_id": "",
+          "supported_subset": false,
+          "has_witness": false,
+          "witness_type": "",
+          "witness_name": "",
+          "before_match": false,
+          "after_match": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input0": "mcp://*.a.*",
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input1": ""
+      },
+      "expected": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked": {
+          "domain_status": "INVALID_INPUT",
+          "invalid_field": "before",
+          "status": "INVALID_INPUT",
+          "rule_id": "",
+          "supported_subset": false,
+          "has_witness": false,
+          "witness_type": "",
+          "witness_name": "",
+          "before_match": false,
+          "after_match": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input0": "*",
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input1": "mcp://a..b"
+      },
+      "expected": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked": {
+          "domain_status": "INVALID_INPUT",
+          "invalid_field": "after",
+          "status": "INVALID_INPUT",
+          "rule_id": "",
+          "supported_subset": false,
+          "has_witness": false,
+          "witness_type": "",
+          "witness_name": "",
+          "before_match": false,
+          "after_match": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input0": "mcp://*.a.*",
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked.input1": "mcp://*.a.*"
+      },
+      "expected": {
+        "gooo/service-policy/checked-refinement:AnalyzeServiceGrantChecked": {
+          "domain_status": "INVALID_INPUT",
+          "invalid_field": "before",
+          "status": "INVALID_INPUT",
+          "rule_id": "",
+          "supported_subset": false,
+          "has_witness": false,
+          "witness_type": "",
+          "witness_name": "",
+          "before_match": false,
+          "after_match": false
+        }
+      }
+    }
+  ]
+}

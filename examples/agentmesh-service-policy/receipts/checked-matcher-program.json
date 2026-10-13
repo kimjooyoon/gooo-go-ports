@@ -1,0 +1,279 @@
+{
+  "activities": [
+    {
+      "activity": "MatchServicePatternChecked",
+      "lowered_name": "GoooPackage4ActivityMatchServicePatternChecked",
+      "package_path": "gooo/service-policy/checked-matcher"
+    }
+  ],
+  "entry": {
+    "activity": "MatchServicePatternChecked",
+    "lowered_name": "GoooPackage4ActivityMatchServicePatternChecked",
+    "package_path": "gooo/service-policy/checked-matcher"
+  },
+  "lowered_gooo_source": "package gooo_workspace\nnamespace gooo_workspace\n\nentity Text id \"gooo://std/text\"\nentity Boolean id \"gooo://std/boolean\"\nentity CheckedMatcherDecision id \"gooo://service-policy/checked-matcher/decision/v1\" fields {\n    field domain_status id \"gooo://service-policy/checked-matcher/domain_status\" type string required one\n    field invalid_field id \"gooo://service-policy/checked-matcher/invalid_field\" type string required one\n    field matched id \"gooo://service-policy/checked-matcher/matched\" type boolean required one\n}\nactivity GoooPackage0ActivityMatchServicePattern(Text, Text, Text) -> Boolean id \"gooo://agentmesh-prototype/match-service-pattern\" computes \"\\nif input0 == \\\"\\\" || input1 == \\\"\\\" || input2 == \\\"\\\" { return false }\\nif input0 == \\\"*\\\" { return true }\\nlet split = -1\\nlet offset = 0\\nfor offset = 0; offset < 128; offset = offset + 1 {\\n let end = offset + 3\\n if end <= int64(len(input0)) {\\n  if input0[offset:end] == \\\"://\\\" { if split == -1 { split = offset } }\\n }\\n}\\nif split < 0 { return false }\\nlet nameStart = split + 3\\nlet patternType = input0[0:split]\\nlet patternName = input0[nameStart:int64(len(input0))]\\nif patternType != input1 || patternName == \\\"\\\" { return false }\\nif patternName == \\\"*\\\" { return true }\\nlet patternLength = int64(len(patternName))\\nlet requestLength = int64(len(input2))\\nif patternLength >= 2 {\\n if patternName[0:2] == \\\"*.\\\" {\\n  let suffix = patternName[1:patternLength]\\n  let suffixLength = int64(len(suffix))\\n  if requestLength < suffixLength { return false }\\n  let suffixStart = requestLength - suffixLength\\n  return input2[suffixStart:requestLength] == suffix\\n }\\n let tailStart = patternLength - 2\\n if patternName[tailStart:patternLength] == \\\".*\\\" {\\n  let prefixEnd = patternLength - 1\\n  let prefix = patternName[0:prefixEnd]\\n  if requestLength < prefixEnd { return false }\\n  return input2[0:prefixEnd] == prefix\\n }\\n}\\nreturn input2 == patternName\\n\"\nactivity GoooPackage1ActivityValidateServiceType(Text) -> Boolean id \"gooo://service-domain/type\" computes \"\\nlet n = int64(len(input))\\nif n > 128 { return false }\\nif n == 0 { return true }\\nlet first = int64(input[0])\\nif !((first >= 65 && first <= 90) || (first >= 97 && first <= 122)) { return false }\\nlet offset = 0\\nfor offset = 0; offset < 128; offset = offset + 1 {\\n if offset < n {\\n  let b = int64(input[offset])\\n  let alpha = (b >= 65 && b <= 90) || (b >= 97 && b <= 122)\\n  let digit = b >= 48 && b <= 57\\n  if !alpha && !digit && b != 43 && b != 45 && b != 46 { return false }\\n }\\n}\\nreturn true\\n\"\nactivity GoooPackage2ActivityValidateServiceName(Text) -> Boolean id \"gooo://service-domain/name\" computes \"\\nlet n = int64(len(input))\\nif n > 128 { return false }\\nif n == 0 { return true }\\nlet previousDot = true\\nlet offset = 0\\nfor offset = 0; offset < 128; offset = offset + 1 {\\n if offset < n {\\n  let b = int64(input[offset])\\n  if b == 46 {\\n   if previousDot { return false }\\n   previousDot = true\\n  } else {\\n   let alpha = (b >= 65 && b <= 90) || (b >= 97 && b <= 122)\\n   let digit = b >= 48 && b <= 57\\n   if !alpha && !digit && b != 45 && b != 95 { return false }\\n   previousDot = false\\n  }\\n }\\n}\\nreturn !previousDot\\n\"\nactivity GoooPackage3ActivityValidateServicePattern(Text) -> Boolean id \"gooo://service-domain/pattern\" computes \"\\nlet n = int64(len(input))\\nif n > 128 { return false }\\nif input == \\\"\\\" || input == \\\"*\\\" { return true }\\nlet split = -1\\nlet offset = 0\\nfor offset = 0; offset < 128; offset = offset + 1 {\\n let end = offset + 3\\n if end <= n {\\n  if input[offset:end] == \\\"://\\\" { if split == -1 { split = offset } }\\n }\\n}\\nif split <= 0 { return false }\\nlet typ = input[0:split]\\nif !GoooPackage1ActivityValidateServiceType(typ) { return false }\\nlet start = split + 3\\nlet part = input[start:n]\\nlet size = int64(len(part))\\nif size == 0 { return false }\\nif part == \\\"*\\\" { return true }\\nif size >= 2 {\\n if part[0:2] == \\\"*.\\\" { part = part[2:size] } else {\\n  let tail = size - 2\\n  if part[tail:size] == \\\".*\\\" { part = part[0:tail] }\\n }\\n}\\nif part == \\\"\\\" { return false }\\nreturn GoooPackage2ActivityValidateServiceName(part)\\n\"\nactivity GoooPackage4ActivityMatchServicePatternChecked(Text, Text, Text) -> CheckedMatcherDecision id \"gooo://service-policy/checked-matcher/evaluate/v1\" computes \"\\nif !GoooPackage3ActivityValidateServicePattern(input0) { return CheckedMatcherDecision{domain_status: \\\"INVALID_INPUT\\\", invalid_field: \\\"pattern\\\", matched: false} }\\nif !GoooPackage1ActivityValidateServiceType(input1) { return CheckedMatcherDecision{domain_status: \\\"INVALID_INPUT\\\", invalid_field: \\\"req_type\\\", matched: false} }\\nif !GoooPackage2ActivityValidateServiceName(input2) { return CheckedMatcherDecision{domain_status: \\\"INVALID_INPUT\\\", invalid_field: \\\"req_name\\\", matched: false} }\\nlet result = GoooPackage0ActivityMatchServicePattern(input0, input1, input2)\\nreturn CheckedMatcherDecision{domain_status: \\\"VALID_INPUT\\\", invalid_field: \\\"\\\", matched: result}\\n\"\n",
+  "pure_calls": {
+    "activities": [
+      {
+        "activity": {
+          "activity": "MatchServicePattern",
+          "lowered_name": "GoooPackage0ActivityMatchServicePattern",
+          "package_path": "go/google/agentmesh/api"
+        },
+        "activity_id": "gooo-agentmesh-prototype://activity/match-service-pattern",
+        "lowered_activity_id": "gooo-workspace://activity/gooo-package0activity-match-service-pattern",
+        "source": "ports/agentmesh/service_pattern.gooo",
+        "source_body_sha256": "sha256:eff57dfbb7c96a29ec5199e1369c9329a576461408450d40957c19a0e26d6ec5"
+      },
+      {
+        "activity": {
+          "activity": "ValidateServiceName",
+          "lowered_name": "GoooPackage2ActivityValidateServiceName",
+          "package_path": "gooo/service-domain"
+        },
+        "activity_id": "gooo-original-service-domain://activity/validate-service-name",
+        "lowered_activity_id": "gooo-workspace://activity/gooo-package2activity-validate-service-name",
+        "source": "examples/agentmesh-service-policy/domain.gooo",
+        "source_body_sha256": "sha256:2c2d688b983a870dc27276d7580658c2ffd4f2d44978b13c006a0a98a2cb34ba"
+      },
+      {
+        "activity": {
+          "activity": "ValidateServicePattern",
+          "lowered_name": "GoooPackage3ActivityValidateServicePattern",
+          "package_path": "gooo/service-domain"
+        },
+        "activity_id": "gooo-original-service-domain://activity/validate-service-pattern",
+        "lowered_activity_id": "gooo-workspace://activity/gooo-package3activity-validate-service-pattern",
+        "source": "examples/agentmesh-service-policy/domain.gooo",
+        "source_body_sha256": "sha256:a0716357ea138ff593f1c5ef4116949978f402fb5e4e5d66c8e4d028dcd1e2ba"
+      },
+      {
+        "activity": {
+          "activity": "ValidateServiceType",
+          "lowered_name": "GoooPackage1ActivityValidateServiceType",
+          "package_path": "gooo/service-domain"
+        },
+        "activity_id": "gooo-original-service-domain://activity/validate-service-type",
+        "lowered_activity_id": "gooo-workspace://activity/gooo-package1activity-validate-service-type",
+        "source": "examples/agentmesh-service-policy/domain.gooo",
+        "source_body_sha256": "sha256:d2971b3397a0ca639fa987cd80754f1083cc469bf34af13c451d6ec108696890"
+      },
+      {
+        "activity": {
+          "activity": "MatchServicePatternChecked",
+          "lowered_name": "GoooPackage4ActivityMatchServicePatternChecked",
+          "package_path": "gooo/service-policy/checked-matcher"
+        },
+        "activity_id": "gooo-original-checked-matcher://activity/match-service-pattern-checked",
+        "lowered_activity_id": "gooo-workspace://activity/gooo-package4activity-match-service-pattern-checked",
+        "source": "examples/agentmesh-service-policy/checked_matcher.gooo",
+        "source_body_sha256": "sha256:c5f3095b38f84221037ab97be6571aa688f9ef001e6cd0cb51aa20fa45b206d8"
+      }
+    ],
+    "schema": "gooo/workspace-pure-calls/v1",
+    "sites": [
+      {
+        "callee": "gooo/service-domain:ValidateServicePattern",
+        "caller": "gooo/service-policy/checked-matcher:MatchServicePatternChecked",
+        "end_byte": 34,
+        "start_byte": 5,
+        "surface": "computes"
+      },
+      {
+        "callee": "gooo/service-domain:ValidateServiceType",
+        "caller": "gooo/service-policy/checked-matcher:MatchServicePatternChecked",
+        "end_byte": 181,
+        "start_byte": 155,
+        "surface": "computes"
+      },
+      {
+        "callee": "gooo/service-domain:ValidateServiceName",
+        "caller": "gooo/service-policy/checked-matcher:MatchServicePatternChecked",
+        "end_byte": 329,
+        "start_byte": 303,
+        "surface": "computes"
+      },
+      {
+        "callee": "go/google/agentmesh/api:MatchServicePattern",
+        "caller": "gooo/service-policy/checked-matcher:MatchServicePatternChecked",
+        "end_byte": 484,
+        "start_byte": 460,
+        "surface": "computes"
+      },
+      {
+        "callee": "gooo/service-domain:ValidateServiceType",
+        "caller": "gooo/service-domain:ValidateServicePattern",
+        "end_byte": 375,
+        "start_byte": 356,
+        "surface": "computes"
+      },
+      {
+        "callee": "gooo/service-domain:ValidateServiceName",
+        "caller": "gooo/service-domain:ValidateServicePattern",
+        "end_byte": 740,
+        "start_byte": 721,
+        "surface": "computes"
+      }
+    ]
+  },
+  "schema": "gooo/workspace-body-program/v1",
+  "scope": "entry and explicit bind producers with source-resolved pure activity calls; original package identities map to lowered names; finite native observations",
+  "workspace_image": {
+    "digest": "sha256:d3ab3e03c1fb254a87eb507067675089d3d856bab2c579689ee59757bcef7082",
+    "entry": {
+      "activity": "MatchServicePatternChecked",
+      "inputs": [
+        "Text",
+        "Text",
+        "Text"
+      ],
+      "output": "CheckedMatcherDecision",
+      "package_path": "gooo/service-policy/checked-matcher",
+      "source": "examples/agentmesh-service-policy/checked_matcher.gooo"
+    },
+    "init_order": [
+      "go/google/agentmesh/api",
+      "gooo/service-domain",
+      "gooo/service-policy/checked-matcher"
+    ],
+    "packages": [
+      {
+        "declarations": 3,
+        "exports": [
+          {
+            "id": "gooo://agentmesh-prototype/match-service-pattern",
+            "input_types": [
+              "gooo://std/text",
+              "gooo://std/text",
+              "gooo://std/text"
+            ],
+            "kind": "activity",
+            "name": "MatchServicePattern",
+            "output_type": "gooo://std/boolean"
+          },
+          {
+            "id": "gooo://std/boolean",
+            "kind": "entity",
+            "name": "Boolean"
+          },
+          {
+            "id": "gooo://std/text",
+            "kind": "entity",
+            "name": "Text"
+          }
+        ],
+        "imports": null,
+        "name": "service_pattern",
+        "namespace": "gooo_agentmesh_prototype",
+        "path": "go/google/agentmesh/api",
+        "semantic_digest": "sha256:e5f18ee41e1df26f3d01aea45f829544c7c7d424e986a6bfccc3c7684e6f4b02",
+        "sources": [
+          {
+            "declarations": 3,
+            "filename": "ports/agentmesh/service_pattern.gooo",
+            "semantic_digest": "sha256:df7cb8312cbb5ce5bf093f862977c04b3e3a2b4ee45b3d36787cb9aa61530f6f",
+            "source_digest": "sha256:6408e92880e220549cb05ffe4a319e029de9bc19c93d27d87226ef7b0f5804b1"
+          }
+        ]
+      },
+      {
+        "declarations": 5,
+        "exports": [
+          {
+            "id": "gooo://service-domain/name",
+            "input_types": [
+              "gooo://std/text"
+            ],
+            "kind": "activity",
+            "name": "ValidateServiceName",
+            "output_type": "gooo://std/boolean"
+          },
+          {
+            "id": "gooo://service-domain/pattern",
+            "input_types": [
+              "gooo://std/text"
+            ],
+            "kind": "activity",
+            "name": "ValidateServicePattern",
+            "output_type": "gooo://std/boolean"
+          },
+          {
+            "id": "gooo://service-domain/type",
+            "input_types": [
+              "gooo://std/text"
+            ],
+            "kind": "activity",
+            "name": "ValidateServiceType",
+            "output_type": "gooo://std/boolean"
+          },
+          {
+            "id": "gooo://std/boolean",
+            "kind": "entity",
+            "name": "Boolean"
+          },
+          {
+            "id": "gooo://std/text",
+            "kind": "entity",
+            "name": "Text"
+          }
+        ],
+        "imports": null,
+        "name": "service_domain",
+        "namespace": "gooo_original_service_domain",
+        "path": "gooo/service-domain",
+        "semantic_digest": "sha256:ada1db226063a755e1f525249047aa4b8f02a170663f7fd30829d76e3aa0326f",
+        "sources": [
+          {
+            "declarations": 5,
+            "filename": "examples/agentmesh-service-policy/domain.gooo",
+            "semantic_digest": "sha256:55cb022c611ece43dedf1c6f46dffd287dc301154de41a72bad60baa5ae47cb4",
+            "source_digest": "sha256:dfa16f26428c75bf7a69ced8c6212e5f3774a721d41a22a1bdbc853d9b8f5f35"
+          }
+        ]
+      },
+      {
+        "declarations": 3,
+        "exports": [
+          {
+            "id": "gooo://service-policy/checked-matcher/evaluate/v1",
+            "input_types": [
+              "gooo://std/text",
+              "gooo://std/text",
+              "gooo://std/text"
+            ],
+            "kind": "activity",
+            "name": "MatchServicePatternChecked",
+            "output_type": "gooo://service-policy/checked-matcher/decision/v1"
+          },
+          {
+            "id": "gooo://service-policy/checked-matcher/decision/v1",
+            "kind": "entity",
+            "name": "CheckedMatcherDecision"
+          },
+          {
+            "id": "gooo://std/text",
+            "kind": "entity",
+            "name": "Text"
+          }
+        ],
+        "imports": [
+          "go/google/agentmesh/api",
+          "gooo/service-domain"
+        ],
+        "name": "checked_matcher",
+        "namespace": "gooo_original_checked_matcher",
+        "path": "gooo/service-policy/checked-matcher",
+        "semantic_digest": "sha256:ddefc5bf1005466ba375bd8f6f066d372575ec789730af029f79afc493b8c8bc",
+        "sources": [
+          {
+            "declarations": 3,
+            "filename": "examples/agentmesh-service-policy/checked_matcher.gooo",
+            "semantic_digest": "sha256:7c7f4cae9d4377bc4c7515fc4c37ed5b4944a81f4e948bf563f062d82e4103b3",
+            "source_digest": "sha256:9005a093602ddaceda64c8df8df28e5e945463cb1e7515cd16efeb5ec584f7ae"
+          }
+        ]
+      }
+    ],
+    "schema": "gooo/package-runtime-image/v1"
+  }
+}

@@ -1,0 +1,6472 @@
+[
+  {
+    "name": "ascii-type-first-0",
+    "activity": "ValidateServiceType",
+    "input": "\u0000",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-0",
+    "activity": "ValidateServiceType",
+    "input": "a\u0000",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-0",
+    "activity": "ValidateServiceName",
+    "input": "\u0000",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-0",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0000",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-1",
+    "activity": "ValidateServiceType",
+    "input": "\u0001",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-1",
+    "activity": "ValidateServiceType",
+    "input": "a\u0001",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-1",
+    "activity": "ValidateServiceName",
+    "input": "\u0001",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-1",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0001",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-2",
+    "activity": "ValidateServiceType",
+    "input": "\u0002",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-2",
+    "activity": "ValidateServiceType",
+    "input": "a\u0002",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-2",
+    "activity": "ValidateServiceName",
+    "input": "\u0002",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-2",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0002",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-3",
+    "activity": "ValidateServiceType",
+    "input": "\u0003",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-3",
+    "activity": "ValidateServiceType",
+    "input": "a\u0003",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-3",
+    "activity": "ValidateServiceName",
+    "input": "\u0003",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-3",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0003",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-4",
+    "activity": "ValidateServiceType",
+    "input": "\u0004",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-4",
+    "activity": "ValidateServiceType",
+    "input": "a\u0004",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-4",
+    "activity": "ValidateServiceName",
+    "input": "\u0004",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-4",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0004",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-5",
+    "activity": "ValidateServiceType",
+    "input": "\u0005",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-5",
+    "activity": "ValidateServiceType",
+    "input": "a\u0005",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-5",
+    "activity": "ValidateServiceName",
+    "input": "\u0005",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-5",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0005",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-6",
+    "activity": "ValidateServiceType",
+    "input": "\u0006",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-6",
+    "activity": "ValidateServiceType",
+    "input": "a\u0006",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-6",
+    "activity": "ValidateServiceName",
+    "input": "\u0006",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-6",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0006",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-7",
+    "activity": "ValidateServiceType",
+    "input": "\u0007",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-7",
+    "activity": "ValidateServiceType",
+    "input": "a\u0007",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-7",
+    "activity": "ValidateServiceName",
+    "input": "\u0007",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-7",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0007",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-8",
+    "activity": "ValidateServiceType",
+    "input": "\b",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-8",
+    "activity": "ValidateServiceType",
+    "input": "a\b",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-8",
+    "activity": "ValidateServiceName",
+    "input": "\b",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-8",
+    "activity": "ValidateServiceName",
+    "input": "a.\b",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-9",
+    "activity": "ValidateServiceType",
+    "input": "\t",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-9",
+    "activity": "ValidateServiceType",
+    "input": "a\t",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-9",
+    "activity": "ValidateServiceName",
+    "input": "\t",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-9",
+    "activity": "ValidateServiceName",
+    "input": "a.\t",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-10",
+    "activity": "ValidateServiceType",
+    "input": "\n",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-10",
+    "activity": "ValidateServiceType",
+    "input": "a\n",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-10",
+    "activity": "ValidateServiceName",
+    "input": "\n",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-10",
+    "activity": "ValidateServiceName",
+    "input": "a.\n",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-11",
+    "activity": "ValidateServiceType",
+    "input": "\u000b",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-11",
+    "activity": "ValidateServiceType",
+    "input": "a\u000b",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-11",
+    "activity": "ValidateServiceName",
+    "input": "\u000b",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-11",
+    "activity": "ValidateServiceName",
+    "input": "a.\u000b",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-12",
+    "activity": "ValidateServiceType",
+    "input": "\f",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-12",
+    "activity": "ValidateServiceType",
+    "input": "a\f",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-12",
+    "activity": "ValidateServiceName",
+    "input": "\f",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-12",
+    "activity": "ValidateServiceName",
+    "input": "a.\f",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-13",
+    "activity": "ValidateServiceType",
+    "input": "\r",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-13",
+    "activity": "ValidateServiceType",
+    "input": "a\r",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-13",
+    "activity": "ValidateServiceName",
+    "input": "\r",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-13",
+    "activity": "ValidateServiceName",
+    "input": "a.\r",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-14",
+    "activity": "ValidateServiceType",
+    "input": "\u000e",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-14",
+    "activity": "ValidateServiceType",
+    "input": "a\u000e",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-14",
+    "activity": "ValidateServiceName",
+    "input": "\u000e",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-14",
+    "activity": "ValidateServiceName",
+    "input": "a.\u000e",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-15",
+    "activity": "ValidateServiceType",
+    "input": "\u000f",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-15",
+    "activity": "ValidateServiceType",
+    "input": "a\u000f",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-15",
+    "activity": "ValidateServiceName",
+    "input": "\u000f",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-15",
+    "activity": "ValidateServiceName",
+    "input": "a.\u000f",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-16",
+    "activity": "ValidateServiceType",
+    "input": "\u0010",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-16",
+    "activity": "ValidateServiceType",
+    "input": "a\u0010",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-16",
+    "activity": "ValidateServiceName",
+    "input": "\u0010",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-16",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0010",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-17",
+    "activity": "ValidateServiceType",
+    "input": "\u0011",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-17",
+    "activity": "ValidateServiceType",
+    "input": "a\u0011",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-17",
+    "activity": "ValidateServiceName",
+    "input": "\u0011",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-17",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0011",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-18",
+    "activity": "ValidateServiceType",
+    "input": "\u0012",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-18",
+    "activity": "ValidateServiceType",
+    "input": "a\u0012",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-18",
+    "activity": "ValidateServiceName",
+    "input": "\u0012",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-18",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0012",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-19",
+    "activity": "ValidateServiceType",
+    "input": "\u0013",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-19",
+    "activity": "ValidateServiceType",
+    "input": "a\u0013",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-19",
+    "activity": "ValidateServiceName",
+    "input": "\u0013",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-19",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0013",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-20",
+    "activity": "ValidateServiceType",
+    "input": "\u0014",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-20",
+    "activity": "ValidateServiceType",
+    "input": "a\u0014",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-20",
+    "activity": "ValidateServiceName",
+    "input": "\u0014",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-20",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0014",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-21",
+    "activity": "ValidateServiceType",
+    "input": "\u0015",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-21",
+    "activity": "ValidateServiceType",
+    "input": "a\u0015",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-21",
+    "activity": "ValidateServiceName",
+    "input": "\u0015",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-21",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0015",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-22",
+    "activity": "ValidateServiceType",
+    "input": "\u0016",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-22",
+    "activity": "ValidateServiceType",
+    "input": "a\u0016",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-22",
+    "activity": "ValidateServiceName",
+    "input": "\u0016",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-22",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0016",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-23",
+    "activity": "ValidateServiceType",
+    "input": "\u0017",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-23",
+    "activity": "ValidateServiceType",
+    "input": "a\u0017",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-23",
+    "activity": "ValidateServiceName",
+    "input": "\u0017",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-23",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0017",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-24",
+    "activity": "ValidateServiceType",
+    "input": "\u0018",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-24",
+    "activity": "ValidateServiceType",
+    "input": "a\u0018",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-24",
+    "activity": "ValidateServiceName",
+    "input": "\u0018",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-24",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0018",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-25",
+    "activity": "ValidateServiceType",
+    "input": "\u0019",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-25",
+    "activity": "ValidateServiceType",
+    "input": "a\u0019",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-25",
+    "activity": "ValidateServiceName",
+    "input": "\u0019",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-25",
+    "activity": "ValidateServiceName",
+    "input": "a.\u0019",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-26",
+    "activity": "ValidateServiceType",
+    "input": "\u001a",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-26",
+    "activity": "ValidateServiceType",
+    "input": "a\u001a",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-26",
+    "activity": "ValidateServiceName",
+    "input": "\u001a",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-26",
+    "activity": "ValidateServiceName",
+    "input": "a.\u001a",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-27",
+    "activity": "ValidateServiceType",
+    "input": "\u001b",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-27",
+    "activity": "ValidateServiceType",
+    "input": "a\u001b",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-27",
+    "activity": "ValidateServiceName",
+    "input": "\u001b",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-27",
+    "activity": "ValidateServiceName",
+    "input": "a.\u001b",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-28",
+    "activity": "ValidateServiceType",
+    "input": "\u001c",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-28",
+    "activity": "ValidateServiceType",
+    "input": "a\u001c",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-28",
+    "activity": "ValidateServiceName",
+    "input": "\u001c",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-28",
+    "activity": "ValidateServiceName",
+    "input": "a.\u001c",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-29",
+    "activity": "ValidateServiceType",
+    "input": "\u001d",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-29",
+    "activity": "ValidateServiceType",
+    "input": "a\u001d",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-29",
+    "activity": "ValidateServiceName",
+    "input": "\u001d",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-29",
+    "activity": "ValidateServiceName",
+    "input": "a.\u001d",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-30",
+    "activity": "ValidateServiceType",
+    "input": "\u001e",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-30",
+    "activity": "ValidateServiceType",
+    "input": "a\u001e",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-30",
+    "activity": "ValidateServiceName",
+    "input": "\u001e",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-30",
+    "activity": "ValidateServiceName",
+    "input": "a.\u001e",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-31",
+    "activity": "ValidateServiceType",
+    "input": "\u001f",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-31",
+    "activity": "ValidateServiceType",
+    "input": "a\u001f",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-31",
+    "activity": "ValidateServiceName",
+    "input": "\u001f",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-31",
+    "activity": "ValidateServiceName",
+    "input": "a.\u001f",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-32",
+    "activity": "ValidateServiceType",
+    "input": " ",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-32",
+    "activity": "ValidateServiceType",
+    "input": "a ",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-32",
+    "activity": "ValidateServiceName",
+    "input": " ",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-32",
+    "activity": "ValidateServiceName",
+    "input": "a. ",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-33",
+    "activity": "ValidateServiceType",
+    "input": "!",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-33",
+    "activity": "ValidateServiceType",
+    "input": "a!",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-33",
+    "activity": "ValidateServiceName",
+    "input": "!",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-33",
+    "activity": "ValidateServiceName",
+    "input": "a.!",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-34",
+    "activity": "ValidateServiceType",
+    "input": "\"",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-34",
+    "activity": "ValidateServiceType",
+    "input": "a\"",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-34",
+    "activity": "ValidateServiceName",
+    "input": "\"",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-34",
+    "activity": "ValidateServiceName",
+    "input": "a.\"",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-35",
+    "activity": "ValidateServiceType",
+    "input": "#",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-35",
+    "activity": "ValidateServiceType",
+    "input": "a#",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-35",
+    "activity": "ValidateServiceName",
+    "input": "#",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-35",
+    "activity": "ValidateServiceName",
+    "input": "a.#",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-36",
+    "activity": "ValidateServiceType",
+    "input": "$",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-36",
+    "activity": "ValidateServiceType",
+    "input": "a$",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-36",
+    "activity": "ValidateServiceName",
+    "input": "$",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-36",
+    "activity": "ValidateServiceName",
+    "input": "a.$",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-37",
+    "activity": "ValidateServiceType",
+    "input": "%",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-37",
+    "activity": "ValidateServiceType",
+    "input": "a%",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-37",
+    "activity": "ValidateServiceName",
+    "input": "%",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-37",
+    "activity": "ValidateServiceName",
+    "input": "a.%",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-38",
+    "activity": "ValidateServiceType",
+    "input": "&",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-38",
+    "activity": "ValidateServiceType",
+    "input": "a&",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-38",
+    "activity": "ValidateServiceName",
+    "input": "&",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-38",
+    "activity": "ValidateServiceName",
+    "input": "a.&",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-39",
+    "activity": "ValidateServiceType",
+    "input": "'",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-39",
+    "activity": "ValidateServiceType",
+    "input": "a'",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-39",
+    "activity": "ValidateServiceName",
+    "input": "'",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-39",
+    "activity": "ValidateServiceName",
+    "input": "a.'",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-40",
+    "activity": "ValidateServiceType",
+    "input": "(",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-40",
+    "activity": "ValidateServiceType",
+    "input": "a(",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-40",
+    "activity": "ValidateServiceName",
+    "input": "(",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-40",
+    "activity": "ValidateServiceName",
+    "input": "a.(",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-41",
+    "activity": "ValidateServiceType",
+    "input": ")",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-41",
+    "activity": "ValidateServiceType",
+    "input": "a)",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-41",
+    "activity": "ValidateServiceName",
+    "input": ")",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-41",
+    "activity": "ValidateServiceName",
+    "input": "a.)",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-42",
+    "activity": "ValidateServiceType",
+    "input": "*",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-42",
+    "activity": "ValidateServiceType",
+    "input": "a*",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-42",
+    "activity": "ValidateServiceName",
+    "input": "*",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-42",
+    "activity": "ValidateServiceName",
+    "input": "a.*",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-43",
+    "activity": "ValidateServiceType",
+    "input": "+",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-43",
+    "activity": "ValidateServiceType",
+    "input": "a+",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-43",
+    "activity": "ValidateServiceName",
+    "input": "+",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-43",
+    "activity": "ValidateServiceName",
+    "input": "a.+",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-44",
+    "activity": "ValidateServiceType",
+    "input": ",",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-44",
+    "activity": "ValidateServiceType",
+    "input": "a,",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-44",
+    "activity": "ValidateServiceName",
+    "input": ",",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-44",
+    "activity": "ValidateServiceName",
+    "input": "a.,",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-45",
+    "activity": "ValidateServiceType",
+    "input": "-",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-45",
+    "activity": "ValidateServiceType",
+    "input": "a-",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-45",
+    "activity": "ValidateServiceName",
+    "input": "-",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-45",
+    "activity": "ValidateServiceName",
+    "input": "a.-",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-46",
+    "activity": "ValidateServiceType",
+    "input": ".",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-46",
+    "activity": "ValidateServiceType",
+    "input": "a.",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-46",
+    "activity": "ValidateServiceName",
+    "input": ".",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-46",
+    "activity": "ValidateServiceName",
+    "input": "a..",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-47",
+    "activity": "ValidateServiceType",
+    "input": "/",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-47",
+    "activity": "ValidateServiceType",
+    "input": "a/",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-47",
+    "activity": "ValidateServiceName",
+    "input": "/",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-47",
+    "activity": "ValidateServiceName",
+    "input": "a./",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-48",
+    "activity": "ValidateServiceType",
+    "input": "0",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-48",
+    "activity": "ValidateServiceType",
+    "input": "a0",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-48",
+    "activity": "ValidateServiceName",
+    "input": "0",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-48",
+    "activity": "ValidateServiceName",
+    "input": "a.0",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-49",
+    "activity": "ValidateServiceType",
+    "input": "1",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-49",
+    "activity": "ValidateServiceType",
+    "input": "a1",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-49",
+    "activity": "ValidateServiceName",
+    "input": "1",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-49",
+    "activity": "ValidateServiceName",
+    "input": "a.1",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-50",
+    "activity": "ValidateServiceType",
+    "input": "2",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-50",
+    "activity": "ValidateServiceType",
+    "input": "a2",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-50",
+    "activity": "ValidateServiceName",
+    "input": "2",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-50",
+    "activity": "ValidateServiceName",
+    "input": "a.2",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-51",
+    "activity": "ValidateServiceType",
+    "input": "3",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-51",
+    "activity": "ValidateServiceType",
+    "input": "a3",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-51",
+    "activity": "ValidateServiceName",
+    "input": "3",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-51",
+    "activity": "ValidateServiceName",
+    "input": "a.3",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-52",
+    "activity": "ValidateServiceType",
+    "input": "4",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-52",
+    "activity": "ValidateServiceType",
+    "input": "a4",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-52",
+    "activity": "ValidateServiceName",
+    "input": "4",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-52",
+    "activity": "ValidateServiceName",
+    "input": "a.4",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-53",
+    "activity": "ValidateServiceType",
+    "input": "5",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-53",
+    "activity": "ValidateServiceType",
+    "input": "a5",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-53",
+    "activity": "ValidateServiceName",
+    "input": "5",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-53",
+    "activity": "ValidateServiceName",
+    "input": "a.5",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-54",
+    "activity": "ValidateServiceType",
+    "input": "6",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-54",
+    "activity": "ValidateServiceType",
+    "input": "a6",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-54",
+    "activity": "ValidateServiceName",
+    "input": "6",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-54",
+    "activity": "ValidateServiceName",
+    "input": "a.6",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-55",
+    "activity": "ValidateServiceType",
+    "input": "7",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-55",
+    "activity": "ValidateServiceType",
+    "input": "a7",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-55",
+    "activity": "ValidateServiceName",
+    "input": "7",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-55",
+    "activity": "ValidateServiceName",
+    "input": "a.7",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-56",
+    "activity": "ValidateServiceType",
+    "input": "8",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-56",
+    "activity": "ValidateServiceType",
+    "input": "a8",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-56",
+    "activity": "ValidateServiceName",
+    "input": "8",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-56",
+    "activity": "ValidateServiceName",
+    "input": "a.8",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-57",
+    "activity": "ValidateServiceType",
+    "input": "9",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-57",
+    "activity": "ValidateServiceType",
+    "input": "a9",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-57",
+    "activity": "ValidateServiceName",
+    "input": "9",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-57",
+    "activity": "ValidateServiceName",
+    "input": "a.9",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-58",
+    "activity": "ValidateServiceType",
+    "input": ":",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-58",
+    "activity": "ValidateServiceType",
+    "input": "a:",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-58",
+    "activity": "ValidateServiceName",
+    "input": ":",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-58",
+    "activity": "ValidateServiceName",
+    "input": "a.:",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-59",
+    "activity": "ValidateServiceType",
+    "input": ";",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-59",
+    "activity": "ValidateServiceType",
+    "input": "a;",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-59",
+    "activity": "ValidateServiceName",
+    "input": ";",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-59",
+    "activity": "ValidateServiceName",
+    "input": "a.;",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-60",
+    "activity": "ValidateServiceType",
+    "input": "<",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-60",
+    "activity": "ValidateServiceType",
+    "input": "a<",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-60",
+    "activity": "ValidateServiceName",
+    "input": "<",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-60",
+    "activity": "ValidateServiceName",
+    "input": "a.<",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-61",
+    "activity": "ValidateServiceType",
+    "input": "=",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-61",
+    "activity": "ValidateServiceType",
+    "input": "a=",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-61",
+    "activity": "ValidateServiceName",
+    "input": "=",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-61",
+    "activity": "ValidateServiceName",
+    "input": "a.=",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-62",
+    "activity": "ValidateServiceType",
+    "input": ">",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-62",
+    "activity": "ValidateServiceType",
+    "input": "a>",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-62",
+    "activity": "ValidateServiceName",
+    "input": ">",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-62",
+    "activity": "ValidateServiceName",
+    "input": "a.>",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-63",
+    "activity": "ValidateServiceType",
+    "input": "?",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-63",
+    "activity": "ValidateServiceType",
+    "input": "a?",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-63",
+    "activity": "ValidateServiceName",
+    "input": "?",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-63",
+    "activity": "ValidateServiceName",
+    "input": "a.?",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-64",
+    "activity": "ValidateServiceType",
+    "input": "@",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-64",
+    "activity": "ValidateServiceType",
+    "input": "a@",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-64",
+    "activity": "ValidateServiceName",
+    "input": "@",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-64",
+    "activity": "ValidateServiceName",
+    "input": "a.@",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-65",
+    "activity": "ValidateServiceType",
+    "input": "A",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-65",
+    "activity": "ValidateServiceType",
+    "input": "aA",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-65",
+    "activity": "ValidateServiceName",
+    "input": "A",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-65",
+    "activity": "ValidateServiceName",
+    "input": "a.A",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-66",
+    "activity": "ValidateServiceType",
+    "input": "B",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-66",
+    "activity": "ValidateServiceType",
+    "input": "aB",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-66",
+    "activity": "ValidateServiceName",
+    "input": "B",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-66",
+    "activity": "ValidateServiceName",
+    "input": "a.B",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-67",
+    "activity": "ValidateServiceType",
+    "input": "C",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-67",
+    "activity": "ValidateServiceType",
+    "input": "aC",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-67",
+    "activity": "ValidateServiceName",
+    "input": "C",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-67",
+    "activity": "ValidateServiceName",
+    "input": "a.C",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-68",
+    "activity": "ValidateServiceType",
+    "input": "D",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-68",
+    "activity": "ValidateServiceType",
+    "input": "aD",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-68",
+    "activity": "ValidateServiceName",
+    "input": "D",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-68",
+    "activity": "ValidateServiceName",
+    "input": "a.D",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-69",
+    "activity": "ValidateServiceType",
+    "input": "E",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-69",
+    "activity": "ValidateServiceType",
+    "input": "aE",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-69",
+    "activity": "ValidateServiceName",
+    "input": "E",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-69",
+    "activity": "ValidateServiceName",
+    "input": "a.E",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-70",
+    "activity": "ValidateServiceType",
+    "input": "F",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-70",
+    "activity": "ValidateServiceType",
+    "input": "aF",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-70",
+    "activity": "ValidateServiceName",
+    "input": "F",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-70",
+    "activity": "ValidateServiceName",
+    "input": "a.F",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-71",
+    "activity": "ValidateServiceType",
+    "input": "G",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-71",
+    "activity": "ValidateServiceType",
+    "input": "aG",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-71",
+    "activity": "ValidateServiceName",
+    "input": "G",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-71",
+    "activity": "ValidateServiceName",
+    "input": "a.G",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-72",
+    "activity": "ValidateServiceType",
+    "input": "H",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-72",
+    "activity": "ValidateServiceType",
+    "input": "aH",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-72",
+    "activity": "ValidateServiceName",
+    "input": "H",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-72",
+    "activity": "ValidateServiceName",
+    "input": "a.H",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-73",
+    "activity": "ValidateServiceType",
+    "input": "I",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-73",
+    "activity": "ValidateServiceType",
+    "input": "aI",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-73",
+    "activity": "ValidateServiceName",
+    "input": "I",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-73",
+    "activity": "ValidateServiceName",
+    "input": "a.I",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-74",
+    "activity": "ValidateServiceType",
+    "input": "J",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-74",
+    "activity": "ValidateServiceType",
+    "input": "aJ",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-74",
+    "activity": "ValidateServiceName",
+    "input": "J",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-74",
+    "activity": "ValidateServiceName",
+    "input": "a.J",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-75",
+    "activity": "ValidateServiceType",
+    "input": "K",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-75",
+    "activity": "ValidateServiceType",
+    "input": "aK",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-75",
+    "activity": "ValidateServiceName",
+    "input": "K",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-75",
+    "activity": "ValidateServiceName",
+    "input": "a.K",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-76",
+    "activity": "ValidateServiceType",
+    "input": "L",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-76",
+    "activity": "ValidateServiceType",
+    "input": "aL",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-76",
+    "activity": "ValidateServiceName",
+    "input": "L",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-76",
+    "activity": "ValidateServiceName",
+    "input": "a.L",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-77",
+    "activity": "ValidateServiceType",
+    "input": "M",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-77",
+    "activity": "ValidateServiceType",
+    "input": "aM",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-77",
+    "activity": "ValidateServiceName",
+    "input": "M",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-77",
+    "activity": "ValidateServiceName",
+    "input": "a.M",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-78",
+    "activity": "ValidateServiceType",
+    "input": "N",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-78",
+    "activity": "ValidateServiceType",
+    "input": "aN",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-78",
+    "activity": "ValidateServiceName",
+    "input": "N",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-78",
+    "activity": "ValidateServiceName",
+    "input": "a.N",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-79",
+    "activity": "ValidateServiceType",
+    "input": "O",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-79",
+    "activity": "ValidateServiceType",
+    "input": "aO",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-79",
+    "activity": "ValidateServiceName",
+    "input": "O",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-79",
+    "activity": "ValidateServiceName",
+    "input": "a.O",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-80",
+    "activity": "ValidateServiceType",
+    "input": "P",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-80",
+    "activity": "ValidateServiceType",
+    "input": "aP",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-80",
+    "activity": "ValidateServiceName",
+    "input": "P",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-80",
+    "activity": "ValidateServiceName",
+    "input": "a.P",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-81",
+    "activity": "ValidateServiceType",
+    "input": "Q",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-81",
+    "activity": "ValidateServiceType",
+    "input": "aQ",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-81",
+    "activity": "ValidateServiceName",
+    "input": "Q",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-81",
+    "activity": "ValidateServiceName",
+    "input": "a.Q",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-82",
+    "activity": "ValidateServiceType",
+    "input": "R",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-82",
+    "activity": "ValidateServiceType",
+    "input": "aR",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-82",
+    "activity": "ValidateServiceName",
+    "input": "R",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-82",
+    "activity": "ValidateServiceName",
+    "input": "a.R",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-83",
+    "activity": "ValidateServiceType",
+    "input": "S",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-83",
+    "activity": "ValidateServiceType",
+    "input": "aS",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-83",
+    "activity": "ValidateServiceName",
+    "input": "S",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-83",
+    "activity": "ValidateServiceName",
+    "input": "a.S",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-84",
+    "activity": "ValidateServiceType",
+    "input": "T",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-84",
+    "activity": "ValidateServiceType",
+    "input": "aT",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-84",
+    "activity": "ValidateServiceName",
+    "input": "T",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-84",
+    "activity": "ValidateServiceName",
+    "input": "a.T",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-85",
+    "activity": "ValidateServiceType",
+    "input": "U",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-85",
+    "activity": "ValidateServiceType",
+    "input": "aU",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-85",
+    "activity": "ValidateServiceName",
+    "input": "U",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-85",
+    "activity": "ValidateServiceName",
+    "input": "a.U",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-86",
+    "activity": "ValidateServiceType",
+    "input": "V",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-86",
+    "activity": "ValidateServiceType",
+    "input": "aV",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-86",
+    "activity": "ValidateServiceName",
+    "input": "V",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-86",
+    "activity": "ValidateServiceName",
+    "input": "a.V",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-87",
+    "activity": "ValidateServiceType",
+    "input": "W",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-87",
+    "activity": "ValidateServiceType",
+    "input": "aW",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-87",
+    "activity": "ValidateServiceName",
+    "input": "W",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-87",
+    "activity": "ValidateServiceName",
+    "input": "a.W",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-88",
+    "activity": "ValidateServiceType",
+    "input": "X",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-88",
+    "activity": "ValidateServiceType",
+    "input": "aX",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-88",
+    "activity": "ValidateServiceName",
+    "input": "X",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-88",
+    "activity": "ValidateServiceName",
+    "input": "a.X",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-89",
+    "activity": "ValidateServiceType",
+    "input": "Y",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-89",
+    "activity": "ValidateServiceType",
+    "input": "aY",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-89",
+    "activity": "ValidateServiceName",
+    "input": "Y",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-89",
+    "activity": "ValidateServiceName",
+    "input": "a.Y",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-90",
+    "activity": "ValidateServiceType",
+    "input": "Z",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-90",
+    "activity": "ValidateServiceType",
+    "input": "aZ",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-90",
+    "activity": "ValidateServiceName",
+    "input": "Z",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-90",
+    "activity": "ValidateServiceName",
+    "input": "a.Z",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-91",
+    "activity": "ValidateServiceType",
+    "input": "[",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-91",
+    "activity": "ValidateServiceType",
+    "input": "a[",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-91",
+    "activity": "ValidateServiceName",
+    "input": "[",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-91",
+    "activity": "ValidateServiceName",
+    "input": "a.[",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-92",
+    "activity": "ValidateServiceType",
+    "input": "\\",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-92",
+    "activity": "ValidateServiceType",
+    "input": "a\\",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-92",
+    "activity": "ValidateServiceName",
+    "input": "\\",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-92",
+    "activity": "ValidateServiceName",
+    "input": "a.\\",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-93",
+    "activity": "ValidateServiceType",
+    "input": "]",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-93",
+    "activity": "ValidateServiceType",
+    "input": "a]",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-93",
+    "activity": "ValidateServiceName",
+    "input": "]",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-93",
+    "activity": "ValidateServiceName",
+    "input": "a.]",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-94",
+    "activity": "ValidateServiceType",
+    "input": "^",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-94",
+    "activity": "ValidateServiceType",
+    "input": "a^",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-94",
+    "activity": "ValidateServiceName",
+    "input": "^",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-94",
+    "activity": "ValidateServiceName",
+    "input": "a.^",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-95",
+    "activity": "ValidateServiceType",
+    "input": "_",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-95",
+    "activity": "ValidateServiceType",
+    "input": "a_",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-95",
+    "activity": "ValidateServiceName",
+    "input": "_",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-95",
+    "activity": "ValidateServiceName",
+    "input": "a._",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-96",
+    "activity": "ValidateServiceType",
+    "input": "`",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-96",
+    "activity": "ValidateServiceType",
+    "input": "a`",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-96",
+    "activity": "ValidateServiceName",
+    "input": "`",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-96",
+    "activity": "ValidateServiceName",
+    "input": "a.`",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-97",
+    "activity": "ValidateServiceType",
+    "input": "a",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-97",
+    "activity": "ValidateServiceType",
+    "input": "aa",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-97",
+    "activity": "ValidateServiceName",
+    "input": "a",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-97",
+    "activity": "ValidateServiceName",
+    "input": "a.a",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-98",
+    "activity": "ValidateServiceType",
+    "input": "b",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-98",
+    "activity": "ValidateServiceType",
+    "input": "ab",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-98",
+    "activity": "ValidateServiceName",
+    "input": "b",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-98",
+    "activity": "ValidateServiceName",
+    "input": "a.b",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-99",
+    "activity": "ValidateServiceType",
+    "input": "c",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-99",
+    "activity": "ValidateServiceType",
+    "input": "ac",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-99",
+    "activity": "ValidateServiceName",
+    "input": "c",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-99",
+    "activity": "ValidateServiceName",
+    "input": "a.c",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-100",
+    "activity": "ValidateServiceType",
+    "input": "d",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-100",
+    "activity": "ValidateServiceType",
+    "input": "ad",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-100",
+    "activity": "ValidateServiceName",
+    "input": "d",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-100",
+    "activity": "ValidateServiceName",
+    "input": "a.d",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-101",
+    "activity": "ValidateServiceType",
+    "input": "e",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-101",
+    "activity": "ValidateServiceType",
+    "input": "ae",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-101",
+    "activity": "ValidateServiceName",
+    "input": "e",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-101",
+    "activity": "ValidateServiceName",
+    "input": "a.e",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-102",
+    "activity": "ValidateServiceType",
+    "input": "f",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-102",
+    "activity": "ValidateServiceType",
+    "input": "af",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-102",
+    "activity": "ValidateServiceName",
+    "input": "f",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-102",
+    "activity": "ValidateServiceName",
+    "input": "a.f",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-103",
+    "activity": "ValidateServiceType",
+    "input": "g",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-103",
+    "activity": "ValidateServiceType",
+    "input": "ag",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-103",
+    "activity": "ValidateServiceName",
+    "input": "g",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-103",
+    "activity": "ValidateServiceName",
+    "input": "a.g",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-104",
+    "activity": "ValidateServiceType",
+    "input": "h",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-104",
+    "activity": "ValidateServiceType",
+    "input": "ah",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-104",
+    "activity": "ValidateServiceName",
+    "input": "h",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-104",
+    "activity": "ValidateServiceName",
+    "input": "a.h",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-105",
+    "activity": "ValidateServiceType",
+    "input": "i",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-105",
+    "activity": "ValidateServiceType",
+    "input": "ai",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-105",
+    "activity": "ValidateServiceName",
+    "input": "i",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-105",
+    "activity": "ValidateServiceName",
+    "input": "a.i",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-106",
+    "activity": "ValidateServiceType",
+    "input": "j",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-106",
+    "activity": "ValidateServiceType",
+    "input": "aj",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-106",
+    "activity": "ValidateServiceName",
+    "input": "j",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-106",
+    "activity": "ValidateServiceName",
+    "input": "a.j",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-107",
+    "activity": "ValidateServiceType",
+    "input": "k",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-107",
+    "activity": "ValidateServiceType",
+    "input": "ak",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-107",
+    "activity": "ValidateServiceName",
+    "input": "k",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-107",
+    "activity": "ValidateServiceName",
+    "input": "a.k",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-108",
+    "activity": "ValidateServiceType",
+    "input": "l",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-108",
+    "activity": "ValidateServiceType",
+    "input": "al",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-108",
+    "activity": "ValidateServiceName",
+    "input": "l",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-108",
+    "activity": "ValidateServiceName",
+    "input": "a.l",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-109",
+    "activity": "ValidateServiceType",
+    "input": "m",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-109",
+    "activity": "ValidateServiceType",
+    "input": "am",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-109",
+    "activity": "ValidateServiceName",
+    "input": "m",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-109",
+    "activity": "ValidateServiceName",
+    "input": "a.m",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-110",
+    "activity": "ValidateServiceType",
+    "input": "n",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-110",
+    "activity": "ValidateServiceType",
+    "input": "an",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-110",
+    "activity": "ValidateServiceName",
+    "input": "n",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-110",
+    "activity": "ValidateServiceName",
+    "input": "a.n",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-111",
+    "activity": "ValidateServiceType",
+    "input": "o",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-111",
+    "activity": "ValidateServiceType",
+    "input": "ao",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-111",
+    "activity": "ValidateServiceName",
+    "input": "o",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-111",
+    "activity": "ValidateServiceName",
+    "input": "a.o",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-112",
+    "activity": "ValidateServiceType",
+    "input": "p",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-112",
+    "activity": "ValidateServiceType",
+    "input": "ap",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-112",
+    "activity": "ValidateServiceName",
+    "input": "p",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-112",
+    "activity": "ValidateServiceName",
+    "input": "a.p",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-113",
+    "activity": "ValidateServiceType",
+    "input": "q",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-113",
+    "activity": "ValidateServiceType",
+    "input": "aq",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-113",
+    "activity": "ValidateServiceName",
+    "input": "q",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-113",
+    "activity": "ValidateServiceName",
+    "input": "a.q",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-114",
+    "activity": "ValidateServiceType",
+    "input": "r",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-114",
+    "activity": "ValidateServiceType",
+    "input": "ar",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-114",
+    "activity": "ValidateServiceName",
+    "input": "r",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-114",
+    "activity": "ValidateServiceName",
+    "input": "a.r",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-115",
+    "activity": "ValidateServiceType",
+    "input": "s",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-115",
+    "activity": "ValidateServiceType",
+    "input": "as",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-115",
+    "activity": "ValidateServiceName",
+    "input": "s",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-115",
+    "activity": "ValidateServiceName",
+    "input": "a.s",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-116",
+    "activity": "ValidateServiceType",
+    "input": "t",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-116",
+    "activity": "ValidateServiceType",
+    "input": "at",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-116",
+    "activity": "ValidateServiceName",
+    "input": "t",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-116",
+    "activity": "ValidateServiceName",
+    "input": "a.t",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-117",
+    "activity": "ValidateServiceType",
+    "input": "u",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-117",
+    "activity": "ValidateServiceType",
+    "input": "au",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-117",
+    "activity": "ValidateServiceName",
+    "input": "u",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-117",
+    "activity": "ValidateServiceName",
+    "input": "a.u",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-118",
+    "activity": "ValidateServiceType",
+    "input": "v",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-118",
+    "activity": "ValidateServiceType",
+    "input": "av",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-118",
+    "activity": "ValidateServiceName",
+    "input": "v",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-118",
+    "activity": "ValidateServiceName",
+    "input": "a.v",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-119",
+    "activity": "ValidateServiceType",
+    "input": "w",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-119",
+    "activity": "ValidateServiceType",
+    "input": "aw",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-119",
+    "activity": "ValidateServiceName",
+    "input": "w",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-119",
+    "activity": "ValidateServiceName",
+    "input": "a.w",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-120",
+    "activity": "ValidateServiceType",
+    "input": "x",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-120",
+    "activity": "ValidateServiceType",
+    "input": "ax",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-120",
+    "activity": "ValidateServiceName",
+    "input": "x",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-120",
+    "activity": "ValidateServiceName",
+    "input": "a.x",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-121",
+    "activity": "ValidateServiceType",
+    "input": "y",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-121",
+    "activity": "ValidateServiceType",
+    "input": "ay",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-121",
+    "activity": "ValidateServiceName",
+    "input": "y",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-121",
+    "activity": "ValidateServiceName",
+    "input": "a.y",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-122",
+    "activity": "ValidateServiceType",
+    "input": "z",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-122",
+    "activity": "ValidateServiceType",
+    "input": "az",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-122",
+    "activity": "ValidateServiceName",
+    "input": "z",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-122",
+    "activity": "ValidateServiceName",
+    "input": "a.z",
+    "want": true,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-123",
+    "activity": "ValidateServiceType",
+    "input": "{",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-123",
+    "activity": "ValidateServiceType",
+    "input": "a{",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-123",
+    "activity": "ValidateServiceName",
+    "input": "{",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-123",
+    "activity": "ValidateServiceName",
+    "input": "a.{",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-124",
+    "activity": "ValidateServiceType",
+    "input": "|",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-124",
+    "activity": "ValidateServiceType",
+    "input": "a|",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-124",
+    "activity": "ValidateServiceName",
+    "input": "|",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-124",
+    "activity": "ValidateServiceName",
+    "input": "a.|",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-125",
+    "activity": "ValidateServiceType",
+    "input": "}",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-125",
+    "activity": "ValidateServiceType",
+    "input": "a}",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-125",
+    "activity": "ValidateServiceName",
+    "input": "}",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-125",
+    "activity": "ValidateServiceName",
+    "input": "a.}",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-126",
+    "activity": "ValidateServiceType",
+    "input": "~",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-126",
+    "activity": "ValidateServiceType",
+    "input": "a~",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-126",
+    "activity": "ValidateServiceName",
+    "input": "~",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-126",
+    "activity": "ValidateServiceName",
+    "input": "a.~",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "ascii-type-first-127",
+    "activity": "ValidateServiceType",
+    "input": "\u007f",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-first"
+    ]
+  },
+  {
+    "name": "ascii-type-continuation-127",
+    "activity": "ValidateServiceType",
+    "input": "a\u007f",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "type-continuation"
+    ]
+  },
+  {
+    "name": "ascii-name-single-127",
+    "activity": "ValidateServiceName",
+    "input": "\u007f",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-single"
+    ]
+  },
+  {
+    "name": "ascii-name-after-dot-127",
+    "activity": "ValidateServiceName",
+    "input": "a.\u007f",
+    "want": false,
+    "coverage": [
+      "ascii-512",
+      "name-after-dot"
+    ]
+  },
+  {
+    "name": "boundary-empty-components-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-components-req_type",
+    "activity": "ValidateServiceType",
+    "input": "",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-components-req_name",
+    "activity": "ValidateServiceName",
+    "input": "",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-global-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "*",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-global-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-global-req_name",
+    "activity": "ValidateServiceName",
+    "input": "a",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-typed-all-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://*",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-typed-all-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-typed-all-req_name",
+    "activity": "ValidateServiceName",
+    "input": "a",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-exact-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://a",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-exact-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-exact-req_name",
+    "activity": "ValidateServiceName",
+    "input": "a",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-prefix-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://a.*",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-prefix-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-prefix-req_name",
+    "activity": "ValidateServiceName",
+    "input": "a.b",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-suffix-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://*.a",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-suffix-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-suffix-req_name",
+    "activity": "ValidateServiceName",
+    "input": "b.a",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-case-sensitive-domain-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "MCP://A",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-case-sensitive-domain-req_type",
+    "activity": "ValidateServiceType",
+    "input": "MCP",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-case-sensitive-domain-req_name",
+    "activity": "ValidateServiceName",
+    "input": "A",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-custom-scheme-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "a+1.-://x",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-custom-scheme-req_type",
+    "activity": "ValidateServiceType",
+    "input": "a+1.-",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-custom-scheme-req_name",
+    "activity": "ValidateServiceName",
+    "input": "x",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-consecutive-scheme-dots-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "a..://x",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-consecutive-scheme-dots-req_type",
+    "activity": "ValidateServiceType",
+    "input": "a..",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-consecutive-scheme-dots-req_name",
+    "activity": "ValidateServiceName",
+    "input": "x",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-name-label-alphabet-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://0_A-.b_2",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-name-label-alphabet-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-name-label-alphabet-req_name",
+    "activity": "ValidateServiceName",
+    "input": "0_A-.b_2",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-max-exact-and-request-components-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "a://nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-max-exact-and-request-components-req_type",
+    "activity": "ValidateServiceType",
+    "input": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-max-exact-and-request-components-req_name",
+    "activity": "ValidateServiceName",
+    "input": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-max-prefix-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "a://nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn.*",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-max-prefix-req_type",
+    "activity": "ValidateServiceType",
+    "input": "a",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-max-prefix-req_name",
+    "activity": "ValidateServiceName",
+    "input": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn.x",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-max-suffix-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "a://*.nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-max-suffix-req_type",
+    "activity": "ValidateServiceType",
+    "input": "a",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-max-suffix-req_name",
+    "activity": "ValidateServiceName",
+    "input": "x.nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-max-scheme-pattern-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa://*",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-max-scheme-pattern-req_type",
+    "activity": "ValidateServiceType",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-max-scheme-pattern-req_name",
+    "activity": "ValidateServiceName",
+    "input": "x",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-pattern-129-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "a://nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-pattern-129-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-pattern-129-req_name",
+    "activity": "ValidateServiceName",
+    "input": "x",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-type-129-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "*",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-type-129-req_type",
+    "activity": "ValidateServiceType",
+    "input": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-type-129-req_name",
+    "activity": "ValidateServiceName",
+    "input": "x",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-name-129-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "*",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-name-129-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-name-129-req_name",
+    "activity": "ValidateServiceName",
+    "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-missing-delimiter-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp:a",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-missing-delimiter-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-missing-delimiter-req_name",
+    "activity": "ValidateServiceName",
+    "input": "x",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-scheme-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "://a",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-scheme-req_type",
+    "activity": "ValidateServiceType",
+    "input": "",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-scheme-req_name",
+    "activity": "ValidateServiceName",
+    "input": "x",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-body-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-body-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-body-req_name",
+    "activity": "ValidateServiceName",
+    "input": "",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-path-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://a/path",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-path-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-path-req_name",
+    "activity": "ValidateServiceName",
+    "input": "a/path",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-query-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://a?q=x",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-query-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-query-req_name",
+    "activity": "ValidateServiceName",
+    "input": "a?q=x",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-fragment-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://a#x",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-fragment-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-fragment-req_name",
+    "activity": "ValidateServiceName",
+    "input": "a#x",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-userinfo-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://user@a",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-userinfo-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-userinfo-req_name",
+    "activity": "ValidateServiceName",
+    "input": "user@a",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-port-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://a:443",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-port-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-port-req_name",
+    "activity": "ValidateServiceName",
+    "input": "a:443",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-mixed-wildcard-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://*.a.*",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-mixed-wildcard-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-mixed-wildcard-req_name",
+    "activity": "ValidateServiceName",
+    "input": "a",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-double-wildcard-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://*.*",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-double-wildcard-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-double-wildcard-req_name",
+    "activity": "ValidateServiceName",
+    "input": "a",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-interior-wildcard-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://a*b",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-interior-wildcard-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-interior-wildcard-req_name",
+    "activity": "ValidateServiceName",
+    "input": "a*b",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-middle-label-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://a..b",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-middle-label-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-middle-label-req_name",
+    "activity": "ValidateServiceName",
+    "input": "a..b",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-first-label-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://.a",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-first-label-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-first-label-req_name",
+    "activity": "ValidateServiceName",
+    "input": ".a",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-final-label-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://a.",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-final-label-req_type",
+    "activity": "ValidateServiceType",
+    "input": "mcp",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-empty-final-label-req_name",
+    "activity": "ValidateServiceName",
+    "input": "a.",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-non-ascii-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://\u00e9",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-non-ascii-req_type",
+    "activity": "ValidateServiceType",
+    "input": "\u00e9",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-non-ascii-req_name",
+    "activity": "ValidateServiceName",
+    "input": "\u00e9",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-nul-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://a\u0000b",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-nul-req_type",
+    "activity": "ValidateServiceType",
+    "input": "a\u0000b",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-nul-req_name",
+    "activity": "ValidateServiceName",
+    "input": "a\u0000b",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-whitespace-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://a b",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-whitespace-req_type",
+    "activity": "ValidateServiceType",
+    "input": "a b",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-whitespace-req_name",
+    "activity": "ValidateServiceName",
+    "input": "a b",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-numeric-first-scheme-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "1a://x",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-numeric-first-scheme-req_type",
+    "activity": "ValidateServiceType",
+    "input": "1a",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-numeric-first-scheme-req_name",
+    "activity": "ValidateServiceName",
+    "input": "123",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-global-invalid-request-components-pattern",
+    "activity": "ValidateServicePattern",
+    "input": "*",
+    "want": true,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-global-invalid-request-components-req_type",
+    "activity": "ValidateServiceType",
+    "input": "bad/type",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "boundary-global-invalid-request-components-req_name",
+    "activity": "ValidateServiceName",
+    "input": "bad/name",
+    "want": false,
+    "coverage": [
+      "boundary"
+    ]
+  },
+  {
+    "name": "unicode-0-ValidateServiceType",
+    "activity": "ValidateServiceType",
+    "input": "\u00e9",
+    "want": false,
+    "coverage": [
+      "unicode"
+    ]
+  },
+  {
+    "name": "unicode-0-ValidateServiceName",
+    "activity": "ValidateServiceName",
+    "input": "\u00e9",
+    "want": false,
+    "coverage": [
+      "unicode"
+    ]
+  },
+  {
+    "name": "unicode-0-ValidateServicePattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://\u00e9",
+    "want": false,
+    "coverage": [
+      "unicode"
+    ]
+  },
+  {
+    "name": "unicode-1-ValidateServiceType",
+    "activity": "ValidateServiceType",
+    "input": "\ud55c",
+    "want": false,
+    "coverage": [
+      "unicode"
+    ]
+  },
+  {
+    "name": "unicode-1-ValidateServiceName",
+    "activity": "ValidateServiceName",
+    "input": "\ud55c",
+    "want": false,
+    "coverage": [
+      "unicode"
+    ]
+  },
+  {
+    "name": "unicode-1-ValidateServicePattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://\ud55c",
+    "want": false,
+    "coverage": [
+      "unicode"
+    ]
+  },
+  {
+    "name": "unicode-2-ValidateServiceType",
+    "activity": "ValidateServiceType",
+    "input": "\ud83d\ude00",
+    "want": false,
+    "coverage": [
+      "unicode"
+    ]
+  },
+  {
+    "name": "unicode-2-ValidateServiceName",
+    "activity": "ValidateServiceName",
+    "input": "\ud83d\ude00",
+    "want": false,
+    "coverage": [
+      "unicode"
+    ]
+  },
+  {
+    "name": "unicode-2-ValidateServicePattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://\ud83d\ude00",
+    "want": false,
+    "coverage": [
+      "unicode"
+    ]
+  },
+  {
+    "name": "unicode-3-ValidateServiceType",
+    "activity": "ValidateServiceType",
+    "input": "a\u0080b",
+    "want": false,
+    "coverage": [
+      "unicode"
+    ]
+  },
+  {
+    "name": "unicode-3-ValidateServiceName",
+    "activity": "ValidateServiceName",
+    "input": "a\u0080b",
+    "want": false,
+    "coverage": [
+      "unicode"
+    ]
+  },
+  {
+    "name": "unicode-3-ValidateServicePattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://a\u0080b",
+    "want": false,
+    "coverage": [
+      "unicode"
+    ]
+  },
+  {
+    "name": "unicode-4-ValidateServiceType",
+    "activity": "ValidateServiceType",
+    "input": "a\u007fb",
+    "want": false,
+    "coverage": [
+      "unicode"
+    ]
+  },
+  {
+    "name": "unicode-4-ValidateServiceName",
+    "activity": "ValidateServiceName",
+    "input": "a\u007fb",
+    "want": false,
+    "coverage": [
+      "unicode"
+    ]
+  },
+  {
+    "name": "unicode-4-ValidateServicePattern",
+    "activity": "ValidateServicePattern",
+    "input": "mcp://a\u007fb",
+    "want": false,
+    "coverage": [
+      "unicode"
+    ]
+  },
+  {
+    "name": "length-0-ValidateServiceType",
+    "activity": "ValidateServiceType",
+    "input": "",
+    "want": true,
+    "coverage": [
+      "length"
+    ]
+  },
+  {
+    "name": "length-0-ValidateServiceName",
+    "activity": "ValidateServiceName",
+    "input": "",
+    "want": true,
+    "coverage": [
+      "length"
+    ]
+  },
+  {
+    "name": "length-1-ValidateServiceType",
+    "activity": "ValidateServiceType",
+    "input": "a",
+    "want": true,
+    "coverage": [
+      "length"
+    ]
+  },
+  {
+    "name": "length-1-ValidateServiceName",
+    "activity": "ValidateServiceName",
+    "input": "a",
+    "want": true,
+    "coverage": [
+      "length"
+    ]
+  },
+  {
+    "name": "length-127-ValidateServiceType",
+    "activity": "ValidateServiceType",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "want": true,
+    "coverage": [
+      "length"
+    ]
+  },
+  {
+    "name": "length-127-ValidateServiceName",
+    "activity": "ValidateServiceName",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "want": true,
+    "coverage": [
+      "length"
+    ]
+  },
+  {
+    "name": "length-128-ValidateServiceType",
+    "activity": "ValidateServiceType",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "want": true,
+    "coverage": [
+      "length"
+    ]
+  },
+  {
+    "name": "length-128-ValidateServiceName",
+    "activity": "ValidateServiceName",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "want": true,
+    "coverage": [
+      "length"
+    ]
+  },
+  {
+    "name": "length-129-ValidateServiceType",
+    "activity": "ValidateServiceType",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "want": false,
+    "coverage": [
+      "length"
+    ]
+  },
+  {
+    "name": "length-129-ValidateServiceName",
+    "activity": "ValidateServiceName",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "want": false,
+    "coverage": [
+      "length"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-0",
+    "activity": "ValidateServicePattern",
+    "input": "a",
+    "want": false,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-1",
+    "activity": "ValidateServicePattern",
+    "input": ":",
+    "want": false,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-2",
+    "activity": "ValidateServicePattern",
+    "input": ":/",
+    "want": false,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-3",
+    "activity": "ValidateServicePattern",
+    "input": "://",
+    "want": false,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-4",
+    "activity": "ValidateServicePattern",
+    "input": "a://",
+    "want": false,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-5",
+    "activity": "ValidateServicePattern",
+    "input": "a://*.",
+    "want": false,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-6",
+    "activity": "ValidateServicePattern",
+    "input": "a://.*",
+    "want": false,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-7",
+    "activity": "ValidateServicePattern",
+    "input": "a://*.x",
+    "want": true,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-8",
+    "activity": "ValidateServicePattern",
+    "input": "a://x.*",
+    "want": true,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-9",
+    "activity": "ValidateServicePattern",
+    "input": "a://%61",
+    "want": false,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-10",
+    "activity": "ValidateServicePattern",
+    "input": " a://x",
+    "want": false,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-11",
+    "activity": "ValidateServicePattern",
+    "input": "a://x ",
+    "want": false,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-12",
+    "activity": "ValidateServicePattern",
+    "input": "a://\uff21",
+    "want": false,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-13",
+    "activity": "ValidateServicePattern",
+    "input": "a://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "want": true,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-14",
+    "activity": "ValidateServicePattern",
+    "input": "a://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "want": false,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-15",
+    "activity": "ValidateServicePattern",
+    "input": "a://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.*",
+    "want": false,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  },
+  {
+    "name": "pattern-slice-normalization-16",
+    "activity": "ValidateServicePattern",
+    "input": "a://*.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "want": false,
+    "coverage": [
+      "pattern-boundary"
+    ]
+  }
+]

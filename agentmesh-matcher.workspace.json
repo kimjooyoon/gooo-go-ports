@@ -1,14 +1,26 @@
 {
   "schema": "gooo/package-workspace-manifest/v1",
   "entry": {
-    "package_path": "go/google/agentmesh/api",
-    "activity": "MatchServicePattern"
+    "package_path": "gooo/service-policy/checked-matcher",
+    "activity": "MatchServicePatternChecked"
   },
   "packages": [
+    {
+      "path": "gooo/service-domain",
+      "sources": [
+        "examples/agentmesh-service-policy/domain.gooo"
+      ]
+    },
     {
       "path": "go/google/agentmesh/api",
       "sources": [
         "ports/agentmesh/service_pattern.gooo"
+      ]
+    },
+    {
+      "path": "gooo/service-policy/checked-matcher",
+      "sources": [
+        "examples/agentmesh-service-policy/checked_matcher.gooo"
       ]
     }
   ]

@@ -1,0 +1,103 @@
+{
+  "schema": "gooo/body-composition-cases/v1",
+  "cases": [
+    {
+      "inputs": {
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input0": "*",
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input1": "mcp",
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input2": "calculator"
+      },
+      "expected": {
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked": {
+          "domain_status": "VALID_INPUT",
+          "invalid_field": "",
+          "matched": true
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input0": "*",
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input1": "egress",
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input2": "api.github.com"
+      },
+      "expected": {
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked": {
+          "domain_status": "VALID_INPUT",
+          "invalid_field": "",
+          "matched": true
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input0": "mcp://*",
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input1": "mcp",
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input2": "calculator"
+      },
+      "expected": {
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked": {
+          "domain_status": "VALID_INPUT",
+          "invalid_field": "",
+          "matched": true
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input0": "mcp://*",
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input1": "inference",
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input2": "calculator"
+      },
+      "expected": {
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked": {
+          "domain_status": "VALID_INPUT",
+          "invalid_field": "",
+          "matched": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input0": "bad/value",
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input1": "mcp",
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input2": "a"
+      },
+      "expected": {
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked": {
+          "domain_status": "INVALID_INPUT",
+          "invalid_field": "pattern",
+          "matched": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input0": "mcp://a",
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input1": "bad/value",
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input2": "a"
+      },
+      "expected": {
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked": {
+          "domain_status": "INVALID_INPUT",
+          "invalid_field": "req_type",
+          "matched": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input0": "mcp://a",
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input1": "mcp",
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked.input2": "bad/value"
+      },
+      "expected": {
+        "gooo/service-policy/checked-matcher:MatchServicePatternChecked": {
+          "domain_status": "INVALID_INPUT",
+          "invalid_field": "req_name",
+          "matched": false
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,141 @@
+{
+  "schema": "gooo/body-composition-cases/v1",
+  "cases": [
+    {
+      "inputs": {
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input0": "mcp://a",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input1": "mcp://a",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input2": "mcp",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input3": "a"
+      },
+      "expected": {
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked": {
+          "domain_status": "VALID_INPUT",
+          "invalid_field": "",
+          "before_match": true,
+          "after_match": true,
+          "change": "UNCHANGED_ALLOW"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input0": "mcp://a",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input1": "mcp://a",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input2": "mcp",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input3": "b"
+      },
+      "expected": {
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked": {
+          "domain_status": "VALID_INPUT",
+          "invalid_field": "",
+          "before_match": false,
+          "after_match": false,
+          "change": "UNCHANGED_DENY"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input0": "mcp://a",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input1": "mcp://*",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input2": "mcp",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input3": "b"
+      },
+      "expected": {
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked": {
+          "domain_status": "VALID_INPUT",
+          "invalid_field": "",
+          "before_match": false,
+          "after_match": true,
+          "change": "WIDENED"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input0": "mcp://*",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input1": "mcp://a",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input2": "mcp",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input3": "b"
+      },
+      "expected": {
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked": {
+          "domain_status": "VALID_INPUT",
+          "invalid_field": "",
+          "before_match": true,
+          "after_match": false,
+          "change": "REVOKED"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input0": "bad/value",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input1": "mcp://a",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input2": "mcp",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input3": "a"
+      },
+      "expected": {
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked": {
+          "domain_status": "INVALID_INPUT",
+          "invalid_field": "before",
+          "before_match": false,
+          "after_match": false,
+          "change": "INVALID_INPUT"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input0": "mcp://a",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input1": "bad/value",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input2": "mcp",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input3": "a"
+      },
+      "expected": {
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked": {
+          "domain_status": "INVALID_INPUT",
+          "invalid_field": "after",
+          "before_match": false,
+          "after_match": false,
+          "change": "INVALID_INPUT"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input0": "mcp://a",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input1": "mcp://a",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input2": "bad/value",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input3": "a"
+      },
+      "expected": {
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked": {
+          "domain_status": "INVALID_INPUT",
+          "invalid_field": "req_type",
+          "before_match": false,
+          "after_match": false,
+          "change": "INVALID_INPUT"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input0": "mcp://a",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input1": "mcp://a",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input2": "mcp",
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked.input3": "bad/value"
+      },
+      "expected": {
+        "gooo/service-policy/checked-impact:CompareServiceGrantChecked": {
+          "domain_status": "INVALID_INPUT",
+          "invalid_field": "req_name",
+          "before_match": false,
+          "after_match": false,
+          "change": "INVALID_INPUT"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "app/service-grant-refinement",
+    "activity": "AnalyzeServiceGrant"
+  },
+  "packages": [
+    {
+      "path": "go/google/agentmesh/api",
+      "sources": [
+        "ports/agentmesh/service_pattern.gooo"
+      ]
+    },
+    {
+      "path": "app/service-grant-refinement",
+      "sources": [
+        "examples/agentmesh-service-policy/refinement.gooo"
+      ]
+    }
+  ]
+}
