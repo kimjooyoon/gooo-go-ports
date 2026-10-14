@@ -1,0 +1,81 @@
+// Original Gooo comparison of two complete API decision records.
+// Interpret a policy-revision comparison only after strict verification of the
+// saved original proof and both sealed policies evaluated on the same raw facts.
+// These pure entrypoints do not authenticate facts, validate source generations,
+// authorize an operation, or execute effects. Classifier seed pairs are synthetic.
+// Go transports and serializes outputs; Gooo computes every flag, count and class.
+package api_policy_revision_classifier
+namespace gooo_original_api_policy_revision_classifier_v1
+import api "app/cel-api-policy"
+entity ApiDifferenceFlags id "gooo://api-policy-revision/difference-flags/v1" fields {
+ field allowed id "gooo://api-policy-revision/difference-flags/allowed" type boolean required one
+ field reason id "gooo://api-policy-revision/difference-flags/reason" type boolean required one
+ field authenticated id "gooo://api-policy-revision/difference-flags/authenticated" type boolean required one
+ field tenant_present id "gooo://api-policy-revision/difference-flags/tenant-present" type boolean required one
+ field tenant_matched id "gooo://api-policy-revision/difference-flags/tenant-matched" type boolean required one
+ field action_present id "gooo://api-policy-revision/difference-flags/action-present" type boolean required one
+ field action_matched id "gooo://api-policy-revision/difference-flags/action-matched" type boolean required one
+ field access_allowed id "gooo://api-policy-revision/difference-flags/access-allowed" type boolean required one
+ field access_error id "gooo://api-policy-revision/difference-flags/access-error" type boolean required one
+ field access_result id "gooo://api-policy-revision/difference-flags/access-result" type boolean required one
+ field group_matched id "gooo://api-policy-revision/difference-flags/group-matched" type boolean required one
+ field principal_matched id "gooo://api-policy-revision/difference-flags/principal-matched" type boolean required one
+ field group_missing id "gooo://api-policy-revision/difference-flags/group-missing" type boolean required one
+ field principal_defaulted id "gooo://api-policy-revision/difference-flags/principal-defaulted" type boolean required one
+ field effective_principal id "gooo://api-policy-revision/difference-flags/effective-principal" type boolean required one
+}
+entity ApiChangeSummary id "gooo://api-policy-revision/change-summary/v1" fields {
+ field classification id "gooo://api-policy-revision/change-summary/classification" type string required one
+ field changed_count id "gooo://api-policy-revision/change-summary/changed-count" type integer required one
+}
+
+activity DifferenceFlags(ApiDecision, ApiDecision) -> ApiDifferenceFlags id "gooo://api-policy-revision/difference-flags" computes `
+return ApiDifferenceFlags{allowed: input0.allowed != input1.allowed, reason: input0.reason != input1.reason, authenticated: input0.authenticated != input1.authenticated, tenant_present: input0.tenant_present != input1.tenant_present, tenant_matched: input0.tenant_matched != input1.tenant_matched, action_present: input0.action_present != input1.action_present, action_matched: input0.action_matched != input1.action_matched, access_allowed: input0.access_allowed != input1.access_allowed, access_error: input0.access_error != input1.access_error, access_result: input0.access_result != input1.access_result, group_matched: input0.group_matched != input1.group_matched, principal_matched: input0.principal_matched != input1.principal_matched, group_missing: input0.group_missing != input1.group_missing, principal_defaulted: input0.principal_defaulted != input1.principal_defaulted, effective_principal: input0.effective_principal != input1.effective_principal}
+`
+
+activity ChangeSummary(ApiDecision, ApiDecision) -> ApiChangeSummary id "gooo://api-policy-revision/change-summary" computes `
+let differences = DifferenceFlags(input0, input1)
+let changedCount = 0
+if differences.allowed { changedCount = changedCount + 1 }
+if differences.reason { changedCount = changedCount + 1 }
+if differences.authenticated { changedCount = changedCount + 1 }
+if differences.tenant_present { changedCount = changedCount + 1 }
+if differences.tenant_matched { changedCount = changedCount + 1 }
+if differences.action_present { changedCount = changedCount + 1 }
+if differences.action_matched { changedCount = changedCount + 1 }
+if differences.access_allowed { changedCount = changedCount + 1 }
+if differences.access_error { changedCount = changedCount + 1 }
+if differences.access_result { changedCount = changedCount + 1 }
+if differences.group_matched { changedCount = changedCount + 1 }
+if differences.principal_matched { changedCount = changedCount + 1 }
+if differences.group_missing { changedCount = changedCount + 1 }
+if differences.principal_defaulted { changedCount = changedCount + 1 }
+if differences.effective_principal { changedCount = changedCount + 1 }
+let classification = "UNCHANGED"
+if !input0.allowed && input1.allowed {
+ classification = "NEWLY_ALLOWED"
+} else {
+ if input0.allowed && !input1.allowed {
+  classification = "NEWLY_DENIED"
+ } else {
+  if differences.reason {
+   classification = "REASON_CHANGED"
+  } else {
+   if changedCount > 0 { classification = "OBSERVATIONS_CHANGED" }
+  }
+ }
+}
+return ApiChangeSummary{classification: classification, changed_count: changedCount}
+`
+
+// Seed order and independent literal summary expectations (all synthetic):
+// 1 identical_allow: UNCHANGED/0.
+// 2 allowed_only: NEWLY_DENIED/1; 3 reason_only: REASON_CHANGED/1.
+// 4..16: one named observation changes in original field order, OBSERVATIONS_CHANGED/1.
+// 17 newly_allowed: NEWLY_ALLOWED/2; 18 newly_denied: NEWLY_DENIED/2.
+// 19 every_field_changed: NEWLY_DENIED/15; 20 raw_unicode_equal: UNCHANGED/0.
+// 21 combining_inequality: OBSERVATIONS_CHANGED/1; 22 identical_deny: UNCHANGED/0.
+// 23 deny_reason_only: REASON_CHANGED/1.
+// Flags: row1/20/22 allfalse; rows2..16 exactly their one original field true;
+// row17/18 allowed+reason true; row19 all15 true; row21 effective_principal true;
+// row23 reason true. These are classifier examples, not readonly policy paths.

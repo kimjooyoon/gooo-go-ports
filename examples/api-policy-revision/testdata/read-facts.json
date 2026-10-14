@@ -1,0 +1,11 @@
+{
+  "group_present": true,
+  "group_value": "admin",
+  "principal_present": true,
+  "principal_value": "synthetic:user",
+  "authenticated": true,
+  "caller_tenant": "tenant-a",
+  "resource_tenant": "tenant-a",
+  "requested_action": "read",
+  "allowed_action": "read"
+}

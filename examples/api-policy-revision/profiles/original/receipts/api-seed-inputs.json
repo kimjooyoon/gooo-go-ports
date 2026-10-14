@@ -1,0 +1,16 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "app/cel-api-policy:APIAccess.input0": true,
+      "app/cel-api-policy:APIAccess.input1": "admin",
+      "app/cel-api-policy:APIAccess.input2": true,
+      "app/cel-api-policy:APIAccess.input3": "user:me@acme.co",
+      "app/cel-api-policy:APIAccess.input4": true,
+      "app/cel-api-policy:APIAccess.input5": "tenant-a",
+      "app/cel-api-policy:APIAccess.input6": "tenant-a",
+      "app/cel-api-policy:APIAccess.input7": "write",
+      "app/cel-api-policy:APIAccess.input8": "write"
+    }
+  ]
+}

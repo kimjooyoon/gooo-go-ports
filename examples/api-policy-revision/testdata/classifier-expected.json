@@ -1,0 +1,558 @@
+{
+  "schema": "gooo/api-policy-revision-classifier-expected/v1",
+  "scope": "synthetic_record_pairs_not_policy_paths",
+  "cases": [
+    {
+      "name": "identical_allow",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "UNCHANGED",
+        "changed_count": 0
+      }
+    },
+    {
+      "name": "allowed_only",
+      "flags": {
+        "allowed": true,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "NEWLY_DENIED",
+        "changed_count": 1
+      }
+    },
+    {
+      "name": "reason_only",
+      "flags": {
+        "allowed": false,
+        "reason": true,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "REASON_CHANGED",
+        "changed_count": 1
+      }
+    },
+    {
+      "name": "authenticated_only",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": true,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "OBSERVATIONS_CHANGED",
+        "changed_count": 1
+      }
+    },
+    {
+      "name": "tenant_present_only",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": true,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "OBSERVATIONS_CHANGED",
+        "changed_count": 1
+      }
+    },
+    {
+      "name": "tenant_matched_only",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": true,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "OBSERVATIONS_CHANGED",
+        "changed_count": 1
+      }
+    },
+    {
+      "name": "action_present_only",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": true,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "OBSERVATIONS_CHANGED",
+        "changed_count": 1
+      }
+    },
+    {
+      "name": "action_matched_only",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": true,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "OBSERVATIONS_CHANGED",
+        "changed_count": 1
+      }
+    },
+    {
+      "name": "access_allowed_only",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": true,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "OBSERVATIONS_CHANGED",
+        "changed_count": 1
+      }
+    },
+    {
+      "name": "access_error_only",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": true,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "OBSERVATIONS_CHANGED",
+        "changed_count": 1
+      }
+    },
+    {
+      "name": "access_result_only",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": true,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "OBSERVATIONS_CHANGED",
+        "changed_count": 1
+      }
+    },
+    {
+      "name": "group_matched_only",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": true,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "OBSERVATIONS_CHANGED",
+        "changed_count": 1
+      }
+    },
+    {
+      "name": "principal_matched_only",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": true,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "OBSERVATIONS_CHANGED",
+        "changed_count": 1
+      }
+    },
+    {
+      "name": "group_missing_only",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": true,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "OBSERVATIONS_CHANGED",
+        "changed_count": 1
+      }
+    },
+    {
+      "name": "principal_defaulted_only",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": true,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "OBSERVATIONS_CHANGED",
+        "changed_count": 1
+      }
+    },
+    {
+      "name": "effective_principal_only",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": true
+      },
+      "summary": {
+        "classification": "OBSERVATIONS_CHANGED",
+        "changed_count": 1
+      }
+    },
+    {
+      "name": "newly_allowed",
+      "flags": {
+        "allowed": true,
+        "reason": true,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "NEWLY_ALLOWED",
+        "changed_count": 2
+      }
+    },
+    {
+      "name": "newly_denied",
+      "flags": {
+        "allowed": true,
+        "reason": true,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "NEWLY_DENIED",
+        "changed_count": 2
+      }
+    },
+    {
+      "name": "every_field_changed",
+      "flags": {
+        "allowed": true,
+        "reason": true,
+        "authenticated": true,
+        "tenant_present": true,
+        "tenant_matched": true,
+        "action_present": true,
+        "action_matched": true,
+        "access_allowed": true,
+        "access_error": true,
+        "access_result": true,
+        "group_matched": true,
+        "principal_matched": true,
+        "group_missing": true,
+        "principal_defaulted": true,
+        "effective_principal": true
+      },
+      "summary": {
+        "classification": "NEWLY_DENIED",
+        "changed_count": 15
+      }
+    },
+    {
+      "name": "raw_unicode_equal",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "UNCHANGED",
+        "changed_count": 0
+      }
+    },
+    {
+      "name": "combining_inequality",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": true
+      },
+      "summary": {
+        "classification": "OBSERVATIONS_CHANGED",
+        "changed_count": 1
+      }
+    },
+    {
+      "name": "identical_deny",
+      "flags": {
+        "allowed": false,
+        "reason": false,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "UNCHANGED",
+        "changed_count": 0
+      }
+    },
+    {
+      "name": "deny_reason_only",
+      "flags": {
+        "allowed": false,
+        "reason": true,
+        "authenticated": false,
+        "tenant_present": false,
+        "tenant_matched": false,
+        "action_present": false,
+        "action_matched": false,
+        "access_allowed": false,
+        "access_error": false,
+        "access_result": false,
+        "group_matched": false,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": false
+      },
+      "summary": {
+        "classification": "REASON_CHANGED",
+        "changed_count": 1
+      }
+    }
+  ]
+}

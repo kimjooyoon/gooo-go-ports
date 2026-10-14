@@ -1,0 +1,27 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "gooo/api-policy-revision/classifier",
+    "activity": "ChangeSummary"
+  },
+  "packages": [
+    {
+      "path": "go/cel.dev/cel-go/codelab",
+      "sources": [
+        "canonical/scalar_access.gooo"
+      ]
+    },
+    {
+      "path": "app/cel-api-policy",
+      "sources": [
+        "canonical/main.gooo"
+      ]
+    },
+    {
+      "path": "gooo/api-policy-revision/classifier",
+      "sources": [
+        "compare.gooo"
+      ]
+    }
+  ]
+}

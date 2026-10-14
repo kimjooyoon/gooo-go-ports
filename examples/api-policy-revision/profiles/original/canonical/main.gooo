@@ -1,0 +1,51 @@
+// Original Gooo API-policy composition. This performs no authentication or API effect.
+package cel_api_policy
+namespace gooo_original_api_example
+import cel "go/cel.dev/cel-go/codelab"
+entity Boolean id "gooo://std/boolean"
+entity Text id "gooo://std/text"
+entity ApiDecision id "gooo://api-example/decision/v1" fields {
+ field allowed id "gooo://api-example/decision/allowed" type boolean required one
+ field reason id "gooo://api-example/decision/reason" type string required one
+ field authenticated id "gooo://api-example/decision/authenticated" type boolean required one
+ field tenant_present id "gooo://api-example/decision/tenant-present" type boolean required one
+ field tenant_matched id "gooo://api-example/decision/tenant-matched" type boolean required one
+ field action_present id "gooo://api-example/decision/action-present" type boolean required one
+ field action_matched id "gooo://api-example/decision/action-matched" type boolean required one
+ field access_allowed id "gooo://api-example/decision/access-allowed" type boolean required one
+ field access_error id "gooo://api-example/decision/access-error" type boolean required one
+ field access_result id "gooo://api-example/decision/access-result" type string required one
+ field group_matched id "gooo://api-example/decision/group-matched" type boolean required one
+ field principal_matched id "gooo://api-example/decision/principal-matched" type boolean required one
+ field group_missing id "gooo://api-example/decision/group-missing" type boolean required one
+ field principal_defaulted id "gooo://api-example/decision/principal-defaulted" type boolean required one
+ field effective_principal id "gooo://api-example/decision/effective-principal" type string required one
+}
+
+// input0..3 retain the scalar candidate's presence/raw facts.
+// input4 is established by the server's authentication provider. input5/6 are
+// caller/resource tenant values. input7 is requested action; input8 is the
+// server-owned allowed action. Host code computes no comparison or reason.
+activity APIAccess(Boolean, Text, Boolean, Text, Boolean, Text, Text, Text, Text) -> ApiDecision id "gooo://api-example/api-access" computes `
+let access = cel.ScalarAccess(input0, input1, input2, input3)
+let tenantPresent = input5 != "" && input6 != ""
+let tenantMatched = input5 == input6
+let actionPresent = input7 != "" && input8 != ""
+let actionMatched = input7 == input8
+let allowed = input4 && tenantPresent && tenantMatched && actionPresent && actionMatched && access.allowed
+let reason = "ALLOW"
+if !input4 { reason = "NOT_AUTHENTICATED" } else {
+ if !tenantPresent { reason = "TENANT_UNSPECIFIED" } else {
+  if !tenantMatched { reason = "TENANT_MISMATCH" } else {
+   if !actionPresent { reason = "ACTION_UNSPECIFIED" } else {
+    if !actionMatched { reason = "ACTION_MISMATCH" } else {
+     if access.evaluation_error { reason = "ACCESS_ERROR" } else {
+      if !access.allowed { reason = "ACCESS_DENIED" }
+     }
+    }
+   }
+  }
+ }
+}
+return ApiDecision{allowed: allowed, reason: reason, authenticated: input4, tenant_present: tenantPresent, tenant_matched: tenantMatched, action_present: actionPresent, action_matched: actionMatched, access_allowed: access.allowed, access_error: access.evaluation_error, access_result: access.result, group_matched: access.group_matched, principal_matched: access.principal_matched, group_missing: access.group_missing, principal_defaulted: access.principal_defaulted, effective_principal: access.effective_principal}
+`

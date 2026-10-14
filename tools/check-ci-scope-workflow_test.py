@@ -48,13 +48,14 @@ HEAVY = {
     "Observe malformed literal Text inputs through the actual CLI",
     "Verify the offline decision-policy experiment",
     "Verify the imported CEL API policy",
+    "Verify the sealed API policy revision comparison",
     "Verify the Agent Mesh service-pattern adaptation",
 }
 UPLOADS = {"Upload offline policy experiment evidence", "Upload execution and diagnostic evidence"}
 DOC_STEPS = {"Report documentation-only native scope", "Preserve documentation scope and compiler identity"}
 NATIVE_COMMAND = re.compile(
     r"(?:\.gooo\s+package\s+(?:execute|replay)|\./cmd/(?:verify|check-unicode|check-literal-text-report)\b|"
-    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py)"
+    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py)"
 )
 LITERAL_COMMANDS = {
     "Execute and replay the literal text report": {
@@ -112,7 +113,7 @@ def validate(text):
     require(hashlib.sha256(header.encode()).hexdigest() == HEADER_SHA, "events or permissions changed")
     require(hashlib.sha256(browser.encode()).hexdigest() == BROWSER_SHA, "browser/deployment behavior changed")
     named, unnamed = named_steps(text)
-    require(len(HEAVY) == 23, "full-scope native step count changed")
+    require(len(HEAVY) == 24, "full-scope native step count changed")
     require(set(named) == COMMON | HEAVY | UPLOADS | DOC_STEPS, "step roster changed without guard review")
     require(len(unnamed) == 2 and all(field(c, "if") is None for c in unnamed), "checkout/Go setup became conditional")
     require("fetch-depth: 0" in unnamed[0], "exact PR parents must be available")
@@ -143,6 +144,17 @@ def validate(text):
                   ".literal_report_reference_cases == 9313", ".literal_finite_provenance_scope",
                   "Inner prior_result_sha256, full generation-report provenance and composition/runtime typed-plan equality are NOT_CHECKED"):
         require(token in comparison, "literal finite evidence scope missing: " + token)
+    revision = named["Verify the sealed API policy revision comparison"]
+    require('python3 -B examples/api-policy-revision/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/api-policy-revision"' in revision,
+            "sealed revision native generator/test/fresh-process verifier missing")
+    for token in ('.schema == "gooo/api-policy-revision-verification/v1"',
+                  '.status == "FINITE_TWO_PROFILE_NATIVE_AND_SAVED_REPLAY_PASS"',
+                  '.classifier_cases == 23', '.decision_fields == 15',
+                  '.fresh_process_pairs == 2', '.altered_report_refused == true',
+                  '.original_generation_preserved == true'):
+        require(token in revision, "sealed revision acceptance missing: " + token)
+    require("continue-on-error:" not in revision and "|| true" not in revision,
+            "sealed revision failure became optional")
     for name, expected in LITERAL_COMMANDS.items():
         commands = literal_commands(named[name])
         require(len(commands) == len(expected) and set(commands) == expected,
