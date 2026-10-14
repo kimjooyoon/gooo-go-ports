@@ -446,6 +446,24 @@ UUID 파싱 화면만 빌드하려면 `--uuid-parse-only`와 새 출력 경로�
 여러 배포본을 로컬에서 열 때는 버전별 디렉터리와 URL을 유지하세요. 같은 URL의
 파일을 교체했다면 캐시를 무시하고 새로고침해 HTML과 스크립트를 다시 받습니다.
 실행 파일·메타데이터·비교 입력은 브라우저 캐시를 재사용하지 않고 요청합니다.
+
+API 정책 비교 화면만 재현하려면 Go 1.27.2와 Node.js 22를 선택한 뒤 새 출력
+경로를 사용합니다. 이 전용 모드는 기존 Gooo 생성 Go와 두 고정 정책을 사용하며,
+Gooo 컴파일러를 실행하지 않습니다. 다른 전용 빌드 옵션과 함께 사용할 수 없습니다.
+
+```sh
+GOTOOLCHAIN=local GOWORK=off go run ./cmd/build-demo --api-policy-only --out out/api-policy-browser
+node --test tools/api-policy-app.test.cjs
+node tools/api-policy-browser-smoke.mjs --site "$PWD/out/api-policy-browser/site" --module "$PWD/examples/api-policy-revision" --out "$PWD/out/api-policy-browser/api-policy-smoke.json"
+python3 -m http.server 8768 --bind 127.0.0.1 --directory out/api-policy-browser/site
+```
+
+`http://127.0.0.1:8768/api-policy.html`에서 같은 아홉 사실을 원본·읽기 전용 정책으로
+계산하고, 두 판단의 열다섯 항목과 차이를 확인합니다. 저장 보고서는 파일을 불러온
+다음 명시적으로 재계산해야 새 결과를 저장할 수 있습니다. 파일 입력은 원시 바이트를
+그대로 전달하며, 편집기는 브라우저에 표시된 텍스트를 사용합니다. 각 Text의 UTF-8
+65,536바이트 한도와 원본 디코더의 한도를 유지합니다. 이 서명 없는 과거·가상 비교는
+사실의 진위나 현재 API 실행 권한을 인증하지 않습니다.
 브라우저 비교는 기존 함수 입력 3,135개와 정밀도 경계 2개를 보존하고 색상 원본 비교 1,300개를
 추가한 4,437건과 회전 원본 비교 2,472건을 합친 6,909건을 보존합니다.
 시간 간격 두 함수에 각각 1,789건을 더한 **10,487건**도 유지하고, `IsSpace` **506건**을

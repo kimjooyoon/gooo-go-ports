@@ -38,9 +38,10 @@ func run() error {
 	codegenOnly := flag.Bool("codegen-only", false, "build and verify only the editable browser body-codegen page")
 	uuidParseOnly := flag.Bool("uuid-parse-only", false, "build and verify only the compiled Google UUID Text parser page")
 	servicePolicyOnly := flag.Bool("service-policy-only", false, "build only the checked service-policy browser page from existing generated Gooo")
+	apiPolicyOnly := flag.Bool("api-policy-only", false, "build only the two-profile API policy browser page from existing generated Gooo")
 	flag.Parse()
 	isolatedModes := 0
-	for _, selected := range []bool{*codegenOnly, *uuidParseOnly, *servicePolicyOnly} {
+	for _, selected := range []bool{*codegenOnly, *uuidParseOnly, *servicePolicyOnly, *apiPolicyOnly} {
 		if selected {
 			isolatedModes++
 		}
@@ -88,6 +89,14 @@ func run() error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
+	if *apiPolicyOnly {
+		site := filepath.Join(dir, "site")
+		if err := buildAPIRevisionDemo(ctx, site, dir, lock); err != nil {
+			return err
+		}
+		fmt.Printf("Built %s/api-policy.html; fresh native literal controls and generated Gooo Wasm, unsigned historical comparison\n", site)
+		return nil
+	}
 	if *servicePolicyOnly {
 		site := filepath.Join(dir, "site")
 		if err := buildServicePolicyDemo(ctx, site, dir, lock); err != nil {
@@ -224,6 +233,9 @@ func run() error {
 		return err
 	}
 	if err := buildServicePolicyDemo(ctx, site, dir, lock); err != nil {
+		return err
+	}
+	if err := buildAPIRevisionDemo(ctx, site, dir, lock); err != nil {
 		return err
 	}
 	if err := buildCodegenDemo(ctx, site, dir, lock, *compilerRoot); err != nil {

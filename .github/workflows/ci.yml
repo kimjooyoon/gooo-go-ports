@@ -789,6 +789,25 @@ jobs:
           node tools/literal-search-smoke.cjs out/browser/site | tee out/browser/literal-search-smoke.json
           node tools/uuid-parse-smoke.cjs out/browser/site | tee out/browser/uuid-parse-smoke.json
           node tools/service-policy-smoke.cjs out/browser/site | tee out/browser/service-policy-smoke.json
+          node tools/api-policy-browser-smoke.mjs --site "$PWD/out/browser/site" --module "$PWD/examples/api-policy-revision" --out "$PWD/out/browser/api-policy-smoke.json"
+          jq -e '
+            .schema == "gooo/api-policy-browser-smoke/v1"
+            and .status == "FINITE_ACTUAL_API_POLICY_BROWSER_PACKAGE_PASS"
+            and .direct_actual_Wasm_steps == 422
+            and .saved_tamper_no_data_refusals == 279
+            and .explicit_no_data_refusals == 369
+            and .caller_own_override_controls == 15
+            and .genuine_write_byte_authority_controls == 3
+            and .public_manifest_bound == true
+            and .fresh_native_fixture_receipt_verified == true
+            and .shipped_worker_loader_checks.compare == true
+            and .shipped_worker_loader_checks.replay == true
+            and .shipped_worker_loader_checks.worker_hash_mismatch == true
+            and .shipped_worker_loader_checks.runtime_hash_mismatch == true
+            and .shipped_worker_loader_checks.wasm_hash_mismatch == true
+            and .shipped_worker_loader_checks.native_binding_mismatch == true
+          ' out/browser/api-policy-smoke.json
+          sha256sum out/browser/site/api-policy.html out/browser/site/api-policy.js out/browser/site/api-policy-worker.js out/browser/site/api-policy/program.wasm out/browser/site/api-policy/wasm_exec.js out/browser/site/api-policy/manifest.json out/browser/site/api-policy/native-fixtures-receipt.json
           node tools/source-view-smoke.cjs out/browser/site | tee out/browser/source-view-smoke.json
           node tools/browser-codegen-smoke.cjs out/browser/site/codegen out/browser/codegen-evidence | tee out/browser/codegen-smoke.json
         shell: bash --noprofile --norc -e -o pipefail {0}
