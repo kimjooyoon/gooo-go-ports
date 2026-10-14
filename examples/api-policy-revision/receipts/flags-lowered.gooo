@@ -1,0 +1,54 @@
+package gooo_workspace
+namespace gooo_workspace
+
+entity Boolean id "gooo://std/boolean"
+entity Text id "gooo://std/text"
+entity AccessDecision id "gooo://cel-example/access-decision/v1" fields {
+    field allowed id "gooo://cel-example/access-decision/allowed" type boolean required one
+    field evaluation_error id "gooo://cel-example/access-decision/evaluation-error" type boolean required one
+    field result id "gooo://cel-example/access-decision/result" type string required one
+    field group_matched id "gooo://cel-example/access-decision/group-matched" type boolean required one
+    field principal_matched id "gooo://cel-example/access-decision/principal-matched" type boolean required one
+    field group_missing id "gooo://cel-example/access-decision/group-missing" type boolean required one
+    field principal_defaulted id "gooo://cel-example/access-decision/principal-defaulted" type boolean required one
+    field effective_principal id "gooo://cel-example/access-decision/effective-principal" type string required one
+}
+entity ApiDecision id "gooo://api-example/decision/v1" fields {
+    field allowed id "gooo://api-example/decision/allowed" type boolean required one
+    field reason id "gooo://api-example/decision/reason" type string required one
+    field authenticated id "gooo://api-example/decision/authenticated" type boolean required one
+    field tenant_present id "gooo://api-example/decision/tenant-present" type boolean required one
+    field tenant_matched id "gooo://api-example/decision/tenant-matched" type boolean required one
+    field action_present id "gooo://api-example/decision/action-present" type boolean required one
+    field action_matched id "gooo://api-example/decision/action-matched" type boolean required one
+    field access_allowed id "gooo://api-example/decision/access-allowed" type boolean required one
+    field access_error id "gooo://api-example/decision/access-error" type boolean required one
+    field access_result id "gooo://api-example/decision/access-result" type string required one
+    field group_matched id "gooo://api-example/decision/group-matched" type boolean required one
+    field principal_matched id "gooo://api-example/decision/principal-matched" type boolean required one
+    field group_missing id "gooo://api-example/decision/group-missing" type boolean required one
+    field principal_defaulted id "gooo://api-example/decision/principal-defaulted" type boolean required one
+    field effective_principal id "gooo://api-example/decision/effective-principal" type string required one
+}
+entity ApiDifferenceFlags id "gooo://api-policy-revision/difference-flags/v1" fields {
+    field allowed id "gooo://api-policy-revision/difference-flags/allowed" type boolean required one
+    field reason id "gooo://api-policy-revision/difference-flags/reason" type boolean required one
+    field authenticated id "gooo://api-policy-revision/difference-flags/authenticated" type boolean required one
+    field tenant_present id "gooo://api-policy-revision/difference-flags/tenant-present" type boolean required one
+    field tenant_matched id "gooo://api-policy-revision/difference-flags/tenant-matched" type boolean required one
+    field action_present id "gooo://api-policy-revision/difference-flags/action-present" type boolean required one
+    field action_matched id "gooo://api-policy-revision/difference-flags/action-matched" type boolean required one
+    field access_allowed id "gooo://api-policy-revision/difference-flags/access-allowed" type boolean required one
+    field access_error id "gooo://api-policy-revision/difference-flags/access-error" type boolean required one
+    field access_result id "gooo://api-policy-revision/difference-flags/access-result" type boolean required one
+    field group_matched id "gooo://api-policy-revision/difference-flags/group-matched" type boolean required one
+    field principal_matched id "gooo://api-policy-revision/difference-flags/principal-matched" type boolean required one
+    field group_missing id "gooo://api-policy-revision/difference-flags/group-missing" type boolean required one
+    field principal_defaulted id "gooo://api-policy-revision/difference-flags/principal-defaulted" type boolean required one
+    field effective_principal id "gooo://api-policy-revision/difference-flags/effective-principal" type boolean required one
+}
+entity ApiChangeSummary id "gooo://api-policy-revision/change-summary/v1" fields {
+    field classification id "gooo://api-policy-revision/change-summary/classification" type string required one
+    field changed_count id "gooo://api-policy-revision/change-summary/changed-count" type integer required one
+}
+activity GoooPackage2ActivityDifferenceFlags(ApiDecision, ApiDecision) -> ApiDifferenceFlags id "gooo://api-policy-revision/difference-flags" computes "\nreturn ApiDifferenceFlags{allowed: input0.allowed != input1.allowed, reason: input0.reason != input1.reason, authenticated: input0.authenticated != input1.authenticated, tenant_present: input0.tenant_present != input1.tenant_present, tenant_matched: input0.tenant_matched != input1.tenant_matched, action_present: input0.action_present != input1.action_present, action_matched: input0.action_matched != input1.action_matched, access_allowed: input0.access_allowed != input1.access_allowed, access_error: input0.access_error != input1.access_error, access_result: input0.access_result != input1.access_result, group_matched: input0.group_matched != input1.group_matched, principal_matched: input0.principal_matched != input1.principal_matched, group_missing: input0.group_missing != input1.group_missing, principal_defaulted: input0.principal_defaulted != input1.principal_defaulted, effective_principal: input0.effective_principal != input1.effective_principal}\n"

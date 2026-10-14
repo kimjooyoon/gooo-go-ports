@@ -1,0 +1,38 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "app/api-policy-readonly:ReadOnlyAPI.input0": true,
+      "app/api-policy-readonly:ReadOnlyAPI.input1": "admin",
+      "app/api-policy-readonly:ReadOnlyAPI.input2": true,
+      "app/api-policy-readonly:ReadOnlyAPI.input3": "user:me@acme.co",
+      "app/api-policy-readonly:ReadOnlyAPI.input4": true,
+      "app/api-policy-readonly:ReadOnlyAPI.input5": "tenant-a",
+      "app/api-policy-readonly:ReadOnlyAPI.input6": "tenant-a",
+      "app/api-policy-readonly:ReadOnlyAPI.input7": "write",
+      "app/api-policy-readonly:ReadOnlyAPI.input8": "write"
+    },
+    {
+      "app/api-policy-readonly:ReadOnlyAPI.input0": true,
+      "app/api-policy-readonly:ReadOnlyAPI.input1": "admin",
+      "app/api-policy-readonly:ReadOnlyAPI.input2": true,
+      "app/api-policy-readonly:ReadOnlyAPI.input3": "user:me@acme.co",
+      "app/api-policy-readonly:ReadOnlyAPI.input4": true,
+      "app/api-policy-readonly:ReadOnlyAPI.input5": "tenant-a",
+      "app/api-policy-readonly:ReadOnlyAPI.input6": "tenant-a",
+      "app/api-policy-readonly:ReadOnlyAPI.input7": "read",
+      "app/api-policy-readonly:ReadOnlyAPI.input8": "read"
+    },
+    {
+      "app/api-policy-readonly:ReadOnlyAPI.input0": true,
+      "app/api-policy-readonly:ReadOnlyAPI.input1": "admin",
+      "app/api-policy-readonly:ReadOnlyAPI.input2": true,
+      "app/api-policy-readonly:ReadOnlyAPI.input3": "user:me@acme.co",
+      "app/api-policy-readonly:ReadOnlyAPI.input4": false,
+      "app/api-policy-readonly:ReadOnlyAPI.input5": "tenant-a",
+      "app/api-policy-readonly:ReadOnlyAPI.input6": "tenant-a",
+      "app/api-policy-readonly:ReadOnlyAPI.input7": "write",
+      "app/api-policy-readonly:ReadOnlyAPI.input8": "write"
+    }
+  ]
+}

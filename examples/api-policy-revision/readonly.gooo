@@ -1,0 +1,32 @@
+// Original Gooo candidate: a hypothetical read-only revision over the same supplied API facts.
+package api_policy_readonly
+namespace gooo_original_api_revision
+import original "app/cel-api-policy"
+entity Boolean id "gooo://std/boolean"
+entity Text id "gooo://std/text"
+entity ApiDecision id "gooo://api-example/decision/v1" fields {
+ field allowed id "gooo://api-example/decision/allowed" type boolean required one
+ field reason id "gooo://api-example/decision/reason" type string required one
+ field authenticated id "gooo://api-example/decision/authenticated" type boolean required one
+ field tenant_present id "gooo://api-example/decision/tenant-present" type boolean required one
+ field tenant_matched id "gooo://api-example/decision/tenant-matched" type boolean required one
+ field action_present id "gooo://api-example/decision/action-present" type boolean required one
+ field action_matched id "gooo://api-example/decision/action-matched" type boolean required one
+ field access_allowed id "gooo://api-example/decision/access-allowed" type boolean required one
+ field access_error id "gooo://api-example/decision/access-error" type boolean required one
+ field access_result id "gooo://api-example/decision/access-result" type string required one
+ field group_matched id "gooo://api-example/decision/group-matched" type boolean required one
+ field principal_matched id "gooo://api-example/decision/principal-matched" type boolean required one
+ field group_missing id "gooo://api-example/decision/group-missing" type boolean required one
+ field principal_defaulted id "gooo://api-example/decision/principal-defaulted" type boolean required one
+ field effective_principal id "gooo://api-example/decision/effective-principal" type string required one
+}
+
+activity ReadOnlyAPI(Boolean, Text, Boolean, Text, Boolean, Text, Text, Text, Text) -> ApiDecision id "gooo://api-revision/readonly/v1" computes `
+let base = original.APIAccess(input0, input1, input2, input3, input4, input5, input6, input7, input8)
+let allowed = base.allowed
+let reason = base.reason
+if allowed && input7 != "read" { allowed = false
+ reason = "ACTION_NOT_READ_ONLY" }
+return ApiDecision{allowed: allowed, reason: reason, authenticated: base.authenticated, tenant_present: base.tenant_present, tenant_matched: base.tenant_matched, action_present: base.action_present, action_matched: base.action_matched, access_allowed: base.access_allowed, access_error: base.access_error, access_result: base.access_result, group_matched: base.group_matched, principal_matched: base.principal_matched, group_missing: base.group_missing, principal_defaulted: base.principal_defaulted, effective_principal: base.effective_principal}
+`
