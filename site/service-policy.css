@@ -5,6 +5,9 @@
 .policy-input-grid label, #policy-form > label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px }
 #policy-mode { max-width: 100%; padding: 10px; background: #fffefa; border: 1px solid var(--line); border-radius: 5px; font: inherit }
 .policy-captured { margin: 20px 0 }
+.policy-captured h2 { font-size: 18px; margin-bottom: 8px }
+.policy-capture-note .literal-help { margin: 6px 0 }
+.policy-capture-note button { padding: 4px 0; border: 0; background: none; color: inherit; font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer }
 .service-policy-page pre { padding: 16px; background: #efeee7; border-radius: 5px; font: 13px/1.6 monospace; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 420px; overflow: auto }
 .service-policy-page details > summary { cursor: pointer; padding: 10px 0; font-weight: 600 }
 .policy-summary { padding: 14px 16px; background: #f1f4ec; border: 1px solid #c4cebd; border-radius: 5px; line-height: 1.7 }
