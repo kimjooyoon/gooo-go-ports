@@ -242,3 +242,192 @@ test('unsigned observation exports retain literal and escaped input, never claim
   assert.match(observation.scope, /Unsigned/); assert.match(observation.scope, /Not a native execution receipt/);
   assert.match(observation.scope, /policy write/);
 });
+
+function savedObservation(mode = 'match', decision) {
+  const program = metadata(), row = corpusRows().find(item => item.mode === mode && item.want.domain_status === 'VALID_INPUT');
+  const result = proof(row, program);
+  if (decision) result.decision = decision;
+  return clone(protocol.observation(mode, row.facts, result, program));
+}
+function withSavedProgram(saved, change) {
+  const result = clone(saved); change(result.program);
+  if (result.program.bindings !== undefined) result.proof.bindings = clone(result.program.bindings);
+  return result;
+}
+
+test('saved observations round-trip every mode and exact input representation as immutable claims', () => {
+  for (const mode of Object.keys(FIELDS)) {
+    const samples = corpusRows().filter(row => row.mode === mode && row.want.domain_status === 'INVALID_INPUT');
+    const saved = savedObservation(mode);
+    assert.deepEqual(clone(protocol.parseObservation(JSON.stringify(saved))), saved);
+    for (const row of samples.slice(0, 1)) {
+      const program = metadata(), exported = protocol.observation(mode, row.facts, proof(row, program), program);
+      assert.deepEqual(clone(protocol.parseObservation(JSON.stringify(exported))), clone(exported));
+    }
+    const parsed = protocol.validateObservation(saved);
+    for (const value of [parsed, parsed.inputs, parsed.inputs[0], parsed.inputs[0].utf16_units,
+      parsed.proof, parsed.proof.facts, parsed.proof.decision, parsed.program, parsed.program.bindings.assets, parsed.program.files]) assert.equal(Object.isFrozen(value), true);
+    const original = parsed.inputs[0].text; saved.inputs[0].text = 'mutated'; assert.equal(parsed.inputs[0].text, original);
+    assert.throws(() => { parsed.proof.facts[FIELDS[mode][0]] = 'mutated'; }, TypeError);
+  }
+  const program = metadata();
+  for (const text of ['', '\r\n\t\0', '\uFEFF', '<tag>&', 'e\u0301', 'é', '😀', 'x'.repeat(129), '\uffff'.repeat(4096), '😀'.repeat(2048)]) {
+    const facts = { ...fact('match'), req_name: text };
+    const result = { facts, decision: { domain_status: 'INVALID_INPUT', invalid_field: 'req_name', matched: false }, bindings: program.bindings };
+    const parsed = protocol.parseObservation(JSON.stringify(protocol.observation('match', facts, result, program)));
+    assert.equal(parsed.inputs[2].text, text); assert.equal(parsed.proof.facts.req_name, text);
+    assert.deepEqual(parsed.inputs[2].utf16_units, Array.from({ length: text.length }, (_, index) => text.charCodeAt(index)));
+  }
+});
+
+test('saved observation parser refuses duplicate keys, excessive depth and noncanonical numeric tokens before rounding', () => {
+  const saved = savedObservation(), raw = JSON.stringify(saved);
+  for (const token of ['100.0', '100.00000000000000001', '1e2', '1E+2', '-0', '-100', '9007199254740992', '9007199254740993', '1e999']) {
+    assert.throws(() => protocol.parseObservation(raw.replace('"wasm_bytes":100', '"wasm_bytes":' + token)), /canonical nonnegative safe integers/, token);
+  }
+  for (const changed of [
+    raw.replace('"schema":', '"schema":"ignored","schema":'),
+    raw.replace('"kind":', '"k\\u0069nd":"ignored","kind":'),
+    raw.replace('"matched":', '"matched":false,"matched":'),
+    raw.replace('"sha256":', '"sha256":"ignored","sha256":'),
+    raw.replace('"text":', '"text":"ignored","text":'),
+    raw + '{}', '[' + raw + ']', '\uFEFF' + raw, raw.slice(0, -1),
+    '{"a":NaN}', '{"a":Infinity}', '{"a":01}', '{"a":+1}', '{"a":.1}', '{"a":1.}',
+  ]) assert.throws(() => protocol.parseObservation(changed));
+  assert.throws(() => protocol.parseObservation('['.repeat(13) + '0' + ']'.repeat(13)), /nested too deeply/);
+  assert.throws(() => protocol.parseObservation('['.repeat(12) + '0' + ']'.repeat(12)), error => !/nested too deeply/.test(error.message));
+  for (const value of ['', null, false, {}, new String(raw)]) assert.throws(() => protocol.parseObservation(value));
+});
+
+test('saved observation roots, inputs and proof require exact fields, order and matching representations', () => {
+  const saved = savedObservation();
+  const refuse = change => { const altered = clone(saved); change(altered); assert.throws(() => protocol.validateObservation(altered)); };
+  for (const key of Object.keys(saved)) refuse(value => { delete value[key]; });
+  for (const key of ['schema', 'kind', 'input_binding', 'scope']) refuse(value => { value[key] += 'changed'; });
+  for (const mode of ['__proto__', 'unknown', null, false]) refuse(value => { value.mode = mode; });
+  refuse(value => { value.extra = true; });
+  for (const inputs of [null, {}, [], [saved.inputs[0]], [...saved.inputs, saved.inputs[0]], [...saved.inputs].reverse(),
+    [saved.inputs[0], saved.inputs[0], saved.inputs[2]]]) refuse(value => { value.inputs = inputs; });
+  for (const field of ['name', 'text', 'utf16_units', 'escaped']) refuse(value => { delete value.inputs[0][field]; });
+  for (const patch of [{ extra: 1 }, { name: 'other' }, { text: null }, { text: '\ud800' }, { text: 'x'.repeat(4097) },
+    { text: 'different' }, { utf16_units: [] }, { utf16_units: '42' }, { utf16_units: [0] },
+    { utf16_units: [42.5] }, { utf16_units: [-0] }, { utf16_units: [65536] }, { escaped: '*' }, { escaped: null }]) {
+    refuse(value => Object.assign(value.inputs[0], patch));
+  }
+  for (const field of ['facts', 'decision', 'bindings']) refuse(value => { delete value.proof[field]; });
+  refuse(value => { value.proof.extra = true; });
+  refuse(value => { value.proof.facts.pattern += 'x'; });
+  refuse(value => { value.proof.facts.extra = ''; });
+  refuse(value => { value.proof.decision.matched = 1; });
+  refuse(value => { value.proof.decision.domain_status = 'UNKNOWN'; });
+  refuse(value => { value.proof.decision.extra = true; });
+  refuse(value => { value.proof.bindings.assets['matcher.gooo'] = 'sha256:' + '0'.repeat(64); });
+});
+
+test('known-v1 historical metadata is admitted internally while live runtime pins remain strict', () => {
+  const saved = savedObservation();
+  const changed = withSavedProgram(saved, program => {
+    program.compiler_revision = program.bindings.compiler_source_sha = 'd'.repeat(40);
+    program.generation_sha256 = program.bindings.generation_sha256 = 'sha256:' + 'e'.repeat(64);
+    program.files['source/generation.json'].sha256 = 'e'.repeat(64);
+    program.go_version = 'go1.26.5'; program.source_revision = 'f'.repeat(40); program.source_dirty = true;
+    program.wasm_sha256 = program.files['program.wasm'].sha256 = 'd'.repeat(64);
+    program.wasm_bytes = program.files['program.wasm'].bytes = 101;
+    program.wasm_exec_sha256 = program.files['wasm_exec.js'].sha256 = 'e'.repeat(64);
+    program.wasm_exec_bytes = program.files['wasm_exec.js'].bytes = 102;
+    program.bindings.assets['matcher.gooo'] = 'sha256:' + 'f'.repeat(64);
+    program.files['source/matcher.gooo'].sha256 = 'f'.repeat(64);
+  });
+  assert.deepEqual(clone(protocol.parseObservation(JSON.stringify(changed))), changed);
+  assert.throws(() => protocol.validateMetadata(changed.program));
+  assert.throws(() => protocol.validateBindings(changed.program.bindings));
+  assert.throws(() => protocol.validateReady({ type: 'ready', program: changed.program }));
+  const comparison = protocol.compareObservation(changed, saved.mode, saved.proof.facts, saved.proof, saved.program);
+  assert.deepEqual(clone(comparison), { decision_equal: true, decision_differences: [], program_equal: false, bindings_equal: false, executable_equal: false });
+  for (const isolated of [
+    withSavedProgram(saved, p => { p.source_revision = 'f'.repeat(40); }),
+    withSavedProgram(saved, p => { p.go_version = 'go2.0.0'; }),
+    withSavedProgram(saved, p => { p.source_dirty = !p.source_dirty; }),
+    withSavedProgram(saved, p => { p.files['source/NOTICE.md'].bytes++; }),
+  ]) {
+    const result = protocol.compareObservation(isolated, saved.mode, saved.proof.facts, saved.proof, saved.program);
+    assert.equal(result.program_equal, false); assert.equal(result.bindings_equal, true); assert.equal(result.executable_equal, true);
+  }
+});
+
+test('historical metadata still refuses inconsistent identities, malformed rosters and declared-size bounds', () => {
+  const saved = savedObservation();
+  const refuse = change => { const altered = withSavedProgram(saved, change); assert.throws(() => protocol.validateObservation(altered)); };
+  for (const field of Object.keys(saved.program)) refuse(program => { delete program[field]; });
+  for (const patch of [{ schema: 'v2' }, { compiler_revision: 'x'.repeat(40) }, { generation_sha256: 'sha256:' + '0'.repeat(64) },
+    { source_revision: 'main' }, { source_dirty: 1 }, { go_version: 'go1.27' }, { go_version: 'go01.27.2' },
+    { go_version: 'go1.27.2extra' }, { go_version: 'go1000.0.0' }, { wasm_bytes: 101 }, { wasm_exec_sha256: '0'.repeat(64) }, { extra: true }]) refuse(p => Object.assign(p, patch));
+  for (const field of Object.keys(saved.program.bindings)) refuse(p => { delete p.bindings[field]; });
+  for (const patch of [{ compiler_source_sha: 'bad' }, { generation_sha256: 'bad' }, { generation_origin: 'unverified' }, { extra: true }]) refuse(p => Object.assign(p.bindings, patch));
+  for (const name of protocol.ASSET_NAMES) {
+    refuse(p => { delete p.bindings.assets[name]; });
+    refuse(p => { p.bindings.assets[name] = '0'.repeat(64); });
+  }
+  refuse(p => { p.bindings.assets['unknown'] = 'sha256:' + '0'.repeat(64); });
+  for (const name of protocol.FILE_NAMES) {
+    refuse(p => { delete p.files[name]; });
+    for (const patch of [{ bytes: 0 }, { bytes: 1.5 }, { bytes: '1' }, { bytes: 33554433 }, { sha256: 'bad' }, { extra: true }]) refuse(p => Object.assign(p.files[name], patch));
+    if (name.startsWith('source/') && (protocol.ASSET_NAMES.includes(name.slice(7)) || name === 'source/LICENSE-APACHE-2.0' || name === 'source/generation.json')) {
+      refuse(p => { p.files[name].sha256 = '0'.repeat(64); });
+    }
+  }
+  refuse(p => { p.files['../outside'] = { sha256: '0'.repeat(64), bytes: 1 }; });
+  refuse(p => { for (const file of Object.values(p.files)) file.bytes = 33554432; p.wasm_bytes = p.wasm_exec_bytes = 33554432; });
+});
+
+test('observation comparison checks every typed decision field without treating saved claims as authority', () => {
+  const cases = [
+    ['match', { domain_status: 'VALID_INPUT', invalid_field: '', matched: true }, { domain_status: 'INVALID_INPUT', invalid_field: 'pattern', matched: false }],
+    ['impact', { domain_status: 'VALID_INPUT', invalid_field: '', before_match: true, after_match: true, change: 'UNCHANGED_ALLOW' },
+      { domain_status: 'INVALID_INPUT', invalid_field: 'before', before_match: false, after_match: false, change: 'INVALID_INPUT' }],
+    ['refine', { domain_status: 'VALID_INPUT', invalid_field: '', status: 'SUPPORTED_SUBSET', rule_id: 'OLD_GLOBAL', supported_subset: true,
+      has_witness: false, witness_type: '', witness_name: '', before_match: false, after_match: false },
+      { domain_status: 'VALID_INPUT', invalid_field: '', status: 'WIDENING_WITNESS', rule_id: 'CHECKED_CANDIDATE_REQUEST', supported_subset: false,
+        has_witness: true, witness_type: 'mcp', witness_name: 'a.y', before_match: false, after_match: true }],
+  ];
+  for (const [mode, currentDecision, claimedDecision] of cases) {
+    const current = savedObservation(mode, currentDecision), claimed = clone(current); claimed.proof.decision = claimedDecision;
+    const result = protocol.compareObservation(claimed, mode, current.proof.facts, current.proof, current.program);
+    const expected = protocol.DECISION_FIELDS[mode].filter(field => claimedDecision[field] !== currentDecision[field])
+      .map(field => ({ field, saved: claimedDecision[field], current: currentDecision[field] }));
+    assert.deepEqual(clone(result.decision_differences), expected);
+    assert.equal(result.decision_equal, false); assert.equal(result.program_equal, true); assert.equal(result.bindings_equal, true); assert.equal(result.executable_equal, true);
+    assert.equal(Object.isFrozen(result.decision_differences[0]), true);
+    for (const field of protocol.DECISION_FIELDS[mode]) {
+      const wrong = clone(claimed); wrong.proof.decision[field] = null; assert.throws(() => protocol.compareObservation(wrong, mode, current.proof.facts, current.proof, current.program), field);
+    }
+    assert.equal(protocol.compareObservation(current, mode, current.proof.facts, current.proof, current.program).decision_equal, true);
+    const wrongFacts = { ...current.proof.facts, [FIELDS[mode][0]]: 'other' };
+    assert.throws(() => protocol.compareObservation(current, mode, wrongFacts, { ...current.proof, facts: wrongFacts }, current.program));
+    const otherMode = mode === 'match' ? 'impact' : 'match', other = savedObservation(otherMode);
+    assert.throws(() => protocol.compareObservation(current, otherMode, other.proof.facts, other.proof, other.program));
+    const badProgram = clone(current.program); badProgram.compiler_revision = 'd'.repeat(40);
+    assert.throws(() => protocol.compareObservation(current, mode, current.proof.facts, current.proof, badProgram));
+  }
+  // A witness's request text may differ while all Boolean/status fields agree.
+  const witness = cases[2][2], current = savedObservation('refine', witness), claimed = clone(current);
+  claimed.proof.decision.witness_type = 'other'; claimed.proof.decision.witness_name = 'b.z';
+  assert.deepEqual(clone(protocol.compareObservation(claimed, 'refine', current.proof.facts, current.proof, current.program).decision_differences),
+    [{ field: 'witness_type', saved: 'other', current: 'mcp' }, { field: 'witness_name', saved: 'b.z', current: 'a.y' }]);
+});
+
+test('four maximum-length input exports fit the byte cap and the decoded-text cap has an exact boundary', t => {
+  assert.equal(protocol.MAX_OBSERVATION_BYTES, 1048576);
+  const program = metadata(), facts = Object.fromEntries(FIELDS.impact.map(name => [name, '\u001f'.repeat(4096)]));
+  const result = { facts, decision: { domain_status: 'INVALID_INPUT', invalid_field: 'before', before_match: false, after_match: false, change: 'INVALID_INPUT' }, bindings: program.bindings };
+  const exported = protocol.observation('impact', facts, result, program), raw = JSON.stringify(exported, null, 2) + '\n';
+  const bytes = Buffer.byteLength(raw, 'utf8');
+  assert.ok(bytes > 262144, 'exercise the old parser default limit');
+  assert.ok(bytes <= protocol.MAX_OBSERVATION_BYTES, 'the supported four-field pretty export must fit');
+  assert.deepEqual(clone(protocol.parseObservation(raw)), clone(exported));
+  const exact = raw + ' '.repeat(protocol.MAX_OBSERVATION_BYTES - raw.length);
+  assert.equal(exact.length, protocol.MAX_OBSERVATION_BYTES); assert.equal(Buffer.byteLength(exact), protocol.MAX_OBSERVATION_BYTES);
+  assert.deepEqual(clone(protocol.parseObservation(exact)), clone(exported));
+  assert.throws(() => protocol.parseObservation(exact + ' '), /text limit/);
+  t.diagnostic(JSON.stringify({ maximum_input_pretty_export_bytes: bytes, fields: 4, units_each: 4096, exact_cap_accepted: protocol.MAX_OBSERVATION_BYTES, one_over_refused: true }));
+});

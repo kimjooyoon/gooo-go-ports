@@ -150,6 +150,9 @@ async function directBridge(site, manifest, bindings) {
 function workerHarness(site, fault) {
   // A real thread runs the shipped loader, protocol and Wasm. Only browser
   // fetch/Blob/importScripts transport is mapped to this static output tree.
+  const fetchPaths = ['./service-policy/manifest.json', ...Object.keys(read(path.join(site, 'service-policy/manifest.json')).files)
+    .map(name => './service-policy/' + name)].sort();
+  const fetchCounts = new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * fetchPaths.length));
   const worker = new Worker(`
     const { parentPort, workerData } = require('node:worker_threads');
     const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
@@ -158,9 +161,12 @@ function workerHarness(site, fault) {
     const manifestPath = './service-policy/manifest.json';
     const realManifest = JSON.parse(fs.readFileSync(path.join(workerData.site, manifestPath), 'utf8'));
     const allowed = new Set([manifestPath, ...Object.keys(realManifest.files).map(name => './service-policy/' + name)]);
+    const fetchCounts = new Int32Array(workerData.fetchCounts);
+    assert.deepEqual([...allowed].sort(), workerData.fetchPaths);
     globalThis.fetch = async (name, options) => {
       assert.deepEqual(options, { cache: 'no-store', credentials: 'omit', redirect: 'error', referrerPolicy: 'no-referrer' });
       assert.ok(allowed.has(name), 'unexpected fetch: ' + name);
+      Atomics.add(fetchCounts, workerData.fetchPaths.indexOf(name), 1);
       if (workerData.fault === 'missing-source' && name === './service-policy/source/domain.gooo') return { ok: false };
       let raw = fs.readFileSync(path.join(workerData.site, name));
       if (workerData.fault === 'manifest' && name === manifestPath) {
@@ -200,11 +206,12 @@ function workerHarness(site, fault) {
     globalThis.postMessage = message => parentPort.postMessage(message);
     globalThis.addEventListener = (event, handler) => { assert.equal(event, 'message'); parentPort.on('message', data => handler({ data })); };
     require(path.join(workerData.site, 'service-policy-worker.js')).startWorker(globalThis);
-  `, { eval: true, workerData: { site, fault } });
+  `, { eval: true, workerData: { site, fault, fetchPaths, fetchCounts: fetchCounts.buffer } });
   const queue = []; let waiting = null, failed = null;
   worker.on('message', value => { if (waiting) { const receive = waiting; waiting = null; receive(null, value); } else queue.push(value); });
   worker.on('error', error => { failed = error; if (waiting) { const receive = waiting; waiting = null; receive(error); } });
-  return { worker, next: () => new Promise((resolve, reject) => {
+  return { worker, fetches: () => Object.fromEntries(fetchPaths.map((name, index) => [name, Atomics.load(fetchCounts, index)])),
+    next: () => new Promise((resolve, reject) => {
     if (failed) return reject(failed);
     if (queue.length) return resolve(queue.shift());
     const timer = setTimeout(() => { waiting = null; reject(new Error('Service-policy Worker timed out: ' + (fault || 'normal'))); }, 30000);
@@ -212,10 +219,120 @@ function workerHarness(site, fault) {
   }) };
 }
 
+function recheckRows(rows) {
+  const named = name => {
+    const matches = rows.filter(row => row.name === name); assert.equal(matches.length, 1);
+    return clone(matches[0]);
+  };
+  const cases = [];
+  for (const [mode, validName, invalidName, falseDecision, changedFields] of [
+    ['match', 'matcher-cases.json:upstream-5', 'checked:contract-global-invalid-type',
+      { domain_status: 'VALID_INPUT', invalid_field: '', matched: true }, ['matched']],
+    ['impact', 'impact-cases.json:impact-2', 'checked:contract-both-global-invalid-type',
+      { domain_status: 'VALID_INPUT', invalid_field: '', before_match: false, after_match: false, change: 'UNCHANGED_DENY' },
+      ['after_match', 'change']],
+    ['refine', 'refinement-cases.json:matrix-suffix-prefix', 'checked:contract-candidate-empty-invalid-before',
+      { domain_status: 'VALID_INPUT', invalid_field: '', status: 'SUPPORTED_SUBSET', rule_id: 'OLD_GLOBAL',
+        supported_subset: true, has_witness: false, witness_type: '', witness_name: '', before_match: false, after_match: false },
+      ['status', 'rule_id', 'supported_subset', 'has_witness', 'witness_type', 'witness_name', 'after_match']],
+  ]) {
+    const valid = named(validName), badInput = named(invalidName);
+    assert.equal(valid.mode, mode); assert.equal(badInput.mode, mode);
+    cases.push({ ...valid, name: mode + ':valid-roundtrip', kind: 'roundtrip' },
+      { ...badInput, name: mode + ':invalid-roundtrip', kind: 'roundtrip' },
+      { ...valid, name: mode + ':coherent-false-claim', kind: 'false-claim', falseDecision, changedFields },
+      { ...valid, name: mode + ':cross-program-claim', kind: 'cross-program' });
+  }
+  for (const [label, text] of [['crlf', '\r\n'], ['tab', '\t'], ['nul', '\u0000'], ['combining', 'e\u0301'],
+    ['supplementary', '😀'], ['non-ascii', 'é'], ['ascii-129', 'a'.repeat(129)], ['max-utf16', '😀'.repeat(2048)]]) {
+    cases.push({ name: 'raw-roundtrip:' + label, kind: 'raw-boundary', mode: 'match',
+      facts: { pattern: '*', req_type: 'mcp', req_name: text }, want: invalid('match', 'req_name') });
+  }
+  cases.push({ name: 'max-four-field-pretty-export', kind: 'max-export', mode: 'impact',
+    facts: Object.fromEntries(FIELDS.impact.map(name => [name, '\uffff'.repeat(4096)])), want: invalid('impact', 'before') });
+  assert.equal(cases.length, 21); assert.equal(new Set(cases.map(row => row.name)).size, cases.length);
+  return cases;
+}
+
+// Deliberately unverified, structurally coherent claims for another known-v1
+// program. These hashes are not fetched, treated as evidence, or used to run code.
+function claimDifferentProgram(saved) {
+  const program = saved.program;
+  program.compiler_revision = 'c'.repeat(40); program.bindings.compiler_source_sha = program.compiler_revision;
+  program.generation_sha256 = 'sha256:' + 'd'.repeat(64); program.bindings.generation_sha256 = program.generation_sha256;
+  program.files['source/generation.json'].sha256 = 'd'.repeat(64);
+  program.go_version = 'go1.27.3'; program.source_revision = 'e'.repeat(40); program.source_dirty = true;
+  for (const [file, prefix, character] of [['program.wasm', 'wasm', 'a'], ['wasm_exec.js', 'wasm_exec', 'b']]) {
+    program[prefix + '_sha256'] = character.repeat(64); program[prefix + '_bytes']++;
+    program.files[file] = { sha256: program[prefix + '_sha256'], bytes: program[prefix + '_bytes'] };
+  }
+  saved.proof.bindings = clone(program.bindings);
+}
+
+async function savedObservationRechecks(protocol, manifest, bindings, rows, evaluate, fetches) {
+  const cases = recheckRows(rows), beforeFetches = fetches();
+  let originalCalls = 0, freshCalls = 0, largestBytes = 0;
+  for (const row of cases) {
+    const original = await evaluate(row.mode, row.facts); originalCalls++;
+    checkProof(original, row, bindings);
+    const claimed = clone(protocol.observation(row.mode, row.facts, original, manifest));
+    if (row.kind === 'false-claim') claimed.proof.decision = clone(row.falseDecision);
+    if (row.kind === 'cross-program') {
+      claimDifferentProgram(claimed);
+      assert.throws(() => protocol.validateMetadata(claimed.program), row.name + ': live pins remain strict');
+      assert.throws(() => protocol.validateProof(row.mode, claimed.proof, row.facts, manifest));
+    }
+    // Exercise actual saved JSON bytes, preserving BOMs for parser rejection and
+    // refusing malformed UTF-8 instead of silently replacing or normalizing it.
+    const bytes = Buffer.from(JSON.stringify(claimed, null, 2), 'utf8');
+    assert.ok(bytes.length > 0 && bytes.length <= protocol.MAX_OBSERVATION_BYTES, row.name + ': bounded pretty export');
+    largestBytes = Math.max(largestBytes, bytes.length);
+    const raw = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
+    assert.deepEqual(Buffer.from(raw, 'utf8'), bytes, row.name + ': exact UTF-8 roundtrip');
+    const saved = clone(protocol.parseObservation(raw));
+    assert.deepEqual(saved, claimed, row.name + ': parser retains the complete unsigned claim');
+    assert.equal(saved.mode, row.mode); assert.deepEqual(saved.proof.facts, row.facts);
+    assert.deepEqual(saved.inputs, FIELDS[row.mode].map(name => ({ name, text: row.facts[name],
+      utf16_units: units(row.facts[name]), escaped: '"' + units(row.facts[name])
+        .map(value => '\\u' + value.toString(16).toUpperCase().padStart(4, '0')).join('') + '"' })),
+    row.name + ': every raw text representation');
+    // This is a second, newly identified request to the shipped real Worker.
+    // Only the parsed mode/facts are sent; saved decisions and metadata cannot
+    // select an executable or substitute for fresh generated Gooo execution.
+    const fresh = await evaluate(saved.mode, saved.proof.facts); freshCalls++;
+    checkProof(fresh, row, bindings);
+    const comparison = clone(protocol.compareObservation(saved, saved.mode, saved.proof.facts, fresh, manifest));
+    const differences = (row.changedFields || []).map(field => ({ field,
+      saved: row.falseDecision[field], current: row.want[field] }));
+    assert.deepEqual(comparison, { decision_equal: row.kind !== 'false-claim', decision_differences: differences,
+      program_equal: row.kind !== 'cross-program', bindings_equal: row.kind !== 'cross-program',
+      executable_equal: row.kind !== 'cross-program' }, row.name + ': exact independent comparison expectations');
+    const currentExport = clone(protocol.observation(saved.mode, saved.proof.facts, fresh, manifest));
+    assert.deepEqual(currentExport.proof, fresh); assert.deepEqual(currentExport.program, manifest);
+    assert.deepEqual(currentExport.inputs, saved.inputs, row.name + ': current export keeps original input units');
+    assert.deepEqual(fetches(), beforeFetches, row.name + ': importing claims does not fetch saved assets');
+  }
+  assert.equal(originalCalls, 21); assert.equal(freshCalls, 21);
+  assert.equal(cases.filter(row => row.want.domain_status === 'INVALID_INPUT').length, 12);
+  return { cases: cases.length, modes: 3, original_worker_evaluations: originalCalls, fresh_worker_evaluations: freshCalls,
+    coherent_false_claims: 3, cross_program_claims: 3, invalid_domain_roundtrips: 12, raw_text_boundary_roundtrips: 8,
+    max_four_field_export_roundtrips: 1, max_pretty_export_bytes: largestBytes,
+    all_raw_facts_and_utf16_representations_preserved: true, all_typed_decision_fields_compared: true,
+    all_89_current_bindings_compared: true, current_program_and_executable_bound: true,
+    live_validators_reject_cross_program_claims: true,
+    fetches_before_recheck: Object.values(beforeFetches).reduce((sum, count) => sum + count, 0),
+    fetches_after_recheck: Object.values(fetches()).reduce((sum, count) => sum + count, 0), additional_fetches: 0,
+    scope: 'Fresh generated Gooo evaluations compare unsigned saved claims; not native receipt replay, authenticity, authorization or policy application. Fetch observations cover only this Node Worker harness, not browser UI networking.' };
+}
+
 async function realWorker(site, manifest, bindings, protocol, rows) {
   const harness = workerHarness(site); let id = 0, observed = 0;
   try {
     assert.deepEqual(clone(protocol.validateReady(await harness.next())), manifest);
+    const expectedFetches = Object.fromEntries(['./service-policy/manifest.json',
+      ...Object.keys(manifest.files).map(name => './service-policy/' + name)].map(name => [name, 1]));
+    assert.deepEqual(harness.fetches(), expectedFetches, 'exact current manifest and 34 files fetched once before readiness');
+    const fetchesAtReady = Object.values(harness.fetches()).reduce((sum, count) => sum + count, 0);
     for (const row of rows) {
       const request = { type: 'evaluate', id: ++id, mode: row.mode, facts: row.facts };
       harness.worker.postMessage(request);
@@ -247,7 +364,14 @@ async function realWorker(site, manifest, bindings, protocol, rows) {
     const row = rows[0], request = { type: 'evaluate', id: ++id, mode: row.mode, facts: row.facts };
     harness.worker.postMessage(request);
     checkProof(clone(protocol.validateResult(await harness.next(), { ...request, program: manifest })), row, bindings);
-    return { cases: rows.length, observation_exports: observed, request_rejections: malformed.length, recovery_after_refusal: true };
+    const rechecks = await savedObservationRechecks(protocol, manifest, bindings, rows, async (mode, facts) => {
+      const request = { type: 'evaluate', id: ++id, mode, facts };
+      harness.worker.postMessage(request);
+      return clone(protocol.validateResult(await harness.next(), { ...request, program: manifest }));
+    }, harness.fetches);
+    assert.deepEqual(harness.fetches(), expectedFetches, 'all evaluation paths preserve the exact current fetch roster');
+    return { cases: rows.length, observation_exports: observed, request_rejections: malformed.length, recovery_after_refusal: true,
+      saved_observation_recheck: { ...rechecks, fetches_at_ready: fetchesAtReady, exact_current_fetch_roster: true } };
   } finally { await harness.worker.terminate(); }
 }
 
@@ -304,6 +428,7 @@ async function runSmoke(directory) {
     published_files_checked: Object.keys(manifest.files).length, direct_bridge: direct,
     actual_worker_request_rejections: worker.request_rejections, recovery_after_refusal: worker.recovery_after_refusal,
     browser_observation_exports: worker.observation_exports, real_loader_fault_controls: failures,
+    saved_observation_recheck: worker.saved_observation_recheck,
     corpus_sha256: corpusHashes, generation_sha256: manifest.generation_sha256, wasm_sha256: manifest.wasm_sha256,
     scope: 'Actual generated checked Gooo in Wasm and shipped Worker code in Node worker_threads with static-file transport. Expectations come from existing independent corpora and explicit UTF16 boundaries; no new semantic oracle or policy reimplementation. Loader fault controls are injected failures, not real corrupt published assets. No full browser DOM, native receipt, saved replay, authorization, policy application, signature, or production safety claim.' };
 }

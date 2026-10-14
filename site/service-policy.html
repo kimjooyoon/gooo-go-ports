@@ -32,6 +32,19 @@
         <p id="policy-runtime" class="literal-runtime" role="status">Loading the compiled Gooo policy rules…</p>
         <button id="policy-retry" type="button" class="secondary-button" hidden>Retry loading</button>
       </section>
+      <section class="policy-observation" aria-labelledby="policy-observation-title">
+        <h2 id="policy-observation-title">Recheck a saved observation</h2>
+        <label for="policy-observation-file">Choose one browser observation JSON</label>
+        <input id="policy-observation-file" type="file" accept=".json,application/json" aria-describedby="policy-file-help policy-file-status">
+        <p id="policy-file-help" class="literal-help">One local file, up to 1 MiB. Loading it captures its exact inputs but does not run a check. The file stays in this browser and is not uploaded or stored.</p>
+        <p id="policy-file-status" class="literal-help" role="status">No saved observation loaded.</p>
+        <p id="policy-file-error" class="literal-error" role="alert" hidden></p>
+        <div id="policy-saved-wrap" hidden>
+          <p class="literal-help"><strong>Saved decision · unsigned, unverified claim.</strong> Its structure is valid, but this does not establish who produced it or whether the recorded program ran. Select <em>Recheck with current Gooo</em> to compute these inputs now.</p>
+          <details><summary>Saved claimed decision</summary><pre id="policy-saved-decision" tabindex="0"></pre></details>
+          <details><summary>Recorded program identity · unverified</summary><pre id="policy-saved-program" tabindex="0"></pre></details>
+        </div>
+      </section>
       <form id="policy-form" novalidate>
         <label for="policy-mode">What to check</label>
         <select id="policy-mode">
@@ -63,7 +76,7 @@
           <p class="literal-help">These are the values submitted when you run the check, including text Gooo may reject. Quotes and escapes show exact characters; <code>""</code> means an empty value.</p>
           <pre id="policy-input-preview" tabindex="0"></pre>
           <p id="policy-input-origin" class="literal-help" role="status">Using the current editor values.</p>
-          <p class="literal-help">Paste or drop captures plain text before editor conversion and leaves that editor empty. Typing replaces only that field; choosing an example replaces the fields it displays. Typing follows the browser's textarea line-ending behavior.</p>
+          <p class="literal-help">Paste, drop or loading a saved file captures exact text before editor conversion and leaves that editor empty. Typing replaces only that field; choosing an example replaces the fields it displays. Editing any input clears the saved comparison. Typing follows the browser's textarea line-ending behavior.</p>
         </section>
         <p id="policy-input-error" class="literal-error" role="alert" hidden></p>
         <div class="literal-presets" aria-label="Policy examples">
@@ -85,6 +98,14 @@
         <p id="policy-error" class="literal-error" role="alert" hidden></p>
         <div id="policy-result" hidden><p id="policy-summary" class="policy-summary" role="status"></p><dl id="policy-fields" class="literal-output"></dl></div>
         <details id="policy-proof-wrap" hidden><summary>Complete inputs, decision and source bindings</summary><pre id="policy-proof" tabindex="0"></pre></details>
+        <div id="policy-comparison" class="policy-comparison" hidden>
+          <h3>Saved claim compared with this fresh result</h3>
+          <p id="policy-comparison-summary" role="status"></p>
+          <dl id="policy-decision-differences" class="literal-output"></dl>
+          <p id="policy-program-comparison" class="literal-help"></p>
+          <p class="literal-help">Matching fields do not authenticate the saved observation or prove that its recorded program ran. This is a comparison with the currently verified program; it grants no authorization and changes no policy.</p>
+          <details><summary>Recorded and current program identities</summary><pre id="policy-comparison-programs" tabindex="0"></pre></details>
+        </div>
         <div id="policy-download-controls" hidden>
           <button id="policy-download" type="button" class="secondary-button" disabled>Download browser observation JSON</button>
           <p class="literal-help">The download includes the captured inputs and complete result. It is an unsigned browser observation; it grants no permission to change a policy or call a service.</p>

@@ -7,6 +7,7 @@
 })(globalThis, () => {
   'use strict';
   const MAX_UNITS = 4096;
+  const MAX_OBSERVATION_BYTES = 1048576;
   const MODE_FIELDS = Object.freeze({ match: Object.freeze(['pattern', 'req_type', 'req_name']),
     impact: Object.freeze(['before', 'after', 'req_type', 'req_name']), refine: Object.freeze(['before', 'after']) });
   const DECISION_FIELDS = Object.freeze({ match: Object.freeze(['domain_status', 'invalid_field', 'matched']),
@@ -359,8 +360,95 @@
       proof: checkedProof, program: metadata,
       scope: 'Unsigned observation from this browser and compiled Gooo program. Not a native execution receipt, saved replay, authorization, policy write, attestation or complete Agent Mesh compatibility claim.' });
   }
-  return Object.freeze({ MAX_UNITS, MODE_FIELDS, DECISION_FIELDS, SUBSET_RULES, ASSET_NAMES, FILE_NAMES,
+  // Stored metadata is an unsigned claim. Check its known v1 structure and
+  // internal relationships without relaxing the live runtime's pinned gates.
+  function validateStoredBindings(bindings) {
+    object(bindings, ['compiler_source_sha', 'generation_sha256', 'generation_origin', 'assets'], 'saved native source bindings');
+    if (typeof bindings.compiler_source_sha !== 'string' || !/^[a-f0-9]{40}$/.test(bindings.compiler_source_sha) ||
+        !nativeSHA(bindings.generation_sha256) || bindings.generation_origin !== 'fresh_pinned_generation') throw new Error('Invalid saved native source identity.');
+    object(bindings.assets, ASSET_NAMES, 'saved native asset roster');
+    if (Object.values(bindings.assets).some(value => !nativeSHA(value))) throw new Error('Invalid saved native asset hash.');
+    return canonical(bindings);
+  }
+  function validateStoredMetadata(metadata) {
+    object(metadata, ['schema', 'compiler_revision', 'go_version', 'source_revision', 'source_dirty', 'generation_sha256', 'bindings',
+      'wasm_sha256', 'wasm_bytes', 'wasm_exec_sha256', 'wasm_exec_bytes', 'files'], 'saved build manifest');
+    const bindings = validateStoredBindings(metadata.bindings);
+    if (metadata.schema !== 'gooo/browser-service-policy/v1' || metadata.compiler_revision !== bindings.compiler_source_sha ||
+        metadata.generation_sha256 !== bindings.generation_sha256 || typeof metadata.go_version !== 'string' ||
+        !/^go[1-9][0-9]{0,2}\.(?:0|[1-9][0-9]{0,2})\.(?:0|[1-9][0-9]{0,2})$/.test(metadata.go_version) ||
+        typeof metadata.source_revision !== 'string' || !/^[a-f0-9]{40}$/.test(metadata.source_revision) ||
+        typeof metadata.source_dirty !== 'boolean' || !sha(metadata.wasm_sha256) || !sha(metadata.wasm_exec_sha256)) throw new Error('Unsupported saved policy build identity.');
+    object(metadata.files, FILE_NAMES, 'saved file roster');
+    let total = 0;
+    for (const file of Object.values(metadata.files)) {
+      object(file, ['sha256', 'bytes'], 'saved file');
+      if (!sha(file.sha256) || !Number.isSafeInteger(file.bytes) || file.bytes < 1 || file.bytes > 32 * 1024 * 1024) throw new Error('Invalid saved file hash or size.');
+      total += file.bytes;
+    }
+    if (total > 64 * 1024 * 1024 || metadata.files['program.wasm'].sha256 !== metadata.wasm_sha256 ||
+        metadata.files['program.wasm'].bytes !== metadata.wasm_bytes || metadata.files['wasm_exec.js'].sha256 !== metadata.wasm_exec_sha256 ||
+        metadata.files['wasm_exec.js'].bytes !== metadata.wasm_exec_bytes) throw new Error('Inconsistent saved program or runtime bindings.');
+    if ('sha256:' + metadata.files['source/generation.json'].sha256 !== metadata.generation_sha256) throw new Error('Inconsistent saved generation identity.');
+    for (const name of ASSET_NAMES) {
+      const file = metadata.files['source/' + name];
+      if (file && 'sha256:' + file.sha256 !== bindings.assets[name]) throw new Error('Saved source differs from its native asset binding.');
+    }
+    if ('sha256:' + metadata.files['source/LICENSE-APACHE-2.0'].sha256 !== bindings.assets['upstream/LICENSE']) throw new Error('Saved upstream license differs from its native binding.');
+    return canonical(metadata);
+  }
+  function validateObservation(value) {
+    object(value, ['schema', 'kind', 'mode', 'input_binding', 'inputs', 'proof', 'program', 'scope'], 'saved observation');
+    if (value.schema !== 'gooo/service-policy-browser-observation/v1' || value.kind !== 'browser-observation' ||
+        value.input_binding !== 'Exact UTF-16 code units; unpaired surrogates refused; no trimming, normalization or replacement.' ||
+        value.scope !== 'Unsigned observation from this browser and compiled Gooo program. Not a native execution receipt, saved replay, authorization, policy write, attestation or complete Agent Mesh compatibility claim.') throw new Error('Unsupported saved observation format.');
+    const fields = modeFields(value.mode);
+    if (!Array.isArray(value.inputs) || value.inputs.length !== fields.length) throw new Error('Invalid saved input roster.');
+    const facts = Object.create(null);
+    fields.forEach((name, index) => {
+      const input = value.inputs[index];
+      object(input, ['name', 'text', 'utf16_units', 'escaped'], 'saved input');
+      if (input.name !== name) throw new Error('Saved inputs must use the mode field order.');
+      const encoded = units(input.text);
+      if (!Array.isArray(input.utf16_units) || input.utf16_units.length !== encoded.length ||
+          input.utf16_units.some(unit => !Number.isSafeInteger(unit) || unit < 0 || unit > 65535 || Object.is(unit, -0)) ||
+          !same(input.utf16_units, encoded) || input.escaped !== escaped(input.text)) throw new Error('Saved input representations disagree.');
+      facts[name] = input.text;
+    });
+    object(value.proof, ['facts', 'decision', 'bindings'], 'saved proof');
+    if (!same(validateFacts(value.mode, value.proof.facts), facts)) throw new Error('Saved proof facts differ from its inputs.');
+    validateDecision(value.mode, value.proof.decision);
+    const program = validateStoredMetadata(value.program);
+    if (!same(validateStoredBindings(value.proof.bindings), program.bindings)) throw new Error('Saved proof has different source bindings.');
+    return canonical(value);
+  }
+  function parseObservation(raw) {
+    if (typeof raw !== 'string' || raw.length === 0 || raw.length > MAX_OBSERVATION_BYTES) throw new Error('The saved observation exceeds its text limit or is unreadable.');
+    // Check depth and numeric spellings before JSON.parse can round a token.
+    // Strings are consumed whole, so their digits and braces are not tokens.
+    let depth = 0;
+    for (const match of raw.matchAll(/"(?:\\[\s\S]|[^"\\])*"|[{}\[\]]|-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/g)) {
+      const token = match[0];
+      if (token === '{' || token === '[') {
+        if (++depth > 12) throw new Error('The saved observation is nested too deeply.');
+      } else if (token === '}' || token === ']') depth--;
+      else if (token[0] !== '"' && (!/^(?:0|[1-9][0-9]*)$/.test(token) || token.length > 16 ||
+          token.length === 16 && token > '9007199254740991')) throw new Error('Saved numbers must be canonical nonnegative safe integers.');
+    }
+    return validateObservation(parseExactJSON(raw, MAX_OBSERVATION_BYTES));
+  }
+  function compareObservation(saved, mode, facts, proof, currentProgram) {
+    const claimed = validateObservation(saved), checkedFacts = validateFacts(mode, facts), program = validateMetadata(currentProgram);
+    const current = validateProof(mode, proof, checkedFacts, program);
+    if (claimed.mode !== mode || !same(claimed.proof.facts, checkedFacts)) throw new Error('The fresh check must use the saved mode and exact inputs.');
+    const differences = DECISION_FIELDS[mode].filter(field => claimed.proof.decision[field] !== current.decision[field])
+      .map(field => ({ field, saved: claimed.proof.decision[field], current: current.decision[field] }));
+    return canonical({ decision_equal: differences.length === 0, decision_differences: differences,
+      program_equal: same(claimed.program, program), bindings_equal: same(claimed.program.bindings, program.bindings),
+      executable_equal: ['wasm_sha256', 'wasm_bytes', 'wasm_exec_sha256', 'wasm_exec_bytes'].every(field => claimed.program[field] === program[field]) });
+  }
+  return Object.freeze({ MAX_UNITS, MAX_OBSERVATION_BYTES, MODE_FIELDS, DECISION_FIELDS, SUBSET_RULES, ASSET_NAMES, FILE_NAMES,
     validateFacts, packFacts, escaped, validateRequest, validateCancel, parseExactJSON, validateDecision,
     validateBindings, validateMetadata, parseMetadata, parseBindings, validateProof, parseCompiledReply,
-    validateReady, validateResult, validateError, observation });
+    validateReady, validateResult, validateError, observation, parseObservation, validateObservation, compareObservation });
 });

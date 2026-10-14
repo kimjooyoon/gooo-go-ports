@@ -6,6 +6,11 @@
 #policy-mode { max-width: 100%; padding: 10px; background: #fffefa; border: 1px solid var(--line); border-radius: 5px; font: inherit }
 .policy-captured { margin: 20px 0 }
 .policy-captured h2 { font-size: 18px; margin-bottom: 8px }
+.policy-observation { margin: 24px 0 }
+.policy-observation h2, .policy-comparison h3 { font-size: 18px; margin-bottom: 8px }
+.policy-observation label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px }
+.policy-observation input { max-width: 100%; font: inherit }
+.policy-comparison { margin: 20px 0 }
 .policy-capture-note .literal-help { margin: 6px 0 }
 .policy-capture-note button { padding: 4px 0; border: 0; background: none; color: inherit; font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer }
 .service-policy-page pre { padding: 16px; background: #efeee7; border-radius: 5px; font: 13px/1.6 monospace; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 420px; overflow: auto }
