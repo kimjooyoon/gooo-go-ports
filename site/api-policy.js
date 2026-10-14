@@ -24,7 +24,7 @@
   const SAMPLE = action => '{\n  "group_present": true,\n  "group_value": "admin",\n  "principal_present": true,\n  "principal_value": "synthetic:user",\n  "authenticated": true,\n  "caller_tenant": "tenant-a",\n  "resource_tenant": "tenant-a",\n  "requested_action": "' + action + '",\n  "allowed_action": "' + action + '"\n}';
 
   let epoch = 0, nextID = 0, active = null;
-  let factsFileBytes = null, savedReportBytes = null;
+  let factsFileBytes = null, factsFileLabel = '', savedReportBytes = null, savedReportLabel = '';
   let verifiedBytes = null, downloadURL = null;
 
   function exactObject(value, keys) {
@@ -44,6 +44,8 @@
     downloadURL = null; ui.save.disabled = true; ui.result.hidden = true;
     ui['decision-rows'].replaceChildren(); ui['raw-report'].textContent = ''; ui['result-facts'].textContent = '';
     ui.classification.textContent = ''; ui['changed-count'].textContent = ''; ui['result-origin'].textContent = '';
+    if (factsFileBytes !== null) ui['facts-origin'].textContent = factsFileLabel + ' No current comparison result.';
+    if (savedReportBytes !== null) ui['report-origin'].textContent = savedReportLabel + ' No current recheck result.';
   }
   function stopActive() {
     if (!active) return;
@@ -71,7 +73,7 @@
   function current(job) { return active === job && job.token === epoch; }
 
   function clearFactsFile() {
-    factsFileBytes = null; ui['facts-file'].value = ''; ui.facts.disabled = false; ui['use-editor'].hidden = true;
+    factsFileBytes = null; factsFileLabel = ''; ui['facts-file'].value = ''; ui.facts.disabled = false; ui['use-editor'].hidden = true;
     ui['facts-origin'].textContent = 'The displayed editor text is used. Browsers may fold raw line endings; use a file when exact input bytes matter.';
   }
   // The displayed textarea value is the sole editor authority. Browser editing
@@ -100,10 +102,10 @@
   async function loadFile(kind, input, limit) {
     invalidate('Reading raw file bytes. This does not run a policy or recheck.');
     if (kind === 'facts') {
-      factsFileBytes = null; ui.facts.disabled = false; ui['use-editor'].hidden = true;
+      factsFileBytes = null; factsFileLabel = ''; ui.facts.disabled = false; ui['use-editor'].hidden = true;
       ui['facts-origin'].textContent = 'No raw facts file loaded. The displayed editor text will be used; browsers may fold raw line endings.';
     }
-    else { savedReportBytes = null; ui.replay.disabled = true; ui['report-origin'].textContent = 'No report loaded.'; }
+    else { savedReportBytes = null; savedReportLabel = ''; ui.replay.disabled = true; ui['report-origin'].textContent = 'No report loaded.'; }
     const file = input.files && input.files[0];
     if (!file) { status('No file selected.'); return; }
     if (!Number.isSafeInteger(file.size) || file.size < 1 || file.size > limit) {
@@ -119,10 +121,12 @@
       // Do not decode, parse, pretty-print, or roundtrip file bytes via textarea.
       if (kind === 'facts') {
         factsFileBytes = raw; ui.facts.disabled = true; ui['use-editor'].hidden = false;
-        ui['facts-origin'].textContent = 'Raw facts file loaded: ' + file.name + ' (' + raw.byteLength + ' bytes). The editor above is not used. Click Compare policies to run it.';
+        factsFileLabel = 'Raw facts file loaded: ' + file.name + ' (' + raw.byteLength + ' bytes). The editor above is not used.';
+        ui['facts-origin'].textContent = factsFileLabel + ' No current comparison result.';
       } else {
         savedReportBytes = raw; ui.replay.disabled = false;
-        ui['report-origin'].textContent = 'Raw report loaded: ' + file.name + ' (' + raw.byteLength + ' bytes). It has not been rechecked.';
+        savedReportLabel = 'Raw report loaded: ' + file.name + ' (' + raw.byteLength + ' bytes).';
+        ui['report-origin'].textContent = savedReportLabel + ' No current recheck result.';
       }
       status('File loaded, unverified. Choose an explicit comparison or recheck.');
     } catch (error) {
@@ -215,6 +219,8 @@
     ui['result-origin'].textContent = operation === 'replay' ? 'The selected saved report was fully recalculated by Go. Saving keeps the exact new native response bytes.' :
       'Go created a fresh original baseline and compared the read-only candidate using the same supplied facts.';
     verifiedBytes = raw; ui.result.hidden = false; ui.save.disabled = false;
+    if (operation === 'compare' && factsFileBytes !== null) ui['facts-origin'].textContent = factsFileLabel + ' Compared by Go; complete result below.';
+    if (operation === 'replay') ui['report-origin'].textContent = savedReportLabel + ' Rechecked by Go; complete result below.';
   }
 
   async function run(operation) {

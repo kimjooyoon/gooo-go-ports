@@ -176,3 +176,72 @@ test('actual app verifies Worker bytes before creating a Worker', async () => {
   const h = app({ badWorkerHash: true }); await h.run(); assert.equal(h.workers.length, 0);
   assert.match(h.get('status').textContent, /Worker source hash mismatch/); assert.equal(h.get('save').disabled, true);
 });
+test('saved report origin follows explicit replay and invalidation', async () => {
+  const h = app(), raw = Buffer.from(JSON.stringify(report()));
+  await h.load('report', raw);
+  const label = 'Raw report loaded: raw.json (' + raw.length + ' bytes).';
+  const loadedOrigin = h.get('report-origin').textContent;
+  assert.ok(loadedOrigin.startsWith(label)); assert.equal(h.workers.length, 0);
+  const checked = (prefix = label) => assert.equal(h.get('report-origin').textContent, prefix + ' Rechecked by Go; complete result below.');
+  const notCurrent = (prefix = label) => assert.equal(h.get('report-origin').textContent, prefix + ' No current recheck result.');
+  const replay = await h.run('replay');
+  assert.deepEqual(Buffer.from(replay.messages[0].bytes), raw);
+  h.result(replay, raw); checked();
+  assert.equal(loadedOrigin, label + ' No current recheck result.');
+  assert.equal(h.get('save').disabled, false);
+
+  h.edit(JSON.stringify(facts)); notCurrent(); assert.equal(h.get('save').disabled, true); assert.equal(h.get('result').hidden, true);
+  const again = await h.run('replay'); notCurrent(); h.result(again, raw); checked();
+  const comparison = await h.run('compare'); notCurrent(); h.result(comparison, raw); notCurrent();
+  assert.equal(h.get('save').disabled, false); // This complete result is a fresh comparison, not a recheck of the selected file.
+  const cancelled = await h.run('replay'); h.cancel(); notCurrent(); h.result(cancelled, raw); notCurrent();
+  assert.equal(h.get('save').disabled, true); assert.equal(h.get('result').hidden, true);
+
+  const completed = await h.run('replay'); h.result(completed, raw); checked();
+  const replacement = Buffer.concat([raw, Buffer.from('\n')]), beforeWorkers = h.workers.length;
+  h.get('report-file').files = [{ name: 'replacement-report.json', size: replacement.length, arrayBuffer: () => Promise.resolve(bytes(replacement).buffer) }];
+  h.get('report-file').emit('change'); await flush();
+  const replacementLabel = 'Raw report loaded: replacement-report.json (' + replacement.length + ' bytes).';
+  notCurrent(replacementLabel); assert.equal(h.workers.length, beforeWorkers);
+  assert.equal(h.get('save').disabled, true); assert.equal(h.get('result').hidden, true);
+  const replacementReplay = await h.run('replay');
+  assert.deepEqual(Buffer.from(replacementReplay.messages[0].bytes), replacement);
+  h.result(replacementReplay, raw); checked(replacementLabel);
+  h.pagehide(); notCurrent(replacementLabel);
+  assert.equal(h.get('save').disabled, true); assert.equal(h.get('result').hidden, true);
+});
+test('raw facts origin follows explicit compare and invalidation', async () => {
+  const h = app(), raw = Buffer.from(JSON.stringify(facts));
+  await h.load('facts', raw);
+  const label = 'Raw facts file loaded: raw.json (' + raw.length + ' bytes). The editor above is not used.';
+  const loadedOrigin = h.get('facts-origin').textContent;
+  assert.ok(loadedOrigin.startsWith(label)); assert.equal(h.workers.length, 0);
+  const checked = (prefix = label) => assert.equal(h.get('facts-origin').textContent, prefix + ' Compared by Go; complete result below.');
+  const notCurrent = (prefix = label) => assert.equal(h.get('facts-origin').textContent, prefix + ' No current comparison result.');
+  const compared = await h.run('compare');
+  assert.deepEqual(Buffer.from(compared.messages[0].bytes), raw); h.result(compared); checked();
+  assert.equal(loadedOrigin, label + ' No current comparison result.');
+
+  const reportRaw = Buffer.from(JSON.stringify(report())); await h.load('report', reportRaw); notCurrent();
+  const replayed = await h.run('replay'); notCurrent(); h.result(replayed, reportRaw); notCurrent();
+  assert.match(h.get('report-origin').textContent, /Rechecked by Go; complete result below\.$/);
+  const again = await h.run('compare'); h.result(again); checked();
+  assert.match(h.get('report-origin').textContent, /No current recheck result\.$/);
+  h.cancel(); notCurrent(); assert.equal(h.get('save').disabled, true); assert.equal(h.get('result').hidden, true);
+
+  const completed = await h.run('compare'); h.result(completed); checked();
+  h.get('use-editor').emit('click'); h.edit(JSON.stringify(facts));
+  assert.match(h.get('facts-origin').textContent, /displayed editor text/);
+  assert.doesNotMatch(h.get('facts-origin').textContent, /Compared by Go/);
+  assert.equal(h.get('save').disabled, true); assert.equal(h.get('result').hidden, true);
+  const replacement = Buffer.concat([raw, Buffer.from('\n')]), beforeWorkers = h.workers.length;
+  h.get('facts-file').files = [{ name: 'replacement-facts.json', size: replacement.length, arrayBuffer: () => Promise.resolve(bytes(replacement).buffer) }];
+  h.get('facts-file').emit('change'); await flush();
+  const replacementLabel = 'Raw facts file loaded: replacement-facts.json (' + replacement.length + ' bytes). The editor above is not used.';
+  notCurrent(replacementLabel); assert.equal(h.workers.length, beforeWorkers);
+  const replacementComparison = await h.run('compare');
+  assert.deepEqual(Buffer.from(replacementComparison.messages[0].bytes), replacement);
+  h.result(replacementComparison); checked(replacementLabel);
+  h.pagehide(); notCurrent(replacementLabel);
+  assert.equal(h.get('save').disabled, true); assert.equal(h.get('result').hidden, true);
+});
