@@ -49,13 +49,28 @@ HEAVY = {
     "Verify the offline decision-policy experiment",
     "Verify the imported CEL API policy",
     "Verify the sealed API policy revision comparison",
+    "Verify the public API policy consumer",
     "Verify the Agent Mesh service-pattern adaptation",
 }
 UPLOADS = {"Upload offline policy experiment evidence", "Upload execution and diagnostic evidence"}
 DOC_STEPS = {"Report documentation-only native scope", "Preserve documentation scope and compiler identity"}
 NATIVE_COMMAND = re.compile(
     r"(?:\.gooo\s+package\s+(?:execute|replay)|\./cmd/(?:verify|check-unicode|check-literal-text-report)\b|"
-    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py)"
+    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py)"
+)
+PUBLIC_CONSUMER_COMMAND = 'python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer"'
+PUBLIC_CONSUMER_CLAUSES = (
+    '.schema == "gooo/api-policy-public-consumer/v1"',
+    '.status == "PUBLIC_API_POLICY_CONSUMER_PASS"',
+    '.acceptance.facts == 9', '.acceptance.positive_cases == 2',
+    '.acceptance.decision_fields == 15', '.acceptance.difference_flags == 15',
+    '.acceptance.summary_fields == 2', '.acceptance.public_asset_count == 36',
+    '.acceptance.public_assets_exact == true', '.acceptance.public_generation_exact == true',
+    '.acceptance.original_assets_exact == true', '.acceptance.original_generation_unchanged == true',
+    '.acceptance.substitution_refused == true', '.acceptance.runtime_empty_path == true',
+    '.acceptance.consumer_no_replace_or_workspace == true', '.acceptance.substitution_stdout_bytes == 0',
+    '.acceptance.original_version == "v0.0.0-20261014100709-8cddcc4e65af"',
+    '.acceptance.original_commit == "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"',
 )
 LITERAL_COMMANDS = {
     "Execute and replay the literal text report": {
@@ -113,7 +128,7 @@ def validate(text):
     require(hashlib.sha256(header.encode()).hexdigest() == HEADER_SHA, "events or permissions changed")
     require(hashlib.sha256(browser.encode()).hexdigest() == BROWSER_SHA, "browser/deployment behavior changed")
     named, unnamed = named_steps(text)
-    require(len(HEAVY) == 24, "full-scope native step count changed")
+    require(len(HEAVY) == 25, "full-scope native step count changed")
     require(set(named) == COMMON | HEAVY | UPLOADS | DOC_STEPS, "step roster changed without guard review")
     require(len(unnamed) == 2 and all(field(c, "if") is None for c in unnamed), "checkout/Go setup became conditional")
     require("fetch-depth: 0" in unnamed[0], "exact PR parents must be available")
@@ -155,6 +170,19 @@ def validate(text):
         require(token in revision, "sealed revision acceptance missing: " + token)
     require("continue-on-error:" not in revision and "|| true" not in revision,
             "sealed revision failure became optional")
+    public_consumer = named["Verify the public API policy consumer"]
+    expected_public_consumer = (
+        "      - name: Verify the public API policy consumer\n"
+        "        if: " + FULL + "\n"
+        "        env:\n"
+        "          PUBLIC_API_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}\n"
+        "        run: |\n"
+        "          " + PUBLIC_CONSUMER_COMMAND + "\n"
+        "          jq -e '" + " and ".join(PUBLIC_CONSUMER_CLAUSES)
+        + "' out/api-policy-public-consumer/verification.json\n"
+    )
+    require(public_consumer == expected_public_consumer,
+            "public consumer must bind the actual PR head, exact Go command and every acceptance clause")
     for name, expected in LITERAL_COMMANDS.items():
         commands = literal_commands(named[name])
         require(len(commands) == len(expected) and set(commands) == expected,
@@ -303,10 +331,11 @@ class WorkflowScopeTests(unittest.TestCase):
             validate(self.text.replace(named[name], broken, 1))
 
     def test_native_command_cannot_be_hidden_in_common_step(self):
-        broken = self.text.replace("      - name: Check Gooo declarations\n",
-                                   "      - name: Check Gooo declarations\n        run: ./.gooo package execute workspace.json\n", 1)
-        with self.assertRaises(ValueError):
-            validate(broken)
+        for command in ("./.gooo package execute workspace.json", PUBLIC_CONSUMER_COMMAND):
+            broken = self.text.replace("      - name: Check Gooo declarations\n",
+                                       "      - name: Check Gooo declarations\n        run: " + command + "\n", 1)
+            with self.subTest(command=command), self.assertRaises(ValueError):
+                validate(broken)
 
     def test_each_literal_native_command_is_guarded_and_exact(self):
         named, _ = named_steps(self.text)
@@ -361,6 +390,18 @@ class WorkflowScopeTests(unittest.TestCase):
         for replacement in ("", policy_smoke.replace("service-policy-smoke.cjs", "browser-smoke.cjs")):
             with self.subTest(replacement=replacement), self.assertRaises(ValueError):
                 validate(self.text.replace(policy_smoke, replacement, 1))
+        named, _ = named_steps(self.text)
+        public = named["Verify the public API policy consumer"]
+        mutations = (
+            ('${{ github.event.pull_request.head.sha || github.sha }}', '${{ github.sha }}'),
+            ('--go "$(go env GOROOT)/bin/go"', '--go /usr/bin/go'),
+            ('--revision "$PUBLIC_API_REVISION"', '--revision "$GITHUB_SHA"'),
+            ('out/api-policy-public-consumer/verification.json', 'out/other.json'),
+            ('        run: |', '        continue-on-error: true\n        run: |'),
+        ) + tuple((clause, 'true') for clause in PUBLIC_CONSUMER_CLAUSES)
+        for before, after in mutations:
+            with self.subTest(public_consumer=before), self.assertRaises(ValueError):
+                validate(self.text.replace(public, public.replace(before, after, 1), 1))
 
     def test_cel_native_verifier_cannot_use_another_producer_or_skip_receipt(self):
         named, _ = named_steps(self.text)
