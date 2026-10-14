@@ -1,0 +1,306 @@
+// Fixed-profile Go/Wasm transport. Policies, differences and replay use the
+// unchanged public Gooo-generated APIs. Inputs are bytes, never JS fact strings.
+package main
+
+import (
+	"encoding/json"
+	"errors"
+	"math"
+	"syscall/js"
+
+	revision "github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision"
+	original "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
+)
+
+// This is an output transport ceiling, not an input/report/schema limit. It is
+// four times the native report input limit and does not wrap/escape its JSON.
+// Native results contain only the fixed bindings plus bounded facts/decisions;
+// this leaves room for their complete canonical encoding without truncation.
+const maxOutputBytes = 4 * revision.MaxReportBytes
+
+var callbacks []js.Func
+
+type byteTransport struct {
+	uint8Constructor js.Value
+	uint8Prototype   js.Value
+	bufferPrototype  js.Value
+	isView           js.Value
+	getPrototype     js.Value
+	getBuffer        js.Value
+	getLength        js.Value
+	getOffset        js.Value
+	getKind          js.Value
+	getBufferLength  js.Value
+	getResizable     js.Value
+}
+
+func getter(object, prototype js.Value, property any) (js.Value, error) {
+	descriptor := object.Call("getOwnPropertyDescriptor", prototype, property)
+	if descriptor.Type() != js.TypeObject || descriptor.IsNull() {
+		return js.Undefined(), errors.New("required byte-array intrinsic is unavailable")
+	}
+	value := descriptor.Get("get")
+	if value.Type() != js.TypeFunction {
+		return js.Undefined(), errors.New("required byte-array getter is unavailable")
+	}
+	return value, nil
+}
+
+func newTransport() (transport *byteTransport, err error) {
+	defer func() {
+		if recover() != nil {
+			transport = nil
+			err = errors.New("byte-array transport initialization failed")
+		}
+	}()
+	global := js.Global()
+	object, arrayBuffer, uint8 := global.Get("Object"), global.Get("ArrayBuffer"), global.Get("Uint8Array")
+	if object.Type() != js.TypeFunction || arrayBuffer.Type() != js.TypeFunction || uint8.Type() != js.TypeFunction {
+		return nil, errors.New("byte-array transport is unavailable")
+	}
+	t := &byteTransport{
+		uint8Constructor: uint8,
+		uint8Prototype:   uint8.Get("prototype"),
+		bufferPrototype:  arrayBuffer.Get("prototype"),
+		isView:           arrayBuffer.Get("isView"),
+		getPrototype:     object.Get("getPrototypeOf"),
+		getResizable:     js.Undefined(),
+	}
+	if t.isView.Type() != js.TypeFunction || t.getPrototype.Type() != js.TypeFunction {
+		return nil, errors.New("byte-array type checks are unavailable")
+	}
+	typedPrototype := t.getPrototype.Invoke(t.uint8Prototype)
+	for name, destination := range map[string]*js.Value{
+		"buffer": &t.getBuffer, "length": &t.getLength, "byteOffset": &t.getOffset,
+	} {
+		value, err := getter(object, typedPrototype, name)
+		if err != nil {
+			return nil, err
+		}
+		*destination = value
+	}
+	t.getKind, err = getter(object, typedPrototype, global.Get("Symbol").Get("toStringTag"))
+	if err != nil {
+		return nil, err
+	}
+	t.getBufferLength, err = getter(object, t.bufferPrototype, "byteLength")
+	if err != nil {
+		return nil, err
+	}
+	resizable := object.Call("getOwnPropertyDescriptor", t.bufferPrototype, "resizable")
+	if resizable.Type() == js.TypeObject && !resizable.IsNull() {
+		t.getResizable = resizable.Get("get")
+		if t.getResizable.Type() != js.TypeFunction {
+			return nil, errors.New("resizable-buffer check is unavailable")
+		}
+	}
+	return t, nil
+}
+
+// Only an ordinary same-realm Uint8Array covering its complete fixed, nonshared
+// ArrayBuffer is accepted. No array/string/number coercion or field getter on
+// the supplied view participates in reading bytes. CopyBytesToGo takes a new
+// Go-owned snapshot; the future Worker must transfer/create its own JS buffer.
+func (t *byteTransport) input(value js.Value, limit int) ([]byte, error) {
+	invalid := errors.New("expected a nonempty owned fixed Uint8Array within the mode byte limit")
+	if value.Type() != js.TypeObject || value.IsNull() || !t.isView.Invoke(value).Bool() ||
+		!t.getPrototype.Invoke(value).Equal(t.uint8Prototype) ||
+		t.getKind.Call("call", value).String() != "Uint8Array" {
+		return nil, invalid
+	}
+	buffer := t.getBuffer.Call("call", value)
+	if buffer.Type() != js.TypeObject || buffer.IsNull() ||
+		!t.getPrototype.Invoke(buffer).Equal(t.bufferPrototype) {
+		return nil, invalid // Also refuses SharedArrayBuffer backing.
+	}
+	if t.getResizable.Type() == js.TypeFunction && t.getResizable.Call("call", buffer).Bool() {
+		return nil, invalid
+	}
+	length := t.getLength.Call("call", value).Float()
+	if math.IsNaN(length) || math.IsInf(length, 0) || math.Trunc(length) != length ||
+		length < 1 || length > float64(limit) {
+		return nil, invalid // Detached/empty views have no acceptable input.
+	}
+	if t.getOffset.Call("call", value).Float() != 0 ||
+		t.getBufferLength.Call("call", buffer).Float() != length {
+		return nil, invalid
+	}
+	// The official Go runtime invokes src.subarray during CopyBytesToGo.
+	// A caller view may have own method/constructor overrides despite passing
+	// the intrinsic checks above. Make a fresh full view over the validated
+	// fixed buffer so only trusted standard prototype methods are consulted;
+	// no caller property participates in the actual byte copy.
+	copySource := t.uint8Constructor.New(buffer)
+	raw := make([]byte, int(length))
+	if js.CopyBytesToGo(raw, copySource) != len(raw) {
+		return nil, errors.New("input byte snapshot was incomplete")
+	}
+	return raw, nil
+}
+
+func (t *byteTransport) output(raw []byte) (js.Value, error) {
+	if len(raw) > maxOutputBytes {
+		return js.Undefined(), errors.New("complete output exceeds the byte transport ceiling")
+	}
+	value := t.uint8Constructor.New(len(raw))
+	if js.CopyBytesToJS(value, raw) != len(raw) {
+		return js.Undefined(), errors.New("output byte copy was incomplete")
+	}
+	return value, nil
+}
+
+func failure(message string) map[string]any {
+	return map[string]any{"ok": false, "error": message}
+}
+
+func inputLimit(mode string) int {
+	switch mode {
+	case "baseline", "compare":
+		return revision.MaxInputBytes
+	case "replay":
+		return revision.MaxReportBytes
+	default:
+		return 0
+	}
+}
+
+// dispatch exactly follows the native cmd/compare decoder/API order. There is
+// no alternative policy, difference calculation, baseline repair or file IO.
+func dispatch(mode string, raw []byte) ([]byte, error) {
+	var result any
+	var err error
+	switch mode {
+	case "baseline":
+		facts, decodeErr := original.DecodeAPI(raw)
+		if decodeErr != nil {
+			return nil, decodeErr
+		}
+		result, err = revision.Baseline(facts)
+	case "compare":
+		request, decodeErr := revision.DecodeCompareRequest(raw)
+		if decodeErr != nil {
+			return nil, decodeErr
+		}
+		result, err = revision.Compare(request)
+	case "replay":
+		report, decodeErr := revision.DecodeComparisonReport(raw)
+		if decodeErr != nil {
+			return nil, decodeErr
+		}
+		result, err = revision.VerifyComparison(report)
+	default:
+		return nil, errors.New("mode must be baseline, compare, or replay")
+	}
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(result)
+}
+
+func startupInfo() (raw []byte, err error) {
+	defer func() {
+		if recover() != nil {
+			raw = nil
+			err = errors.New("native source metadata initialization failed")
+		}
+	}()
+	originalBindings, err := original.SourceBindings()
+	if err != nil {
+		return nil, err
+	}
+	revisionBindings, err := revision.RevisionBindings()
+	if err != nil {
+		return nil, err
+	}
+	// These are native source bindings, not recomputed policy generations or an
+	// executable signature. Exposed metadata is never read back as authority.
+	return json.Marshal(struct {
+		Schema   string                       `json:"schema"`
+		Scope    string                       `json:"scope"`
+		Modes    []string                     `json:"modes"`
+		Profiles map[string]string            `json:"profiles"`
+		Limits   map[string]int               `json:"limits"`
+		Bindings map[string]original.Bindings `json:"bindings"`
+	}{
+		Schema:   "gooo/api-policy-browser-bridge-info/v1",
+		Scope:    "unsigned_historical_hypothetical_comparison",
+		Modes:    []string{"baseline", "compare", "replay"},
+		Profiles: map[string]string{"original": revision.OriginalProfile, "candidate": revision.CandidateProfile},
+		Limits: map[string]int{
+			"text_utf8_bytes":        original.MaxTextBytes,
+			"baseline_input_bytes":   revision.MaxInputBytes,
+			"compare_input_bytes":    revision.MaxInputBytes,
+			"replay_input_bytes":     revision.MaxReportBytes,
+			"original_proof_bytes":   original.MaxBatchBytes,
+			"native_facts_raw_bytes": 9 * (original.MaxTextBytes*6 + 32),
+			"output_bytes":           maxOutputBytes,
+		},
+		Bindings: map[string]original.Bindings{"original": originalBindings, "revision": revisionBindings},
+	})
+}
+
+func publishInfo(transport *byteTransport) (err error) {
+	defer func() {
+		if recover() != nil {
+			err = errors.New("browser metadata transport failed")
+		}
+	}()
+	raw, err := startupInfo()
+	if err != nil {
+		return err
+	}
+	value, err := transport.output(raw)
+	if err != nil {
+		return err
+	}
+	js.Global().Set("goooAPIRevisionInfo", value)
+	return nil
+}
+
+func main() {
+	// The loader must require fresh globals and complete metadata before ready.
+	// Failure publishes no partial info. No input, fact, report or error is logged.
+	js.Global().Set("goooAPIRevisionInfo", js.Undefined())
+	transport, initErr := newTransport()
+	ready := false
+	compute := js.FuncOf(func(_ js.Value, args []js.Value) (result any) {
+		defer func() {
+			if recover() != nil {
+				result = failure("browser byte transport or native operation failed")
+			}
+		}()
+		if !ready || initErr != nil || transport == nil {
+			return failure("the native byte bridge is unavailable")
+		}
+		if len(args) != 2 || args[0].Type() != js.TypeString {
+			return failure("expected a mode string and an owned Uint8Array")
+		}
+		mode := args[0].String() // Control token only; never fact/report JSON.
+		limit := inputLimit(mode)
+		if limit == 0 {
+			return failure("mode must be baseline, compare, or replay")
+		}
+		raw, err := transport.input(args[1], limit)
+		if err != nil {
+			return failure(err.Error())
+		}
+		output, err := dispatch(mode, raw)
+		if err != nil {
+			return failure(err.Error())
+		}
+		data, err := transport.output(output)
+		if err != nil {
+			return failure(err.Error())
+		}
+		return map[string]any{"ok": true, "data": data}
+	})
+	callbacks = append(callbacks, compute)
+	js.Global().Set("goooAPIRevision", compute)
+	if initErr == nil {
+		initErr = publishInfo(transport)
+		ready = initErr == nil
+	}
+	// Go/JS callbacks must remain live. A fatal runtime OOM is not recoverable:
+	// the Worker must treat runtime exit/termination/deadline as no result.
+	select {}
+}

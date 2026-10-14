@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' blob: 'wasm-unsafe-eval'; style-src 'self'; connect-src 'self'; worker-src blob:; base-uri 'none'; form-action 'none'">
+  <title>API policy comparison · Gooo</title>
+  <link rel="stylesheet" href="./api-policy.css">
+  <script src="./api-policy.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to comparison</a>
+  <div class="shell">
+    <header><a class="wordmark" href="#main">Gooo<span> / policy lab</span></a><span class="badge">Experimental preview · fixed profiles</span></header>
+    <main id="main">
+      <section class="intro" aria-labelledby="title">
+        <p class="eyebrow">API POLICY REVISION</p>
+        <h1 id="title">See what a policy change would do.</h1>
+        <p class="lead">Try the same supplied facts against an original policy and a read-only candidate. Gooo-generated code computes both decisions, all 15 differences, and the change summary in your browser.</p>
+        <p class="trust">This is an unsigned, historical comparison of two fixed profiles. Supplied facts are not authenticated. Results do not establish current authority or apply a policy. No input is sent to a server by this page.</p>
+      </section>
+      <noscript>This prototype needs JavaScript, WebAssembly, Workers and WebCrypto. It cannot compare policies without them.</noscript>
+      <section class="panel" aria-labelledby="input-title">
+        <div class="section-heading"><div><p class="eyebrow">1 / SUPPLY FACTS</p><h2 id="input-title">Start with a request</h2></div><div class="samples"><button id="sample-read" type="button">Read sample</button><button id="sample-write" type="button">Write sample</button></div></div>
+        <label for="facts">Nine-fact JSON</label>
+        <p id="facts-help" class="help">Edit or paste the displayed JSON. Browsers may fold raw line endings; use a file for exact input bytes. This page does not trim text or normalize Unicode. Each decoded text value may contain up to 65,536 UTF-8 bytes; the native decoder also checks the complete JSON.</p>
+        <textarea id="facts" rows="14" spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="facts-help facts-origin"></textarea>
+        <p id="facts-origin" class="help">The displayed editor text is used. Its UTF-16 pairs are checked before encoding; raw file bytes follow a separate path.</p>
+        <div class="file-row"><label class="file-label" for="facts-file">Or use raw facts from a JSON file <input id="facts-file" type="file" accept=".json,application/json"></label><button id="use-editor" type="button" hidden>Use editor instead</button></div>
+        <p class="help">File bytes go directly to Go. Loading a file does not run it. Requests are limited to 4 MiB, with the original decoder’s smaller raw-facts and per-text limits preserved.</p>
+        <div class="actions"><button id="compare" class="primary" type="button">Compare policies</button><span class="help">Creates an original baseline, then compares the candidate with those same facts.</span></div>
+      </section>
+      <section class="panel" aria-labelledby="replay-title">
+        <div class="section-heading"><div><p class="eyebrow">2 / RECHECK A SAVED RESULT</p><h2 id="replay-title">Bring back a report</h2></div></div>
+        <p>Load a native comparison JSON file, then explicitly recheck it. Go recalculates the complete report, including the saved decisions, differences and source bindings.</p>
+        <label class="file-label" for="report-file">Saved comparison JSON <input id="report-file" type="file" accept=".json,application/json"></label>
+        <p id="report-origin" class="help">No report loaded. Files may be up to 16 MiB; each nested original proof remains limited to 4 MiB.</p>
+        <button id="replay" type="button" disabled>Recheck saved report</button>
+      </section>
+      <div class="status-row"><p id="status" role="status" aria-live="polite">Ready for a comparison. The native runtime loads when you run it.</p><button id="cancel" type="button" disabled>Cancel</button></div>
+      <section id="result" class="panel result" aria-labelledby="result-title" hidden>
+        <div class="section-heading"><div><p class="eyebrow">COMPLETED NATIVE RECALCULATION</p><h2 id="result-title">Comparison result</h2></div><button id="save" type="button" disabled>Save recalculated report</button></div>
+        <p id="result-origin" class="help"></p>
+        <div class="summary"><div><span>Classification</span><strong id="classification"></strong></div><div><span>Changed fields</span><strong id="changed-count"></strong></div></div>
+        <div class="table-scroll"><table><caption>All decision fields and native difference flags</caption><thead><tr><th scope="col">Field</th><th scope="col">Original</th><th scope="col">Read-only candidate</th><th scope="col">Native changed flag</th></tr></thead><tbody id="decision-rows"></tbody></table></div>
+        <details><summary>Supplied facts in the native report</summary><pre id="result-facts"></pre></details>
+        <details><summary>Complete native report, including all source bindings</summary><pre id="raw-report"></pre></details>
+      </section>
+      <details class="panel" id="build-details"><summary>Profiles, runtime and limits</summary><p class="help">Static manifest hashes check consistency with this package. They are unsigned and do not authenticate its publisher or prove an adversarial executable is trustworthy.</p><pre id="runtime-info">Manifest not loaded yet.</pre></details>
+      <p class="footnote">An interrupted or timed-out run produces no result and cannot be saved. The 120-second deadline is an operational limit, not a policy decision.</p>
+    </main>
+    <footer>Gooo · fixed-profile API policy comparison</footer>
+  </div>
+</body>
+</html>

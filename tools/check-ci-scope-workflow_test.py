@@ -16,9 +16,9 @@ WORKFLOW = Path(__file__).resolve().parent.parent / ".github/workflows/ci.yml"
 FULL = "steps.change-scope.outputs.docs_only != 'true'"
 DOCS = "steps.change-scope.outputs.docs_only == 'true'"
 HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
-# Reviewed browser delta: add checked service-policy smoke after UUID parsing.
+# Reviewed browser delta: add API policy actual-Wasm/package checks after service-policy smoke.
 # Events, native skip guards and deployment dependencies stay byte-identical.
-BROWSER_SHA = "3a2d3a25717cddea4ec9326b85b037dc94277e061621f567b140e1291159381a"
+BROWSER_SHA = "9842fdb57f69899aa53215451feeda87eca4ce90f4b1bb92ef18326608be3231"
 COMMON = {
     "Classify the exact checked PR tree", "Check the Go observer",
     "Check pinned Unicode table generation",
