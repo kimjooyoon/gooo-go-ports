@@ -1,0 +1,177 @@
+// This finite external consumer checks unsigned historical consistency over
+// synthetic facts and a hypothetical readonly revision. It neither authenticates
+// those facts nor authorizes or performs an API operation.
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+	"reflect"
+
+	revisionpolicy "github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision"
+	original "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
+)
+
+// Exact identities of the source generations this consumer accepts. Observations
+// exist only after the public-module verification helper actually runs this binary.
+const (
+	expectedCompiler = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+	expectedOriginalGeneration = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
+	expectedRevisionGeneration = "sha256:5ce3d883db76b9b2cca6f53602eff6b7b3dff1870b3e19a882281dcff91bdda6"
+)
+
+func main() {
+	if err := run(); err != nil {
+		fmt.Fprintln(os.Stderr, "external consumer refused:", err)
+		os.Exit(1)
+	}
+}
+
+type caseObservation struct {
+	Action string `json:"action"`
+	Report revisionpolicy.ComparisonReport `json:"report"`
+}
+
+func run() error {
+	// Explicit nine-field inputs; there is no current trusted fact provider.
+	cases := []struct {
+		action string
+		raw string
+	}{
+		{"read", `{"group_present":true,"group_value":"admin","principal_present":true,"principal_value":"synthetic:user","authenticated":true,"caller_tenant":"tenant-a","resource_tenant":"tenant-a","requested_action":"read","allowed_action":"read"}`},
+		{"write", `{"group_present":true,"group_value":"admin","principal_present":true,"principal_value":"synthetic:user","authenticated":true,"caller_tenant":"tenant-a","resource_tenant":"tenant-a","requested_action":"write","allowed_action":"write"}`},
+	}
+	observations := make([]caseObservation, 0, len(cases))
+	for _, current := range cases {
+		var report revisionpolicy.ComparisonReport
+		if err := checkCase(current.action, []byte(current.raw), &report); err != nil {
+			return fmt.Errorf("%s: %w", current.action, err)
+		}
+		observations = append(observations, caseObservation{Action: current.action, Report: report})
+	}
+	// Emit only after both complete native comparisons and saved replays agree.
+	output, err := json.Marshal(struct {
+		Schema string `json:"schema"`
+		Scope string `json:"scope"`
+		Cases []caseObservation `json:"cases"`
+	}{"gooo/api-policy-consumer-observation/v1", "synthetic_unsigned_historical_hypothetical_readonly", observations})
+	if err != nil {
+		return err
+	}
+	output = append(output, '\n')
+	written, err := os.Stdout.Write(output)
+	if err != nil {
+		return err
+	}
+	if written != len(output) {
+		return io.ErrShortWrite
+	}
+	return nil
+}
+
+func checkCase(action string, raw []byte, observation *revisionpolicy.ComparisonReport) error {
+	// There is no revisionpolicy.DecodeFacts API. The actual public decoder is
+	// original.DecodeAPI, also used by the repository's baseline command.
+	facts, err := original.DecodeAPI(raw)
+	if err != nil {
+		return fmt.Errorf("decode facts: %w", err)
+	}
+	expectedFacts := original.APIFacts{
+		Facts: original.Facts{
+			GroupPresent: true, GroupValue: "admin",
+			PrincipalPresent: true, PrincipalValue: "synthetic:user",
+		},
+		Authenticated: true, CallerTenant: "tenant-a", ResourceTenant: "tenant-a",
+		RequestedAction: action, AllowedAction: action,
+	}
+	if facts != expectedFacts {
+		return fmt.Errorf("decoded nine raw facts differ")
+	}
+	baseline, err := revisionpolicy.Baseline(facts)
+	if err != nil {
+		return fmt.Errorf("baseline: %w", err)
+	}
+	report, err := revisionpolicy.Compare(baseline)
+	if err != nil {
+		return fmt.Errorf("compare: %w", err)
+	}
+
+	// All fifteen output fields are literal expectations. These assertions are
+	// independent observations to check; they are not a host policy fallback.
+	before := original.APIDecision{
+		Allowed: true, Reason: "ALLOW", Authenticated: true,
+		TenantPresent: true, TenantMatched: true,
+		ActionPresent: true, ActionMatched: true,
+		AccessAllowed: true, AccessError: false, AccessResult: "ALLOW",
+		GroupMatched: true, PrincipalMatched: false, GroupMissing: false,
+		PrincipalDefaulted: false, EffectivePrincipal: "synthetic:user",
+	}
+	after := original.APIDecision{
+		Allowed: true, Reason: "ALLOW", Authenticated: true,
+		TenantPresent: true, TenantMatched: true,
+		ActionPresent: true, ActionMatched: true,
+		AccessAllowed: true, AccessError: false, AccessResult: "ALLOW",
+		GroupMatched: true, PrincipalMatched: false, GroupMissing: false,
+		PrincipalDefaulted: false, EffectivePrincipal: "synthetic:user",
+	}
+	flags := revisionpolicy.DifferenceFlags{
+		Allowed: false, Reason: false, Authenticated: false,
+		TenantPresent: false, TenantMatched: false,
+		ActionPresent: false, ActionMatched: false,
+		AccessAllowed: false, AccessError: false, AccessResult: false,
+		GroupMatched: false, PrincipalMatched: false, GroupMissing: false,
+		PrincipalDefaulted: false, EffectivePrincipal: false,
+	}
+	summary := revisionpolicy.Summary{Classification: "UNCHANGED", ChangedCount: 0}
+	if action == "write" {
+		after.Allowed, after.Reason = false, "ACTION_NOT_READ_ONLY"
+		flags.Allowed, flags.Reason = true, true
+		summary = revisionpolicy.Summary{Classification: "NEWLY_DENIED", ChangedCount: 2}
+	}
+	if report.Schema != revisionpolicy.ComparisonSchema ||
+		report.Status != revisionpolicy.ComparisonStatus ||
+		report.Scope != revisionpolicy.ComparisonScope ||
+		report.BeforeProfile != revisionpolicy.OriginalProfile ||
+		report.CandidateProfile != revisionpolicy.CandidateProfile ||
+		baseline.BeforeProfile != revisionpolicy.OriginalProfile ||
+		baseline.CandidateProfile != revisionpolicy.CandidateProfile {
+		return fmt.Errorf("comparison context differs")
+	}
+	if baseline.Before.Facts != expectedFacts || report.Before.Facts != expectedFacts ||
+		report.After.Facts != expectedFacts || baseline.Before.Decision != before ||
+		report.Before.Decision != before || report.After.Decision != after ||
+		report.Differences != flags || report.Summary != summary ||
+		!reflect.DeepEqual(report.Before, baseline.Before) {
+		return fmt.Errorf("nine facts, fifteen decisions, fifteen flags or summary differ")
+	}
+	if report.Before.Bindings.CompilerSourceSHA != expectedCompiler ||
+		report.Before.Bindings.GenerationSHA256 != expectedOriginalGeneration ||
+		len(report.Before.Bindings.Assets) != 28 ||
+		report.After.Bindings.CompilerSourceSHA != expectedCompiler ||
+		report.After.Bindings.GenerationSHA256 != expectedRevisionGeneration ||
+		len(report.After.Bindings.Assets) != 36 ||
+		!reflect.DeepEqual(report.After.Bindings, report.ClassifierBindings) {
+		return fmt.Errorf("source bindings differ from this consumer contract")
+	}
+
+	// Exercise the public saved-report decoder and complete typed re-evaluation.
+	saved, err := json.Marshal(report)
+	if err != nil {
+		return fmt.Errorf("marshal saved comparison: %w", err)
+	}
+	decoded, err := revisionpolicy.DecodeComparisonReport(saved)
+	if err != nil {
+		return fmt.Errorf("decode saved comparison: %w", err)
+	}
+	verified, err := revisionpolicy.VerifyComparison(decoded)
+	if err != nil {
+		return fmt.Errorf("verify saved comparison: %w", err)
+	}
+	if !reflect.DeepEqual(report, decoded) || !reflect.DeepEqual(report, verified) {
+		return fmt.Errorf("complete saved comparison or replay differs")
+	}
+	*observation = verified
+	return nil
+}

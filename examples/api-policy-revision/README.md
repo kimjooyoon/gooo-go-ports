@@ -61,6 +61,64 @@ group, principal and tenant facts; inspect them before sharing. Validation error
 produce a nonzero exit and no JSON result. Writing stdout or a redirected file
 is not an atomic file transaction.
 
+## Import the published policy from another Go project
+
+With Go 1.27.2 installed and selected, this separate project imports the public
+module at immutable commit `e723f9af6dc33ecfff002a951e4b09a310439338`.
+Initial dependency downloads use the public Go proxy and checksum service.
+There is no consumer-owned `replace`, workspace or Gooo compiler requirement.
+
+```sh
+(
+  set -eu
+  export GOTOOLCHAIN=local GOWORK=off GOENV=off
+  export GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org
+  export GOPRIVATE= GONOPROXY= GONOSUMDB=
+  consumer_dir="$(mktemp -d)"
+  cd "$consumer_dir"
+  go mod init example.local/gooo-api-review
+  go get github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision@e723f9af6dc33ecfff002a951e4b09a310439338
+  cat > main.go <<'GO'
+package main
+
+import (
+    "fmt"
+    revision "github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision"
+    original "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
+)
+
+func main() {
+    facts, err := original.DecodeAPI([]byte(`{"group_present":true,"group_value":"admin","principal_present":true,"principal_value":"synthetic:user","authenticated":true,"caller_tenant":"tenant-a","resource_tenant":"tenant-a","requested_action":"write","allowed_action":"write"}`))
+    if err != nil { panic(err) }
+    saved, err := revision.Baseline(facts)
+    if err != nil { panic(err) }
+    report, err := revision.Compare(saved)
+    if err != nil { panic(err) }
+    fmt.Println(report.Summary.Classification, report.Summary.ChangedCount)
+}
+GO
+  go run .
+)
+```
+
+Expected output: `NEWLY_DENIED 2`. Both `allowed` and `reason` change; all nine
+facts and both complete decisions remain in the report. This synthetic
+comparison does not authenticate the facts or authorize an API action.
+
+The parent now requires the original module at the actual Go-resolved version
+`v0.0.0-20261014100709-8cddcc4e65af`. Repository builds retain the local frozen
+replacement; dependency replacements are not inherited by an external project.
+Go module ZIPs exclude nested modules, so the public parent ZIP omits
+`profiles/original`; Go resolves that original module separately. Build and
+generator reproduction still use the full source checkout described above.
+`go install .../cmd/compare@version` is not a supported installation path.
+
+Changing this dependency declaration creates a new parent generation even
+though the Gooo policies and original 28 assets are unchanged. Original API
+proofs retain their original generation. A saved comparison from the earlier
+parent generation must be replayed with its original source version; it is not
+migrated or silently rebound to this module version.
+
 ## Exact input and evidence contracts
 
 The facts object has exactly nine fields: `group_present`, `group_value`,
