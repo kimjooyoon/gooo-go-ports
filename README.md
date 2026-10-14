@@ -2,6 +2,9 @@
 
 [Gooo](https://github.com/kimjooyoon/meta-ontology-go) is an experimental language for
 describing what programs should do and inspecting how they are built and run.
+
+**Try service-policy checks from Go:** open the [four-file service-policy quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726). With Go 1.27.2 already installed, follow its README to run Go generated from Gooo without a runtime Gooo compiler. Distinguish invalid input from denial, compare the same request before and after a rule change, and inspect a returned widening witness. These calls compare supplied policy facts; they do not apply a grant or call a service.
+
 This independent ecosystem project implements selected Go standard-library, x/image and Google UUID functions in Gooo,
 with independent Go reference outputs and saved replay: 38 standard-library ports,
 two ports from golang.org/x/image and two Google UUID adaptations. The current scope is
@@ -42,6 +45,7 @@ proposal, a refused expansion, and recovery of a discarded response by operation
 
 | What would you like to do? | Start with | What you can change |
 | --- | --- | --- |
+| Compare service-policy facts from a Go program | [Four-file Go quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726) | Use Go 1.27.2 to inspect input refusal, a request-specific policy change, and a returned widening witness; no grant is applied |
 | Try Gooo without installing anything | [Interactive tutorial](https://kimjooyoon.github.io/gooo-go-ports/tutorial.html) | Change a score and label, see the returned record, and read the two Gooo source files |
 | Edit source and save generated Go in the browser | [Gooo code editor](https://kimjooyoon.github.io/gooo-go-ports/codegen/) | Edit one source file and generate Go for one activity; save the current Go code or original response JSON. Generated Go is not executed |
 | Find a literal phrase without installing anything | [Literal search](https://kimjooyoon.github.io/gooo-go-ports/literal-search.html) | Supply two strings, see the first UTF-8 byte position and non-overlapping count, and save an honest browser observation |
