@@ -112,10 +112,10 @@ jobs:
       - name: Compare the ports with Go and replay every batch
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
-          go run ./cmd/verify --workers 4 --out out/ci
+          go run ./cmd/verify --workers 2 --out out/ci --timing-out out/ci/timing.jsonl
           jq -e '
             .schema == "gooo/go-ports-differential/v1" and
-            .native_suite_workers == 4 and
+            .native_suite_workers == 2 and
             .go_version == "go1.27.2" and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
             .ported_functions == 42 and .consumer_programs == 18 and .consumer_activities == 20 and
@@ -192,6 +192,44 @@ jobs:
             ([.runs[:54][].cases] | add) == 65345 and ([.runs[:54][].batches] | add) == 882 and
             all(.runs[]; .passed == .cases and .replay_equal == true)
           ' out/ci/summary.json
+          tail -n 1 out/ci/timing.jsonl | jq -e '
+            .schema == "gooo/native-verification-timing/v1" and
+            .kind == "run_end" and
+            .status == "COMPLETE" and
+            .expected_suites == 62 and
+            .successful_suites == 62 and
+            .observed_batches == 2332 and
+            .verified_batches == 2332 and
+            .verified_cases == 159781 and
+            .event_count == 2458 and
+            .failed_suites == 0 and
+            .canceled_suites == 0 and
+            .not_started_suites == 0 and
+            .missing_suite_finishes == 0 and
+            .failed_batches == 0 and
+            .incomplete_batches == 0 and
+            .logger_errors == 0 and
+            .source_bindings_unchanged == true
+          '
+          jq -c -s '
+            .[0] as $header | .[-1] as $footer |
+            [.[] | select(.kind == "batch_end")] as $batches |
+            [.[] | select(.kind == "suite_end")] as $suites |
+            {
+              schema: "gooo/native-verification-timing-summary/v1",
+              header: $header,
+              footer: ($footer | del(.identity_after)),
+              row_count: length,
+              sequence_contiguous: (to_entries | all(.[]; .key == .value.seq)),
+              kind_counts: (group_by(.kind) | map({key: .[0].kind, value: length}) | from_entries),
+              verified_batch_count: ($batches | map(select(.status == "VERIFIED" and .verified == true)) | length),
+              phase_totals: ([$batches[].phases[] | select(.observed == true)] | group_by(.name) |
+                map({phase: .[0].name, observations: length, sum_observed_elapsed_ns: (map(.duration_ns) | add)})),
+              suite_costs: ($suites | sort_by(.suite_index) |
+                map({suite_index, package, activity, status, duration_ns, observed_batches, covered_cases})),
+              scope: "Monotonic observed elapsed intervals, including recorder overhead. Concurrent sums are not CPU time or speed forecasts. Batch selection and compiler build/run internals are not separately measured."
+            }
+          ' out/ci/timing.jsonl
       - name: Execute and replay the Unicode case inspector
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |

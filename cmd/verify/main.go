@@ -45,9 +45,13 @@ func run() error {
 	out := flag.String("out", "", "new evidence directory (must not exist)")
 	browser := flag.String("browser-fixtures", "", "write independent browser oracle fixtures to a new JSON file")
 	workers := flag.Int("workers", 1, "native suites to verify concurrently (1..4; default serial)")
+	timingOut := flag.String("timing-out", "", "optional new timing JSONL directly under --out (observation only)")
 	flag.Parse()
 	if err := validateNativeSuiteWorkers(*workers); err != nil {
 		return err
+	}
+	if *timingOut != "" && (*out == "" || *browser != "") {
+		return fmt.Errorf("--timing-out requires --out and cannot be used with --browser-fixtures")
 	}
 	if *out != "" && *browser != "" {
 		return fmt.Errorf("choose either --out or --browser-fixtures")
@@ -188,6 +192,11 @@ func run() error {
 	if err = os.Mkdir(root, 0755); err != nil {
 		return err
 	}
+	if *timingOut != "" {
+		if err := validateNativeTimingOutput(*timingOut, root); err != nil {
+			return err
+		}
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
 	defer cancel()
 	raw, err := execute(ctx, *compiler, filepath.Join(root, "compiler.json"), "version", "--build", "--json")
@@ -234,13 +243,37 @@ func run() error {
 			fmt.Fprintln(os.Stderr, "native build cache cleanup:", err)
 		}
 	}()
+	var timing *nativeTiming
+	if *timingOut != "" {
+		timing, err = newNativeTiming(nativeTimingConfig{
+			Output: *timingOut, EvidenceRoot: root, RepositoryRoot: ".",
+			Compiler: *compiler, Workers: *workers, Suites: suites,
+			Lock: lock, Catalog: catalog, CompilerIdentity: raw,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	timingClosed := false
+	defer func() {
+		if timing != nil && !timingClosed {
+			// Do not recover a panic or turn an interrupted verifier into a timing PASS.
+			timing.abort()
+			if err := timing.close(nil, ctx.Err()); err != nil {
+				fmt.Fprintln(os.Stderr, "incomplete native timing:", err)
+			}
+		}
+	}()
 	reports := []observation{}
 	var foldingExhaustive simpleFoldExhaustiveReport
 	ycbcrExhaustive := map[string]ycbcrExhaustiveReport{}
 	mappingExhaustive := map[string]caseMappingExhaustiveReport{}
 	verifier := newNativeSuiteVerifier(ctx, *compiler, root, lock, cache)
+	verifier.timing = timing
 	results, err := runNativeSuites(ctx, suites, *workers, func(ctx context.Context, index int, s suite) (nativeSuiteResult, error) {
+		suiteTiming := timing.beginSuite(index, s)
 		result, err := verifier.verify(ctx, s, workspaces[index])
+		suiteTiming.finish(result, err, ctx.Err())
 		if err == nil {
 			r := result.Observation
 			fmt.Printf("%s:%s %d/%d; %d batches; replay identical\n", r.Package, r.Activity, r.Passed, r.Cases, r.Batches)
@@ -248,6 +281,11 @@ func run() error {
 		return result, err
 	})
 	if err != nil {
+		// Preserve the original earliest-index verification error as the primary result.
+		if timingErr := timing.close(err, ctx.Err()); timingErr != nil {
+			fmt.Fprintln(os.Stderr, "native timing:", timingErr)
+		}
+		timingClosed = true
 		return err
 	}
 	for _, result := range results {
@@ -275,7 +313,7 @@ func run() error {
 			consumerActivities++
 		}
 	}
-	return save(filepath.Join(root, "summary.json"), map[string]any{
+	summaryErr := save(filepath.Join(root, "summary.json"), map[string]any{
 		"schema": "gooo/go-ports-differential/v1", "go_version": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH,
 		"native_suite_workers": *workers,
 		"compiler_revision":    lock.CompilerRevision, "source_sha256": catalog.Hashes,
@@ -337,6 +375,16 @@ func run() error {
 		"cases":                         total, "passed": passed, "runs": reports,
 		"scope": "Finite differential observations against pinned Go source, plus identical saved replay. The prior 56 suites, 108,835 cases, source rosters and 1,416 batch boundaries are unchanged. A separate ParseCanonical Text API adds original Google UUID Parse and returned String observations, preserving partial values on errors. Google UUID Validate and its importing consumer add finite original-source references, exact error/classification records and isolated package workspaces. Strings.IndexByte adds independent byte-search references and separately counted original int64 needle extensions; its two Text suites and all UUID suites use a serialized-byte batch bound. NRGBA adds finite record-input conversion and opaque matte references with original int64 domain rejection, independent color and draw oracles and separate counters. Case mapping adds independent Go references, separately counted outside-int32 extensions, and a three-mapping diagnostic consumer. Invalid To case selectors return U+FFFD before rune-domain handling; valid selectors and unary wrappers preserve outside-int32 inputs as an explicit identity extension. Fixed-point Floor/Ceil add finite comparisons with byte-preserved golang.org/x/image source, including original int32 overflow; outside-int32 rejection is separate. PixelBounds rejects invalid raw coordinates first, returns original empty/reversed selections as empty before quantization, and rejects nonempty max coordinates that overflow Ceil; it clips the rounded rectangle against unnormalized int64 bounds. No 2^32 exhaustive check or font/image rendering claim. YCbCr adds finite Go-reference tuples and separately counted out-of-byte rejection cases; original int64 inputs are checked before conversion. Its importing RGB round-trip consumer reports signed restored-minus-original deltas and does not promise a lossless conversion. SimpleFold preserves the pinned ASCII, special-orbit and case-range rules over original signed int32 runes; its outside-int32 identity extension is counted separately. The importing two-rune consumer compares simple folding classes with a maximum orbit length verified from the complete pinned Unicode graph; it is not whole-string folding or locale-aware matching. The separate simple_fold_exhaustive report covers the unchanged generated SimpleFold function on every input 0..0x10FFFF, plus separately counted finite int32 and int64 extension samples, not every int32 value or rune pair. The original four geometry methods preserve four original signed int64 coordinates in each Rectangle record on 64-bit Go, including empty and noncanonical rectangles; named boundaries, a small grid and fixed samples are finite Go method comparisons, with no coordinate normalization or domain-rejection extension. Both-empty Union preserves the second original record; empty Intersect returns the zero record. RectangleCanon separately compares and swaps inverted axes; its finite corpus includes canonical outputs again to observe idempotence. DragCropPlan canonicalizes only the original second record (drag corners) before intersection; original bounds and the existing CropPlan semantics are unchanged. These activities introduce no coordinate arithmetic or domain extension. CropPlan computes bounds only and does not process image pixels or calculate possibly overflowing widths/areas. Classification adds complete pinned Letter and Digit table semantics over original signed int32 rune inputs, observed here only through finite range boundaries, stride holes, Latin-1 and deterministic samples. A separate check-unicode command exhaustively checks 0..0x10FFFF using the unmodified generated Go; its counts are not included in these receipt batches. Whitespace uses pinned Unicode 17.0.0 White_Space semantics over original signed int32 rune inputs; all 256 Latin-1 values and all 25 true property members are included, with other domains observed finitely. Outside-int32 false/-1 extensions are counted separately from Go-reference observations. Duration ports and their consumer preserve both signed int64 nanosecond inputs, including nonpositive quanta, and add finite Go-reference observations without domain-rejection extensions. Color and rotation port/consumer Go-reference cases and explicit out-of-byte rejection cases are counted separately. RuneStart and the five original unary math/bits functions each cover all 256 byte values exactly once, excluding out-of-domain inputs. RotateLeft8 covers all 2,048 byte/rotation pairs only for x=0..255 and k=0..7; other signed int64 rotations have finite boundary/sample observations with original inputs preserved. No claim of exhaustive equivalence for all rotations or other domains, input-independent execution time, whole-package compatibility, ICC color management, or printed appearance.",
 	})
+	// Timing never substitutes for the original summary or its required CI predicates.
+	timingErr := timing.close(summaryErr, ctx.Err())
+	timingClosed = true
+	if summaryErr != nil {
+		if timingErr != nil {
+			fmt.Fprintln(os.Stderr, "native timing:", timingErr)
+		}
+		return summaryErr
+	}
+	return timingErr
 }
 func caseDocument(s suite) any {
 	rows := []any{}

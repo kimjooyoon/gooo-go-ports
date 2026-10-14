@@ -19,6 +19,21 @@ HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
 # Reviewed browser delta: add API policy actual-Wasm/package checks after service-policy smoke.
 # Events, native skip guards and deployment dependencies stay byte-identical.
 BROWSER_SHA = "9842fdb57f69899aa53215451feeda87eca4ce90f4b1bb92ef18326608be3231"
+NATIVE_COMPARISON_COMMAND = "go run ./cmd/verify --workers 2 --out out/ci --timing-out out/ci/timing.jsonl"
+TIMING_CLAUSES = (
+    '.schema == "gooo/native-verification-timing/v1"', '.kind == "run_end"',
+    '.status == "COMPLETE"', '.expected_suites == 62', '.successful_suites == 62',
+    '.observed_batches == 2332', '.verified_batches == 2332', '.verified_cases == 159781',
+    '.event_count == 2458', '.failed_suites == 0', '.canceled_suites == 0',
+    '.not_started_suites == 0', '.missing_suite_finishes == 0',
+    '.failed_batches == 0', '.incomplete_batches == 0', '.logger_errors == 0',
+    '.source_bindings_unchanged == true',
+)
+TIMING_ASSERTION = ("          tail -n 1 out/ci/timing.jsonl | jq -e '\n"
+                    + "\n".join("            " + clause + (" and" if index < len(TIMING_CLAUSES) - 1 else "")
+                                for index, clause in enumerate(TIMING_CLAUSES))
+                    + "\n          '\n")
+TIMING_SUMMARY_SHA = '449c77747290beaa0cb7d41c356e47199bbbc1a071e2f6da25a0c69eb8c0e52e'
 COMMON = {
     "Classify the exact checked PR tree", "Check the Go observer",
     "Check pinned Unicode table generation",
@@ -140,9 +155,16 @@ def validate(text):
     for name in UPLOADS:
         require(field(named[name], "if") == "always() && " + FULL, "native artifact can upload on docs path: " + name)
     comparison = named["Compare the ports with Go and replay every batch"]
-    require("go run ./cmd/verify --workers 4 --out out/ci" in comparison
-            and ".native_suite_workers == 4 and" in comparison,
-            "full native CI must exercise and bind the four-worker setting")
+    require(literal_commands(comparison) == [NATIVE_COMPARISON_COMMAND]
+            and ".native_suite_workers == 2 and" in comparison,
+            "full native CI must bind two workers and source-bound timing")
+    require(comparison.count(TIMING_ASSERTION) == 1,
+            "native timing must require the exact complete footer and full observed roster")
+    summaries = re.findall(r"^          jq -c -s '\n.*?^          ' out/ci/timing.jsonl\n", comparison, re.M | re.S)
+    require(len(summaries) == 1 and hashlib.sha256(summaries[0].encode()).hexdigest() == TIMING_SUMMARY_SHA,
+            "native timing console summary must retain its exact source and actual input")
+    require("continue-on-error:" not in comparison and "|| true" not in comparison,
+            "native comparison or timing failure became optional")
     for token in (".ported_functions == 42 and .consumer_programs == 18 and .consumer_activities == 20 and",
                   "(.runs | length) == 62 and",
                   ".cases == 159781 and .passed == 159781 and",
@@ -302,12 +324,38 @@ class WorkflowScopeTests(unittest.TestCase):
     def test_real_workflow_policy(self):
         validate(self.text)
 
-    def test_full_native_ci_binds_four_workers(self):
-        for workers in (1, 2, 3, 5):
-            for before, after in (("--workers 4 --out out/ci", f"--workers {workers} --out out/ci"),
-                                  (".native_suite_workers == 4 and", f".native_suite_workers == {workers} and")):
+    def test_full_native_ci_binds_two_workers_and_timing(self):
+        for workers in (1, 3, 4, 5):
+            for before, after in (("--workers 2 --out out/ci", f"--workers {workers} --out out/ci"),
+                                  (".native_suite_workers == 2 and", f".native_suite_workers == {workers} and")):
                 with self.subTest(workers=workers, before=before), self.assertRaises(ValueError):
                     validate(self.text.replace(before, after, 1))
+
+    def test_native_timing_completion_cannot_be_omitted_or_weakened(self):
+        named, _ = named_steps(self.text)
+        chunk = named["Compare the ports with Go and replay every batch"]
+        mutations = [
+            chunk.replace(" --timing-out out/ci/timing.jsonl", "", 1),
+            chunk.replace("--timing-out out/ci/timing.jsonl", "--timing-out out/other.jsonl", 1),
+            chunk.replace(TIMING_ASSERTION, "", 1),
+            chunk.replace("tail -n 1 out/ci/timing.jsonl", "tail -n 1 out/other.jsonl", 1),
+            chunk.replace("        run: |", "        continue-on-error: true\n        run: |", 1),
+        ] + [chunk.replace(TIMING_ASSERTION, TIMING_ASSERTION.replace(clause, "true", 1), 1)
+             for clause in TIMING_CLAUSES]
+        for altered in mutations:
+            with self.subTest(altered=altered[-600:]), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, altered, 1))
+
+    def test_native_timing_console_summary_cannot_be_removed_or_rebound(self):
+        named, _ = named_steps(self.text)
+        chunk = named["Compare the ports with Go and replay every batch"]
+        summary = re.search(r"^          jq -c -s '\n.*?^          ' out/ci/timing.jsonl\n", chunk, re.M | re.S)[0]
+        for altered in (chunk.replace(summary, "", 1),
+                        chunk.replace(summary, summary.replace("timing-summary/v1", "timing-summary/v0"), 1),
+                        chunk.replace(summary, summary.replace("map(.duration_ns) | add", "map(.duration_ns) | length"), 1),
+                        chunk.replace(summary, summary.replace("out/ci/timing.jsonl", "out/other.jsonl"), 1)):
+            with self.subTest(altered=altered[-500:]), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, altered, 1))
 
     def test_each_heavy_step_and_native_upload_requires_its_guard(self):
         named, _ = named_steps(self.text)
