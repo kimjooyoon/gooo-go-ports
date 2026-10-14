@@ -171,8 +171,16 @@ skipped test does not verify a receipt.
 파일을 해당 검사에 전달합니다. 건너뛴 검사를 receipt 검증으로 기록하지 않습니다.
 
 CI runs the complete native differential verifier with two bounded workers;
-the receipt must record that worker count. The 62 suites, 159,781 cases and
-2,332 replay batches remain required. Verifier correctness tests share only
+the receipt must record that worker count. The original 62 suites, 159,781 cases
+and 2,332 replay batches remain a byte-preserved prefix. The appended literal Cut
+family adds three ports and one importing Report with the same 32 authored tuples
+each. The actual nativeBatchEnd partition check gives one batch for each port
+and two for Report: the required integrated roster is 66 suites, 159,909 case
+observations and 2,337 replay batches. CI also requires exactly 2,471 timing
+events, with a COMPLETE footer and no failed, canceled, missing or incomplete
+records. These partition counts are coverage requirements; completed native
+execution and saved replay must still pass for the current source. All previous
+gates remain required. Verifier correctness tests share only
 compiled Go packages in a private cache owned and removed by that test process.
 Each fixture still executes fresh source and writes separate evidence; the
 nil-cache path and warm-cache changed-source rejection remain tested.
@@ -190,7 +198,13 @@ CI also prints a compact phase-total and per-suite timing summary, so analysis d
 not require downloading the complete native evidence archive.
 
 CI는 제한된 워커 2개로 전체 native 비교를 실행하고 receipt의 워커 수도 확인합니다.
-62개 suite, 159,781개 case, 2,332개 replay batch를 그대로 요구합니다. 검증기 테스트는
+기존 62개 suite, 159,781개 case, 2,332개 replay batch를 원래 prefix로 보존합니다.
+Cut 세 함수와 importing Report는 같은 수동 입력 32쌍씩을 뒤에 추가하여 작성상
+nativeBatchEnd의 실제 분할 검증에서 Cut·CutPrefix·CutSuffix는 각 1개, Report는 2개 batch로
+계산됐습니다. 필수 통합 범위는 66개 suite·159,909개 case·2,337개 replay batch이며,
+CI는 실패·취소·누락·미완료가 없는 COMPLETE footer와 정확한 계측 event 2,471개도 요구합니다.
+분할 수치는 필수 검증 범위이며 현재 소스의 native 실행·저장 replay 완료를 대신하지 않습니다.
+검증기 테스트는
 프로세스가 소유하고 종료 시 제거하는 전용 캐시에서 Go 컴파일 결과만 공유합니다.
 입력 소스의 실행과 증거는 매번 새로 만들며, 캐시가 없는 경로와 캐시가 따뜻해진 뒤
 변경된 소스를 거부하는 검사도 유지합니다. 회귀 검증은 native oracle·replay와

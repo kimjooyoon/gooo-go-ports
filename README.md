@@ -6,9 +6,9 @@ describing what programs should do and inspecting how they are built and run.
 **Try service-policy checks from Go:** open the [four-file service-policy quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726). With Go 1.27.2 already installed, follow its README to run Go generated from Gooo without a runtime Gooo compiler. Distinguish invalid input from denial, compare the same request before and after a rule change, and inspect a returned widening witness. These calls compare supplied policy facts; they do not apply a grant or call a service.
 
 This independent ecosystem project implements selected Go standard-library, x/image and Google UUID functions in Gooo,
-with independent Go reference outputs and saved replay: 38 standard-library ports,
+with independent Go reference outputs and saved replay: 41 authored standard-library ports,
 two ports from golang.org/x/image and two Google UUID adaptations. The current scope is
-42 HTTP, Unicode, literal-text and byte search, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, eighteen native importing consumer programs (twenty activities),
+45 authored HTTP, Unicode, literal-text splitting and byte search, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, nineteen native importing consumer programs (twenty-one activities),
 and an importing browser dispatcher.
 The RectangleIn/FitsCrop suites have completed finite native execution and saved
 replay with an independent raw-receipt audit; see the [verification evidence](evidence/rectangle-in-fits-crop-20261012.json).
@@ -21,7 +21,7 @@ The separate [Agent Mesh service-pattern example](examples/agentmesh-service-pol
 adds a bounded adaptation of `MatchServicePattern` and an original three-field
 comparison for one supplied request before and after a pattern change. Its
 63 matcher cases (including 12 upstream tests) and 16 original impact cases are
-separate from the 42 APIs and the existing native corpus above. `WIDENED` means
+separate from the 45 authored APIs and the existing native corpus above. `WIDENED` means
 that this supplied request became allowed; it is not a global grant-inclusion
 proof or a current authorization. Gooo computes the matches and impact without
 per-call human approval; the host owns trusted facts and any actual effects.
@@ -55,6 +55,7 @@ proposal, a refused expansion, and recovery of a discarded response by operation
 | Edit and run Gooo code locally | [Run and edit locally](#run-and-edit-locally) | Install the pinned compiler, then change the tutorial's condition and rerun it |
 | Apply a constrained policy change automatically | [Service-grant application](examples/agentmesh-service-policy/conditional-apply.md) | Tighten a local grant, observe conflict and refusal, and recover a recorded result |
 | Search a diagnostic phrase locally | [Literal-text report](examples/literal-text-report/README.md) | Supply text and a phrase; export the first byte offset, non-overlapping count and both original inputs |
+| Split a literal separator or remove an edge affix | [Literal Cut report](examples/literal-cut-report/README.md) | Compare Cut, CutPrefix and CutSuffix while retaining both original inputs and all eleven returned fields |
 | Use a port in another project | [Import walkthrough](docs/use-in-your-project.md) | Build a separate application that imports `utf8.ValidRune` from a fixed source snapshot |
 
 You can also [try 21 library functions in the browser](https://kimjooyoon.github.io/gooo-go-ports/).
@@ -322,7 +323,7 @@ with the page URL or command and what happened. A working demo or shared input l
 is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-현재 Go 표준 라이브러리, x/image와 Google UUID의 HTTP·Unicode·바이트 검색·UUID 형식 검사·파싱·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 API 42개를 표현합니다.
+현재 Go 표준 라이브러리, x/image와 Google UUID의 HTTP·Unicode·문자열 검색·분할·UUID 형식 검사·파싱·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 API 45개를 소스로 표현합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -337,6 +338,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | `go/net/http` | `StatusText` | Go의 상태 코드 62개와 설명. 미등록 코드는 빈 문자열 |
 | `go/strings` | `IndexByte` | UTF-8 Text 최대 1,024바이트에서 0..255 byte의 첫 위치 또는 -1. 원본 바이트 offset과 길이 보존; 영역 밖 Integer는 별도 -1 확장. Native 전용 |
 | `go/strings` | `Index`, `Count` | 두 UTF-8 Text 각각 최대 1,024바이트. 첫 literal byte offset 또는 -1, 겹치지 않는 개수. 빈 needle은 offset 0·code point 수+1. Native 전용 |
+| `go/strings` | `Cut`, `CutPrefix`, `CutSuffix` | 각 decoded valid UTF-8 Text 최대 1,024바이트. 첫 separator 분할 또는 가장자리 affix만 제거하고 Go 다중 반환을 required-field record로 보존. 빈 needle은 성공. Native 전용 |
 | `go/github.com/google/uuid` | `Validate` | 원본 네 표기와 정확한 오류·길이 오류 분류를 `{valid,error,invalid_length}`로 보존. 유효한 UTF-8 Text 최대 1,024바이트; native 전용 |
 | `go/unicode` | `IsLetter`, `IsDigit` | Unicode 17.0.0 전체 Letter(L)·decimal digit(Nd) 범위와 stride 보존. 원본 표에서 결정적으로 Gooo 분기 생성 |
 | `go/unicode` | `IsSpace` | Unicode 17.0.0 White_Space 속성의 25개 코드 포인트 판정. 전체 signed int32 rune 입력 유지 |
@@ -909,6 +911,25 @@ Index **137**, Count **137**, Report **281** 배치를 유도했습니다. 기�
 고정 profile에서 그 세 결합까지 검사합니다. 그 profile을 finite `--cases`에 재사용하지 않습니다.
 input-only native 영수증은 `OBSERVED`·`finite_total=0`을 유지하며 Go oracle 검사는 별도입니다.
 
+## Literal Cut 분할 보고서
+
+[Literal Cut 보고서](examples/literal-cut-report/README.md)는 같은 문자열과 needle로
+`Cut`, `CutPrefix`, `CutSuffix`를 호출하고 원래 두 입력, 세 결과와 두 byte 길이를
+11개 필드로 반환합니다. 예를 들어 `one::two::three`와 `::`의 Cut은 첫 구분자만
+나눠 `one`과 `two::three`를 반환합니다. 접두·접미 함수는 해당 가장자리만 제거하며,
+빈 needle은 성공입니다. 공백·NUL·CRLF·BOM과 조합형/완성형 Unicode를 정규화하지 않습니다.
+
+입력은 각각 decoded valid UTF-8 Text 1,024바이트 이내로 한정합니다. Go의 여러 반환값은
+required-field record로 옮겼으며, 임의의 byte 문자열·더 긴 입력·전체 strings 패키지 호환은
+제공하지 않습니다. 새 네 suite는 고정된 수동 입력 32쌍을 독립 Go 원본으로 각각 다시
+계산합니다. 기존 **62개 suite·159,781건·2,332개 batch**의 factory, 원래 Gooo 소스,
+workspace와 batch 경계를 보존하고 네 suite를 뒤에 추가합니다. 실제 JSON+LF 배치 분할 검증에서
+Cut·CutPrefix·CutSuffix는 각 **1개**, Report는 **2개** 배치로 계산됐습니다. 필수 통합 범위는
+**66개 suite·159,909건·2,337개 배치**이며 계측 완료 기록 수는 **2,471개**입니다.
+이 분할 검사는 새 public entry의 전체 native 실행·저장 replay 완료를 대신하지 않습니다.
+완료된 실행과 유한 검증 범위는 해당 소스의 CI/native 보고서에서 확인합니다.
+기존 브라우저 프로그램과 검증 범위는 확장하지 않습니다.
+
 ## 원본과 라이선스
 
 [upstream.json](upstream.json)에 Go **1.27.2**의 커밋
@@ -939,6 +960,7 @@ Google UUID Validate와 importing inspector까지의 38개 포트·16개 소비 
 별도 ParseCanonical Text API까지의 39개 포트·16개 소비 프로그램·18개 소비 활동을 유지합니다.
 RectangleIn과 FitsCrop까지의 총계 40개 포트·17개 소비 프로그램·19개 소비 활동을 보존합니다.
 새 Index·Count와 Literal Text Report를 포함한 소스 목록은 42개 포트·18개 소비 프로그램·20개 소비 활동입니다.
+이 목록을 보존하고 Cut·CutPrefix·CutSuffix와 Literal Cut Report를 덧붙인 작성 소스는 45개 포트·19개 소비 프로그램·21개 소비 활동입니다. 신규 네 suite는 각 원래 입력 32쌍을 사용하며, 완료된 native 실행과 replay는 해당 소스의 CI 보고서로 구분합니다.
 원본 int32 전체의 동작을 구현하되 2^32 전수 검사를 주장하지 않습니다.
 브라우저 21함수와 두 crop 모드는 그대로입니다.
 

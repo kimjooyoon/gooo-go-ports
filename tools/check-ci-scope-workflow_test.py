@@ -22,9 +22,9 @@ BROWSER_SHA = "9842fdb57f69899aa53215451feeda87eca4ce90f4b1bb92ef18326608be3231"
 NATIVE_COMPARISON_COMMAND = "go run ./cmd/verify --workers 2 --out out/ci --timing-out out/ci/timing.jsonl"
 TIMING_CLAUSES = (
     '.schema == "gooo/native-verification-timing/v1"', '.kind == "run_end"',
-    '.status == "COMPLETE"', '.expected_suites == 62', '.successful_suites == 62',
-    '.observed_batches == 2332', '.verified_batches == 2332', '.verified_cases == 159781',
-    '.event_count == 2458', '.failed_suites == 0', '.canceled_suites == 0',
+    '.status == "COMPLETE"', '.expected_suites == 66', '.successful_suites == 66',
+    '.observed_batches == 2337', '.verified_batches == 2337', '.verified_cases == 159909',
+    '.event_count == 2471', '.failed_suites == 0', '.canceled_suites == 0',
     '.not_started_suites == 0', '.missing_suite_finishes == 0',
     '.failed_batches == 0', '.incomplete_batches == 0', '.logger_errors == 0',
     '.source_bindings_unchanged == true',
@@ -165,12 +165,13 @@ def validate(text):
             "native timing console summary must retain its exact source and actual input")
     require("continue-on-error:" not in comparison and "|| true" not in comparison,
             "native comparison or timing failure became optional")
-    for token in (".ported_functions == 42 and .consumer_programs == 18 and .consumer_activities == 20 and",
-                  "(.runs | length) == 62 and",
-                  ".cases == 159781 and .passed == 159781 and",
-                  "([.runs[].cases] | add) == 159781 and ([.runs[].batches] | add) == 2332 and",
+    for token in (".ported_functions == 45 and .consumer_programs == 19 and .consumer_activities == 21 and",
+                  "(.runs | length) == 66 and",
+                  ".cases == 159909 and .passed == 159909 and",
+                  "([.runs[].cases] | add) == 159909 and ([.runs[].batches] | add) == 2337 and",
+                  "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2332 and",
                   "([.runs[:59][].cases] | add) == 131842 and ([.runs[:59][].batches] | add) == 1777 and"):
-        require(token in comparison, "integrated roster or original 59-suite preservation missing: " + token)
+        require(token in comparison, "integrated roster or original 62/59-suite preservation missing: " + token)
     for index, package, activity, batches in ((59, "go/strings", "Index", 137),
                                                (60, "go/strings", "Count", 137),
                                                (61, "app/literal-text-report", "Report", 281)):
@@ -181,6 +182,17 @@ def validate(text):
                   ".literal_report_reference_cases == 9313", ".literal_finite_provenance_scope",
                   "Inner prior_result_sha256, full generation-report provenance and composition/runtime typed-plan equality are NOT_CHECKED"):
         require(token in comparison, "literal finite evidence scope missing: " + token)
+    for index, package, activity, batches in ((62, "go/strings", "Cut", 1),
+                                               (63, "go/strings", "CutPrefix", 1),
+                                               (64, "go/strings", "CutSuffix", 1),
+                                               (65, "app/literal-cut-report", "Report", 2)):
+        for token in (f'.runs[{index}].package == "{package}" and .runs[{index}].activity == "{activity}" and',
+                      f".runs[{index}].cases == 32 and .runs[{index}].passed == 32 and .runs[{index}].batches == {batches} and"):
+            require(token in comparison, "Cut finite suite identity/count/batch missing: " + token)
+    for token in (".literal_cut_reference_cases == 32", ".literal_cut_prefix_reference_cases == 32",
+                  ".literal_cut_suffix_reference_cases == 32", ".literal_cut_report_reference_cases == 32",
+                  '(.literal_cut_finite_provenance_scope | contains("Inner prior_result_sha256, full generation-report provenance and composition/runtime typed-plan equality are NOT_CHECKED")) and'):
+        require(token in comparison, "Cut finite evidence scope missing: " + token)
     revision = named["Verify the sealed API policy revision comparison"]
     require('python3 -B examples/api-policy-revision/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/api-policy-revision"' in revision,
             "sealed revision native generator/test/fresh-process verifier missing")
@@ -220,9 +232,11 @@ def validate(text):
                   ".prior_result_sha256", ".execution_sha256", ".replay_sha256", ".source_bindings"):
         require(token in literal, "strong input-only Report evidence gate missing: " + token)
     malformed = named["Observe malformed literal Text inputs through the actual CLI"]
-    for token in ('.schema == "gooo/literal-text-input-rejections/v1"', ".planned_framework_inputs == 84",
-                  ".observed_framework_rejections == 84", ".go_reference_cases == 0",
+    for token in ('.schema == "gooo/literal-text-input-rejections/v1"', ".planned_framework_inputs == 196",
+                  ".observed_framework_rejections == 196", ".go_reference_cases == 0",
                   '"go/strings:Count"', '"go/strings:Index"', '"app/literal-text-report:Report"',
+                  '"go/strings:Cut"', '"go/strings:CutPrefix"', '"go/strings:CutSuffix"', '"app/literal-cut-report:Report"',
+                  "(.cases | length) == 196",
                   ".planned_by_entry == .observed_by_entry", "all(.observed_by_entry[]; . == 28)",
                   ".verified_rejection_stage == .expected_rejection_stage", ".exit_code == 1", ".timed_out == false",
                   '.actual_runtime_stage == "NOT_REPORTED"', '.observed_counters == "NOT_REPORTED"',
@@ -264,7 +278,7 @@ def validate(text):
     require("./.gooo check ports/image/geometry.gooo" in declarations
             and "./.gooo check examples/fits-crop/main.gooo" in declarations
             and "tools/probe.sh" not in declarations, "declaration/probe separation")
-    for source in ("ports/strings/search.gooo", "ports/strings/literal.gooo", "examples/literal-text-report/main.gooo"):
+    for source in ("ports/strings/search.gooo", "ports/strings/literal.gooo", "examples/literal-text-report/main.gooo", "ports/strings/cut.gooo", "examples/literal-cut-report/main.gooo"):
         require("./.gooo check " + source in declarations, "literal declaration check missing: " + source)
     for source in ("ports/cel/scalar_access.gooo", "examples/cel-api-policy/main.gooo"):
         require("./.gooo check " + source in declarations, "CEL declaration check missing: " + source)
@@ -357,6 +371,36 @@ class WorkflowScopeTests(unittest.TestCase):
             with self.subTest(altered=altered[-500:]), self.assertRaises(ValueError):
                 validate(self.text.replace(chunk, altered, 1))
 
+    def test_cut_counts_original62_prefix_and_exact_partitions_cannot_be_weakened(self):
+        named, _ = named_steps(self.text)
+        comparison = named["Compare the ports with Go and replay every batch"]
+        clauses = (
+            ".ported_functions == 45 and .consumer_programs == 19 and .consumer_activities == 21 and",
+            "(.runs | length) == 66 and", ".cases == 159909 and .passed == 159909 and",
+            "([.runs[].cases] | add) == 159909 and ([.runs[].batches] | add) == 2337 and",
+            "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2332 and",
+            ".literal_cut_reference_cases == 32", ".literal_cut_prefix_reference_cases == 32",
+            ".literal_cut_suffix_reference_cases == 32", ".literal_cut_report_reference_cases == 32",
+            '(.literal_cut_finite_provenance_scope | contains("Inner prior_result_sha256, full generation-report provenance and composition/runtime typed-plan equality are NOT_CHECKED")) and',
+        )
+        for clause in clauses:
+            self.assertIn(clause, comparison)
+            weakened = clause.replace("==", ">=", 1) if "==" in clause else clause.replace("NOT_CHECKED", "CHECKED", 1)
+            for replacement in ("true", weakened):
+                with self.subTest(clause=clause, replacement=replacement), self.assertRaises(ValueError):
+                    validate(self.text.replace(comparison, comparison.replace(clause, replacement, 1), 1))
+        for index, package, activity, batches in ((62, "go/strings", "Cut", 1),
+                                                  (63, "go/strings", "CutPrefix", 1),
+                                                  (64, "go/strings", "CutSuffix", 1),
+                                                  (65, "app/literal-cut-report", "Report", 2)):
+            clauses = (f'.runs[{index}].package == "{package}" and .runs[{index}].activity == "{activity}" and',
+                       f".runs[{index}].cases == 32 and .runs[{index}].passed == 32 and .runs[{index}].batches == {batches} and")
+            for clause in clauses:
+                self.assertIn(clause, comparison)
+                for replacement in ("true", clause.replace("==", ">=", 1)):
+                    with self.subTest(index=index, clause=clause), self.assertRaises(ValueError):
+                        validate(self.text.replace(comparison, comparison.replace(clause, replacement, 1), 1))
+
     def test_each_heavy_step_and_native_upload_requires_its_guard(self):
         named, _ = named_steps(self.text)
         for name in HEAVY | UPLOADS:
@@ -415,6 +459,19 @@ class WorkflowScopeTests(unittest.TestCase):
                               ("are NOT_CHECKED", "are CHECKED")):
             with self.subTest(before=before), self.assertRaises(ValueError):
                 validate(self.text.replace(before, after, 1))
+
+    def test_cut_malformed_entries_counts_and_declarations_cannot_be_removed(self):
+        named, _ = named_steps(self.text)
+        malformed = named["Observe malformed literal Text inputs through the actual CLI"]
+        for token in ('"go/strings:Cut"', '"go/strings:CutPrefix"', '"go/strings:CutSuffix"',
+                      '"app/literal-cut-report:Report"', '.planned_framework_inputs == 196',
+                      '.observed_framework_rejections == 196', '(.cases | length) == 196'):
+            with self.subTest(token=token), self.assertRaises(ValueError):
+                validate(self.text.replace(malformed, malformed.replace(token, 'true', 1), 1))
+        declarations = named["Check Gooo declarations"]
+        for name in ('ports/strings/cut.gooo', 'examples/literal-cut-report/main.gooo'):
+            with self.subTest(source=name), self.assertRaises(ValueError):
+                validate(self.text.replace(declarations, declarations.replace('./.gooo check ' + name, '# missing ' + name, 1), 1))
 
     def test_literal_report_requires_explicit_matching_go_tool(self):
         named, _ = named_steps(self.text)

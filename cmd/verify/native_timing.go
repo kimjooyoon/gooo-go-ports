@@ -52,6 +52,14 @@ var nativeTimingSourceNames = []string{
 	"cmd/verify/main.go", "cmd/verify/suite_workers.go", "cmd/verify/suite_workers_test.go",
 	"cmd/verify/native_build_cache.go", "cmd/verify/native_build_cache_test.go",
 	"cmd/verify/native_suite.go", "cmd/verify/native_timing.go",
+	"cmd/verify/literal_cut_corpus.go", "cmd/verify/literal_cut_contracts.go",
+	"cmd/verify/contracts.go", "cmd/verify/whitespace_contracts.go", "cmd/verify/inspect.go",
+	"cmd/verify/string_byte_batches.go", "cmd/verify/workspace_catalog.go",
+	"cmd/verify/literal_cut_corpus_test.go", "cmd/verify/literal_cut_integration_test.go",
+	"cmd/verify/testdata/literal-cut-original62.json", "cmd/verify/contracts_test.go", "cmd/verify/workspace_catalog_test.go",
+	"tools/check-literal-text-inputs.py", "tools/check-literal-text-inputs_test.py",
+	"literal-cut-report.workspace.json", "examples/literal-cut-report/inputs.json",
+	"examples/literal-cut-report/manual-contract.json", "examples/literal-cut-report/README.md", "CONTRIBUTING.md",
 }
 
 var nativeTimingPhaseNames = [...]string{

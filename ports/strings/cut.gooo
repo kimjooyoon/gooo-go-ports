@@ -1,0 +1,42 @@
+// Copyright 2009 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license reproduced in third_party/GO-LICENSE.
+// Bounded adaptation of Go 1.27.2 strings.Cut/CutPrefix/CutSuffix at
+// 022c8636110ebac86a9b88724cda168ed713c21f.
+// src/strings/strings.go SHA256:
+// a81bdf73a308277c322e35d0c602e3813f57b6f769c091f8f8962c8884a45ea3.
+// src/internal/stringslite/strings.go SHA256:
+// 3ed7df2eeabb5427d44b95e6cfe66ef03e13f1c969ad08050a4a0e89d43b8af2.
+// Modification: call the existing bounded Gooo Index and use guarded Text
+// slices instead of the upstream optimized/general byte-string helpers.
+// Each argument is decoded valid UTF-8 Text <=1024 bytes. Multiple Go results
+// become required-field records. No normalization, trimming, arbitrary-byte
+// strings, longer inputs, or whole-package compatibility is provided.
+package strings
+namespace gooo_ports_strings
+entity CutResult id "gooo://go/strings/cut-result" fields {
+    field before id "gooo://go/strings/cut-result/before" type string required one
+    field after id "gooo://go/strings/cut-result/after" type string required one
+    field found id "gooo://go/strings/cut-result/found" type boolean required one
+}
+entity AffixResult id "gooo://go/strings/affix-result" fields {
+    field text id "gooo://go/strings/affix-result/text" type string required one
+    field found id "gooo://go/strings/affix-result/found" type boolean required one
+}
+activity Cut(Text, Text) -> CutResult id "gooo://go/strings/Cut" computes `let offset = Index(input0, input1)
+if offset < 0 { return CutResult{before: input0, after: "", found: false} }
+let end = offset + int64(len(input1))
+return CutResult{before: input0[0:offset], after: input0[end:int64(len(input0))], found: true}`
+
+activity CutPrefix(Text, Text) -> AffixResult id "gooo://go/strings/CutPrefix" computes `let text_length = int64(len(input0))
+let affix_length = int64(len(input1))
+if affix_length > text_length { return AffixResult{text: input0, found: false} }
+if input0[0:affix_length] == input1 { return AffixResult{text: input0[affix_length:text_length], found: true} }
+return AffixResult{text: input0, found: false}`
+
+activity CutSuffix(Text, Text) -> AffixResult id "gooo://go/strings/CutSuffix" computes `let text_length = int64(len(input0))
+let affix_length = int64(len(input1))
+if affix_length > text_length { return AffixResult{text: input0, found: false} }
+let start = text_length - affix_length
+if input0[start:text_length] == input1 { return AffixResult{text: input0[0:start], found: true} }
+return AffixResult{text: input0, found: false}`

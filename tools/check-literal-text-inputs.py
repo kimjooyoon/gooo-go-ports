@@ -20,8 +20,14 @@ VERSION = "0.6.32-dev"
 GO = "go1.27.2"
 SCHEMA = "gooo/body-composition-inputs/v1"
 ENTRIES = ("go/strings:Index", "go/strings:Count", "app/literal-text-report:Report")
+CUT_ENTRIES = ("go/strings:Cut", "go/strings:CutPrefix", "go/strings:CutSuffix", "app/literal-cut-report:Report")
+ALL_ENTRIES = (*ENTRIES, *CUT_ENTRIES)
 PORT_SOURCES = ("ports/strings/search.gooo", "ports/strings/literal.gooo")
 SOURCES = (*PORT_SOURCES, "examples/literal-text-report/main.gooo")
+CUT_PORT_SOURCES = (*PORT_SOURCES, "ports/strings/cut.gooo")
+CUT_SOURCES = (*CUT_PORT_SOURCES, "examples/literal-cut-report/main.gooo")
+FROZEN_FILES = ("literal-text-report.workspace.json", *SOURCES,
+                "literal-cut-report.workspace.json", "ports/strings/cut.gooo", CUT_SOURCES[-1])
 RECEIPT_SCHEMA = "gooo/workspace-body-execution-receipt/v1"
 
 
@@ -39,7 +45,7 @@ def encode(value):
 
 
 def validate_inputs(raw, entry):
-    require(entry in ENTRIES, "untrusted entry")
+    require(entry in ALL_ENTRIES, "untrusted entry")
     try:
         value = loads_receipt(raw.decode("utf-8", errors="strict"))
     except (UnicodeError, TypeError) as error:
@@ -65,8 +71,10 @@ def negative_inputs():
     """An ordered finite roster; request count is independent of oracle cases."""
     wrong = (("null", None), ("false", False), ("true", True), ("integer", 0),
              ("fraction", 1.5), ("array", []), ("object", {}))
-    for entry in ENTRIES:
+    for entry in ALL_ENTRIES:
         prefix = entry.rsplit(":", 1)[1].lower()
+        if entry == "app/literal-cut-report:Report":
+            prefix = "cutreport"
         base = {entry + ".input0": "diagnostic", entry + ".input1": "tic"}
 
         def case(name, row, diagnostic, stage="INPUT_DOMAIN", position=None, raw=None):
@@ -151,29 +159,63 @@ def inspect_rejection(case, stdout, exit_code, timed_out, manifest_path, manifes
             "native_execution_claim": "NOT_REPORTED: no zero-counter or native-execution claim inferred from absent runtime"}
 
 
-def observe(root, out, compiler):
-    out.mkdir(parents=True, exist_ok=False)
-    frozen = {name: (root / name).read_bytes() for name in ("literal-text-report.workspace.json", *SOURCES)}
-    for name, raw in frozen.items():
-        path = out / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(raw)
+def trusted_manifests(frozen):
+    """Validate both exact closures before any subprocess; old bytes stay old."""
+    require(ENTRIES == ("go/strings:Index", "go/strings:Count", "app/literal-text-report:Report")
+            and CUT_ENTRIES == ("go/strings:Cut", "go/strings:CutPrefix", "go/strings:CutSuffix", "app/literal-cut-report:Report")
+            and ALL_ENTRIES == (*ENTRIES, *CUT_ENTRIES), "complete ordered seven-entry rejection roster")
+    require(PORT_SOURCES == ("ports/strings/search.gooo", "ports/strings/literal.gooo")
+            and SOURCES == (*PORT_SOURCES, "examples/literal-text-report/main.gooo")
+            and CUT_PORT_SOURCES == (*PORT_SOURCES, "ports/strings/cut.gooo")
+            and CUT_SOURCES == (*CUT_PORT_SOURCES, "examples/literal-cut-report/main.gooo"), "exact separate old/new source closures")
+    require(set(frozen) == {"literal-text-report.workspace.json", *SOURCES,
+                            "literal-cut-report.workspace.json", "ports/strings/cut.gooo", CUT_SOURCES[-1]},
+            "complete frozen source/manifest roster")
     original_manifest = loads_receipt(frozen["literal-text-report.workspace.json"])
     require(original_manifest == {"schema": "gooo/package-workspace-manifest/v1",
                                  "entry": {"package_path": "app/literal-text-report", "activity": "Report"},
                                  "packages": [{"path": "go/strings", "sources": list(PORT_SOURCES)},
                                               {"path": "app/literal-text-report", "sources": [SOURCES[-1]]}]},
             "trusted three-source report manifest")
+    new_manifest = loads_receipt(frozen["literal-cut-report.workspace.json"])
+    require(new_manifest == {"schema": "gooo/package-workspace-manifest/v1",
+                            "entry": {"package_path": "app/literal-cut-report", "activity": "Report"},
+                            "packages": [{"path": "go/strings", "sources": list(CUT_PORT_SOURCES)},
+                                         {"path": "app/literal-cut-report", "sources": [CUT_SOURCES[-1]]}]},
+            "trusted separate Cut report manifest")
     manifests = {}
-    for entry in ENTRIES:
+    for entry in ALL_ENTRIES:
         package, activity = entry.rsplit(":", 1)
-        name = "literal-text-report.workspace.json" if activity == "Report" else activity.lower() + ".workspace.json"
+        if activity == "Report":
+            name = "literal-text-report.workspace.json" if entry in ENTRIES else "literal-cut-report.workspace.json"
+            raw = frozen[name]
+        else:
+            name = activity.lower() + ".workspace.json"
+            sources = PORT_SOURCES if entry in ENTRIES else CUT_PORT_SOURCES
+            raw = encode({"schema": "gooo/package-workspace-manifest/v1",
+                          "entry": {"package_path": package, "activity": activity},
+                          "packages": [{"path": "go/strings", "sources": list(sources)}]}) + b"\n"
+        manifests[entry] = (name, raw)
+    require(len(manifests) == 7 and len({name for name, _ in manifests.values()}) == 7,
+            "distinct complete manifest roster")
+    return manifests
+
+
+def observe(root, out, compiler):
+    out.mkdir(parents=True, exist_ok=False)
+    frozen = {name: (root / name).read_bytes() for name in FROZEN_FILES}
+    prepared = trusted_manifests(frozen)
+    for name, raw in frozen.items():
         path = out / name
-        if activity != "Report":
-            path.write_bytes(encode({"schema": "gooo/package-workspace-manifest/v1",
-                                    "entry": {"package_path": package, "activity": activity},
-                                    "packages": [{"path": "go/strings", "sources": list(PORT_SOURCES)}]}) + b"\n")
-        manifests[entry] = (path, path.read_bytes())
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(raw)
+    manifests = {}
+    for entry, (name, raw) in prepared.items():
+        path = out / name
+        if name not in frozen:
+            path.write_bytes(raw)
+        require(path.read_bytes() == raw, "copied original manifest bytes")
+        manifests[entry] = (path, raw)
     lock = loads_receipt((root / "upstream.json").read_bytes())
     env = clean_environment()
     executable_binding = binding(compiler)
@@ -183,7 +225,9 @@ def observe(root, out, compiler):
     require(version.returncode == 0, "compiler identity command")
     validate_identity(loads_receipt(version.stdout), lock)
     cases = list(negative_inputs())
-    require(len(cases) == 84 and len({case["name"] for case in cases}) == 84, "frozen rejection request roster")
+    require(len(cases) == 196 and len({case["name"] for case in cases}) == 196
+            and all(sum(case["entry"] == entry for case in cases) == 28 for entry in ALL_ENTRIES),
+            "frozen legacy84 plus new112 rejection request roster")
     rows, failures = [], []
     for case in cases:
         fixture = out / (case["name"] + ".inputs.json")
@@ -221,16 +265,17 @@ def observe(root, out, compiler):
             break
     require(all((root / name).read_bytes() == raw and (out / name).read_bytes() == raw for name, raw in frozen.items()),
             "frozen source changed during rejection observations")
+    require(all(path.read_bytes() == raw for path, raw in manifests.values()), "generated manifest changed during observations")
     require(binding(compiler) == executable_binding, "compiler executable changed during observations")
     summary = {"schema": "gooo/literal-text-input-rejections/v1", "status": "PASS" if not failures and len(rows) == len(cases) else "FAIL",
-               "planned_framework_inputs": len(cases), "planned_by_entry": {entry: sum(c["entry"] == entry for c in cases) for entry in ENTRIES},
+               "planned_framework_inputs": len(cases), "planned_by_entry": {entry: sum(c["entry"] == entry for c in cases) for entry in ALL_ENTRIES},
                "observed_framework_rejections": sum(r.get("rejection_verified") is True for r in rows),
-               "observed_by_entry": {entry: sum(r["entry"] == entry and r.get("rejection_verified") is True for r in rows) for entry in ENTRIES},
+               "observed_by_entry": {entry: sum(r["entry"] == entry and r.get("rejection_verified") is True for r in rows) for entry in ALL_ENTRIES},
                "go_reference_cases": 0, "compiler_revision": COMPILER, "compiler_version": VERSION, "go_version": GO,
                "compiler_identity_binding": binding(out / "compiler.json"), "compiler_executable_binding": executable_binding,
                "source_bindings": [binding(out / name) for name in frozen],
                "manifest_bindings": [binding(path) for path, _ in manifests.values()], "cases": rows, "failures": failures,
-               "scope": "Finite malformed request/domain observations for each of Index, Count and Report; no Go comparisons. Absent native stages/counters/builds/runs remain NOT_REPORTED. Wire-invalid UTF-8 and surrogate replacement are not included or claimed as rejected. Stop on the first incompatibility."}
+               "scope": "Finite malformed request/domain observations: original84 for Index/Count/literal-text Report followed by112 for Cut/CutPrefix/CutSuffix/literal-cut Report, with separate exact source closures; no Go comparisons. Absent native stages/counters/builds/runs remain NOT_REPORTED. Wire-invalid UTF-8 and surrogate replacement are not included or claimed as rejected. Stop on the first incompatibility."}
     (out / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n")
     require(summary["status"] == "PASS", "rejection observation failure: " + "; ".join(failures))
     return summary

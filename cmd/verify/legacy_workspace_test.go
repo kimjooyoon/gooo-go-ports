@@ -165,7 +165,7 @@ func TestLegacy445CatalogSourcesManifestsInputsCasesAndBatchesRemainIdentical(t 
 	}
 	for i := range expectedCatalog.Packages {
 		if expectedCatalog.Packages[i].Path == "go/strings" {
-			expectedCatalog.Packages[i].Sources = append(expectedCatalog.Packages[i].Sources, "ports/strings/literal.gooo")
+			expectedCatalog.Packages[i].Sources = append(expectedCatalog.Packages[i].Sources, "ports/strings/literal.gooo", "ports/strings/cut.gooo")
 		}
 	}
 	expectedCatalog.Packages = append(expectedCatalog.Packages, sourcePackage{Path: "app/literal-text-report", Sources: []string{"examples/literal-text-report/main.gooo"}})
@@ -180,9 +180,10 @@ func TestLegacy445CatalogSourcesManifestsInputsCasesAndBatchesRemainIdentical(t 
 		sourcePackage{Path: "gooo/service-policy/checked-impact", Sources: []string{"examples/agentmesh-service-policy/checked_impact.gooo"}},
 		sourcePackage{Path: "gooo/service-policy/checked-refinement", Sources: []string{"examples/agentmesh-service-policy/checked_refinement.gooo"}},
 		sourcePackage{Path: "gooo/service-policy/conditional-apply", Sources: []string{"examples/agentmesh-service-policy/conditional_apply.gooo"}},
+		sourcePackage{Path: "app/literal-cut-report", Sources: []string{"examples/literal-cut-report/main.gooo"}},
 	)
-	if !reflect.DeepEqual(frozen.Catalog, expectedCatalog) || len(frozen.Sources) != len(fixture.Sources)+12 {
-		t.Fatal("catalog changed beyond the reviewed literal, CEL, AgentMesh, checked-domain and conditional-apply sources")
+	if !reflect.DeepEqual(frozen.Catalog, expectedCatalog) || len(frozen.Sources) != len(fixture.Sources)+14 {
+		t.Fatal("catalog changed beyond the reviewed literal, Cut, CEL, AgentMesh, checked-domain and conditional-apply sources")
 	}
 	sources := map[string]legacy445Source{}
 	for _, old := range fixture.Sources {
@@ -210,6 +211,12 @@ func TestLegacy445CatalogSourcesManifestsInputsCasesAndBatchesRemainIdentical(t 
 			}
 			if _, exists := w.Sources["examples/literal-text-report/main.gooo"]; exists {
 				t.Fatal("literal consumer leaked into old suite")
+			}
+			if _, exists := w.Sources["ports/strings/cut.gooo"]; exists {
+				t.Fatal("Cut source leaked into old suite")
+			}
+			if _, exists := w.Sources["examples/literal-cut-report/main.gooo"]; exists {
+				t.Fatal("Cut consumer leaked into old suite")
 			}
 		})
 		cases += len(s.Cases)

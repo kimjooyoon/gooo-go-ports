@@ -156,7 +156,8 @@
       "path": "go/strings",
       "sources": [
         "ports/strings/search.gooo",
-        "ports/strings/literal.gooo"
+        "ports/strings/literal.gooo",
+        "ports/strings/cut.gooo"
       ]
     },
     {
@@ -253,6 +254,12 @@
       "path": "gooo/service-policy/conditional-apply",
       "sources": [
         "examples/agentmesh-service-policy/conditional_apply.gooo"
+      ]
+    },
+    {
+      "path": "app/literal-cut-report",
+      "sources": [
+        "examples/literal-cut-report/main.gooo"
       ]
     }
   ]

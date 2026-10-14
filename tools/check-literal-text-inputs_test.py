@@ -1,5 +1,7 @@
 """Strict request/evidence checks using synthetic receipts; never run a compiler."""
 import copy
+import hashlib
+import tempfile
 import importlib.util
 import json
 from pathlib import Path
@@ -30,9 +32,9 @@ class LiteralMalformedRequestTests(unittest.TestCase):
         self.cases = list(PROBE.negative_inputs())
 
     def test_all_three_entries_and_both_arguments_have_independent_rejection_rosters(self):
-        self.assertEqual(len(self.cases), 84)
-        self.assertEqual(len({case["name"] for case in self.cases}), 84)
-        for entry in PROBE.ENTRIES:
+        self.assertEqual(len(self.cases), 196)
+        self.assertEqual(len({case["name"] for case in self.cases}), 196)
+        for entry in PROBE.ALL_ENTRIES:
             selected = [case for case in self.cases if case["entry"] == entry]
             self.assertEqual(len(selected), 28)
             for position in range(2):
@@ -59,7 +61,7 @@ class LiteralMalformedRequestTests(unittest.TestCase):
                     self.assertEqual(len(row[key]), 513)
 
     def test_every_wrong_type_is_present_in_each_argument_without_coercion(self):
-        for entry in PROBE.ENTRIES:
+        for entry in PROBE.ALL_ENTRIES:
             for position in range(2):
                 names = {case["name"].split("-", 1)[1].rsplit("-input", 1)[0]
                          for case in self.cases if case["entry"] == entry and case["position"] == position}
@@ -68,7 +70,7 @@ class LiteralMalformedRequestTests(unittest.TestCase):
     def test_supplied_example_and_exact_multibyte_boundary_are_in_domain(self):
         rows = PROBE.validate_inputs((ROOT / "examples/literal-text-report/inputs.json").read_bytes(), PROBE.ENTRIES[-1])
         self.assertEqual(len(rows), 24)
-        for entry in PROBE.ENTRIES:
+        for entry in PROBE.ALL_ENTRIES:
             raw = PROBE.encode({"schema": PROBE.SCHEMA, "inputs": [{entry + ".input0": "é" * 512,
                                                                       entry + ".input1": "🙂" * 256}]})
             accepted = PROBE.validate_inputs(raw, entry)[0]
@@ -159,6 +161,171 @@ class LiteralRejectionReceiptTests(unittest.TestCase):
         self.assertNotIn("OPENAI_API_KEY", env)
         self.assertEqual({key: env[key] for key in ("GOTOOLCHAIN", "GOWORK", "GOENV", "GOPROXY", "GOSUMDB")},
                          {"GOTOOLCHAIN": "local", "GOWORK": "off", "GOENV": "off", "GOPROXY": "off", "GOSUMDB": "off"})
+
+
+# Frozen pre-Cut generator. Its independent three-entry byte roster is used only
+# in these synthetic tests; it does not invoke a compiler or a subprocess.
+def frozen_legacy_negative_inputs():
+    ENTRIES = ("go/strings:Index", "go/strings:Count", "app/literal-text-report:Report")
+    SCHEMA = "gooo/body-composition-inputs/v1"
+    def encode(value):
+        return json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    """An ordered finite roster; request count is independent of oracle cases."""
+    wrong = (("null", None), ("false", False), ("true", True), ("integer", 0),
+             ("fraction", 1.5), ("array", []), ("object", {}))
+    for entry in ENTRIES:
+        prefix = entry.rsplit(":", 1)[1].lower()
+        base = {entry + ".input0": "diagnostic", entry + ".input1": "tic"}
+
+        def case(name, row, diagnostic, stage="INPUT_DOMAIN", position=None, raw=None):
+            return {"name": prefix + "-" + name, "entry": entry, "position": position,
+                    "expected_diagnostic": diagnostic, "expected_rejection_stage": stage,
+                    "raw": raw if raw is not None else encode({"schema": SCHEMA, "inputs": [row]}) + b"\n"}
+
+        for position in range(2):
+            key = entry + ".input" + str(position)
+            for name, value in (("ascii-1025", "a" * 1025), ("multibyte-1025", "é" * 512 + "a"), *wrong):
+                row = dict(base, **{key: value})
+                diagnostic = "explicit Text scalar required" if value is None else "Text requires a string of at most 1024 UTF-8 bytes"
+                yield case(name + "-input" + str(position), row, diagnostic, position=position)
+            row = dict(base)
+            del row[key]
+            yield case("missing-input" + str(position), row, "requires an explicit value", position=position)
+            for name, duplicate_key in (("duplicate", encode(key)), ("duplicate-escaped", encode(key).replace(b"input", b"\\u0069nput"))):
+                token = encode(key) + b":" + encode(base[key])
+                duplicate = token + b"," + duplicate_key + b":" + encode(base[key])
+                raw = encode({"schema": SCHEMA, "inputs": [base]}).replace(token, duplicate, 1) + b"\n"
+                yield case(name + "-input" + str(position), base, "duplicate or invalid JSON key", "INPUT_JSON_DECODE", position, raw)
+        yield case("extra-input2", dict(base, **{entry + ".input2": "extra"}),
+                   "inputs and nonempty expectations must name declared activities")
+        raw = encode({"schema": "gooo/wrong-inputs/v1", "inputs": [base]}) + b"\n"
+        yield case("wrong-schema", base, "composition inputs require schema and 1..128 input rows", "INPUT_JSON_DECODE", raw=raw)
+        for field, escaped in (("schema", b'"\\u0073chema"'), ("inputs", b'"\\u0069nputs"')):
+            value = SCHEMA if field == "schema" else [base]
+            token = encode(field) + b":" + encode(value)
+            raw = encode({"schema": SCHEMA, "inputs": [base]}).replace(token, token + b"," + escaped + b":" + encode(value), 1) + b"\n"
+            yield case("duplicate-" + field, base, "duplicate or invalid JSON key", "INPUT_JSON_DECODE", raw=raw)
+
+
+class LiteralCutAppendOnlyRequestTests(unittest.TestCase):
+    def test_legacy84_raw_hashes_and_order_are_an_unchanged_prefix(self):
+        original = list(frozen_legacy_negative_inputs())
+        current = list(PROBE.negative_inputs())
+        self.assertEqual(len(original), 84)
+        self.assertEqual(len(current), 196)
+        self.assertEqual([row["name"] for row in current[:84]], [row["name"] for row in original])
+        for before, after in zip(original, current[:84]):
+            with self.subTest(case=before["name"]):
+                self.assertEqual(before, after)
+                self.assertEqual(hashlib.sha256(before["raw"]).hexdigest(), hashlib.sha256(after["raw"]).hexdigest())
+        self.assertEqual(len({row["name"] for row in current}), 196)
+        self.assertTrue(all(row["entry"] in PROBE.CUT_ENTRIES for row in current[84:]))
+        self.assertEqual(current[84]["entry"], "go/strings:Cut")
+        self.assertEqual(current[-1]["entry"], "app/literal-cut-report:Report")
+        self.assertTrue(all(row["name"].startswith("cutreport-") for row in current if row["entry"] == "app/literal-cut-report:Report"))
+        for entry in PROBE.CUT_ENTRIES:
+            selected = [row for row in current[84:] if row["entry"] == entry]
+            self.assertEqual(len(selected), 28)
+            for position in range(2):
+                self.assertEqual(sum(row["position"] == position for row in selected), 12)
+            self.assertEqual(sum(row["expected_rejection_stage"] == "INPUT_JSON_DECODE" for row in selected), 7)
+
+    def test_new_entries_keep_all_original_rejection_binding_checks(self):
+        for entry in PROBE.CUT_ENTRIES:
+            case = next(row for row in PROBE.negative_inputs() if row["entry"] == entry)
+            receipt, path, raw = receipt_fixture(case)
+            for label, change in {
+                "manifest": lambda value: value.update(manifest_digest=PROBE.digest(b"other manifest")),
+                "input": lambda value: value.update(inputs_digest=PROBE.digest(b"other input")),
+                "path": lambda value: value.update(manifest="/other/Report.workspace.json"),
+                "route": lambda value: value.update(error="decode inputs: " + value["error"]),
+                "result": lambda value: value.update(result={"runtime":{"stage":"COMPLETE","model_calls":0}}),
+            }.items():
+                altered = copy.deepcopy(receipt)
+                change(altered)
+                with self.subTest(entry=entry, alteration=label), self.assertRaises(ValueError):
+                    PROBE.inspect_rejection(case, PROBE.encode(altered), 1, False, path, raw)
+
+
+class LiteralCutSeparateManifestTests(unittest.TestCase):
+    def frozen(self):
+        frozen = {name: ("synthetic source " + name + "\n").encode() for name in PROBE.FROZEN_FILES}
+        old = {"schema":"gooo/package-workspace-manifest/v1",
+               "entry":{"package_path":"app/literal-text-report","activity":"Report"},
+               "packages":[{"path":"go/strings","sources":list(PROBE.PORT_SOURCES)},
+                           {"path":"app/literal-text-report","sources":[PROBE.SOURCES[-1]]}]}
+        new = {"schema":"gooo/package-workspace-manifest/v1",
+               "entry":{"package_path":"app/literal-cut-report","activity":"Report"},
+               "packages":[{"path":"go/strings","sources":list(PROBE.CUT_PORT_SOURCES)},
+                           {"path":"app/literal-cut-report","sources":[PROBE.CUT_SOURCES[-1]]}]}
+        frozen["literal-text-report.workspace.json"] = (json.dumps(old, indent=2)+"\n").encode()
+        frozen["literal-cut-report.workspace.json"] = (json.dumps(new, indent=2)+"\n").encode()
+        return frozen
+
+    def test_old_three_source_bytes_and_new_closures_are_separate(self):
+        frozen = self.frozen()
+        before = dict(frozen)
+        manifests = PROBE.trusted_manifests(frozen)
+        self.assertEqual(list(manifests), list(PROBE.ALL_ENTRIES))
+        self.assertEqual(len({name for name, raw in manifests.values()}), 7)
+        self.assertEqual(manifests["app/literal-text-report:Report"], ("literal-text-report.workspace.json",frozen["literal-text-report.workspace.json"]))
+        self.assertEqual(manifests["app/literal-cut-report:Report"], ("literal-cut-report.workspace.json",frozen["literal-cut-report.workspace.json"]))
+        for entry, (name, raw) in manifests.items():
+            manifest = json.loads(raw)
+            self.assertEqual(manifest["entry"], dict(zip(("package_path","activity"),entry.rsplit(":",1))))
+            expected = list(PROBE.PORT_SOURCES if entry in PROBE.ENTRIES else PROBE.CUT_PORT_SOURCES)
+            self.assertEqual(manifest["packages"][0], {"path":"go/strings","sources":expected})
+            if entry.rsplit(":",1)[1] == "Report":
+                expected_source = PROBE.SOURCES[-1] if entry in PROBE.ENTRIES else PROBE.CUT_SOURCES[-1]
+                self.assertEqual(manifest["packages"][1], {"path":entry.rsplit(":",1)[0],"sources":[expected_source]})
+            else:
+                self.assertEqual(len(manifest["packages"]), 1)
+        self.assertEqual(frozen, before)
+        for entry in PROBE.ENTRIES[:2]:
+            package, activity = entry.rsplit(":",1)
+            original_raw = PROBE.encode({"schema":"gooo/package-workspace-manifest/v1", "entry":{"package_path":package,"activity":activity}, "packages":[{"path":"go/strings","sources":list(PROBE.PORT_SOURCES)}]})+b"\n"
+            self.assertEqual(manifests[entry][1], original_raw)
+
+    def test_missing_new_entry_or_source_cannot_silently_reduce_the_gate(self):
+        frozen = self.frozen()
+        for missing in ("literal-cut-report.workspace.json","ports/strings/cut.gooo",PROBE.CUT_SOURCES[-1]):
+            altered = dict(frozen)
+            del altered[missing]
+            with self.subTest(missing=missing), self.assertRaises(ValueError):
+                PROBE.trusted_manifests(altered)
+        with mock.patch.object(PROBE,"ALL_ENTRIES",PROBE.ALL_ENTRIES[:-1]), self.assertRaises(ValueError):
+            PROBE.trusted_manifests(frozen)
+        with mock.patch.object(PROBE,"CUT_PORT_SOURCES",PROBE.PORT_SOURCES), self.assertRaises(ValueError):
+            PROBE.trusted_manifests(frozen)
+
+    def test_wrong_or_cross_contaminated_manifest_closures_refuse_before_any_cli(self):
+        for name, mode in (("literal-text-report.workspace.json","old-contamination"),
+                           ("literal-cut-report.workspace.json","cut-missing"),
+                           ("literal-cut-report.workspace.json","wrong-consumer"),
+                           ("literal-cut-report.workspace.json","wrong-entry")):
+            frozen = self.frozen()
+            value = json.loads(frozen[name])
+            if mode == "old-contamination":
+                value["packages"][0]["sources"].append("ports/strings/cut.gooo")
+            elif mode == "cut-missing":
+                value["packages"][0]["sources"].remove("ports/strings/cut.gooo")
+            elif mode == "wrong-consumer":
+                value["packages"][1]["sources"] = [PROBE.SOURCES[-1]]
+            else:
+                value["entry"]["package_path"] = "app/literal-text-report"
+            frozen[name] = PROBE.encode(value)+b"\n"
+            with tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)/"root"
+                root.mkdir()
+                for file, raw in frozen.items():
+                    target = root/file
+                    target.parent.mkdir(parents=True,exist_ok=True)
+                    target.write_bytes(raw)
+                with self.subTest(mode=mode), mock.patch.object(PROBE.subprocess,"run",side_effect=AssertionError("no CLI allowed")) as run:
+                    with self.assertRaises(ValueError):
+                        PROBE.observe(root,Path(temporary)/"new-output",Path("/never-run-compiler"))
+                    run.assert_not_called()
+                self.assertEqual((root/name).read_bytes(),frozen[name])
 
 
 if __name__ == "__main__":
