@@ -10,6 +10,7 @@ const { createHash } = require('node:crypto');
 const protocol = require('../site/service-policy-protocol.js');
 const { expectedBindings } = require('./service-policy-smoke.cjs');
 const source = fs.readFileSync(path.join(__dirname, '../site/service-policy.js'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '../site/service-policy.html'), 'utf8');
 const clone = value => JSON.parse(JSON.stringify(value));
 function metadata() {
   const bindings = expectedBindings(), files = {};
@@ -109,17 +110,77 @@ test('Unicode and oversized policy-domain input reach transport unchanged; bad U
   }
 });
 test('paste/drop preserves pre-editor CRLF and HTML text; no result survives a replaced input', () => {
+  const capture = html.match(/<section\b([^>]*\bclass="policy-captured"[^>]*)>([\s\S]*?)<\/section>/);
+  assert.ok(capture, 'captured facts must be in an always-visible section');
+  assert.doesNotMatch(capture[1], /\bhidden\b/);
+  assert.doesNotMatch(capture[2], /<details\b/);
+  assert.match(capture[2], /id="policy-input-preview"/); assert.match(capture[2], /id="policy-input-origin"/);
   for (const kind of ['paste', 'drop']) {
     const h = app(); h.ready(); h.run(); h.reply();
     const value = '\uFEFF\r\n<unsafe>&é'; h.transfer('req_name', value, kind);
     assert.equal(h.get('policy-req_name').value, ''); assert.match(h.get('policy-input-preview').textContent, /\\r\\n/);
+    assert.ok(h.get('policy-input-preview').textContent.includes('req_name: ' + JSON.stringify(value)));
+    assert.equal(h.get('policy-capture-req_name').hidden, false);
+    assert.match(h.get('policy-origin-req_name').textContent, /text is captured below/);
+    assert.match(h.get('policy-input-origin').textContent, /Request name: (pasted|dropped) plain text/);
     assert.equal(h.get('policy-download').disabled, true); assert.equal(h.get('policy-result').hidden, true);
     assert.equal(h.run().facts.req_name, value);
+    h.reply({ ...invalid, invalid_field: 'req_name' });
+    assert.ok(h.get('policy-input-preview').textContent.includes('req_name: ' + JSON.stringify(value)));
+    assert.equal(h.get('policy-capture-req_name').hidden, false);
+    h.transfer('req_name', '\ud800', kind);
+    assert.match(h.get('policy-input-preview').textContent, /req_name: "\\ud800"/);
+    assert.equal(h.get('policy-input-error').hidden, false); assert.equal(h.get('policy-run').disabled, true);
+    assert.equal(h.get('policy-capture-req_name').hidden, false);
+    h.transfer('req_name', '', kind);
+    assert.match(h.get('policy-input-preview').textContent, /req_name: ""/);
+    assert.equal(h.run().facts.req_name, '');
   }
   const h = app(); h.ready(); h.transfer('pattern', '', 'drop', { files: [{}] }); assert.equal(h.get('policy-run').disabled, true);
 });
+test('capture origins describe only current active fields after edits, mode changes and examples', () => {
+  const h = app(); h.ready();
+  h.transfer('pattern', 'mcp://*'); h.transfer('req_name', 'é', 'drop');
+  assert.match(h.get('policy-input-origin').textContent, /Service pattern: pasted plain text/);
+  assert.match(h.get('policy-input-origin').textContent, /Request name: dropped plain text/);
+  h.type('req_name', 'weather');
+  assert.equal(h.get('policy-capture-req_name').hidden, true);
+  assert.equal(h.get('policy-origin-req_name').textContent, '');
+  assert.doesNotMatch(h.get('policy-input-origin').textContent, /Request name: dropped/);
+  assert.match(h.get('policy-input-origin').textContent, /Service pattern: pasted/);
+  h.mode('refine');
+  assert.doesNotMatch(h.get('policy-input-origin').textContent, /pasted|dropped/);
+  assert.doesNotMatch(h.get('policy-input-preview').textContent, /pattern:|req_name:/);
+  h.preset('witness'); h.mode('match');
+  assert.match(h.get('policy-input-origin').textContent, /Service pattern: pasted/);
+  assert.equal(h.run().facts.pattern, 'mcp://*'); h.reply();
+  h.preset('denied');
+  assert.doesNotMatch(h.get('policy-input-origin').textContent, /pasted|dropped/);
+  assert.equal(h.get('policy-capture-pattern').hidden, true);
+  assert.deepEqual(h.run().facts, { pattern: 'mcp://weather', req_type: 'mcp', req_name: 'stocks' }); h.reply();
+  h.transfer('req_name', 'é'); h.transfer('req_name', '', 'drop', { files: [{}] });
+  assert.equal(h.get('policy-capture-req_name').hidden, true);
+  assert.doesNotMatch(h.get('policy-input-origin').textContent, /pasted|dropped/);
+  assert.match(h.get('policy-input-preview').textContent, /req_name: ""/);
+  assert.equal(h.get('policy-run').disabled, true); assert.equal(h.get('policy-input-error').hidden, false);
+});
+test('clearing a captured value explicitly replaces it with empty text and invalidates results and active jobs', () => {
+  const h = app(); h.ready(); h.transfer('pattern', 'mcp://*'); h.transfer('req_name', 'weather');
+  h.run(); h.reply(); assert.equal(h.get('policy-download').disabled, false);
+  h.get('policy-clear-req_name').emit('click');
+  assert.equal(h.get('policy-capture-req_name').hidden, true);
+  assert.equal(h.get('policy-capture-pattern').hidden, false);
+  assert.equal(h.get('policy-result').hidden, true); assert.equal(h.get('policy-download').disabled, true);
+  assert.match(h.get('policy-input-preview').textContent, /req_name: ""/);
+  const old = h.current(); assert.deepEqual(h.run().facts, { pattern: 'mcp://*', req_type: 'mcp', req_name: '' });
+  h.get('policy-clear-pattern').emit('click');
+  assert.equal(old.terminated, true); assert.notEqual(h.current(), old); h.reply(undefined, old);
+  assert.equal(h.get('policy-result').hidden, true); assert.equal(h.get('policy-download').disabled, true);
+  assert.doesNotMatch(h.get('policy-input-origin').textContent, /pasted|dropped/);
+  h.ready(); assert.equal(h.run().facts.pattern, '');
+});
 test('input changes and cancellation terminate active Worker and suppress late results', () => {
-  for (const change of [h => h.type('req_name', 'new'), h => h.mode('refine'), h => h.preset('denied'), h => h.get('policy-cancel').emit('click')]) {
+  for (const change of [h => h.type('req_name', 'new'), h => h.transfer('req_name', 'pasted'), h => h.transfer('req_name', 'dropped', 'drop'), h => h.mode('refine'), h => h.preset('denied'), h => h.get('policy-cancel').emit('click')]) {
     const h = app(); h.ready(); const old = h.current(); h.run(); change(h);
     assert.equal(old.terminated, true); assert.notEqual(h.current(), old); h.reply(undefined, old);
     assert.equal(h.get('policy-result').hidden, true); assert.equal(h.get('policy-download').disabled, true);

@@ -41,14 +41,30 @@
         </select>
         <p id="policy-mode-help" class="literal-help"></p>
         <div id="policy-inputs" class="policy-input-grid">
-          <div data-policy-field="pattern"><label for="policy-pattern">Service pattern</label><textarea id="policy-pattern" rows="2" maxlength="4096" spellcheck="false">mcp://weather</textarea></div>
-          <div data-policy-field="before" hidden><label for="policy-before">Current grant pattern</label><textarea id="policy-before" rows="2" maxlength="4096" spellcheck="false">mcp://*.x</textarea></div>
-          <div data-policy-field="after" hidden><label for="policy-after">Proposed grant pattern</label><textarea id="policy-after" rows="2" maxlength="4096" spellcheck="false">mcp://a.*</textarea></div>
-          <div data-policy-field="req_type"><label for="policy-req_type">Request type</label><textarea id="policy-req_type" rows="2" maxlength="4096" spellcheck="false">mcp</textarea></div>
-          <div data-policy-field="req_name"><label for="policy-req_name">Request name</label><textarea id="policy-req_name" rows="2" maxlength="4096" spellcheck="false">weather</textarea></div>
+          <div data-policy-field="pattern"><label for="policy-pattern">Service pattern</label><textarea id="policy-pattern" rows="2" maxlength="4096" spellcheck="false" aria-describedby="policy-origin-pattern">mcp://weather</textarea>
+            <div id="policy-capture-pattern" class="policy-capture-note" hidden><p id="policy-origin-pattern" class="literal-help"></p><button id="policy-clear-pattern" type="button">Clear this value</button></div>
+          </div>
+          <div data-policy-field="before" hidden><label for="policy-before">Current grant pattern</label><textarea id="policy-before" rows="2" maxlength="4096" spellcheck="false" aria-describedby="policy-origin-before">mcp://*.x</textarea>
+            <div id="policy-capture-before" class="policy-capture-note" hidden><p id="policy-origin-before" class="literal-help"></p><button id="policy-clear-before" type="button">Clear this value</button></div>
+          </div>
+          <div data-policy-field="after" hidden><label for="policy-after">Proposed grant pattern</label><textarea id="policy-after" rows="2" maxlength="4096" spellcheck="false" aria-describedby="policy-origin-after">mcp://a.*</textarea>
+            <div id="policy-capture-after" class="policy-capture-note" hidden><p id="policy-origin-after" class="literal-help"></p><button id="policy-clear-after" type="button">Clear this value</button></div>
+          </div>
+          <div data-policy-field="req_type"><label for="policy-req_type">Request type</label><textarea id="policy-req_type" rows="2" maxlength="4096" spellcheck="false" aria-describedby="policy-origin-req_type">mcp</textarea>
+            <div id="policy-capture-req_type" class="policy-capture-note" hidden><p id="policy-origin-req_type" class="literal-help"></p><button id="policy-clear-req_type" type="button">Clear this value</button></div>
+          </div>
+          <div data-policy-field="req_name"><label for="policy-req_name">Request name</label><textarea id="policy-req_name" rows="2" maxlength="4096" spellcheck="false" aria-describedby="policy-origin-req_name">weather</textarea>
+            <div id="policy-capture-req_name" class="policy-capture-note" hidden><p id="policy-origin-req_name" class="literal-help"></p><button id="policy-clear-req_name" type="button">Clear this value</button></div>
+          </div>
         </div>
         <p class="literal-help">The Gooo rules accept canonical ASCII components up to 128 bytes. Other well-formed text reaches Gooo and returns <code>INVALID_INPUT</code>. Text is not trimmed or Unicode-normalized. The browser transport accepts up to 4,096 UTF-16 code units per field and rejects unpaired surrogates.</p>
-        <details class="policy-captured"><summary>Exact captured inputs</summary><pre id="policy-input-preview" tabindex="0"></pre><p id="policy-input-origin" class="literal-help">Typing follows the browser's textarea line-ending behavior. Paste or drop captures the delivered plain text before editor conversion and clears that capture box; typing starts a new value.</p></details>
+        <section class="policy-captured" aria-labelledby="policy-captured-title">
+          <h2 id="policy-captured-title">Inputs for this check</h2>
+          <p class="literal-help">These are the values submitted when you run the check, including text Gooo may reject. Quotes and escapes show exact characters; <code>""</code> means an empty value.</p>
+          <pre id="policy-input-preview" tabindex="0"></pre>
+          <p id="policy-input-origin" class="literal-help" role="status">Using the current editor values.</p>
+          <p class="literal-help">Paste or drop captures plain text before editor conversion and leaves that editor empty. Typing replaces only that field; choosing an example replaces the fields it displays. Typing follows the browser's textarea line-ending behavior.</p>
+        </section>
         <p id="policy-input-error" class="literal-error" role="alert" hidden></p>
         <div class="literal-presets" aria-label="Policy examples">
           <button type="button" data-policy-preset="match">Matching request</button>

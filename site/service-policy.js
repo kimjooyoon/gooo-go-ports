@@ -4,6 +4,8 @@
   const protocol = window.GoooServicePolicyProtocol;
   const fieldNames = ['pattern', 'before', 'after', 'req_type', 'req_name'];
   const values = Object.fromEntries(fieldNames.map(name => [name, $('policy-' + name).value]));
+  const origins = Object.fromEntries(fieldNames.map(name => [name, 'editor']));
+  const fieldLabels = { pattern: 'Service pattern', before: 'Current grant pattern', after: 'Proposed grant pattern', req_type: 'Request type', req_name: 'Request name' };
   let worker = null, program = null, job = null, completed = null, nextId = 0;
   let loadTimer = null, runTimer = null, factsValid = false;
   const downloads = new Map();
@@ -52,6 +54,16 @@
     document.querySelectorAll('[data-policy-field]').forEach(row => { row.hidden = !active.includes(row.dataset.policyField); });
     $('policy-mode-help').textContent = modeHelp[mode] || 'Choose a supported check.';
     $('policy-input-preview').textContent = active.map(name => name + ': ' + JSON.stringify(values[name])).join('\n');
+    const captured = active.filter(name => origins[name] !== 'editor');
+    $('policy-input-origin').textContent = captured.length
+      ? captured.map(name => `${fieldLabels[name]}: ${origins[name] === 'paste' ? 'pasted' : 'dropped'} plain text.`).join(' ') + ' The empty editors keep these captured values until you replace or clear them.'
+      : 'Using the current editor values.';
+    fieldNames.forEach(name => {
+      const isCaptured = origins[name] !== 'editor';
+      $('policy-capture-' + name).hidden = !isCaptured;
+      $('policy-origin-' + name).textContent = isCaptured
+        ? `${origins[name] === 'paste' ? 'Pasted' : 'Dropped'} text is captured below. Typing replaces this field.` : '';
+    });
     $('policy-input-error').hidden = true;
     $('policy-input-error').textContent = '';
     factsValid = false;
@@ -174,7 +186,11 @@
   }
   fieldNames.forEach(name => {
     const input = $('policy-' + name);
-    input.addEventListener('input', () => { values[name] = input.value; invalidate(); });
+    input.addEventListener('input', () => { values[name] = input.value; origins[name] = 'editor'; invalidate(); });
+    $('policy-clear-' + name).addEventListener('click', () => {
+      if (origins[name] === 'editor') return;
+      input.value = ''; values[name] = ''; origins[name] = 'editor'; invalidate();
+    });
     for (const kind of ['paste', 'drop']) input.addEventListener(kind, event => {
       event.preventDefault();
       input.value = '';
@@ -183,10 +199,10 @@
         if (!data || typeof data.getData !== 'function' || data.files?.length ||
             (data.types?.length && !Array.from(data.types).includes('text/plain'))) throw new Error('Paste or drop plain text.');
         values[name] = data.getData('text/plain');
+        origins[name] = kind;
         invalidate();
-        $('policy-input-origin').textContent = `Exact plain text delivered by ${kind} was captured for ${name}. Its box was cleared before editor conversion. Inspect the captured value above; typing starts a new value.`;
       } catch (error) {
-        values[name] = '';
+        values[name] = ''; origins[name] = 'editor';
         invalidate(); factsValid = false;
         $('policy-input-error').textContent = error.message; $('policy-input-error').hidden = false; buttons();
       }
@@ -206,9 +222,8 @@
     const preset = presets[button.dataset.policyPreset];
     if (!preset) return;
     $('policy-mode').value = preset[0];
-    for (const [name, value] of Object.entries(preset[1])) { values[name] = value; $('policy-' + name).value = value; }
+    for (const [name, value] of Object.entries(preset[1])) { values[name] = value; origins[name] = 'editor'; $('policy-' + name).value = value; }
     invalidate();
-    $('policy-input-origin').textContent = 'Built-in example supplied explicitly. Edit any field to try your own input.';
   }));
   $('policy-form').addEventListener('submit', event => {
     event.preventDefault();
