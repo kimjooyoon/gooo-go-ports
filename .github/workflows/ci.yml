@@ -112,10 +112,10 @@ jobs:
       - name: Compare the ports with Go and replay every batch
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
-          go run ./cmd/verify --workers 2 --out out/ci
+          go run ./cmd/verify --workers 4 --out out/ci
           jq -e '
             .schema == "gooo/go-ports-differential/v1" and
-            .native_suite_workers == 2 and
+            .native_suite_workers == 4 and
             .go_version == "go1.27.2" and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
             .ported_functions == 42 and .consumer_programs == 18 and .consumer_activities == 20 and

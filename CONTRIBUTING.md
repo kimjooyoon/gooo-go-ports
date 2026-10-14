@@ -170,6 +170,24 @@ skipped test does not verify a receipt.
 [CI workflow](.github/workflows/ci.yml)는 importing 예제도 실행하고 저장한 실행·재실행
 파일을 해당 검사에 전달합니다. 건너뛴 검사를 receipt 검증으로 기록하지 않습니다.
 
+CI runs the complete native differential verifier with four bounded workers;
+the receipt must record that worker count. The 62 suites, 159,781 cases and
+2,332 replay batches remain required. Verifier correctness tests share only
+compiled Go packages in a private cache owned and removed by that test process.
+Each fixture still executes fresh source and writes separate evidence; the
+nil-cache path and warm-cache changed-source rejection remain tested.
+Use the workflow's native oracle/replay checks and automated Node/Wasm checks
+for reproducible regression testing. Manual Chrome checks are optional UX
+observations and do not replace those checks.
+
+CI는 제한된 워커 4개로 전체 native 비교를 실행하고 receipt의 워커 수도 확인합니다.
+62개 suite, 159,781개 case, 2,332개 replay batch를 그대로 요구합니다. 검증기 테스트는
+프로세스가 소유하고 종료 시 제거하는 전용 캐시에서 Go 컴파일 결과만 공유합니다.
+입력 소스의 실행과 증거는 매번 새로 만들며, 캐시가 없는 경로와 캐시가 따뜻해진 뒤
+변경된 소스를 거부하는 검사도 유지합니다. 회귀 검증은 native oracle·replay와
+자동화된 Node/Wasm 검사를 기준으로 삼습니다. Chrome 수동 확인은 선택적인 사용성
+관찰이며 이 검사를 대신하지 않습니다.
+
 For an unsupported behavior, add a small failing example under `probes/`.
 Describe the desired Go behavior, actual Gooo diagnostic, pinned version, and
 the port blocked by that limit. When compiler support arrives, turn the failing

@@ -140,9 +140,9 @@ def validate(text):
     for name in UPLOADS:
         require(field(named[name], "if") == "always() && " + FULL, "native artifact can upload on docs path: " + name)
     comparison = named["Compare the ports with Go and replay every batch"]
-    require("go run ./cmd/verify --workers 2 --out out/ci" in comparison
-            and ".native_suite_workers == 2 and" in comparison,
-            "full native CI must exercise and bind the two-worker setting")
+    require("go run ./cmd/verify --workers 4 --out out/ci" in comparison
+            and ".native_suite_workers == 4 and" in comparison,
+            "full native CI must exercise and bind the four-worker setting")
     for token in (".ported_functions == 42 and .consumer_programs == 18 and .consumer_activities == 20 and",
                   "(.runs | length) == 62 and",
                   ".cases == 159781 and .passed == 159781 and",
@@ -302,11 +302,12 @@ class WorkflowScopeTests(unittest.TestCase):
     def test_real_workflow_policy(self):
         validate(self.text)
 
-    def test_full_native_ci_binds_two_workers(self):
-        for before, after in (("--workers 2 --out out/ci", "--workers 1 --out out/ci"),
-                              (".native_suite_workers == 2 and", ".native_suite_workers == 1 and")):
-            with self.subTest(before=before), self.assertRaises(ValueError):
-                validate(self.text.replace(before, after, 1))
+    def test_full_native_ci_binds_four_workers(self):
+        for workers in (1, 2, 3, 5):
+            for before, after in (("--workers 4 --out out/ci", f"--workers {workers} --out out/ci"),
+                                  (".native_suite_workers == 4 and", f".native_suite_workers == {workers} and")):
+                with self.subTest(workers=workers, before=before), self.assertRaises(ValueError):
+                    validate(self.text.replace(before, after, 1))
 
     def test_each_heavy_step_and_native_upload_requires_its_guard(self):
         named, _ = named_steps(self.text)
