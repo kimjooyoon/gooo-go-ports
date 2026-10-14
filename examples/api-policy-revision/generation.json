@@ -11,7 +11,7 @@
     "compiler.json": "sha256:9e61c23a1302e7390ba03af0606066a8cca1b13d5bd96864dc3c27a85c00dd5c",
     "differences.workspace.json": "sha256:ba83133424c08ed42c66e6096355661dab596349e45f990c1bdc2fcefc827a12",
     "generate.py": "sha256:3fd4daa5f914adb763d1968ababba4b1a82a9824c1ffef230368afaaefb4c9d3",
-    "go.mod": "sha256:df4665e4d5a35da0bff8c7d84018ec92da8cdadffb6cf9d8ef050b0878eb56da",
+    "go.mod": "sha256:4d29f224cf2b8bc07133b17d74673e2f9c257987f024a82679cc7676a4d934a9",
     "input.go": "sha256:4099d8be17ef64edacf21e8473165fbc8cf25383e6b9f8645bdeb04e78f09b07",
     "internal/candidate/generated.go": "sha256:3738725928d3b2a7712d23963e5db210ecefeef02781b2283be66a163839a56a",
     "internal/flags/generated.go": "sha256:475c9d9286514a0ea1cff53617c584b17f547b1cee27463775dfbfc9b9dc9b11",
