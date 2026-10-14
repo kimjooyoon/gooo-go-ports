@@ -37,8 +37,15 @@ func run() error {
 	compilerRoot := flag.String("compiler-root", ".compiler", "clean pinned compiler checkout used only by the browser codegen overlay")
 	codegenOnly := flag.Bool("codegen-only", false, "build and verify only the editable browser body-codegen page")
 	uuidParseOnly := flag.Bool("uuid-parse-only", false, "build and verify only the compiled Google UUID Text parser page")
+	servicePolicyOnly := flag.Bool("service-policy-only", false, "build only the checked service-policy browser page from existing generated Gooo")
 	flag.Parse()
-	if *codegenOnly && *uuidParseOnly {
+	isolatedModes := 0
+	for _, selected := range []bool{*codegenOnly, *uuidParseOnly, *servicePolicyOnly} {
+		if selected {
+			isolatedModes++
+		}
+	}
+	if isolatedModes > 1 {
 		return fmt.Errorf("choose at most one isolated build mode")
 	}
 	if *out == "" {
@@ -81,6 +88,23 @@ func run() error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
+	if *servicePolicyOnly {
+		site := filepath.Join(dir, "site")
+		if err := buildServicePolicyDemo(ctx, site, dir, lock); err != nil {
+			return err
+		}
+		for _, name := range []string{"style.css", "literal-search.css", "LICENSE", "NOTICE", "third_party/GO-LICENSE"} {
+			from := name
+			if name == "style.css" || name == "literal-search.css" {
+				from = filepath.Join("site", name)
+			}
+			if err := copyFile(from, filepath.Join(site, name)); err != nil {
+				return err
+			}
+		}
+		fmt.Printf("Built %s/service-policy.html; existing checked Gooo rules, unsigned browser observations\n", site)
+		return nil
+	}
 	compilerRaw, err := command(ctx, nil, "./.gooo", "version", "--build", "--json")
 	if err != nil {
 		return err
@@ -197,6 +221,9 @@ func run() error {
 		return err
 	}
 	if err := buildUUIDParseDemo(ctx, site, dir, lock); err != nil {
+		return err
+	}
+	if err := buildServicePolicyDemo(ctx, site, dir, lock); err != nil {
 		return err
 	}
 	if err := buildCodegenDemo(ctx, site, dir, lock, *compilerRoot); err != nil {

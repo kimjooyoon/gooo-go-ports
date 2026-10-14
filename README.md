@@ -46,6 +46,7 @@ proposal, a refused expansion, and recovery of a discarded response by operation
 | What would you like to do? | Start with | What you can change |
 | --- | --- | --- |
 | Compare service-policy facts from a Go program | [Four-file Go quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726) | Use Go 1.27.2 to inspect input refusal, a request-specific policy change, and a returned widening witness; no grant is applied |
+| Edit service-policy inputs in the browser | [Checked service-policy tool](https://kimjooyoon.github.io/gooo-go-ports/service-policy.html) | Distinguish malformed input from a valid refusal, compare one request, or inspect a whole-pattern widening witness from the existing Gooo APIs; inputs stay in the browser |
 | Try Gooo without installing anything | [Interactive tutorial](https://kimjooyoon.github.io/gooo-go-ports/tutorial.html) | Change a score and label, see the returned record, and read the two Gooo source files |
 | Edit source and save generated Go in the browser | [Gooo code editor](https://kimjooyoon.github.io/gooo-go-ports/codegen/) | Edit one source file and generate Go for one activity; save the current Go code or original response JSON. Generated Go is not executed |
 | Find a literal phrase without installing anything | [Literal search](https://kimjooyoon.github.io/gooo-go-ports/literal-search.html) | Supply two strings, see the first UTF-8 byte position and non-overlapping count, and save an honest browser observation |

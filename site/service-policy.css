@@ -1,0 +1,13 @@
+@import url('./literal-search.css');
+.policy-input-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin: 22px 0 }
+.policy-input-grid > [hidden] { display: none }
+.policy-input-grid textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 72px; padding: 12px; border: 1px solid var(--line); border-radius: 5px; background: #fffefa; font: 15px/1.6 monospace }
+.policy-input-grid label, #policy-form > label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px }
+#policy-mode { max-width: 100%; padding: 10px; background: #fffefa; border: 1px solid var(--line); border-radius: 5px; font: inherit }
+.policy-captured { margin: 20px 0 }
+.service-policy-page pre { padding: 16px; background: #efeee7; border-radius: 5px; font: 13px/1.6 monospace; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 420px; overflow: auto }
+.service-policy-page details > summary { cursor: pointer; padding: 10px 0; font-weight: 600 }
+.policy-summary { padding: 14px 16px; background: #f1f4ec; border: 1px solid #c4cebd; border-radius: 5px; line-height: 1.7 }
+.policy-summary.invalid { background: #fff4e9; border-color: #d9b9ae }
+.service-policy-page .literal-output dd { overflow-wrap: anywhere }
+@media (max-width: 640px) { .policy-input-grid { grid-template-columns: minmax(0, 1fr) } }
