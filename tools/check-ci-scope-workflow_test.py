@@ -16,9 +16,9 @@ WORKFLOW = Path(__file__).resolve().parent.parent / ".github/workflows/ci.yml"
 FULL = "steps.change-scope.outputs.docs_only != 'true'"
 DOCS = "steps.change-scope.outputs.docs_only == 'true'"
 HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
-# Reviewed browser delta: add UUID ParseCanonical smoke after literal search.
+# Reviewed browser delta: add checked service-policy smoke after UUID parsing.
 # Events, native skip guards and deployment dependencies stay byte-identical.
-BROWSER_SHA = "a97b7ac0ba9703e23c1f8a3acc09eba372b77c70085723ce798b20deb6172afa"
+BROWSER_SHA = "3a2d3a25717cddea4ec9326b85b037dc94277e061621f567b140e1291159381a"
 COMMON = {
     "Classify the exact checked PR tree", "Check the Go observer",
     "Check pinned Unicode table generation",
@@ -344,6 +344,11 @@ class WorkflowScopeTests(unittest.TestCase):
             validate(self.text.replace("  browser-demo:\n", extra + "  browser-demo:\n", 1))
         with self.assertRaises(ValueError):
             validate(self.text.replace("needs: [native-ports, browser-demo]", "needs: [browser-demo]"))
+        policy_smoke = "          node tools/service-policy-smoke.cjs out/browser/site | tee out/browser/service-policy-smoke.json\n"
+        self.assertEqual(self.text.count(policy_smoke), 1)
+        for replacement in ("", policy_smoke.replace("service-policy-smoke.cjs", "browser-smoke.cjs")):
+            with self.subTest(replacement=replacement), self.assertRaises(ValueError):
+                validate(self.text.replace(policy_smoke, replacement, 1))
 
     def test_cel_native_verifier_cannot_use_another_producer_or_skip_receipt(self):
         named, _ = named_steps(self.text)

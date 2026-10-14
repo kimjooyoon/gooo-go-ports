@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Edit service-policy inputs and inspect Gooo's checked matching, request changes, and grant-refinement witnesses in your browser.">
+  <meta name="theme-color" content="#f5f3eb">
+  <title>Check a service policy — Gooo</title>
+  <link rel="canonical" href="https://kimjooyoon.github.io/gooo-go-ports/service-policy.html">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./service-policy.css">
+  <script defer src="./service-policy-protocol.js"></script>
+  <script defer src="./service-policy.js"></script>
+</head>
+<body class="service-policy-page">
+  <a class="skip-link" href="#policy-form">Skip to policy inputs</a>
+  <div class="page-shell">
+    <header class="masthead">
+      <a class="wordmark" href="https://github.com/kimjooyoon/meta-ontology-go" aria-label="Gooo language on GitHub">gooo<span class="wordmark-dot" aria-hidden="true">.</span></a>
+      <span class="masthead-caption">The Go ports lab / experimental</span>
+      <nav class="repository-links" aria-label="Related pages">
+        <a class="text-link" href="./">All demos</a>
+        <a class="text-link" href="./tutorial.html">Learn Gooo</a>
+        <a class="text-link" href="https://github.com/kimjooyoon/gooo-go-ports">Source on GitHub</a>
+      </nav>
+    </header>
+    <main>
+      <section class="literal-intro" aria-labelledby="policy-title">
+        <p class="eyebrow">SERVICE POLICIES / COMPILED GOOO</p>
+        <h1 id="policy-title">What does a policy change allow?</h1>
+        <p>Test a service pattern, compare one request, or find access that a proposed grant adds. Edit the inputs and inspect the complete result from the compiled Gooo rules.</p>
+        <p id="policy-runtime" class="literal-runtime" role="status">Loading the compiled Gooo policy rules…</p>
+        <button id="policy-retry" type="button" class="secondary-button" hidden>Retry loading</button>
+      </section>
+      <form id="policy-form" novalidate>
+        <label for="policy-mode">What to check</label>
+        <select id="policy-mode">
+          <option value="match">Does one request match?</option>
+          <option value="impact">How does one request change?</option>
+          <option value="refine">Does the proposed grant add access?</option>
+        </select>
+        <p id="policy-mode-help" class="literal-help"></p>
+        <div id="policy-inputs" class="policy-input-grid">
+          <div data-policy-field="pattern"><label for="policy-pattern">Service pattern</label><textarea id="policy-pattern" rows="2" maxlength="4096" spellcheck="false">mcp://weather</textarea></div>
+          <div data-policy-field="before" hidden><label for="policy-before">Current grant pattern</label><textarea id="policy-before" rows="2" maxlength="4096" spellcheck="false">mcp://*.x</textarea></div>
+          <div data-policy-field="after" hidden><label for="policy-after">Proposed grant pattern</label><textarea id="policy-after" rows="2" maxlength="4096" spellcheck="false">mcp://a.*</textarea></div>
+          <div data-policy-field="req_type"><label for="policy-req_type">Request type</label><textarea id="policy-req_type" rows="2" maxlength="4096" spellcheck="false">mcp</textarea></div>
+          <div data-policy-field="req_name"><label for="policy-req_name">Request name</label><textarea id="policy-req_name" rows="2" maxlength="4096" spellcheck="false">weather</textarea></div>
+        </div>
+        <p class="literal-help">The Gooo rules accept canonical ASCII components up to 128 bytes. Other well-formed text reaches Gooo and returns <code>INVALID_INPUT</code>. Text is not trimmed or Unicode-normalized. The browser transport accepts up to 4,096 UTF-16 code units per field and rejects unpaired surrogates.</p>
+        <details class="policy-captured"><summary>Exact captured inputs</summary><pre id="policy-input-preview" tabindex="0"></pre><p id="policy-input-origin" class="literal-help">Typing follows the browser's textarea line-ending behavior. Paste or drop captures the delivered plain text before editor conversion and clears that capture box; typing starts a new value.</p></details>
+        <p id="policy-input-error" class="literal-error" role="alert" hidden></p>
+        <div class="literal-presets" aria-label="Policy examples">
+          <button type="button" data-policy-preset="match">Matching request</button>
+          <button type="button" data-policy-preset="denied">Valid input, denied request</button>
+          <button type="button" data-policy-preset="same-request">One example misses an expansion</button>
+          <button type="button" data-policy-preset="witness">Find the added request</button>
+          <button type="button" data-policy-preset="subset">Recognized narrower grant</button>
+          <button type="button" data-policy-preset="invalid">Malformed pattern</button>
+        </div>
+        <div class="literal-actions">
+          <button id="policy-run" type="submit" class="primary-button" disabled>Run policy check</button>
+          <button id="policy-cancel" type="button" class="secondary-button" hidden>Cancel check</button>
+        </div>
+      </form>
+      <section class="literal-results" aria-labelledby="policy-result-title">
+        <h2 id="policy-result-title">Gooo result</h2>
+        <p id="policy-progress" role="status">No check has run.</p>
+        <p id="policy-error" class="literal-error" role="alert" hidden></p>
+        <div id="policy-result" hidden><p id="policy-summary" class="policy-summary" role="status"></p><dl id="policy-fields" class="literal-output"></dl></div>
+        <details id="policy-proof-wrap" hidden><summary>Complete inputs, decision and source bindings</summary><pre id="policy-proof" tabindex="0"></pre></details>
+        <div id="policy-download-controls" hidden>
+          <button id="policy-download" type="button" class="secondary-button" disabled>Download browser observation JSON</button>
+          <p class="literal-help">The download includes the captured inputs and complete result. It is an unsigned browser observation; it grants no permission to change a policy or call a service.</p>
+          <p id="policy-download-status" class="literal-help" role="status" hidden></p>
+        </div>
+      </section>
+      <section class="literal-method" aria-labelledby="policy-method-title">
+        <h2 id="policy-method-title">Read the result</h2>
+        <p><strong>Request matching</strong> answers for one request. A valid input can return <code>matched: false</code>. <strong>Request comparison</strong> describes only that same request before and after. <strong>Grant comparison</strong> examines the relationship between two supported patterns and can return a concrete request admitted only by the proposal.</p>
+        <p>For <code>mcp://*.x</code> → <code>mcp://a.*</code>, both patterns admit <code>mcp://a.x</code>. Grant comparison finds <code>mcp://a.y</code>, which only the proposal admits. Recognized subset rules establish their bounded pattern relationship; an <code>UNPROVEN</code> result cannot establish a subset.</p>
+        <p>Use semantic fields only after <code>domain_status: VALID_INPUT</code>. The supported domain uses ASCII service types and dotted names with the documented wildcard forms. A complete Agent Mesh policy can contain additional grants, HTTP restrictions and other rules. Actual automatic updates require an authenticated host that checks current authority and policy version at its commit boundary.</p>
+        <p>Inputs stay in this browser. The page fetches only static program and source assets and stores no input history. Gooo implements the decisions; JavaScript transports inputs and displays results.</p>
+        <details><summary>Verified program and Gooo source</summary><p id="policy-program" class="literal-help">Waiting for the program manifest.</p><ul id="policy-sources"></ul></details>
+        <p><a class="text-link" href="https://github.com/kimjooyoon/gooo-go-ports/blob/4193e04cbe53a1b55034742f236e5109725d73cd/examples/agentmesh-service-policy/README.md">Supported input domain and API guide ↗</a> · <a class="text-link" href="https://gist.github.com/kimjooyoon/9ff5458c21e6a1e06b658983ad3a3e4c">Try the local automatic-update host ↗</a> · <a class="text-link" href="https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml">Report a problem ↗</a></p>
+        <p class="literal-help">An independent Gooo project by asketeddy. Google does not endorse this project. Codex assisted development and verification.</p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
