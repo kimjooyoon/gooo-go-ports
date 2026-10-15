@@ -83,15 +83,40 @@ duplicate-key warning under an explicit host namespace contract; equal cleaned
 paths do not establish permission, safe paths or router/filesystem identity.
 Its two appended normal suites contain 9,841 shortlex Clean inputs and 120 input
 pairs, for 70 suites and 170,227 cases: 47 ports, 21 consumer programs and 23
-consumer activities. Existing 68 inputs and selected source closures, seven
-exhaustive checks and the path-facts sidecar remain unchanged. The focused source
-partition check gives 77 Clean batches and four Report batches: 81 new batches,
+consumer activities. In legacy workspace mode, existing 68 inputs and selected
+source closures, seven exhaustive checks and the path-facts sidecar remain
+unchanged. The focused source partition check gives 77 Clean batches and four Report batches: 81 new batches,
 for 2,153 with the current combined compact CI profile, 2,295 timing records
-(final sequence 2,294) and 140 current source identities. The largest raw case
-files are 17,823 and 29,661 bytes; the respective source-derived translated upper
+(final sequence 2,294). The historical PR #101 baseline bound 140 source
+identities; the updated verifier binds 142 in both workspace profiles. The largest
+raw case files are 17,823 and 29,661 bytes; the respective source-derived translated upper
 bounds are 13,970 and 22,680 bytes. These are measured source partition
-requirements, not completed full70 native or hosted-CI observations. Both entries
-have portable execution and saved-replay examples in the guide.
+requirements. The historical workspace passed the full 70-suite comparison and
+saved replay in [PR #101](https://github.com/kimjooyoon/gooo-go-ports/pull/101)
+and its merged-main CI. Those completed checks do not establish acceptance of
+the new workspace profile below. Both entries have portable execution and
+saved-replay examples in the guide.
+
+Full CI selects `--workspace-profile dependency-closure-v1` independently of the
+existing `--case-profile uuid-and-literal-report-compact-v1`. The workspace profile
+starts with each suite's historical selected workspace, then follows imports over
+whole selected packages in their original order. It narrows 56 of the 70 manifests;
+the 14 already isolated UUID, literal-text, decimal and path manifests stay exact.
+Omitting the option, or choosing `legacy`, preserves the historical workspace and
+emits no `workspace_profile` metadata. The explicit profile appears in both the
+summary and timing header. Timing still binds all 140 existing inputs plus the
+selector and its tests, for 142 source identities, and prints each suite's actual
+`source_set` and `source_set_sha256`. This does not reduce the required 70 suites,
+170,227 cases, 2,153 batches, 2,295 timing records or seven exhaustive checks.
+
+A local serial ABBA pilot using legacy case-wire serialization on
+`go/net/http:StatusText` and `app/color-inspector:InspectRGB` ran 208 fresh
+execute/saved-replay commands. Mean command sums were 19.88 seconds with the historical workspace and 17.13 seconds
+with the narrower workspace. The runs shared a Go cache and include order and
+cache effects. These two-entry observations establish neither a hosted CI speedup
+nor acceptance of the other 68 entries. Fresh full-roster native comparison,
+saved replay and all existing CI sidecars remain required for this profile. The
+native execution job uses `ubuntu-24.04` to keep its selected runner image explicit.
 
 The original [automatic redelivery policy](examples/automatic-redelivery/README.md)
 uses nine supplied facts to return fifteen fields, including every original input,

@@ -18,8 +18,8 @@ WORKFLOW = Path(__file__).resolve().parent.parent / ".github/workflows/ci.yml"
 FULL = "steps.change-scope.outputs.docs_only != 'true'"
 DOCS = "steps.change-scope.outputs.docs_only == 'true'"
 HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
-# Three producer jobs retain their original exact bytes. Only the deployment
-# dependency/condition prefix changes; its existing runner/permissions/body stays.
+# The observer/browser producers and deployment body retain their reviewed bytes.
+# Native alone uses the explicit workspace profile and a pinned Ubuntu 24.04 runner.
 BROWSER_JOB_SHA = "1aee9cc0cd8f75b2e4a438712aaf87bc8e1007a1318cb997ede369b6f6ce4e10"
 DEPLOY_BODY_SHA = "0fed0b124228b17bd80d8f95c7c7e69ac2ad854f719ca846c3e60a1359a480c8"
 PATH_STEP_SHA = 'b90f403ce804adea78dacebf554c45f3e21b1faf89b942e83f32aca2847f9df5'
@@ -46,7 +46,7 @@ REDELIVERY_COMMON_COMMANDS = (
 )
 PATH_COMMAND = 'python3 -B tools/check-path-facts.py --repository . --out out/path-facts --go "$(go env GOROOT)/bin/go" --compiler ./.gooo --timeout 300'
 PATH_COMMON_UNIT_BLOCK = '          # Full scope runs these13 Python controls inside the bounded sidecar once.\n          # Documentation-only PRs still run them as common non-native checks.\n          if [ "${{ steps.change-scope.outputs.docs_only }}" = "true" ]; then\n            python3 -I -B tools/check-path-facts_test.py\n          fi\n'
-NATIVE_COMPARISON_COMMAND = "go run ./cmd/verify --workers 2 --case-profile uuid-and-literal-report-compact-v1 --out out/ci --timing-out out/ci/timing.jsonl"
+NATIVE_COMPARISON_COMMAND = "go run ./cmd/verify --workers 2 --case-profile uuid-and-literal-report-compact-v1 --workspace-profile dependency-closure-v1 --out out/ci --timing-out out/ci/timing.jsonl"
 CASE_PROFILE_ASSERTION = '''            .case_profile == {
               schema: "gooo/native-case-profile/v1", name: "uuid-and-literal-report-compact-v1",
               compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.2",
@@ -59,19 +59,27 @@ CASE_PROFILE_ASSERTION = '''            .case_profile == {
               scope: "UUID3 retain the exact uuid-compact-v1 policy/wire bytes. Only literal-text Report adds compact wire bytes and new source-bounded partitions. Index/Count and decimal/payload policies remain unchanged. Original ordered cases, independent expectations, exact sources and fresh native execution/saved replay are required; no prior profile PASS, native capacity or speedup is inherited."
             } and
 '''
+WORKSPACE_PROFILE_ASSERTION = '''            .workspace_profile == {
+              schema: "gooo/native-workspace-profile/v1", name: "dependency-closure-v1",
+              basis: "legacy-selected-workspace",
+              selection: "entry import closure over whole already-selected packages; original package/source order",
+              compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.2"
+            } and
+'''
 TIMING_HEADER_ASSERTION = '''          head -n 1 out/ci/timing.jsonl | jq -e --slurpfile summary out/ci/summary.json '
             . as $header |
             .schema == "gooo/native-verification-timing/v1" and .kind == "header" and .seq == 0 and
             .case_profile == $summary[0].case_profile and
+            .workspace_profile == $summary[0].workspace_profile and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
             .configured_workers == 2 and .expected_suites == 70 and .expected_cases == 170227 and
             .expected_boundaries_recomputed == false and
             .boundary_scope == "Actual contiguous ranges only. UUID3 retain uuid-compact-v1 wire/partitions; literal-text Report uses a new compact writer/partition identity. No prior profile PASS or full batch total is inherited. Index/Count and other existing non-UUID suites retain their indented writer; decimal/payload retain their source-bounded pretty JSON policy. Fresh native/saved replay and the full summary gate remain required; no timing or speedup claim." and
-            (.identity.source_files | length) == 140 and
-            all(["cmd/verify/case_profile.go", "cmd/verify/case_profile_test.go", "cmd/verify/case_profile_integration_test.go", "cmd/verify/literal_report_case_profile_test.go", "cmd/verify/path_alias_corpus.go", "cmd/verify/path_alias_corpus_test.go", "cmd/verify/path_alias_contracts.go", "cmd/verify/path_alias_contracts_test.go", "cmd/verify/path_alias_batches.go", "cmd/verify/path_alias_batches_test.go", "ports/path/README.md", "ports/path/provenance.json", "ports/path/clean-corpus-9841.json", "path-clean.workspace.json", "path-alias-facts.workspace.json", "examples/path-alias-facts/contract.json", "examples/path-alias-facts/corpus-120.json", "examples/path-alias-facts/anchor-pairs-24.json", "examples/path-alias-facts/clean-inputs.json", "examples/path-alias-facts/inputs.json", "examples/path-alias-facts/README.md", "ports/path/path.gooo", "ports/path/clean.gooo", "examples/path-alias-facts/main.gooo"][];
-              . as $path | ($header.identity.source_files[$path].bytes | type) == "number" and
-              $header.identity.source_files[$path].bytes > 0 and
-              ($header.identity.source_files[$path].sha256 | test("^[0-9a-f]{64}$")))
+            (.identity.source_files | length) == 142 and
+            (.identity.source_files | keys) == [".github/workflows/ci.yml", "CONTRIBUTING.md", "README.md", "cmd/build-demo/api_policy.go", "cmd/build-demo/api_policy_test.go", "cmd/build-demo/main.go", "cmd/verify/case_exhaustive_test.go", "cmd/verify/case_profile.go", "cmd/verify/case_profile_integration_test.go", "cmd/verify/case_profile_test.go", "cmd/verify/contracts.go", "cmd/verify/contracts_test.go", "cmd/verify/decimal_payload_batches.go", "cmd/verify/decimal_payload_batches_test.go", "cmd/verify/decimal_payload_contracts_test.go", "cmd/verify/decimal_payload_corpus.go", "cmd/verify/decimal_payload_corpus_test.go", "cmd/verify/inspect.go", "cmd/verify/literal_cut_contracts.go", "cmd/verify/literal_cut_corpus.go", "cmd/verify/literal_cut_corpus_test.go", "cmd/verify/literal_cut_integration_test.go", "cmd/verify/literal_report_case_profile_test.go", "cmd/verify/main.go", "cmd/verify/native_build_cache.go", "cmd/verify/native_build_cache_test.go", "cmd/verify/native_correctness_cache_test.go", "cmd/verify/native_suite.go", "cmd/verify/native_timing.go", "cmd/verify/path_alias_batches.go", "cmd/verify/path_alias_batches_test.go", "cmd/verify/path_alias_contracts.go", "cmd/verify/path_alias_contracts_test.go", "cmd/verify/path_alias_corpus.go", "cmd/verify/path_alias_corpus_test.go", "cmd/verify/simple_fold_exhaustive_test.go", "cmd/verify/string_byte_batches.go", "cmd/verify/suite_workers.go", "cmd/verify/suite_workers_test.go", "cmd/verify/testdata/literal-cut-original62.json", "cmd/verify/whitespace_contracts.go", "cmd/verify/workspace_catalog.go", "cmd/verify/workspace_catalog_test.go", "cmd/verify/workspace_profile.go", "cmd/verify/workspace_profile_test.go", "cmd/verify/ycbcr_exhaustive_test.go", "decimal-int64.workspace.json", "examples/agentmesh-service-policy/checked_impact.gooo", "examples/agentmesh-service-policy/checked_matcher.gooo", "examples/agentmesh-service-policy/checked_refinement.gooo", "examples/agentmesh-service-policy/conditional_apply.gooo", "examples/agentmesh-service-policy/domain.gooo", "examples/agentmesh-service-policy/impact.gooo", "examples/agentmesh-service-policy/refinement.gooo", "examples/alpha-matte/main.gooo", "examples/byte-rotation/main.gooo", "examples/byte-summary/main.gooo", "examples/case-inspector/main.gooo", "examples/cel-api-policy/main.gooo", "examples/color-inspector/main.gooo", "examples/crop-planner/crop_planner.gooo", "examples/crop-planner/drag_crop.gooo", "examples/duration-quantizer/main.gooo", "examples/fits-crop/main.gooo", "examples/fixed-pixel-bounds/main.gooo", "examples/identifier-rune/main.gooo", "examples/literal-cut-report/README.md", "examples/literal-cut-report/inputs.json", "examples/literal-cut-report/main.gooo", "examples/literal-cut-report/manual-contract.json", "examples/literal-text-report/main.gooo", "examples/path-alias-facts/README.md", "examples/path-alias-facts/anchor-pairs-24.json", "examples/path-alias-facts/clean-inputs.json", "examples/path-alias-facts/contract.json", "examples/path-alias-facts/corpus-120.json", "examples/path-alias-facts/inputs.json", "examples/path-alias-facts/main.gooo", "examples/payload-admission/README.md", "examples/payload-admission/contract.json", "examples/payload-admission/corpus.json", "examples/payload-admission/inputs.json", "examples/payload-admission/main.gooo", "examples/payload-admission/manual17.json", "examples/response.gooo", "examples/simple-fold/main.gooo", "examples/string-byte-search/main.gooo", "examples/unicode-inspector/main.gooo", "examples/uuid-format-inspector/main.gooo", "examples/whitespace-inspector/main.gooo", "examples/ycbcr-inspector/main.gooo", "literal-cut-report.workspace.json", "path-alias-facts.workspace.json", "path-clean.workspace.json", "payload-admission.workspace.json", "ports/agentmesh/service_pattern.gooo", "ports/cel/scalar_access.gooo", "ports/google/uuid/quote.gooo", "ports/google/uuid/text/parse_canonical.gooo", "ports/google/uuid/validate.gooo", "ports/image/canon.gooo", "ports/image/color.gooo", "ports/image/fixed.gooo", "ports/image/geometry.gooo", "ports/image/nrgba.gooo", "ports/image/ycbcr.gooo", "ports/math/bits.gooo", "ports/net/http.gooo", "ports/path/README.md", "ports/path/clean-corpus-9841.json", "ports/path/clean.gooo", "ports/path/path.gooo", "ports/path/provenance.json", "ports/strconv/README.md", "ports/strconv/corpus-256.json", "ports/strconv/decimal.gooo", "ports/strconv/inputs.json", "ports/strconv/provenance.json", "ports/strings/cut.gooo", "ports/strings/literal.gooo", "ports/strings/search.gooo", "ports/time/duration.gooo", "ports/unicode/case_mapping.gooo", "ports/unicode/classification.gooo", "ports/unicode/simple_fold.gooo", "ports/unicode/space.gooo", "ports/unicode/utf16.gooo", "ports/unicode/utf8.gooo", "site/api-policy-worker.js", "site/api-policy.css", "site/api-policy.html", "site/api-policy.js", "tools/api-policy-app.test.cjs", "tools/api-policy-browser-bridge.go.txt", "tools/api-policy-browser-smoke.mjs", "tools/check-ci-scope-workflow_test.py", "tools/check-literal-text-inputs.py", "tools/check-literal-text-inputs_test.py", "tools/classify-ci-scope.py", "tools/generate-payload-corpus.py", "upstream.json", "verification-catalog.json"] and
+            all($header.identity.source_files[];
+              (.bytes | type) == "number" and .bytes > 0 and
+              (.sha256 | test("^[0-9a-f]{64}$")))
           '
 '''
 TIMING_CLAUSES = (
@@ -90,7 +98,7 @@ TIMING_ASSERTION = ("          tail -n 1 out/ci/timing.jsonl | jq -e '\n"
                                 for index, clause in enumerate(TIMING_CLAUSES))
                     + "\n          '\n")
 LITERAL_REPORT_COMPACT_SCOPE = 'Only app/literal-text-report:Report adds compact case JSON plus one LF, <=128 original rows, <=30000 raw bytes and a pinned839 source-derived nonexpanding-key <=32768 translated bound. Index/Count retain their prior indented writer and partitions. Native execution and saved replay must freshly inspect all9313 original Report pairs; count-only281-to235 is not native, full-CI or performance acceptance. Decimal/payload policies remain unchanged.'
-TIMING_SUMMARY_SHA = '449c77747290beaa0cb7d41c356e47199bbbc1a071e2f6da25a0c69eb8c0e52e'
+TIMING_SUMMARY_SHA = 'ca262e77de47a75e3c458a84862b7d5eb13333d1c1af7c6e313ce20f99ee3ae8'
 PATH_ALIAS_DECLARATIONS = ("ports/path/clean.gooo", "examples/path-alias-facts/main.gooo")
 PATH_ALIAS_CLAUSES = (
     '([.runs[:68][].cases] | add) == 160266 and ([.runs[:68][].batches] | add) == 2072 and',
@@ -177,7 +185,7 @@ LITERAL_COMMANDS = {
 # The common checks move byte-for-byte; both isolated jobs classify their own
 # exact full-history checkout. These are source-integrity locks, not CI PASS.
 OBSERVER_HEADER_SHA = '46cb0e7392dd3f3fb9562bccea6b27e5194ffcf59e1a58bab4c07b99aba08bd9'
-NATIVE_HEADER_SHA = '5f4d0761ec793a582d7d23c06f9a758bd71fa66f5448b50d01739915052b213e'
+NATIVE_HEADER_SHA = '584d7a22663deb57be052a69d58f2b19e6233a7eefb7d4ce6ad1d5b650d48e69'
 # Add the record adapter controls and input-only corpus regeneration check;
 # every previously required observer command remains byte-identical and once.
 OBSERVER_STEP_SHA = '9074348ace69478671218d3e12bad74d7abd5ac2cc2a0579443c6b1494760cee'
@@ -336,6 +344,8 @@ def validate(text):
             "full native CI must bind two workers and source-bound timing")
     require(comparison.count(CASE_PROFILE_ASSERTION) == 1,
             "native CI must require the exact explicit UUID compact profile identity")
+    require(comparison.count(WORKSPACE_PROFILE_ASSERTION) == 1,
+            "native CI must require the exact explicit dependency closure workspace profile identity")
     require(comparison.count(TIMING_HEADER_ASSERTION) == 1,
             "native timing must bind the same profile and complete source identity")
     require(comparison.count(TIMING_ASSERTION) == 1,
@@ -731,7 +741,7 @@ class WorkflowScopeTests(unittest.TestCase):
             chunk.replace(".literal_report_compact_scope == " + json.dumps(LITERAL_REPORT_COMPACT_SCOPE) + " and", "true and", 1),
             chunk.replace("maximum_rows: 128", "maximum_rows: 129", 1),
             chunk.replace("raw_bytes_including_LF: 30000", "raw_bytes_including_LF: 32768", 1),
-            chunk.replace("(.identity.source_files | length) == 140", "(.identity.source_files | length) >= 97", 1),
+            chunk.replace("(.identity.source_files | length) == 142", "(.identity.source_files | length) >= 97", 1),
             chunk.replace("--slurpfile summary out/ci/summary.json", "--slurpfile summary out/old/summary.json", 1),
             chunk.replace(".case_profile == $summary[0].case_profile", ".case_profile == null", 1),
         ))
@@ -739,6 +749,62 @@ class WorkflowScopeTests(unittest.TestCase):
             self.assertNotEqual(chunk, altered)
             with self.subTest(altered=altered[:600]), self.assertRaises(ValueError):
                 validate(self.text.replace(chunk, altered, 1))
+
+    def test_workspace_dependency_closure_flag_identity_source_map_and_console_are_required(self):
+        named, _ = named_steps(self.text)
+        chunk = named["Compare the ports with Go and replay every batch"]
+        validate(self.text)
+        mutations = [chunk.replace(" --workspace-profile dependency-closure-v1", replacement, 1)
+                     for replacement in ("", " --workspace-profile legacy", " --workspace-profile unknown",
+                                         " --workspace-profile dependency-closure-v1 --workspace-profile legacy")]
+        self.assertEqual(chunk.count(WORKSPACE_PROFILE_ASSERTION), 1)
+        mutations.append(chunk.replace(WORKSPACE_PROFILE_ASSERTION, "", 1))
+        for line in WORKSPACE_PROFILE_ASSERTION.splitlines()[1:-1]:
+            mutations.append(chunk.replace(WORKSPACE_PROFILE_ASSERTION,
+                                           WORKSPACE_PROFILE_ASSERTION.replace(line, "            true and", 1), 1))
+        for replacement in ("            .workspace_profile == null and\n",
+                            WORKSPACE_PROFILE_ASSERTION.replace('name: "dependency-closure-v1"', 'name: "legacy"'),
+                            WORKSPACE_PROFILE_ASSERTION.replace('basis: "legacy-selected-workspace"', 'basis: "other"')):
+            mutations.append(chunk.replace(WORKSPACE_PROFILE_ASSERTION, replacement, 1))
+        for before, after in (
+                (".workspace_profile == $summary[0].workspace_profile and", "true and"),
+                (".workspace_profile == $summary[0].workspace_profile", ".workspace_profile == null"),
+                (".workspace_profile == $summary[0].workspace_profile", ".workspace_profile == $summary[0].case_profile"),
+                ("(.identity.source_files | length) == 142", "(.identity.source_files | length) == 140"),
+                ("(.identity.source_files | length) == 142", "(.identity.source_files | length) >= 140"),
+                ("(.identity.source_files | keys) ==", "(.identity.source_files | values) =="),
+                ("all($header.identity.source_files[];", "all($header.identity.source_files | del(.\"cmd/verify/workspace_profile.go\") | .[];"),
+                ("(.bytes | type) == \"number\" and .bytes > 0", "(.bytes | type) == \"number\"")):
+            self.assertIn(before, chunk)
+            mutations.append(chunk.replace(before, after, 1))
+        # Guard every old input as well as each new selector/test input. A count
+        # alone would permit substituting a different source at the same length.
+        for name in ("cmd/verify/workspace_profile.go", "cmd/verify/workspace_profile_test.go", "cmd/verify/main.go"):
+            token = json.dumps(name) + ", "
+            self.assertIn(token, TIMING_HEADER_ASSERTION)
+            mutations.append(chunk.replace(TIMING_HEADER_ASSERTION,
+                                           TIMING_HEADER_ASSERTION.replace(token, "", 1), 1))
+        summary = re.search(r"^          jq -c -s '\n.*?^          ' out/ci/timing.jsonl\n", chunk, re.M | re.S)[0]
+        for field in ("source_set", "source_set_sha256"):
+            token = ", " + field
+            self.assertIn(token, summary)
+            mutations.append(chunk.replace(summary, summary.replace(token, "", 1), 1))
+        for altered in mutations:
+            self.assertNotEqual(altered, chunk)
+            with self.subTest(altered=altered[:700]), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, altered, 1))
+
+    def test_only_native_execution_runner_is_pinned_to_reviewed_ubuntu_24_04(self):
+        jobs = workflow_jobs(self.text)
+        native = jobs["native-execution"]
+        self.assertIn("    runs-on: ubuntu-24.04\n", native)
+        self.assertIn("    runs-on: ubuntu-latest\n", jobs["observer-checks"])
+        self.assertIn("    runs-on: ubuntu-latest\n", jobs["browser-demo"])
+        for runner in ("ubuntu-latest", "ubuntu-26.04", "ubuntu-22.04"):
+            changed = native.replace("runs-on: ubuntu-24.04", "runs-on: " + runner, 1)
+            self.assertNotEqual(changed, native)
+            with self.subTest(runner=runner), self.assertRaises(ValueError):
+                validate(self.text.replace(native, changed, 1))
 
     def test_path_clean_alias_exact_appended_roster_sources_and_scope_are_required(self):
         named, _ = named_steps(self.text)
@@ -783,7 +849,7 @@ class WorkflowScopeTests(unittest.TestCase):
             ("([.runs[].batches] | add) == 2153", "([.runs[].batches] | add) == 2072"),
             (".event_count == 2295", ".event_count == 2210"),
             (".seq == 2294", ".seq == 2209"),
-            ("(.identity.source_files | length) == 140", "(.identity.source_files | length) == 120"),
+            ("(.identity.source_files | length) == 142", "(.identity.source_files | length) == 120"),
         )
         for before, after in changes:
             self.assertIn(before, comparison)
