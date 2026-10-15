@@ -249,6 +249,7 @@ func TestWorkspaceProfileFixed70ClosuresPreserveEveryOriginalCaseAndPartition(t 
 	beforeCatalog := contentDigest(mustJSON(t, frozen))
 	counts := map[nativeCaseProfile]int{}
 	changed, totalCases, totalFiles := 0, 0, 0
+	preparedPolicies, prepareCalls, prettyWrites := 0, 0, 0
 	for index, s := range suites {
 		expected := workspaceProfileReviewed70[index]
 		entry := s.Package + ":" + s.Activity
@@ -285,6 +286,17 @@ func TestWorkspaceProfileFixed70ClosuresPreserveEveryOriginalCaseAndPartition(t 
 				t.Fatal("profile changed a retained original source or its identity", entry, name)
 			}
 		}
+		// prepare reads only the complete policy value, suite and start. Prove
+		// both workspace choices supply the same value before sharing its pure
+		// JSON work. Keep each exact interval, nil-vs-raw writer and bytes once
+		// per distinct policy for this entry, including all three wire profiles.
+		type preparedCaseBatch struct {
+			start    int
+			prepared nativePreparedCaseBatch
+			raw      []byte
+			digest   string
+		}
+		preparedByPolicy := map[nativeCaseBatchPolicy][]preparedCaseBatch{}
 		for _, profile := range []nativeCaseProfile{"", uuidCompactCaseProfile, uuidLiteralReportCompactCaseProfile} {
 			oldPolicy, err := profile.policy(s, legacy, workspaceProfilePinnedLock())
 			if err != nil {
@@ -294,18 +306,43 @@ func TestWorkspaceProfileFixed70ClosuresPreserveEveryOriginalCaseAndPartition(t 
 			if err != nil {
 				t.Fatal(entry, profile, err)
 			}
-			batches := 0
-			for start := 0; start < len(s.Cases); batches++ {
-				oldBatch, err := oldPolicy.prepare(s, start)
-				if err != nil {
-					t.Fatal(entry, profile, err)
-				}
-				newBatch, err := newPolicy.prepare(s, start)
-				if err != nil || oldBatch.End != newBatch.End || (oldBatch.Raw == nil) != (newBatch.Raw == nil) || !bytes.Equal(workspaceProfileBatchBytes(t, s, start, oldBatch), workspaceProfileBatchBytes(t, s, start, newBatch)) {
-					t.Fatal("workspace selection changed original raw case bytes or exact bounds", entry, profile, start, err)
-				}
-				start = oldBatch.End
+			// The struct is deliberately the whole comparable key, not selected
+			// flags: future source-dependent policy drift must fail before reuse.
+			if oldPolicy != newPolicy {
+				t.Fatal("workspace selection changed the complete case writer/bounds policy", entry, profile, oldPolicy, newPolicy)
 			}
+			preparedBatches, found := preparedByPolicy[oldPolicy]
+			if !found {
+				preparedPolicies++
+				for start := 0; start < len(s.Cases); {
+					prepareCalls++
+					prepared, err := oldPolicy.prepare(s, start)
+					if err != nil {
+						t.Fatal(entry, profile, start, err)
+					}
+					if prepared.Raw == nil {
+						prettyWrites++
+					}
+					raw := workspaceProfileBatchBytes(t, s, start, prepared)
+					preparedBatches = append(preparedBatches, preparedCaseBatch{start, prepared, raw, contentDigest(raw)})
+					start = prepared.End
+				}
+				preparedByPolicy[oldPolicy] = preparedBatches
+			}
+			start := 0
+			for _, batch := range preparedBatches {
+				if batch.start != start || batch.prepared.End <= start || batch.prepared.End > len(s.Cases) || len(batch.raw) == 0 || batch.raw[len(batch.raw)-1] != '\n' || contentDigest(batch.raw) != batch.digest {
+					t.Fatal("shared original raw case bytes or exact contiguous bounds changed", entry, profile, start)
+				}
+				if batch.prepared.Raw != nil && !bytes.Equal(batch.prepared.Raw, batch.raw) {
+					t.Fatal("prepared bytes changed the original raw writer", entry, profile, start)
+				}
+				start = batch.prepared.End
+			}
+			if start != len(s.Cases) || contentDigest(mustJSON(t, s.Cases)) != beforeCases {
+				t.Fatal("shared policy skipped or mutated original ordered cases", entry, profile, start)
+			}
+			batches := len(preparedBatches)
 			if profile == uuidLiteralReportCompactCaseProfile && batches != expected.currentBatches {
 				t.Fatal("current2153 partition changed", entry, batches, expected.currentBatches)
 			}
@@ -320,6 +357,10 @@ func TestWorkspaceProfileFixed70ClosuresPreserveEveryOriginalCaseAndPartition(t 
 	if changed != 56 || len(suites)-changed != 14 || totalCases != 170227 || totalFiles != 180 || counts[""] != 2427 || counts[uuidCompactCaseProfile] != 2199 || counts[uuidLiteralReportCompactCaseProfile] != 2153 {
 		t.Fatal("reviewed finite totals changed", changed, totalCases, totalFiles, counts)
 	}
+	if preparedPolicies != 74 || prepareCalls != 3293 || prettyWrites != 2337 {
+		t.Fatal("distinct original policy work changed", preparedPolicies, prepareCalls, prettyWrites)
+	}
+	t.Logf("shared exact policy plans: %d; prepare calls: %d; original pretty writer calls: %d", preparedPolicies, prepareCalls, prettyWrites)
 	if contentDigest(mustJSON(t, frozen)) != beforeCatalog {
 		t.Fatal("profile mutated shared frozen catalog")
 	}
