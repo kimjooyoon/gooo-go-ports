@@ -28,6 +28,7 @@ type nativeTimingConfig struct {
 	Lock                                           upstream
 	Catalog                                        frozenVerificationCatalog
 	CompilerIdentity                               []byte
+	CaseProfile                                    nativeCaseProfile
 }
 
 type nativeTimingFile struct {
@@ -60,6 +61,7 @@ var nativeTimingSourceNames = []string{
 	"tools/check-literal-text-inputs.py", "tools/check-literal-text-inputs_test.py",
 	"literal-cut-report.workspace.json", "examples/literal-cut-report/inputs.json",
 	"examples/literal-cut-report/manual-contract.json", "examples/literal-cut-report/README.md", "CONTRIBUTING.md",
+	"cmd/verify/case_profile.go", "cmd/verify/case_profile_test.go", "cmd/verify/case_profile_integration_test.go",
 }
 
 var nativeTimingPhaseNames = [...]string{
@@ -165,6 +167,9 @@ func newNativeTiming(cfg nativeTimingConfig) (*nativeTiming, error) {
 
 // Injection is internal to this package's recorder tests, not a runtime option.
 func newNativeTimingWithSnapshot(cfg nativeTimingConfig, snapshot func(nativeTimingConfig) (nativeTimingSnapshot, error)) (*nativeTiming, error) {
+	if err := cfg.CaseProfile.validateCompiler(cfg.Lock); err != nil {
+		return nil, err
+	}
 	if err := validateNativeTimingOutput(cfg.Output, cfg.EvidenceRoot); err != nil {
 		return nil, err
 	}
@@ -262,7 +267,7 @@ func newNativeTimingWithSnapshot(cfg nativeTimingConfig, snapshot func(nativeTim
 		planned = append(planned, map[string]any{"index": st.index, "package": st.pkg, "activity": st.activity, "cases": st.cases})
 		total += st.cases
 	}
-	t.emitLocked(map[string]any{
+	header := map[string]any{
 		"kind": "header", "started_at_utc": t.started.UTC().Format(time.RFC3339Nano),
 		"configured_workers": cfg.Workers, "reported_num_cpu": runtime.NumCPU(), "gomaxprocs": runtime.GOMAXPROCS(0),
 		"memory_limit_bytes": nil, "cpu_quota": nil, "go_version": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH,
@@ -275,7 +280,9 @@ func newNativeTimingWithSnapshot(cfg nativeTimingConfig, snapshot func(nativeTim
 		"source_set_scope":   "Each suite_end stores its checked source set once. Batch events bind that exact map by SHA-256; source inputs and the complete frozen catalog are hashed in the header and rechecked at close.",
 		"timing_scope":       "Suite and batch elapsed intervals include recorder lock/event overhead; enqueue, slot wait, dispatch, CPU time and resource contention are not measured. Batch selection happens before beginBatch and is unmeasured. Run duration includes identity observations and ends before footer finalization. UTC is for correlation; durations use Go monotonic time.",
 		"finalization_scope": "A footer is diagnostic evidence only; successful close return and the original native verification/summary gates are also required. No effect authorization or performance causality is asserted.",
-	})
+	}
+	cfg.CaseProfile.decorateTimingHeader(header)
+	t.emitLocked(header)
 	if t.err != nil {
 		_ = t.file.Close()
 		_ = t.root.Close()

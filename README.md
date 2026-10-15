@@ -525,13 +525,30 @@ bootstrap은 고정한 컴파일러를 `.compiler/`에 받아 `.gooo`를 빌드�
 `--out`에는 기존에 없는 디렉터리를 지정합니다.
 
 The verifier defaults to one suite at a time. `--workers 2` runs up to two
-suites concurrently; the accepted range is 1–4. Each suite keeps its original
-batch boundaries and execution, inspection, saved replay, and receipt-binding
+suites concurrently; the accepted range is 1–4. With the default `legacy` case
+profile, each suite keeps its original batch boundaries. All profiles retain
+execution, inspection, saved replay, and receipt-binding
 checks. The summary keeps corpus order and records the configured worker limit
 as `native_suite_workers`. A failing suite stops later suites between complete
 batches, and every started worker finishes before the private build cache is
 removed. Full native CI exercises two workers and retains every corpus and
 exhaustive check.
+
+`--case-profile uuid-compact-v1` selects compact JSON case files for UUID
+`Validate`, the importing format `Inspect`, and `ParseCanonical` only. It keeps
+every original input, expected result and source workspace; other suites retain
+their original writer and boundaries. The sized bytes, including one final LF,
+are the same file hashed and passed to execution and saved replay. Each batch
+has at most 128 rows and 30,000 bytes. This profile requires the pinned compiler
+and a checked source-derived bound on its rewritten activity keys; it refuses
+an unsupported bound rather than changing the partition or execution path.
+
+Full native CI selects this profile explicitly. The complete 66-suite partition
+calculation retains all 159,909 cases and changes 2,337 legacy batches to 2,109
+(UUID: 195/197/239 batches), with 2,243 timing records required on completion.
+The summary and timing header identify the selected profile. These partition
+counts do not establish native completion or a speedup; use the corresponding
+source's complete CI results. No case profile reuses a prior successful receipt.
 
 ### Bootstrap recovery
 
@@ -793,7 +810,9 @@ byte 3성분 입력을 Go 원본과 비교합니다. 총 **33,554,432번**의 �
 생성 소스 해시·도구체인·결과를 기록합니다. 소비 앱의 모든 RGB 왕복을 실행하거나
 이미지 압축·색상 프로파일을 검증한 것으로 해석하지 않습니다.
 
-Gooo 실행 입력 상한에 맞춰 현재 catalog를 총 **1,777개 배치**로 나눕니다. 기존 833개 배치와
+다음 배치 수와 경계 보존 내역은 기본 `legacy` 프로필의 이전 포팅 단계를 설명합니다.
+CI에서 명시적으로 선택하는 `uuid-compact-v1`의 UUID 경계는 위 실행 안내처럼 별도로 계산합니다.
+이전 catalog는 Gooo 실행 입력 상한에 맞춰 총 **1,777개 배치**로 나눴습니다. 기존 833개 배치와
 그 경계를 유지하며 IndexByte 21개·Search 소비 앱 28개 배치를 추가합니다.
 IndexByte·Search와 UUID의 세 suite는 128행 이하에서 실제 JSON 30,000바이트 상한에 맞춰 최대 접두 배치를 선택합니다.
 UUID Validate 257개·Inspect 277개 배치를 추가하며 이전 882배치의 경계는 바뀌지 않습니다.
@@ -925,7 +944,9 @@ required-field record로 옮겼으며, 임의의 byte 문자열·더 긴 입력�
 계산합니다. 기존 **62개 suite·159,781건·2,332개 batch**의 factory, 원래 Gooo 소스,
 workspace와 batch 경계를 보존하고 네 suite를 뒤에 추가합니다. 실제 JSON+LF 배치 분할 검증에서
 Cut·CutPrefix·CutSuffix는 각 **1개**, Report는 **2개** 배치로 계산됐습니다. 필수 통합 범위는
-**66개 suite·159,909건·2,337개 배치**이며 계측 완료 기록 수는 **2,471개**입니다.
+기본 `legacy`에서는 **66개 suite·159,909건·2,337개 배치**이며 계측 완료 기록 수는 **2,471개**입니다.
+CI의 `uuid-compact-v1`에서는 같은 suite·입력·기대값을 **2,109개 배치**로 나누며,
+계측 완료 기록 수 **2,243개**와 새 프로필 식별자를 함께 검사합니다. Cut 네 suite의 경계는 그대로입니다.
 이 분할 검사는 새 public entry의 전체 native 실행·저장 replay 완료를 대신하지 않습니다.
 완료된 실행과 유한 검증 범위는 해당 소스의 CI/native 보고서에서 확인합니다.
 기존 브라우저 프로그램과 검증 범위는 확장하지 않습니다.
