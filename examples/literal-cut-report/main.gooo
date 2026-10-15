@@ -1,0 +1,23 @@
+// Importing example: all three split decisions are computed by Gooo.
+// The host transports typed Text and independently checks the complete result.
+package literal_cut_report
+namespace gooo_ports_examples_literal_cut
+import strings "go/strings"
+entity Text id "gooo://std/text"
+entity LiteralCutReport id "gooo://go-ports/examples/literal-cut-report/result" fields {
+    field text id "gooo://go-ports/examples/literal-cut-report/result/text" type string required one
+    field needle id "gooo://go-ports/examples/literal-cut-report/result/needle" type string required one
+    field cut_before id "gooo://go-ports/examples/literal-cut-report/result/cut-before" type string required one
+    field cut_after id "gooo://go-ports/examples/literal-cut-report/result/cut-after" type string required one
+    field cut_found id "gooo://go-ports/examples/literal-cut-report/result/cut-found" type boolean required one
+    field prefix_after id "gooo://go-ports/examples/literal-cut-report/result/prefix-after" type string required one
+    field prefix_found id "gooo://go-ports/examples/literal-cut-report/result/prefix-found" type boolean required one
+    field suffix_before id "gooo://go-ports/examples/literal-cut-report/result/suffix-before" type string required one
+    field suffix_found id "gooo://go-ports/examples/literal-cut-report/result/suffix-found" type boolean required one
+    field text_byte_length id "gooo://go-ports/examples/literal-cut-report/result/text-byte-length" type integer required one
+    field needle_byte_length id "gooo://go-ports/examples/literal-cut-report/result/needle-byte-length" type integer required one
+}
+activity Report(Text, Text) -> LiteralCutReport id "gooo://go-ports/examples/literal-cut-report/report" computes `let cut = strings.Cut(input0, input1)
+let prefix = strings.CutPrefix(input0, input1)
+let suffix = strings.CutSuffix(input0, input1)
+return LiteralCutReport{text: input0, needle: input1, cut_before: cut.before, cut_after: cut.after, cut_found: cut.found, prefix_after: prefix.text, prefix_found: prefix.found, suffix_before: suffix.text, suffix_found: suffix.found, text_byte_length: int64(len(input0)), needle_byte_length: int64(len(input1))}`

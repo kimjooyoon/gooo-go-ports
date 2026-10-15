@@ -245,6 +245,28 @@
         "Count"
       ],
       "api_mapping": "Each Go string maps to decoded valid UTF-8 Text <=1024 bytes. Index preserves first literal byte offset or -1, including empty needle returning 0. Count preserves non-overlapping matches and empty needle returning Unicode code-point count plus 1. A guarded literal-bound scan uses Text slices/equality; a separate next-match threshold prevents overlap without reassigning the loop counter. No arbitrary-byte Go strings, normalization, regex, whole strings package or performance claim. Index and Count share the bounded literal-text corpus and feed the importing Report consumer. Source-derived coverage specifies the required finite checks; completed execution evidence must identify its exact source and compiler pins."
+    },
+    {
+      "source": "src/strings/strings.go",
+      "supporting_sources": [
+        "src/internal/stringslite/strings.go"
+      ],
+      "target": "ports/strings/cut.gooo",
+      "supporting_targets": [
+        "ports/strings/search.gooo",
+        "ports/strings/literal.gooo"
+      ],
+      "symbols": [
+        "Cut",
+        "CutPrefix",
+        "CutSuffix"
+      ],
+      "target_activities": [
+        "Cut",
+        "CutPrefix",
+        "CutSuffix"
+      ],
+      "api_mapping": "Each Go string maps to explicitly present decoded valid UTF-8 Text <=1024 bytes. Cut preserves the first literal separator split; no match returns the original text, empty after and false. CutPrefix/CutSuffix remove the literal affix only at that edge; no match returns unchanged text/false. Empty separators and affixes succeed. Go multiple returns become required records: Cut {before,after,found}, affixes {text,found}. The importing Report preserves both original inputs, all three decisions and byte lengths (eleven fields). No normalization, trimming, arbitrary invalid-UTF8 strings, longer inputs, generic ABI or whole-package compatibility. Malformed JSON wire spelling is not byte-preserved by the core Text decoder. The native32 pilot was executed under compiler839 before public integration; the new catalog entry requires its own fresh full native and saved-replay acceptance."
     }
   ],
   "external_sources": [

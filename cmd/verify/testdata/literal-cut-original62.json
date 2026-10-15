@@ -1,0 +1,344 @@
+{
+  "schema": "gooo/literal-cut-original62-source-freeze/v1",
+  "source_commit": "dfd6580938a6b9f07cd3429e53837c9ad61bde59",
+  "catalog_sha256": "5cfff07a2f208a5bde1fcc4c573edd7cb2fb6e89d65b3c12f2db0645847c1614",
+  "catalog": {
+    "schema": "gooo/go-ports-verification-catalog/v1",
+    "packages": [
+      {
+        "path": "go/net/http",
+        "sources": [
+          "ports/net/http.gooo"
+        ]
+      },
+      {
+        "path": "go/unicode/utf8",
+        "sources": [
+          "ports/unicode/utf8.gooo"
+        ]
+      },
+      {
+        "path": "go/unicode/utf16",
+        "sources": [
+          "ports/unicode/utf16.gooo"
+        ]
+      },
+      {
+        "path": "go/unicode",
+        "sources": [
+          "ports/unicode/space.gooo",
+          "ports/unicode/classification.gooo",
+          "ports/unicode/simple_fold.gooo",
+          "ports/unicode/case_mapping.gooo"
+        ]
+      },
+      {
+        "path": "go/math/bits",
+        "sources": [
+          "ports/math/bits.gooo"
+        ]
+      },
+      {
+        "path": "go/image/color",
+        "sources": [
+          "ports/image/color.gooo",
+          "ports/image/ycbcr.gooo",
+          "ports/image/nrgba.gooo"
+        ]
+      },
+      {
+        "path": "go/image",
+        "sources": [
+          "ports/image/geometry.gooo",
+          "ports/image/canon.gooo"
+        ]
+      },
+      {
+        "path": "go/time",
+        "sources": [
+          "ports/time/duration.gooo"
+        ]
+      },
+      {
+        "path": "app/response",
+        "sources": [
+          "examples/response.gooo"
+        ]
+      },
+      {
+        "path": "app/byte-summary",
+        "sources": [
+          "examples/byte-summary/main.gooo"
+        ]
+      },
+      {
+        "path": "app/byte-rotation",
+        "sources": [
+          "examples/byte-rotation/main.gooo"
+        ]
+      },
+      {
+        "path": "app/unicode-inspector",
+        "sources": [
+          "examples/unicode-inspector/main.gooo"
+        ]
+      },
+      {
+        "path": "app/color-inspector",
+        "sources": [
+          "examples/color-inspector/main.gooo"
+        ]
+      },
+      {
+        "path": "app/duration-quantizer",
+        "sources": [
+          "examples/duration-quantizer/main.gooo"
+        ]
+      },
+      {
+        "path": "app/whitespace-inspector",
+        "sources": [
+          "examples/whitespace-inspector/main.gooo"
+        ]
+      },
+      {
+        "path": "app/identifier-rune",
+        "sources": [
+          "examples/identifier-rune/main.gooo"
+        ]
+      },
+      {
+        "path": "example/crop-planner",
+        "sources": [
+          "examples/crop-planner/crop_planner.gooo",
+          "examples/crop-planner/drag_crop.gooo"
+        ]
+      },
+      {
+        "path": "example/fits-crop",
+        "sources": [
+          "examples/fits-crop/main.gooo"
+        ]
+      },
+      {
+        "path": "app/simple-fold",
+        "sources": [
+          "examples/simple-fold/main.gooo"
+        ]
+      },
+      {
+        "path": "app/ycbcr-inspector",
+        "sources": [
+          "examples/ycbcr-inspector/main.gooo"
+        ]
+      },
+      {
+        "path": "go/golang.org/x/image/math/fixed",
+        "sources": [
+          "ports/image/fixed.gooo"
+        ]
+      },
+      {
+        "path": "example/fixed-pixel-bounds",
+        "sources": [
+          "examples/fixed-pixel-bounds/main.gooo"
+        ]
+      },
+      {
+        "path": "app/alpha-matte",
+        "sources": [
+          "examples/alpha-matte/main.gooo"
+        ]
+      },
+      {
+        "path": "app/case-inspector",
+        "sources": [
+          "examples/case-inspector/main.gooo"
+        ]
+      },
+      {
+        "path": "go/strings",
+        "sources": [
+          "ports/strings/search.gooo",
+          "ports/strings/literal.gooo"
+        ]
+      },
+      {
+        "path": "app/string-byte-search",
+        "sources": [
+          "examples/string-byte-search/main.gooo"
+        ]
+      },
+      {
+        "path": "go/github.com/google/uuid/internal/quote",
+        "sources": [
+          "ports/google/uuid/quote.gooo"
+        ]
+      },
+      {
+        "path": "go/github.com/google/uuid",
+        "sources": [
+          "ports/google/uuid/validate.gooo"
+        ]
+      },
+      {
+        "path": "app/uuid-format-inspector",
+        "sources": [
+          "examples/uuid-format-inspector/main.gooo"
+        ]
+      },
+      {
+        "path": "go/github.com/google/uuid/text",
+        "sources": [
+          "ports/google/uuid/text/parse_canonical.gooo"
+        ]
+      },
+      {
+        "path": "app/literal-text-report",
+        "sources": [
+          "examples/literal-text-report/main.gooo"
+        ]
+      },
+      {
+        "path": "go/cel.dev/cel-go/codelab",
+        "sources": [
+          "ports/cel/scalar_access.gooo"
+        ]
+      },
+      {
+        "path": "app/cel-api-policy",
+        "sources": [
+          "examples/cel-api-policy/main.gooo"
+        ]
+      },
+      {
+        "path": "go/google/agentmesh/api",
+        "sources": [
+          "ports/agentmesh/service_pattern.gooo"
+        ]
+      },
+      {
+        "path": "app/service-grant-impact",
+        "sources": [
+          "examples/agentmesh-service-policy/impact.gooo"
+        ]
+      },
+      {
+        "path": "app/service-grant-refinement",
+        "sources": [
+          "examples/agentmesh-service-policy/refinement.gooo"
+        ]
+      },
+      {
+        "path": "gooo/service-domain",
+        "sources": [
+          "examples/agentmesh-service-policy/domain.gooo"
+        ]
+      },
+      {
+        "path": "gooo/service-policy/checked-matcher",
+        "sources": [
+          "examples/agentmesh-service-policy/checked_matcher.gooo"
+        ]
+      },
+      {
+        "path": "gooo/service-policy/checked-impact",
+        "sources": [
+          "examples/agentmesh-service-policy/checked_impact.gooo"
+        ]
+      },
+      {
+        "path": "gooo/service-policy/checked-refinement",
+        "sources": [
+          "examples/agentmesh-service-policy/checked_refinement.gooo"
+        ]
+      },
+      {
+        "path": "gooo/service-policy/conditional-apply",
+        "sources": [
+          "examples/agentmesh-service-policy/conditional_apply.gooo"
+        ]
+      }
+    ]
+  },
+  "source_sha256": {
+    "ports/net/http.gooo": "6245657e704a1fe249a45c8cb6040da54c5507188938db3c1bbded24a55592b2",
+    "ports/unicode/utf8.gooo": "def90e079bc265bfd6da7982115a07343e7e7726dee694a4332c44189f3004a2",
+    "ports/unicode/utf16.gooo": "885bc4b92c7a820c91429b4ddefe959ef06118092abff488e2700a43c2641e1b",
+    "ports/unicode/space.gooo": "0b1a2481378c12bc3d5d15be266f85d86f42bc6a370eea1fe1f6b4219d797ca2",
+    "ports/unicode/classification.gooo": "cf7451143fe7c3349b5cf2a3cfcfe7144bf8633f25782025c7120a672c179c46",
+    "ports/unicode/simple_fold.gooo": "3a5d3098a3abf68d69b2d3d028687f991107fc35512d54968dcaee60fa8c0433",
+    "ports/unicode/case_mapping.gooo": "e22f7d025e90de36849aa2bae94f61dd93766c6056b9d3f4c07ae0af1e88ec2f",
+    "ports/math/bits.gooo": "33c1806376c6c0fd4eda86ce62f24994f42c4f5cc98243ce5e4af9a611a7010b",
+    "ports/image/color.gooo": "4357789636044b9d451274f9b14a3ed322a251fea333e1c96644cd052fbd9b43",
+    "ports/image/ycbcr.gooo": "7e686c58549bbd4df3de8ecf6396c8c55795521778869956b48a667e4a949e42",
+    "ports/image/nrgba.gooo": "993fe0df4dce799d41f3c0521a95e2157090d4ace0a780948ed75c897835900f",
+    "ports/image/geometry.gooo": "b9a6fb784f5a8451099c2e4b64e2e9515e20b1603bcaccab3d707bcbb8ea48cc",
+    "ports/image/canon.gooo": "d0bc946cb49298f491f49e61c593248a52eccf2baeaf59140a7f544dc5a64916",
+    "ports/time/duration.gooo": "8351497e42ab00036fe8f78fc94caab3d5b5dc75a98cc37d85bff6b817c23ac8",
+    "examples/response.gooo": "c86eda08379d1cdbcd851c9399ebc13287ad04013f93f6a10175ddce0d827155",
+    "examples/byte-summary/main.gooo": "fd95823cec967d5fa9040efe31c9af396994288d8a5c555f715249a11fb94fbe",
+    "examples/byte-rotation/main.gooo": "c07d4a306866802db7925d4056a9f96cffc793ec13b8ae7453939819b0be2da5",
+    "examples/unicode-inspector/main.gooo": "5a0ada1d4ee5498bff2909bdb4f45323bf12290e309175b9bd55611ab180e7b6",
+    "examples/color-inspector/main.gooo": "34f0ff23c1bea0f5d270acd4ee198e1b55bea615de11d557f3426e220537d734",
+    "examples/duration-quantizer/main.gooo": "39b42738500f2c8fab1f2595689136e74e746f48bef9fe114abcd237e5f78da4",
+    "examples/whitespace-inspector/main.gooo": "9e2f5f075722b93e8462d5a2530fbd7eb8b78a2d067cee018494b344fc9877f2",
+    "examples/identifier-rune/main.gooo": "b2be1bfd5c6a3d9cfdba1b41e2b7244c839ec4d8d82a83cce5c349a0c5cce58b",
+    "examples/crop-planner/crop_planner.gooo": "57d835afa7d7cba3c7077a882770384b049aee04b85bf1bad554fe6ee7e7a338",
+    "examples/crop-planner/drag_crop.gooo": "37df1f582f26a2f5b37861dbe0da9a8b50296977a0c83da1a87d1ba7bd40fd61",
+    "examples/fits-crop/main.gooo": "091d6b888903bfb0e2b3c487153720b5203d49c05eca6f6981a33e91583563d4",
+    "examples/simple-fold/main.gooo": "f317755665b2f468d88102c98d9c5df9585f97029f5d3c2efa2eeb1d18014aa9",
+    "examples/ycbcr-inspector/main.gooo": "867ca091a1f030d86d892bbe17d5884b3890513fccc652f43fa797d3b9c61d2c",
+    "ports/image/fixed.gooo": "a1231ecaa0e752e8242b023dacf012ee8353392123ccb2fddc0d2d75ebb12044",
+    "examples/fixed-pixel-bounds/main.gooo": "553ffe29e8412b5d5de18fa9172a7021b6eaea3fc138a34d27a6799ebea4e07a",
+    "examples/alpha-matte/main.gooo": "dbb2e21422a3140fde76a89c4b9bb441853bdf94107be8de32acfd654e46293e",
+    "examples/case-inspector/main.gooo": "5b9e54a5a574ffd613a179fcac3bbdec638d379c8364d4bf11acd31dce0bc967",
+    "ports/strings/search.gooo": "39e0371cb71ee050dfc6d96c92bca2e5b61efc22927f70f3c15506e1599baf01",
+    "ports/strings/literal.gooo": "4aebcc74d3c2ad965be5881095cf3afc80bd7e0c85fbe0b5848900bd25e425b5",
+    "examples/string-byte-search/main.gooo": "20b86c1dc42c5d9a28aba97d49b9ff53e96e411b53581893460e60ba0ca86db7",
+    "ports/google/uuid/quote.gooo": "b9b0a9d642a91e2baba25b7636e875f6e5de9713bb7c4913368cd564cf34e339",
+    "ports/google/uuid/validate.gooo": "01c157a336f82a2d71c93bfe5abdb3b4fba98c021d3659429b14086745eca184",
+    "examples/uuid-format-inspector/main.gooo": "fb43b65b83393c0e15f64b17e21a28f11f280b4bf5c2b7f1bfdf738d83a5e8be",
+    "ports/google/uuid/text/parse_canonical.gooo": "2821bec26211d473b25722317aaa7756cc30f077d620cb99d1b9f4ea7e3d557a",
+    "examples/literal-text-report/main.gooo": "96d4c80d00b2627a2787c3fa7a9af68de91e8239cd456f10c6ff69dbeb87f77d",
+    "ports/cel/scalar_access.gooo": "86a237641bd7b4de2722a00e1dd89e9f28d17ea953663e9ef1e2a435959c2b83",
+    "examples/cel-api-policy/main.gooo": "72d5f8542c35bb610d094648befa98bbd4c215cbbaac138e18cbb88f58932f53",
+    "ports/agentmesh/service_pattern.gooo": "e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+    "examples/agentmesh-service-policy/impact.gooo": "e7e84b71beab8661298ed2d6fdd85e8d01586d3546b1c0a7f5f86bb0d155f647",
+    "examples/agentmesh-service-policy/refinement.gooo": "90bcc738c88eb5bec8b41b5306cccf274a5740560d7dd62b7f3a57b30b441ff0",
+    "examples/agentmesh-service-policy/domain.gooo": "b866ea5aa827e6122541faa54fd920c9ec1942a308bf72adb82fb244f1b3c33c",
+    "examples/agentmesh-service-policy/checked_matcher.gooo": "fc6d3ce08396f40e54a83f7635222fc53f9618cc0a05550a405c8c79341341f1",
+    "examples/agentmesh-service-policy/checked_impact.gooo": "c47c196e58bfc43f9a8d1e0faa11388b50f13012dc2190c105bef740b8ab5a02",
+    "examples/agentmesh-service-policy/checked_refinement.gooo": "6628f15bf8a260e48bc7b58e5d05699c48138b145a1e42c6e6f872efd6f81772",
+    "examples/agentmesh-service-policy/conditional_apply.gooo": "09b1d63aa9ad970989c0857bdf9dbe8b02bb0c096df9b1256face673bc0e5f51"
+  },
+  "factory_sha256": {
+    "cmd/verify/bits_corpus.go": "9bd5526b9c49a17e97e7455788a0ea3c8c25d06986494660638b5f6c4832c074",
+    "cmd/verify/canon_corpus.go": "5f477d7b51c4fe5ea2577ece982c006bdf0616ff3ecd8616328f5645fc649db5",
+    "cmd/verify/case_corpus.go": "b4eafa380b91e3fc1f3d36cf414b73d669d4bfa89d527bda85c2a0459bf7517b",
+    "cmd/verify/classification_corpus.go": "87e0c006518075e6f5574df3e7a231c7aac0e13ddfdcaa8d1367fb0472c5f045",
+    "cmd/verify/color_corpus.go": "c91b2e27d422eb7e3aeb764b938a5561088b31cf45b363edc216caa17694a0bb",
+    "cmd/verify/containment_corpus.go": "edae489adf04f3bf885c7f0730acc54a6c7b4419a70d7474b77794ded26952ec",
+    "cmd/verify/corpus.go": "99ab336d8ac4b7183a23669bfce95d8ab28922b9e5bbe1cf049653ebd9adeddc",
+    "cmd/verify/duration_corpus.go": "72ee925388a18d112204ff333aabeaeb5fc845dafec1a8533a648e4220b0d2be",
+    "cmd/verify/fixed_corpus.go": "0b7d75313d2fa703c03a48e1cd95098fe38f878108d2c0a62f10f41d53a1e97c",
+    "cmd/verify/geometry_corpus.go": "3525f2d9efdb003d703e3db36da70167b430fedc3933cb8ffc739682d60094f9",
+    "cmd/verify/literal_text_corpus.go": "4e3f10301be419b7b751ce4385d2956b59e7829734b7d2d6422c94b46fb618e5",
+    "cmd/verify/nrgba_corpus.go": "f618613d848673beb7d39e93b00f04bd4ac4678b71e1d944f87a5df63c369c30",
+    "cmd/verify/rotation_corpus.go": "28aa28975e5b87e49536324871e1948142fdc57d599336b4180e537ba96a77fd",
+    "cmd/verify/simple_fold_corpus.go": "469bb3d59cf87c1cb941abd5bca7c627f1c36c151481df251b2c5ed6e9fa2b43",
+    "cmd/verify/string_byte_corpus.go": "feb0b4ed47b7f3a950118e8dcd6ffee9468e580d27bcd6a249ad494c6e5878db",
+    "cmd/verify/unicode_corpus.go": "9af9f7f9ad39583351628feb25af69c3b4e6f2d004265a8b11fe9a973226dff8",
+    "cmd/verify/uuid_corpus.go": "e5876387f5a698bb123ad273f223633a88e184d90e615c62eaf42a3271279fa8",
+    "cmd/verify/uuid_parse_corpus.go": "78628b3534d6f34e982ddbd04382e70cff32c640be48161caf98abe456d24cf8",
+    "cmd/verify/whitespace_corpus.go": "a604cf714abf5a0d02810a30a04933be5a73d2801538d4d647390f8d490a2181",
+    "cmd/verify/ycbcr_corpus.go": "68845fc3bdf676f97ef3317263dc34715d51def9853b3f82b4cffc1f2d727b2e",
+    "cmd/verify/batch_sizes.go": "0943f3d8112a9a4f2494ab9b72acef793f739ab8512db8a81128dd0015d4f3c1"
+  },
+  "suites": 62,
+  "cases": 159781,
+  "batches": 2332,
+  "ported_functions": 42,
+  "consumer_programs": 18,
+  "consumer_activities": 20
+}

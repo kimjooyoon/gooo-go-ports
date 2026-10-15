@@ -95,6 +95,8 @@ jobs:
           ./.gooo check ports/strings/search.gooo
           ./.gooo check ports/strings/literal.gooo
           ./.gooo check examples/literal-text-report/main.gooo
+          ./.gooo check ports/strings/cut.gooo
+          ./.gooo check examples/literal-cut-report/main.gooo
           ./.gooo check ports/cel/scalar_access.gooo
           ./.gooo check examples/cel-api-policy/main.gooo
           ./.gooo check ports/agentmesh/service_pattern.gooo
@@ -112,13 +114,13 @@ jobs:
       - name: Compare the ports with Go and replay every batch
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
-          go run ./cmd/verify --workers 2 --out out/ci
+          go run ./cmd/verify --workers 2 --out out/ci --timing-out out/ci/timing.jsonl
           jq -e '
             .schema == "gooo/go-ports-differential/v1" and
             .native_suite_workers == 2 and
             .go_version == "go1.27.2" and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
-            .ported_functions == 42 and .consumer_programs == 18 and .consumer_activities == 20 and
+            .ported_functions == 45 and .consumer_programs == 19 and .consumer_activities == 21 and
             .uuid_port_reference_cases == 21745 and .uuid_consumer_reference_cases == 21745 and
             .uuid_parse_reference_cases == 21867 and .uuid_parse_legacy_reference_inputs == 21745 and
             .uuid_parse_anchor_inputs == 136 and .uuid_parse_added_reference_inputs == 122 and
@@ -163,6 +165,9 @@ jobs:
             .string_byte_consumer_reference_cases == 1536 and .string_byte_consumer_extension_cases == 16 and
             .literal_index_reference_cases == 9313 and .literal_count_reference_cases == 9313 and
             .literal_report_reference_cases == 9313 and
+            .literal_cut_reference_cases == 32 and .literal_cut_prefix_reference_cases == 32 and
+            .literal_cut_suffix_reference_cases == 32 and .literal_cut_report_reference_cases == 32 and
+            (.literal_cut_finite_provenance_scope | contains("Inner prior_result_sha256, full generation-report provenance and composition/runtime typed-plan equality are NOT_CHECKED")) and
             (.literal_finite_provenance_scope | contains("Inner prior_result_sha256, full generation-report provenance and composition/runtime typed-plan equality are NOT_CHECKED")) and
             (.case_mapping_exhaustive | keys) == ["To", "ToLower", "ToTitle", "ToUpper"] and
             all(.case_mapping_exhaustive | to_entries[];
@@ -171,9 +176,10 @@ jobs:
               .value.unicode_range_inputs == 1114112 and .value.mismatches == 0) and
             .case_mapping_exhaustive.To.unicode_range_comparisons == 3342336 and
             ([.case_mapping_exhaustive[].unicode_range_comparisons] | add) == 6684672 and
-            .cases == 159781 and .passed == 159781 and
-            (.runs | length) == 62 and
-            ([.runs[].cases] | add) == 159781 and ([.runs[].batches] | add) == 2332 and
+            .cases == 159909 and .passed == 159909 and
+            (.runs | length) == 66 and
+            ([.runs[].cases] | add) == 159909 and ([.runs[].batches] | add) == 2337 and
+            ([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2332 and
             ([.runs[:59][].cases] | add) == 131842 and ([.runs[:59][].batches] | add) == 1777 and
             ([.runs[:57][].cases] | add) == 130702 and ([.runs[:57][].batches] | add) == 1741 and
             ([.runs[:56][].cases] | add) == 108835 and ([.runs[:56][].batches] | add) == 1416 and
@@ -189,9 +195,55 @@ jobs:
             .runs[60].cases == 9313 and .runs[60].passed == 9313 and .runs[60].batches == 137 and
             .runs[61].package == "app/literal-text-report" and .runs[61].activity == "Report" and
             .runs[61].cases == 9313 and .runs[61].passed == 9313 and .runs[61].batches == 281 and
+            .runs[62].package == "go/strings" and .runs[62].activity == "Cut" and
+            .runs[62].cases == 32 and .runs[62].passed == 32 and .runs[62].batches == 1 and
+            .runs[63].package == "go/strings" and .runs[63].activity == "CutPrefix" and
+            .runs[63].cases == 32 and .runs[63].passed == 32 and .runs[63].batches == 1 and
+            .runs[64].package == "go/strings" and .runs[64].activity == "CutSuffix" and
+            .runs[64].cases == 32 and .runs[64].passed == 32 and .runs[64].batches == 1 and
+            .runs[65].package == "app/literal-cut-report" and .runs[65].activity == "Report" and
+            .runs[65].cases == 32 and .runs[65].passed == 32 and .runs[65].batches == 2 and
             ([.runs[:54][].cases] | add) == 65345 and ([.runs[:54][].batches] | add) == 882 and
             all(.runs[]; .passed == .cases and .replay_equal == true)
           ' out/ci/summary.json
+          tail -n 1 out/ci/timing.jsonl | jq -e '
+            .schema == "gooo/native-verification-timing/v1" and
+            .kind == "run_end" and
+            .status == "COMPLETE" and
+            .expected_suites == 66 and
+            .successful_suites == 66 and
+            .observed_batches == 2337 and
+            .verified_batches == 2337 and
+            .verified_cases == 159909 and
+            .event_count == 2471 and
+            .failed_suites == 0 and
+            .canceled_suites == 0 and
+            .not_started_suites == 0 and
+            .missing_suite_finishes == 0 and
+            .failed_batches == 0 and
+            .incomplete_batches == 0 and
+            .logger_errors == 0 and
+            .source_bindings_unchanged == true
+          '
+          jq -c -s '
+            .[0] as $header | .[-1] as $footer |
+            [.[] | select(.kind == "batch_end")] as $batches |
+            [.[] | select(.kind == "suite_end")] as $suites |
+            {
+              schema: "gooo/native-verification-timing-summary/v1",
+              header: $header,
+              footer: ($footer | del(.identity_after)),
+              row_count: length,
+              sequence_contiguous: (to_entries | all(.[]; .key == .value.seq)),
+              kind_counts: (group_by(.kind) | map({key: .[0].kind, value: length}) | from_entries),
+              verified_batch_count: ($batches | map(select(.status == "VERIFIED" and .verified == true)) | length),
+              phase_totals: ([$batches[].phases[] | select(.observed == true)] | group_by(.name) |
+                map({phase: .[0].name, observations: length, sum_observed_elapsed_ns: (map(.duration_ns) | add)})),
+              suite_costs: ($suites | sort_by(.suite_index) |
+                map({suite_index, package, activity, status, duration_ns, observed_batches, covered_cases})),
+              scope: "Monotonic observed elapsed intervals, including recorder overhead. Concurrent sums are not CPU time or speed forecasts. Batch selection and compiler build/run internals are not separately measured."
+            }
+          ' out/ci/timing.jsonl
       - name: Execute and replay the Unicode case inspector
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
@@ -597,13 +649,13 @@ jobs:
           python3 -B tools/check-literal-text-inputs.py out/literal-text-input-rejections
           jq -e '
             .schema == "gooo/literal-text-input-rejections/v1" and .status == "PASS" and
-            .planned_framework_inputs == 84 and .observed_framework_rejections == 84 and
+            .planned_framework_inputs == 196 and .observed_framework_rejections == 196 and
             .go_reference_cases == 0 and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
             .compiler_version == "0.6.32-dev" and .go_version == "go1.27.2" and
-            (.planned_by_entry | keys) == ["app/literal-text-report:Report", "go/strings:Count", "go/strings:Index"] and
+            (.planned_by_entry | keys) == ["app/literal-cut-report:Report", "app/literal-text-report:Report", "go/strings:Count", "go/strings:Cut", "go/strings:CutPrefix", "go/strings:CutSuffix", "go/strings:Index"] and
             .planned_by_entry == .observed_by_entry and all(.observed_by_entry[]; . == 28) and
-            (.cases | length) == 84 and (.failures | length) == 0 and
+            (.cases | length) == 196 and (.failures | length) == 0 and
             all(.cases[]; .rejection_verified == true and .exit_code == 1 and .timed_out == false and
               .verified_rejection_stage == .expected_rejection_stage and
               .result_present == false and .runtime_present == false and

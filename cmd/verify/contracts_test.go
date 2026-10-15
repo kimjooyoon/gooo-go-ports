@@ -97,7 +97,7 @@ func original59NativeSuites(t *testing.T) []suite {
 	return append(all, containment.Suites...)
 }
 
-func allNativeSuites(t *testing.T) []suite {
+func original62NativeSuites(t *testing.T) []suite {
 	t.Helper()
 	all := original59NativeSuites(t)
 	literal, err := literalTextCorpus()
@@ -107,6 +107,16 @@ func allNativeSuites(t *testing.T) []suite {
 	return append(all, literal.Suites...)
 }
 
+func allNativeSuites(t *testing.T) []suite {
+	t.Helper()
+	all := original62NativeSuites(t)
+	cut, err := literalCutCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return append(all, cut.Suites...)
+}
+
 func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 	contracts := nativeActivityContracts()
 	catalog, err := freezeVerificationCatalog("../../verification-catalog.json")
@@ -114,7 +124,7 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	suites := allNativeSuites(t)
-	if len(contracts) != 62 || len(suites) != 62 {
+	if len(contracts) != 66 || len(suites) != 66 {
 		t.Fatal("contract/suite roster changed")
 	}
 	seen := map[string]bool{}
@@ -145,8 +155,8 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		for i, input := range inputs {
 			if contract.InputEntities[i] == textEntity {
 				declarations := source
-				if contract.Source == "ports/strings/literal.gooo" && s.Package == literalTextPackage && (s.Activity == "Index" || s.Activity == "Count") {
-					// Only these trusted same-package activities share search.gooo.
+				if contract.Source == "ports/strings/literal.gooo" && s.Package == literalTextPackage && (s.Activity == "Index" || s.Activity == "Count") || contract.Source == "ports/strings/cut.gooo" && isLiteralCutSuite(s) {
+					// These trusted same-package search/split activities share search.gooo.
 					declarations = catalog.Sources["ports/strings/search.gooo"]
 				}
 				if strings.TrimSpace(input) != "Text" || !strings.Contains(string(declarations), `entity Text id "`+textEntity+`"`) {
@@ -248,6 +258,11 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	added += literal.IndexReferenceCases + literal.CountReferenceCases + literal.ReportReferenceCases
+	cut, err := literalCutCorpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	added += cut.CutReferenceCases + cut.CutPrefixReferenceCases + cut.CutSuffixReferenceCases + cut.ReportReferenceCases
 	if total != 24770+added {
 		t.Fatalf("corpus changed: %d", total)
 	}

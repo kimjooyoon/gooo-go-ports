@@ -101,7 +101,7 @@ func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, e
 		if pkg.Path == "go/cel.dev/cel-go/codelab" || pkg.Path == "go/google/agentmesh/api" {
 			continue
 		}
-		if isLiteralTextSuite(s) && pkg.Path != "go/strings" && pkg.Path != s.Package {
+		if (isLiteralTextSuite(s) || isLiteralCutSuite(s)) && pkg.Path != "go/strings" && pkg.Path != s.Package {
 			continue
 		}
 		isUUIDPackage := pkg.Path == uuidPackage || pkg.Path == uuidPackage+"/internal/quote" || pkg.Path == uuidParsePackage
@@ -116,7 +116,10 @@ func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, e
 		}
 		names := make([]string, 0, len(pkg.Sources))
 		for _, name := range pkg.Sources {
-			if name == "ports/strings/literal.gooo" && !isLiteralTextSuite(s) {
+			if name == "ports/strings/cut.gooo" && !isLiteralCutSuite(s) {
+				continue
+			}
+			if name == "ports/strings/literal.gooo" && !isLiteralTextSuite(s) && !isLiteralCutSuite(s) {
 				continue
 			}
 			names = append(names, name)
@@ -128,6 +131,15 @@ func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, e
 			}
 			if !equalSourceNames(names, want) {
 				return w, fmt.Errorf("literal Text workspace has unexpected sources for %s", pkg.Path)
+			}
+		}
+		if isLiteralCutSuite(s) {
+			want := []string{"ports/strings/search.gooo", "ports/strings/literal.gooo", "ports/strings/cut.gooo"}
+			if pkg.Path == literalCutConsumerPackage {
+				want = []string{"examples/literal-cut-report/main.gooo"}
+			}
+			if !equalSourceNames(names, want) {
+				return w, fmt.Errorf("literal Cut workspace has unexpected sources for %s", pkg.Path)
 			}
 		}
 		selected[pkg.Path] = true

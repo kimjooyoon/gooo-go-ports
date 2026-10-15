@@ -233,15 +233,7 @@ func caseMappingSyntheticSource(operation, extra, fallback, invalidPrefix string
 }
 
 func TestCaseMappingNativeExhaustiveRunsUnchangedSource(t *testing.T) {
-	cache, err := newNativeBuildCache(t.TempDir())
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if err := cache.close(); err != nil {
-			t.Error(err)
-		}
-	})
+	cache := nativeCorrectnessCache(t)
 	// Host poisoning must not enter the isolated, stdlib-only verifier module.
 	t.Setenv("GOFLAGS", "-toolexec=/does-not-exist")
 	t.Setenv("GOTOOLCHAIN", "not-a-toolchain")
@@ -289,6 +281,7 @@ func TestCaseMappingNativeExhaustiveRunsUnchangedSource(t *testing.T) {
 }
 
 func TestCaseMappingNativeExhaustiveRejectsSemanticTampering(t *testing.T) {
+	cache := nativeCorrectnessCache(t)
 	for _, test := range []struct{ name, extra, fallback, prefix, message string }{
 		{"last title comparison", "if c==2 && x==1114111 { return 0 }", "x", "", "case=2 rune=1114111"},
 		{"narrowed extension", "", "int64(int32(x))", "", "int64 extension To case=0 rune=-9223372036854775808"},
@@ -300,7 +293,7 @@ func TestCaseMappingNativeExhaustiveRejectsSemanticTampering(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 			defer cancel()
 			dir := filepath.Join(t.TempDir(), "check")
-			_, err := checkCaseMappingExhaustive(ctx, dir, mustJSON(t, caseMappingFixture(source, "To")), contentDigest([]byte(source)), "To", nil)
+			_, err := checkCaseMappingExhaustive(ctx, dir, mustJSON(t, caseMappingFixture(source, "To")), contentDigest([]byte(source)), "To", cache)
 			if err == nil || !strings.Contains(err.Error(), test.message) {
 				t.Fatal("did not reject semantic tampering at expected comparison", err)
 			}

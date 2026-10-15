@@ -19,6 +19,10 @@ type activityContract struct {
 func nativeActivityContracts() map[string]activityContract {
 	i := integerEntity
 	return map[string]activityContract{
+		literalCutPackage + ":Cut":               {"ports/strings/cut.gooo", "gooo://go/strings/Cut", []string{textEntity, textEntity}},
+		literalCutPackage + ":CutPrefix":         {"ports/strings/cut.gooo", "gooo://go/strings/CutPrefix", []string{textEntity, textEntity}},
+		literalCutPackage + ":CutSuffix":         {"ports/strings/cut.gooo", "gooo://go/strings/CutSuffix", []string{textEntity, textEntity}},
+		literalCutConsumerPackage + ":Report":    {"examples/literal-cut-report/main.gooo", "gooo://go-ports/examples/literal-cut-report/report", []string{textEntity, textEntity}},
 		literalTextPackage + ":Index":            {"ports/strings/literal.gooo", "gooo://go/strings/Index", []string{textEntity, textEntity}},
 		literalTextPackage + ":Count":            {"ports/strings/literal.gooo", "gooo://go/strings/Count", []string{textEntity, textEntity}},
 		literalTextConsumerPackage + ":Report":   {"examples/literal-text-report/main.gooo", "gooo://go-ports/examples/literal-text-report/report", []string{textEntity, textEntity}},

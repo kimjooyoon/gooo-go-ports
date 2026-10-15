@@ -212,7 +212,7 @@ func TestSimpleFoldNativeExhaustiveRejectsLateMismatch(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	dir := filepath.Join(t.TempDir(), "check")
-	if _, err := checkSimpleFoldExhaustive(ctx, dir, mustJSON(t, simpleFoldFixture(text)), contentDigest([]byte(text)), nil); err == nil || !strings.Contains(err.Error(), "SimpleFold(1114111)") {
+	if _, err := checkSimpleFoldExhaustive(ctx, dir, mustJSON(t, simpleFoldFixture(text)), contentDigest([]byte(text)), nativeCorrectnessCache(t)); err == nil || !strings.Contains(err.Error(), "SimpleFold(1114111)") {
 		t.Fatal("did not reject final-range mismatch", err)
 	}
 	if _, err := os.Stat(filepath.Join(dir, "exhaustive.json")); !os.IsNotExist(err) {
@@ -225,7 +225,7 @@ func TestSimpleFoldNativeExhaustiveRejectsNarrowedExtension(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	dir := filepath.Join(t.TempDir(), "check")
-	if _, err := checkSimpleFoldExhaustive(ctx, dir, mustJSON(t, simpleFoldFixture(text)), contentDigest([]byte(text)), nil); err == nil || !strings.Contains(err.Error(), "int64 extension SimpleFold(-9223372036854775808)") {
+	if _, err := checkSimpleFoldExhaustive(ctx, dir, mustJSON(t, simpleFoldFixture(text)), contentDigest([]byte(text)), nativeCorrectnessCache(t)); err == nil || !strings.Contains(err.Error(), "int64 extension SimpleFold(-9223372036854775808)") {
 		t.Fatal("did not reject narrowed extension after all original rune checks", err)
 	}
 	if _, err := os.Stat(filepath.Join(dir, "exhaustive.json")); !os.IsNotExist(err) {
