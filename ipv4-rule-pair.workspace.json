@@ -1,0 +1,22 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "app/ipv4-rule-pair",
+    "activity": "Report"
+  },
+  "packages": [
+    {
+      "path": "go/net/netip",
+      "sources": [
+        "ports/net/netip/ipv4.gooo",
+        "ports/net/netip/prefix.gooo"
+      ]
+    },
+    {
+      "path": "app/ipv4-rule-pair",
+      "sources": [
+        "examples/ipv4-rule-pair/main.gooo"
+      ]
+    }
+  ]
+}

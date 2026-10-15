@@ -1,0 +1,364 @@
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"encoding/json"
+	"flag"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strconv"
+)
+
+type ruleInput struct {
+	A        int64 `json:"a"`
+	B        int64 `json:"b"`
+	C        int64 `json:"c"`
+	D        int64 `json:"d"`
+	Bits     int64 `json:"bits"`
+	Effect   int64 `json:"effect"`
+	Scope    int64 `json:"scope"`
+	Priority int64 `json:"priority"`
+}
+type input struct {
+	Left  ruleInput `json:"left"`
+	Right ruleInput `json:"right"`
+}
+type report struct {
+	Valid          bool  `json:"valid"`
+	Comparable     bool  `json:"comparable"`
+	Overlap        bool  `json:"overlap"`
+	OpposingEffect bool  `json:"opposing_effect"`
+	Conflict       bool  `json:"conflict"`
+	WitnessValid   bool  `json:"witness_valid"`
+	WitnessA       int64 `json:"witness_a"`
+	WitnessB       int64 `json:"witness_b"`
+	WitnessC       int64 `json:"witness_c"`
+	WitnessD       int64 `json:"witness_d"`
+	Reason         int64 `json:"reason"`
+}
+type corpusCase struct {
+	Name  string    `json:"name"`
+	Left  ruleInput `json:"left"`
+	Right ruleInput `json:"right"`
+}
+type corpusDocument struct {
+	Schema string       `json:"schema"`
+	Cases  []corpusCase `json:"cases"`
+}
+type row struct {
+	Index  int    `json:"index"`
+	Name   string `json:"name"`
+	Inputs input  `json:"inputs"`
+	Actual report `json:"actual"`
+}
+type boundary struct {
+	Schema          string    `json:"schema"`
+	SourceFreeze    fileRef   `json:"source_freeze"`
+	GeneratedSource fileRef   `json:"generated_source"`
+	Corpus          fileRef   `json:"corpus"`
+	Oracle          fileRef   `json:"oracle"`
+	ABI             fileRef   `json:"abi"`
+	GoTool          fileRef   `json:"go_tool"`
+	Binary          fileRef   `json:"binary"`
+	ModuleSources   []fileRef `json:"module_sources"`
+	ReportReceipts  []fileRef `json:"report_receipts"`
+	ReportChecked   []fileRef `json:"report_checked"`
+}
+
+// Stable field IDs determine these identifiers; no historical generated-source
+// digest is hardcoded. This directly reads all eleven fields from the actual
+// compiler-produced typed function compiled from the unchanged fresh source.
+func actualReport(v input) report {
+	convert := func(x ruleInput) GoooRecord76a41aeb7e187e40986ac62413a0000ad2ae74ea77490598e396b7d413fb9dee {
+		return GoooRecord76a41aeb7e187e40986ac62413a0000ad2ae74ea77490598e396b7d413fb9dee{GoooField4b37492aeeb1b34ccdd28f2b285894ead4aaec65590fa244de37ba897a20b62d: x.A, GoooField82b00bbac5b14d1b75687c7452d7fdc9a765c629f4cd7de89bb0fbc4034ed79b: x.B, GoooFieldca88fb654f636123890ae427ad928445b69ba30919bcc6a926d4a2907cf13990: x.C, GoooField52a019783ad8caf70aed326b8f3c62e705fb5f2733fc51bbd92530c2f9fe52a2: x.D, GoooField81ac49a52749116f10c545cd4353bd2b3bf99a4713353d584238ef8a7a4c1bcf: x.Bits, GoooFieldf74209009ec6a589e25682230e4e9ffbc7b083bba74735f46cb777b880c3e49f: x.Effect, GoooField53a2ed4c2124910c91f8260daaab5288600d2e995ee72ad9f1e11b5e24499939: x.Scope, GoooField7010a8ffe32ce12a5c1cdac2a05827d22384145a89f119df068b1b7b34ce038e: x.Priority}
+	}
+	r := GoooComposedActivity0(convert(v.Left), convert(v.Right))
+	return report{Valid: r.GoooField510946fba95297173407f0dcd1c23b4931fe568d8caa73ed3e041d81a6a30dab, Comparable: r.GoooField1fbdf2661d28fbe92340f887dbe04952ea3b374b67a32473e0b7c859951e116c, Overlap: r.GoooField3b862a0dd6e4a210ba58be0087b876c13c30f65d3bc7a7979671534837264499, OpposingEffect: r.GoooFielddf17c03ef1a07456bf90172a74b6ad97b88d8ae924247e24b0e102bd71f23858, Conflict: r.GoooFieldf6ee0a23f1a3cf1670a62a6a0a5a6acdb515cd05f66bc37bcd815e97aa4f7507, WitnessValid: r.GoooFieldece942d3d2a19c602de5661185c6a677077f4d3b3ba83195bd4b5991fdef110a, WitnessA: r.GoooField52b283363f8a8229973d9d7acafc6ecb5ee4578cb6a48c539aec042fbdf81f54, WitnessB: r.GoooField71a0b13a42277d4661bd5d14f9d4499d33f1011781dcdddd9ffdae53b71b0724, WitnessC: r.GoooField507468e5a9123e640a79fa47bcd73b7a071a64b36b96f6dc789cac25b5786cdb, WitnessD: r.GoooField1ea1ac3586ace06d03e95267fd9633337d8ac319cc3bd96b44cbb431e66ad064, Reason: r.GoooField7c7089f85e657a034fce75732a02a4821bae120ad5d56996138d599e2a5c31d1}
+}
+
+func checkBoundary(b boundary) error {
+	if b.Schema != "gooo/ipv4-rule-pair-generated-boundary/v1" || len(b.ModuleSources) != 5 || len(b.ReportReceipts) != 2 || len(b.ReportChecked) != 1 {
+		return fmt.Errorf("boundary shape")
+	}
+	refs := []fileRef{b.SourceFreeze, b.GeneratedSource, b.Corpus, b.Oracle, b.ABI, b.GoTool, b.Binary}
+	refs = append(refs, b.ModuleSources...)
+	refs = append(refs, b.ReportReceipts...)
+	refs = append(refs, b.ReportChecked...)
+	for _, ref := range refs {
+		if err := checkRef(ref, maxJSONBytes); err != nil {
+			return err
+		}
+	}
+	executable, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	if executable != b.Binary.Path || b.GoTool.Path != filepath.Join(runtime.GOROOT(), "bin", "go") || runtime.Version() != "go1.27.2" {
+		return fmt.Errorf("actual executable/toolchain binding")
+	}
+	names := []string{"go.mod", "main.go", "support.go", "harness_test.go", "generated.go"}
+	for i, ref := range b.ModuleSources {
+		if ref.Path != filepath.Join(filepath.Dir(b.GeneratedSource.Path), names[i]) {
+			return fmt.Errorf("module source roster")
+		}
+	}
+	if b.ModuleSources[4] != b.GeneratedSource {
+		return fmt.Errorf("compiled generated source differs")
+	}
+	source, err := readFile(b.GeneratedSource.Path, 1<<20)
+	if err != nil {
+		return err
+	}
+	if err := validatePairGenerated(source); err != nil {
+		return err
+	}
+	for _, ref := range b.ReportReceipts {
+		raw, err := readFile(ref.Path, maxJSONBytes)
+		if err != nil {
+			return err
+		}
+		value, err := decode(raw)
+		if err != nil {
+			return err
+		}
+		envelope, ok := value.(map[string]any)
+		if !ok {
+			return fmt.Errorf("report receipt object")
+		}
+		result, ok := envelope["result"].(map[string]any)
+		if !ok {
+			return fmt.Errorf("report receipt result")
+		}
+		composition, ok := result["composition"].(map[string]any)
+		if !ok {
+			return fmt.Errorf("report receipt composition")
+		}
+		generated, ok := composition["source"].(string)
+		if !ok || !bytes.Equal([]byte(generated), source) {
+			return fmt.Errorf("fresh Report generated bytes changed")
+		}
+	}
+	return nil
+}
+
+func readCorpus(ref fileRef) ([]corpusCase, error) {
+	if ref.Bytes != 49496 || ref.SHA256 != "8a7b9470c17f3244ef9bf4d9e6016b4b83d0f61b2bec0ca0a22801416d51d698" {
+		return nil, fmt.Errorf("frozen112 corpus identity")
+	}
+	raw, err := readFile(ref.Path, 128<<10)
+	if err != nil {
+		return nil, err
+	}
+	var doc corpusDocument
+	if err := exactDecode(raw, &doc); err != nil {
+		return nil, err
+	}
+	if doc.Schema != "gooo/ipv4-rule-pair-inputs/v1" || len(doc.Cases) != 112 {
+		return nil, fmt.Errorf("exact112 corpus required")
+	}
+	names := make(map[string]bool)
+	tuples := make(map[input]bool)
+	for _, c := range doc.Cases {
+		if c.Name == "" || names[c.Name] || tuples[input{c.Left, c.Right}] {
+			return nil, fmt.Errorf("corpus index/name/tuple uniqueness")
+		}
+		names[c.Name] = true
+		tuples[input{c.Left, c.Right}] = true
+	}
+	return doc.Cases, nil
+}
+
+func generateRows(cases []corpusCase, call func(input) report, emit func(row) error) ([]row, error) {
+	if len(cases) != 112 {
+		return nil, fmt.Errorf("exact112 invocation roster")
+	}
+	rows := make([]row, 0, len(cases))
+	for i, c := range cases {
+		v := input{c.Left, c.Right}
+		actual := call(v)
+		r := row{i, c.Name, v, actual}
+		if err := emit(r); err != nil {
+			return nil, err
+		}
+		rows = append(rows, r)
+	}
+	return rows, nil
+}
+
+func checkRowKeys(raw []byte) error {
+	v, err := decode(raw)
+	if err != nil {
+		return err
+	}
+	root, ok := v.(map[string]any)
+	if !ok || len(root) != 4 {
+		return fmt.Errorf("row key roster")
+	}
+	for _, key := range []string{"index", "name", "inputs", "actual"} {
+		if _, ok := root[key]; !ok {
+			return fmt.Errorf("row key missing")
+		}
+	}
+	integer := func(v any) bool {
+		n, ok := v.(json.Number)
+		if !ok {
+			return false
+		}
+		_, e := strconv.ParseInt(n.String(), 10, 64)
+		return e == nil
+	}
+	if !integer(root["index"]) {
+		return fmt.Errorf("row index kind")
+	}
+	if _, ok := root["name"].(string); !ok {
+		return fmt.Errorf("row name kind")
+	}
+	inputs, ok := root["inputs"].(map[string]any)
+	if !ok || len(inputs) != 2 {
+		return fmt.Errorf("row input roster")
+	}
+	for _, side := range []string{"left", "right"} {
+		r, ok := inputs[side].(map[string]any)
+		if !ok || len(r) != 8 {
+			return fmt.Errorf("row rule roster")
+		}
+		for _, f := range pairRuleNames {
+			if !integer(r[f]) {
+				return fmt.Errorf("row rule integer kind")
+			}
+		}
+	}
+	actual, ok := root["actual"].(map[string]any)
+	if !ok || len(actual) != 11 {
+		return fmt.Errorf("row fact roster")
+	}
+	for i, f := range pairNames {
+		if i < 6 {
+			if _, ok := actual[f].(bool); !ok {
+				return fmt.Errorf("row fact boolean kind")
+			}
+		} else if !integer(actual[f]) {
+			return fmt.Errorf("row fact integer kind")
+		}
+	}
+	return nil
+}
+
+func readback(raw []byte, expected []row) error {
+	if len(raw) == 0 || len(raw) > 2<<20 || raw[len(raw)-1] != '\n' {
+		return fmt.Errorf("row size/final LF")
+	}
+	scan := bufio.NewScanner(bytes.NewReader(raw))
+	scan.Buffer(make([]byte, 4096), 16<<10)
+	n := 0
+	for scan.Scan() {
+		if n >= len(expected) {
+			return fmt.Errorf("extra row")
+		}
+		line := scan.Bytes()
+		if err := checkRowKeys(line); err != nil {
+			return err
+		}
+		var actual row
+		if err := exactDecode(line, &actual); err != nil {
+			return err
+		}
+		if actual != expected[n] {
+			return fmt.Errorf("readback typed row/order differs at%d", n)
+		}
+		n++
+	}
+	if err := scan.Err(); err != nil {
+		return err
+	}
+	if n != 112 || n != len(expected) {
+		return fmt.Errorf("readback row count")
+	}
+	return nil
+}
+
+func runHarness(args []string) error {
+	fs := flag.NewFlagSet("ipv4-generated112", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	bound := fs.String("boundary", "", "current source/receipt/tool boundary")
+	rowsPath := fs.String("rows", "", "new retained JSONL")
+	summaryPath := fs.String("summary", "", "new retained summary")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *bound == "" || *rowsPath == "" || *summaryPath == "" || fs.NArg() != 0 {
+		return fmt.Errorf("require boundary,rows,summary")
+	}
+	raw, err := readFile(*bound, 1<<20)
+	if err != nil {
+		return err
+	}
+	var b boundary
+	if err := exactDecode(raw, &b); err != nil {
+		return err
+	}
+	if err := checkBoundary(b); err != nil {
+		return err
+	}
+	cases, err := readCorpus(b.Corpus)
+	if err != nil {
+		return err
+	}
+	output, err := os.OpenFile(*rowsPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if err != nil {
+		return err
+	}
+	encoder := json.NewEncoder(output)
+	expected, produceErr := generateRows(cases, actualReport, func(r row) error { return encoder.Encode(r) })
+	closeErr := output.Close()
+	if produceErr != nil {
+		return produceErr
+	}
+	if closeErr != nil {
+		return closeErr
+	}
+	stored, err := readFile(*rowsPath, 2<<20)
+	if err != nil {
+		return err
+	}
+	if err := readback(stored, expected); err != nil {
+		return err
+	}
+	if err := checkBoundary(b); err != nil {
+		return err
+	}
+	rowsRef, err := currentRef(*rowsPath, 2<<20)
+	if err != nil {
+		return err
+	}
+	boundRef, err := currentRef(*bound, 1<<20)
+	if err != nil {
+		return err
+	}
+	summary := map[string]any{"schema": "gooo/ipv4-rule-pair-generated112/v1", "status": "ACTUAL_FUNCTION_ROWS_WRITTEN_AND_READ_BACK", "generated_Report_calls": len(expected), "readback_rows": len(expected), "rows": rowsRef, "boundary": boundRef, "extra_CLI_outputs": 0, "extra_saved_replay_outputs": 0, "oracle_comparison": "PARENT_INDEPENDENT_TYPED_COMPARISON_REQUIRED"}
+	encoded, err := json.MarshalIndent(summary, "", "  ")
+	if err != nil {
+		return err
+	}
+	encoded = append(encoded, '\n')
+	out, err := os.OpenFile(*summaryPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if err != nil {
+		return err
+	}
+	if _, err := out.Write(encoded); err != nil {
+		out.Close()
+		return err
+	}
+	return out.Close()
+}
+
+func main() {
+	if err := runHarness(os.Args[1:]); err != nil {
+		fmt.Fprintln(os.Stderr, "IPV4_PAIR_GENERATED_REFUSED:", err)
+		os.Exit(1)
+	}
+}

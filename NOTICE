@@ -49,3 +49,10 @@ source reference third_party/go/netip.go.txt, immutable Go revision and SHA256
 are recorded in upstream.json. IPv4Valid and the importing eleven-field Address
 Facts Report are original repository code under LICENSE. They classify supplied
 facts and preserve invalid original integers; they do not grant network access.
+
+The IPv4 Prefix.Contains/Overlaps adaptation in ports/net/netip/prefix.gooo
+retains Copyright 2020 The Go Authors and Go BSD terms, using the same immutable
+netip.go source reference and hash recorded in upstream.json. Its required IPv4
+records, domain/divisor lowering and the importing prefix-query and rule-pair
+compositions are repository code under LICENSE. Scope keys and prefix facts do
+not establish actual caller context, network permission or production safety.

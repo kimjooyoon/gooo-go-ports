@@ -1,0 +1,13 @@
+// Copyright 2026 Gooo Go Ports contributors.
+// BSD-3-Clause: see LICENSE. Original importing IPv4 prefix query example.
+// Delegates only to Gooo bodies; Go owns the independent reference calculation.
+// No policy conflict, authorization or actual network I/O is implemented.
+package ipv4_prefix_probe
+namespace gooo_original_ipv4_prefix_probe
+import netip "go/net/netip"
+
+// Imported record/Boolean type names follow the existing crop-planner pattern.
+// No duplicate entity declarations hide a possible import/type resolution gap.
+activity Contains(IPv4Prefix, IPv4Address) -> Boolean id "gooo://ipv4-prefix-probe/contains/v1" computes `return netip.PrefixContains(input0, input1)`
+
+activity Overlaps(IPv4Prefix, IPv4Prefix) -> Boolean id "gooo://ipv4-prefix-probe/overlaps/v1" computes `return netip.PrefixOverlaps(input0, input1)`

@@ -27,7 +27,7 @@ def write(path, value):
 class RunnerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        M.bind_modules(HERE.parent,HERE/'check-path-facts.py')
+        M.bind_modules(HERE.parent,HERE/'check-path-facts.py',True)
 
     def setUp(self):
         self.launch = mock.patch.object(subprocess,'Popen',side_effect=AssertionError('Producer launch forbidden in pure controls'))
@@ -96,6 +96,36 @@ class RunnerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'input order'):M.check_generated_rows(path,oracle)
             put(rows,False)
             with self.assertRaisesRegex(ValueError,'final LF'):M.check_generated_rows(path,oracle)
+
+    def test_optional_pair_counts_stage_suffix_and_typed_rows(self):
+        self.assertEqual(M.stage_names(True)[:54],M.stage_names())
+        self.assertEqual(len(M.stage_names(True)),68)
+        self.assertEqual(len(set(M.stage_names(True))),68)
+        summary={'schema':'gooo/ipv4-public-sidecar/v2','status':'IPV4_PREFIX_RULE_PAIR_CURRENT_NATIVE_REPLAY_GENERATED_PASS',
+                 'compiler_revision':M.REV,'go_version':M.GO_VERSION,**M.COUNTS,'top_level_stages':68,
+                 'include_prefix_rule_pair':True,'prefix_rule_pair':dict(M.PAIR_COUNTS)}
+        M.check_counts(summary)
+        for k in M.PAIR_COUNTS:
+            for bad in (True,float(summary['prefix_rule_pair'][k]),summary['prefix_rule_pair'][k]+1):
+                changed={**summary,'prefix_rule_pair':{**summary['prefix_rule_pair'],k:bad}}
+                with self.assertRaisesRegex(ValueError,'Pair count'):M.check_counts(changed)
+        rows=[];oracle=[]
+        for i in range(112):
+            inputs={s:{f:(i if f=='priority' else 0) for f in M.Q.RULE_FIELDS} for s in ('left','right')}
+            actual={f:(False if j<6 else 0) for j,f in enumerate(M.Q.FACTS)}
+            oracle.append({'index':i,'name':str(i),'inputs':inputs,'expected':actual})
+            rows.append({'index':i,'name':str(i),'inputs':inputs,'actual':actual})
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp).resolve()/'rows.jsonl'
+            def put(v):path.write_bytes(('\n'.join(json.dumps(r) for r in v)+'\n').encode())
+            put(rows);M.check_pair_rows(path,oracle)
+            for f in M.Q.FACTS:
+                changed=json.loads(json.dumps(rows));changed[0]['actual'][f]=None;put(changed)
+                with self.assertRaisesRegex(ValueError,'fact kinds'):M.check_pair_rows(path,oracle)
+            put(rows[:-1])
+            with self.assertRaisesRegex(ValueError,'count/LF'):M.check_pair_rows(path,oracle)
+            changed=list(rows);changed[0],changed[1]=changed[1],changed[0];put(changed)
+            with self.assertRaisesRegex(ValueError,'input/order'):M.check_pair_rows(path,oracle)
 
     def test_regular_refs_refuse_byte_changes_symlinks_and_coercion(self):
         with tempfile.TemporaryDirectory() as tmp:

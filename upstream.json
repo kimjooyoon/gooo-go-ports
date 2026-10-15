@@ -327,6 +327,33 @@
         "IsGlobalUnicast"
       ],
       "api_mapping": "IPv4-only Addr classification: the receiver becomes four ordered signed int64 Integer octets a,b,c,d. Every method validates all four original inputs in0..255 before classification or conversion. Invalid Integer domains return false as an explicit Gooo extension; the original IPv4Valid helper exposes validity separately. IsPrivate preserves the three RFC1918 ranges; classification flags overlap and private addresses can also be global unicast. No address-text parsing, IPv6/mapped addresses/zones, Prefix/AddrPort, sockets, reachability, destination permission, complete SSRF defense or whole-netip compatibility."
+    },
+    {
+      "source": "src/net/netip/netip.go",
+      "source_copy": "third_party/go/netip.go.txt",
+      "target": "ports/net/netip/prefix.gooo",
+      "supporting_targets": [
+        "ports/net/netip/ipv4.gooo"
+      ],
+      "symbols": [
+        "Prefix.Contains",
+        "Prefix.Overlaps"
+      ],
+      "target_activities": [
+        "PrefixContains",
+        "PrefixOverlaps"
+      ],
+      "target_sha256": "05eadddddfc8959c9b2e721967b8650734f1f52a4a0b0927a684f07758060261",
+      "license": "third_party/GO-LICENSE",
+      "api_mapping": "IPv4-only required Integer records: IPv4Address{a,b,c,d}, IPv4Prefix{a,b,c,d,bits}. Validate all original signed int64 octets0..255 and bits0..32 before arithmetic; invalid domains return false as an explicit Gooo extension. Prefix host bits are retained and ignored only for network comparison. /0 and /32 are supported; valid0.0.0.0 is distinct from Go zero-value Addr. No parsing, IPv6/mapped addresses/zones, Addr{} representation, network access, permission or whole-netip compatibility. Integer/Boolean declarations are shared with unchanged ipv4.gooo.",
+      "verification": {
+        "command": "tools/check-ipv4.py",
+        "option": "--include-prefix-rule-pair",
+        "status": "FRESH_NATIVE_REPLAY_AND_GENERATED_VALIDATION_REQUIRED",
+        "query_CLI_outputs": 36,
+        "query_saved_replay_outputs": 36,
+        "scope": "Two imported query entries with18 boundary inputs each; not all IPv4/prefix combinations."
+      }
     }
   ],
   "external_sources": [
@@ -487,6 +514,37 @@
         "public_CI_requires_fresh_execution": true
       },
       "scope": "Original eligibility/reason policy, not an upstream SDK port. Nine input facts are echoed in fifteen required fields. It supplies no network sender, ledger, host adapter, authority evidence or atomic claim. Existing66/159909/2109/7 catalog and196CLI/422actualNode-Wasm counts remain separate; no production safety or performance claim."
+    },
+    {
+      "id": "ipv4-rule-pair/v2",
+      "kind": "original equal-priority IPv4 rule-pair facts",
+      "source": "examples/ipv4-rule-pair/main.gooo",
+      "source_sha256": "f895b5bb458bfcd28fb4c46b2da529ee60bf81b0cff737634d259afa56c852c6",
+      "contract": "examples/ipv4-rule-pair/contract.json",
+      "contract_sha256": "864c62caa16e4b900cad4bc7579e35cd56473f618a9b8be9151109ed7d218891",
+      "workspace": "ipv4-rule-pair.workspace.json",
+      "entry": "app/ipv4-rule-pair:Report",
+      "license": "LICENSE",
+      "inputs": 2,
+      "input_integer_values": 16,
+      "required_output_fields": 11,
+      "input_corpus": "examples/ipv4-rule-pair/corpus-112.json",
+      "input_corpus_sha256": "8a7b9470c17f3244ef9bf4d9e6016b4b83d0f61b2bec0ca0a22801416d51d698",
+      "independent_reference": "cmd/ipv4-oracle --profile prefix-rule-pair",
+      "verification": {
+        "command": "tools/check-ipv4.py",
+        "option": "--include-prefix-rule-pair",
+        "status": "FRESH_NATIVE_REPLAY_AND_GENERATED_VALIDATION_REQUIRED",
+        "Report_CLI_outputs": 18,
+        "Report_saved_replay_outputs": 18,
+        "generated_Report_outputs": 112,
+        "generated_Report_typed_facts": 1232,
+        "generated_Report_original_input_values": 1792,
+        "generated_individual_CLI_outputs": 0,
+        "generated_individual_saved_replay_outputs": 0,
+        "public_CI_requires_fresh_execution": true
+      },
+      "scope": "Original11-field diagnostic decision over two supplied8-field Rules. Sixteen original integers are bound in receipt inputs, not repeated in output. Invalid and non-comparable are explicit; conflict requires equal positive scope/equal priority/overlap/opposite effects and returns a canonical network witness. Opaque scope does not verify context truth/freshness. No full ACL, actual authorization, host adapter, effects or production safety. Existing66/159909/2109/7 catalog,196CLI/422Node-Wasm observations and other sidecar counters remain separate."
     }
   ],
   "original_diagnostic_compositions": [
@@ -519,6 +577,26 @@
         "public_CI_requires_fresh_execution": true
       },
       "scope": "Four original signed int64 octets are echoed with validity and six overlapping classification flags. The CLI and generated-function layers are finite and separately counted. Invalid well-formed integers are valid extension inputs, distinct from malformed transport. Classification does not authorize a network effect or promise public reachability. Existing66/159909/2109/7catalog, path/redelivery sidecars and browser counters remain separate."
+    },
+    {
+      "id": "ipv4-prefix-probe/v1",
+      "kind": "original importing Gooo Boolean queries",
+      "source": "examples/ipv4-prefix-probe/main.gooo",
+      "source_sha256": "7bb6b2651436b8a425b2f0a7f775f962f5270cfeb958a8e760c08be21ef04d8f",
+      "workspaces": [
+        "prefix-contains.workspace.json",
+        "prefix-overlaps.workspace.json"
+      ],
+      "entries": [
+        "app/ipv4-prefix-probe:Contains",
+        "app/ipv4-prefix-probe:Overlaps"
+      ],
+      "license": "LICENSE",
+      "input_corpus": "examples/ipv4-prefix-probe/corpus-18.json",
+      "input_corpus_sha256": "573f6a836ceed5f28a7ed6eee92ea8dbfb00896b78e04711a6b291c2386c9e5c",
+      "independent_reference": "cmd/ipv4-oracle --profile prefix-rule-pair",
+      "verification_status": "FRESH_NATIVE_REPLAY_AND_GENERATED_VALIDATION_REQUIRED",
+      "scope": "Two required-record inputs return a Boolean through imported Gooo PrefixContains/PrefixOverlaps; neither a false query nor overlap establishes policy permission."
     }
   ]
 }

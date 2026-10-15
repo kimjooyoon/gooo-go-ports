@@ -1,12 +1,20 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"go/types"
 	"io"
 	"os"
 	"runtime"
+	"slices"
+	"strings"
+	"unicode/utf8"
 )
 
 // The unchanged public codec/profile are copied into this owned module before
@@ -15,12 +23,23 @@ func runBridge(args []string) error {
 	fs := flag.NewFlagSet("ipv4-digest-and-ABI", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	receipt := fs.String("receipt", "", "canonical original execute receipt")
+	record := fs.Bool("record-runtime", false, "closed compiler839 record/arithmetic result profile")
+	profile := fs.String("abi-profile", "classification", "fixed generated ABI profile")
 	generated := fs.String("check-generated", "", "canonical generated source to inspect before compile")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	if fs.NArg() != 0 || (*receipt == "") == (*generated == "") {
 		return fmt.Errorf("require exactly one --receipt or --check-generated")
+	}
+	if *profile != "classification" && *profile != "prefix-rule-pair" {
+		return fmt.Errorf("unknown ABI profile")
+	}
+	if *receipt != "" && *profile != "classification" {
+		return fmt.Errorf("receipt mode forbids ABI profile")
+	}
+	if *record && *generated != "" {
+		return fmt.Errorf("record-runtime requires receipt mode")
 	}
 	if runtime.Version() != "go1.27.2" {
 		return fmt.Errorf("pinned Go version required")
@@ -33,12 +52,19 @@ func runBridge(args []string) error {
 		if err != nil {
 			return err
 		}
-		if err := validateGenerated(raw); err != nil {
+		validate := validateGenerated
+		if *profile == "prefix-rule-pair" {
+			validate = validatePairGenerated
+		}
+		if err := validate(raw); err != nil {
 			return err
 		}
 		ref, err := currentRef(*generated, 1<<20)
 		if err != nil {
 			return err
+		}
+		if *profile == "prefix-rule-pair" {
+			return json.NewEncoder(os.Stdout).Encode(map[string]any{"schema": "gooo/ipv4-rule-pair-generated-ABI/v1", "generated_source": ref, "functions": 5, "records": 4, "record_fields": 28, "root_fields": 11, "input_ports": 2})
 		}
 		return json.NewEncoder(os.Stdout).Encode(map[string]any{"schema": "gooo/ipv4-generated-ABI/v1", "generated_source": ref, "functions": 8, "record_fields": 11, "input_ports": 4})
 	}
@@ -46,7 +72,16 @@ func runBridge(args []string) error {
 	if err != nil {
 		return err
 	}
-	typed, err := pinnedResultDigest(raw)
+	var typed string
+	if *record {
+		var encoded []byte
+		encoded, err = recordResultBytes(raw)
+		if err == nil {
+			typed = digest(encoded)
+		}
+	} else {
+		typed, err = pinnedResultDigest(raw)
+	}
 	if err != nil {
 		return err
 	}
@@ -57,7 +92,12 @@ func runBridge(args []string) error {
 	if ref.SHA256 != rawDigest(raw) {
 		return fmt.Errorf("receipt changed after digest")
 	}
-	return json.NewEncoder(os.Stdout).Encode(map[string]any{"schema": "gooo/ipv4-pinned-result-digest/v1", "receipt": ref, "typed_result_sha256": typed, "compiler_revision": compilerRevision})
+	result := map[string]any{"schema": "gooo/ipv4-pinned-result-digest/v1", "receipt": ref, "typed_result_sha256": typed, "compiler_revision": compilerRevision}
+	if *record {
+		result["runtime_profile"] = "gooo/ipv4-record-runtime-result/v1"
+		result["runtime_profile_sha256"] = digest([]byte(recordRuntimeProfileDescriptor))
+	}
+	return json.NewEncoder(os.Stdout).Encode(result)
 }
 
 func main() {
@@ -65,4 +105,250 @@ func main() {
 		fmt.Fprintln(os.Stderr, "IPV4_BRIDGE_REFUSED:", err)
 		os.Exit(1)
 	}
+}
+
+// Closed extension derived from immutable compiler839 structs. The original
+// embedded profile, codec implementation and raw-value path map are unchanged.
+const recordRuntimeProfileDescriptor = `{"schema":"gooo/ipv4-record-runtime-result/v1","compiler_revision":"83928fa4538245abe33b08549da47f8cbdc50ed2","base_profile_sha256":"9eafadab81a6c7fe33a4f59777e3776cc27f31c7962e472f3828e77867142d44","source_sha256":{"composition_runtime.go":"358cde39c368dbd386014adf3c7bd477fb4ff300306263b3ef2a8ef4e8be5b84","composition_fault.go":"f73d87494a749abe9695fab56d8c82d40fa16657088a0ef10a5ece4d6f240113","composition_records.go":"07b3550e07a81a856b136fb68411497810fbfebfbe9b6c0a4ffceaceae1f126f","composition_fault_projection.go":"3a872722d77ea3f57b90829ceeb7e90db19587b566447496499cf6abcd0d466f"},"runtime_after_driver":["observed_projection_sha256","observed_driver_sha256"],"runtime_after_finite_total":["fault_sites","outcomes"],"fault_site_fields":["expression_id","root_activity_id","activity_id","operator","expression","projection_sha256","start","end"],"outcome_fields":["matched","mismatched","faulted","blocked","unobserved"],"input_after_value":"fields","input_field_fields":["id","name","value"],"input_field_value":"canonical signed int64 Integer only"}`
+
+type recordFaultSite struct {
+	ExpressionID     string `json:"expression_id"`
+	RootActivityID   string `json:"root_activity_id"`
+	ActivityID       string `json:"activity_id"`
+	Operator         string `json:"operator"`
+	Expression       string `json:"expression"`
+	ProjectionSHA256 string `json:"projection_sha256"`
+	Start            int    `json:"start"`
+	End              int    `json:"end"`
+}
+type recordOutcomes struct {
+	Matched    int `json:"matched"`
+	Mismatched int `json:"mismatched"`
+	Faulted    int `json:"faulted"`
+	Blocked    int `json:"blocked"`
+	Unobserved int `json:"unobserved"`
+}
+
+// Only the newly selected record entries use this profile. Field presence,
+// order, primitive kinds and omitempty behavior still go through the original
+// strict codec. No generic map fallback or mutation of its globals is used.
+func recordResultBytes(receipt []byte) ([]byte, error) {
+	if len(receipt) == 0 || len(receipt) > 32<<20 || !utf8.Valid(receipt) {
+		return nil, fmt.Errorf("record receipt size/UTF8")
+	}
+	depth := json.NewDecoder(bytes.NewReader(receipt))
+	depth.UseNumber()
+	if err := pinnedJSONDepth(depth, 0); err != nil {
+		return nil, err
+	}
+	if _, err := decode(receipt); err != nil {
+		return nil, err
+	}
+	var envelope map[string]json.RawMessage
+	if err := json.Unmarshal(receipt, &envelope); err != nil {
+		return nil, err
+	}
+	if len(envelope) != 6 {
+		return nil, fmt.Errorf("record original envelope")
+	}
+	for _, key := range []string{"schema", "decision", "manifest", "manifest_digest", "inputs_digest", "result"} {
+		raw, ok := envelope[key]
+		if !ok {
+			return nil, fmt.Errorf("record envelope field")
+		}
+		if key != "result" {
+			var s string
+			if len(raw) == 0 || raw[0] != '"' || json.Unmarshal(raw, &s) != nil {
+				return nil, fmt.Errorf("record envelope scalar")
+			}
+		}
+	}
+	var profile resultProfile
+	if err := json.Unmarshal(resultProfileJSON, &profile); err != nil || profile.Compiler != compilerRevision {
+		return nil, fmt.Errorf("record base profile")
+	}
+	insert := func(path, after string, extra ...profileField) error {
+		shape, ok := profile.Nodes[path]
+		if !ok {
+			return fmt.Errorf("record base node")
+		}
+		for i, field := range shape.Fields {
+			if field.Name == after {
+				fields := append([]profileField{}, shape.Fields[:i+1]...)
+				fields = append(fields, extra...)
+				fields = append(fields, shape.Fields[i+1:]...)
+				shape.Fields = fields
+				profile.Nodes[path] = shape
+				return nil
+			}
+		}
+		return fmt.Errorf("record insertion anchor")
+	}
+	if err := insert("$.runtime", "driver_sha256", profileField{Name: "observed_projection_sha256", Optional: true, OmitZero: true}, profileField{Name: "observed_driver_sha256", Optional: true, OmitZero: true}); err != nil {
+		return nil, err
+	}
+	if err := insert("$.runtime", "finite_total", profileField{Name: "fault_sites", Optional: true, OmitZero: true}, profileField{Name: "outcomes", Optional: true}); err != nil {
+		return nil, err
+	}
+	if err := insert("$.runtime.traces.*.deliveries.*.inputs.*", "value", profileField{Name: "fields", Optional: true, OmitZero: true}); err != nil {
+		return nil, err
+	}
+	stringShape := profileShape{Kinds: []string{"string"}}
+	integerShape := profileShape{Kinds: []string{"integer"}}
+	profile.Nodes["$.runtime.observed_projection_sha256"] = stringShape
+	profile.Nodes["$.runtime.observed_driver_sha256"] = stringShape
+	profile.Nodes["$.runtime.fault_sites"] = profileShape{Kinds: []string{"array"}}
+	siteNames := []string{"expression_id", "root_activity_id", "activity_id", "operator", "expression", "projection_sha256", "start", "end"}
+	siteFields := []profileField{}
+	for i, name := range siteNames {
+		siteFields = append(siteFields, profileField{Name: name})
+		shape := stringShape
+		if i >= 6 {
+			shape = integerShape
+		}
+		profile.Nodes["$.runtime.fault_sites.*."+name] = shape
+	}
+	profile.Nodes["$.runtime.fault_sites.*"] = profileShape{Kinds: []string{"object"}, Fields: siteFields}
+	outcomeFields := []profileField{}
+	for _, name := range []string{"matched", "mismatched", "faulted", "blocked", "unobserved"} {
+		outcomeFields = append(outcomeFields, profileField{Name: name})
+		profile.Nodes["$.runtime.outcomes."+name] = integerShape
+	}
+	profile.Nodes["$.runtime.outcomes"] = profileShape{Kinds: []string{"object"}, Fields: outcomeFields}
+	path := "$.runtime.traces.*.deliveries.*.inputs.*.fields"
+	profile.Nodes[path] = profileShape{Kinds: []string{"array"}}
+	profile.Nodes[path+".*"] = profileShape{Kinds: []string{"object"}, Fields: []profileField{{Name: "id"}, {Name: "name"}, {Name: "value"}}}
+	profile.Nodes[path+".*.id"] = stringShape
+	profile.Nodes[path+".*.name"] = stringShape
+	profile.Nodes[path+".*.value"] = integerShape
+	raw := envelope["result"]
+	d := json.NewDecoder(bytes.NewReader(raw))
+	d.UseNumber()
+	normalized, err := normalizeResultValue(d, raw, "$", profile.Nodes, 0)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := d.Token(); err != io.EOF {
+		return nil, fmt.Errorf("record trailing result")
+	}
+	if err := checkRecordArithmetic(raw); err != nil {
+		return nil, err
+	}
+	return json.Marshal(json.RawMessage(normalized))
+}
+
+// Mirror only immutable839's fault-site collector, not any policy behavior.
+// The original generated Go bytes and source-declared call closure independently
+// determine every operation span and ExpressionID. Observation digests stay
+// producer-reported; both are required and saved replay must match them.
+func checkRecordArithmetic(raw []byte) error {
+	var value struct {
+		Composition struct {
+			Source          string `json:"source"`
+			GeneratedSHA256 string `json:"generated_sha256"`
+			Plan            struct {
+				Activities []struct {
+					ID string `json:"id"`
+				} `json:"activities"`
+			} `json:"plan"`
+			Steps []struct {
+				Generation struct {
+					Report struct {
+						CallClosure *struct {
+							Activities []struct {
+								ActivityID string `json:"activity_id"`
+							} `json:"activities"`
+						} `json:"call_closure"`
+					} `json:"report"`
+				} `json:"generation"`
+			} `json:"steps"`
+		} `json:"composition"`
+		Runtime struct {
+			ObservedProjection string            `json:"observed_projection_sha256"`
+			ObservedDriver     string            `json:"observed_driver_sha256"`
+			Sites              []recordFaultSite `json:"fault_sites"`
+			Outcomes           *recordOutcomes   `json:"outcomes"`
+		} `json:"runtime"`
+	}
+	if err := json.Unmarshal(raw, &value); err != nil {
+		return err
+	}
+	c, r := value.Composition, value.Runtime
+	validDigest := func(s string) bool {
+		if len(s) != 71 || !strings.HasPrefix(s, "sha256:") {
+			return false
+		}
+		for _, v := range s[7:] {
+			if !(v >= '0' && v <= '9' || v >= 'a' && v <= 'f') {
+				return false
+			}
+		}
+		return true
+	}
+	if len(c.Source) == 0 || len(c.Source) > 1<<20 || !utf8.ValidString(c.Source) {
+		return fmt.Errorf("record projection size/UTF8")
+	}
+	if !validDigest(r.ObservedProjection) || !validDigest(r.ObservedDriver) || r.Outcomes == nil || *r.Outcomes != (recordOutcomes{}) || len(r.Sites) < 1 || len(r.Sites) > 64 || len(c.Plan.Activities) != 1 || len(c.Steps) != 1 || c.Steps[0].Generation.Report.CallClosure == nil || digest([]byte(c.Source)) != c.GeneratedSHA256 {
+		return fmt.Errorf("record arithmetic provenance/outcomes")
+	}
+	names := map[string][2]string{}
+	root := c.Plan.Activities[0].ID
+	names["GoooComposedActivity0"] = [2]string{root, root}
+	for i, helper := range c.Steps[0].Generation.Report.CallClosure.Activities {
+		names[fmt.Sprint("GoooComposedActivity0Call", i)] = [2]string{root, helper.ActivityID}
+	}
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, "composition.go", c.Source, 0)
+	if err != nil {
+		return err
+	}
+	if len(file.Imports) != 0 {
+		return fmt.Errorf("record projection imports")
+	}
+	info := &types.Info{Types: map[ast.Expr]types.TypeAndValue{}}
+	if _, err := new(types.Config).Check("gooo.record.arithmetic", fset, []*ast.File{file}, info); err != nil {
+		return err
+	}
+	sites := []recordFaultSite{}
+	var bad error
+	for _, declaration := range file.Decls {
+		if fn, ok := declaration.(*ast.FuncDecl); ok {
+			ids := names[fn.Name.Name]
+			ast.Inspect(fn.Body, func(n ast.Node) bool {
+				e, ok := n.(*ast.BinaryExpr)
+				if !ok || e.Op != token.QUO && e.Op != token.REM {
+					return true
+				}
+				typed := info.Types[e]
+				if typed.Value != nil || typed.Type == nil || !types.Identical(typed.Type, types.Typ[types.Int64]) {
+					return true
+				}
+				if ids[0] == "" || ids[1] == "" {
+					bad = fmt.Errorf("record arithmetic activity identity")
+					return false
+				}
+				start, end := fset.Position(e.Pos()).Offset, fset.Position(e.End()).Offset
+				site := recordFaultSite{RootActivityID: ids[0], ActivityID: ids[1], Operator: e.Op.String(), Expression: c.Source[start:end], ProjectionSHA256: c.GeneratedSHA256, Start: start, End: end}
+				b, _ := json.Marshal(site)
+				site.ExpressionID = digest(b)
+				sites = append(sites, site)
+				return true
+			})
+		}
+	}
+	if bad != nil {
+		return bad
+	}
+	slices.SortFunc(sites, func(a, b recordFaultSite) int {
+		if a.Start == b.Start {
+			return b.End - a.End
+		}
+		return a.Start - b.Start
+	})
+	expected, _ := json.Marshal(sites)
+	actual, _ := json.Marshal(r.Sites)
+	if !bytes.Equal(expected, actual) {
+		return fmt.Errorf("record fault-site source bindings")
+	}
+	return nil
 }
