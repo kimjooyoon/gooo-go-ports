@@ -20,6 +20,7 @@ type nativeSuiteVerifier struct {
 	lock        upstream
 	cache       *nativeBuildCache
 	timing      *nativeTiming
+	caseProfile nativeCaseProfile
 	execute     func(context.Context, string, string, ...string) ([]byte, error)
 	simpleFold  func(context.Context, string, []byte, string, *nativeBuildCache) (simpleFoldExhaustiveReport, error)
 	ycbcr       func(context.Context, string, []byte, string, string, *nativeBuildCache) (ycbcrExhaustiveReport, error)
@@ -41,15 +42,19 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 		}
 	}()
 	r := observation{Package: s.Package, Activity: s.Activity, Domain: s.Domain, Cases: len(s.Cases), ReplayEqual: true}
-	batchSize := nativeBatchSize(s)
+	casePolicy, err := v.caseProfile.policy(s, selected, v.lock)
+	if err != nil {
+		return result, err
+	}
 	for start := 0; start < len(s.Cases); {
 		if err := ctx.Err(); err != nil {
 			return result, err
 		}
-		end, err := nativeBatchEnd(s, start, batchSize)
+		prepared, err := casePolicy.prepare(s, start)
 		if err != nil {
 			return result, err
 		}
+		end := prepared.End
 		pendingTiming = v.timing.beginBatch(s, r.Batches, start, end)
 		pendingTiming.phase("prepare")
 		batch := s
@@ -73,7 +78,7 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 		if err = save(workspace, selected.Manifest); err != nil {
 			return result, err
 		}
-		if err = save(cases, caseDocument(batch)); err != nil {
+		if err = writeNativeCaseBatch(cases, batch, prepared); err != nil {
 			return result, err
 		}
 		manifestSHA, err := digestFile(workspace)

@@ -114,12 +114,22 @@ jobs:
       - name: Compare the ports with Go and replay every batch
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
-          go run ./cmd/verify --workers 2 --out out/ci --timing-out out/ci/timing.jsonl
+          go run ./cmd/verify --workers 2 --case-profile uuid-compact-v1 --out out/ci --timing-out out/ci/timing.jsonl
           jq -e '
             .schema == "gooo/go-ports-differential/v1" and
             .native_suite_workers == 2 and
             .go_version == "go1.27.2" and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+            .case_profile == {
+              schema: "gooo/native-case-profile/v1", name: "uuid-compact-v1",
+              compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.2",
+              entries: ["go/github.com/google/uuid:Validate", "app/uuid-format-inspector:Inspect", "go/github.com/google/uuid/text:ParseCanonical"],
+              serializer: "Go1.27.2 json.Marshal(caseDocument(batch)) plus exactly one LF",
+              maximum_rows: 128, raw_bytes_including_LF: 30000,
+              translated_compact_engine_bytes: 32768, maximum_selected_source_bytes: 10485760,
+              lowering_guard: "Pinned839 source-derived nonexpansion upper bound; not measured translated bytes or an actual LoweredName.",
+              scope: "Only UUID3 wire bytes/partitions change; original ordered cases, independent expected values, exact workspace and fresh execution/saved replay remain required. No legacy batch total, native-capacity acceptance, full-profile compatibility or speedup is inherited."
+            } and
             .ported_functions == 45 and .consumer_programs == 19 and .consumer_activities == 21 and
             .uuid_port_reference_cases == 21745 and .uuid_consumer_reference_cases == 21745 and
             .uuid_parse_reference_cases == 21867 and .uuid_parse_legacy_reference_inputs == 21745 and
@@ -178,13 +188,17 @@ jobs:
             ([.case_mapping_exhaustive[].unicode_range_comparisons] | add) == 6684672 and
             .cases == 159909 and .passed == 159909 and
             (.runs | length) == 66 and
-            ([.runs[].cases] | add) == 159909 and ([.runs[].batches] | add) == 2337 and
-            ([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2332 and
-            ([.runs[:59][].cases] | add) == 131842 and ([.runs[:59][].batches] | add) == 1777 and
-            ([.runs[:57][].cases] | add) == 130702 and ([.runs[:57][].batches] | add) == 1741 and
-            ([.runs[:56][].cases] | add) == 108835 and ([.runs[:56][].batches] | add) == 1416 and
+            ([.runs[].cases] | add) == 159909 and ([.runs[].batches] | add) == 2109 and
+            ([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2104 and
+            ([.runs[:59][].cases] | add) == 131842 and ([.runs[:59][].batches] | add) == 1549 and
+            ([.runs[:57][].cases] | add) == 130702 and ([.runs[:57][].batches] | add) == 1513 and
+            ([.runs[:56][].cases] | add) == 108835 and ([.runs[:56][].batches] | add) == 1274 and
+            .runs[54].package == "go/github.com/google/uuid" and .runs[54].activity == "Validate" and
+            .runs[54].cases == 21745 and .runs[54].passed == 21745 and .runs[54].batches == 195 and
+            .runs[55].package == "app/uuid-format-inspector" and .runs[55].activity == "Inspect" and
+            .runs[55].cases == 21745 and .runs[55].passed == 21745 and .runs[55].batches == 197 and
             .runs[56].package == "go/github.com/google/uuid/text" and .runs[56].activity == "ParseCanonical" and
-            .runs[56].cases == 21867 and .runs[56].batches == 325 and
+            .runs[56].cases == 21867 and .runs[56].passed == 21867 and .runs[56].batches == 239 and
             .runs[57].package == "go/image" and .runs[57].activity == "RectangleIn" and
             .runs[57].cases == 570 and .runs[57].passed == 570 and .runs[57].batches == 18 and
             .runs[58].package == "example/fits-crop" and .runs[58].activity == "FitsCrop" and
@@ -206,16 +220,32 @@ jobs:
             ([.runs[:54][].cases] | add) == 65345 and ([.runs[:54][].batches] | add) == 882 and
             all(.runs[]; .passed == .cases and .replay_equal == true)
           ' out/ci/summary.json
+          head -n 1 out/ci/timing.jsonl | jq -e --slurpfile summary out/ci/summary.json '
+            . as $header |
+            .schema == "gooo/native-verification-timing/v1" and .kind == "header" and .seq == 0 and
+            .case_profile == $summary[0].case_profile and
+            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
+            .configured_workers == 2 and .expected_suites == 66 and .expected_cases == 159909 and
+            .expected_boundaries_recomputed == false and
+            .boundary_scope == "Actual contiguous batch coverage is observed. UUID3 use uuid-compact-v1 compact wire bytes and newly selected bounds; no original UUID batch boundaries or legacy2337 total are claimed preserved. Non-UUID suites retain nativeBatchEnd/save behavior. The recorder does not recompute expected partitions." and
+            (.identity.source_files | length) == 100 and
+            all(["cmd/verify/case_profile.go", "cmd/verify/case_profile_test.go", "cmd/verify/case_profile_integration_test.go"][];
+              . as $path | ($header.identity.source_files[$path].bytes | type) == "number" and
+              $header.identity.source_files[$path].bytes > 0 and
+              ($header.identity.source_files[$path].sha256 | test("^[0-9a-f]{64}$")))
+          '
           tail -n 1 out/ci/timing.jsonl | jq -e '
             .schema == "gooo/native-verification-timing/v1" and
             .kind == "run_end" and
             .status == "COMPLETE" and
+            .complete == true and .aborted == false and .successful_close_return_required == true and
+            .seq == 2242 and
             .expected_suites == 66 and
             .successful_suites == 66 and
-            .observed_batches == 2337 and
-            .verified_batches == 2337 and
+            .observed_batches == 2109 and
+            .verified_batches == 2109 and
             .verified_cases == 159909 and
-            .event_count == 2471 and
+            .event_count == 2243 and
             .failed_suites == 0 and
             .canceled_suites == 0 and
             .not_started_suites == 0 and

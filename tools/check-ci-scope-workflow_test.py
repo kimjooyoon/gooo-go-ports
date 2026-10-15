@@ -19,12 +19,40 @@ HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
 # Reviewed browser delta: add API policy actual-Wasm/package checks after service-policy smoke.
 # Events, native skip guards and deployment dependencies stay byte-identical.
 BROWSER_SHA = "9842fdb57f69899aa53215451feeda87eca4ce90f4b1bb92ef18326608be3231"
-NATIVE_COMPARISON_COMMAND = "go run ./cmd/verify --workers 2 --out out/ci --timing-out out/ci/timing.jsonl"
+NATIVE_COMPARISON_COMMAND = "go run ./cmd/verify --workers 2 --case-profile uuid-compact-v1 --out out/ci --timing-out out/ci/timing.jsonl"
+CASE_PROFILE_ASSERTION = '''            .case_profile == {
+              schema: "gooo/native-case-profile/v1", name: "uuid-compact-v1",
+              compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.2",
+              entries: ["go/github.com/google/uuid:Validate", "app/uuid-format-inspector:Inspect", "go/github.com/google/uuid/text:ParseCanonical"],
+              serializer: "Go1.27.2 json.Marshal(caseDocument(batch)) plus exactly one LF",
+              maximum_rows: 128, raw_bytes_including_LF: 30000,
+              translated_compact_engine_bytes: 32768, maximum_selected_source_bytes: 10485760,
+              lowering_guard: "Pinned839 source-derived nonexpansion upper bound; not measured translated bytes or an actual LoweredName.",
+              scope: "Only UUID3 wire bytes/partitions change; original ordered cases, independent expected values, exact workspace and fresh execution/saved replay remain required. No legacy batch total, native-capacity acceptance, full-profile compatibility or speedup is inherited."
+            } and
+'''
+TIMING_HEADER_ASSERTION = '''          head -n 1 out/ci/timing.jsonl | jq -e --slurpfile summary out/ci/summary.json '
+            . as $header |
+            .schema == "gooo/native-verification-timing/v1" and .kind == "header" and .seq == 0 and
+            .case_profile == $summary[0].case_profile and
+            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
+            .configured_workers == 2 and .expected_suites == 66 and .expected_cases == 159909 and
+            .expected_boundaries_recomputed == false and
+            .boundary_scope == "Actual contiguous batch coverage is observed. UUID3 use uuid-compact-v1 compact wire bytes and newly selected bounds; no original UUID batch boundaries or legacy2337 total are claimed preserved. Non-UUID suites retain nativeBatchEnd/save behavior. The recorder does not recompute expected partitions." and
+            (.identity.source_files | length) == 100 and
+            all(["cmd/verify/case_profile.go", "cmd/verify/case_profile_test.go", "cmd/verify/case_profile_integration_test.go"][];
+              . as $path | ($header.identity.source_files[$path].bytes | type) == "number" and
+              $header.identity.source_files[$path].bytes > 0 and
+              ($header.identity.source_files[$path].sha256 | test("^[0-9a-f]{64}$")))
+          '
+'''
 TIMING_CLAUSES = (
     '.schema == "gooo/native-verification-timing/v1"', '.kind == "run_end"',
-    '.status == "COMPLETE"', '.expected_suites == 66', '.successful_suites == 66',
-    '.observed_batches == 2337', '.verified_batches == 2337', '.verified_cases == 159909',
-    '.event_count == 2471', '.failed_suites == 0', '.canceled_suites == 0',
+    '.status == "COMPLETE"',
+    '.complete == true and .aborted == false and .successful_close_return_required == true',
+    '.seq == 2242', '.expected_suites == 66', '.successful_suites == 66',
+    '.observed_batches == 2109', '.verified_batches == 2109', '.verified_cases == 159909',
+    '.event_count == 2243', '.failed_suites == 0', '.canceled_suites == 0',
     '.not_started_suites == 0', '.missing_suite_finishes == 0',
     '.failed_batches == 0', '.incomplete_batches == 0', '.logger_errors == 0',
     '.source_bindings_unchanged == true',
@@ -158,6 +186,10 @@ def validate(text):
     require(literal_commands(comparison) == [NATIVE_COMPARISON_COMMAND]
             and ".native_suite_workers == 2 and" in comparison,
             "full native CI must bind two workers and source-bound timing")
+    require(comparison.count(CASE_PROFILE_ASSERTION) == 1,
+            "native CI must require the exact explicit UUID compact profile identity")
+    require(comparison.count(TIMING_HEADER_ASSERTION) == 1,
+            "native timing must bind the same profile and complete source identity")
     require(comparison.count(TIMING_ASSERTION) == 1,
             "native timing must require the exact complete footer and full observed roster")
     summaries = re.findall(r"^          jq -c -s '\n.*?^          ' out/ci/timing.jsonl\n", comparison, re.M | re.S)
@@ -168,10 +200,21 @@ def validate(text):
     for token in (".ported_functions == 45 and .consumer_programs == 19 and .consumer_activities == 21 and",
                   "(.runs | length) == 66 and",
                   ".cases == 159909 and .passed == 159909 and",
-                  "([.runs[].cases] | add) == 159909 and ([.runs[].batches] | add) == 2337 and",
-                  "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2332 and",
-                  "([.runs[:59][].cases] | add) == 131842 and ([.runs[:59][].batches] | add) == 1777 and"):
-        require(token in comparison, "integrated roster or original 62/59-suite preservation missing: " + token)
+                  "([.runs[].cases] | add) == 159909 and ([.runs[].batches] | add) == 2109 and",
+                  "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2104 and",
+                  "([.runs[:59][].cases] | add) == 131842 and ([.runs[:59][].batches] | add) == 1549 and",
+                  "([.runs[:57][].cases] | add) == 130702 and ([.runs[:57][].batches] | add) == 1513 and",
+                  "([.runs[:56][].cases] | add) == 108835 and ([.runs[:56][].batches] | add) == 1274 and",
+                  "([.runs[:54][].cases] | add) == 65345 and ([.runs[:54][].batches] | add) == 882 and",
+                  "all(.runs[]; .passed == .cases and .replay_equal == true)"):
+        require(token in comparison, "original case roster or compact partition counts missing: " + token)
+    for index, package, activity, cases, batches in (
+            (54, "go/github.com/google/uuid", "Validate", 21745, 195),
+            (55, "app/uuid-format-inspector", "Inspect", 21745, 197),
+            (56, "go/github.com/google/uuid/text", "ParseCanonical", 21867, 239)):
+        for token in (f'.runs[{index}].package == "{package}" and .runs[{index}].activity == "{activity}" and',
+                      f".runs[{index}].cases == {cases} and .runs[{index}].passed == {cases} and .runs[{index}].batches == {batches} and"):
+            require(token in comparison, "UUID compact suite identity/count missing: " + token)
     for index, package, activity, batches in ((59, "go/strings", "Index", 137),
                                                (60, "go/strings", "Count", 137),
                                                (61, "app/literal-text-report", "Report", 281)):
@@ -340,10 +383,59 @@ class WorkflowScopeTests(unittest.TestCase):
 
     def test_full_native_ci_binds_two_workers_and_timing(self):
         for workers in (1, 3, 4, 5):
-            for before, after in (("--workers 2 --out out/ci", f"--workers {workers} --out out/ci"),
+            for before, after in (("--workers 2 --case-profile", f"--workers {workers} --case-profile"),
                                   (".native_suite_workers == 2 and", f".native_suite_workers == {workers} and")):
                 with self.subTest(workers=workers, before=before), self.assertRaises(ValueError):
                     validate(self.text.replace(before, after, 1))
+
+    def test_compact_profile_cannot_be_missing_unknown_legacy_or_rebound(self):
+        named, _ = named_steps(self.text)
+        chunk = named["Compare the ports with Go and replay every batch"]
+        mutations = [chunk.replace(" --case-profile uuid-compact-v1", replacement, 1)
+                     for replacement in ("", " --case-profile legacy", " --case-profile uuid-compact-v2",
+                                         " --case-profile uuid-compact-v1 --case-profile legacy")]
+        for assertion in (CASE_PROFILE_ASSERTION, TIMING_HEADER_ASSERTION):
+            self.assertIn(assertion, chunk)
+            mutations.append(chunk.replace(assertion, "", 1))
+            for line in assertion.splitlines()[1:-1]:
+                mutations.append(chunk.replace(assertion, assertion.replace(line, "            true and", 1), 1))
+        mutations.extend((
+            chunk.replace('name: "uuid-compact-v1"', 'name: "legacy"', 1),
+            chunk.replace("maximum_rows: 128", "maximum_rows: 129", 1),
+            chunk.replace("raw_bytes_including_LF: 30000", "raw_bytes_including_LF: 32768", 1),
+            chunk.replace("(.identity.source_files | length) == 100", "(.identity.source_files | length) >= 97", 1),
+            chunk.replace("--slurpfile summary out/ci/summary.json", "--slurpfile summary out/old/summary.json", 1),
+            chunk.replace(".case_profile == $summary[0].case_profile", ".case_profile == null", 1),
+        ))
+        for altered in mutations:
+            self.assertNotEqual(chunk, altered)
+            with self.subTest(altered=altered[:600]), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, altered, 1))
+
+    def test_compact_uuid_exact_counts_and_full_case_replay_gate_cannot_be_weakened(self):
+        named, _ = named_steps(self.text)
+        chunk = named["Compare the ports with Go and replay every batch"]
+        clauses = [
+            "([.runs[:59][].cases] | add) == 131842 and ([.runs[:59][].batches] | add) == 1549 and",
+            "([.runs[:57][].cases] | add) == 130702 and ([.runs[:57][].batches] | add) == 1513 and",
+            "([.runs[:56][].cases] | add) == 108835 and ([.runs[:56][].batches] | add) == 1274 and",
+            "([.runs[:54][].cases] | add) == 65345 and ([.runs[:54][].batches] | add) == 882 and",
+            "all(.runs[]; .passed == .cases and .replay_equal == true)",
+        ]
+        for index, package, activity, cases, batches in (
+                (54, "go/github.com/google/uuid", "Validate", 21745, 195),
+                (55, "app/uuid-format-inspector", "Inspect", 21745, 197),
+                (56, "go/github.com/google/uuid/text", "ParseCanonical", 21867, 239)):
+            clauses.extend((
+                f'.runs[{index}].package == "{package}" and .runs[{index}].activity == "{activity}" and',
+                f".runs[{index}].cases == {cases} and .runs[{index}].passed == {cases} and .runs[{index}].batches == {batches} and",
+            ))
+        for clause in clauses:
+            self.assertIn(clause, chunk)
+            for replacement in ("true", clause.replace("==", ">=", 1)):
+                self.assertNotEqual(clause, replacement)
+                with self.subTest(clause=clause), self.assertRaises(ValueError):
+                    validate(self.text.replace(chunk, chunk.replace(clause, replacement, 1), 1))
 
     def test_native_timing_completion_cannot_be_omitted_or_weakened(self):
         named, _ = named_steps(self.text)
@@ -371,14 +463,14 @@ class WorkflowScopeTests(unittest.TestCase):
             with self.subTest(altered=altered[-500:]), self.assertRaises(ValueError):
                 validate(self.text.replace(chunk, altered, 1))
 
-    def test_cut_counts_original62_prefix_and_exact_partitions_cannot_be_weakened(self):
+    def test_cut_counts_original62_cases_and_compact_partitions_cannot_be_weakened(self):
         named, _ = named_steps(self.text)
         comparison = named["Compare the ports with Go and replay every batch"]
         clauses = (
             ".ported_functions == 45 and .consumer_programs == 19 and .consumer_activities == 21 and",
             "(.runs | length) == 66 and", ".cases == 159909 and .passed == 159909 and",
-            "([.runs[].cases] | add) == 159909 and ([.runs[].batches] | add) == 2337 and",
-            "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2332 and",
+            "([.runs[].cases] | add) == 159909 and ([.runs[].batches] | add) == 2109 and",
+            "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2104 and",
             ".literal_cut_reference_cases == 32", ".literal_cut_prefix_reference_cases == 32",
             ".literal_cut_suffix_reference_cases == 32", ".literal_cut_report_reference_cases == 32",
             '(.literal_cut_finite_provenance_scope | contains("Inner prior_result_sha256, full generation-report provenance and composition/runtime typed-plan equality are NOT_CHECKED")) and',
