@@ -1,0 +1,83 @@
+// Copyright 2020 The Go Authors. All rights reserved.
+// BSD-3-Clause: see LICENSE and third_party/GO-LICENSE.
+// Adapted from Go 1.27.2 src/net/netip/netip.go, revision
+// 022c8636110ebac86a9b88724cda168ed713c21f.
+// Source SHA-256: 32295f4761825d8c6fdade4dad093b08683bdd1945010bee8a90a298e18cf208.
+// PrefixFrom retains host bits; Contains/Overlaps compare specified network bits
+// (upstream lines1285..1302,1412..1479). IPv4 integer records only: no parsing,
+// IPv6, mapped IPv6, zones or representation of zero-value Go Addr/Prefix.
+// All original signed Integer fields are checked before arithmetic/conversion.
+// Bad octets or bits return false, an explicit Gooo input-domain extension.
+package netip
+namespace gooo_ports_net_netip
+
+entity IPv4Address id "gooo://go/net/netip/ipv4/address/v1" fields {
+    field a id "gooo://go/net/netip/ipv4/address/v1/a" type integer required one
+    field b id "gooo://go/net/netip/ipv4/address/v1/b" type integer required one
+    field c id "gooo://go/net/netip/ipv4/address/v1/c" type integer required one
+    field d id "gooo://go/net/netip/ipv4/address/v1/d" type integer required one
+}
+entity IPv4Prefix id "gooo://go/net/netip/ipv4/prefix/v1" fields {
+    field a id "gooo://go/net/netip/ipv4/prefix/v1/a" type integer required one
+    field b id "gooo://go/net/netip/ipv4/prefix/v1/b" type integer required one
+    field c id "gooo://go/net/netip/ipv4/prefix/v1/c" type integer required one
+    field d id "gooo://go/net/netip/ipv4/prefix/v1/d" type integer required one
+    field bits id "gooo://go/net/netip/ipv4/prefix/v1/bits" type integer required one
+}
+
+// Original domain helpers; Go AddrFrom4 instead receives already bounded bytes.
+activity IPv4AddressValid(IPv4Address) -> Boolean id "gooo://go-ports/net/netip/ipv4/address-valid/v1" computes `return input.a >= 0 && input.a <= 255 && input.b >= 0 && input.b <= 255 && input.c >= 0 && input.c <= 255 && input.d >= 0 && input.d <= 255`
+
+activity IPv4PrefixValid(IPv4Prefix) -> Boolean id "gooo://go-ports/net/netip/ipv4/prefix-valid/v1" computes `return input.a >= 0 && input.a <= 255 && input.b >= 0 && input.b <= 255 && input.c >= 0 && input.c <= 255 && input.d >= 0 && input.d <= 255 && input.bits >= 0 && input.bits <= 32`
+
+// Original finite lowering: 2^(32-bits), positive for every valid bit length.
+// Largest divisor4294967296 and packed address4294967295 both fit signed int64.
+// No dynamic shifts, powers, floating point, loops or narrowing conversions.
+activity IPv4PrefixDivisor(Integer) -> Integer id "gooo://go-ports/net/netip/ipv4/divisor/v1" computes `if input < 0 || input > 32 { return 0 }
+if input == 0 { return 4294967296 }
+if input == 1 { return 2147483648 }
+if input == 2 { return 1073741824 }
+if input == 3 { return 536870912 }
+if input == 4 { return 268435456 }
+if input == 5 { return 134217728 }
+if input == 6 { return 67108864 }
+if input == 7 { return 33554432 }
+if input == 8 { return 16777216 }
+if input == 9 { return 8388608 }
+if input == 10 { return 4194304 }
+if input == 11 { return 2097152 }
+if input == 12 { return 1048576 }
+if input == 13 { return 524288 }
+if input == 14 { return 262144 }
+if input == 15 { return 131072 }
+if input == 16 { return 65536 }
+if input == 17 { return 32768 }
+if input == 18 { return 16384 }
+if input == 19 { return 8192 }
+if input == 20 { return 4096 }
+if input == 21 { return 2048 }
+if input == 22 { return 1024 }
+if input == 23 { return 512 }
+if input == 24 { return 256 }
+if input == 25 { return 128 }
+if input == 26 { return 64 }
+if input == 27 { return 32 }
+if input == 28 { return 16 }
+if input == 29 { return 8 }
+if input == 30 { return 4 }
+if input == 31 { return 2 }
+return 1`
+
+activity PrefixContains(IPv4Prefix, IPv4Address) -> Boolean id "gooo://go/net/netip/ipv4/prefix-contains" computes `if !IPv4PrefixValid(input0) || !IPv4AddressValid(input1) { return false }
+let divisor = IPv4PrefixDivisor(input0.bits)
+let prefix = input0.a * 16777216 + input0.b * 65536 + input0.c * 256 + input0.d
+let address = input1.a * 16777216 + input1.b * 65536 + input1.c * 256 + input1.d
+return prefix / divisor == address / divisor`
+
+activity PrefixOverlaps(IPv4Prefix, IPv4Prefix) -> Boolean id "gooo://go/net/netip/ipv4/prefix-overlaps" computes `if !IPv4PrefixValid(input0) || !IPv4PrefixValid(input1) { return false }
+let bits = input0.bits
+if input1.bits < bits { bits = input1.bits }
+let divisor = IPv4PrefixDivisor(bits)
+let left = input0.a * 16777216 + input0.b * 65536 + input0.c * 256 + input0.d
+let right = input1.a * 16777216 + input1.b * 65536 + input1.c * 256 + input1.d
+return left / divisor == right / divisor`

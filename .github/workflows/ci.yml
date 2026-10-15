@@ -47,6 +47,8 @@ jobs:
           python3 -I -B tools/check-redelivery-policy_test.py
           python3 -I -B tools/ipv4_receipts_test.py
           python3 -I -B tools/check-ipv4_test.py
+          python3 -I -B tools/prefix_rule_pair_receipts_test.py
+          python3 -I -B tools/generate-rule-pair-corpus.py --check
           python3 tools/bootstrap.test.py
           python3 tools/receipt_json_test.py
           python3 tools/check-drag-crop-example_test.py
@@ -143,6 +145,9 @@ jobs:
           ./.gooo check examples/path-facts/main.gooo
           ./.gooo check ports/net/netip/ipv4.gooo
           ./.gooo check examples/ipv4-address-facts/main.gooo
+          ./.gooo check ports/net/netip/prefix.gooo
+          ./.gooo check examples/ipv4-prefix-probe/main.gooo
+          ./.gooo check examples/ipv4-rule-pair/main.gooo
           ./.gooo check examples/automatic-redelivery/main.gooo
           ./.gooo check ports/cel/scalar_access.gooo
           ./.gooo check examples/cel-api-policy/main.gooo
@@ -337,10 +342,10 @@ jobs:
       - name: Verify the isolated native IPv4 address facts sidecar
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
-          python3 -I -B tools/check-ipv4.py --repository . --compiler ./.gooo --go "$(go env GOROOT)/bin/go" --out out/ipv4 --timeout 180
+          python3 -I -B tools/check-ipv4.py --repository . --compiler ./.gooo --go "$(go env GOROOT)/bin/go" --out out/ipv4 --timeout 180 --include-prefix-rule-pair
           python3 -I -B tools/check-ipv4.py --verify-summary "$PWD/out/ipv4/summary.json" > out/ipv4/summary-readback.json
           jq -e '
-            .schema == "gooo/ipv4-public-sidecar/v1" and .status == "IPV4_CURRENT_NATIVE_REPLAY_GENERATED_PASS" and
+            .schema == "gooo/ipv4-public-sidecar/v2" and .status == "IPV4_PREFIX_RULE_PAIR_CURRENT_NATIVE_REPLAY_GENERATED_PASS" and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
             .manual_execute_outputs == 352 and .manual_saved_replay_outputs == 352 and
             .typed_scalar_fields_each_phase == 992 and .original_report_echoes_each_phase == 256 and
@@ -348,9 +353,16 @@ jobs:
             .generated_Report_calls == 202 and .generated_typed_fields == 2222 and .generated_original_echoes == 808 and
             .extra_CLI_outputs == 0 and .extra_saved_replay_outputs == 0 and
             .strict_wire_refusals == 42 and .receipt_tamper_refusals == 18 and
-            .top_level_stages == 54 and .automatic_retries == 0
+            .top_level_stages == 68 and .automatic_retries == 0 and
+            .prefix_rule_pair.manual_execute_outputs == 54 and .prefix_rule_pair.manual_saved_replay_outputs == 54 and
+            .prefix_rule_pair.typed_scalar_fields_each_phase == 234 and .prefix_rule_pair.original_input_values_each_phase == 630 and
+            .prefix_rule_pair.output_echoes == 0 and .prefix_rule_pair.native_internal_run_records == 12 and
+            .prefix_rule_pair.generated_Report_calls == 112 and .prefix_rule_pair.generated_typed_fields == 1232 and
+            .prefix_rule_pair.generated_input_values == 1792 and .prefix_rule_pair.extra_CLI_outputs == 0 and
+            .prefix_rule_pair.extra_saved_replay_outputs == 0 and .prefix_rule_pair.wire_refusals == 310 and
+            .prefix_rule_pair.tamper_refusals == 18
           ' out/ipv4/summary.json
-          jq -e '.schema == "gooo/ipv4-summary-readback/v1" and .status == "CURRENT_SOURCE_AND_EVIDENCE_RECHECKED"' out/ipv4/summary-readback.json
+          jq -e '.schema == "gooo/ipv4-summary-readback/v2" and .status == "CURRENT_SOURCE_AND_EVIDENCE_RECHECKED"' out/ipv4/summary-readback.json
       - name: Retain unsupported-body probes
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |

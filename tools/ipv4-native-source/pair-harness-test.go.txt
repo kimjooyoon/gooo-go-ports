@@ -1,0 +1,123 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"os"
+	"strings"
+	"testing"
+)
+
+// These synthetic112 calls are unit regressions, separate from the retained
+// production112 corpus and independently computed Go expectations.
+func pairRegressionCases() []corpusCase {
+	cases := make([]corpusCase, 112)
+	for i := range cases {
+		r := ruleInput{A: 10, D: int64(i), Bits: 32, Effect: 1, Scope: 1, Priority: int64(i)}
+		cases[i] = corpusCase{fmt.Sprint("fixture-", i), r, r}
+	}
+	return cases
+}
+
+func TestPairActualBoundFunctionAndEveryField(t *testing.T) {
+	// Identical valid /32 prefixes with equal effects have reason SAME_EFFECT;
+	// no conflict witness exists. This known single relation is not an oracle
+	// implementation for the production corpus.
+	reference := report{Valid: true, Comparable: true, Overlap: true, Reason: 4}
+	fixtures := pairRegressionCases()
+	calls := 0
+	check := func(r row) error {
+		if r.Actual != reference {
+			return fmt.Errorf("independent fixture comparison")
+		}
+		return nil
+	}
+	rows, err := generateRows(fixtures, func(v input) report { calls++; return actualReport(v) }, check)
+	if err != nil || calls != 112 || len(rows) != 112 {
+		t.Fatalf("actual bound function/count: %d %v", calls, err)
+	}
+	mutants := []func(*report){func(r *report) { r.Valid = !r.Valid }, func(r *report) { r.Comparable = !r.Comparable }, func(r *report) { r.Overlap = !r.Overlap }, func(r *report) { r.OpposingEffect = !r.OpposingEffect }, func(r *report) { r.Conflict = !r.Conflict }, func(r *report) { r.WitnessValid = !r.WitnessValid }, func(r *report) { r.WitnessA++ }, func(r *report) { r.WitnessB++ }, func(r *report) { r.WitnessC++ }, func(r *report) { r.WitnessD++ }, func(r *report) { r.Reason++ }}
+	for i, mutate := range mutants {
+		_, err := generateRows(fixtures, func(v input) report { r := actualReport(v); mutate(&r); return r }, check)
+		if err == nil || !strings.Contains(err.Error(), "independent fixture comparison") {
+			t.Fatalf("field %d mutant escaped: %v", i, err)
+		}
+	}
+	_, err = generateRows(fixtures, func(input) report { return report{} }, check)
+	if err == nil {
+		t.Fatal("ABI-shaped wrong function escaped")
+	}
+}
+
+func TestPairRowsKindsOrderCountAndInputs(t *testing.T) {
+	rows, err := generateRows(pairRegressionCases(), actualReport, func(row) error { return nil })
+	if err != nil {
+		t.Fatal(err)
+	}
+	var b bytes.Buffer
+	for _, r := range rows {
+		if err := json.NewEncoder(&b).Encode(r); err != nil {
+			t.Fatal(err)
+		}
+	}
+	raw := b.Bytes()
+	if err := readback(raw, rows); err != nil {
+		t.Fatal(err)
+	}
+	mutants := map[string][]byte{
+		"missing-row":   bytes.Join(bytes.Split(raw, []byte("\n"))[1:], []byte("\n")),
+		"extra-row":     append(append([]byte{}, raw...), append(bytes.Split(raw, []byte("\n"))[0], byte('\n'))...),
+		"index":         bytes.Replace(raw, []byte(`"index":0`), []byte(`"index":1`), 1),
+		"null-integer":  bytes.Replace(raw, []byte(`"witness_a":0`), []byte(`"witness_a":null`), 1),
+		"null-boolean":  bytes.Replace(raw, []byte(`"conflict":false`), []byte(`"conflict":null`), 1),
+		"false-integer": bytes.Replace(raw, []byte(`"witness_a":0`), []byte(`"witness_a":false`), 1),
+		"float":         bytes.Replace(raw, []byte(`"reason":4`), []byte(`"reason":4.0`), 1),
+		"input":         bytes.Replace(raw, []byte(`"scope":1`), []byte(`"scope":2`), 1),
+		"unknown":       bytes.Replace(raw, []byte(`"index":0`), []byte(`"unknown":0,"index":0`), 1),
+		"duplicate":     bytes.Replace(raw, []byte(`"index":0`), []byte(`"index":0,"index":0`), 1),
+	}
+	for name, bad := range mutants {
+		if bytes.Equal(bad, raw) {
+			t.Fatal(name, "mutation did not change source")
+		}
+		if err := readback(bad, rows); err == nil {
+			t.Fatal(name, "escaped")
+		}
+	}
+	reordered := append([]row{}, rows...)
+	reordered[0], reordered[1] = reordered[1], reordered[0]
+	if err := readback(raw, reordered); err == nil {
+		t.Fatal("row order escaped")
+	}
+}
+
+func TestPairClosedGeneratedABI(t *testing.T) {
+	raw, err := os.ReadFile("generated.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := validatePairGenerated(raw); err != nil {
+		t.Fatal("positive ABI", err)
+	}
+	source := string(raw)
+	mutants := map[string]string{
+		"record":    strings.Replace(source, namedDigest("GoooRecord", pairRuleID), "WrongRule", 1),
+		"field":     strings.Replace(source, namedDigest("GoooField", pairResultID+"/valid"), "WrongField", 1),
+		"type":      strings.Replace(source, " bool ", " int64 ", 1),
+		"callee":    strings.Replace(source, "func GoooComposedActivity0Call0(", "func WrongFunction(", 1),
+		"import":    strings.Replace(source, "package main", "package main\nimport \"os\"", 1),
+		"directive": "//go:build ignore\n" + source,
+		"legacy":    "// +build ignore\n" + source,
+		"global":    source + "\nvar Extra = 1\n",
+		"init":      source + "\nfunc init() {}\n",
+	}
+	for name, bad := range mutants {
+		if bad == source {
+			t.Fatal(name, "no mutation")
+		}
+		if err := validatePairGenerated([]byte(bad)); err == nil {
+			t.Fatal(name, "ABI mutation escaped")
+		}
+	}
+}

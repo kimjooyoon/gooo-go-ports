@@ -1,0 +1,150 @@
+{
+  "schema": "gooo/ipv4-rule-pair-contract/v2",
+  "entry": "app/ipv4-rule-pair:Report",
+  "activity_id": "gooo://ipv4-rule-pair/report/v2",
+  "rule_entity_id": "gooo://ipv4-rule-pair/rule/v1",
+  "result_entity_id": "gooo://ipv4-rule-pair/result/v2",
+  "inputs": {
+    "count": 2,
+    "order": [
+      "left",
+      "right"
+    ],
+    "record_fields": [
+      "a",
+      "b",
+      "c",
+      "d",
+      "bits",
+      "effect",
+      "scope",
+      "priority"
+    ],
+    "wire_kind": "required one signed int64 Integer for every field; no coercion/default/null/missing fields",
+    "field_ids": "rule_entity_id + / + field_name",
+    "domain": {
+      "a,b,c,d": "0..255 inclusive",
+      "bits": "0..32 inclusive",
+      "effect": "0 DENY;1 ALLOW; no other value",
+      "scope": "positive signed int64 opaque same-context key",
+      "priority": "full signed int64; equality only, no numeric ranking/arithmetic"
+    },
+    "receipt_binding": "Bind raw corpus and native-input document bytes/SHA; each case index and both Rule port entity IDs/ordered8 field IDs/names/exact int64 values must match originals in execute and saved replay. Input-only data contains no expected results."
+  },
+  "output": {
+    "fields_order": [
+      "valid",
+      "comparable",
+      "overlap",
+      "opposing_effect",
+      "conflict",
+      "witness_valid",
+      "witness_a",
+      "witness_b",
+      "witness_c",
+      "witness_d",
+      "reason"
+    ],
+    "fields_required": true,
+    "integer_fields": [
+      "witness_a",
+      "witness_b",
+      "witness_c",
+      "witness_d",
+      "reason"
+    ],
+    "boolean_fields": [
+      "valid",
+      "comparable",
+      "overlap",
+      "opposing_effect",
+      "conflict",
+      "witness_valid"
+    ],
+    "field_ids": "result_entity_id + / + field_name",
+    "echoes": "No duplicate result echoes: all16 original signed int64 values are retained and validated in the receipt delivery inputs, including invalid-domain extrema."
+  },
+  "semantics": {
+    "valid": "both rule domains valid; no arithmetic or prefix conversion before this check",
+    "invalid": "all16 original receipt input integers unchanged; all6 output Boolean fields false; all4 witness octets0; reason0",
+    "comparable": "valid and exact scope equality and exact priority equality",
+    "overlap": "for valid inputs, network-prefix overlap independent of scope/priority; false when invalid",
+    "opposing_effect": "for valid inputs, effect values differ independent of scope/priority; false when invalid",
+    "conflict": "valid and comparable and overlap and opposing_effect",
+    "witness_valid": "exactly conflict, not merely comparable overlap",
+    "witness": "if conflict, canonical network address of more-specific prefix (larger bits); tie selects left. Must be contained by both valid prefixes. Otherwise4zeros and witness_valid=false",
+    "host_bits": "preserve original input host bits; network comparisons and witness masking ignore only unspecified host bits",
+    "zero_address": "0.0.0.0 valid IPv4; with witness_valid=true can be a real witness, distinct from non-witness4zero sentinel"
+  },
+  "reason_priority": [
+    {
+      "value": 0,
+      "name": "INVALID_INPUT",
+      "condition": "either rule semantic domain invalid"
+    },
+    {
+      "value": 1,
+      "name": "SCOPE_MISMATCH",
+      "condition": "valid and scopes unequal"
+    },
+    {
+      "value": 2,
+      "name": "PRIORITY_MISMATCH",
+      "condition": "valid and scopes equal and priorities unequal"
+    },
+    {
+      "value": 3,
+      "name": "DISJOINT",
+      "condition": "valid and comparable and not overlap"
+    },
+    {
+      "value": 4,
+      "name": "SAME_EFFECT",
+      "condition": "valid and comparable and overlap and not opposing_effect"
+    },
+    {
+      "value": 5,
+      "name": "CONFLICT",
+      "condition": "valid and comparable and overlap and opposing_effect"
+    }
+  ],
+  "scope_contract": [
+    "Caller must assign the same positive scope only for the same tenant/action/principal/protocol/port and other relevant policy context, with stable revision binding.",
+    "Gooo checks only positive int64/equality. It does not verify the truth, authenticity, uniqueness or freshness of caller scope/context.",
+    "This equal-priority pair contract deliberately excludes longest-prefix-wins/deny-overrides/ordered-rule resolution."
+  ],
+  "non_claims": [
+    "conflict=false when invalid or not comparable is not permission, safety, comparison success or proof of a conflict-free ACL",
+    "Only a finite pair of supplied rules is examined; no whole ACL, actual request, connected peer, network send, host adapter, ledger or production safety guarantee",
+    "No human approval protocol is part of this pure deterministic calculation"
+  ],
+  "oracle_interface": {
+    "input_schema": "gooo/ipv4-rule-pair-inputs/v1",
+    "input_corpus": "examples/ipv4-rule-pair/corpus-112.json",
+    "case_count": 112,
+    "case_fields": [
+      "name",
+      "left",
+      "right"
+    ],
+    "calculation": "Independent pinned Go1.27.2 net/netip PrefixFrom/Overlaps/Masked/Contains; int64 guards before byte/int conversion; do not reproduce Gooo arithmetic formula",
+    "manual_input_corpus": "examples/ipv4-rule-pair/corpus-18.json",
+    "manual_case_count": 18
+  },
+  "pinned_prefix_source": {
+    "path": "ports/net/netip/prefix.gooo",
+    "sha256": "05eadddddfc8959c9b2e721967b8650734f1f52a4a0b0927a684f07758060261",
+    "go_version": "go1.27.2",
+    "go_revision": "022c8636110ebac86a9b88724cda168ed713c21f",
+    "go_source_sha256": "32295f4761825d8c6fdade4dad093b08683bdd1945010bee8a90a298e18cf208",
+    "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+    "shared_declarations": "ports/net/netip/ipv4.gooo"
+  },
+  "engine_constraint": {
+    "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+    "maximum_fields_per_record": 16,
+    "input_rule_fields": 8,
+    "output_fields": 11,
+    "mapping": "Original16 integers are preserved in receipt inputs; no duplicate output echoes. Declaration checking alone does not establish native execution."
+  }
+}

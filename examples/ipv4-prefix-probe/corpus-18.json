@@ -1,0 +1,419 @@
+{
+  "schema": "gooo/ipv4-prefix-pilot-inputs/v1",
+  "cases": [
+    {
+      "name": "host-bits-retained-nested",
+      "prefix": {
+        "a": 10,
+        "b": 1,
+        "c": 2,
+        "d": 3,
+        "bits": 8
+      },
+      "address": {
+        "a": 10,
+        "b": 99,
+        "c": 0,
+        "d": 1
+      },
+      "other_prefix": {
+        "a": 10,
+        "b": 20,
+        "c": 30,
+        "d": 40,
+        "bits": 16
+      }
+    },
+    {
+      "name": "different-octet-networks",
+      "prefix": {
+        "a": 10,
+        "b": 1,
+        "c": 2,
+        "d": 3,
+        "bits": 8
+      },
+      "address": {
+        "a": 11,
+        "b": 0,
+        "c": 0,
+        "d": 1
+      },
+      "other_prefix": {
+        "a": 11,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8
+      }
+    },
+    {
+      "name": "zero-default-route",
+      "prefix": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 0
+      },
+      "address": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      },
+      "other_prefix": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 32
+      }
+    },
+    {
+      "name": "noncanonical-default-route",
+      "prefix": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 0
+      },
+      "address": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      },
+      "other_prefix": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 32
+      }
+    },
+    {
+      "name": "zero-host-is-valid-address",
+      "prefix": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 32
+      },
+      "address": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      },
+      "other_prefix": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 32
+      }
+    },
+    {
+      "name": "maximum-host-and-adjacent",
+      "prefix": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 32
+      },
+      "address": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      },
+      "other_prefix": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 254,
+        "bits": 32
+      }
+    },
+    {
+      "name": "unmasked-24-and-single-host",
+      "prefix": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 99,
+        "bits": 24
+      },
+      "address": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 4
+      },
+      "other_prefix": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 4,
+        "bits": 32
+      }
+    },
+    {
+      "name": "adjacent-25-boundary",
+      "prefix": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 127,
+        "bits": 25
+      },
+      "address": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 128
+      },
+      "other_prefix": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 128,
+        "bits": 25
+      }
+    },
+    {
+      "name": "upper-25-and-contained-26",
+      "prefix": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 199,
+        "bits": 25
+      },
+      "address": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 255
+      },
+      "other_prefix": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 128,
+        "bits": 26
+      }
+    },
+    {
+      "name": "31-host-bit-ignored",
+      "prefix": {
+        "a": 192,
+        "b": 0,
+        "c": 2,
+        "d": 1,
+        "bits": 31
+      },
+      "address": {
+        "a": 192,
+        "b": 0,
+        "c": 2,
+        "d": 0
+      },
+      "other_prefix": {
+        "a": 192,
+        "b": 0,
+        "c": 2,
+        "d": 0,
+        "bits": 32
+      }
+    },
+    {
+      "name": "first-bit-lower-half",
+      "prefix": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 1
+      },
+      "address": {
+        "a": 127,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      },
+      "other_prefix": {
+        "a": 128,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 1
+      }
+    },
+    {
+      "name": "first-bit-upper-half",
+      "prefix": {
+        "a": 128,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 1
+      },
+      "address": {
+        "a": 127,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      },
+      "other_prefix": {
+        "a": 192,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 2
+      }
+    },
+    {
+      "name": "negative-bits-even-self-invalid",
+      "prefix": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": -1
+      },
+      "address": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 1
+      },
+      "other_prefix": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": -1
+      }
+    },
+    {
+      "name": "33-bits-even-self-invalid",
+      "prefix": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 33
+      },
+      "address": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 1
+      },
+      "other_prefix": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 33
+      }
+    },
+    {
+      "name": "minimum-int64-octet",
+      "prefix": {
+        "a": -9223372036854775808,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 0
+      },
+      "address": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      },
+      "other_prefix": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 0
+      }
+    },
+    {
+      "name": "maximum-int64-octet",
+      "prefix": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 9223372036854775807,
+        "bits": 32
+      },
+      "address": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 1
+      },
+      "other_prefix": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8
+      }
+    },
+    {
+      "name": "bad-address-does-not-invalidate-overlap",
+      "prefix": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8
+      },
+      "address": {
+        "a": 10,
+        "b": -9223372036854775808,
+        "c": 0,
+        "d": 1
+      },
+      "other_prefix": {
+        "a": 10,
+        "b": 20,
+        "c": 0,
+        "d": 0,
+        "bits": 16
+      }
+    },
+    {
+      "name": "bad-other-prefix-does-not-invalidate-contains",
+      "prefix": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8
+      },
+      "address": {
+        "a": 10,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      },
+      "other_prefix": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 9223372036854775807
+      }
+    }
+  ]
+}

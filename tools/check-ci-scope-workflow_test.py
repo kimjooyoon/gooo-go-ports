@@ -22,12 +22,19 @@ HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
 BROWSER_SHA = "9842fdb57f69899aa53215451feeda87eca4ce90f4b1bb92ef18326608be3231"
 PATH_STEP_SHA = 'b90f403ce804adea78dacebf554c45f3e21b1faf89b942e83f32aca2847f9df5'
 REDELIVERY_STEP_SHA = '2ce6496cbee29d77c9334f1f32dc518c96a12c193e37ab569144bdc4fd1a864e'
-IPV4_STEP_SHA = 'fc7ae14e887a878b0975c5704884d2b5618d83bad7a2b45414c5171b3de3b1e3'
-IPV4_COMMAND = 'python3 -I -B tools/check-ipv4.py --repository . --compiler ./.gooo --go "$(go env GOROOT)/bin/go" --out out/ipv4 --timeout 180'
+IPV4_STEP_SHA = '6ce5d2f5e75f9ff9a7728718567ffb039c74232ef4e254ea244b7dc02fbc9ed8'
+IPV4_COMMAND = 'python3 -I -B tools/check-ipv4.py --repository . --compiler ./.gooo --go "$(go env GOROOT)/bin/go" --out out/ipv4 --timeout 180 --include-prefix-rule-pair'
 IPV4_READBACK = 'python3 -I -B tools/check-ipv4.py --verify-summary "$PWD/out/ipv4/summary.json" > out/ipv4/summary-readback.json'
 IPV4_COMMON_COMMANDS = (
     'python3 -I -B tools/ipv4_receipts_test.py',
     'python3 -I -B tools/check-ipv4_test.py',
+    'python3 -I -B tools/prefix_rule_pair_receipts_test.py',
+    'python3 -I -B tools/generate-rule-pair-corpus.py --check',
+)
+IPV4_DECLARATIONS = (
+    "ports/net/netip/ipv4.gooo", "examples/ipv4-address-facts/main.gooo",
+    "ports/net/netip/prefix.gooo", "examples/ipv4-prefix-probe/main.gooo",
+    "examples/ipv4-rule-pair/main.gooo",
 )
 REDELIVERY_COMMAND = 'python3 -B tools/check-redelivery-policy.py --repository . --out out/redelivery-policy --go "$(go env GOROOT)/bin/go" --compiler ./.gooo --timeout 300'
 REDELIVERY_COMMON_COMMANDS = (
@@ -152,7 +159,9 @@ LITERAL_COMMANDS = {
 # exact full-history checkout. These are source-integrity locks, not CI PASS.
 OBSERVER_HEADER_SHA = '46cb0e7392dd3f3fb9562bccea6b27e5194ffcf59e1a58bab4c07b99aba08bd9'
 NATIVE_HEADER_SHA = '5f4d0761ec793a582d7d23c06f9a758bd71fa66f5448b50d01739915052b213e'
-OBSERVER_STEP_SHA = 'd816c8dde53f5b6d24f624f7cac9d32220860d9bd91c7fd787abeb69274e7d98'
+# Add the record adapter controls and input-only corpus regeneration check;
+# every previously required observer command remains byte-identical and once.
+OBSERVER_STEP_SHA = '62328e8907108b200549846f212f99f0e74d3b106d64f732793be82562c185f8'
 GENERATOR_STEP_SHA = '081263b551a4d28aa8b46dc025fe951c62d91d13e164cb7927b70d7270aaf399'
 CLASSIFIER_STEP_SHA = '1864b9e0f27cc73595dd863c71640050cf046b2ec67cfd02c6ba5a8ebd11a61a'
 CHECKOUT_STEP_SHA = 'b60ba5d7bf95691b8baec3a3e402aeba552fbcb4a353d7de8946023e73e79603'
@@ -384,7 +393,7 @@ def validate(text):
     for command in IPV4_COMMON_COMMANDS:
         require(named["Check the Go observer"].count(command) == text.count(command) == 1,
                 "IPv4 Python checks must run once as common checks")
-    for source in ("ports/net/netip/ipv4.gooo", "examples/ipv4-address-facts/main.gooo"):
+    for source in IPV4_DECLARATIONS:
         require(named["Check Gooo declarations"].count("./.gooo check " + source) == 1,
                 "IPv4 declaration check missing: " + source)
     for name, expected in LITERAL_COMMANDS.items():
@@ -614,7 +623,14 @@ class WorkflowScopeTests(unittest.TestCase):
                      (".generated_typed_fields == 2222", ".generated_typed_fields >= 1"),
                      (".strict_wire_refusals == 42", ".strict_wire_refusals == 18"),
                      (".receipt_tamper_refusals == 18", ".receipt_tamper_refusals == 0"),
-                     (".top_level_stages == 54", ".top_level_stages >= 1"),
+                     (".top_level_stages == 68", ".top_level_stages >= 1"),
+                     (" --include-prefix-rule-pair", ""),
+                     (".prefix_rule_pair.manual_saved_replay_outputs == 54", ".prefix_rule_pair.manual_saved_replay_outputs == 0"),
+                     (".prefix_rule_pair.original_input_values_each_phase == 630", ".prefix_rule_pair.original_input_values_each_phase >= 1"),
+                     (".prefix_rule_pair.generated_Report_calls == 112", ".prefix_rule_pair.generated_Report_calls == 18"),
+                     (".prefix_rule_pair.generated_typed_fields == 1232", ".prefix_rule_pair.generated_typed_fields >= 1"),
+                     (".prefix_rule_pair.wire_refusals == 310", ".prefix_rule_pair.wire_refusals == 0"),
+                     (".prefix_rule_pair.tamper_refusals == 18", ".prefix_rule_pair.tamper_refusals == 0"),
                      (".automatic_retries == 0", ".automatic_retries == 1"),
                      ("CURRENT_SOURCE_AND_EVIDENCE_RECHECKED", "OLD_PASS"),
                      ("        run: |", "        continue-on-error: true\n        run: |")]
@@ -631,7 +647,7 @@ class WorkflowScopeTests(unittest.TestCase):
             for changed in ("", line + line):
                 with self.subTest(command=command), self.assertRaises(ValueError):
                     validate(self.text.replace(line, changed, 1))
-        for source in ("ports/net/netip/ipv4.gooo", "examples/ipv4-address-facts/main.gooo"):
+        for source in IPV4_DECLARATIONS:
             line = "          ./.gooo check " + source + "\n"
             with self.subTest(source=source), self.assertRaises(ValueError):
                 validate(self.text.replace(line, "", 1))

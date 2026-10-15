@@ -335,3 +335,166 @@ func validateGenerated(raw []byte) error {
 	}
 	return nil
 }
+
+// The optional pair ABI is a second closed compiler839 shape. It does not
+// relax the classifier's four-int64 validator above.
+const pairRuleID = "gooo://ipv4-rule-pair/rule/v1"
+const pairResultID = "gooo://ipv4-rule-pair/result/v2"
+
+var pairNames = []string{"valid", "comparable", "overlap", "opposing_effect", "conflict", "witness_valid", "witness_a", "witness_b", "witness_c", "witness_d", "reason"}
+var pairRuleNames = []string{"a", "b", "c", "d", "bits", "effect", "scope", "priority"}
+
+func validatePairGenerated(raw []byte) error {
+	if len(raw) == 0 || len(raw) > 1<<20 || !utf8.Valid(raw) {
+		return fmt.Errorf("pair source bound")
+	}
+	f, err := parser.ParseFile(token.NewFileSet(), "generated.go", raw, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	if f.Name.Name != "main" || len(f.Imports) != 0 {
+		return fmt.Errorf("pair package/import ABI")
+	}
+	for _, g := range f.Comments {
+		for _, c := range g.List {
+			s := strings.TrimSpace(c.Text)
+			if strings.HasPrefix(s, "//go:") || constraint.IsPlusBuild(s) {
+				return fmt.Errorf("pair directive")
+			}
+		}
+	}
+	address := namedDigest("GoooRecord", "gooo://go/net/netip/ipv4/address/v1")
+	prefix := namedDigest("GoooRecord", "gooo://go/net/netip/ipv4/prefix/v1")
+	rule := namedDigest("GoooRecord", pairRuleID)
+	result := namedDigest("GoooRecord", pairResultID)
+	ids := map[string]string{address: "gooo://go/net/netip/ipv4/address/v1", prefix: "gooo://go/net/netip/ipv4/prefix/v1", rule: pairRuleID, result: pairResultID}
+	fields := map[string][]string{address: {"a", "b", "c", "d"}, prefix: {"a", "b", "c", "d", "bits"}, rule: pairRuleNames, result: pairNames}
+	found := map[string]bool{}
+	funcs := map[string]*ast.FuncDecl{}
+	selectors := map[string]bool{}
+	for _, d := range f.Decls {
+		switch d := d.(type) {
+		case *ast.GenDecl:
+			if d.Tok != token.TYPE || len(d.Specs) != 1 {
+				return fmt.Errorf("pair global declaration")
+			}
+			t, ok := d.Specs[0].(*ast.TypeSpec)
+			if !ok || t.Assign.IsValid() || ids[t.Name.Name] == "" || found[t.Name.Name] {
+				return fmt.Errorf("pair record identity")
+			}
+			st, ok := t.Type.(*ast.StructType)
+			if !ok || len(st.Fields.List) != len(fields[t.Name.Name]) {
+				return fmt.Errorf("pair record fields")
+			}
+			for i, x := range st.Fields.List {
+				name := fields[t.Name.Name][i]
+				kind := "int64"
+				if t.Name.Name == result && i < 6 {
+					kind = "bool"
+				}
+				tag := ""
+				if x.Tag != nil {
+					tag, _ = strconv.Unquote(x.Tag.Value)
+				}
+				goName := namedDigest("GoooField", ids[t.Name.Name]+"/"+name)
+				if len(x.Names) != 1 || x.Names[0].Name != goName || !nameIs(x.Type, kind) || tag != "json:\""+name+"\"" {
+					return fmt.Errorf("pair field ID/type/tag/order")
+				}
+				selectors[goName] = true
+			}
+			found[t.Name.Name] = true
+		case *ast.FuncDecl:
+			if d.Recv != nil || d.Type.TypeParams != nil || funcs[d.Name.Name] != nil {
+				return fmt.Errorf("pair function identity")
+			}
+			funcs[d.Name.Name] = d
+		default:
+			return fmt.Errorf("pair declaration forbidden")
+		}
+	}
+	if len(found) != 4 || len(funcs) != 5 {
+		return fmt.Errorf("pair record/function count")
+	}
+	signatures := map[string][]string{"GoooComposedActivity0": {rule, rule, result}, "GoooComposedActivity0Call0": {rule, "bool"}, "GoooComposedActivity0Call1": {prefix, "bool"}, "GoooComposedActivity0Call2": {"int64", "int64"}, "GoooComposedActivity0Call3": {prefix, prefix, "bool"}}
+	expected := map[string]map[string]int{"GoooComposedActivity0": {"GoooComposedActivity0Call0": 2, "GoooComposedActivity0Call2": 1, "GoooComposedActivity0Call3": 1}, "GoooComposedActivity0Call0": {}, "GoooComposedActivity0Call1": {}, "GoooComposedActivity0Call2": {}, "GoooComposedActivity0Call3": {"GoooComposedActivity0Call1": 2, "GoooComposedActivity0Call2": 1}}
+	for name, signature := range signatures {
+		fn := funcs[name]
+		n := len(signature) - 1
+		if fn == nil || fn.Body == nil || fn.Type.Params == nil || len(fn.Type.Params.List) != n || fn.Type.Results == nil || len(fn.Type.Results.List) != 1 || len(fn.Type.Results.List[0].Names) != 0 || !nameIs(fn.Type.Results.List[0].Type, signature[n]) {
+			return fmt.Errorf("pair function signature")
+		}
+		for i, p := range fn.Type.Params.List {
+			want := "input"
+			if n > 1 {
+				want += strconv.Itoa(i)
+			}
+			if len(p.Names) != 1 || p.Names[0].Name != want || !nameIs(p.Type, signature[i]) {
+				return fmt.Errorf("pair parameter ABI")
+			}
+		}
+		calls := map[string]int{}
+		var bad error
+		ast.Inspect(fn.Body, func(node ast.Node) bool {
+			if node == nil || bad != nil {
+				return bad == nil
+			}
+			switch v := node.(type) {
+			case *ast.BlockStmt, *ast.ReturnStmt, *ast.IfStmt, *ast.ParenExpr, *ast.Ident, *ast.BasicLit, *ast.CompositeLit, *ast.KeyValueExpr, *ast.DeclStmt, *ast.ValueSpec:
+			case *ast.GenDecl:
+				if v.Tok != token.VAR {
+					bad = fmt.Errorf("pair local declaration")
+				}
+			case *ast.SelectorExpr:
+				if !selectors[v.Sel.Name] {
+					bad = fmt.Errorf("pair field selector")
+				}
+			case *ast.AssignStmt:
+				if v.Tok != token.ASSIGN || len(v.Lhs) != 1 || len(v.Rhs) != 1 {
+					bad = fmt.Errorf("pair assignment")
+				}
+				for _, x := range v.Lhs {
+					if _, ok := x.(*ast.Ident); !ok {
+						bad = fmt.Errorf("pair assignment target")
+					}
+				}
+			case *ast.UnaryExpr:
+				if v.Op != token.NOT && v.Op != token.SUB {
+					bad = fmt.Errorf("pair unary effect")
+				}
+			case *ast.BinaryExpr:
+				switch v.Op {
+				case token.LAND, token.LOR, token.EQL, token.NEQ, token.LSS, token.LEQ, token.GTR, token.GEQ, token.ADD, token.SUB, token.MUL, token.QUO, token.REM:
+				default:
+					bad = fmt.Errorf("pair binary effect")
+				}
+			case *ast.CallExpr:
+				t, ok := v.Fun.(*ast.Ident)
+				if !ok || v.Ellipsis.IsValid() {
+					bad = fmt.Errorf("pair call target")
+					break
+				}
+				sig, ok := signatures[t.Name]
+				if !ok || len(v.Args) != len(sig)-1 || expected[name][t.Name] == 0 {
+					bad = fmt.Errorf("pair call ABI")
+					break
+				}
+				calls[t.Name]++
+			default:
+				bad = fmt.Errorf("pair effect or unsupported node %T", node)
+			}
+			return bad == nil
+		})
+		if bad != nil {
+			return bad
+		}
+		if len(calls) != len(expected[name]) {
+			return fmt.Errorf("pair call roster")
+		}
+		for callee, count := range expected[name] {
+			if calls[callee] != count {
+				return fmt.Errorf("pair call count")
+			}
+		}
+	}
+	return nil
+}

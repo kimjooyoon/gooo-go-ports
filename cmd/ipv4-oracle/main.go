@@ -272,6 +272,9 @@ func evaluateCorpus(inputs corpus, goVersion string) (output, error) {
 }
 
 func run(args []string, out io.Writer, goVersion string) error {
+	if len(args) >= 2 && args[0] == "--profile" && args[1] == "prefix-rule-pair" {
+		return runPrefixRulePair(args[2:], out, goVersion)
+	}
 	flags := flag.NewFlagSet("ipv4-independent-oracle", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
 	corpusPath := flags.String("corpus", "", "absolute path of frozen public202 input-only corpus")

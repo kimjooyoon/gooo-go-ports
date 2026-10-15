@@ -1,0 +1,2581 @@
+{
+  "schema": "gooo/ipv4-rule-pair-inputs/v1",
+  "cases": [
+    {
+      "name": "invalid-left-precedes-scope-and-priority",
+      "left": {
+        "a": -9223372036854775808,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": 1,
+        "scope": 1,
+        "priority": -9223372036854775808
+      },
+      "right": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": 0,
+        "scope": 2,
+        "priority": 9223372036854775807
+      }
+    },
+    {
+      "name": "invalid-right-octet-and-bits",
+      "left": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": 1,
+        "scope": 1,
+        "priority": 0
+      },
+      "right": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 9223372036854775807,
+        "bits": 33,
+        "effect": 0,
+        "scope": 1,
+        "priority": 0
+      }
+    },
+    {
+      "name": "invalid-effect",
+      "left": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": -1,
+        "scope": 1,
+        "priority": 0
+      },
+      "right": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": 1,
+        "scope": 1,
+        "priority": 0
+      }
+    },
+    {
+      "name": "invalid-zero-scope",
+      "left": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": 1,
+        "scope": 0,
+        "priority": 0
+      },
+      "right": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": 0,
+        "scope": 1,
+        "priority": 0
+      }
+    },
+    {
+      "name": "invalid-negative-scope",
+      "left": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": 1,
+        "scope": 1,
+        "priority": 9223372036854775807
+      },
+      "right": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": 0,
+        "scope": -9223372036854775808,
+        "priority": 9223372036854775807
+      }
+    },
+    {
+      "name": "scope-mismatch-before-priority",
+      "left": {
+        "a": 10,
+        "b": 1,
+        "c": 2,
+        "d": 3,
+        "bits": 8,
+        "effect": 1,
+        "scope": 1,
+        "priority": -9223372036854775808
+      },
+      "right": {
+        "a": 10,
+        "b": 20,
+        "c": 30,
+        "d": 40,
+        "bits": 16,
+        "effect": 0,
+        "scope": 2,
+        "priority": 9223372036854775807
+      }
+    },
+    {
+      "name": "priority-mismatch",
+      "left": {
+        "a": 10,
+        "b": 1,
+        "c": 2,
+        "d": 3,
+        "bits": 8,
+        "effect": 1,
+        "scope": 42,
+        "priority": -9223372036854775808
+      },
+      "right": {
+        "a": 10,
+        "b": 20,
+        "c": 30,
+        "d": 40,
+        "bits": 16,
+        "effect": 0,
+        "scope": 42,
+        "priority": 9223372036854775807
+      }
+    },
+    {
+      "name": "disjoint-opposite-effects",
+      "left": {
+        "a": 10,
+        "b": 1,
+        "c": 2,
+        "d": 3,
+        "bits": 8,
+        "effect": 1,
+        "scope": 42,
+        "priority": 0
+      },
+      "right": {
+        "a": 11,
+        "b": 20,
+        "c": 30,
+        "d": 40,
+        "bits": 8,
+        "effect": 0,
+        "scope": 42,
+        "priority": 0
+      }
+    },
+    {
+      "name": "disjoint-before-same-effect",
+      "left": {
+        "a": 10,
+        "b": 1,
+        "c": 2,
+        "d": 3,
+        "bits": 8,
+        "effect": 1,
+        "scope": 42,
+        "priority": 0
+      },
+      "right": {
+        "a": 11,
+        "b": 20,
+        "c": 30,
+        "d": 40,
+        "bits": 8,
+        "effect": 1,
+        "scope": 42,
+        "priority": 0
+      }
+    },
+    {
+      "name": "overlap-same-allow",
+      "left": {
+        "a": 10,
+        "b": 1,
+        "c": 2,
+        "d": 3,
+        "bits": 8,
+        "effect": 1,
+        "scope": 42,
+        "priority": 0
+      },
+      "right": {
+        "a": 10,
+        "b": 20,
+        "c": 30,
+        "d": 40,
+        "bits": 16,
+        "effect": 1,
+        "scope": 42,
+        "priority": 0
+      }
+    },
+    {
+      "name": "overlap-same-deny-31-and-32",
+      "left": {
+        "a": 192,
+        "b": 0,
+        "c": 2,
+        "d": 1,
+        "bits": 31,
+        "effect": 0,
+        "scope": 42,
+        "priority": -9223372036854775808
+      },
+      "right": {
+        "a": 192,
+        "b": 0,
+        "c": 2,
+        "d": 0,
+        "bits": 32,
+        "effect": 0,
+        "scope": 42,
+        "priority": -9223372036854775808
+      }
+    },
+    {
+      "name": "conflict-more-specific-right",
+      "left": {
+        "a": 10,
+        "b": 1,
+        "c": 2,
+        "d": 3,
+        "bits": 8,
+        "effect": 1,
+        "scope": 42,
+        "priority": 7
+      },
+      "right": {
+        "a": 10,
+        "b": 20,
+        "c": 30,
+        "d": 40,
+        "bits": 16,
+        "effect": 0,
+        "scope": 42,
+        "priority": 7
+      }
+    },
+    {
+      "name": "conflict-swapped-same-witness",
+      "left": {
+        "a": 10,
+        "b": 20,
+        "c": 30,
+        "d": 40,
+        "bits": 16,
+        "effect": 0,
+        "scope": 42,
+        "priority": 7
+      },
+      "right": {
+        "a": 10,
+        "b": 1,
+        "c": 2,
+        "d": 3,
+        "bits": 8,
+        "effect": 1,
+        "scope": 42,
+        "priority": 7
+      }
+    },
+    {
+      "name": "conflict-non-byte-prefix",
+      "left": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 199,
+        "bits": 25,
+        "effect": 0,
+        "scope": 42,
+        "priority": 9223372036854775807
+      },
+      "right": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 170,
+        "bits": 26,
+        "effect": 1,
+        "scope": 42,
+        "priority": 9223372036854775807
+      }
+    },
+    {
+      "name": "conflict-equal-default-prefixes-zero-witness",
+      "left": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 0,
+        "effect": 1,
+        "scope": 9223372036854775807,
+        "priority": 9223372036854775807
+      },
+      "right": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 0,
+        "effect": 0,
+        "scope": 9223372036854775807,
+        "priority": 9223372036854775807
+      }
+    },
+    {
+      "name": "conflict-zero-host-32-is-valid",
+      "left": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 32,
+        "effect": 0,
+        "scope": 42,
+        "priority": 0
+      },
+      "right": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 0,
+        "effect": 1,
+        "scope": 42,
+        "priority": 0
+      }
+    },
+    {
+      "name": "conflict-maximum-host-32",
+      "left": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 1,
+        "scope": 42,
+        "priority": 0
+      },
+      "right": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 254,
+        "bits": 0,
+        "effect": 0,
+        "scope": 42,
+        "priority": 0
+      }
+    },
+    {
+      "name": "adjacent-25-disjoint",
+      "left": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 127,
+        "bits": 25,
+        "effect": 1,
+        "scope": 42,
+        "priority": 0
+      },
+      "right": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 128,
+        "bits": 25,
+        "effect": 0,
+        "scope": 42,
+        "priority": 0
+      }
+    },
+    {
+      "name": "prefix-00-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 0,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000000
+      },
+      "right": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000000
+      }
+    },
+    {
+      "name": "prefix-00-other-host-valid-overlap",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 0,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000001
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 164,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000001
+      }
+    },
+    {
+      "name": "prefix-01-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 1,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000002
+      },
+      "right": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000002
+      }
+    },
+    {
+      "name": "prefix-01-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 1,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000003
+      },
+      "right": {
+        "a": 70,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000003
+      }
+    },
+    {
+      "name": "prefix-02-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 2,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000004
+      },
+      "right": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000004
+      }
+    },
+    {
+      "name": "prefix-02-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 2,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000005
+      },
+      "right": {
+        "a": 134,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000005
+      }
+    },
+    {
+      "name": "prefix-03-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 3,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000006
+      },
+      "right": {
+        "a": 223,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000006
+      }
+    },
+    {
+      "name": "prefix-03-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 3,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000007
+      },
+      "right": {
+        "a": 230,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000007
+      }
+    },
+    {
+      "name": "prefix-04-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 4,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000008
+      },
+      "right": {
+        "a": 207,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000008
+      }
+    },
+    {
+      "name": "prefix-04-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 4,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000009
+      },
+      "right": {
+        "a": 214,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000009
+      }
+    },
+    {
+      "name": "prefix-05-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 5,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000010
+      },
+      "right": {
+        "a": 199,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000010
+      }
+    },
+    {
+      "name": "prefix-05-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 5,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000011
+      },
+      "right": {
+        "a": 206,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000011
+      }
+    },
+    {
+      "name": "prefix-06-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 6,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000012
+      },
+      "right": {
+        "a": 199,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000012
+      }
+    },
+    {
+      "name": "prefix-06-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 6,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000013
+      },
+      "right": {
+        "a": 194,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000013
+      }
+    },
+    {
+      "name": "prefix-07-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 7,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000014
+      },
+      "right": {
+        "a": 199,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000014
+      }
+    },
+    {
+      "name": "prefix-07-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 7,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000015
+      },
+      "right": {
+        "a": 196,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000015
+      }
+    },
+    {
+      "name": "prefix-08-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 8,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000016
+      },
+      "right": {
+        "a": 198,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000016
+      }
+    },
+    {
+      "name": "prefix-08-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 8,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000017
+      },
+      "right": {
+        "a": 199,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000017
+      }
+    },
+    {
+      "name": "prefix-09-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 9,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000018
+      },
+      "right": {
+        "a": 198,
+        "b": 127,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000018
+      }
+    },
+    {
+      "name": "prefix-09-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 9,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000019
+      },
+      "right": {
+        "a": 198,
+        "b": 146,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000019
+      }
+    },
+    {
+      "name": "prefix-10-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 10,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000020
+      },
+      "right": {
+        "a": 198,
+        "b": 63,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000020
+      }
+    },
+    {
+      "name": "prefix-10-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 10,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000021
+      },
+      "right": {
+        "a": 198,
+        "b": 82,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000021
+      }
+    },
+    {
+      "name": "prefix-11-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 11,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000022
+      },
+      "right": {
+        "a": 198,
+        "b": 31,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000022
+      }
+    },
+    {
+      "name": "prefix-11-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 11,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000023
+      },
+      "right": {
+        "a": 198,
+        "b": 50,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000023
+      }
+    },
+    {
+      "name": "prefix-12-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 12,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000024
+      },
+      "right": {
+        "a": 198,
+        "b": 31,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000024
+      }
+    },
+    {
+      "name": "prefix-12-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 12,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000025
+      },
+      "right": {
+        "a": 198,
+        "b": 2,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000025
+      }
+    },
+    {
+      "name": "prefix-13-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 13,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000026
+      },
+      "right": {
+        "a": 198,
+        "b": 23,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000026
+      }
+    },
+    {
+      "name": "prefix-13-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 13,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000027
+      },
+      "right": {
+        "a": 198,
+        "b": 26,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000027
+      }
+    },
+    {
+      "name": "prefix-14-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 14,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000028
+      },
+      "right": {
+        "a": 198,
+        "b": 19,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000028
+      }
+    },
+    {
+      "name": "prefix-14-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 14,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000029
+      },
+      "right": {
+        "a": 198,
+        "b": 22,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000029
+      }
+    },
+    {
+      "name": "prefix-15-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 15,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000030
+      },
+      "right": {
+        "a": 198,
+        "b": 19,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000030
+      }
+    },
+    {
+      "name": "prefix-15-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 15,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000031
+      },
+      "right": {
+        "a": 198,
+        "b": 16,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000031
+      }
+    },
+    {
+      "name": "prefix-16-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 16,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000032
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000032
+      }
+    },
+    {
+      "name": "prefix-16-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 16,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000033
+      },
+      "right": {
+        "a": 198,
+        "b": 19,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000033
+      }
+    },
+    {
+      "name": "prefix-17-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 17,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000034
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 127,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000034
+      }
+    },
+    {
+      "name": "prefix-17-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 17,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000035
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 201,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000035
+      }
+    },
+    {
+      "name": "prefix-18-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 18,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000036
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 127,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000036
+      }
+    },
+    {
+      "name": "prefix-18-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 18,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000037
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 9,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000037
+      }
+    },
+    {
+      "name": "prefix-19-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 19,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000038
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 95,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000038
+      }
+    },
+    {
+      "name": "prefix-19-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 19,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000039
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 105,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000039
+      }
+    },
+    {
+      "name": "prefix-20-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 20,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000040
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 79,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000040
+      }
+    },
+    {
+      "name": "prefix-20-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 20,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000041
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 89,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000041
+      }
+    },
+    {
+      "name": "prefix-21-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 21,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000042
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 79,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000042
+      }
+    },
+    {
+      "name": "prefix-21-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 21,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000043
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 65,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000043
+      }
+    },
+    {
+      "name": "prefix-22-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 22,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000044
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 75,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000044
+      }
+    },
+    {
+      "name": "prefix-22-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 22,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000045
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 77,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000045
+      }
+    },
+    {
+      "name": "prefix-23-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 23,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000046
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000046
+      }
+    },
+    {
+      "name": "prefix-23-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 23,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000047
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 75,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000047
+      }
+    },
+    {
+      "name": "prefix-24-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000048
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000048
+      }
+    },
+    {
+      "name": "prefix-24-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000049
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 72,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000049
+      }
+    },
+    {
+      "name": "prefix-25-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 25,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000050
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 255,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000050
+      }
+    },
+    {
+      "name": "prefix-25-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 25,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000051
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 37,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000051
+      }
+    },
+    {
+      "name": "prefix-26-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 26,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000052
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 191,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000052
+      }
+    },
+    {
+      "name": "prefix-26-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 26,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000053
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 229,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000053
+      }
+    },
+    {
+      "name": "prefix-27-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 27,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000054
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 191,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000054
+      }
+    },
+    {
+      "name": "prefix-27-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 27,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000055
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 133,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000055
+      }
+    },
+    {
+      "name": "prefix-28-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 28,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000056
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 175,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000056
+      }
+    },
+    {
+      "name": "prefix-28-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 28,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000057
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 181,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000057
+      }
+    },
+    {
+      "name": "prefix-29-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 29,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000058
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 167,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000058
+      }
+    },
+    {
+      "name": "prefix-29-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 29,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000059
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 173,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000059
+      }
+    },
+    {
+      "name": "prefix-30-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 30,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000060
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 167,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000060
+      }
+    },
+    {
+      "name": "prefix-30-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 30,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000061
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 161,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000061
+      }
+    },
+    {
+      "name": "prefix-31-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 31,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000062
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000062
+      }
+    },
+    {
+      "name": "prefix-31-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 31,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000063
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 167,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000063
+      }
+    },
+    {
+      "name": "prefix-32-inside-last-host-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000064
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000064
+      }
+    },
+    {
+      "name": "prefix-32-different-network-right32",
+      "left": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 165,
+        "bits": 32,
+        "effect": 1,
+        "scope": 83197201,
+        "priority": 1000065
+      },
+      "right": {
+        "a": 198,
+        "b": 18,
+        "c": 73,
+        "d": 164,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197201,
+        "priority": 1000065
+      }
+    },
+    {
+      "name": "domain-left-a-invalid-0",
+      "left": {
+        "a": -1,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000000
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000000
+      }
+    },
+    {
+      "name": "domain-left-a-invalid-1",
+      "left": {
+        "a": 256,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000001
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000001
+      }
+    },
+    {
+      "name": "domain-left-b-invalid-0",
+      "left": {
+        "a": 203,
+        "b": -1,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000002
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000002
+      }
+    },
+    {
+      "name": "domain-left-b-invalid-1",
+      "left": {
+        "a": 203,
+        "b": 256,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000003
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000003
+      }
+    },
+    {
+      "name": "domain-left-c-invalid-0",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": -1,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000004
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000004
+      }
+    },
+    {
+      "name": "domain-left-c-invalid-1",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 256,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000005
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000005
+      }
+    },
+    {
+      "name": "domain-left-d-invalid-0",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": -1,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000006
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000006
+      }
+    },
+    {
+      "name": "domain-left-d-invalid-1",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 256,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000007
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000007
+      }
+    },
+    {
+      "name": "domain-left-bits-invalid-0",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": -1,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000008
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000008
+      }
+    },
+    {
+      "name": "domain-left-bits-invalid-1",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 33,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000009
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000009
+      }
+    },
+    {
+      "name": "domain-left-effect-invalid-0",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": -1,
+        "scope": 83197202,
+        "priority": 2000010
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000010
+      }
+    },
+    {
+      "name": "domain-left-effect-invalid-1",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 2,
+        "scope": 83197202,
+        "priority": 2000011
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000011
+      }
+    },
+    {
+      "name": "domain-left-scope-invalid-0",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 0,
+        "priority": 2000012
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000012
+      }
+    },
+    {
+      "name": "domain-left-scope-invalid-1",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": -1,
+        "priority": 2000013
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000013
+      }
+    },
+    {
+      "name": "domain-right-a-invalid-0",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000014
+      },
+      "right": {
+        "a": -1,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000014
+      }
+    },
+    {
+      "name": "domain-right-a-invalid-1",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000015
+      },
+      "right": {
+        "a": 256,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000015
+      }
+    },
+    {
+      "name": "domain-right-b-invalid-0",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000016
+      },
+      "right": {
+        "a": 203,
+        "b": -1,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000016
+      }
+    },
+    {
+      "name": "domain-right-b-invalid-1",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000017
+      },
+      "right": {
+        "a": 203,
+        "b": 256,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000017
+      }
+    },
+    {
+      "name": "domain-right-c-invalid-0",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000018
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": -1,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000018
+      }
+    },
+    {
+      "name": "domain-right-c-invalid-1",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000019
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 256,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000019
+      }
+    },
+    {
+      "name": "domain-right-d-invalid-0",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000020
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": -1,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000020
+      }
+    },
+    {
+      "name": "domain-right-d-invalid-1",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000021
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 256,
+        "bits": 32,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000021
+      }
+    },
+    {
+      "name": "domain-right-bits-invalid-0",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000022
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": -1,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000022
+      }
+    },
+    {
+      "name": "domain-right-bits-invalid-1",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000023
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 33,
+        "effect": 0,
+        "scope": 83197202,
+        "priority": 2000023
+      }
+    },
+    {
+      "name": "domain-right-effect-invalid-0",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000024
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": -1,
+        "scope": 83197202,
+        "priority": 2000024
+      }
+    },
+    {
+      "name": "domain-right-effect-invalid-1",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000025
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 2,
+        "scope": 83197202,
+        "priority": 2000025
+      }
+    },
+    {
+      "name": "domain-right-scope-invalid-0",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000026
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": 0,
+        "priority": 2000026
+      }
+    },
+    {
+      "name": "domain-right-scope-invalid-1",
+      "left": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 73,
+        "bits": 24,
+        "effect": 1,
+        "scope": 83197202,
+        "priority": 2000027
+      },
+      "right": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 201,
+        "bits": 32,
+        "effect": 0,
+        "scope": -1,
+        "priority": 2000027
+      }
+    }
+  ]
+}

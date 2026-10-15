@@ -6,9 +6,9 @@ describing what programs should do and inspecting how they are built and run.
 **Try service-policy checks from Go:** open the [four-file service-policy quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726). With Go 1.27.2 already installed, follow its README to run Go generated from Gooo without a runtime Gooo compiler. Distinguish invalid input from denial, compare the same request before and after a rule change, and inspect a returned widening witness. These calls compare supplied policy facts; they do not apply a grant or call a service.
 
 This independent ecosystem project implements selected Go standard-library, x/image and Google UUID functions in Gooo,
-with independent Go reference outputs and saved replay: 49 authored standard-library ports,
+using independent Go references and saved replay. The source inventory includes 51 authored standard-library ports,
 two ports from golang.org/x/image and two Google UUID adaptations. The current scope is
-53 authored HTTP, Unicode, IPv4 classification, literal-text splitting and byte search, slash-path, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, twenty-one native importing consumer programs (twenty-three activities),
+55 authored HTTP, Unicode, IPv4 classification and prefix queries, literal-text splitting and byte search, slash-path, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, twenty-three importing consumer programs (twenty-six activities),
 and an importing browser dispatcher.
 The RectangleIn/FitsCrop suites have completed finite native execution and saved
 replay with an independent raw-receipt audit; see the [verification evidence](evidence/rectangle-in-fits-crop-20261012.json).
@@ -40,6 +40,15 @@ are separate from the CLI layer and the existing catalog. Private addresses can
 also be global unicast; neither flag is a destination permission or a promise of
 Internet reachability. Parsing and IPv6 are outside this port.
 
+The new [IPv4 prefix queries](examples/ipv4-prefix-probe/README.md) and original
+[equal-priority rule-pair report](examples/ipv4-rule-pair/README.md) add two
+required-record query APIs and an 11-field Gooo decision. The report distinguishes
+invalid input and non-comparable scope/priority, and returns a canonical network
+witness only for overlapping opposite effects in a comparable pair. Caller scope
+is an opaque key, not evidence of actual context or authority. The opt-in checker requires fresh native execution and saved replay for these
+sources. It keeps 54 CLI outputs and 54 saved-replay outputs
+separate from 112 fresh generated Report calls; existing catalog counts stay intact.
+
 The original [automatic redelivery policy](examples/automatic-redelivery/README.md)
 uses nine supplied facts to return fifteen fields, including every original input,
 a next action and its reason. It can select an eligible attempt, stop, refresh
@@ -58,7 +67,7 @@ The separate [Agent Mesh service-pattern example](examples/agentmesh-service-pol
 adds a bounded adaptation of `MatchServicePattern` and an original three-field
 comparison for one supplied request before and after a pattern change. Its
 63 matcher cases (including 12 upstream tests) and 16 original impact cases are
-separate from the 53 authored APIs and the existing native catalog above. `WIDENED` means
+separate from the 55 authored APIs and the existing native catalog above. `WIDENED` means
 that this supplied request became allowed; it is not a global grant-inclusion
 proof or a current authorization. Gooo computes the matches and impact without
 per-call human approval; the host owns trusted facts and any actual effects.
@@ -95,6 +104,7 @@ proposal, a refused expansion, and recovery of a discarded response by operation
 | Split a literal separator or remove an edge affix | [Literal Cut report](examples/literal-cut-report/README.md) | Compare Cut, CutPrefix and CutSuffix while retaining both original inputs and all eleven returned fields |
 | Assess an uncertain API operation automatically | [Automatic redelivery policy](examples/automatic-redelivery/README.md) | Supply nine bound facts, inspect all fifteen returned fields and save a replay; eligibility requires a later host-owned atomic claim |
 | Classify four IPv4 octets in Gooo | [IPv4 address facts](examples/ipv4-address-facts/README.md) | Preserve all four supplied integers, distinguish invalid input from valid addresses, and inspect six overlapping classification flags |
+| Compare two IPv4 rule scopes | [IPv4 rule-pair facts](examples/ipv4-rule-pair/README.md) | Preserve typed inputs, distinguish invalid/non-comparable rules and inspect a conflict witness |
 | Use current ports in another Gooo project | [Current path import walkthrough](docs/use-current-path-in-your-project.md) | Copy a separate Gooo workspace, run `path.Ext` / `path.IsAbs` through its six-field report and save a replayable record |
 
 The [older ValidRune import walkthrough](docs/use-in-your-project.md) remains fixed to preview.2 and its own compiler. Use the current path walkthrough above for the `83928fa` compiler and Go 1.27.2.
@@ -1025,6 +1035,7 @@ RectangleIn과 FitsCrop까지의 총계 40개 포트·17개 소비 프로그램�
 새 Index·Count와 Literal Text Report를 포함한 소스 목록은 42개 포트·18개 소비 프로그램·20개 소비 활동입니다.
 이 목록을 보존하고 Cut·CutPrefix·CutSuffix와 Literal Cut Report를 덧붙인 작성 소스는 45개 포트·19개 소비 프로그램·21개 소비 활동입니다. 신규 네 suite는 각 원래 입력 32쌍을 사용하며, 완료된 native 실행과 replay는 해당 소스의 CI 보고서로 구분합니다.
 그 목록과 별도로 `path.Ext`·`path.IsAbs`, IPv4 분류 함수 6개와 각각의 importing Report를 더한 작성 소스는 **53개 포트·21개 소비 프로그램·23개 소비 활동**입니다. 기존 catalog의 66개 suite·159,909건·2,109개 CI 배치·7개 전수 검사는 그대로입니다. [Path Facts](examples/path-facts/README.md)의 generated-native 출력 29,523개 및 CLI·replay 각 72개와, [IPv4 Address Facts](examples/ipv4-address-facts/README.md)의 CLI·replay 각 352개 및 생성 리포트 입력 202개는 따로 집계합니다. 각 입력 범위와 검사 방식을 확인하세요. 전체 라이브러리 호환성·네트워크 접근 안전성·성능 향상을 입증하는 수치는 아닙니다.
+새 prefix query 두 포트와 importing probe·rule-pair 구성을 더한 작성 소스는 **55개 포트·23개 소비 프로그램·26개 소비 활동**입니다. 별도 검사기는 현재 소스로 54개 CLI 실행·54개 저장 영수증 재현과 112개 생성 함수 결과를 독립적인 Go 계산과 비교합니다. 입력 존재나 이전 기록을 새 native 성공으로 계산하지 않습니다.
 원본 int32 전체의 동작을 구현하되 2^32 전수 검사를 주장하지 않습니다.
 브라우저 21함수와 두 crop 모드는 그대로입니다.
 

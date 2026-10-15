@@ -1,0 +1,419 @@
+{
+  "schema": "gooo/ipv4-rule-pair-inputs/v1",
+  "cases": [
+    {
+      "name": "invalid-left-precedes-scope-and-priority",
+      "left": {
+        "a": -9223372036854775808,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": 1,
+        "scope": 1,
+        "priority": -9223372036854775808
+      },
+      "right": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": 0,
+        "scope": 2,
+        "priority": 9223372036854775807
+      }
+    },
+    {
+      "name": "invalid-right-octet-and-bits",
+      "left": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": 1,
+        "scope": 1,
+        "priority": 0
+      },
+      "right": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 9223372036854775807,
+        "bits": 33,
+        "effect": 0,
+        "scope": 1,
+        "priority": 0
+      }
+    },
+    {
+      "name": "invalid-effect",
+      "left": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": -1,
+        "scope": 1,
+        "priority": 0
+      },
+      "right": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": 1,
+        "scope": 1,
+        "priority": 0
+      }
+    },
+    {
+      "name": "invalid-zero-scope",
+      "left": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": 1,
+        "scope": 0,
+        "priority": 0
+      },
+      "right": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": 0,
+        "scope": 1,
+        "priority": 0
+      }
+    },
+    {
+      "name": "invalid-negative-scope",
+      "left": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": 1,
+        "scope": 1,
+        "priority": 9223372036854775807
+      },
+      "right": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 8,
+        "effect": 0,
+        "scope": -9223372036854775808,
+        "priority": 9223372036854775807
+      }
+    },
+    {
+      "name": "scope-mismatch-before-priority",
+      "left": {
+        "a": 10,
+        "b": 1,
+        "c": 2,
+        "d": 3,
+        "bits": 8,
+        "effect": 1,
+        "scope": 1,
+        "priority": -9223372036854775808
+      },
+      "right": {
+        "a": 10,
+        "b": 20,
+        "c": 30,
+        "d": 40,
+        "bits": 16,
+        "effect": 0,
+        "scope": 2,
+        "priority": 9223372036854775807
+      }
+    },
+    {
+      "name": "priority-mismatch",
+      "left": {
+        "a": 10,
+        "b": 1,
+        "c": 2,
+        "d": 3,
+        "bits": 8,
+        "effect": 1,
+        "scope": 42,
+        "priority": -9223372036854775808
+      },
+      "right": {
+        "a": 10,
+        "b": 20,
+        "c": 30,
+        "d": 40,
+        "bits": 16,
+        "effect": 0,
+        "scope": 42,
+        "priority": 9223372036854775807
+      }
+    },
+    {
+      "name": "disjoint-opposite-effects",
+      "left": {
+        "a": 10,
+        "b": 1,
+        "c": 2,
+        "d": 3,
+        "bits": 8,
+        "effect": 1,
+        "scope": 42,
+        "priority": 0
+      },
+      "right": {
+        "a": 11,
+        "b": 20,
+        "c": 30,
+        "d": 40,
+        "bits": 8,
+        "effect": 0,
+        "scope": 42,
+        "priority": 0
+      }
+    },
+    {
+      "name": "disjoint-before-same-effect",
+      "left": {
+        "a": 10,
+        "b": 1,
+        "c": 2,
+        "d": 3,
+        "bits": 8,
+        "effect": 1,
+        "scope": 42,
+        "priority": 0
+      },
+      "right": {
+        "a": 11,
+        "b": 20,
+        "c": 30,
+        "d": 40,
+        "bits": 8,
+        "effect": 1,
+        "scope": 42,
+        "priority": 0
+      }
+    },
+    {
+      "name": "overlap-same-allow",
+      "left": {
+        "a": 10,
+        "b": 1,
+        "c": 2,
+        "d": 3,
+        "bits": 8,
+        "effect": 1,
+        "scope": 42,
+        "priority": 0
+      },
+      "right": {
+        "a": 10,
+        "b": 20,
+        "c": 30,
+        "d": 40,
+        "bits": 16,
+        "effect": 1,
+        "scope": 42,
+        "priority": 0
+      }
+    },
+    {
+      "name": "overlap-same-deny-31-and-32",
+      "left": {
+        "a": 192,
+        "b": 0,
+        "c": 2,
+        "d": 1,
+        "bits": 31,
+        "effect": 0,
+        "scope": 42,
+        "priority": -9223372036854775808
+      },
+      "right": {
+        "a": 192,
+        "b": 0,
+        "c": 2,
+        "d": 0,
+        "bits": 32,
+        "effect": 0,
+        "scope": 42,
+        "priority": -9223372036854775808
+      }
+    },
+    {
+      "name": "conflict-more-specific-right",
+      "left": {
+        "a": 10,
+        "b": 1,
+        "c": 2,
+        "d": 3,
+        "bits": 8,
+        "effect": 1,
+        "scope": 42,
+        "priority": 7
+      },
+      "right": {
+        "a": 10,
+        "b": 20,
+        "c": 30,
+        "d": 40,
+        "bits": 16,
+        "effect": 0,
+        "scope": 42,
+        "priority": 7
+      }
+    },
+    {
+      "name": "conflict-swapped-same-witness",
+      "left": {
+        "a": 10,
+        "b": 20,
+        "c": 30,
+        "d": 40,
+        "bits": 16,
+        "effect": 0,
+        "scope": 42,
+        "priority": 7
+      },
+      "right": {
+        "a": 10,
+        "b": 1,
+        "c": 2,
+        "d": 3,
+        "bits": 8,
+        "effect": 1,
+        "scope": 42,
+        "priority": 7
+      }
+    },
+    {
+      "name": "conflict-non-byte-prefix",
+      "left": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 199,
+        "bits": 25,
+        "effect": 0,
+        "scope": 42,
+        "priority": 9223372036854775807
+      },
+      "right": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 170,
+        "bits": 26,
+        "effect": 1,
+        "scope": 42,
+        "priority": 9223372036854775807
+      }
+    },
+    {
+      "name": "conflict-equal-default-prefixes-zero-witness",
+      "left": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 0,
+        "effect": 1,
+        "scope": 9223372036854775807,
+        "priority": 9223372036854775807
+      },
+      "right": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 0,
+        "effect": 0,
+        "scope": 9223372036854775807,
+        "priority": 9223372036854775807
+      }
+    },
+    {
+      "name": "conflict-zero-host-32-is-valid",
+      "left": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 0,
+        "bits": 32,
+        "effect": 0,
+        "scope": 42,
+        "priority": 0
+      },
+      "right": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 0,
+        "effect": 1,
+        "scope": 42,
+        "priority": 0
+      }
+    },
+    {
+      "name": "conflict-maximum-host-32",
+      "left": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 255,
+        "bits": 32,
+        "effect": 1,
+        "scope": 42,
+        "priority": 0
+      },
+      "right": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 254,
+        "bits": 0,
+        "effect": 0,
+        "scope": 42,
+        "priority": 0
+      }
+    },
+    {
+      "name": "adjacent-25-disjoint",
+      "left": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 127,
+        "bits": 25,
+        "effect": 1,
+        "scope": 42,
+        "priority": 0
+      },
+      "right": {
+        "a": 192,
+        "b": 168,
+        "c": 1,
+        "d": 128,
+        "bits": 25,
+        "effect": 0,
+        "scope": 42,
+        "priority": 0
+      }
+    }
+  ]
+}
