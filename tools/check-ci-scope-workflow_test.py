@@ -7,6 +7,7 @@ It needs no YAML package on the CI runner.
 """
 
 import hashlib
+import json
 import re
 import subprocess
 import unittest
@@ -44,16 +45,17 @@ REDELIVERY_COMMON_COMMANDS = (
 )
 PATH_COMMAND = 'python3 -B tools/check-path-facts.py --repository . --out out/path-facts --go "$(go env GOROOT)/bin/go" --compiler ./.gooo --timeout 300'
 PATH_COMMON_UNIT_BLOCK = '          # Full scope runs these13 Python controls inside the bounded sidecar once.\n          # Documentation-only PRs still run them as common non-native checks.\n          if [ "${{ steps.change-scope.outputs.docs_only }}" = "true" ]; then\n            python3 -I -B tools/check-path-facts_test.py\n          fi\n'
-NATIVE_COMPARISON_COMMAND = "go run ./cmd/verify --workers 2 --case-profile uuid-compact-v1 --out out/ci --timing-out out/ci/timing.jsonl"
+NATIVE_COMPARISON_COMMAND = "go run ./cmd/verify --workers 2 --case-profile uuid-and-literal-report-compact-v1 --out out/ci --timing-out out/ci/timing.jsonl"
 CASE_PROFILE_ASSERTION = '''            .case_profile == {
-              schema: "gooo/native-case-profile/v1", name: "uuid-compact-v1",
+              schema: "gooo/native-case-profile/v1", name: "uuid-and-literal-report-compact-v1",
               compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.2",
-              entries: ["go/github.com/google/uuid:Validate", "app/uuid-format-inspector:Inspect", "go/github.com/google/uuid/text:ParseCanonical"],
+              entries: ["go/github.com/google/uuid:Validate", "app/uuid-format-inspector:Inspect", "go/github.com/google/uuid/text:ParseCanonical", "app/literal-text-report:Report"],
+              basis_profile: "uuid-compact-v1",
               serializer: "Go1.27.2 json.Marshal(caseDocument(batch)) plus exactly one LF",
               maximum_rows: 128, raw_bytes_including_LF: 30000,
               translated_compact_engine_bytes: 32768, maximum_selected_source_bytes: 10485760,
               lowering_guard: "Pinned839 source-derived nonexpansion upper bound; not measured translated bytes or an actual LoweredName.",
-              scope: "Only UUID3 wire bytes/partitions change; original ordered cases, independent expected values, exact workspace and fresh execution/saved replay remain required. No legacy batch total, native-capacity acceptance, full-profile compatibility or speedup is inherited."
+              scope: "UUID3 retain the exact uuid-compact-v1 policy/wire bytes. Only literal-text Report adds compact wire bytes and new source-bounded partitions. Index/Count and decimal/payload policies remain unchanged. Original ordered cases, independent expectations, exact sources and fresh native execution/saved replay are required; no prior profile PASS, native capacity or speedup is inherited."
             } and
 '''
 TIMING_HEADER_ASSERTION = '''          head -n 1 out/ci/timing.jsonl | jq -e --slurpfile summary out/ci/summary.json '
@@ -63,9 +65,9 @@ TIMING_HEADER_ASSERTION = '''          head -n 1 out/ci/timing.jsonl | jq -e --s
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
             .configured_workers == 2 and .expected_suites == 68 and .expected_cases == 160266 and
             .expected_boundaries_recomputed == false and
-            .boundary_scope == "Actual contiguous batch coverage is observed. UUID3 use uuid-compact-v1 compact wire bytes and newly selected bounds; no original UUID batch boundaries or legacy2337 total are claimed preserved. Existing non-UUID suites retain nativeBatchEnd/save behavior; appended decimal/payload entries use source-bounded pretty JSON. The recorder does not recompute expected partitions." and
-            (.identity.source_files | length) == 119 and
-            all(["cmd/verify/case_profile.go", "cmd/verify/case_profile_test.go", "cmd/verify/case_profile_integration_test.go"][];
+            .boundary_scope == "Actual contiguous ranges only. UUID3 retain uuid-compact-v1 wire/partitions; literal-text Report uses a new compact writer/partition identity. No prior profile PASS or full batch total is inherited. Index/Count and other existing non-UUID suites retain their indented writer; decimal/payload retain their source-bounded pretty JSON policy. Fresh native/saved replay and the full summary gate remain required; no timing or speedup claim." and
+            (.identity.source_files | length) == 120 and
+            all(["cmd/verify/case_profile.go", "cmd/verify/case_profile_test.go", "cmd/verify/case_profile_integration_test.go", "cmd/verify/literal_report_case_profile_test.go"][];
               . as $path | ($header.identity.source_files[$path].bytes | type) == "number" and
               $header.identity.source_files[$path].bytes > 0 and
               ($header.identity.source_files[$path].sha256 | test("^[0-9a-f]{64}$")))
@@ -75,9 +77,9 @@ TIMING_CLAUSES = (
     '.schema == "gooo/native-verification-timing/v1"', '.kind == "run_end"',
     '.status == "COMPLETE"',
     '.complete == true and .aborted == false and .successful_close_return_required == true',
-    '.seq == 2255', '.expected_suites == 68', '.successful_suites == 68',
-    '.observed_batches == 2118', '.verified_batches == 2118', '.verified_cases == 160266',
-    '.event_count == 2256', '.failed_suites == 0', '.canceled_suites == 0',
+    '.seq == 2209', '.expected_suites == 68', '.successful_suites == 68',
+    '.observed_batches == 2072', '.verified_batches == 2072', '.verified_cases == 160266',
+    '.event_count == 2210', '.failed_suites == 0', '.canceled_suites == 0',
     '.not_started_suites == 0', '.missing_suite_finishes == 0',
     '.failed_batches == 0', '.incomplete_batches == 0', '.logger_errors == 0',
     '.source_bindings_unchanged == true',
@@ -86,6 +88,7 @@ TIMING_ASSERTION = ("          tail -n 1 out/ci/timing.jsonl | jq -e '\n"
                     + "\n".join("            " + clause + (" and" if index < len(TIMING_CLAUSES) - 1 else "")
                                 for index, clause in enumerate(TIMING_CLAUSES))
                     + "\n          '\n")
+LITERAL_REPORT_COMPACT_SCOPE = 'Only app/literal-text-report:Report adds compact case JSON plus one LF, <=128 original rows, <=30000 raw bytes and a pinned839 source-derived nonexpanding-key <=32768 translated bound. Index/Count retain their prior indented writer and partitions. Native execution and saved replay must freshly inspect all9313 original Report pairs; count-only281-to235 is not native, full-CI or performance acceptance. Decimal/payload policies remain unchanged.'
 TIMING_SUMMARY_SHA = '449c77747290beaa0cb7d41c356e47199bbbc1a071e2f6da25a0c69eb8c0e52e'
 COMMON = {
     "Classify the exact checked PR tree", "Check the Go observer",
@@ -306,8 +309,8 @@ def validate(text):
     for token in (".ported_functions == 46 and .consumer_programs == 20 and .consumer_activities == 22 and",
                   "(.runs | length) == 68 and",
                   ".cases == 160266 and .passed == 160266 and",
-                  "([.runs[].cases] | add) == 160266 and ([.runs[].batches] | add) == 2118 and",
-                  "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2104 and",
+                  "([.runs[].cases] | add) == 160266 and ([.runs[].batches] | add) == 2072 and",
+                  "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2058 and",
                   "([.runs[:59][].cases] | add) == 131842 and ([.runs[:59][].batches] | add) == 1549 and",
                   "([.runs[:57][].cases] | add) == 130702 and ([.runs[:57][].batches] | add) == 1513 and",
                   "([.runs[:56][].cases] | add) == 108835 and ([.runs[:56][].batches] | add) == 1274 and",
@@ -323,10 +326,12 @@ def validate(text):
             require(token in comparison, "UUID compact suite identity/count missing: " + token)
     for index, package, activity, batches in ((59, "go/strings", "Index", 137),
                                                (60, "go/strings", "Count", 137),
-                                               (61, "app/literal-text-report", "Report", 281)):
+                                               (61, "app/literal-text-report", "Report", 235)):
         for token in (f'.runs[{index}].package == "{package}" and .runs[{index}].activity == "{activity}" and',
                       f".runs[{index}].cases == 9313 and .runs[{index}].passed == 9313 and .runs[{index}].batches == {batches} and"):
             require(token in comparison, "literal finite suite identity/count missing: " + token)
+    require(".literal_report_compact_scope == " + json.dumps(LITERAL_REPORT_COMPACT_SCOPE) + " and" in comparison,
+            "literal Report compact scope is missing or rebound")
     for token in (".literal_index_reference_cases == 9313", ".literal_count_reference_cases == 9313",
                   ".literal_report_reference_cases == 9313", ".literal_finite_provenance_scope",
                   "Inner prior_result_sha256, full generation-report provenance and composition/runtime typed-plan equality are NOT_CHECKED"):
@@ -342,7 +347,7 @@ def validate(text):
                   ".literal_cut_suffix_reference_cases == 32", ".literal_cut_report_reference_cases == 32",
                   '(.literal_cut_finite_provenance_scope | contains("Inner prior_result_sha256, full generation-report provenance and composition/runtime typed-plan equality are NOT_CHECKED")) and'):
         require(token in comparison, "Cut finite evidence scope missing: " + token)
-    for token in ('([.runs[:66][].cases] | add) == 159909 and ([.runs[:66][].batches] | add) == 2109 and', '.decimal_reference_cases == 256 and .payload_admission_reference_cases == 101 and', '(.decimal_payload_provenance_scope | contains("Inner prior_result_sha256 is NOT_CHECKED")) and', '.runs[66].package == "go/strconv" and .runs[66].activity == "ParseIntDecimal64" and', '.runs[66].cases == 256 and .runs[66].passed == 256 and .runs[66].batches == 5 and', '.runs[67].package == "app/payload-admission" and .runs[67].activity == "Report" and', '.runs[67].cases == 101 and .runs[67].passed == 101 and .runs[67].batches == 4 and'):
+    for token in ('([.runs[:66][].cases] | add) == 159909 and ([.runs[:66][].batches] | add) == 2063 and', '.decimal_reference_cases == 256 and .payload_admission_reference_cases == 101 and', '(.decimal_payload_provenance_scope | contains("Inner prior_result_sha256 is NOT_CHECKED")) and', '.runs[66].package == "go/strconv" and .runs[66].activity == "ParseIntDecimal64" and', '.runs[66].cases == 256 and .runs[66].passed == 256 and .runs[66].batches == 5 and', '.runs[67].package == "app/payload-admission" and .runs[67].activity == "Report" and', '.runs[67].cases == 101 and .runs[67].passed == 101 and .runs[67].batches == 4 and'):
         require(token in comparison, "decimal/payload finite roster or evidence scope missing: " + token)
     require(named["Check the Go observer"].count("python3 -I -B tools/generate-payload-corpus.py --check") == 1, "payload input generator missing")
     for source in ("ports/strconv/decimal.gooo", "examples/payload-admission/main.gooo"):
@@ -667,19 +672,23 @@ class WorkflowScopeTests(unittest.TestCase):
     def test_compact_profile_cannot_be_missing_unknown_legacy_or_rebound(self):
         named, _ = named_steps(self.text)
         chunk = named["Compare the ports with Go and replay every batch"]
-        mutations = [chunk.replace(" --case-profile uuid-compact-v1", replacement, 1)
-                     for replacement in ("", " --case-profile legacy", " --case-profile uuid-compact-v2",
-                                         " --case-profile uuid-compact-v1 --case-profile legacy")]
+        mutations = [chunk.replace(" --case-profile uuid-and-literal-report-compact-v1", replacement, 1)
+                     for replacement in ("", " --case-profile legacy", " --case-profile uuid-compact-v1", " --case-profile uuid-and-literal-report-compact-v2",
+                                         " --case-profile uuid-and-literal-report-compact-v1 --case-profile legacy")]
         for assertion in (CASE_PROFILE_ASSERTION, TIMING_HEADER_ASSERTION):
             self.assertIn(assertion, chunk)
             mutations.append(chunk.replace(assertion, "", 1))
             for line in assertion.splitlines()[1:-1]:
                 mutations.append(chunk.replace(assertion, assertion.replace(line, "            true and", 1), 1))
         mutations.extend((
-            chunk.replace('name: "uuid-compact-v1"', 'name: "legacy"', 1),
+            chunk.replace('name: "uuid-and-literal-report-compact-v1"', 'name: "legacy"', 1),
+            chunk.replace('name: "uuid-and-literal-report-compact-v1"', 'name: "uuid-compact-v1"', 1),
+            chunk.replace('basis_profile: "uuid-compact-v1"', 'basis_profile: "legacy"', 1),
+            chunk.replace('"app/literal-text-report:Report"', '"go/strings:Index"', 1),
+            chunk.replace(".literal_report_compact_scope == " + json.dumps(LITERAL_REPORT_COMPACT_SCOPE) + " and", "true and", 1),
             chunk.replace("maximum_rows: 128", "maximum_rows: 129", 1),
             chunk.replace("raw_bytes_including_LF: 30000", "raw_bytes_including_LF: 32768", 1),
-            chunk.replace("(.identity.source_files | length) == 119", "(.identity.source_files | length) >= 97", 1),
+            chunk.replace("(.identity.source_files | length) == 120", "(.identity.source_files | length) >= 97", 1),
             chunk.replace("--slurpfile summary out/ci/summary.json", "--slurpfile summary out/old/summary.json", 1),
             chunk.replace(".case_profile == $summary[0].case_profile", ".case_profile == null", 1),
         ))
@@ -687,6 +696,25 @@ class WorkflowScopeTests(unittest.TestCase):
             self.assertNotEqual(chunk, altered)
             with self.subTest(altered=altered[:600]), self.assertRaises(ValueError):
                 validate(self.text.replace(chunk, altered, 1))
+
+    def test_literal_report_combined_profile_counts_cannot_reuse_previous_profile(self):
+        named, _ = named_steps(self.text)
+        comparison = named["Compare the ports with Go and replay every batch"]
+        changes = (
+            (".runs[61].batches == 235", ".runs[61].batches == 281"),
+            ("([.runs[:62][].batches] | add) == 2058", "([.runs[:62][].batches] | add) == 2104"),
+            ("([.runs[:66][].batches] | add) == 2063", "([.runs[:66][].batches] | add) == 2109"),
+            ("([.runs[].batches] | add) == 2072", "([.runs[].batches] | add) == 2118"),
+            (".event_count == 2210", ".event_count == 2256"),
+            (".seq == 2209", ".seq == 2255"),
+            ("(.identity.source_files | length) == 120", "(.identity.source_files | length) == 119"),
+        )
+        for before, after in changes:
+            self.assertIn(before, comparison)
+            altered = comparison.replace(before, after, 1)
+            self.assertNotEqual(comparison, altered)
+            with self.subTest(before=before), self.assertRaises(ValueError):
+                validate(self.text.replace(comparison, altered, 1))
 
     def test_compact_uuid_exact_counts_and_full_case_replay_gate_cannot_be_weakened(self):
         named, _ = named_steps(self.text)
@@ -745,8 +773,8 @@ class WorkflowScopeTests(unittest.TestCase):
         clauses = (
             ".ported_functions == 46 and .consumer_programs == 20 and .consumer_activities == 22 and",
             "(.runs | length) == 68 and", ".cases == 160266 and .passed == 160266 and",
-            "([.runs[].cases] | add) == 160266 and ([.runs[].batches] | add) == 2118 and",
-            "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2104 and",
+            "([.runs[].cases] | add) == 160266 and ([.runs[].batches] | add) == 2072 and",
+            "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2058 and",
             ".literal_cut_reference_cases == 32", ".literal_cut_prefix_reference_cases == 32",
             ".literal_cut_suffix_reference_cases == 32", ".literal_cut_report_reference_cases == 32",
             '(.literal_cut_finite_provenance_scope | contains("Inner prior_result_sha256, full generation-report provenance and composition/runtime typed-plan equality are NOT_CHECKED")) and',
@@ -823,10 +851,13 @@ class WorkflowScopeTests(unittest.TestCase):
                               ("all(.observed_by_entry[]; . == 28)", "true"),
                               ("([.runs[:59][].cases] | add) == 131842", "true"),
                               (".literal_index_reference_cases == 9313", ".literal_index_reference_cases == 24"),
-                              (".runs[61].batches == 281", ".runs[61].batches == 137"),
+                              (".runs[61].batches == 235", ".runs[61].batches == 137"),
                               ("are NOT_CHECKED", "are CHECKED")):
+            self.assertIn(before, self.text)
+            altered = self.text.replace(before, after, 1)
+            self.assertNotEqual(self.text, altered)
             with self.subTest(before=before), self.assertRaises(ValueError):
-                validate(self.text.replace(before, after, 1))
+                validate(altered)
 
     def test_cut_malformed_entries_counts_and_declarations_cannot_be_removed(self):
         named, _ = named_steps(self.text)

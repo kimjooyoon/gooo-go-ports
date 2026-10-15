@@ -177,10 +177,16 @@ the receipt must record that worker count. The historical 66 suites retain all
 records; the explicit UUID compact profile had 2,109 batches/2,243 timing records.
 The decimal parser adds 256 inputs and PayloadAdmissionFacts adds 101 unique
 seven-fact tuples, with the original 17 policy inputs first. The required current
-roster is 68 suites and 160,266 cases. The current source partition adds five
-parser batches and four policy batches: CI UUID compact totals are 2,118 batches
-and 2,256 timing records; legacy totals are 2,346 and 2,484. These are source
-partition requirements, not native completion. Require a COMPLETE footer and reject failed,
+roster is 68 suites and 160,266 cases. CI now selects
+`uuid-and-literal-report-compact-v1`: the same UUID3 plus literal Report only.
+Report has 235 compact batches; Index/Count and the Cut entries retain their
+prior partitions. The original66 combined-profile requirement is 2,063 batches;
+adding the unchanged parser5/policy4 requires 2,072 full68 batches and 2,210
+timing records. These are source-partition requirements, not native completion.
+The default legacy profile still requires 2,346/2,484 for full68, and the explicit
+UUID-only profile still requires 2,118/2,256. Keep both historical profiles and
+their tests. Summary/header must bind the new exact four-entry identity,
+`basis_profile`, source map and boundary scope. Require a COMPLETE footer and reject failed,
 canceled, missing or incomplete records. All original cases, oracles, source
 workspaces, independent regressions and other gates remain required. Every new
 batch needs fresh native execution and its own saved replay; input generation or
@@ -215,9 +221,13 @@ CI는 제한된 워커 2개로 전체 native 비교를 실행하고 receipt의 �
 기존66개 suite의159,909개 입력 순서·기대값·workspace를 보존합니다. 해당 역사적 목록은
 legacy에서2,337개 배치·2,471개 계측 기록, UUID compact profile에서2,109개 배치·2,243개
 기록이었습니다. 십진수 파서256개와 원본17개를 앞에 보존한 정책101개 입력을 더해 현재
-필수 범위는68개 suite·160,266개 case입니다. 현재 소스 분할에서 parser5·policy4배치를
-추가하여 CI profile은2,118배치·2,256계측기록, legacy는2,346·2,484를 요구합니다.
-이 분할 관측은 native 완료가 아닙니다. 실패·취소·누락·
+필수 범위는68개 suite·160,266개 case입니다. 현재 CI의 `uuid-and-literal-report-compact-v1`은
+기존 UUID3와 literal Report만 compact 형식을 사용합니다. Report는235배치이며 Index·Count·Cut과
+십진수·payload 경계는 그대로입니다. 해당66개는2,063배치를, parser5·policy4까지 더한 전체68개는
+2,072배치·2,210계측기록을 요구합니다. 기본 legacy 전체68개는2,346·2,484,
+명시적 UUID-only 프로필은2,118·2,256을 계속 요구하며 기존 테스트를 유지합니다.
+summary/header의 새4entry 식별자·basis_profile·전체소스·경계 범위를 함께 검사합니다.
+이 분할 요구 수치는 native 완료가 아닙니다. 실패·취소·누락·
 미완료 없이 COMPLETE footer가 있어야 하며 모든 기존 독립 회귀 검사를 유지합니다.
 입력 생성이나 이전 private 관측은 현재 공개 소스의 native 실행·저장 replay 성공이 아닙니다.
 검증기 테스트는

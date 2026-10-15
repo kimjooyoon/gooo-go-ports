@@ -25,7 +25,7 @@ generated native function. Those 29,523 values are direct function comparisons,
 with 72 CLI and 72 saved-replay outputs counted separately. Before the decimal
 parser and payload-policy addition, the historical catalog contained 45 ports,
 19 consumer programs, 21 consumer activities, 66 suites, 159,909 cases,
-2,109 CI-profile batches and 7 exhaustive checks. Sidecar values are not added
+2,109 UUID-only compact batches and 7 exhaustive checks. Sidecar values are not added
 to those historical counters; the new two-suite extension is described below.
 
 The [IPv4 address facts sidecar](examples/ipv4-address-facts/README.md) adds six
@@ -66,8 +66,10 @@ tuples, preserving the original 17 policy witnesses first. The current required
 roster is 46 ports, 20 consumer programs, 22 consumer activities, 68 suites and
 160,266 cases; all 66 historical suites and their inputs remain unchanged.
 The current source partition check gives five parser batches and four policy
-batches: nine new batches, for 2,118 with the CI UUID compact profile (2,346 in
-legacy). The required timing roster is 2,256 records (2,484 in legacy). These are
+batches: nine new batches, for 2,072 with the current combined UUID and literal
+Report compact CI profile (2,118 with UUID-only compact; 2,346 in legacy). The
+required timing roster is 2,210 records (2,256 with UUID-only compact; 2,484 in
+legacy). These are
 source partition requirements, not completed native observations. Fresh native
 comparison and saved replay remain required for both additions.
 
@@ -619,16 +621,26 @@ has at most 128 rows and 30,000 bytes. This profile requires the pinned compiler
 and a checked source-derived bound on its rewritten activity keys; it refuses
 an unsupported bound rather than changing the partition or execution path.
 
-Full native CI selects this profile explicitly. The historical 66-suite partition
-calculation retains 159,909 cases and changes 2,337 legacy batches to 2,109
-(UUID: 195/197/239 batches), with 2,243 timing records. The decimal/payload
-extension preserves that prefix and adds two suites with 357 inputs in nine
-source-checked batches. The full profile therefore requires 2,118 batches and
-2,256 timing records; legacy requires 2,346 and 2,484 respectively. Actual native
-execution, saved replay and a complete timing footer must still pass fresh.
-The summary and timing header identify the selected profile. These partition
-counts do not establish native completion or a speedup; use the corresponding
-source's complete CI results. No case profile reuses a prior successful receipt.
+Full native CI selects `--case-profile uuid-and-literal-report-compact-v1`.
+This is the same UUID policy plus compact case JSON for
+`app/literal-text-report:Report` only. `Index` and `Count`, the Cut entries,
+and decimal/payload keep their existing writers and partitions. The new profile
+records its four entries, `basis_profile: "uuid-compact-v1"` and the exact bounds
+in the summary and timing header. Default `legacy` and explicit
+`uuid-compact-v1` remain available with their original behavior.
+
+The original 66-suite population retains 159,909 cases. Its historical legacy
+partition has 2,337 batches/2,471 timing records; the UUID-only profile has
+2,109/2,243. The combined profile requires 2,063 batches for those same cases:
+UUID retains 195/197/239 and the literal Report uses 235 instead of 281.
+Appending the unchanged parser256/5 and payload101/4 gives the required full
+68 suites, 160,266 cases, 2,072 batches and 2,210 timing records. These are
+strict source-partition requirements, not an assertion that a new execution
+has completed. Current full68 native execution, saved replay, all seven
+exhaustive checks and a complete timing footer must pass the corresponding
+source's CI. Legacy full68 remains 2,346 batches/2,484 records; UUID-only full68
+remains 2,118/2,256. No case profile reuses a previous successful receipt, and
+fewer batches alone do not establish a duration or memory improvement.
 
 ### Bootstrap recovery
 
@@ -891,7 +903,7 @@ byte 3성분 입력을 Go 원본과 비교합니다. 총 **33,554,432번**의 �
 이미지 압축·색상 프로파일을 검증한 것으로 해석하지 않습니다.
 
 다음 배치 수와 경계 보존 내역은 기본 `legacy` 프로필의 이전 포팅 단계를 설명합니다.
-CI에서 명시적으로 선택하는 `uuid-compact-v1`의 UUID 경계는 위 실행 안내처럼 별도로 계산합니다.
+현재 CI의 `uuid-and-literal-report-compact-v1`은 UUID 경계와 literal Report의 compact 경계를 위 실행 안내처럼 별도로 계산합니다. 기존 `uuid-compact-v1` 수치는 해당 이전 프로필에만 적용됩니다.
 이전 catalog는 Gooo 실행 입력 상한에 맞춰 총 **1,777개 배치**로 나눴습니다. 기존 833개 배치와
 그 경계를 유지하며 IndexByte 21개·Search 소비 앱 28개 배치를 추가합니다.
 IndexByte·Search와 UUID의 세 suite는 128행 이하에서 실제 JSON 30,000바이트 상한에 맞춰 최대 접두 배치를 선택합니다.
@@ -1025,8 +1037,10 @@ required-field record로 옮겼으며, 임의의 byte 문자열·더 긴 입력�
 workspace와 batch 경계를 보존하고 네 suite를 뒤에 추가합니다. 실제 JSON+LF 배치 분할 검증에서
 Cut·CutPrefix·CutSuffix는 각 **1개**, Report는 **2개** 배치로 계산됐습니다. 필수 통합 범위는
 기본 `legacy`에서는 **66개 suite·159,909건·2,337개 배치**이며 계측 완료 기록 수는 **2,471개**입니다.
-CI의 `uuid-compact-v1`에서는 같은 suite·입력·기대값을 **2,109개 배치**로 나누며,
-계측 완료 기록 수 **2,243개**와 새 프로필 식별자를 함께 검사합니다. Cut 네 suite의 경계는 그대로입니다.
+이전 `uuid-compact-v1`은 같은66개 suite·입력·기대값을 **2,109개 배치·2,243개 계측 기록**으로 나눕니다.
+현재 `uuid-and-literal-report-compact-v1`의 해당66개는 **2,063개 배치·2,197개 계측 기록**을 요구합니다.
+literal Report만281→235배치이며 Cut 네 suite와 Index·Count 경계는 그대로입니다.
+십진수·payload 두 suite까지 포함한 현재68개 요구 범위는 위 실행 안내의2,072배치·2,210기록입니다.
 이 분할 검사는 새 public entry의 전체 native 실행·저장 replay 완료를 대신하지 않습니다.
 완료된 실행과 유한 검증 범위는 해당 소스의 CI/native 보고서에서 확인합니다.
 기존 브라우저 프로그램과 검증 범위는 확장하지 않습니다.
@@ -1062,7 +1076,7 @@ Google UUID Validate와 importing inspector까지의 38개 포트·16개 소비 
 RectangleIn과 FitsCrop까지의 총계 40개 포트·17개 소비 프로그램·19개 소비 활동을 보존합니다.
 새 Index·Count와 Literal Text Report를 포함한 소스 목록은 42개 포트·18개 소비 프로그램·20개 소비 활동입니다.
 이 목록을 보존하고 Cut·CutPrefix·CutSuffix와 Literal Cut Report를 덧붙인 작성 소스는 45개 포트·19개 소비 프로그램·21개 소비 활동입니다. 신규 네 suite는 각 원래 입력 32쌍을 사용하며, 완료된 native 실행과 replay는 해당 소스의 CI 보고서로 구분합니다.
-그 목록과 별도로 `path.Ext`·`path.IsAbs`, IPv4 분류 함수 6개와 각각의 importing Report를 더한 작성 소스는 **53개 포트·21개 소비 프로그램·23개 소비 활동**입니다. 기존 catalog의 66개 suite·159,909건·2,109개 CI 배치·7개 전수 검사는 그대로입니다. [Path Facts](examples/path-facts/README.md)의 generated-native 출력 29,523개 및 CLI·replay 각 72개와, [IPv4 Address Facts](examples/ipv4-address-facts/README.md)의 CLI·replay 각 352개 및 생성 리포트 입력 202개는 따로 집계합니다. 각 입력 범위와 검사 방식을 확인하세요. 전체 라이브러리 호환성·네트워크 접근 안전성·성능 향상을 입증하는 수치는 아닙니다.
+그 목록과 별도로 `path.Ext`·`path.IsAbs`, IPv4 분류 함수 6개와 각각의 importing Report를 더한 단계의 작성 소스는 **53개 포트·21개 소비 프로그램·23개 소비 활동**입니다. 그 단계의 catalog는 66개 suite·159,909건·7개 전수 검사를 유지했고, UUID-only compact profile에서는 2,109개 배치였습니다. [Path Facts](examples/path-facts/README.md)의 generated-native 출력 29,523개 및 CLI·replay 각 72개와, [IPv4 Address Facts](examples/ipv4-address-facts/README.md)의 CLI·replay 각 352개 및 생성 리포트 입력 202개는 따로 집계합니다. 각 입력 범위와 검사 방식을 확인하세요. 전체 라이브러리 호환성·네트워크 접근 안전성·성능 향상을 입증하는 수치는 아닙니다.
 새 prefix query 두 포트와 importing probe·rule-pair 구성을 더한 작성 소스는 **55개 포트·23개 소비 프로그램·26개 소비 활동**입니다. 별도 검사기는 현재 소스로 54개 CLI 실행·54개 저장 영수증 재현과 112개 생성 함수 결과를 독립적인 Go 계산과 비교합니다. 입력 존재나 이전 기록을 새 native 성공으로 계산하지 않습니다.
 원본 int32 전체의 동작을 구현하되 2^32 전수 검사를 주장하지 않습니다.
 브라우저 21함수와 두 crop 모드는 그대로입니다.
@@ -1071,4 +1085,4 @@ The bounded Agent Mesh adaptation separately retains its original Apache 2.0
 license and source attribution in [the port notice](ports/agentmesh/NOTICE.md)
 and [the example notice](examples/agentmesh-service-policy/NOTICE.md).
 
-십진수 파서와 [Payload Admission Facts](examples/payload-admission/README.md)를 더한 현재 작성 소스는 **56개 포트·24개 소비 프로그램·27개 소비 활동**입니다. 새 일반 native suite 두 개는 parser256개와 policy101개 입력을 추가하여 **68개 suite·160,266개 case**를 요구합니다. 기존66개 suite의 입력·기대값·workspace는 보존하며 현재 소스 분할 검사는 새9개 배치(parser5·policy4)를 추가하여 CI profile2,118개 배치·2,256개 계측 기록(legacy2,346·2,484)을 요구합니다. 이는 분할 관측이며 현재 소스의 native·저장 replay 완료는 별도로 필요합니다. 입력파일 생성이나 이전 receipt를 새 native 실행 성공으로 계산하지 않습니다. 이 순수 정책은 원본7개 관찰과14개 판단 필드를 제공하지만 실제HTTP framing·권한·호스트사실의진위·quota나효과를보장하지않습니다.
+십진수 파서와 [Payload Admission Facts](examples/payload-admission/README.md)를 더한 현재 작성 소스는 **56개 포트·24개 소비 프로그램·27개 소비 활동**입니다. 새 일반 native suite 두 개는 parser 256개와 policy 101개 입력을 추가하여 **68개 suite·160,266개 case**를 요구합니다. 기존 66개 suite의 입력·기대값·workspace는 보존하며 현재 소스 분할 검사는 새 9개 배치(parser 5·policy 4)를 추가하여 UUID와 Literal Report를 함께 압축하는 현재 CI profile에서 **2,072개 배치·2,210개 계측 기록**을 요구합니다. UUID-only compact profile은 2,118개 배치·2,256개 기록, legacy는 2,346개 배치·2,484개 기록을 유지합니다. 이는 분할 관측이며 현재 소스의 native·저장 replay 완료는 별도로 필요합니다. 입력 파일 생성이나 이전 receipt를 새 native 실행 성공으로 계산하지 않습니다. 이 순수 정책은 원본 7개 관찰과 14개 판단 필드를 제공하지만 실제 HTTP framing·권한·호스트 사실의 진위·quota나 효과를 보장하지 않습니다.

@@ -276,6 +276,7 @@ func TestNativeCaseProfileUUIDCompactFull66PartitionObservation(t *testing.T) {
 	}
 	cases, legacyBatches, compactBatches, affected := 0, 0, 0, 0
 	uuidCases, uuidBatches := 0, 0
+	literalCases, literalPrior, literalCurrent, combinedBatches := 0, 0, 0, 0
 	uuidEntries := map[string]bool{}
 	for index, s := range suites {
 		legacy, err := nativeCaseProfile("").policy(s, suiteWorkspace{}, upstream{})
@@ -297,6 +298,13 @@ func TestNativeCaseProfileUUIDCompactFull66PartitionObservation(t *testing.T) {
 		policy, err := uuidCompactCaseProfile.policy(s, workspace, caseProfileTestLock())
 		if err != nil {
 			t.Fatal(err)
+		}
+		combinedPolicy, err := uuidLiteralReportCompactCaseProfile.policy(s, workspace, caseProfileTestLock())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !literalReportCompactTarget(s) && combinedPolicy != policy {
+			t.Fatal("new profile changed an entry outside literal Report", s.Package, s.Activity)
 		}
 		// Only identical value receivers and the same untouched suite/start may
 		// share one prepare result. No source, case, assertion or native PASS is cached.
@@ -344,6 +352,20 @@ func TestNativeCaseProfileUUIDCompactFull66PartitionObservation(t *testing.T) {
 		} else if prior != current {
 			t.Fatal("non-UUID partitions changed", index, prior, current)
 		}
+		combinedCurrent := current
+		if literalReportCompactTarget(s) {
+			combinedCurrent = 0
+			for start := 0; start < len(s.Cases); combinedCurrent++ {
+				prepared, err := combinedPolicy.prepare(s, start)
+				if err != nil {
+					t.Fatal(err)
+				}
+				checkLiteralReportCompactBatch(t, s, start, prepared, combinedPolicy)
+				start = prepared.End
+			}
+			literalCases, literalPrior, literalCurrent = literalCases+len(s.Cases), literalPrior+prior, literalCurrent+combinedCurrent
+		}
+		combinedBatches += combinedCurrent
 		cases, legacyBatches, compactBatches = cases+len(s.Cases), legacyBatches+prior, compactBatches+current
 		t.Logf("profile partition index=%d entry=%s:%s cases=%d legacy_batches=%d compact_batches=%d",
 			index, s.Package, s.Activity, len(s.Cases), prior, current)
@@ -359,6 +381,54 @@ func TestNativeCaseProfileUUIDCompactFull66PartitionObservation(t *testing.T) {
 	if cases != 159909 || legacyBatches != 2337 || affected != 3 {
 		t.Fatal("original population/baseline or explicit UUID-only scope changed", cases, legacyBatches, affected)
 	}
+	// Source count-only experiment found Report281->235. This assertion must
+	// be executed afresh for this candidate; it does not accept native output.
+	if literalCases != 9313 || literalPrior != 281 || literalCurrent != 235 || combinedBatches != 2063 {
+		t.Fatal("combined profile finite partition changed", literalCases, literalPrior, literalCurrent, combinedBatches)
+	}
+	t.Logf("proposed combined profile=%s Report_cases=%d Report_pretty_batches=%d Report_compact_batches=%d original66_combined_batches=%d native_calls=0 saved_replays=0", uuidLiteralReportCompactCaseProfile, literalCases, literalPrior, literalCurrent, combinedBatches)
+	added, err := decimalPayloadCorpus("../..")
+	if err != nil || len(added.Suites) != 2 {
+		t.Fatal("appended decimal/payload corpus", err)
+	}
+	wholeCases, wholeBatches := cases, combinedBatches
+	for _, s := range added.Suites {
+		workspace, err := catalog.workspaceForSuite(s)
+		if err != nil {
+			t.Fatal(err)
+		}
+		prior, err := uuidCompactCaseProfile.policy(s, workspace, caseProfileTestLock())
+		if err != nil {
+			t.Fatal(err)
+		}
+		combined, err := uuidLiteralReportCompactCaseProfile.policy(s, workspace, caseProfileTestLock())
+		if err != nil || combined != prior {
+			t.Fatal("new profile changed decimal/payload receiver", err)
+		}
+		batches := 0
+		for start := 0; start < len(s.Cases); batches++ {
+			prepared, err := combined.prepare(s, start)
+			if err != nil || prepared.End <= start || prepared.End > len(s.Cases) || prepared.Raw == nil || len(prepared.Raw) > 30000 {
+				t.Fatal("appended source partition", s.Package, s.Activity, start, err)
+			}
+			start = prepared.End
+		}
+		want := 5
+		if s.Package == payloadAdmissionPackage {
+			want = 4
+		}
+		if batches != want {
+			t.Fatal("unchanged appended partition differs", s.Package, batches, want)
+		}
+		wholeCases, wholeBatches = wholeCases+len(s.Cases), wholeBatches+batches
+		t.Logf("combined-profile appended entry=%s:%s cases=%d batches=%d native_calls=0 saved_replays=0", s.Package, s.Activity, len(s.Cases), batches)
+	}
+	wholeSuites := len(suites) + len(added.Suites)
+	timingRows := 2 + 2*wholeSuites + wholeBatches
+	if wholeSuites != 68 || wholeCases != 160266 || wholeBatches != 2072 || timingRows != 2210 {
+		t.Fatal("proposed full68 source partition", wholeSuites, wholeCases, wholeBatches, timingRows)
+	}
+	t.Logf("combined-profile whole_suites=%d cases=%d batches=%d timing_rows=%d last_seq=%d native_calls=0 saved_replays=0", wholeSuites, wholeCases, wholeBatches, timingRows, timingRows-1)
 	// Root must freeze these actual new-policy observations before any separate
 	// workflow/audit amendment. They are not native or full-CI acceptance.
 	t.Logf("source-only proposed profile=%s suites=%d cases=%d legacy_batches=%d proposed_batches=%d proposed_timing_rows=%d native_calls=0 saved_replays=0",
