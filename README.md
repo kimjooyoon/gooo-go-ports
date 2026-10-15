@@ -5,6 +5,8 @@ describing what programs should do and inspecting how they are built and run.
 
 **Try service-policy checks from Go:** open the [four-file service-policy quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726). With Go 1.27.2 already installed, follow its README to run Go generated from Gooo without a runtime Gooo compiler. Distinguish invalid input from denial, compare the same request before and after a rule change, and inspect a returned widening witness. These calls compare supplied policy facts; they do not apply a grant or call a service.
 
+**Try a Gooo path diagnostic:** [compare two path spellings](examples/path-alias-facts/README.md#run-and-inspect-three-pairs), keep both originals, and see whether slash cleaning makes them equal. Run the supplied inputs, inspect three results and save a replay; these lexical facts do not grant access or establish router/filesystem identity.
+
 This independent ecosystem project implements selected Go standard-library, x/image and Google UUID functions in Gooo,
 using independent Go references and saved replay. The source inventory includes 53 authored standard-library ports,
 two ports from golang.org/x/image and two Google UUID adaptations. The current scope is
@@ -148,6 +150,7 @@ proposal, a refused expansion, and recovery of a discarded response by operation
 | Assess an uncertain API operation automatically | [Automatic redelivery policy](examples/automatic-redelivery/README.md) | Supply nine bound facts, inspect all fifteen returned fields and save a replay; eligibility requires a later host-owned atomic claim |
 | Classify four IPv4 octets in Gooo | [IPv4 address facts](examples/ipv4-address-facts/README.md) | Preserve all four supplied integers, distinguish invalid input from valid addresses, and inspect six overlapping classification flags |
 | Compare two IPv4 rule scopes | [IPv4 rule-pair facts](examples/ipv4-rule-pair/README.md) | Preserve typed inputs, distinguish invalid/non-comparable rules and inspect a conflict witness |
+| Detect different spellings with the same cleaned slash path | [Path alias quickstart](examples/path-alias-facts/README.md#run-and-inspect-three-pairs) | Inspect three original pairs, change a copied input and save a new execution/replay; no filesystem or authorization action |
 | Use current ports in another Gooo project | [Current path import walkthrough](docs/use-current-path-in-your-project.md) | Copy a separate Gooo workspace, run `path.Ext` / `path.IsAbs` through its six-field report and save a replayable record |
 
 The [older ValidRune import walkthrough](docs/use-in-your-project.md) remains fixed to preview.2 and its own compiler. Use the current path walkthrough above for the `83928fa` compiler and Go 1.27.2.
