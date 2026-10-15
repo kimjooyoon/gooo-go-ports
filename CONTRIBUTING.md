@@ -106,10 +106,37 @@ compatibility.
 해당 실행의 저장 재실행을 검증합니다. `PASS` 표지만으로는 충분하지 않으며,
 함수의 유한 관찰로 패키지 전체 호환성을 주장하지 않습니다.
 
+## Required CI results
+
+Accept a change only when all three current producer checks succeed:
+`observer-checks`, `native-execution`, and `browser-demo`. The first runs the
+common Go/Python and generator checks, the second runs the pinned native
+validation for the classified scope, and the third runs the full browser checks.
+No single producer check substitutes for the other two. The separate
+`native-ports` aggregate job is intentionally removed; this changes the check-name
+contract rather than moving that name onto a producer with weaker meaning.
+
+Main-branch Pages deployment directly depends on those same three jobs and
+requires all three results to be exactly `success`, a main-branch push, and no
+workflow cancellation. Failure, cancellation, skipping, or an absent result does
+not permit deployment. The individual validation commands and coverage remain
+required. GitHub branch protection/rules are separate repository configuration:
+verify the current required-check settings before adopting this check-name change;
+the workflow does not rewrite them or establish that they are configured.
+
+변경 수락에는 현재 `observer-checks`, `native-execution`, `browser-demo` 세 검사의
+성공이 모두 필요합니다. 공통 Go·Python·생성기 검사, 분류된 범위의 고정 native 검증,
+전체 브라우저 검사를 각각 유지하며 한 검사로 나머지를 대신하지 않습니다.
+별도 `native-ports` 집계 작업을 제거하는 명시적인 검사 이름 계약 변경입니다.
+배포도 세 작업을 직접 의존하며, 취소되지 않은 main push에서 세 결과가 모두 정확히
+`success`일 때만 허용합니다. 실패·취소·건너뜀·결과 누락은 배포 성공으로 취급하지
+않습니다. 실제 적용 전 GitHub의 현재 필수 검사 설정을 확인해야 하며, 워크플로 파일
+변경 자체가 원격 보호 규칙을 변경하거나 설정 완료를 증명하지는 않습니다.
+
 Only pull requests that change the contents of the existing root `README.md`
 and/or `CONTRIBUTING.md` qualify for documentation CI. Basic Go, Python,
 generator, compiler identity and declaration checks, and the full browser job
-still run. The native-ports job omits differential/exhaustive validation,
+still run. The native-execution job omits differential/exhaustive validation,
 unsupported-body probes, native examples, malformed-input checks and policy
 execution. All other changes,
 main-branch runs and tag runs retain the full checks. The documentation-scope
@@ -120,7 +147,7 @@ executable changes.
 
 저장소 루트의 기존 `README.md`와/또는 `CONTRIBUTING.md` 내용만 바꾸는 PR만
 문서 CI 대상입니다. 기본 Go·Python·생성기·컴파일러 식별자·선언 검사와 전체
-브라우저 작업은 그대로 실행합니다. native-ports 작업에서는 differential·전수
+브라우저 작업은 그대로 실행합니다. native-execution 작업에서는 differential·전수
 검증, 지원하지 않는 본문 구문 검사, native 예제, 잘못된 입력 검사와 정책 실행을
 생략합니다.
 그 밖의 변경, main 브랜치 실행과 태그 실행은 전체 검사를 유지합니다.

@@ -1104,21 +1104,6 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  native-ports:
-    if: ${{ always() }}
-    needs: [observer-checks, native-execution]
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
-    steps:
-      - name: Require both independent verification jobs
-        env:
-          OBSERVER_RESULT: ${{ needs.observer-checks.result }}
-          NATIVE_RESULT: ${{ needs.native-execution.result }}
-        shell: bash
-        run: |
-          test "$OBSERVER_RESULT" = "success"
-          test "$NATIVE_RESULT" = "success"
-
   browser-demo:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -1182,8 +1167,8 @@ jobs:
           path: out/browser/site
 
   deploy-browser-demo:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [native-ports, browser-demo]
+    if: ${{ always() && !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.observer-checks.result == 'success' && needs.native-execution.result == 'success' && needs.browser-demo.result == 'success' }}
+    needs: [observer-checks, native-execution, browser-demo]
     runs-on: ubuntu-latest
     permissions:
       pages: write
