@@ -1,0 +1,33 @@
+// Copyright 2026 Gooo Go Ports contributors.
+// Original IPv4 address facts composition; BSD-3-Clause, see LICENSE.
+// Echo all four signed Integer inputs. Invalid octets are retained, valid is
+// false, and each imported classifier independently returns false.
+// Facts do not authorize a request or establish the actual connected peer.
+package ipv4_address_facts
+namespace gooo_original_ipv4_address_facts
+
+import netip "go/net/netip"
+
+entity Integer id "gooo://std/integer"
+entity IPv4AddressFacts id "gooo://ipv4-address-facts/result/v1" fields {
+    field a id "gooo://ipv4-address-facts/result/v1/a" type integer required one
+    field b id "gooo://ipv4-address-facts/result/v1/b" type integer required one
+    field c id "gooo://ipv4-address-facts/result/v1/c" type integer required one
+    field d id "gooo://ipv4-address-facts/result/v1/d" type integer required one
+    field valid id "gooo://ipv4-address-facts/result/v1/valid" type boolean required one
+    field is_private id "gooo://ipv4-address-facts/result/v1/is_private" type boolean required one
+    field is_loopback id "gooo://ipv4-address-facts/result/v1/is_loopback" type boolean required one
+    field is_unspecified id "gooo://ipv4-address-facts/result/v1/is_unspecified" type boolean required one
+    field is_multicast id "gooo://ipv4-address-facts/result/v1/is_multicast" type boolean required one
+    field is_link_local_unicast id "gooo://ipv4-address-facts/result/v1/is_link_local_unicast" type boolean required one
+    field is_global_unicast id "gooo://ipv4-address-facts/result/v1/is_global_unicast" type boolean required one
+}
+
+activity Report(Integer, Integer, Integer, Integer) -> IPv4AddressFacts id "gooo://ipv4-address-facts/report/v1" computes `let valid = netip.IPv4Valid(input0, input1, input2, input3)
+let privateAddress = netip.IsPrivate(input0, input1, input2, input3)
+let loopback = netip.IsLoopback(input0, input1, input2, input3)
+let unspecified = netip.IsUnspecified(input0, input1, input2, input3)
+let multicast = netip.IsMulticast(input0, input1, input2, input3)
+let linkLocalUnicast = netip.IsLinkLocalUnicast(input0, input1, input2, input3)
+let globalUnicast = netip.IsGlobalUnicast(input0, input1, input2, input3)
+return IPv4AddressFacts{a: input0, b: input1, c: input2, d: input3, valid: valid, is_private: privateAddress, is_loopback: loopback, is_unspecified: unspecified, is_multicast: multicast, is_link_local_unicast: linkLocalUnicast, is_global_unicast: globalUnicast}`

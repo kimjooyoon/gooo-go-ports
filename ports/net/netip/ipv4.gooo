@@ -1,0 +1,43 @@
+// Copyright 2020 The Go Authors. All rights reserved.
+// BSD-3-Clause: see LICENSE and third_party/GO-LICENSE.
+// Adapted from Go 1.27.2 src/net/netip/netip.go, revision
+// 022c8636110ebac86a9b88724cda168ed713c21f.
+// Source SHA-256: 32295f4761825d8c6fdade4dad093b08683bdd1945010bee8a90a298e18cf208.
+// IPv4 only: the four Integer inputs are octets, not parsed address text.
+// Each method validates every octet before classification. Invalid Integer
+// domains return false, an explicit Gooo extension; IPv4Valid distinguishes them.
+// Flags overlap. Private addresses can be global unicast. Neither property
+// grants network access, promises reachability, or implements an SSRF defense.
+package netip
+namespace gooo_ports_net_netip
+
+entity Integer id "gooo://std/integer"
+entity Boolean id "gooo://std/boolean"
+
+// Original helper; Go AddrFrom4 receives already bounded bytes.
+activity IPv4Valid(Integer, Integer, Integer, Integer) -> Boolean id "gooo://go-ports/net/netip/ipv4/valid" computes `return input0 >= 0 && input0 <= 255 && input1 >= 0 && input1 <= 255 && input2 >= 0 && input2 <= 255 && input3 >= 0 && input3 <= 255`
+
+// Go IsPrivate, lines636..664: RFC1918 IPv4 ranges only.
+activity IsPrivate(Integer, Integer, Integer, Integer) -> Boolean id "gooo://go/net/netip/ipv4/is-private" computes `if !IPv4Valid(input0, input1, input2, input3) { return false }
+return input0 == 10 || (input0 == 172 && input1 >= 16 && input1 <= 31) || (input0 == 192 && input1 == 168)`
+
+// Go IsLoopback, lines537..553: the entire 127/8 block.
+activity IsLoopback(Integer, Integer, Integer, Integer) -> Boolean id "gooo://go/net/netip/ipv4/is-loopback" computes `if !IPv4Valid(input0, input1, input2, input3) { return false }
+return input0 == 127`
+
+// Go IsUnspecified, lines666..672: exactly the all-zero IPv4 address.
+activity IsUnspecified(Integer, Integer, Integer, Integer) -> Boolean id "gooo://go/net/netip/ipv4/is-unspecified" computes `if !IPv4Valid(input0, input1, input2, input3) { return false }
+return input0 == 0 && input1 == 0 && input2 == 0 && input3 == 0`
+
+// Go IsMulticast, lines556..572: bounded first octet makes mask224/4 an interval.
+activity IsMulticast(Integer, Integer, Integer, Integer) -> Boolean id "gooo://go/net/netip/ipv4/is-multicast" computes `if !IPv4Valid(input0, input1, input2, input3) { return false }
+return input0 >= 224 && input0 <= 239`
+
+// Go IsLinkLocalUnicast, lines518..534: the entire 169.254/16 block.
+activity IsLinkLocalUnicast(Integer, Integer, Integer, Integer) -> Boolean id "gooo://go/net/netip/ipv4/is-link-local-unicast" computes `if !IPv4Valid(input0, input1, input2, input3) { return false }
+return input0 == 169 && input1 == 254`
+
+// Go IsGlobalUnicast, lines605..634. Private, CGNAT, documentation and reserved
+// IPv4 can satisfy this classifier. It is not an Internet-egress permission.
+activity IsGlobalUnicast(Integer, Integer, Integer, Integer) -> Boolean id "gooo://go/net/netip/ipv4/is-global-unicast" computes `if !IPv4Valid(input0, input1, input2, input3) { return false }
+return !IsUnspecified(input0, input1, input2, input3) && !(input0 == 255 && input1 == 255 && input2 == 255 && input3 == 255) && !IsLoopback(input0, input1, input2, input3) && !IsMulticast(input0, input1, input2, input3) && !IsLinkLocalUnicast(input0, input1, input2, input3)`

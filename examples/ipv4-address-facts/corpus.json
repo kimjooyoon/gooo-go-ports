@@ -1,0 +1,709 @@
+{
+  "schema": "gooo/ipv4-classification-corpus/v1",
+  "cases": [
+    {
+      "index": 0,
+      "name": "unspecified-zero",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 1,
+      "name": "zero-prefix-nonzero",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 1
+      }
+    },
+    {
+      "index": 2,
+      "name": "all-ones",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 3,
+      "name": "before-private10",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 9,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 4,
+      "name": "private10-first",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 5,
+      "name": "private10-last",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 10,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 6,
+      "name": "after-private10",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 11,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 7,
+      "name": "before-private172",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 172,
+        "b": 15,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 8,
+      "name": "private172-first",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 172,
+        "b": 16,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 9,
+      "name": "private172-last",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 172,
+        "b": 31,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 10,
+      "name": "after-private172",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 172,
+        "b": 32,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 11,
+      "name": "before-private192",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 192,
+        "b": 167,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 12,
+      "name": "private192-first",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 192,
+        "b": 168,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 13,
+      "name": "private192-last",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 192,
+        "b": 168,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 14,
+      "name": "after-private192",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 192,
+        "b": 169,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 15,
+      "name": "before-loopback",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 126,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 16,
+      "name": "loopback-first",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 127,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 17,
+      "name": "loopback-last",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 127,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 18,
+      "name": "after-loopback",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 128,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 19,
+      "name": "before-link-local",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 169,
+        "b": 253,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 20,
+      "name": "link-local-first",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 169,
+        "b": 254,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 21,
+      "name": "link-local-last",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 169,
+        "b": 254,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 22,
+      "name": "after-link-local",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 169,
+        "b": 255,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 23,
+      "name": "before-multicast",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 223,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 24,
+      "name": "multicast-first",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 224,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 25,
+      "name": "multicast-last",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 239,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 26,
+      "name": "after-multicast",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 240,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 27,
+      "name": "cgnat-example",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 100,
+        "b": 64,
+        "c": 0,
+        "d": 1
+      }
+    },
+    {
+      "index": 28,
+      "name": "documentation-one",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 192,
+        "b": 0,
+        "c": 2,
+        "d": 1
+      }
+    },
+    {
+      "index": 29,
+      "name": "documentation-two",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 198,
+        "b": 51,
+        "c": 100,
+        "d": 1
+      }
+    },
+    {
+      "index": 30,
+      "name": "documentation-three",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 1
+      }
+    },
+    {
+      "index": 31,
+      "name": "reserved-high-example",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 255,
+        "b": 0,
+        "c": 0,
+        "d": 1
+      }
+    },
+    {
+      "index": 32,
+      "name": "invalid-a-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -1,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 33,
+      "name": "invalid-a-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 256,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 34,
+      "name": "invalid-a-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -9223372036854775808,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 35,
+      "name": "invalid-a-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 9223372036854775807,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 36,
+      "name": "invalid-b-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": -1,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 37,
+      "name": "invalid-b-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 256,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 38,
+      "name": "invalid-b-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": -9223372036854775808,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 39,
+      "name": "invalid-b-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 9223372036854775807,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 40,
+      "name": "invalid-c-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": -1,
+        "d": 0
+      }
+    },
+    {
+      "index": 41,
+      "name": "invalid-c-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 256,
+        "d": 0
+      }
+    },
+    {
+      "index": 42,
+      "name": "invalid-c-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": -9223372036854775808,
+        "d": 0
+      }
+    },
+    {
+      "index": 43,
+      "name": "invalid-c-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 9223372036854775807,
+        "d": 0
+      }
+    },
+    {
+      "index": 44,
+      "name": "invalid-d-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": -1
+      }
+    },
+    {
+      "index": 45,
+      "name": "invalid-d-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 256
+      }
+    },
+    {
+      "index": 46,
+      "name": "invalid-d-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": -9223372036854775808
+      }
+    },
+    {
+      "index": 47,
+      "name": "invalid-d-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 9223372036854775807
+      }
+    },
+    {
+      "index": 48,
+      "name": "seed-sha256-000",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 228,
+        "b": 98,
+        "c": 0,
+        "d": 166
+      }
+    },
+    {
+      "index": 49,
+      "name": "seed-sha256-001",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 79,
+        "b": 101,
+        "c": 211,
+        "d": 165
+      }
+    },
+    {
+      "index": 50,
+      "name": "seed-sha256-002",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 29,
+        "b": 111,
+        "c": 74,
+        "d": 159
+      }
+    },
+    {
+      "index": 51,
+      "name": "seed-sha256-003",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 254,
+        "b": 220,
+        "c": 180,
+        "d": 159
+      }
+    },
+    {
+      "index": 52,
+      "name": "seed-sha256-004",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 247,
+        "b": 106,
+        "c": 75,
+        "d": 147
+      }
+    },
+    {
+      "index": 53,
+      "name": "seed-sha256-005",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 173,
+        "b": 88,
+        "c": 56,
+        "d": 205
+      }
+    },
+    {
+      "index": 54,
+      "name": "seed-sha256-006",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 155,
+        "b": 240,
+        "c": 2,
+        "d": 147
+      }
+    },
+    {
+      "index": 55,
+      "name": "seed-sha256-007",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 9,
+        "b": 80,
+        "c": 162,
+        "d": 187
+      }
+    },
+    {
+      "index": 56,
+      "name": "seed-sha256-008",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 175,
+        "b": 225,
+        "c": 206,
+        "d": 8
+      }
+    },
+    {
+      "index": 57,
+      "name": "seed-sha256-009",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 166,
+        "b": 18,
+        "c": 159,
+        "d": 151
+      }
+    },
+    {
+      "index": 58,
+      "name": "seed-sha256-010",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 190,
+        "b": 65,
+        "c": 169,
+        "d": 96
+      }
+    },
+    {
+      "index": 59,
+      "name": "seed-sha256-011",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 105,
+        "b": 92,
+        "c": 88,
+        "d": 212
+      }
+    },
+    {
+      "index": 60,
+      "name": "seed-sha256-012",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 245,
+        "b": 51,
+        "c": 52,
+        "d": 132
+      }
+    },
+    {
+      "index": 61,
+      "name": "seed-sha256-013",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 209,
+        "b": 97,
+        "c": 105,
+        "d": 30
+      }
+    },
+    {
+      "index": 62,
+      "name": "seed-sha256-014",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 79,
+        "b": 50,
+        "c": 25,
+        "d": 211
+      }
+    },
+    {
+      "index": 63,
+      "name": "seed-sha256-015",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 206,
+        "b": 209,
+        "c": 25,
+        "d": 240
+      }
+    }
+  ]
+}

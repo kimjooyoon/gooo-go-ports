@@ -27,7 +27,8 @@
     "src/strconv/quote.go": "6602960ec8777de9926c1d02fbf5cb0828d4aefa38083865f4af17b6892c09a2",
     "src/strconv/isprint.go": "e6f4b35fbf38f9c9c8b251e5d3cf94daa880789cb89825f11f9734ba4a42e9ff",
     "src/internal/stringslite/strings.go": "3ed7df2eeabb5427d44b95e6cfe66ef03e13f1c969ad08050a4a0e89d43b8af2",
-    "src/path/path.go": "0a5024c364387eeea9ab5fe0b285f0d62355e8cd181cdbddfdfa227f6916d94c"
+    "src/path/path.go": "0a5024c364387eeea9ab5fe0b285f0d62355e8cd181cdbddfdfa227f6916d94c",
+    "src/net/netip/netip.go": "32295f4761825d8c6fdade4dad093b08683bdd1945010bee8a90a298e18cf208"
   },
   "ports": [
     {
@@ -304,6 +305,28 @@
         "scope": "Separate sidecar:24 manual inputs x3 entries freshly executed and saved-replayed,72outputs perphase, plus all9841 ordered alphabet{a,.,/} length0..8 inputs x3 fresh generated native entries:29523outputs/78728scalar comparisons. Full9841 individual CLI/replay counts remain0. Existing66-suite catalog/159909cases/2109batches/7exhaustive checks unchanged. A declaration or old receipt is not native acceptance.",
         "public_CI_requires_fresh_execution": true
       }
+    },
+    {
+      "source": "src/net/netip/netip.go",
+      "source_copy": "third_party/go/netip.go.txt",
+      "target": "ports/net/netip/ipv4.gooo",
+      "symbols": [
+        "Addr.IsPrivate",
+        "Addr.IsLoopback",
+        "Addr.IsUnspecified",
+        "Addr.IsMulticast",
+        "Addr.IsLinkLocalUnicast",
+        "Addr.IsGlobalUnicast"
+      ],
+      "target_activities": [
+        "IsPrivate",
+        "IsLoopback",
+        "IsUnspecified",
+        "IsMulticast",
+        "IsLinkLocalUnicast",
+        "IsGlobalUnicast"
+      ],
+      "api_mapping": "IPv4-only Addr classification: the receiver becomes four ordered signed int64 Integer octets a,b,c,d. Every method validates all four original inputs in0..255 before classification or conversion. Invalid Integer domains return false as an explicit Gooo extension; the original IPv4Valid helper exposes validity separately. IsPrivate preserves the three RFC1918 ranges; classification flags overlap and private addresses can also be global unicast. No address-text parsing, IPv6/mapped addresses/zones, Prefix/AddrPort, sockets, reachability, destination permission, complete SSRF defense or whole-netip compatibility."
     }
   ],
   "external_sources": [
@@ -464,6 +487,38 @@
         "public_CI_requires_fresh_execution": true
       },
       "scope": "Original eligibility/reason policy, not an upstream SDK port. Nine input facts are echoed in fifteen required fields. It supplies no network sender, ledger, host adapter, authority evidence or atomic claim. Existing66/159909/2109/7 catalog and196CLI/422actualNode-Wasm counts remain separate; no production safety or performance claim."
+    }
+  ],
+  "original_diagnostic_compositions": [
+    {
+      "id": "ipv4-address-facts/v1",
+      "kind": "original importing Gooo diagnostic report",
+      "source": "examples/ipv4-address-facts/main.gooo",
+      "source_sha256": "59163a632daa7e630279e95196abc3d0afc87048797eff50cde859881a58b6b9",
+      "workspace": "ipv4-address-facts.workspace.json",
+      "entry": "app/ipv4-address-facts:Report",
+      "inputs": 4,
+      "required_output_fields": 11,
+      "license": "LICENSE",
+      "independent_reference": "cmd/ipv4-oracle",
+      "verification": {
+        "command": "tools/check-ipv4.py",
+        "fresh_CLI_outputs": 352,
+        "fresh_saved_replay_outputs": 352,
+        "CLI_layer_report_inputs": 64,
+        "CLI_layer_direct_scalar_inputs_each": 48,
+        "generated_native_report_inputs": 202,
+        "generated_native_report_typed_fields": 2222,
+        "generated_native_report_original_echoes": 808,
+        "generated_native_report_valid_inputs": 48,
+        "generated_native_report_invalid_extension_inputs": 154,
+        "expanded_individual_CLI_outputs": 0,
+        "expanded_individual_saved_replay_outputs": 0,
+        "strict_input_preflight_controls": 42,
+        "receipt_tamper_controls": 18,
+        "public_CI_requires_fresh_execution": true
+      },
+      "scope": "Four original signed int64 octets are echoed with validity and six overlapping classification flags. The CLI and generated-function layers are finite and separately counted. Invalid well-formed integers are valid extension inputs, distinct from malformed transport. Classification does not authorize a network effect or promise public reachability. Existing66/159909/2109/7catalog, path/redelivery sidecars and browser counters remain separate."
     }
   ]
 }

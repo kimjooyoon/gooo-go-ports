@@ -21,6 +21,13 @@ HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
 BROWSER_SHA = "9842fdb57f69899aa53215451feeda87eca4ce90f4b1bb92ef18326608be3231"
 PATH_STEP_SHA = 'b90f403ce804adea78dacebf554c45f3e21b1faf89b942e83f32aca2847f9df5'
 REDELIVERY_STEP_SHA = '2ce6496cbee29d77c9334f1f32dc518c96a12c193e37ab569144bdc4fd1a864e'
+IPV4_STEP_SHA = 'fc7ae14e887a878b0975c5704884d2b5618d83bad7a2b45414c5171b3de3b1e3'
+IPV4_COMMAND = 'python3 -I -B tools/check-ipv4.py --repository . --compiler ./.gooo --go "$(go env GOROOT)/bin/go" --out out/ipv4 --timeout 180'
+IPV4_READBACK = 'python3 -I -B tools/check-ipv4.py --verify-summary "$PWD/out/ipv4/summary.json" > out/ipv4/summary-readback.json'
+IPV4_COMMON_COMMANDS = (
+    'python3 -I -B tools/ipv4_receipts_test.py',
+    'python3 -I -B tools/check-ipv4_test.py',
+)
 REDELIVERY_COMMAND = 'python3 -B tools/check-redelivery-policy.py --repository . --out out/redelivery-policy --go "$(go env GOROOT)/bin/go" --compiler ./.gooo --timeout 300'
 REDELIVERY_COMMON_COMMANDS = (
     'go -C examples/automatic-redelivery/reference vet ./...',
@@ -80,6 +87,7 @@ COMMON = {
 }
 HEAVY = {
     "Verify the isolated native path facts sidecar",
+    "Verify the isolated native IPv4 address facts sidecar",
     "Verify the original automatic redelivery policy",
     "Retain unsupported-body probes",
     "Compare the ports with Go and replay every batch",
@@ -111,7 +119,7 @@ UPLOADS = {"Upload offline policy experiment evidence", "Upload execution and di
 DOC_STEPS = {"Report documentation-only native scope", "Preserve documentation scope and compiler identity"}
 NATIVE_COMMAND = re.compile(
     r"(?:\.gooo\s+package\s+(?:execute|replay)|\./cmd/(?:verify|check-unicode|check-literal-text-report)\b|"
-    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py|tools/check-path-facts\.py|tools/check-redelivery-policy\.py)"
+    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py|tools/check-path-facts\.py|tools/check-redelivery-policy\.py|tools/check-ipv4\.py)"
 )
 PUBLIC_CONSUMER_COMMAND = 'python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer"'
 PUBLIC_CONSUMER_CLAUSES = (
@@ -183,7 +191,7 @@ def validate(text):
     require(hashlib.sha256(header.encode()).hexdigest() == HEADER_SHA, "events or permissions changed")
     require(hashlib.sha256(browser.encode()).hexdigest() == BROWSER_SHA, "browser/deployment behavior changed")
     named, unnamed = named_steps(text)
-    require(len(HEAVY) == 27, "full-scope native step count changed")
+    require(len(HEAVY) == 28, "full-scope native step count changed")
     require(set(named) == COMMON | HEAVY | UPLOADS | DOC_STEPS, "step roster changed without guard review")
     require(len(unnamed) == 2 and all(field(c, "if") is None for c in unnamed), "checkout/Go setup became conditional")
     require("fetch-depth: 0" in unnamed[0], "exact PR parents must be available")
@@ -294,6 +302,19 @@ def validate(text):
                 "redelivery unit/reference checks must run once as common checks")
     require(named["Check Gooo declarations"].count("./.gooo check examples/automatic-redelivery/main.gooo") == 1,
             "original redelivery declaration check missing")
+    ipv4 = named["Verify the isolated native IPv4 address facts sidecar"]
+    require(hashlib.sha256(ipv4.encode()).hexdigest() == IPV4_STEP_SHA
+            and ipv4.count(IPV4_COMMAND) == text.count(IPV4_COMMAND) == 1
+            and ipv4.count(IPV4_READBACK) == text.count(IPV4_READBACK) == 1,
+            "IPv4 sidecar must retain fresh finite layers, current source readback and cleanup gates once")
+    require(text.index(named["Check Gooo declarations"]) < text.index(ipv4)
+            < text.index(named["Retain unsupported-body probes"]), "IPv4 producer order changed")
+    for command in IPV4_COMMON_COMMANDS:
+        require(named["Check the Go observer"].count(command) == text.count(command) == 1,
+                "IPv4 Python checks must run once as common checks")
+    for source in ("ports/net/netip/ipv4.gooo", "examples/ipv4-address-facts/main.gooo"):
+        require(named["Check Gooo declarations"].count("./.gooo check " + source) == 1,
+                "IPv4 declaration check missing: " + source)
     for name, expected in LITERAL_COMMANDS.items():
         commands = literal_commands(named[name])
         require(len(commands) == len(expected) and set(commands) == expected,
@@ -508,6 +529,40 @@ class WorkflowScopeTests(unittest.TestCase):
 
     def test_real_workflow_policy(self):
         validate(self.text)
+
+    def test_ipv4_layers_source_readback_and_limits_cannot_be_weakened(self):
+        named, _ = named_steps(self.text)
+        chunk = named["Verify the isolated native IPv4 address facts sidecar"]
+        mutations = [("--timeout 180", "--timeout 900"),
+                     ('--go "$(go env GOROOT)/bin/go"', '--go /usr/bin/go'),
+                     ("--compiler ./.gooo", "--compiler /tmp/old"),
+                     (IPV4_READBACK, "true"),
+                     (".manual_saved_replay_outputs == 352", ".manual_saved_replay_outputs == 0"),
+                     (".generated_Report_calls == 202", ".generated_Report_calls == 64"),
+                     (".generated_typed_fields == 2222", ".generated_typed_fields >= 1"),
+                     (".strict_wire_refusals == 42", ".strict_wire_refusals == 18"),
+                     (".receipt_tamper_refusals == 18", ".receipt_tamper_refusals == 0"),
+                     (".top_level_stages == 54", ".top_level_stages >= 1"),
+                     (".automatic_retries == 0", ".automatic_retries == 1"),
+                     ("CURRENT_SOURCE_AND_EVIDENCE_RECHECKED", "OLD_PASS"),
+                     ("        run: |", "        continue-on-error: true\n        run: |")]
+        for before, after in mutations:
+            self.assertIn(before, chunk)
+            with self.subTest(before=before), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, chunk.replace(before, after, 1), 1))
+        with self.assertRaises(ValueError):
+            validate(self.text.replace(chunk, "", 1))
+
+    def test_ipv4_common_checks_and_declarations_are_required_once(self):
+        for command in IPV4_COMMON_COMMANDS:
+            line = "          " + command + "\n"
+            for changed in ("", line + line):
+                with self.subTest(command=command), self.assertRaises(ValueError):
+                    validate(self.text.replace(line, changed, 1))
+        for source in ("ports/net/netip/ipv4.gooo", "examples/ipv4-address-facts/main.gooo"):
+            line = "          ./.gooo check " + source + "\n"
+            with self.subTest(source=source), self.assertRaises(ValueError):
+                validate(self.text.replace(line, "", 1))
 
     def test_full_native_ci_binds_two_workers_and_timing(self):
         for workers in (1, 3, 4, 5):
