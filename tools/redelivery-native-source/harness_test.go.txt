@@ -1,0 +1,115 @@
+package main
+
+import (
+ "bytes"
+ "compress/gzip"
+ "encoding/json"
+ "errors"
+ "fmt"
+ "io"
+ "os"
+ "path/filepath"
+ "strings"
+ "testing"
+)
+
+func discardRow(Row)error{return nil}
+func mutateField(r *Report,i int){switch i{case 0:r.Method+="!";case 1:r.DeliveryState+="!";case 2:r.BodyReplayable=!r.BodyReplayable;case 3:r.IdempotencyKeyPresent=!r.IdempotencyKeyPresent;case 4:r.ServerRepeatContractVerified=!r.ServerRepeatContractVerified;case 5:r.RequestBindingCurrent=!r.RequestBindingCurrent;case 6:r.CurrentAccessAllowed=!r.CurrentAccessAllowed;case 7:r.AttemptsRemaining++;case 8:r.ProviderRetryGuidance+="!";case 9:r.DomainStatus+="!";case 10:r.Action+="!";case 11:r.Reason+="!";case 12:r.EligibleToClaim=!r.EligibleToClaim;case 13:r.AttemptsIfClaimed++;case 14:r.DedupRequired=!r.DedupRequired;default:panic("bad test field")}}
+
+// This positive regression directly invokes the actual source-bound generated
+// function for every tuple. It never substitutes Evaluate for the actual path.
+func TestActualGeneratedFunctionAll12288AndCounters(t *testing.T){
+ calls,oracleCalls,rows:=0,0,0
+ actual:=func(in Input)Report{calls++;return compiledCandidate(in)}
+ oracle:=func(in Input)(Report,error){oracleCalls++;return Evaluate(in)}
+ stats,err:=runCorpus(ForEachValid,actual,oracle,func(row Row)error{if row.Index!=rows{return fmt.Errorf("emit order")};want,err:=inputAt(rows);if err!=nil||row.Inputs!=want{return fmt.Errorf("emit original input")};rows++;return nil})
+ if err!=nil{t.Fatal(err)};if calls!=12288||oracleCalls!=12288||rows!=12288||stats.InputCount!=12288||stats.ComparisonCount!=12288||stats.GeneratedCalls!=12288||stats.OracleCalls!=12288||stats.FieldComparisons!=184320||stats.EchoComparisons!=110592||stats.Mismatches!=0{t.Fatalf("actual full count/comparisons: %+v calls%d oracle%d rows%d",stats,calls,oracleCalls,rows)}
+}
+func TestEachOfFifteenActualTypedFieldsMustMatchIndependentOracle(t *testing.T){
+ for i,name:=range fieldNames{t.Run(name,func(t *testing.T){calls:=0;actual:=func(in Input)Report{calls++;r:=compiledCandidate(in);mutateField(&r,i);return r};stats,err:=runCorpus(ForEachValid,actual,Evaluate,discardRow);if err==nil||!strings.Contains(err.Error(),"field "+name+" differs"){t.Fatalf("typed field mutant admitted or wrong gate: %v",err)};if calls!=1||stats.GeneratedCalls!=1||stats.OracleCalls!=1||stats.FieldComparisons!=15||stats.EchoComparisons!=9||stats.Mismatches!=1{t.Fatalf("mutant comparison counts: %+v",stats)}})}
+}
+func TestIndependentOracleMutationIsNotCopiedIntoActual(t *testing.T){
+ wrong:=func(in Input)(Report,error){r,err:=Evaluate(in);r.Reason+="-oracle-mutant";return r,err}
+ stats,err:=runCorpus(ForEachValid,compiledCandidate,wrong,discardRow);if err==nil||!strings.Contains(err.Error(),"reason differs")||stats.GeneratedCalls!=1||stats.OracleCalls!=1{t.Fatalf("oracle mutant accepted: %+v %v",stats,err)}
+}
+func TestExactDomainTupleIndexOrderAndCount(t *testing.T){
+ tests:=map[string]enumerator{
+ "omit-last":func(visit func(int,Input)error)error{return ForEachValid(func(i int,in Input)error{if i==12287{return nil};return visit(i,in)})},
+ "duplicate-index":func(visit func(int,Input)error)error{return ForEachValid(func(i int,in Input)error{if i==1{i=0};return visit(i,in)})},
+ "skipped-index":func(visit func(int,Input)error)error{in,_:=inputAt(1);return visit(1,in)},
+ "renumbered-wrong-tuple":func(visit func(int,Input)error)error{return ForEachValid(func(i int,in Input)error{if i==0{in.Method="DELETE"};return visit(i,in)})},
+ "extra-row":func(visit func(int,Input)error)error{if err:=ForEachValid(visit);err!=nil{return err};in,_:=inputAt(0);return visit(12288,in)},
+ }
+ for name,enumerate:=range tests{t.Run(name,func(t *testing.T){if _,err:=runCorpus(enumerate,compiledCandidate,Evaluate,discardRow);err==nil{t.Fatal("wrong domain population admitted")}})}
+ for _,i:=range []int{-1,12288}{if _,err:=inputAt(i);err==nil{t.Fatal("out-of-domain index accepted")}}
+ // Boundary vectors fix mask bit order and fastest-varying guidance explicitly.
+ for _,test:=range []struct{i int;method,state,guidance string;mask int;attempt int64}{{0,"GET","NOT_SENT","ALLOW",0,0},{3,"GET","NOT_SENT","UNKNOWN",0,0},{4,"GET","NOT_SENT","ALLOW",0,1},{12,"GET","NOT_SENT","ALLOW",1,0},{192,"GET","NOT_SENT","ALLOW",16,0},{384,"GET","OUTCOME_UNKNOWN","ALLOW",0,0},{1536,"HEAD","NOT_SENT","ALLOW",0,0},{12287,"DELETE","NOT_APPLIED_CONFIRMED","UNKNOWN",31,2}}{in,err:=inputAt(test.i);if err!=nil{t.Fatal(err)};mask:=0;for j,b:=range []bool{in.BodyReplayable,in.IdempotencyKeyPresent,in.ServerRepeatContractVerified,in.RequestBindingCurrent,in.CurrentAccessAllowed}{if b{mask|=1<<(4-j)}};if in.Method!=test.method||in.DeliveryState!=test.state||in.ProviderRetryGuidance!=test.guidance||mask!=test.mask||in.AttemptsRemaining!=test.attempt{t.Fatalf("wrong contract order vector%d %+v",test.i,in)}}
+}
+func TestEmissionFailureCannotBecomeMatchedReport(t *testing.T){
+ primary:=errors.New("synthetic row disk cap");stats,err:=runCorpus(ForEachValid,compiledCandidate,Evaluate,func(Row)error{return primary});if err!=primary||stats.GeneratedCalls!=1||stats.OracleCalls!=1||stats.ComparisonCount!=0{t.Fatalf("emission error masked: %+v %v",stats,err)}
+}
+
+func writeFullRows(t *testing.T,path string)rowsEvidence{t.Helper();w,err:=newRowsWriter(path);if err!=nil{t.Fatal(err)};defer w.Close();stats,err:=runCorpus(ForEachValid,compiledCandidate,Evaluate,w.WriteRow);if err!=nil{t.Fatal(err)};if err:=w.Close();err!=nil{t.Fatal(err)};if stats.GeneratedCalls!=12288{t.Fatal("generated function not fully called")};return w.Evidence()}
+func TestActualFullRowsDeterministicGzipAndIndependentReadback(t *testing.T){
+ root:=canonicalTestTempDir(t);a:=writeFullRows(t,filepath.Join(root,"a.gz"));readback,err:=verifyRows(a.Path,a);if err!=nil{t.Fatal(err)};if readback.GeneratedCalls!=0||readback.OracleCalls!=12288||readback.ComparisonCount!=12288||readback.FieldComparisons!=184320||readback.EchoComparisons!=110592{t.Fatalf("readback counts %+v",readback)}
+ b:=writeFullRows(t,filepath.Join(root,"b.gz"));if a.CompressedBytes!=b.CompressedBytes||a.CompressedSHA256!=b.CompressedSHA256||a.UncompressedBytes!=b.UncompressedBytes||a.UncompressedSHA256!=b.UncompressedSHA256||a.RowCount!=12288||b.RowCount!=12288{t.Fatal("gzip bytes or full row hashes nondeterministic")};raw,err:=os.ReadFile(a.Path);if err!=nil{t.Fatal(err)};if !bytes.Equal(raw[:10],fixedGzipHeader){t.Fatal("unexpected gzip header")};if a.CompressedBytes>2<<20||a.UncompressedBytes>16<<20{t.Fatal("proof cap exceeded")}
+}
+func firstRow(t *testing.T)Row{t.Helper();in,err:=inputAt(0);if err!=nil{t.Fatal(err)};return Row{0,in,compiledCandidate(in)}}
+func TestCanonicalRowsRejectMissingNullDuplicateCoercionAndTail(t *testing.T){
+ row:=firstRow(t);raw,err:=json.Marshal(row);if err!=nil{t.Fatal(err)};raw=append(raw,'\n');if _,err:=decodeRow(raw);err!=nil{t.Fatal(err)}
+ variants:=[][]byte{bytes.TrimSuffix(raw,[]byte{'\n'}),append(append([]byte{},raw...),[]byte("{}\n")...),bytes.Replace(raw,[]byte(`"index":0`),[]byte(`"index":0,"index":0`),1),bytes.Replace(raw,[]byte(`"index":0`),[]byte(`"index":0.0`),1),bytes.Replace(raw,[]byte(`"index":0`),[]byte(`"index":false`),1),bytes.Replace(raw,[]byte(`"method":"GET"`),[]byte(`"method":null`),1),bytes.Replace(raw,[]byte(`"method":"GET"`),[]byte(`"method":"\ud800"`),1),bytes.Replace(raw,[]byte(`"body_replayable":false,`),nil,1),bytes.Replace(raw,[]byte(`"body_replayable":false`),[]byte(`"body_replayable":0`),1),bytes.Replace(raw,[]byte(`"attempts_remaining":0`),[]byte(`"attempts_remaining":0.0`),1),bytes.Replace(raw,[]byte(`"attempts_remaining":0`),[]byte(`"attempts_remaining":9223372036854775808`),1),bytes.Replace(raw,[]byte(`"index":0`),[]byte(`"index":0,"unknown":true`),1),append([]byte{'"',0xff},'\n')}
+ for i,changed:=range variants{if bytes.Equal(changed,raw){t.Fatalf("ineffective row mutation%d",i)};if _,err:=decodeRow(changed);err==nil{t.Fatalf("noncanonical row%d admitted",i)}}
+ for _,n:=range []int64{-9223372036854775808,9223372036854775807}{r:=row;r.Inputs.AttemptsRemaining=n;r.Actual.AttemptsRemaining=n;r.Actual.AttemptsIfClaimed=n;raw,_:=json.Marshal(r);raw=append(raw,'\n');got,err:=decodeRow(raw);if err!=nil||got.Inputs.AttemptsRemaining!=n||got.Actual.AttemptsIfClaimed!=n{t.Fatal("typed row lost signedint64 extreme",err)}}
+}
+func gzipBytes(t *testing.T,raw []byte)[]byte{t.Helper();var b bytes.Buffer;g,err:=gzip.NewWriterLevel(&b,gzip.BestCompression);if err!=nil{t.Fatal(err)};g.Header.OS=255;if _,err:=g.Write(raw);err!=nil{t.Fatal(err)};if err:=g.Close();err!=nil{t.Fatal(err)};return b.Bytes()}
+func evidenceFor(t *testing.T,path string,compressed,raw []byte)rowsEvidence{t.Helper();if err:=os.WriteFile(path,compressed,0600);err!=nil{t.Fatal(err)};return rowsEvidence{path,int64(len(compressed)),rawDigest(compressed),int64(len(raw)),rawDigest(raw),12288}}
+func TestGzipReadbackRejectsLossOrderDigestExtraMemberAndCaps(t *testing.T){
+ root:=canonicalTestTempDir(t);base:=writeFullRows(t,filepath.Join(root,"base.gz"));compressed,err:=os.ReadFile(base.Path);if err!=nil{t.Fatal(err)};g,err:=gzip.NewReader(bytes.NewReader(compressed));if err!=nil{t.Fatal(err)};raw,err:=io.ReadAll(g);if err!=nil{t.Fatal(err)};if err:=g.Close();err!=nil{t.Fatal(err)};lines:=bytes.Split(raw,[]byte{'\n'});if len(lines)!=12289{t.Fatal("unexpected retained count")}
+ for _,name:=range []string{"omitted-last","duplicate-row","extra-row","renumbered-index","missing-LF","bad-raw-digest","extra-gzip-member","compressed-tail","crc","mtime","os","compressed-cap"}{t.Run(name,func(t *testing.T){r:=append([]byte{},raw...);c:=append([]byte{},compressed...);switch name{case "omitted-last":r=bytes.Join(append(append([][]byte{},lines[:12287]...),[]byte{}),[]byte{'\n'});c=gzipBytes(t,r);case "duplicate-row":parts:=append([][]byte{},lines...);parts[1]=parts[0];r=bytes.Join(parts,[]byte{'\n'});c=gzipBytes(t,r);case "extra-row":r=append(r,append(append([]byte{},lines[0]...),'\n')...);c=gzipBytes(t,r);case "renumbered-index":r=bytes.Replace(r,[]byte(`"index":0`),[]byte(`"index":1`),1);c=gzipBytes(t,r);case "missing-LF":r=r[:len(r)-1];c=gzipBytes(t,r);case "extra-gzip-member":c=append(c,gzipBytes(t,nil)...);case "compressed-tail":c=append(c,0);case "crc":c[len(c)-8]^=1;case "mtime":c[4]=1;case "os":c[9]=0;case "compressed-cap":c=make([]byte,(2<<20)+1)};path:=filepath.Join(root,name+".gz");e:=evidenceFor(t,path,c,r);if name=="bad-raw-digest"{e.UncompressedSHA256=strings.Repeat("0",64)};if _,err:=verifyRows(path,e);err==nil{t.Fatal("mutated full row proof admitted")}})}
+ w,err:=newRowsWriter(filepath.Join(root,"cap.gz"));if err!=nil{t.Fatal(err)};defer w.Close();w.rawBytes=rawRowsCap;if err:=w.WriteRow(firstRow(t));err==nil{t.Fatal("raw16MiB cap ignored")}
+ if _,err:=newRowsWriter(base.Path);err==nil{t.Fatal("existing rows path overwritten")}
+}
+
+func TestActualGeneratedSourceABIAndForbiddenConstructs(t *testing.T){
+ raw,err:=os.ReadFile("generated.go");if err!=nil{t.Fatal(err)};if err:=checkGeneratedABI(raw);err!=nil{t.Fatal(err)}
+ source:=string(raw);mutations:=map[string]string{"import":strings.Replace(source,"package main","package main\nimport \"os\"",1),"global":source+"var global bool\n","init":source+"func init(){}\n","oracle-call":strings.Replace(source,"var methodValid", "Evaluate(Input{}); var methodValid",1),"wrong-field-type":strings.Replace(source,goField(7)+" int64",goField(7)+" string",1),"wrong-tag":strings.Replace(source,`json:"method"`,`json:"different"`,1),"directive":"//go:noinline\n"+source,"legacy":"// +build linux\n\n"+source,"line":"//line hidden:1\n"+source}
+ for name,changed:=range mutations{t.Run(name,func(t *testing.T){if changed==source{t.Fatal("ineffective generated source mutation")};if err:=checkGeneratedABI([]byte(changed));err==nil{t.Fatal("unsupported generated source admitted")}})}
+}
+func TestRawReferenceAndStrictMetadataMutations(t *testing.T){
+ root:=canonicalTestTempDir(t);path:=filepath.Join(root,"file");if err:=os.WriteFile(path,[]byte("first"),0600);err!=nil{t.Fatal(err)};r,err:=fileRef(path,32);if err!=nil{t.Fatal(err)};wire,_:=json.Marshal(r);value,err:=strictJSON(wire);if err!=nil{t.Fatal(err)};if _,err:=parseRef(value);err!=nil{t.Fatal(err)};if err:=os.WriteFile(path,[]byte("other"),0600);err!=nil{t.Fatal(err)};if _,err:=parseRef(value);err==nil{t.Fatal("same-size source mutation ignored")}
+ alias:=filepath.Join(root,"alias");if err:=os.Symlink(path,alias);err!=nil{t.Fatal(err)};if _,err:=fileRef(alias,32);err==nil{t.Fatal("real symlink alias accepted as canonical source")}
+ for _,raw:=range []string{`{"a":1,"\u0061":2}`,`{} {}`,`{"n":NaN}`,strings.Repeat("[",66)+"0"+strings.Repeat("]",66)}{if _,err:=strictJSON([]byte(raw));err==nil{t.Fatal("invalid metadata accepted",raw)}}
+ if absentGroup(map[string]any{"state":"absent","error":"EPERM"})||absentGroup(map[string]any{"state":"unknown","error":nil})||emptyArray(nil)||emptyArray(false){t.Fatal("uncertain process evidence coerced to absence/empty")}
+}
+
+// Synthetic metadata regression only; no child process is launched by this test.
+func TestFreshPublicProcessAndStartedLedgerBoundToOutputAndFreeze(t *testing.T){
+ root:=canonicalTestTempDir(t)
+ write:=func(name string,value any)rawRef{t.Helper();p:=filepath.Join(root,name);raw,err:=json.Marshal(value);if err!=nil{t.Fatal(err)};if err=os.WriteFile(p,raw,0600);err!=nil{t.Fatal(err)};r,err:=fileRef(p,1<<20);if err!=nil{t.Fatal(err)};return r}
+ freeze:=write("freeze.json",map[string]any{"synthetic":true});emptyPath:=filepath.Join(root,"empty");if err:=os.WriteFile(emptyPath,nil,0600);err!=nil{t.Fatal(err)};empty,err:=fileRef(emptyPath,1);if err!=nil{t.Fatal(err)}
+ base:=map[string]any{"name":"synthetic-observe","status":"COMPLETED","exit_code":0,"expected_exit_code":0,"automatic_retries":0,"process_reaped":true,"owned_group_remaining":false,"owned_group_state":map[string]any{"state":"absent","error":nil},"abort":nil,"primary_error":nil,"source_tools_unchanged_after":true,"secondary_errors":[]any{},"termination_errors":[]any{},"argv":[]string{"synthetic-observer","--out","synthetic-report"},"cwd":root,"pid":41,"owned_pgid":41,"timeout_seconds":30,"elapsed_seconds":0.125,"stdout":empty,"stderr":empty,"source_freeze_before":freeze,"source_freeze_after":freeze}
+ clone:=func(value any)map[string]any{t.Helper();raw,_:=json.Marshal(value);v,err:=strictJSON(raw);if err!=nil{t.Fatal(err)};return obj(v)}
+ run:=func(p map[string]any,changeStarted bool)error{started:=clone(p);started["status"]="STARTED";if changeStarted{started["automatic_retries"]=json.Number("1")};p["started_ledger"]=write("started.json",started);r:=write("process.json",p);v:=clone(r);_,err:=checkProcess(v,"synthetic-observe",[]string{"synthetic-observer","--out","synthetic-report"},root,rawRef{},freeze,30);return err}
+ if err:=run(clone(base),false);err!=nil{t.Fatal("positive fresh public process shape",err)}
+ for _,name:=range []string{"bool-counter","unreaped","unknown-group","permission","changed-freeze","wrong-stdout","retry","started","too-long"}{t.Run(name,func(t *testing.T){p:=clone(base);switch name{case "bool-counter":p["exit_code"]=false;case "unreaped":p["process_reaped"]=false;case "unknown-group":obj(p["owned_group_state"])["state"]="unknown";case "permission":obj(p["owned_group_state"])["error"]="EPERM";case "changed-freeze":p["source_freeze_after"]=write("other-freeze.json",map[string]any{"other":true});case "wrong-stdout":p["stdout"]=write("nonempty.json",map[string]any{"unexpected":true});case "retry":p["automatic_retries"]=1;case "too-long":p["timeout_seconds"]=31};if run(p,name=="started")==nil{t.Fatal("untrusted current-process metadata admitted")}})}
+}
+func TestFreshMetadataUnicodeScalarsAndHistoricalFreezeRefusal(t *testing.T){
+ for _,raw:=range []string{`{"x":"\ud800"}`,`{"x":"\udc00"}`}{if _,err:=strictJSON([]byte(raw));err==nil{t.Fatal("unpaired source metadata surrogate admitted")}}
+ if _,err:=strictJSON([]byte(`{"x":"\ud83d\ude00"}`));err!=nil{t.Fatal("valid scalar pair",err)}
+ root:=canonicalTestTempDir(t);path:=filepath.Join(root,"old-freeze.json");if err:=os.WriteFile(path,[]byte(`{"schema":"gooo/redelivery-manual16-runtime-freeze/v1","files":[],"tools":[]}`),0600);err!=nil{t.Fatal(err)};r,err:=fileRef(path,1<<20);if err!=nil{t.Fatal(err)};wire,_:=json.Marshal(r);value,err:=strictJSON(wire);if err!=nil{t.Fatal(err)};if _,_,_,err:=readFreeze(value,root);err==nil||!strings.Contains(err.Error(),"current public source freeze"){t.Fatal("historical source freeze accepted",err)}
+}
+
+func TestParsedMetadataBytesMatchTheDeclaredRawReference(t *testing.T){
+ path:=filepath.Join(canonicalTestTempDir(t),"evidence.json");if err:=os.WriteFile(path,[]byte(`{"n":1}`),0600);err!=nil{t.Fatal(err)};r,err:=fileRef(path,64);if err!=nil{t.Fatal(err)};if _,err:=jsonRef(r);err!=nil{t.Fatal("positive bound JSON read",err)}
+ if err:=os.WriteFile(path,[]byte(`{"n":2}`),0600);err!=nil{t.Fatal(err)};if _,err:=jsonRef(r);err==nil||!strings.Contains(err.Error(),"bound raw reference"){t.Fatal("parsed JSON was not tied to declared evidence hash",err)}
+}
+
+// Only positive fixture roots are resolved; raw-reference guards stay strict.
+func canonicalTestTempDir(t *testing.T) string {
+	t.Helper()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	return root
+}

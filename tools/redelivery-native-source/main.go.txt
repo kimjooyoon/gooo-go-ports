@@ -1,0 +1,28 @@
+// Full valid-domain generated-native checker. Fresh manual CLI/replay
+// receipts bind the current public source origin; this process makes no new CLI/replay claim.
+package main
+
+import (
+ "encoding/json"
+ "flag"
+ "fmt"
+ "os"
+ "path/filepath"
+ "reflect"
+)
+
+func run()error{
+ boundary:=flag.String("generated-boundary","","fresh runtime source/module/binary boundary")
+ rowsPath:=flag.String("rows","","new deterministic gzip JSONL output")
+ summaryPath:=flag.String("summary","","new summary output")
+ flag.Parse();if *boundary==""||*rowsPath==""||*summaryPath==""||flag.NArg()!=0||!filepath.IsAbs(*rowsPath)||!filepath.IsAbs(*summaryPath)||*rowsPath==*summaryPath{return fmt.Errorf("require generated-boundary, distinct absolute new rows and summary paths")}
+ before,err:=checkBoundary(*boundary);if err!=nil{return err}
+ writer,err:=newRowsWriter(*rowsPath);if err!=nil{return err};defer writer.Close()
+ stats,primary:=runCorpus(ForEachValid,compiledCandidate,Evaluate,writer.WriteRow)
+ closeErr:=writer.Close();if primary!=nil{return primary};if closeErr!=nil{return closeErr}
+ evidence:=writer.Evidence();readback,err:=verifyRows(*rowsPath,evidence);if err!=nil{return err}
+ after,err:=checkBoundary(*boundary);if err!=nil{return err};if !reflect.DeepEqual(before,after){return fmt.Errorf("runtime/source boundary changed during generated-native execution")}
+ result:=map[string]any{"schema":"gooo/redelivery-full-domain-generated-native/v1","decision":"FULL12288_GENERATED_NATIVE_VALUES_MATCHED","contract_sha256":ContractSHA256,"input_count":stats.InputCount,"generated_function_calls":stats.GeneratedCalls,"oracle_evaluations":stats.OracleCalls,"typed_field_comparisons":stats.FieldComparisons,"echo_value_comparisons":stats.EchoComparisons,"mismatches":stats.Mismatches,"readback_row_count":readback.InputCount,"readback_oracle_evaluations":readback.OracleCalls,"readback_typed_field_comparisons":readback.FieldComparisons,"readback_echo_value_comparisons":readback.EchoComparisons,"readback_mismatches":readback.Mismatches,"full_CLI_cases":0,"full_saved_replay_cases":0,"rows":evidence,"boundary":before.Boundary,"source_origin":before.SourceOrigin,"runtime_bindings":before,"generated_sha256":"sha256:"+before.Generated.SHA256,"oracle_policy_sha256":"sha256:"+before.Policy.SHA256,"binary_sha256":"sha256:"+before.Binary.SHA256,"go_version":pinnedGoVersion,"scope":"All12288 valid contract-domain tuples were directly evaluated by unchanged source-bound generated function and compared field-by-field to the copied independent Go oracle. Every canonical JSONL row was then read back against freshly enumerated/evaluated independent tuples. These are generated-native values, not individual CLI or saved-replay observations. Fresh manual16 is a separate checked layer including invalid signed-int64 witnesses. No host authority, atomic claim, provider dispatch, production safety or performance claim. Runtime binary and module files are hashed while present; outer runner owns later removal/retention accounting."}
+ raw,err:=json.MarshalIndent(result,"","  ");if err!=nil{return err};raw=append(raw,'\n');f,err:=os.OpenFile(*summaryPath,os.O_WRONLY|os.O_CREATE|os.O_EXCL,0600);if err!=nil{return err};_,writeErr:=f.Write(raw);closeErr=f.Close();if writeErr!=nil{return writeErr};return closeErr
+}
+func main(){if err:=run();err!=nil{fmt.Fprintln(os.Stderr,err);os.Exit(1)}}

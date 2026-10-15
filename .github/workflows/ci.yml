@@ -49,6 +49,9 @@ jobs:
           test -z "$(gofmt -l third_party/google-uuid/source_digest.go)"
           go vet ./...
           go test -race ./...
+          go -C examples/automatic-redelivery/reference vet ./...
+          go -C examples/automatic-redelivery/reference test -race -count=1 ./...
+          python3 -I -B tools/check-redelivery-policy_test.py
           python3 tools/bootstrap.test.py
           python3 tools/receipt_json_test.py
           python3 tools/check-drag-crop-example_test.py
@@ -112,6 +115,7 @@ jobs:
           ./.gooo check examples/literal-cut-report/main.gooo
           ./.gooo check ports/path/path.gooo
           ./.gooo check examples/path-facts/main.gooo
+          ./.gooo check examples/automatic-redelivery/main.gooo
           ./.gooo check ports/cel/scalar_access.gooo
           ./.gooo check examples/cel-api-policy/main.gooo
           ./.gooo check ports/agentmesh/service_pattern.gooo
@@ -177,6 +181,131 @@ jobs:
             ($cleanup[0].owned_path | type) == "string" and ($cleanup[0].owned_path | length) > 0
           ' out/path-facts/summary.json
           test ! -e "$(jq -er '.owned_path' out/path-facts/work-cleanup.json)"
+      - name: Verify the original automatic redelivery policy
+        if: steps.change-scope.outputs.docs_only != 'true'
+        run: |
+          python3 -B tools/check-redelivery-policy.py --repository . --out out/redelivery-policy --go "$(go env GOROOT)/bin/go" --compiler ./.gooo --timeout 300
+          python3 -I - <<'PY'
+          from pathlib import Path
+          from decimal import Decimal
+          import hashlib, json, re
+          root = Path("out/redelivery-policy").resolve()
+          def unique(pairs):
+              value = {}
+              for key, item in pairs:
+                  if key in value: raise ValueError("duplicate metadata key")
+                  value[key] = item
+              return value
+          def no_float(_): raise ValueError("integer metadata token required")
+          def read(path, diagnostics=False):
+              return json.loads(Path(path).read_bytes().decode("utf-8"), object_pairs_hook=unique,
+                  parse_float=Decimal if diagnostics else no_float, parse_constant=no_float)
+          def exact(value, expected):
+              return type(value) is type(expected) and value == expected
+          seen = set()
+          def rawref(value, present=True):
+              assert type(value) is dict and set(value) == {"path", "bytes", "sha256"}
+              path, size, sha = value["path"], value["bytes"], value["sha256"]
+              assert type(path) is str and Path(path).is_absolute()
+              assert type(size) is int and 0 <= size <= 128 << 20
+              assert type(sha) is str and re.fullmatch("[0-9a-f]{64}", sha)
+              if not present: return Path(path)
+              p = Path(path)
+              assert p.resolve(strict=True) == p and not p.is_symlink() and p.is_file()
+              assert p.stat().st_size == size
+              digest = hashlib.sha256()
+              with p.open("rb") as stream:
+                  for block in iter(lambda: stream.read(1 << 20), b""): digest.update(block)
+              assert digest.hexdigest() == sha
+              seen.add(path)
+              return p
+          s = read(root / "summary.json")
+          assert s["schema"] == "gooo/redelivery-public-two-layer-CI/v1"
+          assert s["status"] == "FRESH_MANUAL16_REPLAY_AND_FULL12288_GENERATED_NATIVE_PASS"
+          assert s["compiler_revision"] == "83928fa4538245abe33b08549da47f8cbdc50ed2" and s["go_version"] == "go1.27.2"
+          assert s["contract_sha256"] == "e9dadc2b2bfe776648b216477ffd9cfe7b23ee0deaf2b22bd3ab27c268acdac0"
+          counts = {"top_level_stages":70, "manual_execute_outputs":16, "manual_saved_replay_outputs":16,
+              "manual_reason_count":13, "typed_fields_compared_per_phase":240, "echo_values_compared_per_phase":144,
+              "generated_native_outputs":12288, "generated_native_scalar_comparisons":184320, "generated_native_echo_comparisons":110592,
+              "readback_outputs":12288, "readback_scalar_comparisons":184320, "readback_echo_comparisons":110592,
+              "full_CLI_outputs":0, "full_saved_replay_outputs":0, "native_receipt_expectation_cases":0,
+              "strict_transport_refusals":36, "receipt_tamper_refusals":18, "automatic_retries":0}
+          assert all(exact(s.get(k), v) for k, v in counts.items())
+          for key in ("source_freeze", "oracle", "oracle_origin", "work_cleanup"): rawref(s[key])
+          freeze = read(rawref(s["source_freeze"]))
+          assert freeze["schema"] == "gooo/redelivery-public-runtime-source-freeze/v1"
+          assert freeze["repository_root"] == str(Path.cwd().resolve()) and exact(freeze["overall_seconds"],300)
+          for key in ("files", "tools"):
+              refs = freeze[key]
+              assert type(refs) is list and 0 < len(refs) <= 256 and len({r["path"] for r in refs}) == len(refs)
+              for item in refs: rawref(item)
+          full = s["full"]
+          assert set(full) == {"checked", "rows", "boundary", "generated", "origin"}
+          for key in ("checked", "boundary", "generated", "origin"): rawref(full[key])
+          f = read(rawref(full["checked"]))
+          assert f["schema"] == "gooo/redelivery-full-domain-generated-native/v1" and f["decision"] == "FULL12288_GENERATED_NATIVE_VALUES_MATCHED"
+          assert f["contract_sha256"] == s["contract_sha256"] and f["go_version"] == s["go_version"]
+          for key, value in {"input_count":12288,"generated_function_calls":12288,"oracle_evaluations":12288,
+              "typed_field_comparisons":184320,"echo_value_comparisons":110592,"mismatches":0,
+              "readback_row_count":12288,"readback_oracle_evaluations":12288,"readback_typed_field_comparisons":184320,
+              "readback_echo_value_comparisons":110592,"readback_mismatches":0,"full_CLI_cases":0,"full_saved_replay_cases":0}.items():
+              assert exact(f.get(key),value)
+          assert f["rows"] == full["rows"] and f["boundary"] == full["boundary"] and f["source_origin"] == full["origin"]
+          assert f["generated_sha256"] == "sha256:" + full["generated"]["sha256"]
+          rows = full["rows"]
+          assert rows["path"] == str(root / "full12288-actual-rows.jsonl.gz") and exact(rows["row_count"],12288)
+          assert type(rows["compressed_bytes"]) is int and 0 < rows["compressed_bytes"] <= 2 << 20
+          assert type(rows["uncompressed_bytes"]) is int and 0 < rows["uncompressed_bytes"] <= 16 << 20
+          assert re.fullmatch("[0-9a-f]{64}",rows["uncompressed_sha256"])
+          rawref({"path":rows["path"],"bytes":rows["compressed_bytes"],"sha256":rows["compressed_sha256"]})
+          origin = read(rawref(full["origin"]))
+          assert origin["source_freeze"] == s["source_freeze"] and origin["oracle_origin"] == s["oracle_origin"]
+          assert origin["generated_source"] == full["generated"] and origin["slices"] == s["entries"]
+          boundary = read(rawref(full["boundary"]))
+          assert boundary["source_origin"] == full["origin"]
+          assert all(boundary["generated_source"][k] == full["generated"][k] for k in ("bytes","sha256"))
+          assert type(s["entries"]) is list and len(s["entries"]) == 2
+          for index, entry in enumerate(s["entries"]):
+              assert exact(entry["offset"],index * 8) and exact(entry["count"],8)
+              for key in ("inputs","execution","replay","checked","execute_process","replay_process","observe_process"): rawref(entry[key])
+              m = read(rawref(entry["checked"]))
+              assert m["schema"] == "gooo/redelivery-manual-batch-checked/v1" and m["decision"] == "FIXED_MANUAL16_SLICE_NATIVE_AND_SAVED_REPLAY_PASS"
+              assert exact(m["offset"],index * 8) and m["source_freeze"] == s["source_freeze"] and m["oracle_origin_ref"] == s["oracle_origin"]
+              for key, value in {"count":8,"manual_total":16,"required_output_fields":15,"native_observed_cases":8,
+                  "saved_replay_observed_cases":8,"independent_go_oracle_cases":8,"typed_fields_compared_per_phase":120,
+                  "echo_values_compared_per_phase":72,"native_receipt_expectation_cases":0,"full_native_cases":0,"full_CLI_cases":0,"full_saved_replay_cases":0}.items():
+                  assert exact(m.get(key),value)
+              for key, item in (("execution_sha256","execution"),("replay_sha256","replay"),("inputs_digest","inputs")):
+                  assert m[key] == "sha256:" + entry[item]["sha256"]
+              assert m["generated_sha256"] == f["generated_sha256"]
+          retained = s["retained_runtime_refs"]
+          assert type(retained) is list and len(retained) == 23 and len({r["path"] for r in retained}) == 23
+          for item in retained: rawref(item)
+          assert len([r for r in retained if Path(r["path"]).name.startswith("tamper-")]) == 18
+          assert all(item in retained for item in (s["oracle"],s["oracle_origin"],full["generated"],full["origin"],full["boundary"]))
+          stages = s["stages"]
+          assert type(stages) is list and len(stages) == 70 and len({r["path"] for r in stages}) == 70
+          for index, item in enumerate(stages):
+              p = read(rawref(item),diagnostics=True)
+              assert p["status"] == "COMPLETED" and exact(p["exit_code"],0 if index < 16 else 1)
+              assert p["process_reaped"] is True and p["owned_group_remaining"] is False and p["owned_group_state"] == {"state":"absent","error":None}
+              assert p["source_freeze_before"] == p["source_freeze_after"] == s["source_freeze"]
+              for key in ("stdout","stderr","started_ledger"): rawref(p[key])
+          # Detailed argv/order/typed outputs/diagnostics/STARTED/ownership are audited
+          # inside the fresh verifier before its terminal summary. This gate rehashes
+          # retained evidence and does not rerun the native computation or removed binaries.
+          assert s["work_cleanup"]["path"] == str(root / "work-cleanup.json")
+          cleanup = read(rawref(s["work_cleanup"]))
+          assert cleanup["all_top_level_groups_reaped"] is True
+          assert type(cleanup["owned_inode"]) is int and cleanup["owned_inode"] > 0
+          assert type(cleanup["logical_bytes_removed"]) is int and 0 <= cleanup["logical_bytes_removed"] <= 384 << 20
+          owned = Path(cleanup["owned_path"])
+          assert owned.is_absolute() and not owned.exists() and not owned.is_symlink()
+          assert len(s["producer_binaries_observed_while_present"]) == 3
+          for item in s["producer_binaries_observed_while_present"]: rawref(item,present=False)
+          assert sum(p.stat().st_size for p in root.rglob("*") if p.is_file()) <= 8 << 20
+          print(json.dumps({"schema":"gooo/redelivery-public-ci-gate/v1","status":"CURRENT_TWO_LAYER_REFS_CHECKED","retained_current_paths":len(seen)}))
+          PY
       - name: Retain unsupported-body probes
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |

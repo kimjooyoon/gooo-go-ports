@@ -1,0 +1,64 @@
+package main
+
+import "fmt"
+
+const domainCount = 12288
+const outputFields = 15
+const echoFields = 9
+
+var fieldNames = [15]string{"method","delivery_state","body_replayable","idempotency_key_present","server_repeat_contract_verified","request_binding_current","current_access_allowed","attempts_remaining","provider_retry_guidance","domain_status","action","reason","eligible_to_claim","attempts_if_claimed","dedup_required"}
+
+type Row struct { Index int `json:"index"`; Inputs Input `json:"inputs"`; Actual Report `json:"actual"` }
+type Stats struct {
+ InputCount int `json:"input_count"`
+ ComparisonCount int `json:"comparison_count"`
+ GeneratedCalls int `json:"generated_function_calls"`
+ OracleCalls int `json:"independent_go_oracle_calls"`
+ FieldComparisons int `json:"scalar_comparison_count"`
+ EchoComparisons int `json:"echo_comparison_count"`
+ Mismatches int `json:"mismatches"`
+}
+type enumerator func(func(int,Input)error)error
+type candidateFunction func(Input)Report
+type oracleFunction func(Input)(Report,error)
+
+// This is a contract-domain index decoder, not another policy evaluator. It
+// independently fixes transport order while the unchanged oracle ForEachValid
+// supplies actual tuples. Guidance is fastest; booleans are body bit4 through
+// access bit0, false=0. The actual decision algorithm remains policy.go only.
+func inputAt(index int)(Input,error){
+ if index<0 || index>=domainCount{return Input{},fmt.Errorf("index outside fixed domain")}
+ g:=index%4;index/=4;a:=index%3;index/=3;mask:=index%32;index/=32;s:=index%4;m:=index/4
+ methods:=[8]string{"GET","HEAD","OPTIONS","TRACE","POST","PUT","PATCH","DELETE"}
+ states:=[4]string{"NOT_SENT","OUTCOME_UNKNOWN","APPLIED_CONFIRMED","NOT_APPLIED_CONFIRMED"}
+ guidance:=[4]string{"ALLOW","VETO","ABSENT","UNKNOWN"}
+ return Input{methods[m],states[s],mask&16!=0,mask&8!=0,mask&4!=0,mask&2!=0,mask&1!=0,int64(a),guidance[g]},nil
+}
+
+func compareValues(index int,in Input,actual,expected Report,stats *Stats)error{
+ // Fixed bool arrays evaluate every typed equality eagerly. A successful row
+ // therefore records exactly fifteen output and nine input-echo comparisons.
+ fields:=[15]bool{actual.Method==expected.Method,actual.DeliveryState==expected.DeliveryState,actual.BodyReplayable==expected.BodyReplayable,actual.IdempotencyKeyPresent==expected.IdempotencyKeyPresent,actual.ServerRepeatContractVerified==expected.ServerRepeatContractVerified,actual.RequestBindingCurrent==expected.RequestBindingCurrent,actual.CurrentAccessAllowed==expected.CurrentAccessAllowed,actual.AttemptsRemaining==expected.AttemptsRemaining,actual.ProviderRetryGuidance==expected.ProviderRetryGuidance,actual.DomainStatus==expected.DomainStatus,actual.Action==expected.Action,actual.Reason==expected.Reason,actual.EligibleToClaim==expected.EligibleToClaim,actual.AttemptsIfClaimed==expected.AttemptsIfClaimed,actual.DedupRequired==expected.DedupRequired}
+ echoes:=[9]bool{actual.Method==in.Method,actual.DeliveryState==in.DeliveryState,actual.BodyReplayable==in.BodyReplayable,actual.IdempotencyKeyPresent==in.IdempotencyKeyPresent,actual.ServerRepeatContractVerified==in.ServerRepeatContractVerified,actual.RequestBindingCurrent==in.RequestBindingCurrent,actual.CurrentAccessAllowed==in.CurrentAccessAllowed,actual.AttemptsRemaining==in.AttemptsRemaining,actual.ProviderRetryGuidance==in.ProviderRetryGuidance}
+ stats.FieldComparisons+=15;stats.EchoComparisons+=9
+ if expected.Input!=in{stats.Mismatches++;return fmt.Errorf("row %d independent oracle lost original input",index)}
+ for i,pass:=range fields{if !pass{stats.Mismatches++;return fmt.Errorf("row %d field %s differs from independent oracle",index,fieldNames[i])}}
+ for i,pass:=range echoes{if !pass{stats.Mismatches++;return fmt.Errorf("row %d echo %s differs from original input",index,fieldNames[i])}}
+ return nil
+}
+
+func runCorpus(enumerate enumerator,actual candidateFunction,oracle oracleFunction,emit func(Row)error)(Stats,error){
+ stats:=Stats{}
+ err:=enumerate(func(index int,in Input)error{
+  want,err:=inputAt(index);if err!=nil{return err};if index!=stats.InputCount || in!=want{return fmt.Errorf("original tuple index/order differs at %d",index)}
+  stats.InputCount++
+  got:=actual(in);stats.GeneratedCalls++
+  expected,err:=oracle(in);stats.OracleCalls++;if err!=nil{return err}
+  if err:=compareValues(index,in,got,expected,&stats);err!=nil{return err}
+  if err:=emit(Row{index,in,got});err!=nil{return err}
+  stats.ComparisonCount++;return nil
+ })
+ if err!=nil{return stats,err}
+ if stats.InputCount!=domainCount || stats.ComparisonCount!=domainCount || stats.GeneratedCalls!=domainCount || stats.OracleCalls!=domainCount || stats.FieldComparisons!=184320 || stats.EchoComparisons!=110592 || stats.Mismatches!=0{return stats,fmt.Errorf("incomplete generated-native population/counters")}
+ return stats,nil
+}

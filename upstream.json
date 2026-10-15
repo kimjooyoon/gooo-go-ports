@@ -435,5 +435,35 @@
       "consumer_workspace": "service-grant-impact-raw.workspace.json",
       "api_mapping": "One pure MatchServicePattern adaptation, constrained to canonical ASCII strings of at most 128 bytes, case-sensitive type names with URI-scheme syntax, and dot-separated names. Empty request components match false. Unsupported URI forms are rejected by the native validator without a Go fallback. The original three-field impact is for one supplied request before and after a pattern change; it provides no token verification, roles, current authorization, global grant inclusion or effects. The 63 matcher tuples include 12 official cases; 16 original impact cases remain separate from the existing 42 APIs and 62 legacy suites."
     }
+  ],
+  "original_policy_compositions": [
+    {
+      "id": "automatic-redelivery/v1",
+      "kind": "original Gooo policy over trusted host facts",
+      "source": "examples/automatic-redelivery/main.gooo",
+      "source_sha256": "5ade10c8187e282dc14eef5f47d0042b5b0541d7a55ba95238eb420860ef4833",
+      "contract": "examples/automatic-redelivery/contract.json",
+      "contract_sha256": "e9dadc2b2bfe776648b216477ffd9cfe7b23ee0deaf2b22bd3ab27c268acdac0",
+      "workspace": "automatic-redelivery.workspace.json",
+      "entry": "app/automatic-redelivery:AssessRedelivery",
+      "license": "LICENSE",
+      "inputs": 9,
+      "required_output_fields": 15,
+      "independent_reference": "examples/automatic-redelivery/reference",
+      "verification": {
+        "command": "tools/check-redelivery-policy.py",
+        "fresh_manual_CLI_outputs": 16,
+        "fresh_manual_saved_replay_outputs": 16,
+        "full_generated_native_outputs": 12288,
+        "typed_fields_per_full_compare": 184320,
+        "echoes_per_full_compare": 110592,
+        "full_CLI_outputs": 0,
+        "full_saved_replay_outputs": 0,
+        "strict_wire_refusals": 36,
+        "receipt_tamper_refusals": 18,
+        "public_CI_requires_fresh_execution": true
+      },
+      "scope": "Original eligibility/reason policy, not an upstream SDK port. Nine input facts are echoed in fifteen required fields. It supplies no network sender, ledger, host adapter, authority evidence or atomic claim. Existing66/159909/2109/7 catalog and196CLI/422actualNode-Wasm counts remain separate; no production safety or performance claim."
+    }
   ]
 }

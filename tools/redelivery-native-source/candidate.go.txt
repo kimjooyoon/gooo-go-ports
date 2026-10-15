@@ -1,0 +1,26 @@
+package main
+
+// This adapter invokes the actual unmodified, source-bound generated function
+// exactly once. Every returned field is read through its stable concrete ABI.
+// No policy evaluation, JSON conversion or fallback occurs on this path.
+func compiledCandidate(in Input) Report {
+ r := GoooComposedActivity0(in.Method,in.DeliveryState,in.BodyReplayable,in.IdempotencyKeyPresent,in.ServerRepeatContractVerified,in.RequestBindingCurrent,in.CurrentAccessAllowed,in.AttemptsRemaining,in.ProviderRetryGuidance)
+ return Report{Input:Input{
+ Method:r.GoooFieldfe1ff6dcd76e79be744c9dab6511a3f090dc1c06ffc02e662e6f1136cb91625d,
+ DeliveryState:r.GoooFieldde4317afdb1fd055cdee1bce87e80fe3821e8f5817144f5cf9b22af214ac9c24,
+ BodyReplayable:r.GoooFieldcccc56828b626a567ad14ac5d5432228151bd182d074583c765ad96bb0ba1ae3,
+ IdempotencyKeyPresent:r.GoooField9d696ace73f8d2b08c91a2f284087b599e941d5db349d855d2d82fd7ffbdb659,
+ ServerRepeatContractVerified:r.GoooFieldef42ec60757e689bbf0735efa0f0729082d7f39c71238608cabada08af8658a7,
+ RequestBindingCurrent:r.GoooField4ab607536f27fd914e61c5a329933ba79a191201ca60967d4ec877bebb9970de,
+ CurrentAccessAllowed:r.GoooField6c04e2f2d465050748ff552a616e77757d3820b51f6e659441ac8a6a4bd6ed9d,
+ AttemptsRemaining:r.GoooField13de262c8e6a47f92073cdad92a5c1120aa387fbdc89869a619bcf1d17b5f787,
+ ProviderRetryGuidance:r.GoooFielde9a31fe1d9def3741c7993a7e1eb8345d58c931de365a6376f17d21789d52f38,
+ },
+ DomainStatus:r.GoooField1179adfce7eb6f64db5f69e8f529446dd6888a7bcc3462dbb67ef0d428c56235,
+ Action:r.GoooFielda630b2b9be238eccac053ec9fa3edf045dc2325cbf703e781f50f45b62848d68,
+ Reason:r.GoooField92c6f4a86a726e38d8d1d44ef3dcd02fdeaf5e8f50535c544a21075b60ae4e9b,
+ EligibleToClaim:r.GoooField3fbfb9e84924817e9b5bed607bfeca0d3cd3e13fd972670cf5399c13641bfb04,
+ AttemptsIfClaimed:r.GoooFieldc8dc4a883f3068a41e733c3767f9cec72c43c077983c5fa5653145e4ad1c460e,
+ DedupRequired:r.GoooFieldf11203cb9abc2fd7ac7edc1704c74f841e1d98daf4dbf86042549b4eeedbde9d,
+ }
+}

@@ -1,0 +1,105 @@
+// Copyright 2026 Gooo Go Ports contributors.
+// Original automatic redelivery admission policy; BSD-3-Clause, see LICENSE.
+// This activity compares nine supplied scalar facts. The trusted host owns
+// authority, whole-operation evidence, current provider guidance and any effect.
+package automatic_redelivery
+namespace gooo_original_automatic_redelivery
+
+entity Text id "gooo://std/text"
+entity Boolean id "gooo://std/boolean"
+entity Integer id "gooo://std/integer"
+entity RedeliveryDecision id "gooo://automatic-redelivery/decision/v1" fields {
+    field method id "gooo://automatic-redelivery/decision/v1/method" type string required one
+    field delivery_state id "gooo://automatic-redelivery/decision/v1/delivery_state" type string required one
+    field body_replayable id "gooo://automatic-redelivery/decision/v1/body_replayable" type boolean required one
+    field idempotency_key_present id "gooo://automatic-redelivery/decision/v1/idempotency_key_present" type boolean required one
+    field server_repeat_contract_verified id "gooo://automatic-redelivery/decision/v1/server_repeat_contract_verified" type boolean required one
+    field request_binding_current id "gooo://automatic-redelivery/decision/v1/request_binding_current" type boolean required one
+    field current_access_allowed id "gooo://automatic-redelivery/decision/v1/current_access_allowed" type boolean required one
+    field attempts_remaining id "gooo://automatic-redelivery/decision/v1/attempts_remaining" type integer required one
+    field provider_retry_guidance id "gooo://automatic-redelivery/decision/v1/provider_retry_guidance" type string required one
+    field domain_status id "gooo://automatic-redelivery/decision/v1/domain_status" type string required one
+    field action id "gooo://automatic-redelivery/decision/v1/action" type string required one
+    field reason id "gooo://automatic-redelivery/decision/v1/reason" type string required one
+    field eligible_to_claim id "gooo://automatic-redelivery/decision/v1/eligible_to_claim" type boolean required one
+    field attempts_if_claimed id "gooo://automatic-redelivery/decision/v1/attempts_if_claimed" type integer required one
+    field dedup_required id "gooo://automatic-redelivery/decision/v1/dedup_required" type boolean required one
+}
+
+// Original eight input positions are unchanged; input8 is current provider
+// guidance. Exact enum/domain failures retain every scalar without arithmetic.
+// Ordered first-match selection never treats ALLOW/ABSENT as authority.
+activity AssessRedelivery(Text, Text, Boolean, Boolean, Boolean, Boolean, Boolean, Integer, Text) -> RedeliveryDecision id "gooo://automatic-redelivery/assess/v1" computes `
+let methodValid = input0 == "GET" || input0 == "HEAD" || input0 == "OPTIONS" || input0 == "TRACE" || input0 == "POST" || input0 == "PUT" || input0 == "PATCH" || input0 == "DELETE"
+let stateValid = input1 == "NOT_SENT" || input1 == "OUTCOME_UNKNOWN" || input1 == "APPLIED_CONFIRMED" || input1 == "NOT_APPLIED_CONFIRMED"
+let guidanceValid = input8 == "ALLOW" || input8 == "VETO" || input8 == "ABSENT" || input8 == "UNKNOWN"
+let valid = methodValid && stateValid && guidanceValid && input7 >= 0 && input7 <= 2
+let readLike = input0 == "GET" || input0 == "HEAD" || input0 == "OPTIONS" || input0 == "TRACE"
+let writeMethod = input0 == "POST" || input0 == "PUT" || input0 == "PATCH" || input0 == "DELETE"
+let dedupRequired = valid && input1 == "OUTCOME_UNKNOWN" && writeMethod
+let domainStatus = "INVALID_INPUT"
+let action = "STOP"
+let reason = "INPUT_DOMAIN_INVALID"
+let decided = false
+let attemptsIfClaimed = input7
+if valid {
+    domainStatus = "VALID_INPUT"
+    if !input6 {
+        reason = "CURRENT_ACCESS_REFUSED"
+        decided = true
+    }
+    if !decided && !input5 {
+        reason = "REQUEST_BINDING_CHANGED"
+        decided = true
+    }
+    if !decided && input1 == "APPLIED_CONFIRMED" {
+        action = "LOOKUP_RECORDED_RESULT"
+        reason = "OPERATION_ALREADY_APPLIED"
+        decided = true
+    }
+    if !decided && input8 == "VETO" {
+        reason = "PROVIDER_RETRY_VETO"
+        decided = true
+    }
+    if !decided && input7 == 0 {
+        reason = "ATTEMPT_BUDGET_EXHAUSTED"
+        decided = true
+    }
+    if !decided && !input2 {
+        reason = "BODY_NOT_REPLAYABLE"
+        decided = true
+    }
+    if !decided && input8 == "UNKNOWN" {
+        action = "REFRESH_OUTCOME"
+        reason = "PROVIDER_GUIDANCE_UNVERIFIED"
+        decided = true
+    }
+    if !decided && (input1 == "NOT_SENT" || input1 == "NOT_APPLIED_CONFIRMED") {
+        action = "REDELIVER_ELIGIBLE"
+        reason = "POSITIVE_NONAPPLICATION_EVIDENCE"
+        decided = true
+    }
+    if !decided && !input4 {
+        action = "REFRESH_OUTCOME"
+        reason = "SERVER_REPEAT_CONTRACT_UNVERIFIED"
+        decided = true
+    }
+    if !decided && readLike {
+        action = "REDELIVER_ELIGIBLE"
+        reason = "VERIFIED_REPEAT_CONTRACT"
+        decided = true
+    }
+    if !decided && !input3 {
+        action = "REFRESH_OUTCOME"
+        reason = "DEDUP_KEY_NOT_BOUND"
+        decided = true
+    }
+    if !decided {
+        action = "REDELIVER_ELIGIBLE"
+        reason = "VERIFIED_SERVER_DEDUP"
+    }
+}
+let eligible = action == "REDELIVER_ELIGIBLE"
+if valid && eligible { attemptsIfClaimed = input7 - 1 }
+return RedeliveryDecision{method: input0, delivery_state: input1, body_replayable: input2, idempotency_key_present: input3, server_repeat_contract_verified: input4, request_binding_current: input5, current_access_allowed: input6, attempts_remaining: input7, provider_retry_guidance: input8, domain_status: domainStatus, action: action, reason: reason, eligible_to_claim: eligible, attempts_if_claimed: attemptsIfClaimed, dedup_required: dedupRequired}
+`

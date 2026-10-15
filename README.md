@@ -27,6 +27,20 @@ continues to report 45 ports, 19 consumer programs, 21 consumer activities, 66 s
 159,909 cases, 2,109 CI-profile batches and 7 exhaustive checks. Authored totals
 include the sidecar; its values are not added to those catalog counters.
 
+The original [automatic redelivery policy](examples/automatic-redelivery/README.md)
+uses nine supplied facts to return fifteen fields, including every original input,
+a next action and its reason. It can select an eligible attempt, stop, refresh
+evidence or look up an already applied operation without per-case human approval.
+The application must establish current facts and atomically claim before dispatch;
+this example supplies no sender, ledger or host adapter. Its separate CI requires
+16 fresh CLI outputs and 16 saved-replay outputs, then compares all 12,288 valid
+tuples through the fresh Gooo-generated function with an independent Go reference
+and saved-row readback. Each full comparison checks 184,320 typed fields and
+110,592 original echoes; full-domain individual CLI/replay counts stay zero.
+The 36 strict wire and 18 receipt-tamper refusals are also separate from the
+existing port, path-sidecar and Node/Wasm counters. These finite checks do not
+establish production delivery safety or a speedup.
+
 The separate [Agent Mesh service-pattern example](examples/agentmesh-service-policy/README.md)
 adds a bounded adaptation of `MatchServicePattern` and an original three-field
 comparison for one supplied request before and after a pattern change. Its
@@ -66,6 +80,7 @@ proposal, a refused expansion, and recovery of a discarded response by operation
 | Apply a constrained policy change automatically | [Service-grant application](examples/agentmesh-service-policy/conditional-apply.md) | Tighten a local grant, observe conflict and refusal, and recover a recorded result |
 | Search a diagnostic phrase locally | [Literal-text report](examples/literal-text-report/README.md) | Supply text and a phrase; export the first byte offset, non-overlapping count and both original inputs |
 | Split a literal separator or remove an edge affix | [Literal Cut report](examples/literal-cut-report/README.md) | Compare Cut, CutPrefix and CutSuffix while retaining both original inputs and all eleven returned fields |
+| Assess an uncertain API operation automatically | [Automatic redelivery policy](examples/automatic-redelivery/README.md) | Supply nine bound facts, inspect all fifteen returned fields and save a replay; eligibility requires a later host-owned atomic claim |
 | Use current ports in another Gooo project | [Current path import walkthrough](docs/use-current-path-in-your-project.md) | Copy a separate Gooo workspace, run `path.Ext` / `path.IsAbs` through its six-field report and save a replayable record |
 
 The [older ValidRune import walkthrough](docs/use-in-your-project.md) remains fixed to preview.2 and its own compiler. Use the current path walkthrough above for the `83928fa` compiler and Go 1.27.2.

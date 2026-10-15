@@ -37,3 +37,8 @@ Copyright 2009 The Go Authors notice and Go BSD terms. The byte-exact source
 reference third_party/go/path.go.txt, its immutable Go revision and SHA256 are
 recorded in upstream.json. The importing Path Facts Report is original
 repository code under LICENSE; it does not perform filesystem authorization.
+
+The original automatic-redelivery policy in examples/automatic-redelivery, its
+contract-derived independent Go reference, and its verification tooling are
+repository code under LICENSE. They classify trusted facts and attempt eligibility;
+they do not implement a provider SDK, network delivery, ledger or atomic claim.

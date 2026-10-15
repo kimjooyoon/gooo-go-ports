@@ -1,0 +1,1 @@
+{"method":"\udc00","delivery_state":"NOT_SENT","body_replayable":true,"idempotency_key_present":true,"server_repeat_contract_verified":true,"request_binding_current":true,"current_access_allowed":true,"attempts_remaining":2,"provider_retry_guidance":"ABSENT"}
