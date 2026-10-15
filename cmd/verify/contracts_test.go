@@ -124,7 +124,7 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	suites := allNativeSuites(t)
-	if len(contracts) != 66 || len(suites) != 66 {
+	if len(contracts) != 68 || len(suites) != 66 {
 		t.Fatal("contract/suite roster changed")
 	}
 	seen := map[string]bool{}

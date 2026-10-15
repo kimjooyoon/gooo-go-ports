@@ -15,6 +15,7 @@ import (
 type expectedIdentity struct {
 	CompilerRevision, GoVersion, ManifestDigest, CasesDigest string
 	Sources                                                  map[string]sourceIdentity
+	SourceBytes                                              map[string][]byte `json:"-"`
 }
 
 type envelope struct {
@@ -119,6 +120,11 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 	if err := inspectWorkspace(e.Result.Program.Image, s, contract, identity.Sources); err != nil {
 		return fail(err.Error())
 	}
+	if isDecimalPayloadSuite(s) {
+		if err := inspectDecimalPayloadABI(raw, s, identity); err != nil {
+			return fail(err.Error())
+		}
+	}
 	if r.Calls == nil || *r.Calls != 0 || r.Passed == nil || *r.Passed != len(s.Cases) || r.Total == nil || *r.Total != len(s.Cases) || !r.Projection || !r.Replayed {
 		return fail("runtime counters or replay")
 	}
@@ -145,7 +151,7 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 			if len(d.Inputs) != 0 || !equalValue(d.Input, row.Inputs[0]) {
 				return fail("single input")
 			}
-			if isUUIDSuite(s) && len(d.InputFields) != 0 {
+			if (isUUIDSuite(s) || isDecimalPayloadSuite(s)) && len(d.InputFields) != 0 {
 				return fail("UUID Text input has record fields")
 			}
 			if err := inspectNRGBAInputFields(contract.InputEntities[0], d.InputFields, row.Inputs[0]); err != nil {
@@ -162,7 +168,7 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 				if in.Port != fmt.Sprintf("input%d", j) || in.Entity != contract.InputEntities[j] || !equalValue(in.Value, row.Inputs[j]) {
 					return fail("input order or value")
 				}
-				if (isStringByteSuite(s) || isLiteralTextSuite(s) || isLiteralCutSuite(s)) && len(in.Fields) != 0 {
+				if (isStringByteSuite(s) || isLiteralTextSuite(s) || isLiteralCutSuite(s) || isDecimalPayloadSuite(s)) && len(in.Fields) != 0 {
 					return fail("string byte scalar input has record fields")
 				}
 				if err := inspectNRGBAInputFields(contract.InputEntities[j], in.Fields, row.Inputs[j]); err != nil {

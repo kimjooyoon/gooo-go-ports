@@ -28,7 +28,9 @@
     "src/strconv/isprint.go": "e6f4b35fbf38f9c9c8b251e5d3cf94daa880789cb89825f11f9734ba4a42e9ff",
     "src/internal/stringslite/strings.go": "3ed7df2eeabb5427d44b95e6cfe66ef03e13f1c969ad08050a4a0e89d43b8af2",
     "src/path/path.go": "0a5024c364387eeea9ab5fe0b285f0d62355e8cd181cdbddfdfa227f6916d94c",
-    "src/net/netip/netip.go": "32295f4761825d8c6fdade4dad093b08683bdd1945010bee8a90a298e18cf208"
+    "src/net/netip/netip.go": "32295f4761825d8c6fdade4dad093b08683bdd1945010bee8a90a298e18cf208",
+    "src/strconv/number.go": "dda43e8c91d95f9dea0c46b2fec6637e5520cae099e40c5965dca0e41bbaab9e",
+    "src/internal/strconv/atoi.go": "bd69756b79c2f007ce7900bea400051f9f9da600c9c6bad656e46900331663d8"
   },
   "ports": [
     {
@@ -354,6 +356,37 @@
         "query_saved_replay_outputs": 36,
         "scope": "Two imported query entries with18 boundary inputs each; not all IPv4/prefix combinations."
       }
+    },
+    {
+      "source": "src/strconv/number.go",
+      "supporting_sources": [
+        "src/internal/strconv/atoi.go"
+      ],
+      "target": "ports/strconv/decimal.gooo",
+      "target_sha256": "409c83f22dd22264d60470fbfc37aaa49bfd8bdd49be8d6a4b6038c7ad19b2a1",
+      "symbols": [
+        "ParseInt"
+      ],
+      "target_activities": [
+        "ParseIntDecimal64"
+      ],
+      "license": "third_party/GO-LICENSE",
+      "provenance": "ports/strconv/provenance.json",
+      "api_mapping": "Specializes strconv.ParseInt(original,10,64) over decoded valid UTF-8 Text<=1024 bytes into required input/value/parsed/error_kind record. Exact signed64 values, syntax/range errors, signed saturation and unsigned-overflow-before-invalid-suffix precedence are retained. No configurable base/bitSize, ParseUint, NumError object or whole strconv compatibility. Separate body guard kind3 for>1024 is outside the compatible domain; native Text validation may refuse first. No malformed raw UTF8/surrogate refusal/preservation claim.",
+      "input_corpus": "ports/strconv/corpus-256.json",
+      "input_corpus_sha256": "27a2a638f7de7d9b23c69539234e7bc6c61a8c628dca12c65dda46bb8d6b9c99",
+      "verification": {
+        "command": "go run ./cmd/verify",
+        "cases": 256,
+        "status": "FRESH_CURRENT_SOURCE_NATIVE_AND_SAVED_REPLAY_REQUIRED",
+        "public_CI_requires_fresh_execution": true,
+        "source_partition": {
+          "batches": 5,
+          "maximum_raw_bytes_including_LF": 29859,
+          "source_derived_translated_upper_bytes": 27021,
+          "scope": "Current source-only partition observation; fresh native differential execution and saved replay remain required."
+        }
+      }
     }
   ],
   "external_sources": [
@@ -545,6 +578,42 @@
         "public_CI_requires_fresh_execution": true
       },
       "scope": "Original11-field diagnostic decision over two supplied8-field Rules. Sixteen original integers are bound in receipt inputs, not repeated in output. Invalid and non-comparable are explicit; conflict requires equal positive scope/equal priority/overlap/opposite effects and returns a canonical network witness. Opaque scope does not verify context truth/freshness. No full ACL, actual authorization, host adapter, effects or production safety. Existing66/159909/2109/7 catalog,196CLI/422Node-Wasm observations and other sidecar counters remain separate."
+    },
+    {
+      "id": "payload-admission/v1",
+      "kind": "original pure Gooo eligibility facts over seven host-supplied observations",
+      "source": "examples/payload-admission/main.gooo",
+      "source_sha256": "0efa9428ac4d2ddb7e20ec6234a14a9570b215df38bee1afe770ebeb4a52f772",
+      "contract": "examples/payload-admission/contract.json",
+      "contract_sha256": "1649d05fc5a4346c8066d41190f854bceeb42a82e8ab8ec72c71ea71bee4743b",
+      "workspace": "payload-admission.workspace.json",
+      "entry": "app/payload-admission:Report",
+      "license": "LICENSE",
+      "inputs": 7,
+      "required_output_fields": 14,
+      "original_input_echoes": 7,
+      "input_corpus": "examples/payload-admission/corpus.json",
+      "input_corpus_sha256": "a2573a1a3e2ed19ad3f46b8246d9be510f74568878c786d2165e8489f46c74a8",
+      "original_input_seed": "examples/payload-admission/manual17.json",
+      "original_input_seed_sha256": "fc54b8c739824dc74ab3850201c8bb3f448e8a06a8406630b02963c522eeda8b",
+      "generator": "tools/generate-payload-corpus.py --check",
+      "generator_source_sha256": "bdc8cca9e9704b8335354fa676ee365c55b02abbec9e8b15912b98a814dd8b75",
+      "independent_reference": "cmd/verify actual strconv.ParseInt plus independently implemented contract policy",
+      "verification": {
+        "command": "go run ./cmd/verify",
+        "cases": 101,
+        "typed_fields_each_phase": 1414,
+        "original_echoes_each_phase": 707,
+        "status": "FRESH_CURRENT_SOURCE_NATIVE_AND_SAVED_REPLAY_REQUIRED",
+        "public_CI_requires_fresh_execution": true,
+        "source_partition": {
+          "batches": 4,
+          "maximum_raw_bytes_including_LF": 29555,
+          "source_derived_translated_upper_bytes": 21739,
+          "scope": "Current source-only partition observation; fresh native differential execution and saved replay remain required."
+        }
+      },
+      "scope": "Original14field/7echo policy imports ParseIntDecimal64. ASCII unsigned spelling is separate from signed ParseInt; precedence covers invalid metadata,access,binding,TE,count,parser,spelling,length,budget. Every supplied fact is echoed, including semantic-invalid signed64 values. Host must truthfully bind complete same-request observations/current authority and enforce use. No per-request human approval or effects; no HTTP framing,body I/O,adapter,authority proof,quota reservation,atomic claim or production safety. Adds one ordinary native suite to historical66; other sidecars/196CLI/422NodeWasm counts remain separate. Finite101 cases do not cover defensive reason12,allText/context or malformedwire."
     }
   ],
   "original_diagnostic_compositions": [

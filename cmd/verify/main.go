@@ -192,6 +192,11 @@ func run() error {
 		return err
 	}
 	suites = append(suites, literalCut.Suites...)
+	decimalPayload, err := decimalPayloadCorpus(".")
+	if err != nil {
+		return err
+	}
+	suites = append(suites, decimalPayload.Suites...)
 	if *out == "" {
 		return fmt.Errorf("provide --out for a new evidence directory")
 	}
@@ -333,7 +338,11 @@ func run() error {
 		"compiler_revision":    lock.CompilerRevision, "source_sha256": catalog.Hashes,
 		"verification_catalog_sha256": contentDigest(catalog.Raw),
 		"ported_functions":            portedFunctions, "consumer_programs": len(consumerPrograms), "consumer_activities": consumerActivities,
-		"uuid_port_reference_cases": uuids.PortReferenceCases, "uuid_consumer_reference_cases": uuids.ConsumerReferenceCases,
+		"decimal_reference_cases":           decimalPayload.DecimalReferenceCases,
+		"payload_admission_reference_cases": decimalPayload.PayloadReferenceCases,
+		"decimal_payload_scope":             "Decoded valid UTF-8 Text up to 1024 bytes; exact signed-int64 and Boolean facts. ParseIntDecimal64 compares real Go strconv.ParseInt(input,10,64) values and syntax/range classes, including saturation. Original payload eligibility retains all seven inputs and fourteen fields and is checked against a separate ordered policy. These are finite pure decisions over caller-supplied facts, without HTTP enforcement, current-fact authentication or production safety claims.",
+		"decimal_payload_provenance_scope":  "Fresh native execution and saved replay bind original inputs, required output field identities and order, selected source bytes, producers, generated source and outer receipt parents. New entries also check their source-bound lowered bodies and call/typed-plan bindings. Inner prior_result_sha256 is NOT_CHECKED by this generic finite path; private pilot receipts do not substitute for fresh public verification.",
+		"uuid_port_reference_cases":         uuids.PortReferenceCases, "uuid_consumer_reference_cases": uuids.ConsumerReferenceCases,
 		"uuid_module_revision": uuidRevision, "uuid_module_h1": uuidModuleH1,
 		"uuid_parse_reference_cases":          uuidParse.ReferenceCases,
 		"uuid_parse_legacy_reference_inputs":  uuidParse.LegacyReferenceInputs,

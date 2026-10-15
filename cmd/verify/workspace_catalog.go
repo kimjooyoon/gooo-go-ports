@@ -87,6 +87,9 @@ var catalogImport = regexp.MustCompile(`(?m)^[\t ]*import[\t ]+(?:[A-Za-z_][A-Za
 // prior source rosters and keeps unrelated records out of the pinned compiler's
 // 16-record ABI. All bytes come from one snapshot.
 func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, error) {
+	if isDecimalPayloadSuite(s) {
+		return f.decimalPayloadWorkspace(s)
+	}
 	w := suiteWorkspace{Sources: map[string][]byte{}}
 	w.Manifest.Schema = "gooo/package-workspace-manifest/v1"
 	w.Manifest.Entry.Package, w.Manifest.Entry.Activity = s.Package, s.Activity
@@ -96,6 +99,11 @@ func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, e
 	}
 	selected := map[string]bool{}
 	for _, pkg := range f.Catalog.Packages {
+		// The new Text parser must not add a package or record to any old66
+		// workspace. Its only consumer selects a concrete closure above.
+		if pkg.Path == decimalPackage {
+			continue
+		}
 		// The bounded CEL and AgentMesh rules have separate verifiers and importing
 		// workspaces. They must not alter any legacy suite's frozen source roster.
 		if pkg.Path == "go/cel.dev/cel-go/codelab" || pkg.Path == "go/google/agentmesh/api" {
@@ -165,6 +173,56 @@ func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, e
 			if !selected[string(match[1])] {
 				return w, fmt.Errorf("selected source %s imports absent package %s", name, match[1])
 			}
+		}
+	}
+	return w, nil
+}
+
+func (f frozenVerificationCatalog) decimalPayloadWorkspace(s suite) (suiteWorkspace, error) {
+	w := suiteWorkspace{Sources: map[string][]byte{}}
+	w.Manifest.Schema = "gooo/package-workspace-manifest/v1"
+	w.Manifest.Entry.Package, w.Manifest.Entry.Activity = s.Package, s.Activity
+	packages := []sourcePackage{{Path: decimalPackage, Sources: []string{"ports/strconv/decimal.gooo"}}}
+	if s.Package == payloadAdmissionPackage {
+		packages = append(packages, sourcePackage{Path: payloadAdmissionPackage, Sources: []string{"examples/payload-admission/main.gooo"}})
+	}
+	for _, want := range packages {
+		found := 0
+		for _, candidate := range f.Catalog.Packages {
+			if candidate.Path != want.Path {
+				continue
+			}
+			found++
+			if !equalSourceNames(candidate.Sources, want.Sources) {
+				return w, fmt.Errorf("decimal/payload workspace source closure for %s", want.Path)
+			}
+		}
+		if found != 1 {
+			return w, fmt.Errorf("decimal/payload workspace package count for %s", want.Path)
+		}
+		w.Manifest.Packages = append(w.Manifest.Packages, want)
+		for _, name := range want.Sources {
+			raw, ok := f.Sources[name]
+			if !ok || strings.TrimPrefix(contentDigest(raw), "sha256:") != f.Hashes[name] {
+				return w, fmt.Errorf("missing or altered frozen decimal/payload source %s", name)
+			}
+			w.Sources[name] = bytes.Clone(raw)
+			w.Names = append(w.Names, name)
+		}
+	}
+	var err error
+	w.Identities, err = snapshotSourceIdentities(w.Manifest.Packages, w.Sources)
+	if err != nil {
+		return w, err
+	}
+	for name, raw := range w.Sources {
+		imports := catalogImport.FindAllSubmatch(raw, -1)
+		want := 0
+		if name == "examples/payload-admission/main.gooo" {
+			want = 1
+		}
+		if len(imports) != want || want == 1 && string(imports[0][1]) != decimalPackage {
+			return w, fmt.Errorf("unexpected decimal/payload import closure in %s", name)
 		}
 	}
 	return w, nil

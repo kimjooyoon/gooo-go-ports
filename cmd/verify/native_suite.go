@@ -89,7 +89,7 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 		if err != nil {
 			return result, err
 		}
-		identity := expectedIdentity{CompilerRevision: v.lock.CompilerRevision, GoVersion: v.lock.GoVersion, ManifestDigest: "sha256:" + manifestSHA, CasesDigest: "sha256:" + casesSHA, Sources: selected.Identities}
+		identity := expectedIdentity{CompilerRevision: v.lock.CompilerRevision, GoVersion: v.lock.GoVersion, ManifestDigest: "sha256:" + manifestSHA, CasesDigest: "sha256:" + casesSHA, Sources: selected.Identities, SourceBytes: selected.Sources}
 		receipt := filepath.Join(dir, "execution.json")
 		pendingTiming.phase("execute")
 		raw, err := v.execute(v.commands, v.compiler, receipt, "package", "execute", "--json", "--cases", cases, workspace)

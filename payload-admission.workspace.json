@@ -1,0 +1,21 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "app/payload-admission",
+    "activity": "Report"
+  },
+  "packages": [
+    {
+      "path": "go/strconv",
+      "sources": [
+        "ports/strconv/decimal.gooo"
+      ]
+    },
+    {
+      "path": "app/payload-admission",
+      "sources": [
+        "examples/payload-admission/main.gooo"
+      ]
+    }
+  ]
+}

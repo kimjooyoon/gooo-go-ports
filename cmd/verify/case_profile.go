@@ -70,7 +70,8 @@ type nativePreparedCaseBatch struct {
 }
 
 type nativeCaseBatchPolicy struct {
-	compact bool
+	compact        bool
+	decimalPayload bool
 	// With a nonexpanding lowered key the translated compact struct cannot be
 	// larger than our compact map encoding without its final LF.
 	sourceBytes, loweredKeyBytesUpperBound int
@@ -79,6 +80,9 @@ type nativeCaseBatchPolicy struct {
 func (p nativeCaseProfile) policy(s suite, selected suiteWorkspace, lock upstream) (nativeCaseBatchPolicy, error) {
 	if err := p.validateCompiler(lock); err != nil {
 		return nativeCaseBatchPolicy{}, err
+	}
+	if isDecimalPayloadSuite(s) {
+		return decimalPayloadBatchPolicy(s, selected, lock)
 	}
 	if p == "" || !uuidCompactTarget(s) {
 		return nativeCaseBatchPolicy{}, nil
@@ -122,6 +126,9 @@ func (p nativeCaseProfile) policy(s suite, selected suiteWorkspace, lock upstrea
 }
 
 func (p nativeCaseBatchPolicy) prepare(s suite, start int) (nativePreparedCaseBatch, error) {
+	if p.decimalPayload {
+		return p.prepareDecimalPayload(s, start)
+	}
 	if !p.compact {
 		end, err := nativeBatchEnd(s, start, nativeBatchSize(s))
 		return nativePreparedCaseBatch{End: end}, err
@@ -209,5 +216,5 @@ func (p nativeCaseProfile) decorateTimingHeader(header map[string]any) {
 		return
 	}
 	header["case_profile"] = p.identity()
-	header["boundary_scope"] = "Actual contiguous batch coverage is observed. UUID3 use uuid-compact-v1 compact wire bytes and newly selected bounds; no original UUID batch boundaries or legacy2337 total are claimed preserved. Non-UUID suites retain nativeBatchEnd/save behavior. The recorder does not recompute expected partitions."
+	header["boundary_scope"] = "Actual contiguous batch coverage is observed. UUID3 use uuid-compact-v1 compact wire bytes and newly selected bounds; no original UUID batch boundaries or legacy2337 total are claimed preserved. Existing non-UUID suites retain nativeBatchEnd/save behavior; appended decimal/payload entries use source-bounded pretty JSON. The recorder does not recompute expected partitions."
 }

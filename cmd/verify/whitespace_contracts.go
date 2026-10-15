@@ -21,6 +21,19 @@ type resultContract struct {
 // Existing activities retain their contracts; these new result identities also
 // bind the record's semantic field IDs, order and values to independent Go output.
 func whitespaceResultContract(s suite) resultContract {
+	if isDecimalPayloadSuite(s) {
+		entity := decimalResultEntity
+		names := []string{"input", "value", "parsed", "error_kind"}
+		if s.Package == payloadAdmissionPackage {
+			entity = payloadAdmissionResultEntity
+			names = []string{"declared_length", "content_length_occurrences", "observed_body_bytes", "maximum_payload_bytes", "transfer_encoding_present", "body_observation_bound_to_request", "current_access", "parse_error_kind", "parsed_value", "unsigned_decimal", "length_matches", "within_budget", "eligible", "reason"}
+		}
+		contract := resultContract{Entity: entity}
+		for _, name := range names {
+			contract.Fields = append(contract.Fields, recordFieldContract{name, entity + "/" + name})
+		}
+		return contract
+	}
 	if cut := literalCutResultContract(s); cut.Entity != "" {
 		return cut
 	}

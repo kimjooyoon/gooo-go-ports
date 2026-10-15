@@ -1,0 +1,1217 @@
+{
+  "schema": "gooo/payload-admission-inputs/v1",
+  "cases": [
+    {
+      "name": "zero-body-zero-budget",
+      "inputs": {
+        "declared_length": "0",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 0,
+        "maximum_payload_bytes": 0,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "exact-integer-above-2pow53",
+      "inputs": {
+        "declared_length": "9007199254740993",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9007199254740993,
+        "maximum_payload_bytes": 9007199254740993,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "invalid-minimum-observation-before-other-refusals",
+      "inputs": {
+        "declared_length": "0",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": -9223372036854775808,
+        "maximum_payload_bytes": 0,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": false,
+        "current_access": false
+      }
+    },
+    {
+      "name": "access-denied-before-unbound",
+      "inputs": {
+        "declared_length": "1",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 1,
+        "maximum_payload_bytes": 1,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": false,
+        "current_access": false
+      }
+    },
+    {
+      "name": "unbound-before-transfer-encoding",
+      "inputs": {
+        "declared_length": "1",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 1,
+        "maximum_payload_bytes": 1,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": false,
+        "current_access": true
+      }
+    },
+    {
+      "name": "transfer-encoding-before-repeated-length",
+      "inputs": {
+        "declared_length": "1",
+        "content_length_occurrences": 2,
+        "observed_body_bytes": 1,
+        "maximum_payload_bytes": 1,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "missing-empty-length",
+      "inputs": {
+        "declared_length": "",
+        "content_length_occurrences": 0,
+        "observed_body_bytes": 0,
+        "maximum_payload_bytes": 0,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "repeated-equal-length",
+      "inputs": {
+        "declared_length": "1",
+        "content_length_occurrences": 2,
+        "observed_body_bytes": 1,
+        "maximum_payload_bytes": 1,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "comma-single-original-field",
+      "inputs": {
+        "declared_length": "1,1",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 1,
+        "maximum_payload_bytes": 1,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "range-saturation-does-not-match-observed-maximum",
+      "inputs": {
+        "declared_length": "9223372036854775808",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9223372036854775807,
+        "maximum_payload_bytes": 9223372036854775807,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "plus-is-not-unsigned-spelling",
+      "inputs": {
+        "declared_length": "+1",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 1,
+        "maximum_payload_bytes": 1,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "minus-zero-is-not-unsigned-spelling",
+      "inputs": {
+        "declared_length": "-0",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 0,
+        "maximum_payload_bytes": 0,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "mismatch-before-budget",
+      "inputs": {
+        "declared_length": "2",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 1,
+        "maximum_payload_bytes": 0,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "body-over-route-limit",
+      "inputs": {
+        "declared_length": "2",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 2,
+        "maximum_payload_bytes": 1,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "maximum-1024-byte-leading-zero-length",
+      "inputs": {
+        "declared_length": "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 1,
+        "maximum_payload_bytes": 1,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "uint64-overflow-before-invalid-suffix",
+      "inputs": {
+        "declared_length": "18446744073709551616x",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9223372036854775807,
+        "maximum_payload_bytes": 9223372036854775807,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "zero-occurrences-with-nonempty-value",
+      "inputs": {
+        "declared_length": "1",
+        "content_length_occurrences": 0,
+        "observed_body_bytes": 0,
+        "maximum_payload_bytes": 0,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "context-te0-bound0-access0",
+      "inputs": {
+        "declared_length": "37",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 37,
+        "maximum_payload_bytes": 37,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": false,
+        "current_access": false
+      }
+    },
+    {
+      "name": "context-te0-bound0-access1",
+      "inputs": {
+        "declared_length": "37",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 37,
+        "maximum_payload_bytes": 37,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": false,
+        "current_access": true
+      }
+    },
+    {
+      "name": "context-te0-bound1-access0",
+      "inputs": {
+        "declared_length": "37",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 37,
+        "maximum_payload_bytes": 37,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": false
+      }
+    },
+    {
+      "name": "context-te0-bound1-access1",
+      "inputs": {
+        "declared_length": "37",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 37,
+        "maximum_payload_bytes": 37,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "context-te1-bound0-access0",
+      "inputs": {
+        "declared_length": "37",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 37,
+        "maximum_payload_bytes": 37,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": false,
+        "current_access": false
+      }
+    },
+    {
+      "name": "context-te1-bound0-access1",
+      "inputs": {
+        "declared_length": "37",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 37,
+        "maximum_payload_bytes": 37,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": false,
+        "current_access": true
+      }
+    },
+    {
+      "name": "context-te1-bound1-access0",
+      "inputs": {
+        "declared_length": "37",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 37,
+        "maximum_payload_bytes": 37,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": true,
+        "current_access": false
+      }
+    },
+    {
+      "name": "context-te1-bound1-access1",
+      "inputs": {
+        "declared_length": "37",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 37,
+        "maximum_payload_bytes": 37,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "metadata-content_length_occurrences-negative-one",
+      "inputs": {
+        "declared_length": "23",
+        "content_length_occurrences": -1,
+        "observed_body_bytes": 23,
+        "maximum_payload_bytes": 23,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "metadata-content_length_occurrences-minimum",
+      "inputs": {
+        "declared_length": "23",
+        "content_length_occurrences": -9223372036854775808,
+        "observed_body_bytes": 23,
+        "maximum_payload_bytes": 23,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "metadata-content_length_occurrences-maximum",
+      "inputs": {
+        "declared_length": "23",
+        "content_length_occurrences": 9223372036854775807,
+        "observed_body_bytes": 23,
+        "maximum_payload_bytes": 23,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "metadata-and-context-content_length_occurrences-negative-one",
+      "inputs": {
+        "declared_length": "23",
+        "content_length_occurrences": -1,
+        "observed_body_bytes": 23,
+        "maximum_payload_bytes": 23,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": false,
+        "current_access": false
+      }
+    },
+    {
+      "name": "metadata-and-context-content_length_occurrences-minimum",
+      "inputs": {
+        "declared_length": "23",
+        "content_length_occurrences": -9223372036854775808,
+        "observed_body_bytes": 23,
+        "maximum_payload_bytes": 23,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": false,
+        "current_access": false
+      }
+    },
+    {
+      "name": "metadata-observed_body_bytes-negative-one",
+      "inputs": {
+        "declared_length": "23",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": -1,
+        "maximum_payload_bytes": 23,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "metadata-observed_body_bytes-minimum",
+      "inputs": {
+        "declared_length": "23",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": -9223372036854775808,
+        "maximum_payload_bytes": 23,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "metadata-observed_body_bytes-maximum",
+      "inputs": {
+        "declared_length": "23",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9223372036854775807,
+        "maximum_payload_bytes": 23,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "metadata-and-context-observed_body_bytes-negative-one",
+      "inputs": {
+        "declared_length": "23",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": -1,
+        "maximum_payload_bytes": 23,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": false,
+        "current_access": false
+      }
+    },
+    {
+      "name": "metadata-and-context-observed_body_bytes-minimum",
+      "inputs": {
+        "declared_length": "23",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": -9223372036854775808,
+        "maximum_payload_bytes": 23,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": false,
+        "current_access": false
+      }
+    },
+    {
+      "name": "metadata-maximum_payload_bytes-negative-one",
+      "inputs": {
+        "declared_length": "23",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 23,
+        "maximum_payload_bytes": -1,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "metadata-maximum_payload_bytes-minimum",
+      "inputs": {
+        "declared_length": "23",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 23,
+        "maximum_payload_bytes": -9223372036854775808,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "metadata-maximum_payload_bytes-maximum",
+      "inputs": {
+        "declared_length": "23",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 23,
+        "maximum_payload_bytes": 9223372036854775807,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "metadata-and-context-maximum_payload_bytes-negative-one",
+      "inputs": {
+        "declared_length": "23",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 23,
+        "maximum_payload_bytes": -1,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": false,
+        "current_access": false
+      }
+    },
+    {
+      "name": "metadata-and-context-maximum_payload_bytes-minimum",
+      "inputs": {
+        "declared_length": "23",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 23,
+        "maximum_payload_bytes": -9223372036854775808,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": false,
+        "current_access": false
+      }
+    },
+    {
+      "name": "occurrences-0-empty",
+      "inputs": {
+        "declared_length": "",
+        "content_length_occurrences": 0,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 7,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "occurrences-0-digits",
+      "inputs": {
+        "declared_length": "5",
+        "content_length_occurrences": 0,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 7,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "occurrences-0-comma",
+      "inputs": {
+        "declared_length": "5,5",
+        "content_length_occurrences": 0,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 7,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "occurrences-1-empty",
+      "inputs": {
+        "declared_length": "",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 7,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "occurrences-1-digits",
+      "inputs": {
+        "declared_length": "5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 7,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "occurrences-1-comma",
+      "inputs": {
+        "declared_length": "5,5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 7,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "occurrences-2-empty",
+      "inputs": {
+        "declared_length": "",
+        "content_length_occurrences": 2,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 7,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "occurrences-2-digits",
+      "inputs": {
+        "declared_length": "5",
+        "content_length_occurrences": 2,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 7,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "occurrences-2-comma",
+      "inputs": {
+        "declared_length": "5,5",
+        "content_length_occurrences": 2,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 7,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "occurrences-9223372036854775807-empty",
+      "inputs": {
+        "declared_length": "",
+        "content_length_occurrences": 9223372036854775807,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 7,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "occurrences-9223372036854775807-digits",
+      "inputs": {
+        "declared_length": "5",
+        "content_length_occurrences": 9223372036854775807,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 7,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "occurrences-9223372036854775807-comma",
+      "inputs": {
+        "declared_length": "5,5",
+        "content_length_occurrences": 9223372036854775807,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 7,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-empty",
+      "inputs": {
+        "declared_length": "",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-plus-only",
+      "inputs": {
+        "declared_length": "+",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-minus-only",
+      "inputs": {
+        "declared_length": "-",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-letter",
+      "inputs": {
+        "declared_length": "x",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-leading-space",
+      "inputs": {
+        "declared_length": " 5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-trailing-space",
+      "inputs": {
+        "declared_length": "5 ",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-tab",
+      "inputs": {
+        "declared_length": "\t5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-lf",
+      "inputs": {
+        "declared_length": "5\n",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-crlf",
+      "inputs": {
+        "declared_length": "5\r\n",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-underscore",
+      "inputs": {
+        "declared_length": "5_0",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-hex-prefix",
+      "inputs": {
+        "declared_length": "0x10",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-fullwidth-digit",
+      "inputs": {
+        "declared_length": "５",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-unicode-minus",
+      "inputs": {
+        "declared_length": "−5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-nul",
+      "inputs": {
+        "declared_length": "5\u0000",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-comma",
+      "inputs": {
+        "declared_length": "5,5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-plus",
+      "inputs": {
+        "declared_length": "+5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-negative-zero",
+      "inputs": {
+        "declared_length": "-0",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-negative",
+      "inputs": {
+        "declared_length": "-5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-leading-zero",
+      "inputs": {
+        "declared_length": "0005",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "spelling-digits",
+      "inputs": {
+        "declared_length": "5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 10,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "parse-boundary-signed-maximum",
+      "inputs": {
+        "declared_length": "9223372036854775807",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9223372036854775807,
+        "maximum_payload_bytes": 9223372036854775807,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "parse-boundary-signed-overflow-invalid-suffix",
+      "inputs": {
+        "declared_length": "9223372036854775808x",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9223372036854775807,
+        "maximum_payload_bytes": 9223372036854775807,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "parse-boundary-unsigned-maximum-invalid-suffix",
+      "inputs": {
+        "declared_length": "18446744073709551615x",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9223372036854775807,
+        "maximum_payload_bytes": 9223372036854775807,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "parse-boundary-signed-minimum",
+      "inputs": {
+        "declared_length": "-9223372036854775808",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9223372036854775807,
+        "maximum_payload_bytes": 9223372036854775807,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "parse-boundary-signed-minimum-minus-one",
+      "inputs": {
+        "declared_length": "-9223372036854775809",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9223372036854775807,
+        "maximum_payload_bytes": 9223372036854775807,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "parse-boundary-negative-unsigned-overflow-invalid-suffix",
+      "inputs": {
+        "declared_length": "-18446744073709551616x",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9223372036854775807,
+        "maximum_payload_bytes": 9223372036854775807,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "parse-boundary-leading-zero-1024-bytes",
+      "inputs": {
+        "declared_length": "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9223372036854775807,
+        "maximum_payload_bytes": 9223372036854775807,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "body-4-limit-4",
+      "inputs": {
+        "declared_length": "5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 4,
+        "maximum_payload_bytes": 4,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "body-4-limit-5",
+      "inputs": {
+        "declared_length": "5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 4,
+        "maximum_payload_bytes": 5,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "body-4-limit-6",
+      "inputs": {
+        "declared_length": "5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 4,
+        "maximum_payload_bytes": 6,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "body-5-limit-4",
+      "inputs": {
+        "declared_length": "5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 4,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "body-5-limit-5",
+      "inputs": {
+        "declared_length": "5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 5,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "body-5-limit-6",
+      "inputs": {
+        "declared_length": "5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 5,
+        "maximum_payload_bytes": 6,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "body-6-limit-4",
+      "inputs": {
+        "declared_length": "5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 6,
+        "maximum_payload_bytes": 4,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "body-6-limit-5",
+      "inputs": {
+        "declared_length": "5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 6,
+        "maximum_payload_bytes": 5,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "body-6-limit-6",
+      "inputs": {
+        "declared_length": "5",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 6,
+        "maximum_payload_bytes": 6,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "context-with-syntax-access",
+      "inputs": {
+        "declared_length": "x",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9,
+        "maximum_payload_bytes": 9,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": false
+      }
+    },
+    {
+      "name": "context-with-syntax-binding",
+      "inputs": {
+        "declared_length": "x",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9,
+        "maximum_payload_bytes": 9,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": false,
+        "current_access": true
+      }
+    },
+    {
+      "name": "context-with-syntax-te",
+      "inputs": {
+        "declared_length": "x",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9,
+        "maximum_payload_bytes": 9,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "context-with-syntax-combined",
+      "inputs": {
+        "declared_length": "x",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9,
+        "maximum_payload_bytes": 9,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": false,
+        "current_access": false
+      }
+    },
+    {
+      "name": "context-with-signed-spelling-access",
+      "inputs": {
+        "declared_length": "+9",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9,
+        "maximum_payload_bytes": 9,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": false
+      }
+    },
+    {
+      "name": "context-with-signed-spelling-binding",
+      "inputs": {
+        "declared_length": "+9",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9,
+        "maximum_payload_bytes": 9,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": false,
+        "current_access": true
+      }
+    },
+    {
+      "name": "context-with-signed-spelling-te",
+      "inputs": {
+        "declared_length": "+9",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9,
+        "maximum_payload_bytes": 9,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "context-with-signed-spelling-combined",
+      "inputs": {
+        "declared_length": "+9",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9,
+        "maximum_payload_bytes": 9,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": false,
+        "current_access": false
+      }
+    },
+    {
+      "name": "context-with-unsigned-overflow-suffix-access",
+      "inputs": {
+        "declared_length": "18446744073709551616x",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9,
+        "maximum_payload_bytes": 9,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": false
+      }
+    },
+    {
+      "name": "context-with-unsigned-overflow-suffix-binding",
+      "inputs": {
+        "declared_length": "18446744073709551616x",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9,
+        "maximum_payload_bytes": 9,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": false,
+        "current_access": true
+      }
+    },
+    {
+      "name": "context-with-unsigned-overflow-suffix-te",
+      "inputs": {
+        "declared_length": "18446744073709551616x",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9,
+        "maximum_payload_bytes": 9,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    },
+    {
+      "name": "context-with-unsigned-overflow-suffix-combined",
+      "inputs": {
+        "declared_length": "18446744073709551616x",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9,
+        "maximum_payload_bytes": 9,
+        "transfer_encoding_present": true,
+        "body_observation_bound_to_request": false,
+        "current_access": false
+      }
+    },
+    {
+      "name": "exact-large-leading-zero",
+      "inputs": {
+        "declared_length": "0009007199254740993",
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 9007199254740993,
+        "maximum_payload_bytes": 9007199254740994,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true
+      }
+    }
+  ]
+}

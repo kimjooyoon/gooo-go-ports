@@ -6,9 +6,9 @@ describing what programs should do and inspecting how they are built and run.
 **Try service-policy checks from Go:** open the [four-file service-policy quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726). With Go 1.27.2 already installed, follow its README to run Go generated from Gooo without a runtime Gooo compiler. Distinguish invalid input from denial, compare the same request before and after a rule change, and inspect a returned widening witness. These calls compare supplied policy facts; they do not apply a grant or call a service.
 
 This independent ecosystem project implements selected Go standard-library, x/image and Google UUID functions in Gooo,
-using independent Go references and saved replay. The source inventory includes 51 authored standard-library ports,
+using independent Go references and saved replay. The source inventory includes 52 authored standard-library ports,
 two ports from golang.org/x/image and two Google UUID adaptations. The current scope is
-55 authored HTTP, Unicode, IPv4 classification and prefix queries, literal-text splitting and byte search, slash-path, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, twenty-three importing consumer programs (twenty-six activities),
+56 authored HTTP, Unicode, IPv4 classification and prefix queries, signed-decimal parsing, literal-text splitting and byte search, slash-path, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, twenty-four importing consumer programs (twenty-seven activities),
 and an importing browser dispatcher.
 The RectangleIn/FitsCrop suites have completed finite native execution and saved
 replay with an independent raw-receipt audit; see the [verification evidence](evidence/rectangle-in-fits-crop-20261012.json).
@@ -22,10 +22,11 @@ The [slash-path facts sidecar](examples/path-facts/README.md) adds `path.Ext`,
 requires fresh CLI execution and saved replay for 24 boundary inputs per entry,
 then compares all 9,841 strings over `{a,.,/}` of lengths 0..8 through each fresh
 generated native function. Those 29,523 values are direct function comparisons,
-with 72 CLI and 72 saved-replay outputs counted separately. The existing catalog
-continues to report 45 ports, 19 consumer programs, 21 consumer activities, 66 suites,
-159,909 cases, 2,109 CI-profile batches and 7 exhaustive checks. Authored totals
-include the sidecar; its values are not added to those catalog counters.
+with 72 CLI and 72 saved-replay outputs counted separately. Before the decimal
+parser and payload-policy addition, the historical catalog contained 45 ports,
+19 consumer programs, 21 consumer activities, 66 suites, 159,909 cases,
+2,109 CI-profile batches and 7 exhaustive checks. Sidecar values are not added
+to those historical counters; the new two-suite extension is described below.
 
 The [IPv4 address facts sidecar](examples/ipv4-address-facts/README.md) adds six
 `netip.Addr` classification predicates over four integer octets and an original
@@ -49,6 +50,27 @@ is an opaque key, not evidence of actual context or authority. The opt-in checke
 sources. It keeps 54 CLI outputs and 54 saved-replay outputs
 separate from 112 fresh generated Report calls; existing catalog counts stay intact.
 
+The [signed-decimal parser](ports/strconv/README.md) specializes Go
+`strconv.ParseInt(text, 10, 64)` in Gooo and retains original Text, exact int64
+values, and syntax/range distinctions, including unsigned-overflow precedence.
+The original [payload admission facts](examples/payload-admission/README.md)
+imports it and returns fourteen fields from seven supplied observations. It
+separates Go-valid signed spelling from unsigned length spelling and reports
+metadata, access, binding, TE, occurrence, parse, length and budget refusals in
+an explicit order. It needs no per-request human approval; the host must supply
+truthful current observations and enforce any effect. It is not HTTP framing,
+authorization or quota enforcement.
+
+These two ordinary native suites add 256 parser inputs and 101 unique policy
+tuples, preserving the original 17 policy witnesses first. The current required
+roster is 46 ports, 20 consumer programs, 22 consumer activities, 68 suites and
+160,266 cases; all 66 historical suites and their inputs remain unchanged.
+The current source partition check gives five parser batches and four policy
+batches: nine new batches, for 2,118 with the CI UUID compact profile (2,346 in
+legacy). The required timing roster is 2,256 records (2,484 in legacy). These are
+source partition requirements, not completed native observations. Fresh native
+comparison and saved replay remain required for both additions.
+
 The original [automatic redelivery policy](examples/automatic-redelivery/README.md)
 uses nine supplied facts to return fifteen fields, including every original input,
 a next action and its reason. It can select an eligible attempt, stop, refresh
@@ -67,7 +89,7 @@ The separate [Agent Mesh service-pattern example](examples/agentmesh-service-pol
 adds a bounded adaptation of `MatchServicePattern` and an original three-field
 comparison for one supplied request before and after a pattern change. Its
 63 matcher cases (including 12 upstream tests) and 16 original impact cases are
-separate from the 55 authored APIs and the existing native catalog above. `WIDENED` means
+separate from the 56 authored APIs and the native catalog above. `WIDENED` means
 that this supplied request became allowed; it is not a global grant-inclusion
 proof or a current authorization. Gooo computes the matches and impact without
 per-call human approval; the host owns trusted facts and any actual effects.
@@ -102,6 +124,7 @@ proposal, a refused expansion, and recovery of a discarded response by operation
 | Apply a constrained policy change automatically | [Service-grant application](examples/agentmesh-service-policy/conditional-apply.md) | Tighten a local grant, observe conflict and refusal, and recover a recorded result |
 | Search a diagnostic phrase locally | [Literal-text report](examples/literal-text-report/README.md) | Supply text and a phrase; export the first byte offset, non-overlapping count and both original inputs |
 | Split a literal separator or remove an edge affix | [Literal Cut report](examples/literal-cut-report/README.md) | Compare Cut, CutPrefix and CutSuffix while retaining both original inputs and all eleven returned fields |
+| Parse an exact decimal or inspect payload eligibility | [Payload admission facts](examples/payload-admission/README.md) | Preserve all seven observations, distinguish syntax/range/spelling and inspect the first policy refusal; no request or effect is enforced |
 | Assess an uncertain API operation automatically | [Automatic redelivery policy](examples/automatic-redelivery/README.md) | Supply nine bound facts, inspect all fifteen returned fields and save a replay; eligibility requires a later host-owned atomic claim |
 | Classify four IPv4 octets in Gooo | [IPv4 address facts](examples/ipv4-address-facts/README.md) | Preserve all four supplied integers, distinguish invalid input from valid addresses, and inspect six overlapping classification flags |
 | Compare two IPv4 rule scopes | [IPv4 rule-pair facts](examples/ipv4-rule-pair/README.md) | Preserve typed inputs, distinguish invalid/non-comparable rules and inspect a conflict witness |
@@ -374,7 +397,7 @@ with the page URL or command and what happened. A working demo or shared input l
 is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-현재 Go 표준 라이브러리, x/image와 Google UUID의 HTTP·Unicode·IPv4 분류·문자열 검색·분할·슬래시 경로·UUID 형식 검사·파싱·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 API 53개를 소스로 표현합니다.
+현재 Go 표준 라이브러리, x/image와 Google UUID의 HTTP·Unicode·IPv4 분류·prefix 질의·십진수 파싱·문자열 검색·분할·슬래시 경로·UUID 형식 검사·파싱·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 API 56개를 소스로 표현합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -387,6 +410,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | Gooo 패키지 경로 | 함수 | 원본과의 대응 |
 | --- | --- | --- |
 | `go/net/http` | `StatusText` | Go의 상태 코드 62개와 설명. 미등록 코드는 빈 문자열 |
+| `go/strconv` | `ParseIntDecimal64` | decoded valid UTF-8 Text 최대1,024바이트에서 ParseInt(s,10,64)의 원래 입력·정확한 int64·구문/범위 오류 구별을4필드로 보존. unsigned overflow와 뒤따른 잘못된 문자 우선순위도 유지. [도메인과 차이](ports/strconv/README.md) |
 | `go/path` | `Ext`, `IsAbs` | 명시적 valid UTF-8 Text 최대 1,024바이트. 마지막 slash 이후 확장자와 선행 slash 여부를 Gooo로 계산. 역슬래시는 일반 문자이며 정규화·파일 접근·권한 판정 없음. 기존 catalog와 별도 native sidecar |
 | `go/strings` | `IndexByte` | UTF-8 Text 최대 1,024바이트에서 0..255 byte의 첫 위치 또는 -1. 원본 바이트 offset과 길이 보존; 영역 밖 Integer는 별도 -1 확장. Native 전용 |
 | `go/strings` | `Index`, `Count` | 두 UTF-8 Text 각각 최대 1,024바이트. 첫 literal byte offset 또는 -1, 겹치지 않는 개수. 빈 needle은 offset 0·code point 수+1. Native 전용 |
@@ -595,9 +619,13 @@ has at most 128 rows and 30,000 bytes. This profile requires the pinned compiler
 and a checked source-derived bound on its rewritten activity keys; it refuses
 an unsupported bound rather than changing the partition or execution path.
 
-Full native CI selects this profile explicitly. The complete 66-suite partition
-calculation retains all 159,909 cases and changes 2,337 legacy batches to 2,109
-(UUID: 195/197/239 batches), with 2,243 timing records required on completion.
+Full native CI selects this profile explicitly. The historical 66-suite partition
+calculation retains 159,909 cases and changes 2,337 legacy batches to 2,109
+(UUID: 195/197/239 batches), with 2,243 timing records. The decimal/payload
+extension preserves that prefix and adds two suites with 357 inputs in nine
+source-checked batches. The full profile therefore requires 2,118 batches and
+2,256 timing records; legacy requires 2,346 and 2,484 respectively. Actual native
+execution, saved replay and a complete timing footer must still pass fresh.
 The summary and timing header identify the selected profile. These partition
 counts do not establish native completion or a speedup; use the corresponding
 source's complete CI results. No case profile reuses a prior successful receipt.
@@ -1042,3 +1070,5 @@ RectangleIn과 FitsCrop까지의 총계 40개 포트·17개 소비 프로그램�
 The bounded Agent Mesh adaptation separately retains its original Apache 2.0
 license and source attribution in [the port notice](ports/agentmesh/NOTICE.md)
 and [the example notice](examples/agentmesh-service-policy/NOTICE.md).
+
+십진수 파서와 [Payload Admission Facts](examples/payload-admission/README.md)를 더한 현재 작성 소스는 **56개 포트·24개 소비 프로그램·27개 소비 활동**입니다. 새 일반 native suite 두 개는 parser256개와 policy101개 입력을 추가하여 **68개 suite·160,266개 case**를 요구합니다. 기존66개 suite의 입력·기대값·workspace는 보존하며 현재 소스 분할 검사는 새9개 배치(parser5·policy4)를 추가하여 CI profile2,118개 배치·2,256개 계측 기록(legacy2,346·2,484)을 요구합니다. 이는 분할 관측이며 현재 소스의 native·저장 replay 완료는 별도로 필요합니다. 입력파일 생성이나 이전 receipt를 새 native 실행 성공으로 계산하지 않습니다. 이 순수 정책은 원본7개 관찰과14개 판단 필드를 제공하지만 실제HTTP framing·권한·호스트사실의진위·quota나효과를보장하지않습니다.
