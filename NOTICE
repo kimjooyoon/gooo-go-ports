@@ -31,3 +31,9 @@ The bounded traversal form in ports/strings/search.gooo adapts the Gooo
 examples/bounded-text-search/search.gooo.fixture at compiler source
 c56007f5881296cb3181ff056c50a4ae917a9850. Copyright (c) 2026 Kim Joo-yoon.
 Its full MIT notice is retained in that source alongside Go BSD attribution.
+
+The slash-path Ext/IsAbs adaptation in ports/path/path.gooo preserves the
+Copyright 2009 The Go Authors notice and Go BSD terms. The byte-exact source
+reference third_party/go/path.go.txt, its immutable Go revision and SHA256 are
+recorded in upstream.json. The importing Path Facts Report is original
+repository code under LICENSE; it does not perform filesystem authorization.

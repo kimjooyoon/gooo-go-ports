@@ -19,6 +19,9 @@ HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
 # Reviewed browser delta: add API policy actual-Wasm/package checks after service-policy smoke.
 # Events, native skip guards and deployment dependencies stay byte-identical.
 BROWSER_SHA = "9842fdb57f69899aa53215451feeda87eca4ce90f4b1bb92ef18326608be3231"
+PATH_STEP_SHA = 'b90f403ce804adea78dacebf554c45f3e21b1faf89b942e83f32aca2847f9df5'
+PATH_COMMAND = 'python3 -B tools/check-path-facts.py --repository . --out out/path-facts --go "$(go env GOROOT)/bin/go" --compiler ./.gooo --timeout 300'
+PATH_COMMON_UNIT_BLOCK = '          # Full scope runs these13 Python controls inside the bounded sidecar once.\n          # Documentation-only PRs still run them as common non-native checks.\n          if [ "${{ steps.change-scope.outputs.docs_only }}" = "true" ]; then\n            python3 -I -B tools/check-path-facts_test.py\n          fi\n'
 NATIVE_COMPARISON_COMMAND = "go run ./cmd/verify --workers 2 --case-profile uuid-compact-v1 --out out/ci --timing-out out/ci/timing.jsonl"
 CASE_PROFILE_ASSERTION = '''            .case_profile == {
               schema: "gooo/native-case-profile/v1", name: "uuid-compact-v1",
@@ -69,6 +72,7 @@ COMMON = {
     "Check Gooo declarations",
 }
 HEAVY = {
+    "Verify the isolated native path facts sidecar",
     "Retain unsupported-body probes",
     "Compare the ports with Go and replay every batch",
     "Execute and replay the Unicode case inspector",
@@ -99,7 +103,7 @@ UPLOADS = {"Upload offline policy experiment evidence", "Upload execution and di
 DOC_STEPS = {"Report documentation-only native scope", "Preserve documentation scope and compiler identity"}
 NATIVE_COMMAND = re.compile(
     r"(?:\.gooo\s+package\s+(?:execute|replay)|\./cmd/(?:verify|check-unicode|check-literal-text-report)\b|"
-    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py)"
+    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py|tools/check-path-facts\.py)"
 )
 PUBLIC_CONSUMER_COMMAND = 'python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer"'
 PUBLIC_CONSUMER_CLAUSES = (
@@ -171,7 +175,7 @@ def validate(text):
     require(hashlib.sha256(header.encode()).hexdigest() == HEADER_SHA, "events or permissions changed")
     require(hashlib.sha256(browser.encode()).hexdigest() == BROWSER_SHA, "browser/deployment behavior changed")
     named, unnamed = named_steps(text)
-    require(len(HEAVY) == 25, "full-scope native step count changed")
+    require(len(HEAVY) == 26, "full-scope native step count changed")
     require(set(named) == COMMON | HEAVY | UPLOADS | DOC_STEPS, "step roster changed without guard review")
     require(len(unnamed) == 2 and all(field(c, "if") is None for c in unnamed), "checkout/Go setup became conditional")
     require("fetch-depth: 0" in unnamed[0], "exact PR parents must be available")
@@ -265,6 +269,12 @@ def validate(text):
     )
     require(public_consumer == expected_public_consumer,
             "public consumer must bind the actual PR head, exact Go command and every acceptance clause")
+    path = named["Verify the isolated native path facts sidecar"]
+    require(literal_commands(path) == [PATH_COMMAND] and hashlib.sha256(path.encode()).hexdigest() == PATH_STEP_SHA,
+            "path sidecar must retain exact fresh producer/output/count/cleanup gates")
+    require(named["Check the Go observer"].count(PATH_COMMON_UNIT_BLOCK) == 1
+            and text.count("python3 -I -B tools/check-path-facts_test.py") == 1
+            and text.count(PATH_COMMAND) == 1, "path controls must run inside full sidecar or docs-only common path exactly once")
     for name, expected in LITERAL_COMMANDS.items():
         commands = literal_commands(named[name])
         require(len(commands) == len(expected) and set(commands) == expected,
@@ -332,6 +342,8 @@ def validate(text):
         require("./.gooo check " + source in declarations, "CEL declaration check missing: " + source)
     for source in ("ports/agentmesh/service_pattern.gooo", "examples/agentmesh-service-policy/impact.gooo", "examples/agentmesh-service-policy/refinement.gooo"):
         require("./.gooo check " + source in declarations, "AgentMesh declaration check missing: " + source)
+    for source in ("ports/path/path.gooo", "examples/path-facts/main.gooo"):
+        require("./.gooo check " + source in declarations, "path declaration check missing: " + source)
     mesh = named["Verify the Agent Mesh service-pattern adaptation"]
     require('python3 -B examples/agentmesh-service-policy/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/agentmesh-service-policy"' in mesh,
             "AgentMesh verifier must bind pinned compiler and Go tool")
@@ -398,6 +410,48 @@ class WorkflowScopeTests(unittest.TestCase):
         self.assertIn(command, self.text)
         with self.assertRaises(ValueError):
             validate(self.text.replace(command, "", 1))
+
+    def test_path_sidecar_cannot_weaken_producer_scope_counts_or_cleanup(self):
+        named, _ = named_steps(self.text)
+        chunk = named["Verify the isolated native path facts sidecar"]
+        changes = (('--go "$(go env GOROOT)/bin/go"', '--go /usr/bin/go'),
+                   ("--compiler ./.gooo", "--compiler /tmp/gooo"),
+                   ("--repository .", "--repository /tmp/old-source"),
+                   ("--timeout 300", "--timeout 900"),
+                   ("--out out/path-facts", "--out out/old-path-facts"),
+                   (".generated_native_entry_outputs == 29523", ".generated_native_entry_outputs >= 1"),
+                   (".generated_native_scalar_comparisons == 78728", ".generated_native_scalar_comparisons == 29523"),
+                   (".manual_saved_replay_outputs == 72", ".manual_saved_replay_outputs == 0"),
+                   (".full_CLI_outputs == 0", ".full_CLI_outputs == 29523"),
+                   ("(.stages | length) == 52", "(.stages | length) >= 1"),
+                   ('(.stages | type) == "array"', '(.stages | type) == "object"'),
+                   ("($ext_cleanup | length) == 1", "true"),
+                   ('["ext", "isabs", "report"]', '["report"]'),
+                   ("$f.owned_native_work_removed == false", "$f.owned_native_work_removed == true"),
+                   ("$native[$i].removed == true", "true"),
+                   ("$cleanup[0].all_top_level_groups_reaped == true", "true"),
+                   (".strict_transport_refusals == 15", ".strict_transport_refusals == 0"),
+                   (".receipt_tamper_refusals == 18", ".receipt_tamper_refusals == 0"),
+                   ("' out/path-facts/summary.json", "' out/old/summary.json"),
+                   ("        run: |", "        continue-on-error: true\n        run: |"))
+        for before, after in changes:
+            self.assertIn(before, chunk)
+            with self.subTest(before=before), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, chunk.replace(before, after, 1), 1))
+        with self.assertRaises(ValueError):validate(self.text.replace(chunk, "", 1))
+
+    def test_path_declarations_and_docs_only_unit_branch_are_required(self):
+        named, _ = named_steps(self.text)
+        declarations = named["Check Gooo declarations"]
+        for source in ("ports/path/path.gooo", "examples/path-facts/main.gooo"):
+            token = "./.gooo check " + source
+            self.assertIn(token, declarations)
+            with self.subTest(source=source), self.assertRaises(ValueError):
+                validate(self.text.replace(declarations, declarations.replace(token, "# missing " + source, 1), 1))
+        for changed in ("", PATH_COMMON_UNIT_BLOCK.replace('= "true"', '= "false"'),
+                        PATH_COMMON_UNIT_BLOCK + "          python3 -I -B tools/check-path-facts_test.py\n"):
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                validate(self.text.replace(PATH_COMMON_UNIT_BLOCK, changed, 1))
 
     def test_real_workflow_policy(self):
         validate(self.text)
