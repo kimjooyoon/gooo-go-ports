@@ -34,6 +34,13 @@ jobs:
         with:
           go-version: '1.27.2'
           cache: false
+      - name: Verify the public API policy consumer
+        if: steps.change-scope.outputs.docs_only != 'true'
+        env:
+          PUBLIC_API_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer"
+          jq -e '.schema == "gooo/api-policy-public-consumer/v1" and .status == "PUBLIC_API_POLICY_CONSUMER_PASS" and .acceptance.facts == 9 and .acceptance.positive_cases == 2 and .acceptance.decision_fields == 15 and .acceptance.difference_flags == 15 and .acceptance.summary_fields == 2 and .acceptance.public_asset_count == 36 and .acceptance.public_assets_exact == true and .acceptance.public_generation_exact == true and .acceptance.original_assets_exact == true and .acceptance.original_generation_unchanged == true and .acceptance.substitution_refused == true and .acceptance.runtime_empty_path == true and .acceptance.consumer_no_replace_or_workspace == true and .acceptance.substitution_stdout_bytes == 0 and .acceptance.original_version == "v0.0.0-20261014100709-8cddcc4e65af" and .acceptance.original_commit == "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"' out/api-policy-public-consumer/verification.json
       - name: Check the Go observer
         run: |
           # Upstream UUID archive files stay byte-exact; its added hash wrapper
@@ -52,6 +59,7 @@ jobs:
           python3 -B tools/check-literal-text-inputs_test.py -v
           python3 -B tools/classify-ci-scope_test.py -v
           python3 -B tools/check-ci-scope-workflow_test.py -v
+          python3 -B tools/check-api-policy-public-consumer_test.py -v
       - name: Check pinned Unicode table generation
         run: |
           go run ./cmd/gen-unicode --check
@@ -725,13 +733,6 @@ jobs:
         run: |
           python3 -B examples/api-policy-revision/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/api-policy-revision"
           jq -e '.schema == "gooo/api-policy-revision-verification/v1" and .status == "FINITE_TWO_PROFILE_NATIVE_AND_SAVED_REPLAY_PASS" and .classifier_cases == 23 and .decision_fields == 15 and .fresh_process_pairs == 2 and .altered_report_refused == true and .original_generation_preserved == true' out/api-policy-revision/verification.json
-      - name: Verify the public API policy consumer
-        if: steps.change-scope.outputs.docs_only != 'true'
-        env:
-          PUBLIC_API_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: |
-          python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer"
-          jq -e '.schema == "gooo/api-policy-public-consumer/v1" and .status == "PUBLIC_API_POLICY_CONSUMER_PASS" and .acceptance.facts == 9 and .acceptance.positive_cases == 2 and .acceptance.decision_fields == 15 and .acceptance.difference_flags == 15 and .acceptance.summary_fields == 2 and .acceptance.public_asset_count == 36 and .acceptance.public_assets_exact == true and .acceptance.public_generation_exact == true and .acceptance.original_assets_exact == true and .acceptance.original_generation_unchanged == true and .acceptance.substitution_refused == true and .acceptance.runtime_empty_path == true and .acceptance.consumer_no_replace_or_workspace == true and .acceptance.substitution_stdout_bytes == 0 and .acceptance.original_version == "v0.0.0-20261014100709-8cddcc4e65af" and .acceptance.original_commit == "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"' out/api-policy-public-consumer/verification.json
       - name: Verify the Agent Mesh service-pattern adaptation
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |

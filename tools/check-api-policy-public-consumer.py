@@ -43,6 +43,9 @@ MAX_STDERR = 8 << 20
 MAX_ZIP = 16 << 20
 MAX_DECODED = 64 << 20
 MAX_MEMBERS = 1024
+MAX_FAILURE_STDERR_PREFIX = 2048
+MAX_FAILURE_ERROR_PREFIX = 512
+MAX_FAILURE_CONSOLE = 32 << 10
 
 
 class Refused(Exception):
@@ -532,6 +535,67 @@ def verify(args, out, report):
         report["temporary_sources_binaries_build_cache_removed"] = not work.exists()
 
 
+def bounded_text(value, limit):
+    if not isinstance(value, str):
+        return ""
+    return value.encode("utf-8", errors="replace")[:limit].decode("utf-8", errors="replace")
+
+
+def last_step_diagnostic(out):
+    """Best-effort, bounded local diagnostics; never change a failed decision."""
+    try:
+        path = out / "steps.json"
+        if not path.exists():
+            return None
+        require(path.is_file() and not path.is_symlink(), "unsafe diagnostic step file")
+        with path.open("rb") as stream:
+            raw = stream.read((1 << 20) + 1)
+        require(len(raw) <= 1 << 20, "diagnostic step file exceeds bound")
+        steps = decode(raw)
+        require(isinstance(steps, list), "diagnostic steps must be an array")
+        if not steps:
+            return None
+        step = steps[-1]
+        require(isinstance(step, dict), "diagnostic step must be an object")
+        exit_code = step.get("exit_code")
+        detail = {"name": bounded_text(step.get("name"), 64),
+                  "exit_code": exit_code if type(exit_code) is int and -255 <= exit_code <= 255 else None}
+        stderr = step.get("stderr")
+        if not isinstance(stderr, dict):
+            detail["stderr_unavailable"] = True
+            return detail
+        stderr_path = Path(stderr.get("path", ""))
+        require(stderr_path.parent == out and stderr_path.is_file()
+                and not stderr_path.is_symlink(), "unsafe diagnostic stderr path")
+        with stderr_path.open("rb") as stream:
+            prefix = stream.read(MAX_FAILURE_STDERR_PREFIX + 1)
+        detail.update(stderr_prefix=prefix[:MAX_FAILURE_STDERR_PREFIX].decode("utf-8", errors="replace"),
+                      stderr_truncated=len(prefix) > MAX_FAILURE_STDERR_PREFIX,
+                      stderr_prefix_limit_bytes=MAX_FAILURE_STDERR_PREFIX)
+        return detail
+    except Exception as error:
+        return {"unavailable": type(error).__name__}
+
+
+def console_summary(report, verification):
+    summary = {"status": report["status"], "verification": str(verification)}
+    if report["status"] != "FAIL":
+        return json.dumps(summary)
+    if report["status"] == "FAIL":
+        summary["verification"] = bounded_text(summary["verification"], 1024)
+        summary["error"] = bounded_text(report.get("error"), MAX_FAILURE_ERROR_PREFIX)
+        if report.get("last_step") is not None:
+            summary["last_step"] = report["last_step"]
+    # Escaped controls stay on one JSON line; double colons cannot form an
+    # injected GitHub workflow command in third-party subprocess stderr.
+    encoded = json.dumps(summary, ensure_ascii=True).replace("::", r"\u003a\u003a")
+    if len(encoded.encode("utf-8")) > MAX_FAILURE_CONSOLE:
+        encoded = json.dumps({"status": report["status"],
+                              "verification": bounded_text(str(verification), 1024),
+                              "error": "Diagnostic summary exceeds bound; inspect saved verification.json"})
+    return encoded
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--go", required=True, help="absolute installed Go 1.27.2 executable")
@@ -557,10 +621,13 @@ def main():
         report["status"] = "FAIL"
         report.pop("acceptance", None)
         report["error"] = type(error).__name__ + ": " + str(error)
+        diagnostic = last_step_diagnostic(out)
+        if diagnostic is not None:
+            report["last_step"] = diagnostic
     finally:
         report["completed_at_utc"] = utc()
         save_json(out / "verification.json", report)
-        print(json.dumps({"status": report["status"], "verification": str(out / "verification.json")}))
+        print(console_summary(report, out / "verification.json"))
     return code
 
 
