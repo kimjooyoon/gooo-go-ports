@@ -25,7 +25,7 @@ generated native function. Those 29,523 values are direct function comparisons,
 with 72 CLI and 72 saved-replay outputs counted separately. Before the decimal
 parser and payload-policy addition, the historical catalog contained 45 ports,
 19 consumer programs, 21 consumer activities, 66 suites, 159,909 cases,
-2,109 CI-profile batches and 7 exhaustive checks. Sidecar values are not added
+2,109 UUID-only compact batches and 7 exhaustive checks. Sidecar values are not added
 to those historical counters; the new two-suite extension is described below.
 
 The [IPv4 address facts sidecar](examples/ipv4-address-facts/README.md) adds six
@@ -66,8 +66,10 @@ tuples, preserving the original 17 policy witnesses first. The current required
 roster is 46 ports, 20 consumer programs, 22 consumer activities, 68 suites and
 160,266 cases; all 66 historical suites and their inputs remain unchanged.
 The current source partition check gives five parser batches and four policy
-batches: nine new batches, for 2,118 with the CI UUID compact profile (2,346 in
-legacy). The required timing roster is 2,256 records (2,484 in legacy). These are
+batches: nine new batches, for 2,072 with the current combined UUID and literal
+Report compact CI profile (2,118 with UUID-only compact; 2,346 in legacy). The
+required timing roster is 2,210 records (2,256 with UUID-only compact; 2,484 in
+legacy). These are
 source partition requirements, not completed native observations. Fresh native
 comparison and saved replay remain required for both additions.
 
@@ -1074,7 +1076,7 @@ Google UUID Validate와 importing inspector까지의 38개 포트·16개 소비 
 RectangleIn과 FitsCrop까지의 총계 40개 포트·17개 소비 프로그램·19개 소비 활동을 보존합니다.
 새 Index·Count와 Literal Text Report를 포함한 소스 목록은 42개 포트·18개 소비 프로그램·20개 소비 활동입니다.
 이 목록을 보존하고 Cut·CutPrefix·CutSuffix와 Literal Cut Report를 덧붙인 작성 소스는 45개 포트·19개 소비 프로그램·21개 소비 활동입니다. 신규 네 suite는 각 원래 입력 32쌍을 사용하며, 완료된 native 실행과 replay는 해당 소스의 CI 보고서로 구분합니다.
-그 목록과 별도로 `path.Ext`·`path.IsAbs`, IPv4 분류 함수 6개와 각각의 importing Report를 더한 작성 소스는 **53개 포트·21개 소비 프로그램·23개 소비 활동**입니다. 기존 catalog의 66개 suite·159,909건·2,109개 CI 배치·7개 전수 검사는 그대로입니다. [Path Facts](examples/path-facts/README.md)의 generated-native 출력 29,523개 및 CLI·replay 각 72개와, [IPv4 Address Facts](examples/ipv4-address-facts/README.md)의 CLI·replay 각 352개 및 생성 리포트 입력 202개는 따로 집계합니다. 각 입력 범위와 검사 방식을 확인하세요. 전체 라이브러리 호환성·네트워크 접근 안전성·성능 향상을 입증하는 수치는 아닙니다.
+그 목록과 별도로 `path.Ext`·`path.IsAbs`, IPv4 분류 함수 6개와 각각의 importing Report를 더한 단계의 작성 소스는 **53개 포트·21개 소비 프로그램·23개 소비 활동**입니다. 그 단계의 catalog는 66개 suite·159,909건·7개 전수 검사를 유지했고, UUID-only compact profile에서는 2,109개 배치였습니다. [Path Facts](examples/path-facts/README.md)의 generated-native 출력 29,523개 및 CLI·replay 각 72개와, [IPv4 Address Facts](examples/ipv4-address-facts/README.md)의 CLI·replay 각 352개 및 생성 리포트 입력 202개는 따로 집계합니다. 각 입력 범위와 검사 방식을 확인하세요. 전체 라이브러리 호환성·네트워크 접근 안전성·성능 향상을 입증하는 수치는 아닙니다.
 새 prefix query 두 포트와 importing probe·rule-pair 구성을 더한 작성 소스는 **55개 포트·23개 소비 프로그램·26개 소비 활동**입니다. 별도 검사기는 현재 소스로 54개 CLI 실행·54개 저장 영수증 재현과 112개 생성 함수 결과를 독립적인 Go 계산과 비교합니다. 입력 존재나 이전 기록을 새 native 성공으로 계산하지 않습니다.
 원본 int32 전체의 동작을 구현하되 2^32 전수 검사를 주장하지 않습니다.
 브라우저 21함수와 두 crop 모드는 그대로입니다.
@@ -1083,4 +1085,4 @@ The bounded Agent Mesh adaptation separately retains its original Apache 2.0
 license and source attribution in [the port notice](ports/agentmesh/NOTICE.md)
 and [the example notice](examples/agentmesh-service-policy/NOTICE.md).
 
-십진수 파서와 [Payload Admission Facts](examples/payload-admission/README.md)를 더한 현재 작성 소스는 **56개 포트·24개 소비 프로그램·27개 소비 활동**입니다. 새 일반 native suite 두 개는 parser256개와 policy101개 입력을 추가하여 **68개 suite·160,266개 case**를 요구합니다. 기존66개 suite의 입력·기대값·workspace는 보존하며 현재 소스 분할 검사는 새9개 배치(parser5·policy4)를 추가하여 CI profile2,118개 배치·2,256개 계측 기록(legacy2,346·2,484)을 요구합니다. 이는 분할 관측이며 현재 소스의 native·저장 replay 완료는 별도로 필요합니다. 입력파일 생성이나 이전 receipt를 새 native 실행 성공으로 계산하지 않습니다. 이 순수 정책은 원본7개 관찰과14개 판단 필드를 제공하지만 실제HTTP framing·권한·호스트사실의진위·quota나효과를보장하지않습니다.
+십진수 파서와 [Payload Admission Facts](examples/payload-admission/README.md)를 더한 현재 작성 소스는 **56개 포트·24개 소비 프로그램·27개 소비 활동**입니다. 새 일반 native suite 두 개는 parser 256개와 policy 101개 입력을 추가하여 **68개 suite·160,266개 case**를 요구합니다. 기존 66개 suite의 입력·기대값·workspace는 보존하며 현재 소스 분할 검사는 새 9개 배치(parser 5·policy 4)를 추가하여 UUID와 Literal Report를 함께 압축하는 현재 CI profile에서 **2,072개 배치·2,210개 계측 기록**을 요구합니다. UUID-only compact profile은 2,118개 배치·2,256개 기록, legacy는 2,346개 배치·2,484개 기록을 유지합니다. 이는 분할 관측이며 현재 소스의 native·저장 replay 완료는 별도로 필요합니다. 입력 파일 생성이나 이전 receipt를 새 native 실행 성공으로 계산하지 않습니다. 이 순수 정책은 원본 7개 관찰과 14개 판단 필드를 제공하지만 실제 HTTP framing·권한·호스트 사실의 진위·quota나 효과를 보장하지 않습니다.
