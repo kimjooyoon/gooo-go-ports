@@ -70,6 +70,14 @@ var nativeTimingSourceNames = []string{
 	"examples/payload-admission/corpus.json", "examples/payload-admission/manual17.json", "examples/payload-admission/contract.json",
 	"examples/payload-admission/inputs.json", "examples/payload-admission/README.md",
 	"decimal-int64.workspace.json", "payload-admission.workspace.json", "tools/generate-payload-corpus.py",
+	"cmd/verify/path_alias_corpus.go", "cmd/verify/path_alias_corpus_test.go",
+	"cmd/verify/path_alias_contracts.go", "cmd/verify/path_alias_contracts_test.go",
+	"cmd/verify/path_alias_batches.go", "cmd/verify/path_alias_batches_test.go",
+	"ports/path/README.md", "ports/path/provenance.json", "ports/path/clean-corpus-9841.json",
+	"path-clean.workspace.json", "path-alias-facts.workspace.json",
+	"examples/path-alias-facts/contract.json", "examples/path-alias-facts/corpus-120.json",
+	"examples/path-alias-facts/anchor-pairs-24.json", "examples/path-alias-facts/clean-inputs.json",
+	"examples/path-alias-facts/inputs.json", "examples/path-alias-facts/README.md",
 }
 
 var nativeTimingPhaseNames = [...]string{

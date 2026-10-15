@@ -64,11 +64,11 @@ TIMING_HEADER_ASSERTION = '''          head -n 1 out/ci/timing.jsonl | jq -e --s
             .schema == "gooo/native-verification-timing/v1" and .kind == "header" and .seq == 0 and
             .case_profile == $summary[0].case_profile and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
-            .configured_workers == 2 and .expected_suites == 68 and .expected_cases == 160266 and
+            .configured_workers == 2 and .expected_suites == 70 and .expected_cases == 170227 and
             .expected_boundaries_recomputed == false and
             .boundary_scope == "Actual contiguous ranges only. UUID3 retain uuid-compact-v1 wire/partitions; literal-text Report uses a new compact writer/partition identity. No prior profile PASS or full batch total is inherited. Index/Count and other existing non-UUID suites retain their indented writer; decimal/payload retain their source-bounded pretty JSON policy. Fresh native/saved replay and the full summary gate remain required; no timing or speedup claim." and
-            (.identity.source_files | length) == 120 and
-            all(["cmd/verify/case_profile.go", "cmd/verify/case_profile_test.go", "cmd/verify/case_profile_integration_test.go", "cmd/verify/literal_report_case_profile_test.go"][];
+            (.identity.source_files | length) == 140 and
+            all(["cmd/verify/case_profile.go", "cmd/verify/case_profile_test.go", "cmd/verify/case_profile_integration_test.go", "cmd/verify/literal_report_case_profile_test.go", "cmd/verify/path_alias_corpus.go", "cmd/verify/path_alias_corpus_test.go", "cmd/verify/path_alias_contracts.go", "cmd/verify/path_alias_contracts_test.go", "cmd/verify/path_alias_batches.go", "cmd/verify/path_alias_batches_test.go", "ports/path/README.md", "ports/path/provenance.json", "ports/path/clean-corpus-9841.json", "path-clean.workspace.json", "path-alias-facts.workspace.json", "examples/path-alias-facts/contract.json", "examples/path-alias-facts/corpus-120.json", "examples/path-alias-facts/anchor-pairs-24.json", "examples/path-alias-facts/clean-inputs.json", "examples/path-alias-facts/inputs.json", "examples/path-alias-facts/README.md", "ports/path/path.gooo", "ports/path/clean.gooo", "examples/path-alias-facts/main.gooo"][];
               . as $path | ($header.identity.source_files[$path].bytes | type) == "number" and
               $header.identity.source_files[$path].bytes > 0 and
               ($header.identity.source_files[$path].sha256 | test("^[0-9a-f]{64}$")))
@@ -78,9 +78,9 @@ TIMING_CLAUSES = (
     '.schema == "gooo/native-verification-timing/v1"', '.kind == "run_end"',
     '.status == "COMPLETE"',
     '.complete == true and .aborted == false and .successful_close_return_required == true',
-    '.seq == 2209', '.expected_suites == 68', '.successful_suites == 68',
-    '.observed_batches == 2072', '.verified_batches == 2072', '.verified_cases == 160266',
-    '.event_count == 2210', '.failed_suites == 0', '.canceled_suites == 0',
+    '.seq == 2294', '.expected_suites == 70', '.successful_suites == 70',
+    '.observed_batches == 2153', '.verified_batches == 2153', '.verified_cases == 170227',
+    '.event_count == 2295', '.failed_suites == 0', '.canceled_suites == 0',
     '.not_started_suites == 0', '.missing_suite_finishes == 0',
     '.failed_batches == 0', '.incomplete_batches == 0', '.logger_errors == 0',
     '.source_bindings_unchanged == true',
@@ -91,6 +91,21 @@ TIMING_ASSERTION = ("          tail -n 1 out/ci/timing.jsonl | jq -e '\n"
                     + "\n          '\n")
 LITERAL_REPORT_COMPACT_SCOPE = 'Only app/literal-text-report:Report adds compact case JSON plus one LF, <=128 original rows, <=30000 raw bytes and a pinned839 source-derived nonexpanding-key <=32768 translated bound. Index/Count retain their prior indented writer and partitions. Native execution and saved replay must freshly inspect all9313 original Report pairs; count-only281-to235 is not native, full-CI or performance acceptance. Decimal/payload policies remain unchanged.'
 TIMING_SUMMARY_SHA = '449c77747290beaa0cb7d41c356e47199bbbc1a071e2f6da25a0c69eb8c0e52e'
+PATH_ALIAS_DECLARATIONS = ("ports/path/clean.gooo", "examples/path-alias-facts/main.gooo")
+PATH_ALIAS_CLAUSES = (
+    '([.runs[:68][].cases] | add) == 160266 and ([.runs[:68][].batches] | add) == 2072 and',
+    '.path_clean_reference_cases == 9841 and .path_alias_reference_cases == 120 and',
+    '.runs[68].package == "go/path" and .runs[68].activity == "Clean" and',
+    '.runs[68].cases == 9841 and .runs[68].passed == 9841 and .runs[68].batches == 77 and',
+    '.runs[69].package == "app/path-alias-facts" and .runs[69].activity == "Report" and',
+    '.runs[69].cases == 120 and .runs[69].passed == 120 and .runs[69].batches == 4 and',
+    '(.source_sha256 | length) == 56 and',
+    '.source_sha256["ports/path/path.gooo"] == "593caad2ac3b443d353775a9f4e168282af1ab70181bcbc483c4b379c9ee3de3" and',
+    '.source_sha256["ports/path/clean.gooo"] == "8430fc094b000fbd25b9d081408a9e8cdb59fca942f7a5541e7695c0291b790d" and',
+    '.source_sha256["examples/path-alias-facts/main.gooo"] == "5b0c8436bf95c923730af71a316d3897839d734c53c0223fffad5b555488182e" and',
+    '.path_alias_scope == "Decoded valid UTF-8 Text up to1024 bytes, slash-based lexical Go path.Clean. Original11-field Report preserves both original inputs and exposes clean/absolute/change/equality/alias facts. Actual Go path.Clean and path.IsAbs supply independent finite expectations; no URL, router, filesystem, authorization or safety claim." and',
+    '.path_alias_provenance_scope == "Fresh native execution and saved replay check original Texts, exact result/field identities and order, selected current source bytes, generated bodies, producer identities and raw outer receipt parents. This generic path does not independently check inner prior_result_sha256 or general callee ABI; private receipts are not fresh public acceptance." and',
+)
 COMMON = {
     "Classify the exact checked PR tree", "Check the Go observer",
     "Check pinned Unicode table generation",
@@ -330,10 +345,10 @@ def validate(text):
             "native timing console summary must retain its exact source and actual input")
     require("continue-on-error:" not in comparison and "|| true" not in comparison,
             "native comparison or timing failure became optional")
-    for token in (".ported_functions == 46 and .consumer_programs == 20 and .consumer_activities == 22 and",
-                  "(.runs | length) == 68 and",
-                  ".cases == 160266 and .passed == 160266 and",
-                  "([.runs[].cases] | add) == 160266 and ([.runs[].batches] | add) == 2072 and",
+    for token in (".ported_functions == 47 and .consumer_programs == 21 and .consumer_activities == 23 and",
+                  "(.runs | length) == 70 and",
+                  ".cases == 170227 and .passed == 170227 and",
+                  "([.runs[].cases] | add) == 170227 and ([.runs[].batches] | add) == 2153 and",
                   "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2058 and",
                   "([.runs[:59][].cases] | add) == 131842 and ([.runs[:59][].batches] | add) == 1549 and",
                   "([.runs[:57][].cases] | add) == 130702 and ([.runs[:57][].batches] | add) == 1513 and",
@@ -376,6 +391,10 @@ def validate(text):
     require(named["Check the Go observer"].count("python3 -I -B tools/generate-payload-corpus.py --check") == 1, "payload input generator missing")
     for source in ("ports/strconv/decimal.gooo", "examples/payload-admission/main.gooo"):
         require(named["Check Gooo declarations"].count("./.gooo check " + source) == 1, "decimal/payload declaration missing")
+    for token in PATH_ALIAS_CLAUSES:
+        require(comparison.count(token) == 1, "path Clean/alias exact source, scope or appended roster missing: " + token)
+    for source in PATH_ALIAS_DECLARATIONS:
+        require(named["Check Gooo declarations"].count("./.gooo check " + source) == 1, "path Clean/alias declaration missing or duplicated")
     revision = named["Verify the sealed API policy revision comparison"]
     require('python3 -B examples/api-policy-revision/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/api-policy-revision"' in revision,
             "sealed revision native generator/test/fresh-process verifier missing")
@@ -712,7 +731,7 @@ class WorkflowScopeTests(unittest.TestCase):
             chunk.replace(".literal_report_compact_scope == " + json.dumps(LITERAL_REPORT_COMPACT_SCOPE) + " and", "true and", 1),
             chunk.replace("maximum_rows: 128", "maximum_rows: 129", 1),
             chunk.replace("raw_bytes_including_LF: 30000", "raw_bytes_including_LF: 32768", 1),
-            chunk.replace("(.identity.source_files | length) == 120", "(.identity.source_files | length) >= 97", 1),
+            chunk.replace("(.identity.source_files | length) == 140", "(.identity.source_files | length) >= 97", 1),
             chunk.replace("--slurpfile summary out/ci/summary.json", "--slurpfile summary out/old/summary.json", 1),
             chunk.replace(".case_profile == $summary[0].case_profile", ".case_profile == null", 1),
         ))
@@ -721,6 +740,39 @@ class WorkflowScopeTests(unittest.TestCase):
             with self.subTest(altered=altered[:600]), self.assertRaises(ValueError):
                 validate(self.text.replace(chunk, altered, 1))
 
+    def test_path_clean_alias_exact_appended_roster_sources_and_scope_are_required(self):
+        named, _ = named_steps(self.text)
+        comparison = named["Compare the ports with Go and replay every batch"]
+        # Establish the full current positive source before intended mutations.
+        validate(self.text)
+        for clause in PATH_ALIAS_CLAUSES:
+            self.assertEqual(comparison.count(clause), 1)
+            weakened = clause.replace("==", ">=", 1)
+            for replacement in ("true and", weakened):
+                self.assertNotEqual(clause, replacement)
+                altered = comparison.replace(clause, replacement, 1)
+                with self.subTest(clause=clause, replacement=replacement), self.assertRaises(ValueError):
+                    validate(self.text.replace(comparison, altered, 1))
+        for before, after in (
+                ('.runs[68].batches == 77', '.runs[68].batches == 76'),
+                ('.runs[69].batches == 4', '.runs[69].batches == 1'),
+                ('.expected_suites == 70', '.expected_suites == 68'),
+                ('.successful_suites == 70', '.successful_suites == 68'),
+                ('.verified_cases == 170227', '.verified_cases == 160266'),
+                ('.observed_batches == 2153', '.observed_batches == 2072'),
+                ('.verified_batches == 2153', '.verified_batches == 2072'),
+                ('.event_count == 2295', '.event_count == 2210'),
+                ('.seq == 2294', '.seq == 2209')):
+            self.assertIn(before, comparison)
+            with self.subTest(before=before), self.assertRaises(ValueError):
+                validate(self.text.replace(comparison, comparison.replace(before, after, 1), 1))
+        for source in PATH_ALIAS_DECLARATIONS:
+            line = "          ./.gooo check " + source + "\n"
+            self.assertEqual(self.text.count(line), 1)
+            for replacement in ("", line + line):
+                with self.subTest(source=source, replacement=replacement), self.assertRaises(ValueError):
+                    validate(self.text.replace(line, replacement, 1))
+
     def test_literal_report_combined_profile_counts_cannot_reuse_previous_profile(self):
         named, _ = named_steps(self.text)
         comparison = named["Compare the ports with Go and replay every batch"]
@@ -728,10 +780,10 @@ class WorkflowScopeTests(unittest.TestCase):
             (".runs[61].batches == 235", ".runs[61].batches == 281"),
             ("([.runs[:62][].batches] | add) == 2058", "([.runs[:62][].batches] | add) == 2104"),
             ("([.runs[:66][].batches] | add) == 2063", "([.runs[:66][].batches] | add) == 2109"),
-            ("([.runs[].batches] | add) == 2072", "([.runs[].batches] | add) == 2118"),
-            (".event_count == 2210", ".event_count == 2256"),
-            (".seq == 2209", ".seq == 2255"),
-            ("(.identity.source_files | length) == 120", "(.identity.source_files | length) == 119"),
+            ("([.runs[].batches] | add) == 2153", "([.runs[].batches] | add) == 2072"),
+            (".event_count == 2295", ".event_count == 2210"),
+            (".seq == 2294", ".seq == 2209"),
+            ("(.identity.source_files | length) == 140", "(.identity.source_files | length) == 120"),
         )
         for before, after in changes:
             self.assertIn(before, comparison)
@@ -795,9 +847,9 @@ class WorkflowScopeTests(unittest.TestCase):
         named, _ = named_steps(self.text)
         comparison = named["Compare the ports with Go and replay every batch"]
         clauses = (
-            ".ported_functions == 46 and .consumer_programs == 20 and .consumer_activities == 22 and",
-            "(.runs | length) == 68 and", ".cases == 160266 and .passed == 160266 and",
-            "([.runs[].cases] | add) == 160266 and ([.runs[].batches] | add) == 2072 and",
+            ".ported_functions == 47 and .consumer_programs == 21 and .consumer_activities == 23 and",
+            "(.runs | length) == 70 and", ".cases == 170227 and .passed == 170227 and",
+            "([.runs[].cases] | add) == 170227 and ([.runs[].batches] | add) == 2153 and",
             "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2058 and",
             ".literal_cut_reference_cases == 32", ".literal_cut_prefix_reference_cases == 32",
             ".literal_cut_suffix_reference_cases == 32", ".literal_cut_report_reference_cases == 32",

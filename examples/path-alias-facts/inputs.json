@@ -1,0 +1,17 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "app/path-alias-facts:Report.input0": "/api//v1/../v2",
+      "app/path-alias-facts:Report.input1": "/api/v2"
+    },
+    {
+      "app/path-alias-facts:Report.input0": "a/b/..",
+      "app/path-alias-facts:Report.input1": "a"
+    },
+    {
+      "app/path-alias-facts:Report.input0": "/account/A",
+      "app/path-alias-facts:Report.input1": "/account/B"
+    }
+  ]
+}

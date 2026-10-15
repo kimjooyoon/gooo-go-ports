@@ -290,3 +290,23 @@ process. Evidence prepared here can support a separate related issue or PR.
 
 컴파일러에 기여하는 경우 그 저장소의 `AGENTS.md`와 `agent/* -> dev` 절차를 따릅니다.
 이 저장소의 준비된 자료를 근거로 관련 이슈나 PR을 별도로 작성할 수 있습니다.
+
+### Bounded Clean and original alias facts
+
+`go/path:Clean` and `app/path-alias-facts:Report` append two normal verifier
+suites over 9,841 standalone strings and 120 input pairs. Preserve the accepted
+Gooo implementation, original input-only fixtures and first 24 Report anchors.
+Go `path.Clean`/`path.IsAbs` supply independent expectations; no Go candidate
+fallback or historical native receipt is permitted. Keep all eleven required
+Report field identities and both original Texts. Decoded valid UTF-8 Text is
+bounded to 1,024 bytes; lexical equality is not authorization or safe-path proof.
+
+The new suites select only `ports/path/path.gooo`, `ports/path/clean.gooo` and
+the optional Report source. They must not add a package, record or source to
+any earlier 68-suite workspace. Existing sidecar scopes stay separate. Recheck
+source-derived raw/translated byte partitions before changing CI counters.
+Use the existing verifier/cache/workers and automated checks; do not add another
+lifecycle runner or duplicate the full corpus in a separate example job.
+The local quickstart checks both entries through actual execute/saved replay;
+required vet/race and the fresh original hosted full70 differential CI establish
+the wider integration separately. No Chrome or manual UI testing is required.

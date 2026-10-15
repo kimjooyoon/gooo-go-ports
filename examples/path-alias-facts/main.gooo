@@ -1,0 +1,24 @@
+// Original pure facts over decoded slash paths. No URI decoding, routing,
+// filesystem access, operation identity substitution or effect authorization.
+package path_alias_facts
+namespace gooo_ports_examples_path_alias_facts
+import paths "go/path"
+entity Text id "gooo://std/text"
+entity PathAliasFacts id "gooo://go-ports/examples/path-alias-facts/result/v1" fields {
+    field left id "gooo://go-ports/examples/path-alias-facts/result/left" type string required one
+    field right id "gooo://go-ports/examples/path-alias-facts/result/right" type string required one
+    field left_clean id "gooo://go-ports/examples/path-alias-facts/result/left-clean" type string required one
+    field right_clean id "gooo://go-ports/examples/path-alias-facts/result/right-clean" type string required one
+    field left_is_abs id "gooo://go-ports/examples/path-alias-facts/result/left-is-abs" type boolean required one
+    field right_is_abs id "gooo://go-ports/examples/path-alias-facts/result/right-is-abs" type boolean required one
+    field left_changed id "gooo://go-ports/examples/path-alias-facts/result/left-changed" type boolean required one
+    field right_changed id "gooo://go-ports/examples/path-alias-facts/result/right-changed" type boolean required one
+    field exact_same id "gooo://go-ports/examples/path-alias-facts/result/exact-same" type boolean required one
+    field same_clean id "gooo://go-ports/examples/path-alias-facts/result/same-clean" type boolean required one
+    field lexical_alias id "gooo://go-ports/examples/path-alias-facts/result/lexical-alias" type boolean required one
+}
+activity Report(Text, Text) -> PathAliasFacts id "gooo://go-ports/examples/path-alias-facts/report/v1" computes `let left_clean = paths.Clean(input0)
+let right_clean = paths.Clean(input1)
+let exact = input0 == input1
+let same = left_clean == right_clean
+return PathAliasFacts{left: input0, right: input1, left_clean: left_clean, right_clean: right_clean, left_is_abs: paths.IsAbs(input0), right_is_abs: paths.IsAbs(input1), left_changed: left_clean != input0, right_changed: right_clean != input1, exact_same: exact, same_clean: same, lexical_alias: same && !exact,}`

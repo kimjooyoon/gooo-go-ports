@@ -1,0 +1,30 @@
+{
+  "schema": "gooo/path-clean-provenance/v1",
+  "go_version": "go1.27.2",
+  "go_revision": "022c8636110ebac86a9b88724cda168ed713c21f",
+  "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+  "source": {
+    "path": "src/path/path.go",
+    "sha256": "0a5024c364387eeea9ab5fe0b285f0d62355e8cd181cdbddfdfa227f6916d94c",
+    "repository_copy": "third_party/go/path.go.txt"
+  },
+  "license": "third_party/GO-LICENSE",
+  "ported_entry": "go/path:Clean",
+  "activity_id": "gooo://go/path/Clean",
+  "implementation": "ports/path/clean.gooo",
+  "implementation_sha256": "8430fc094b000fbd25b9d081408a9e8cdb59fca942f7a5541e7695c0291b790d",
+  "same_package_support": {
+    "path": "ports/path/path.gooo",
+    "sha256": "593caad2ac3b443d353775a9f4e168282af1ab70181bcbc483c4b379c9ee3de3"
+  },
+  "input_fixture": {
+    "path": "ports/path/clean-corpus-9841.json",
+    "sha256": "7ba203221673fe804c20d6f68e054fb909c528f50490e4b23aac4c395636b033",
+    "cases": 9841
+  },
+  "input_domain": "Explicitly present decoded valid UTF-8 Text of0..1024 bytes. Arbitrary Go byte strings and longer inputs are outside this adaptation. Raw malformed JSON Unicode is a separate transport boundary.",
+  "type_and_algorithm_difference": "Go lazybuf is replaced by bounded whole-UTF8-segment Text concatenation and guarded backward slices in Gooo. Internal CleanState and CleanPart are implementation details, not additional Go APIs.",
+  "semantics": "Slash paths independent of host OS; empty becomes dot, root clamps parent traversal, leading relative parents remain. Backslash, percent escapes, NUL and Unicode lookalikes are ordinary characters; no Unicode normalization.",
+  "verification": "Input-only finite fixtures; independent actual Go path.Clean expectations plus fresh current-source native execute and saved replay are required. Source hashes and declarations alone do not establish acceptance.",
+  "unsupported": "No filepath/Windows semantics, URL decoding, routing identity, symlinks, filesystem effects, permission or safety guarantee."
+}

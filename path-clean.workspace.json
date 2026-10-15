@@ -1,0 +1,16 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "go/path",
+    "activity": "Clean"
+  },
+  "packages": [
+    {
+      "path": "go/path",
+      "sources": [
+        "ports/path/path.gooo",
+        "ports/path/clean.gooo"
+      ]
+    }
+  ]
+}

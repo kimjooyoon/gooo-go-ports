@@ -197,6 +197,11 @@ func run() error {
 		return err
 	}
 	suites = append(suites, decimalPayload.Suites...)
+	pathAlias, err := pathAliasCorpus(".")
+	if err != nil {
+		return err
+	}
+	suites = append(suites, pathAlias...)
 	if *out == "" {
 		return fmt.Errorf("provide --out for a new evidence directory")
 	}
@@ -338,6 +343,10 @@ func run() error {
 		"compiler_revision":    lock.CompilerRevision, "source_sha256": catalog.Hashes,
 		"verification_catalog_sha256": contentDigest(catalog.Raw),
 		"ported_functions":            portedFunctions, "consumer_programs": len(consumerPrograms), "consumer_activities": consumerActivities,
+		"path_clean_reference_cases":        len(pathAlias[0].Cases),
+		"path_alias_reference_cases":        len(pathAlias[1].Cases),
+		"path_alias_scope":                  "Decoded valid UTF-8 Text up to1024 bytes, slash-based lexical Go path.Clean. Original11-field Report preserves both original inputs and exposes clean/absolute/change/equality/alias facts. Actual Go path.Clean and path.IsAbs supply independent finite expectations; no URL, router, filesystem, authorization or safety claim.",
+		"path_alias_provenance_scope":       "Fresh native execution and saved replay check original Texts, exact result/field identities and order, selected current source bytes, generated bodies, producer identities and raw outer receipt parents. This generic path does not independently check inner prior_result_sha256 or general callee ABI; private receipts are not fresh public acceptance.",
 		"decimal_reference_cases":           decimalPayload.DecimalReferenceCases,
 		"payload_admission_reference_cases": decimalPayload.PayloadReferenceCases,
 		"decimal_payload_scope":             "Decoded valid UTF-8 Text up to 1024 bytes; exact signed-int64 and Boolean facts. ParseIntDecimal64 compares real Go strconv.ParseInt(input,10,64) values and syntax/range classes, including saturation. Original payload eligibility retains all seven inputs and fourteen fields and is checked against a separate ordered policy. These are finite pure decisions over caller-supplied facts, without HTTP enforcement, current-fact authentication or production safety claims.",

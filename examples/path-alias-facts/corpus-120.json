@@ -1,0 +1,845 @@
+{
+  "schema": "gooo/path-alias-inputs/v1",
+  "cases": [
+    {
+      "name": "empty-and-dot",
+      "inputs": {
+        "left": "",
+        "right": "."
+      }
+    },
+    {
+      "name": "exact-root",
+      "inputs": {
+        "left": "/",
+        "right": "/"
+      }
+    },
+    {
+      "name": "repeated-slash",
+      "inputs": {
+        "left": "a//b",
+        "right": "a/b"
+      }
+    },
+    {
+      "name": "current-directory",
+      "inputs": {
+        "left": "a/./b",
+        "right": "a/b"
+      }
+    },
+    {
+      "name": "parent-backtrack",
+      "inputs": {
+        "left": "a/x/../b",
+        "right": "a/b"
+      }
+    },
+    {
+      "name": "relative-leading-parent",
+      "inputs": {
+        "left": "../a",
+        "right": "a"
+      }
+    },
+    {
+      "name": "relative-two-parents",
+      "inputs": {
+        "left": "../../a",
+        "right": "../a"
+      }
+    },
+    {
+      "name": "relative-floor-after-backtrack",
+      "inputs": {
+        "left": "a/../../b",
+        "right": "../b"
+      }
+    },
+    {
+      "name": "root-clamp",
+      "inputs": {
+        "left": "/../../a",
+        "right": "/a"
+      }
+    },
+    {
+      "name": "rooted-versus-relative",
+      "inputs": {
+        "left": "/a",
+        "right": "a"
+      }
+    },
+    {
+      "name": "trailing-slash",
+      "inputs": {
+        "left": "/a/b/",
+        "right": "/a/b"
+      }
+    },
+    {
+      "name": "collapse-to-dot",
+      "inputs": {
+        "left": "a/..",
+        "right": "."
+      }
+    },
+    {
+      "name": "three-dots-ordinary",
+      "inputs": {
+        "left": "a/.../b",
+        "right": "a/b"
+      }
+    },
+    {
+      "name": "backslash-ordinary",
+      "inputs": {
+        "left": "a\\..\\b",
+        "right": "b"
+      }
+    },
+    {
+      "name": "percent-escape-ordinary",
+      "inputs": {
+        "left": "a/%2e%2e/b",
+        "right": "b"
+      }
+    },
+    {
+      "name": "unicode-segment-backtrack",
+      "inputs": {
+        "left": "é/../🙂",
+        "right": "🙂"
+      }
+    },
+    {
+      "name": "unicode-no-normalization",
+      "inputs": {
+        "left": "é",
+        "right": "é"
+      }
+    },
+    {
+      "name": "lookalike-slash-ordinary",
+      "inputs": {
+        "left": "a∕b",
+        "right": "a/b"
+      }
+    },
+    {
+      "name": "nul-segment-backtrack",
+      "inputs": {
+        "left": "a/\u0000/../b",
+        "right": "a/b"
+      }
+    },
+    {
+      "name": "nul-component-ordinary",
+      "inputs": {
+        "left": "a\u0000b",
+        "right": "a/b"
+      }
+    },
+    {
+      "name": "maximum-ascii-pair",
+      "inputs": {
+        "left": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "right": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "name": "maximum-slash-run",
+      "inputs": {
+        "left": "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////",
+        "right": "/"
+      }
+    },
+    {
+      "name": "maximum-unicode-pair",
+      "inputs": {
+        "left": "🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂",
+        "right": "🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂🙂"
+      }
+    },
+    {
+      "name": "maximum-parent-backtrack",
+      "inputs": {
+        "left": "a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/..",
+        "right": "a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a"
+      }
+    },
+    {
+      "name": "derived-00-append-dot",
+      "inputs": {
+        "left": "..a/",
+        "right": "..a//."
+      }
+    },
+    {
+      "name": "derived-00-append-component-parent",
+      "inputs": {
+        "left": "..a/",
+        "right": "..a//a/.."
+      }
+    },
+    {
+      "name": "derived-00-prepend-dot",
+      "inputs": {
+        "left": "..a/",
+        "right": "./..a/"
+      }
+    },
+    {
+      "name": "derived-01-append-dot",
+      "inputs": {
+        "left": "aa/aa",
+        "right": "aa/aa/."
+      }
+    },
+    {
+      "name": "derived-01-append-component-parent",
+      "inputs": {
+        "left": "aa/aa",
+        "right": "aa/aa/a/.."
+      }
+    },
+    {
+      "name": "derived-01-prepend-dot",
+      "inputs": {
+        "left": "aa/aa",
+        "right": "./aa/aa"
+      }
+    },
+    {
+      "name": "derived-02-append-dot",
+      "inputs": {
+        "left": "/.a...",
+        "right": "/.a.../."
+      }
+    },
+    {
+      "name": "derived-02-append-component-parent",
+      "inputs": {
+        "left": "/.a...",
+        "right": "/.a.../a/.."
+      }
+    },
+    {
+      "name": "derived-02-prepend-dot",
+      "inputs": {
+        "left": "/.a...",
+        "right": ".//.a..."
+      }
+    },
+    {
+      "name": "derived-03-append-dot",
+      "inputs": {
+        "left": "a///./",
+        "right": "a///.//."
+      }
+    },
+    {
+      "name": "derived-03-append-component-parent",
+      "inputs": {
+        "left": "a///./",
+        "right": "a///.//a/.."
+      }
+    },
+    {
+      "name": "derived-03-prepend-dot",
+      "inputs": {
+        "left": "a///./",
+        "right": "./a///./"
+      }
+    },
+    {
+      "name": "derived-04-append-dot",
+      "inputs": {
+        "left": "..a.a.a",
+        "right": "..a.a.a/."
+      }
+    },
+    {
+      "name": "derived-04-append-component-parent",
+      "inputs": {
+        "left": "..a.a.a",
+        "right": "..a.a.a/a/.."
+      }
+    },
+    {
+      "name": "derived-04-prepend-dot",
+      "inputs": {
+        "left": "..a.a.a",
+        "right": "./..a.a.a"
+      }
+    },
+    {
+      "name": "derived-05-append-dot",
+      "inputs": {
+        "left": ".a.../.",
+        "right": ".a..././."
+      }
+    },
+    {
+      "name": "derived-05-append-component-parent",
+      "inputs": {
+        "left": ".a.../.",
+        "right": ".a..././a/.."
+      }
+    },
+    {
+      "name": "derived-05-prepend-dot",
+      "inputs": {
+        "left": ".a.../.",
+        "right": "./.a.../."
+      }
+    },
+    {
+      "name": "derived-06-append-dot",
+      "inputs": {
+        "left": "/..a///",
+        "right": "/..a////."
+      }
+    },
+    {
+      "name": "derived-06-append-component-parent",
+      "inputs": {
+        "left": "/..a///",
+        "right": "/..a////a/.."
+      }
+    },
+    {
+      "name": "derived-06-prepend-dot",
+      "inputs": {
+        "left": "/..a///",
+        "right": ".//..a///"
+      }
+    },
+    {
+      "name": "derived-07-append-dot",
+      "inputs": {
+        "left": "////a/a",
+        "right": "////a/a/."
+      }
+    },
+    {
+      "name": "derived-07-append-component-parent",
+      "inputs": {
+        "left": "////a/a",
+        "right": "////a/a/a/.."
+      }
+    },
+    {
+      "name": "derived-07-prepend-dot",
+      "inputs": {
+        "left": "////a/a",
+        "right": "./////a/a"
+      }
+    },
+    {
+      "name": "derived-08-append-dot",
+      "inputs": {
+        "left": "/aa/.a.",
+        "right": "/aa/.a./."
+      }
+    },
+    {
+      "name": "derived-08-append-component-parent",
+      "inputs": {
+        "left": "/aa/.a.",
+        "right": "/aa/.a./a/.."
+      }
+    },
+    {
+      "name": "derived-08-prepend-dot",
+      "inputs": {
+        "left": "/aa/.a.",
+        "right": ".//aa/.a."
+      }
+    },
+    {
+      "name": "derived-09-append-dot",
+      "inputs": {
+        "left": "a/../a/",
+        "right": "a/../a//."
+      }
+    },
+    {
+      "name": "derived-09-append-component-parent",
+      "inputs": {
+        "left": "a/../a/",
+        "right": "a/../a//a/.."
+      }
+    },
+    {
+      "name": "derived-09-prepend-dot",
+      "inputs": {
+        "left": "a/../a/",
+        "right": "./a/../a/"
+      }
+    },
+    {
+      "name": "derived-10-append-dot",
+      "inputs": {
+        "left": "aa.aaaa",
+        "right": "aa.aaaa/."
+      }
+    },
+    {
+      "name": "derived-10-append-component-parent",
+      "inputs": {
+        "left": "aa.aaaa",
+        "right": "aa.aaaa/a/.."
+      }
+    },
+    {
+      "name": "derived-10-prepend-dot",
+      "inputs": {
+        "left": "aa.aaaa",
+        "right": "./aa.aaaa"
+      }
+    },
+    {
+      "name": "derived-11-append-dot",
+      "inputs": {
+        "left": ".../a/..",
+        "right": ".../a/../."
+      }
+    },
+    {
+      "name": "derived-11-append-component-parent",
+      "inputs": {
+        "left": ".../a/..",
+        "right": ".../a/../a/.."
+      }
+    },
+    {
+      "name": "derived-11-prepend-dot",
+      "inputs": {
+        "left": ".../a/..",
+        "right": "./.../a/.."
+      }
+    },
+    {
+      "name": "derived-12-append-dot",
+      "inputs": {
+        "left": "../a/a./",
+        "right": "../a/a.//."
+      }
+    },
+    {
+      "name": "derived-12-append-component-parent",
+      "inputs": {
+        "left": "../a/a./",
+        "right": "../a/a.//a/.."
+      }
+    },
+    {
+      "name": "derived-12-prepend-dot",
+      "inputs": {
+        "left": "../a/a./",
+        "right": "./../a/a./"
+      }
+    },
+    {
+      "name": "derived-13-append-dot",
+      "inputs": {
+        "left": "./../..a",
+        "right": "./../..a/."
+      }
+    },
+    {
+      "name": "derived-13-append-component-parent",
+      "inputs": {
+        "left": "./../..a",
+        "right": "./../..a/a/.."
+      }
+    },
+    {
+      "name": "derived-13-prepend-dot",
+      "inputs": {
+        "left": "./../..a",
+        "right": "././../..a"
+      }
+    },
+    {
+      "name": "derived-14-append-dot",
+      "inputs": {
+        "left": ".///.//.",
+        "right": ".///.//./."
+      }
+    },
+    {
+      "name": "derived-14-append-component-parent",
+      "inputs": {
+        "left": ".///.//.",
+        "right": ".///.//./a/.."
+      }
+    },
+    {
+      "name": "derived-14-prepend-dot",
+      "inputs": {
+        "left": ".///.//.",
+        "right": "././//.//."
+      }
+    },
+    {
+      "name": "derived-15-append-dot",
+      "inputs": {
+        "left": "./a/aa//",
+        "right": "./a/aa///."
+      }
+    },
+    {
+      "name": "derived-15-append-component-parent",
+      "inputs": {
+        "left": "./a/aa//",
+        "right": "./a/aa///a/.."
+      }
+    },
+    {
+      "name": "derived-15-prepend-dot",
+      "inputs": {
+        "left": "./a/aa//",
+        "right": "././a/aa//"
+      }
+    },
+    {
+      "name": "derived-16-append-dot",
+      "inputs": {
+        "left": ".a.aa./a",
+        "right": ".a.aa./a/."
+      }
+    },
+    {
+      "name": "derived-16-append-component-parent",
+      "inputs": {
+        "left": ".a.aa./a",
+        "right": ".a.aa./a/a/.."
+      }
+    },
+    {
+      "name": "derived-16-prepend-dot",
+      "inputs": {
+        "left": ".a.aa./a",
+        "right": "./.a.aa./a"
+      }
+    },
+    {
+      "name": "derived-17-append-dot",
+      "inputs": {
+        "left": ".aa.//a.",
+        "right": ".aa.//a./."
+      }
+    },
+    {
+      "name": "derived-17-append-component-parent",
+      "inputs": {
+        "left": ".aa.//a.",
+        "right": ".aa.//a./a/.."
+      }
+    },
+    {
+      "name": "derived-17-prepend-dot",
+      "inputs": {
+        "left": ".aa.//a.",
+        "right": "./.aa.//a."
+      }
+    },
+    {
+      "name": "derived-18-append-dot",
+      "inputs": {
+        "left": "/../.aa/",
+        "right": "/../.aa//."
+      }
+    },
+    {
+      "name": "derived-18-append-component-parent",
+      "inputs": {
+        "left": "/../.aa/",
+        "right": "/../.aa//a/.."
+      }
+    },
+    {
+      "name": "derived-18-prepend-dot",
+      "inputs": {
+        "left": "/../.aa/",
+        "right": ".//../.aa/"
+      }
+    },
+    {
+      "name": "derived-19-append-dot",
+      "inputs": {
+        "left": "/./a..aa",
+        "right": "/./a..aa/."
+      }
+    },
+    {
+      "name": "derived-19-append-component-parent",
+      "inputs": {
+        "left": "/./a..aa",
+        "right": "/./a..aa/a/.."
+      }
+    },
+    {
+      "name": "derived-19-prepend-dot",
+      "inputs": {
+        "left": "/./a..aa",
+        "right": ".//./a..aa"
+      }
+    },
+    {
+      "name": "derived-20-append-dot",
+      "inputs": {
+        "left": "/.aaaa..",
+        "right": "/.aaaa../."
+      }
+    },
+    {
+      "name": "derived-20-append-component-parent",
+      "inputs": {
+        "left": "/.aaaa..",
+        "right": "/.aaaa../a/.."
+      }
+    },
+    {
+      "name": "derived-20-prepend-dot",
+      "inputs": {
+        "left": "/.aaaa..",
+        "right": ".//.aaaa.."
+      }
+    },
+    {
+      "name": "derived-21-append-dot",
+      "inputs": {
+        "left": "///.a../",
+        "right": "///.a..//."
+      }
+    },
+    {
+      "name": "derived-21-append-component-parent",
+      "inputs": {
+        "left": "///.a../",
+        "right": "///.a..//a/.."
+      }
+    },
+    {
+      "name": "derived-21-prepend-dot",
+      "inputs": {
+        "left": "///.a../",
+        "right": ".////.a../"
+      }
+    },
+    {
+      "name": "derived-22-append-dot",
+      "inputs": {
+        "left": "//a///.a",
+        "right": "//a///.a/."
+      }
+    },
+    {
+      "name": "derived-22-append-component-parent",
+      "inputs": {
+        "left": "//a///.a",
+        "right": "//a///.a/a/.."
+      }
+    },
+    {
+      "name": "derived-22-prepend-dot",
+      "inputs": {
+        "left": "//a///.a",
+        "right": ".///a///.a"
+      }
+    },
+    {
+      "name": "derived-23-append-dot",
+      "inputs": {
+        "left": "/a.a.a/.",
+        "right": "/a.a.a/./."
+      }
+    },
+    {
+      "name": "derived-23-append-component-parent",
+      "inputs": {
+        "left": "/a.a.a/.",
+        "right": "/a.a.a/./a/.."
+      }
+    },
+    {
+      "name": "derived-23-prepend-dot",
+      "inputs": {
+        "left": "/a.a.a/.",
+        "right": ".//a.a.a/."
+      }
+    },
+    {
+      "name": "derived-24-append-dot",
+      "inputs": {
+        "left": "/aa...//",
+        "right": "/aa...///."
+      }
+    },
+    {
+      "name": "derived-24-append-component-parent",
+      "inputs": {
+        "left": "/aa...//",
+        "right": "/aa...///a/.."
+      }
+    },
+    {
+      "name": "derived-24-prepend-dot",
+      "inputs": {
+        "left": "/aa...//",
+        "right": ".//aa...//"
+      }
+    },
+    {
+      "name": "derived-25-append-dot",
+      "inputs": {
+        "left": "a...a//a",
+        "right": "a...a//a/."
+      }
+    },
+    {
+      "name": "derived-25-append-component-parent",
+      "inputs": {
+        "left": "a...a//a",
+        "right": "a...a//a/a/.."
+      }
+    },
+    {
+      "name": "derived-25-prepend-dot",
+      "inputs": {
+        "left": "a...a//a",
+        "right": "./a...a//a"
+      }
+    },
+    {
+      "name": "derived-26-append-dot",
+      "inputs": {
+        "left": "a.///aa.",
+        "right": "a.///aa./."
+      }
+    },
+    {
+      "name": "derived-26-append-component-parent",
+      "inputs": {
+        "left": "a.///aa.",
+        "right": "a.///aa./a/.."
+      }
+    },
+    {
+      "name": "derived-26-prepend-dot",
+      "inputs": {
+        "left": "a.///aa.",
+        "right": "./a.///aa."
+      }
+    },
+    {
+      "name": "derived-27-append-dot",
+      "inputs": {
+        "left": "a.aa/.a/",
+        "right": "a.aa/.a//."
+      }
+    },
+    {
+      "name": "derived-27-append-component-parent",
+      "inputs": {
+        "left": "a.aa/.a/",
+        "right": "a.aa/.a//a/.."
+      }
+    },
+    {
+      "name": "derived-27-prepend-dot",
+      "inputs": {
+        "left": "a.aa/.a/",
+        "right": "./a.aa/.a/"
+      }
+    },
+    {
+      "name": "derived-28-append-dot",
+      "inputs": {
+        "left": "a//../aa",
+        "right": "a//../aa/."
+      }
+    },
+    {
+      "name": "derived-28-append-component-parent",
+      "inputs": {
+        "left": "a//../aa",
+        "right": "a//../aa/a/.."
+      }
+    },
+    {
+      "name": "derived-28-prepend-dot",
+      "inputs": {
+        "left": "a//../aa",
+        "right": "./a//../aa"
+      }
+    },
+    {
+      "name": "derived-29-append-dot",
+      "inputs": {
+        "left": "a/a/....",
+        "right": "a/a/..../."
+      }
+    },
+    {
+      "name": "derived-29-append-component-parent",
+      "inputs": {
+        "left": "a/a/....",
+        "right": "a/a/..../a/.."
+      }
+    },
+    {
+      "name": "derived-29-prepend-dot",
+      "inputs": {
+        "left": "a/a/....",
+        "right": "./a/a/...."
+      }
+    },
+    {
+      "name": "derived-30-append-dot",
+      "inputs": {
+        "left": "aa./a/./",
+        "right": "aa./a/.//."
+      }
+    },
+    {
+      "name": "derived-30-append-component-parent",
+      "inputs": {
+        "left": "aa./a/./",
+        "right": "aa./a/.//a/.."
+      }
+    },
+    {
+      "name": "derived-30-prepend-dot",
+      "inputs": {
+        "left": "aa./a/./",
+        "right": "./aa./a/./"
+      }
+    },
+    {
+      "name": "derived-31-append-dot",
+      "inputs": {
+        "left": "aa/a/a.a",
+        "right": "aa/a/a.a/."
+      }
+    },
+    {
+      "name": "derived-31-append-component-parent",
+      "inputs": {
+        "left": "aa/a/a.a",
+        "right": "aa/a/a.a/a/.."
+      }
+    },
+    {
+      "name": "derived-31-prepend-dot",
+      "inputs": {
+        "left": "aa/a/a.a",
+        "right": "./aa/a/a.a"
+      }
+    }
+  ]
+}

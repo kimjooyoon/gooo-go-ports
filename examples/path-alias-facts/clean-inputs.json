@@ -1,0 +1,14 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "go/path:Clean": ""
+    },
+    {
+      "go/path:Clean": "/api//v1/../v2"
+    },
+    {
+      "go/path:Clean": "../a/./b"
+    }
+  ]
+}

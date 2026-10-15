@@ -369,7 +369,7 @@ func TestDecimalPayloadWorkspacesIsolateAllPrior66Sources(t *testing.T) {
 	baseline := frozen
 	baseline.Catalog.Packages = nil
 	for _, p := range frozen.Catalog.Packages {
-		if p.Path != decimalPackage && p.Path != payloadAdmissionPackage {
+		if p.Path != decimalPackage && p.Path != payloadAdmissionPackage && p.Path != pathCleanPackage && p.Path != pathAliasPackage {
 			baseline.Catalog.Packages = append(baseline.Catalog.Packages, p)
 		}
 	}
@@ -377,7 +377,9 @@ func TestDecimalPayloadWorkspacesIsolateAllPrior66Sources(t *testing.T) {
 	for key := range nativeActivityContracts() {
 		parts := strings.SplitN(key, ":", 2)
 		s := suite{Package: parts[0], Activity: parts[1]}
-		if isDecimalPayloadSuite(s) {
+		// Keep this regression scoped to the original 66 entries. The later
+		// path addition has its own regression over the preceding 68 entries.
+		if isDecimalPayloadSuite(s) || isPathAliasSuite(s) {
 			continue
 		}
 		old++
