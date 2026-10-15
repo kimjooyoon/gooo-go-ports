@@ -1,0 +1,21 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "app/path-facts",
+    "activity": "Report"
+  },
+  "packages": [
+    {
+      "path": "go/path",
+      "sources": [
+        "ports/path/path.gooo"
+      ]
+    },
+    {
+      "path": "app/path-facts",
+      "sources": [
+        "examples/path-facts/main.gooo"
+      ]
+    }
+  ]
+}

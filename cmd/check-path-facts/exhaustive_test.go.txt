@@ -1,0 +1,105 @@
+package main
+
+import (
+	"bufio"
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
+	"hash"
+	"io"
+	"os"
+	"path"
+	"path/filepath"
+	"runtime"
+	"testing"
+)
+
+type pathCorpusReport struct {
+	Text string `json:"text"`
+	Ext string `json:"ext"`
+	IsAbs bool `json:"is_abs"`
+	TextByteLength int64 `json:"text_byte_length"`
+	ExtByteLength int64 `json:"ext_byte_length"`
+	HasExtension bool `json:"has_extension"`
+}
+
+type pathCorpusRow struct {
+	Index int `json:"index"`
+	Input string `json:"input"`
+	Actual any `json:"actual"`
+	Oracle any `json:"oracle"`
+}
+
+func pathCorpusDigest(raw []byte) string { return fmt.Sprintf("sha256:%x",sha256.Sum256(raw)) }
+func pathCorpusHashLine(t *testing.T,h io.Writer,value any) {
+	t.Helper(); raw,err:=json.Marshal(value); if err!=nil { t.Fatal(err) }; if _,err:=h.Write(append(raw,'\n')); err!=nil { t.Fatal(err) }
+}
+func pathCorpusFileDigest(t *testing.T,name string) string { t.Helper(); raw,err:=os.ReadFile(name); if err!=nil { t.Fatal(err) }; return pathCorpusDigest(raw) }
+func pathCorpusSum(h hash.Hash) string { return fmt.Sprintf("sha256:%x",h.Sum(nil)) }
+
+func TestPathGeneratedCorpus(t *testing.T) {
+	if runtime.Version()!="go1.27.2" { t.Fatal("pinned Go version differs") }
+	generated:=pathCorpusFileDigest(t,"generated.go")
+	if generated!={{printf "%q" .Generated}} { t.Fatal("byte-identical generated source differs") }
+	goSource:=pathCorpusFileDigest(t,filepath.Join(runtime.GOROOT(),"src/path/path.go"))
+	if goSource!="sha256:0a5024c364387eeea9ab5fe0b285f0d62355e8cd181cdbddfdfa227f6916d94c" { t.Fatal("independent Go path source differs") }
+	goTool:=pathCorpusFileDigest(t,filepath.Join(runtime.GOROOT(),"bin/go"))
+	if goTool!={{printf "%q" .GoTool}} { t.Fatal("explicit Go tool differs") }
+	rowsPath,reportPath:=os.Getenv("GOOO_PATH_ROWS"),os.Getenv("GOOO_PATH_REPORT")
+	if rowsPath=="" || reportPath=="" || !filepath.IsAbs(rowsPath) || !filepath.IsAbs(reportPath) { t.Fatal("absolute fresh evidence paths required") }
+	f,err:=os.OpenFile(rowsPath,os.O_CREATE|os.O_EXCL|os.O_WRONLY,0600); if err!=nil { t.Fatal(err) }
+	defer f.Close(); writer:=bufio.NewWriter(f)
+	rowHash,inputHash,outputHash,oracleHash:=sha256.New(),sha256.New(),sha256.New(),sha256.New()
+	_,_=io.WriteString(inputHash,"gooo/path-facts-ordered-input/v1\n")
+	for _,h:=range []io.Writer{outputHash,oracleHash} { _,_=io.WriteString(h,"gooo/path-facts-native-values/v1\n"+{{printf "%q" .Activity}}+"\n") }
+	count,bytesWritten:=0,0
+	// This base-3 integer algorithm is independent of the parent's prefix-tree
+	// enumeration. It evaluates every original input exactly once in the same
+	// length-major a,dot,slash order, including the explicit empty string.
+	for length,cardinality:=0,1; length<=8; length,cardinality=length+1,cardinality*3 {
+		for ordinal:=0; ordinal<cardinality; ordinal++ {
+			textBytes:=make([]byte,length); n:=ordinal
+			for position:=length-1; position>=0; position-- { textBytes[position]="a./"[n%3]; n/=3 }
+			text:=string(textBytes)
+			// path is used exclusively for independent expected values. The
+			// generated candidate is retained as a separate unedited source file.
+			extension,absolute:=path.Ext(text),path.IsAbs(text)
+			_ = extension; _ = absolute
+			var actual,oracle any
+{{if eq .Entry "ext"}}
+			actual,oracle={{.ABI.Function}}(text),extension
+{{else if eq .Entry "isabs"}}
+			actual,oracle={{.ABI.Function}}(text),absolute
+{{else}}
+			value:={{.ABI.Function}}(text)
+			actual=pathCorpusReport{value.{{index .ABI.Fields 0}},value.{{index .ABI.Fields 1}},value.{{index .ABI.Fields 2}},value.{{index .ABI.Fields 3}},value.{{index .ABI.Fields 4}},value.{{index .ABI.Fields 5}}}
+			oracle=pathCorpusReport{text,extension,absolute,int64(len(text)),int64(len(extension)),len(extension)>0}
+{{end}}
+			// Direct typed equality, then canonical JSON rows retained for the
+			// parent checker. No successful child summary replaces those rows.
+			if actual!=oracle { t.Fatalf("original Go mismatch at input index%d: %q",count,text) }
+			row,err:=json.Marshal(pathCorpusRow{count,text,actual,oracle}); if err!=nil { t.Fatal(err) }; row=append(row,'\n')
+			if len(row)>(8<<20)-bytesWritten { t.Fatal("rows exceed8MiB") }
+			if _,err:=writer.Write(row); err!=nil { t.Fatal(err) }; if _,err:=rowHash.Write(row); err!=nil { t.Fatal(err) }; bytesWritten+=len(row)
+			pathCorpusHashLine(t,inputHash,text); pathCorpusHashLine(t,outputHash,actual); pathCorpusHashLine(t,oracleHash,oracle)
+			count++
+		}
+	}
+	if count!=9841 { t.Fatal("exhaustive count differs") }
+	if err:=writer.Flush(); err!=nil { t.Fatal(err) }; if err:=f.Close(); err!=nil { t.Fatal(err) }
+	if pathCorpusFileDigest(t,"generated.go")!=generated || pathCorpusFileDigest(t,rowsPath)!=pathCorpusSum(rowHash) { t.Fatal("retained generated source or rows changed") }
+	executable,err:=os.Executable(); if err!=nil { t.Fatal(err) }
+	comparisons:=count; if {{printf "%q" .Entry}}=="report" { comparisons*=6 }
+	report:=map[string]any{
+		"schema":"gooo/path-facts-generated-native-report/v1","profile":"gooo/path-facts-generated-native9841/v1",
+		"entry":{{printf "%q" .Entry}},"activity_id":{{printf "%q" .Activity}},"alphabet":[]string{"a",".","/"},"length_min":0,"length_max":8,
+		"input_count":count,"generated_native_outputs":count,"scalar_comparisons":comparisons,"mismatches":0,"full_cli_transport_outputs":0,"full_saved_replay_outputs":0,
+		"compiler_revision":{{printf "%q" .Compiler}},"go_version":runtime.Version(),"generated_sha256":generated,
+		"execution_sha256":{{printf "%q" .Execution}},"replay_sha256":{{printf "%q" .Replay}},"manifest_digest":{{printf "%q" .Manifest}},"inputs_digest":{{printf "%q" .Inputs}},
+		"go_tool_sha256":goTool,"go_path_source_sha256":goSource,"executable_sha256":pathCorpusFileDigest(t,executable),
+		"harness_sha256":pathCorpusFileDigest(t,"exhaustive_test.go"),
+		"rows":map[string]any{"rows":count,"scalar_comparisons":comparisons,"bytes":bytesWritten,"sha256":pathCorpusSum(rowHash),"ordered_inputs_sha256":pathCorpusSum(inputHash),"output_sha256":pathCorpusSum(outputHash),"oracle_sha256":pathCorpusSum(oracleHash)},
+	}
+	raw,err:=json.MarshalIndent(report,"","  "); if err!=nil { t.Fatal(err) }; raw=append(raw,'\n')
+	rf,err:=os.OpenFile(reportPath,os.O_CREATE|os.O_EXCL|os.O_WRONLY,0600); if err!=nil { t.Fatal(err) }; if _,err:=rf.Write(raw); err!=nil { rf.Close(); t.Fatal(err) }; if err:=rf.Close(); err!=nil { t.Fatal(err) }
+}

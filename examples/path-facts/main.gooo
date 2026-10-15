@@ -1,0 +1,21 @@
+// All classification and derived facts are calculated by authored Gooo bodies.
+// The original path is retained verbatim, with slash semantics and UTF-8 byte
+// lengths. These facts do not authorize filesystem access or certify safe paths.
+package path_facts
+namespace gooo_ports_examples_path_facts
+
+import paths "go/path"
+
+entity Text id "gooo://std/text"
+entity PathFacts id "gooo://go-ports/examples/path-facts/result" fields {
+    field text id "gooo://go-ports/examples/path-facts/result/text" type string required one
+    field ext id "gooo://go-ports/examples/path-facts/result/ext" type string required one
+    field is_abs id "gooo://go-ports/examples/path-facts/result/is-abs" type boolean required one
+    field text_byte_length id "gooo://go-ports/examples/path-facts/result/text-byte-length" type integer required one
+    field ext_byte_length id "gooo://go-ports/examples/path-facts/result/ext-byte-length" type integer required one
+    field has_extension id "gooo://go-ports/examples/path-facts/result/has-extension" type boolean required one
+}
+
+activity Report(Text) -> PathFacts id "gooo://go-ports/examples/path-facts/report" computes `let extension = paths.Ext(input)
+let absolute = paths.IsAbs(input)
+return PathFacts{text: input, ext: extension, is_abs: absolute, text_byte_length: int64(len(input)), ext_byte_length: int64(len(extension)), has_extension: len(extension) > 0}`

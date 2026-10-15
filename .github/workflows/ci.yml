@@ -60,6 +60,11 @@ jobs:
           python3 -B tools/classify-ci-scope_test.py -v
           python3 -B tools/check-ci-scope-workflow_test.py -v
           python3 -B tools/check-api-policy-public-consumer_test.py -v
+          # Full scope runs these13 Python controls inside the bounded sidecar once.
+          # Documentation-only PRs still run them as common non-native checks.
+          if [ "${{ steps.change-scope.outputs.docs_only }}" = "true" ]; then
+            python3 -I -B tools/check-path-facts_test.py
+          fi
       - name: Check pinned Unicode table generation
         run: |
           go run ./cmd/gen-unicode --check
@@ -105,6 +110,8 @@ jobs:
           ./.gooo check examples/literal-text-report/main.gooo
           ./.gooo check ports/strings/cut.gooo
           ./.gooo check examples/literal-cut-report/main.gooo
+          ./.gooo check ports/path/path.gooo
+          ./.gooo check examples/path-facts/main.gooo
           ./.gooo check ports/cel/scalar_access.gooo
           ./.gooo check examples/cel-api-policy/main.gooo
           ./.gooo check ports/agentmesh/service_pattern.gooo
@@ -115,6 +122,61 @@ jobs:
           ./.gooo check examples/agentmesh-service-policy/checked_impact.gooo
           ./.gooo check examples/agentmesh-service-policy/checked_refinement.gooo
           ./.gooo check examples/agentmesh-service-policy/conditional_apply.gooo
+      - name: Verify the isolated native path facts sidecar
+        if: steps.change-scope.outputs.docs_only != 'true'
+        run: |
+          python3 -B tools/check-path-facts.py --repository . --out out/path-facts --go "$(go env GOROOT)/bin/go" --compiler ./.gooo --timeout 300
+          jq -e --arg out "$PWD/out/path-facts" \
+            --slurpfile cleanup out/path-facts/work-cleanup.json \
+            --slurpfile ext_cleanup out/path-facts/ext-native-work-cleanup.json \
+            --slurpfile isabs_cleanup out/path-facts/isabs-native-work-cleanup.json \
+            --slurpfile report_cleanup out/path-facts/report-native-work-cleanup.json '
+            def digest: type == "string" and test("^(sha256:)?[0-9a-f]{64}$");
+            def file: type == "object" and (.path | type) == "string" and
+              (.bytes | type) == "number" and .bytes >= 0 and (.sha256 | digest);
+            . as $s | [$ext_cleanup[0], $isabs_cleanup[0], $report_cleanup[0]] as $native |
+            .schema == "gooo/path-facts-two-layer-CI/v1" and
+            .status == "MANUAL24_CLI_REPLAY_AND_FULL9841_GENERATED_NATIVE_PASS" and
+            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
+            .manual_input_count_per_entry == 24 and .manual_entry_count == 3 and
+            .manual_execute_outputs == 72 and .manual_saved_replay_outputs == 72 and
+            .generated_native_input_count_per_entry == 9841 and .generated_native_entry_outputs == 29523 and
+            .generated_native_scalar_comparisons == 78728 and .full_CLI_outputs == 0 and .full_saved_replay_outputs == 0 and
+            .strict_transport_refusals == 15 and .receipt_tamper_refusals == 18 and .native_receipt_expectation_cases == 0 and
+            (.source_freeze | file) and (.original_Go_manual_oracle | file) and (.work_cleanup | file) and
+            (.stages | type) == "array" and (.stages | length) == 52 and ([.stages[].path] | unique | length) == 52 and all(.stages[]; file and .bytes > 0) and
+            (.entries | type) == "array" and (.entries | length) == 3 and [.entries[].entry] == ["ext", "isabs", "report"] and
+            all(range(0;3); . as $i | $s.entries[$i] as $e | $e.full_generated as $f |
+              all([$e.checked, $e.execute, $e.saved_replay, $e.inputs, $e.native_work_cleanup][]; file) and
+              $f.schema == "gooo/path-facts-generated-native-checked/v1" and $f.decision == "FINITE_GENERATED_NATIVE9841_ORIGINAL_GO_PASS" and
+              $f.profile == "gooo/path-facts-generated-native9841/v1" and $f.entry == $e.entry and
+              $f.activity_id == ["gooo://go/path/Ext", "gooo://go/path/IsAbs", "gooo://go-ports/examples/path-facts/report"][$i] and
+              $f.compiler_revision == $s.compiler_revision and $f.go_version == $s.go_version and
+              $f.input_count == 9841 and $f.comparison_count == 9841 and $f.generated_native_outputs == 9841 and $f.mismatches == 0 and
+              $f.scalar_comparison_count == [9841,9841,59046][$i] and $f.scalar_comparisons == $f.scalar_comparison_count and
+              $f.full_cli_transport_outputs == 0 and $f.full_saved_replay_outputs == 0 and
+              $f.rows.rows == 9841 and $f.rows.scalar_comparisons == $f.scalar_comparison_count and $f.rows.bytes > 0 and
+              $f.rows.bytes == $f.rows_file_bytes and $f.rows.bytes == $f.rows_file.bytes and
+              $f.rows.sha256 == $f.rows_file.sha256 and $f.rows.sha256 == $f.rows_sha256 and ($f.rows.sha256 | digest) and
+              $f.rows.output_sha256 == $f.rows.oracle_sha256 and ($f.rows.output_sha256 | digest) and ($f.rows.ordered_inputs_sha256 | digest) and
+              $f.rows_path == ($out + "/" + $e.entry + "-full/rows.jsonl") and $f.rows_file.path == $f.rows_path and
+              all([$f.generated_file, $f.harness_file, $f.process_file, $f.native_report_file, $f.go_path_source_file, $f.go_tool_file][]; file) and
+              $f.generated_file.sha256 == $f.generated_sha256 and $f.harness_file.sha256 == $f.harness_sha256 and
+              $f.owned_native_work_removed == false and $native[$i].removed == true and $native[$i].all_observed_owned_groups_gone == true and
+              $native[$i].owned_path == $f.owned_native_work.path and
+              $native[$i].device == $f.owned_native_work.device and $native[$i].inode == $f.owned_native_work.inode and
+              $native[$i].checker_checked_report == $e.checked) and
+            ([.entries[].full_generated.generated_native_outputs] | add) == 29523 and
+            ([.entries[].full_generated.scalar_comparison_count] | add) == 78728 and
+            ([.entries[].full_generated.rows.bytes] | add) <= 8388608 and
+            ([.entries[].full_generated.rows.ordered_inputs_sha256] | unique | length) == 1 and
+            ($ext_cleanup | length) == 1 and ($isabs_cleanup | length) == 1 and ($report_cleanup | length) == 1 and
+            ($cleanup | length) == 1 and $cleanup[0].all_top_level_groups_reaped == true and
+            ($cleanup[0].owned_inode | type) == "number" and $cleanup[0].owned_inode > 0 and
+            ($cleanup[0].logical_bytes_removed | type) == "number" and $cleanup[0].logical_bytes_removed >= 0 and
+            ($cleanup[0].owned_path | type) == "string" and ($cleanup[0].owned_path | length) > 0
+          ' out/path-facts/summary.json
+          test ! -e "$(jq -er '.owned_path' out/path-facts/work-cleanup.json)"
       - name: Retain unsupported-body probes
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |

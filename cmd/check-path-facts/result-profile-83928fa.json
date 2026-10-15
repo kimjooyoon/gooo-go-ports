@@ -1,0 +1,2883 @@
+{
+  "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+  "expected_typed_result_bytes": 95075,
+  "expected_typed_result_sha256": "sha256:9283884c6026ae620152b2ac6353162acd5c6491e12737855ea6e1859bfa1ab1",
+  "format": "Canonical same-pin native CLI typed order and scalars; declared omitempty fields already in this workflow, plus normal ProcessTiming fields, may be omitted. Float64 scalars normalize by pinned Go encoding/json. Only scope/status_counts generic maps are supported; populated new routing/provider/body-fill/policy structures fail closed.",
+  "nodes": {
+    "$": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "schema"
+        },
+        {
+          "name": "program"
+        },
+        {
+          "name": "execution_source_sha256"
+        },
+        {
+          "name": "composition"
+        },
+        {
+          "name": "runtime"
+        },
+        {
+          "name": "scope"
+        }
+      ]
+    },
+    "$.composition": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "schema"
+        },
+        {
+          "name": "stage"
+        },
+        {
+          "name": "original_source_sha256"
+        },
+        {
+          "name": "selected_source_sha256"
+        },
+        {
+          "name": "generated_sha256"
+        },
+        {
+          "name": "driver_sha256"
+        },
+        {
+          "name": "plan"
+        },
+        {
+          "name": "steps"
+        },
+        {
+          "name": "gooo_source"
+        },
+        {
+          "name": "source"
+        },
+        {
+          "name": "driver_source"
+        },
+        {
+          "name": "elapsed_ns"
+        },
+        {
+          "name": "scope"
+        }
+      ]
+    },
+    "$.composition.driver_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.driver_source": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.elapsed_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.generated_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.gooo_source": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.original_source_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "schema"
+        },
+        {
+          "name": "entry_activity",
+          "optional": true,
+          "omit_zero": true
+        },
+        {
+          "name": "typed_plan_sha256"
+        },
+        {
+          "name": "semantic_fingerprint"
+        },
+        {
+          "name": "activities"
+        },
+        {
+          "name": "edges"
+        },
+        {
+          "name": "record_types",
+          "optional": true,
+          "omit_zero": true
+        }
+      ]
+    },
+    "$.composition.plan.activities": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.plan.activities.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "name"
+        },
+        {
+          "name": "id"
+        },
+        {
+          "name": "input_type"
+        },
+        {
+          "name": "output_type"
+        },
+        {
+          "name": "input_entity_id"
+        },
+        {
+          "name": "output_entity_id"
+        },
+        {
+          "name": "go_function"
+        },
+        {
+          "name": "input_from"
+        },
+        {
+          "name": "assembling"
+        },
+        {
+          "name": "inputs",
+          "optional": true,
+          "omit_zero": true
+        }
+      ]
+    },
+    "$.composition.plan.activities.*.assembling": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.composition.plan.activities.*.go_function": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.activities.*.id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.activities.*.input_entity_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.activities.*.input_from": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.plan.activities.*.input_type": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.activities.*.inputs": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.plan.activities.*.inputs.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "port"
+        },
+        {
+          "name": "type"
+        },
+        {
+          "name": "entity_id"
+        },
+        {
+          "name": "from"
+        }
+      ]
+    },
+    "$.composition.plan.activities.*.inputs.*.entity_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.activities.*.inputs.*.from": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.plan.activities.*.inputs.*.port": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.activities.*.inputs.*.type": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.activities.*.name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.activities.*.output_entity_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.activities.*.output_type": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.edges": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.plan.entry_activity": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.record_types": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.plan.record_types.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "name"
+        },
+        {
+          "name": "id"
+        },
+        {
+          "name": "go_name"
+        },
+        {
+          "name": "fields"
+        }
+      ]
+    },
+    "$.composition.plan.record_types.*.fields": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.plan.record_types.*.fields.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "name"
+        },
+        {
+          "name": "id"
+        },
+        {
+          "name": "type_id"
+        },
+        {
+          "name": "go_name"
+        }
+      ]
+    },
+    "$.composition.plan.record_types.*.fields.*.go_name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.record_types.*.fields.*.id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.record_types.*.fields.*.name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.record_types.*.fields.*.type_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.record_types.*.go_name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.record_types.*.id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.record_types.*.name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.schema": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.semantic_fingerprint": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.plan.typed_plan_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.schema": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.scope": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.selected_source_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.source": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.stage": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.steps.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "input_source_sha256"
+        },
+        {
+          "name": "generation"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "report"
+        },
+        {
+          "name": "source"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "schema"
+        },
+        {
+          "name": "decision"
+        },
+        {
+          "name": "activity"
+        },
+        {
+          "name": "activity_id"
+        },
+        {
+          "name": "input_type"
+        },
+        {
+          "name": "input_parameters",
+          "optional": true,
+          "omit_zero": true
+        },
+        {
+          "name": "record_types",
+          "optional": true,
+          "omit_zero": true
+        },
+        {
+          "name": "output_type"
+        },
+        {
+          "name": "plan_sha256"
+        },
+        {
+          "name": "compiler_source_sha"
+        },
+        {
+          "name": "source_digest"
+        },
+        {
+          "name": "program_digest"
+        },
+        {
+          "name": "generated_digest"
+        },
+        {
+          "name": "replay_digest"
+        },
+        {
+          "name": "route"
+        },
+        {
+          "name": "route_decision"
+        },
+        {
+          "name": "route_selection"
+        },
+        {
+          "name": "route_decision_latency_ms"
+        },
+        {
+          "name": "call_closure",
+          "optional": true
+        },
+        {
+          "name": "candidate_routes"
+        },
+        {
+          "name": "equivalence_rule"
+        },
+        {
+          "name": "source_constructs"
+        },
+        {
+          "name": "lowered_constructs"
+        },
+        {
+          "name": "source_semantic_units"
+        },
+        {
+          "name": "lowered_semantic_units"
+        },
+        {
+          "name": "completeness_percent"
+        },
+        {
+          "name": "route_equivalence"
+        },
+        {
+          "name": "typecheck_passed"
+        },
+        {
+          "name": "deterministic_replay"
+        },
+        {
+          "name": "repository_writes"
+        },
+        {
+          "name": "unsupported_constructs"
+        },
+        {
+          "name": "completeness_receipt",
+          "optional": true
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.activity": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.activity_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.call_closure": {
+      "kinds": [
+        "object",
+        "null"
+      ],
+      "fields": [
+        {
+          "name": "schema"
+        },
+        {
+          "name": "activities"
+        },
+        {
+          "name": "edges"
+        },
+        {
+          "name": "max_calls_per_invocation"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.call_closure.activities": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.steps.*.generation.report.call_closure.activities.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "name"
+        },
+        {
+          "name": "activity_id"
+        },
+        {
+          "name": "program_sha256"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.call_closure.activities.*.activity_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.call_closure.activities.*.name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.call_closure.activities.*.program_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.call_closure.edges": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.steps.*.generation.report.call_closure.edges.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "caller_id"
+        },
+        {
+          "name": "callee_id"
+        },
+        {
+          "name": "ordinal"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.call_closure.edges.*.callee_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.call_closure.edges.*.caller_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.call_closure.edges.*.ordinal": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.steps.*.generation.report.call_closure.max_calls_per_invocation": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.steps.*.generation.report.call_closure.schema": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.candidate_routes": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.steps.*.generation.report.candidate_routes.*": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.compiler_source_sha": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_percent": {
+      "kinds": [
+        "number"
+      ],
+      "number_type": "float64"
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt": {
+      "kinds": [
+        "object",
+        "null"
+      ],
+      "fields": [
+        {
+          "name": "schema"
+        },
+        {
+          "name": "profile_id"
+        },
+        {
+          "name": "decision"
+        },
+        {
+          "name": "decision_basis"
+        },
+        {
+          "name": "scope"
+        },
+        {
+          "name": "core_dimensions"
+        },
+        {
+          "name": "dimensions"
+        },
+        {
+          "name": "status_counts"
+        },
+        {
+          "name": "aggregate_completeness_score"
+        },
+        {
+          "name": "first_unresolved"
+        },
+        {
+          "name": "unresolved_claims"
+        },
+        {
+          "name": "not_claimed"
+        },
+        {
+          "name": "fail_closed_reason"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.aggregate_completeness_score": {
+      "kinds": [
+        "number",
+        "null"
+      ],
+      "number_type": "float64"
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.core_dimensions": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.core_dimensions.*": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.decision": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.decision_basis": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.dimensions": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.dimensions.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "id"
+        },
+        {
+          "name": "status"
+        },
+        {
+          "name": "numerator"
+        },
+        {
+          "name": "denominator"
+        },
+        {
+          "name": "unit"
+        },
+        {
+          "name": "reason"
+        },
+        {
+          "name": "evidence"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.dimensions.*.denominator": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.dimensions.*.evidence": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.dimensions.*.evidence.*": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.dimensions.*.id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.dimensions.*.numerator": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.dimensions.*.reason": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.dimensions.*.status": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.dimensions.*.unit": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.fail_closed_reason": {
+      "kinds": [
+        "null"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.first_unresolved": {
+      "kinds": [
+        "object",
+        "null"
+      ],
+      "fields": [
+        {
+          "name": "id"
+        },
+        {
+          "name": "status"
+        },
+        {
+          "name": "reason"
+        },
+        {
+          "name": "next_operation"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.first_unresolved.id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.first_unresolved.next_operation": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.first_unresolved.reason": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.first_unresolved.status": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.not_claimed": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.not_claimed.*": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.profile_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.schema": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.unresolved_claims": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.unresolved_claims.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "id"
+        },
+        {
+          "name": "status"
+        },
+        {
+          "name": "reason"
+        },
+        {
+          "name": "next_operation"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.unresolved_claims.*.id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.unresolved_claims.*.next_operation": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.unresolved_claims.*.reason": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.completeness_receipt.unresolved_claims.*.status": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.decision": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.deterministic_replay": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.composition.steps.*.generation.report.equivalence_rule": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.generated_digest": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.input_parameters": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.steps.*.generation.report.input_parameters.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "name"
+        },
+        {
+          "name": "type"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.input_parameters.*.name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.input_parameters.*.type": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.input_type": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.lowered_constructs": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.steps.*.generation.report.lowered_semantic_units": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.steps.*.generation.report.output_type": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.plan_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.program_digest": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.record_types": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.steps.*.generation.report.record_types.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "name"
+        },
+        {
+          "name": "id"
+        },
+        {
+          "name": "go_name"
+        },
+        {
+          "name": "fields"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.record_types.*.fields": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.composition.steps.*.generation.report.record_types.*.fields.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "name"
+        },
+        {
+          "name": "id"
+        },
+        {
+          "name": "type_id"
+        },
+        {
+          "name": "go_name"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.record_types.*.fields.*.go_name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.record_types.*.fields.*.id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.record_types.*.fields.*.name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.record_types.*.fields.*.type_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.record_types.*.go_name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.record_types.*.id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.record_types.*.name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.replay_digest": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.repository_writes": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_decision": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "schema"
+        },
+        {
+          "name": "mode"
+        },
+        {
+          "name": "selected"
+        },
+        {
+          "name": "fallback_reason",
+          "optional": true,
+          "omit_zero": true
+        },
+        {
+          "name": "provider"
+        },
+        {
+          "name": "request_sha256"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_decision.fallback_reason": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_decision.mode": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_decision.provider": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_decision.request_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_decision.schema": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_decision.selected": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_decision_latency_ms": {
+      "kinds": [
+        "number"
+      ],
+      "number_type": "float64"
+    },
+    "$.composition.steps.*.generation.report.route_equivalence": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "schema"
+        },
+        {
+          "name": "decision"
+        },
+        {
+          "name": "method"
+        },
+        {
+          "name": "rule"
+        },
+        {
+          "name": "source_semantic_digest"
+        },
+        {
+          "name": "generated_semantic_digest"
+        },
+        {
+          "name": "equivalent"
+        },
+        {
+          "name": "scope"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_equivalence.decision": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_equivalence.equivalent": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_equivalence.generated_semantic_digest": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_equivalence.method": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_equivalence.rule": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_equivalence.schema": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_equivalence.scope": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_equivalence.source_semantic_digest": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_selection": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "method"
+        },
+        {
+          "name": "proposed_route"
+        },
+        {
+          "name": "final_route"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_selection.final_route": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_selection.method": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.route_selection.proposed_route": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.schema": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.source_constructs": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.steps.*.generation.report.source_digest": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.source_semantic_units": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.steps.*.generation.report.typecheck_passed": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.composition.steps.*.generation.report.unsupported_constructs": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.source": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.input_source_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.execution_source_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "schema"
+        },
+        {
+          "name": "workspace_image"
+        },
+        {
+          "name": "entry"
+        },
+        {
+          "name": "activities"
+        },
+        {
+          "name": "lowered_gooo_source"
+        },
+        {
+          "name": "scope"
+        },
+        {
+          "name": "pure_calls",
+          "optional": true
+        }
+      ]
+    },
+    "$.program.activities": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.program.activities.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "package_path"
+        },
+        {
+          "name": "activity"
+        },
+        {
+          "name": "lowered_name"
+        }
+      ]
+    },
+    "$.program.activities.*.activity": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.activities.*.lowered_name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.activities.*.package_path": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.entry": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "package_path"
+        },
+        {
+          "name": "activity"
+        },
+        {
+          "name": "lowered_name"
+        }
+      ]
+    },
+    "$.program.entry.activity": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.entry.lowered_name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.entry.package_path": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.lowered_gooo_source": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.pure_calls": {
+      "kinds": [
+        "object",
+        "null"
+      ],
+      "fields": [
+        {
+          "name": "schema"
+        },
+        {
+          "name": "activities"
+        },
+        {
+          "name": "sites"
+        }
+      ]
+    },
+    "$.program.pure_calls.activities": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.program.pure_calls.activities.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "activity"
+        },
+        {
+          "name": "activity_id"
+        },
+        {
+          "name": "lowered_activity_id"
+        },
+        {
+          "name": "source"
+        },
+        {
+          "name": "source_body_sha256"
+        }
+      ]
+    },
+    "$.program.pure_calls.activities.*.activity": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "package_path"
+        },
+        {
+          "name": "activity"
+        },
+        {
+          "name": "lowered_name"
+        }
+      ]
+    },
+    "$.program.pure_calls.activities.*.activity.activity": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.pure_calls.activities.*.activity.lowered_name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.pure_calls.activities.*.activity.package_path": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.pure_calls.activities.*.activity_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.pure_calls.activities.*.lowered_activity_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.pure_calls.activities.*.source": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.pure_calls.activities.*.source_body_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.pure_calls.schema": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.pure_calls.sites": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.program.pure_calls.sites.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "caller"
+        },
+        {
+          "name": "callee"
+        },
+        {
+          "name": "surface"
+        },
+        {
+          "name": "start_byte"
+        },
+        {
+          "name": "end_byte"
+        }
+      ]
+    },
+    "$.program.pure_calls.sites.*.callee": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.pure_calls.sites.*.caller": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.pure_calls.sites.*.end_byte": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.program.pure_calls.sites.*.start_byte": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.program.pure_calls.sites.*.surface": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.schema": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.scope": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "schema"
+        },
+        {
+          "name": "init_order"
+        },
+        {
+          "name": "packages"
+        },
+        {
+          "name": "entry"
+        },
+        {
+          "name": "digest"
+        }
+      ]
+    },
+    "$.program.workspace_image.digest": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.entry": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "package_path"
+        },
+        {
+          "name": "source"
+        },
+        {
+          "name": "activity"
+        },
+        {
+          "name": "inputs"
+        },
+        {
+          "name": "output"
+        }
+      ]
+    },
+    "$.program.workspace_image.entry.activity": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.entry.inputs": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.program.workspace_image.entry.inputs.*": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.entry.output": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.entry.package_path": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.entry.source": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.init_order": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.program.workspace_image.init_order.*": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.packages": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.program.workspace_image.packages.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "path"
+        },
+        {
+          "name": "name"
+        },
+        {
+          "name": "namespace"
+        },
+        {
+          "name": "imports"
+        },
+        {
+          "name": "exports"
+        },
+        {
+          "name": "sources"
+        },
+        {
+          "name": "declarations"
+        },
+        {
+          "name": "semantic_digest"
+        }
+      ]
+    },
+    "$.program.workspace_image.packages.*.declarations": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.program.workspace_image.packages.*.exports": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.program.workspace_image.packages.*.exports.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "name"
+        },
+        {
+          "name": "kind"
+        },
+        {
+          "name": "id",
+          "optional": true,
+          "omit_zero": true
+        },
+        {
+          "name": "input_types",
+          "optional": true,
+          "omit_zero": true
+        },
+        {
+          "name": "output_type",
+          "optional": true,
+          "omit_zero": true
+        }
+      ]
+    },
+    "$.program.workspace_image.packages.*.exports.*.id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.packages.*.exports.*.input_types": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.program.workspace_image.packages.*.exports.*.input_types.*": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.packages.*.exports.*.kind": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.packages.*.exports.*.name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.packages.*.exports.*.output_type": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.packages.*.imports": {
+      "kinds": [
+        "null",
+        "array"
+      ]
+    },
+    "$.program.workspace_image.packages.*.imports.*": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.packages.*.name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.packages.*.namespace": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.packages.*.path": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.packages.*.semantic_digest": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.packages.*.sources": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.program.workspace_image.packages.*.sources.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "filename"
+        },
+        {
+          "name": "source_digest"
+        },
+        {
+          "name": "semantic_digest"
+        },
+        {
+          "name": "declarations"
+        }
+      ]
+    },
+    "$.program.workspace_image.packages.*.sources.*.declarations": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.program.workspace_image.packages.*.sources.*.filename": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.packages.*.sources.*.semantic_digest": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.packages.*.sources.*.source_digest": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.program.workspace_image.schema": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "schema"
+        },
+        {
+          "name": "stage"
+        },
+        {
+          "name": "composition_sha256"
+        },
+        {
+          "name": "original_source_sha256"
+        },
+        {
+          "name": "selected_source_sha256"
+        },
+        {
+          "name": "typed_plan_sha256"
+        },
+        {
+          "name": "generated_sha256"
+        },
+        {
+          "name": "driver_sha256"
+        },
+        {
+          "name": "runtime_suite_sha256"
+        },
+        {
+          "name": "executable_sha256"
+        },
+        {
+          "name": "go_tool_sha256"
+        },
+        {
+          "name": "go_tool_selection"
+        },
+        {
+          "name": "go_version"
+        },
+        {
+          "name": "producer_source_sha"
+        },
+        {
+          "name": "producer_module",
+          "optional": true
+        },
+        {
+          "name": "toolchain"
+        },
+        {
+          "name": "build"
+        },
+        {
+          "name": "runs"
+        },
+        {
+          "name": "traces"
+        },
+        {
+          "name": "projection_replayed"
+        },
+        {
+          "name": "runtime_replayed"
+        },
+        {
+          "name": "finite_passed"
+        },
+        {
+          "name": "finite_total"
+        },
+        {
+          "name": "input_separation"
+        },
+        {
+          "name": "model_calls"
+        },
+        {
+          "name": "elapsed_ns"
+        },
+        {
+          "name": "scope"
+        }
+      ]
+    },
+    "$.runtime.build": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "started"
+        },
+        {
+          "name": "completed"
+        },
+        {
+          "name": "canceled"
+        },
+        {
+          "name": "timed_out"
+        },
+        {
+          "name": "diagnostics_bytes"
+        },
+        {
+          "name": "output_truncated"
+        },
+        {
+          "name": "exit_code"
+        },
+        {
+          "name": "wall_ns"
+        },
+        {
+          "name": "user_ns"
+        },
+        {
+          "name": "system_ns"
+        },
+        {
+          "name": "peak_rss_bytes"
+        },
+        {
+          "name": "stdout_sha256"
+        },
+        {
+          "name": "stderr_sha256"
+        },
+        {
+          "name": "timing",
+          "optional": true
+        }
+      ]
+    },
+    "$.runtime.build.canceled": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.build.completed": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.build.diagnostics_bytes": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.build.exit_code": {
+      "kinds": [
+        "integer",
+        "null"
+      ]
+    },
+    "$.runtime.build.output_truncated": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.build.peak_rss_bytes": {
+      "kinds": [
+        "integer",
+        "null"
+      ]
+    },
+    "$.runtime.build.started": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.build.stderr_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.build.stdout_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.build.system_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.build.timed_out": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.build.timing": {
+      "kinds": [
+        "object",
+        "null"
+      ],
+      "fields": [
+        {
+          "name": "start_ns"
+        },
+        {
+          "name": "wait_ns"
+        },
+        {
+          "name": "wait_limit_ns",
+          "optional": true,
+          "omit_zero": true
+        },
+        {
+          "name": "deadline_remaining_ns",
+          "optional": true
+        },
+        {
+          "name": "context_at_start_return"
+        }
+      ]
+    },
+    "$.runtime.build.timing.context_at_start_return": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.build.timing.deadline_remaining_ns": {
+      "kinds": [
+        "integer",
+        "null"
+      ]
+    },
+    "$.runtime.build.timing.start_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.build.timing.wait_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.build.user_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.build.wall_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.composition_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.driver_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.elapsed_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.executable_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.finite_passed": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.finite_total": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.generated_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.go_tool_selection": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.go_tool_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.go_version": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.input_separation": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "status"
+        },
+        {
+          "name": "reason"
+        },
+        {
+          "name": "unique_inputs"
+        },
+        {
+          "name": "duplicate_rows"
+        },
+        {
+          "name": "overlapping_inputs"
+        },
+        {
+          "name": "disjoint_inputs"
+        },
+        {
+          "name": "disjoint_cases_passed"
+        },
+        {
+          "name": "unknown_inputs"
+        },
+        {
+          "name": "scope"
+        }
+      ]
+    },
+    "$.runtime.input_separation.disjoint_cases_passed": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.input_separation.disjoint_inputs": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.input_separation.duplicate_rows": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.input_separation.overlapping_inputs": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.input_separation.reason": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.input_separation.scope": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.input_separation.status": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.input_separation.unique_inputs": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.input_separation.unknown_inputs": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.model_calls": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.original_source_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.producer_module": {
+      "kinds": [
+        "object",
+        "null"
+      ],
+      "fields": [
+        {
+          "name": "path"
+        },
+        {
+          "name": "version"
+        }
+      ]
+    },
+    "$.runtime.producer_module.path": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.producer_module.version": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.producer_source_sha": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.projection_replayed": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.runs": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.runtime.runs.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "started"
+        },
+        {
+          "name": "completed"
+        },
+        {
+          "name": "canceled"
+        },
+        {
+          "name": "timed_out"
+        },
+        {
+          "name": "diagnostics_bytes"
+        },
+        {
+          "name": "output_truncated"
+        },
+        {
+          "name": "exit_code"
+        },
+        {
+          "name": "wall_ns"
+        },
+        {
+          "name": "user_ns"
+        },
+        {
+          "name": "system_ns"
+        },
+        {
+          "name": "peak_rss_bytes"
+        },
+        {
+          "name": "stdout_sha256"
+        },
+        {
+          "name": "stderr_sha256"
+        },
+        {
+          "name": "timing",
+          "optional": true
+        }
+      ]
+    },
+    "$.runtime.runs.*.canceled": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.runs.*.completed": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.runs.*.diagnostics_bytes": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.runs.*.exit_code": {
+      "kinds": [
+        "integer",
+        "null"
+      ]
+    },
+    "$.runtime.runs.*.output_truncated": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.runs.*.peak_rss_bytes": {
+      "kinds": [
+        "integer",
+        "null"
+      ]
+    },
+    "$.runtime.runs.*.started": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.runs.*.stderr_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.runs.*.stdout_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.runs.*.system_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.runs.*.timed_out": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.runs.*.timing": {
+      "kinds": [
+        "object",
+        "null"
+      ],
+      "fields": [
+        {
+          "name": "start_ns"
+        },
+        {
+          "name": "wait_ns"
+        },
+        {
+          "name": "wait_limit_ns",
+          "optional": true,
+          "omit_zero": true
+        },
+        {
+          "name": "deadline_remaining_ns",
+          "optional": true
+        },
+        {
+          "name": "context_at_start_return"
+        }
+      ]
+    },
+    "$.runtime.runs.*.timing.context_at_start_return": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.runs.*.timing.deadline_remaining_ns": {
+      "kinds": [
+        "integer",
+        "null"
+      ]
+    },
+    "$.runtime.runs.*.timing.start_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.runs.*.timing.wait_limit_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.runs.*.timing.wait_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.runs.*.user_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.runs.*.wall_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.runtime_replayed": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.runtime_suite_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.schema": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.scope": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.selected_source_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.stage": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.toolchain": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "started"
+        },
+        {
+          "name": "completed"
+        },
+        {
+          "name": "canceled"
+        },
+        {
+          "name": "timed_out"
+        },
+        {
+          "name": "diagnostics_bytes"
+        },
+        {
+          "name": "output_truncated"
+        },
+        {
+          "name": "exit_code"
+        },
+        {
+          "name": "wall_ns"
+        },
+        {
+          "name": "user_ns"
+        },
+        {
+          "name": "system_ns"
+        },
+        {
+          "name": "peak_rss_bytes"
+        },
+        {
+          "name": "stdout_sha256"
+        },
+        {
+          "name": "stderr_sha256"
+        },
+        {
+          "name": "timing",
+          "optional": true
+        }
+      ]
+    },
+    "$.runtime.toolchain.canceled": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.toolchain.completed": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.toolchain.diagnostics_bytes": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.toolchain.exit_code": {
+      "kinds": [
+        "integer",
+        "null"
+      ]
+    },
+    "$.runtime.toolchain.output_truncated": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.toolchain.peak_rss_bytes": {
+      "kinds": [
+        "integer",
+        "null"
+      ]
+    },
+    "$.runtime.toolchain.started": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.toolchain.stderr_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.toolchain.stdout_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.toolchain.system_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.toolchain.timed_out": {
+      "kinds": [
+        "boolean"
+      ]
+    },
+    "$.runtime.toolchain.timing": {
+      "kinds": [
+        "object",
+        "null"
+      ],
+      "fields": [
+        {
+          "name": "start_ns"
+        },
+        {
+          "name": "wait_ns"
+        },
+        {
+          "name": "wait_limit_ns",
+          "optional": true,
+          "omit_zero": true
+        },
+        {
+          "name": "deadline_remaining_ns",
+          "optional": true
+        },
+        {
+          "name": "context_at_start_return"
+        }
+      ]
+    },
+    "$.runtime.toolchain.timing.context_at_start_return": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.toolchain.timing.deadline_remaining_ns": {
+      "kinds": [
+        "integer",
+        "null"
+      ]
+    },
+    "$.runtime.toolchain.timing.start_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.toolchain.timing.wait_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.toolchain.user_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.toolchain.wall_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.traces": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.runtime.traces.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "case_index"
+        },
+        {
+          "name": "deliveries"
+        }
+      ]
+    },
+    "$.runtime.traces.*.case_index": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.traces.*.deliveries": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.runtime.traces.*.deliveries.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "activity_id"
+        },
+        {
+          "name": "input",
+          "optional": true
+        },
+        {
+          "name": "inputs",
+          "optional": true,
+          "omit_zero": true
+        },
+        {
+          "name": "actual"
+        },
+        {
+          "name": "actual_fields",
+          "optional": true,
+          "omit_zero": true
+        }
+      ]
+    },
+    "$.runtime.traces.*.deliveries.*.activity_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.traces.*.deliveries.*.actual_fields": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.runtime.traces.*.deliveries.*.actual_fields.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "id"
+        },
+        {
+          "name": "name"
+        },
+        {
+          "name": "value"
+        }
+      ]
+    },
+    "$.runtime.traces.*.deliveries.*.actual_fields.*.id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.traces.*.deliveries.*.actual_fields.*.name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.traces.*.deliveries.*.inputs": {
+      "kinds": [
+        "array"
+      ]
+    },
+    "$.runtime.traces.*.deliveries.*.inputs.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "port"
+        },
+        {
+          "name": "entity_id"
+        },
+        {
+          "name": "value"
+        }
+      ]
+    },
+    "$.runtime.traces.*.deliveries.*.inputs.*.entity_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.traces.*.deliveries.*.inputs.*.port": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.typed_plan_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.schema": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.scope": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.build.timing.wait_limit_ns": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.toolchain.timing.wait_limit_ns": {
+      "kinds": [
+        "integer"
+      ]
+    }
+  },
+  "original_receipt_sha256": "1bb2b3420f28836452e93a0bcda271d36ebebbfa41bd0e173f61b307c6a02e60",
+  "profile_source_files": {
+    "internal/packageruntime/workspaceexecution/execute.go": {
+      "sha256": "9cbb76782234d3e3e6f759af897a641080d78528ab554535b0da0ef664637dd2",
+      "bytes": 6321
+    },
+    "internal/packageruntime/workspaceexecution/program.go": {
+      "sha256": "419b689011a9738c03a46fa96e5dc117bce5990d63177515ab1bd401ddcb0b0e",
+      "bytes": 10336
+    },
+    "internal/packageruntime/workspaceexecution/body_calls.go": {
+      "sha256": "76455f8b1e5aa6bb56e6a0e863fa5385cbb3e3f579cb5c05ddf999877d5725c4",
+      "bytes": 3890
+    },
+    "internal/packageruntime/model.go": {
+      "sha256": "c02f781d99bf46c8269dcbcd90923d1748c216b231adefe21452c23bf49daaef",
+      "bytes": 2987
+    },
+    "internal/bodyexecution/composition.go": {
+      "sha256": "9dca02dcd222c549da7f94747211bfe79f0d24f2048527cfff693a3016d10867",
+      "bytes": 11632
+    },
+    "internal/bodyexecution/composition_plan.go": {
+      "sha256": "9ae97ac16d3165911ec8a95224501686e4d48347c0c7fffa0a8a1151d821580f",
+      "bytes": 2698
+    },
+    "internal/bodyexecution/composition_runtime.go": {
+      "sha256": "358cde39c368dbd386014adf3c7bd477fb4ff300306263b3ef2a8ef4e8be5b84",
+      "bytes": 13353
+    },
+    "internal/bodyexecution/composition_records.go": {
+      "sha256": "07b3550e07a81a856b136fb68411497810fbfebfbe9b6c0a4ffceaceae1f126f",
+      "bytes": 4119
+    },
+    "internal/bodyexecution/composition_input_separation.go": {
+      "sha256": "e19ecbb832be8cf2fee23888e29b710de2ba2bc72493e8f5d0396933ab4da079",
+      "bytes": 5897
+    },
+    "internal/bodyexecution/process.go": {
+      "sha256": "b87082e3626147bd6994d30c9ee33dcb63f39013c5f36ce211d342fcb486025e",
+      "bytes": 4374
+    },
+    "internal/bodyexecution/process_timing.go": {
+      "sha256": "244912191cc527a05583067c031ed351143c9a2d14d51fc27dda74fce1bccc8c",
+      "bytes": 2707
+    },
+    "internal/bodycodegen/bodycodegen.go": {
+      "sha256": "9f18921b21a4d36ba42883c295582fdf5ef12282fcc07210c391cf381c747285",
+      "bytes": 20939
+    },
+    "internal/bodycodegen/input_parameters.go": {
+      "sha256": "9625921d041c0fb10d14157eb292e6f52be58e00ab8051519b56b289a84fe298",
+      "bytes": 992
+    },
+    "internal/bodycodegen/record_types.go": {
+      "sha256": "7806b2fa6e98fdcbd67960cc18fac2c592eec9f75e9a7f0647020063a1e92af0",
+      "bytes": 5354
+    },
+    "internal/bodycodegen/pure_calls.go": {
+      "sha256": "35ccefa90c6949ff977d4278bad5e1f51f320efe3bafe88650fc3b9f281e2beb",
+      "bytes": 6390
+    },
+    "internal/bodycodegen/equivalence.go": {
+      "sha256": "0a2dad1edfa30dacc74f6169186a2d8154a0d3efd8254fdb05cd29964f03066c",
+      "bytes": 10166
+    },
+    "internal/bodycodegen/completeness_receipt.go": {
+      "sha256": "e0073923986d3dab0c02043506d2c388fff044917062b781e5ae90afd09bbe02",
+      "bytes": 34614
+    },
+    "internal/completeness/receipt.generated.go": {
+      "sha256": "e39daad3b498fd51ebdc10eb267a102f299b5d41db6cad91632654003fb4eb50",
+      "bytes": 3740
+    },
+    "internal/decisionroute/request.go": {
+      "sha256": "8bb408f30300262f8000d143af36c90113071365b5a6fd58ac08cd677d66f970",
+      "bytes": 4366
+    },
+    "internal/buildidentity/module.go": {
+      "sha256": "b119cae8df474e887f6a006055d8c10575846b9805059fac1431edab1690c103",
+      "bytes": 1218
+    }
+  },
+  "scope": "Source-only derivative of the checked839 CLI typed Result profile; adds the exact single scalar Input RawMessage delivery field at its immutable source struct position. Original raw Result profile provenance retained; not native acceptance for this new path pilot."
+}
