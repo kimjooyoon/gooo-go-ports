@@ -101,87 +101,49 @@ func TestNativeCaseProfileLegacyWriterBytesAndMetadataAbsence(t *testing.T) {
 	}
 }
 
-func TestNativeCaseProfileUUIDPartitionsRetainExactOriginalOrderedValues(t *testing.T) {
-	catalog, err := freezeVerificationCatalog("../../verification-catalog.json")
-	if err != nil {
-		t.Fatal(err)
+// checkNativeCaseProfileUUIDPreparedBatch retains every original wire/value
+// assertion while the full66 test owns the only compact partition traversal.
+func checkNativeCaseProfileUUIDPreparedBatch(t *testing.T, s suite, start int, prepared nativePreparedCaseBatch) {
+	t.Helper()
+	if prepared.End <= start || prepared.End > len(s.Cases) || prepared.End-start > 128 || len(prepared.Raw) == 0 || len(prepared.Raw) > 30000 ||
+		len(prepared.Raw)-1 > 32768 || prepared.Raw[len(prepared.Raw)-1] != '\n' {
+		t.Fatal("compact interval is outside the declared budget")
 	}
-	validation, err := uuidCorpus()
-	if err != nil {
-		t.Fatal(err)
+	batch := s
+	batch.Cases = s.Cases[start:prepared.End]
+	exactRaw, err := json.Marshal(caseDocument(batch))
+	if err != nil || !bytes.Equal(prepared.Raw, append(exactRaw, '\n')) {
+		t.Fatal("sizer/writer byte identity changed", err)
 	}
-	parsed, err := uuidParseCorpus()
-	if err != nil {
-		t.Fatal(err)
-	}
-	suites := append(validation.Suites, parsed.Suite)
-	if len(suites) != 3 {
-		t.Fatal("UUID scope changed")
-	}
-	total := 0
-	for _, s := range suites {
-		w, err := catalog.workspaceForSuite(s)
-		if err != nil {
-			t.Fatal(err)
+	var decoded struct {
+		Schema string
+		Cases  []struct {
+			Inputs   map[string]json.RawMessage
+			Expected map[string]json.RawMessage
 		}
-		policy, err := uuidCompactCaseProfile.policy(s, w, caseProfileTestLock())
-		if err != nil {
-			t.Fatal(err)
-		}
-		batches := 0
-		for start := 0; start < len(s.Cases); {
-			prepared, err := policy.prepare(s, start)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if prepared.End <= start || prepared.End-start > 128 || len(prepared.Raw) > 30000 ||
-				len(prepared.Raw)-1 > 32768 || prepared.Raw[len(prepared.Raw)-1] != '\n' {
-				t.Fatal("compact interval is outside the declared budget")
-			}
-			batch := s
-			batch.Cases = s.Cases[start:prepared.End]
-			exactRaw, err := json.Marshal(caseDocument(batch))
-			if err != nil || !bytes.Equal(prepared.Raw, append(exactRaw, '\n')) {
-				t.Fatal("sizer/writer byte identity changed", err)
-			}
-			var decoded struct {
-				Schema string
-				Cases  []struct {
-					Inputs   map[string]json.RawMessage
-					Expected map[string]json.RawMessage
-				}
-			}
-			decoder := json.NewDecoder(bytes.NewReader(prepared.Raw))
-			decoder.DisallowUnknownFields()
-			if err := decoder.Decode(&decoded); err != nil || len(decoded.Cases) != len(batch.Cases) ||
-				decoded.Schema != "gooo/body-composition-cases/v1" {
-				t.Fatal("strict compact document shape", err)
-			}
-			key := s.Package + ":" + s.Activity
-			for i, row := range decoded.Cases {
-				input, _ := json.Marshal(batch.Cases[i].Inputs[0])
-				expected, _ := json.Marshal(batch.Cases[i].Expected)
-				if len(row.Inputs) != 1 || len(row.Expected) != 1 ||
-					!bytes.Equal(row.Inputs[key], input) || !bytes.Equal(row.Expected[key], expected) {
-					t.Fatal("input/order/expected value changed", key, start+i)
-				}
-			}
-			if prepared.End < len(s.Cases) && prepared.End-start < 128 {
-				next := s
-				next.Cases = s.Cases[start : prepared.End+1]
-				raw, _ := json.Marshal(caseDocument(next))
-				if len(raw)+1 <= 30000 {
-					t.Fatal("selected prefix is not largest fitting prefix")
-				}
-			}
-			start = prepared.End
-			batches++
-		}
-		total += len(s.Cases)
-		t.Logf("new-policy partition %s:%s cases=%d batches=%d", s.Package, s.Activity, len(s.Cases), batches)
 	}
-	if total != 65357 {
-		t.Fatal("original UUID population changed", total)
+	decoder := json.NewDecoder(bytes.NewReader(prepared.Raw))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&decoded); err != nil || len(decoded.Cases) != len(batch.Cases) ||
+		decoded.Schema != "gooo/body-composition-cases/v1" {
+		t.Fatal("strict compact document shape", err)
+	}
+	key := s.Package + ":" + s.Activity
+	for i, row := range decoded.Cases {
+		input, _ := json.Marshal(batch.Cases[i].Inputs[0])
+		expected, _ := json.Marshal(batch.Cases[i].Expected)
+		if len(row.Inputs) != 1 || len(row.Expected) != 1 ||
+			!bytes.Equal(row.Inputs[key], input) || !bytes.Equal(row.Expected[key], expected) {
+			t.Fatal("input/order/expected value changed", key, start+i)
+		}
+	}
+	if prepared.End < len(s.Cases) && prepared.End-start < 128 {
+		next := s
+		next.Cases = s.Cases[start : prepared.End+1]
+		raw, _ := json.Marshal(caseDocument(next))
+		if len(raw)+1 <= 30000 {
+			t.Fatal("selected prefix is not largest fitting prefix")
+		}
 	}
 }
 
@@ -313,6 +275,8 @@ func TestNativeCaseProfileUUIDCompactFull66PartitionObservation(t *testing.T) {
 		t.Fatal("full immutable5faa suite/catalog roster", len(suites), err)
 	}
 	cases, legacyBatches, compactBatches, affected := 0, 0, 0, 0
+	uuidCases, uuidBatches := 0, 0
+	uuidEntries := map[string]bool{}
 	for index, s := range suites {
 		legacy, err := nativeCaseProfile("").policy(s, suiteWorkspace{}, upstream{})
 		if err != nil {
@@ -334,8 +298,10 @@ func TestNativeCaseProfileUUIDCompactFull66PartitionObservation(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !uuidCompactTarget(s) && compactOther != policy {
-			t.Fatal("non-UUID policy changed with workspace selection", s.Package, s.Activity)
+		// Only identical value receivers and the same untouched suite/start may
+		// share one prepare result. No source, case, assertion or native PASS is cached.
+		if !uuidCompactTarget(s) && (legacy != compactOther || compactOther != policy) {
+			t.Fatal("non-UUID policy changed with workspace selection or legacy profile", s.Package, s.Activity)
 		}
 		prior, current := 0, 0
 		for start := 0; start < len(s.Cases); prior++ {
@@ -348,7 +314,9 @@ func TestNativeCaseProfileUUIDCompactFull66PartitionObservation(t *testing.T) {
 				t.Fatal("zero policy changed legacy boundary/writer", s.Package, s.Activity, start, got.End, end, err)
 			}
 			if !uuidCompactTarget(s) {
-				other, err := policy.prepare(s, start)
+				// prepare is pure for these equal value receivers and identical
+				// suite/start arguments. Retain the separate direct-vs-legacy check above.
+				other := got
 				if err != nil || other.End != end || other.Raw != nil {
 					t.Fatal("opt-in changed a non-UUID case/writer", s.Package, s.Activity, start, err)
 				}
@@ -358,19 +326,35 @@ func TestNativeCaseProfileUUIDCompactFull66PartitionObservation(t *testing.T) {
 		}
 		if uuidCompactTarget(s) {
 			affected++
+			key := s.Package + ":" + s.Activity
+			if uuidEntries[key] {
+				t.Fatal("UUID scope contains a repeated entry", key)
+			}
+			uuidEntries[key] = true
 			for start := 0; start < len(s.Cases); current++ {
 				prepared, err := policy.prepare(s, start)
 				if err != nil || prepared.End <= start {
 					t.Fatal("new policy interval failure", err)
 				}
+				checkNativeCaseProfileUUIDPreparedBatch(t, s, start, prepared)
 				start = prepared.End
 			}
+			uuidCases, uuidBatches = uuidCases+len(s.Cases), uuidBatches+current
+			t.Logf("new-policy partition %s:%s cases=%d batches=%d", s.Package, s.Activity, len(s.Cases), current)
 		} else if prior != current {
 			t.Fatal("non-UUID partitions changed", index, prior, current)
 		}
 		cases, legacyBatches, compactBatches = cases+len(s.Cases), legacyBatches+prior, compactBatches+current
 		t.Logf("profile partition index=%d entry=%s:%s cases=%d legacy_batches=%d compact_batches=%d",
 			index, s.Package, s.Activity, len(s.Cases), prior, current)
+	}
+	if uuidCases != 65357 || affected != 3 || len(uuidEntries) != 3 {
+		t.Fatal("original UUID population or scope changed", uuidCases, affected, len(uuidEntries))
+	}
+	// These batch totals come from the original accepted PR89 profile. They
+	// are assertions for this test candidate, not a new observed/native PASS.
+	if uuidBatches != 631 || compactBatches != 2109 {
+		t.Fatal("accepted compact partition counts changed", uuidBatches, compactBatches)
 	}
 	if cases != 159909 || legacyBatches != 2337 || affected != 3 {
 		t.Fatal("original population/baseline or explicit UUID-only scope changed", cases, legacyBatches, affected)

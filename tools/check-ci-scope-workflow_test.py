@@ -176,6 +176,11 @@ def validate(text):
     require(len(unnamed) == 2 and all(field(c, "if") is None for c in unnamed), "checkout/Go setup became conditional")
     require("fetch-depth: 0" in unnamed[0], "exact PR parents must be available")
     require("go-version: '1.27.2'" in unnamed[1], "Go toolchain pin changed")
+    public = named["Verify the public API policy consumer"]
+    require(text.index(unnamed[1]) < text.index(public) < text.index(named["Check the Go observer"]),
+            "public consumer must run after pinned Go setup and before expensive local verification")
+    require("python3 -B tools/check-api-policy-public-consumer_test.py -v" in named["Check the Go observer"],
+            "bounded public-consumer diagnostic checks must remain in the common Go observer step")
     for name in COMMON:
         require(field(named[name], "if") is None, "common check became conditional: " + name)
     for name in HEAVY:
@@ -377,6 +382,22 @@ def validate(text):
 class WorkflowScopeTests(unittest.TestCase):
     def setUp(self):
         self.text = WORKFLOW.read_text()
+
+    def test_public_consumer_runs_before_expensive_local_verification(self):
+        named, unnamed = named_steps(self.text)
+        public = named["Verify the public API policy consumer"]
+        without = self.text.replace(public, "", 1)
+        for anchor in (named["Check the Go observer"], named["Compare the ports with Go and replay every batch"]):
+            with self.subTest(anchor=anchor.splitlines()[0]), self.assertRaises(ValueError):
+                validate(without.replace(anchor, anchor + public, 1))
+        with self.assertRaises(ValueError):
+            validate(without.replace(unnamed[1], public + unnamed[1], 1))
+
+    def test_bounded_public_consumer_diagnostics_remain_tested(self):
+        command = "          python3 -B tools/check-api-policy-public-consumer_test.py -v\n"
+        self.assertIn(command, self.text)
+        with self.assertRaises(ValueError):
+            validate(self.text.replace(command, "", 1))
 
     def test_real_workflow_policy(self):
         validate(self.text)
