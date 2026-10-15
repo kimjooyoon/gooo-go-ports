@@ -8,6 +8,7 @@ It needs no YAML package on the CI runner.
 
 import hashlib
 import re
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -147,6 +148,35 @@ LITERAL_COMMANDS = {
 }
 
 
+# The common checks move byte-for-byte; both isolated jobs classify their own
+# exact full-history checkout. These are source-integrity locks, not CI PASS.
+OBSERVER_HEADER_SHA = '46cb0e7392dd3f3fb9562bccea6b27e5194ffcf59e1a58bab4c07b99aba08bd9'
+NATIVE_HEADER_SHA = '5f4d0761ec793a582d7d23c06f9a758bd71fa66f5448b50d01739915052b213e'
+OBSERVER_STEP_SHA = 'd816c8dde53f5b6d24f624f7cac9d32220860d9bd91c7fd787abeb69274e7d98'
+GENERATOR_STEP_SHA = '081263b551a4d28aa8b46dc025fe951c62d91d13e164cb7927b70d7270aaf399'
+CLASSIFIER_STEP_SHA = '1864b9e0f27cc73595dd863c71640050cf046b2ec67cfd02c6ba5a8ebd11a61a'
+CHECKOUT_STEP_SHA = 'b60ba5d7bf95691b8baec3a3e402aeba552fbcb4a353d7de8946023e73e79603'
+SETUP_STEP_SHA = '742468cc6b855d4f2c2d9a5d45000899bc244f524539bad21505ef94018dceb2'
+MOVED = {'Check the Go observer', 'Check pinned Unicode table generation'}
+JOB_ORDER = ('observer-checks', 'native-execution', 'native-ports', 'browser-demo', 'deploy-browser-demo')
+AGGREGATE = """  native-ports:
+    if: ${{ always() }}
+    needs: [observer-checks, native-execution]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require both independent verification jobs
+        env:
+          OBSERVER_RESULT: ${{ needs.observer-checks.result }}
+          NATIVE_RESULT: ${{ needs.native-execution.result }}
+        shell: bash
+        run: |
+          test "$OBSERVER_RESULT" = "success"
+          test "$NATIVE_RESULT" = "success"
+
+"""
+
+
 def literal_commands(chunk):
     # Continuation joining is deliberately limited to the reviewed fixed layout.
     joined = chunk.replace("\\\n          ", " ")
@@ -165,23 +195,63 @@ def field(chunk, name):
     return values[0] if values else None
 
 
-def named_steps(text):
-    start, end = text.index("  native-ports:\n"), text.index("  browser-demo:\n")
-    native = text[start:end]
-    header, steps_text = native.split("    steps:\n", 1)
-    require(not re.search(r"^    if:", header, re.M), "native job must always report a result")
+def workflow_jobs(text):
+    require(text.count("jobs:\n") == 1, "missing or repeated jobs map")
+    raw = text.split("jobs:\n", 1)[1]
+    starts = list(re.finditer(r"^  ([a-z][a-z0-9-]*):\n", raw, re.M))
+    require(tuple(match[1] for match in starts) == JOB_ORDER, "unknown, repeated, missing or reordered job")
+    require(len(starts) == len(re.findall(r"^  \S", raw, re.M)), "unrecognized job layout")
+    return {match[1]: raw[match.start():starts[i + 1].start() if i + 1 < len(starts) else len(raw)]
+            for i, match in enumerate(starts)}
+
+
+def job_steps(chunk):
+    require(chunk.count("    steps:\n") == 1, "missing or repeated steps map")
+    header, steps_text = chunk.split("    steps:\n", 1)
     starts = list(re.finditer(r"^      - (name|uses): (.+)$", steps_text, re.M))
     require(len(starts) == len(re.findall(r"^      - ", steps_text, re.M)), "unrecognized step layout")
-    named = {}
-    unnamed = []
+    named, unnamed = {}, []
     for index, match in enumerate(starts):
-        chunk = steps_text[match.start():starts[index + 1].start() if index + 1 < len(starts) else len(steps_text)]
+        step = steps_text[match.start():starts[index + 1].start() if index + 1 < len(starts) else len(steps_text)]
         if match[1] == "name":
             require(match[2] not in named, "duplicate step name")
-            named[match[2]] = chunk
+            named[match[2]] = step
         else:
-            unnamed.append(chunk)
-    return named, unnamed
+            unnamed.append(step)
+    return header, named, unnamed
+
+
+def named_steps(text):
+    jobs = workflow_jobs(text)
+    require(jobs['native-ports'] == AGGREGATE, "aggregate must always require both concrete jobs to succeed")
+    all_named, native_unnamed = {}, []
+    for job, header_sha in (('observer-checks', OBSERVER_HEADER_SHA), ('native-execution', NATIVE_HEADER_SHA)):
+        chunk = jobs[job]
+        header, named, unnamed = job_steps(chunk)
+        # No job-level skip, needs cycle, matrix, write permissions or optional
+        # result is allowed on either producer; exact existing timeout/env stay.
+        require(hashlib.sha256(header.encode()).hexdigest() == header_sha, "producer job header changed: " + job)
+        require('continue-on-error:' not in chunk, "producer failure became optional: " + job)
+        require(len(unnamed) == 2, "producer requires checkout and pinned Go setup: " + job)
+        require(hashlib.sha256(unnamed[0].encode()).hexdigest() == CHECKOUT_STEP_SHA and
+                hashlib.sha256(unnamed[1].encode()).hexdigest() == SETUP_STEP_SHA, "producer checkout/Go pin changed: " + job)
+        classifier = named.get('Classify the exact checked PR tree', '')
+        require(hashlib.sha256(classifier.encode()).hexdigest() == CLASSIFIER_STEP_SHA, "producer exact checkout classifier changed: " + job)
+        require(chunk.index(unnamed[0]) < chunk.index(classifier) < chunk.index(unnamed[1]), "producer setup order changed: " + job)
+        expected = {'Classify the exact checked PR tree'} | MOVED if job == 'observer-checks' else (COMMON | HEAVY | UPLOADS | DOC_STEPS) - MOVED
+        require(set(named) == expected, "producer step roster changed: " + job)
+        if job == 'observer-checks':
+            require(hashlib.sha256(named['Check the Go observer'].encode()).hexdigest() == OBSERVER_STEP_SHA and
+                    hashlib.sha256(named['Check pinned Unicode table generation'].encode()).hexdigest() == GENERATOR_STEP_SHA,
+                    "common observer/generator commands must move unchanged once")
+            require(chunk.index(unnamed[1]) < chunk.index(named['Check the Go observer']) <
+                    chunk.index(named['Check pinned Unicode table generation']), "observer check order changed")
+        else:
+            native_unnamed = unnamed
+        for name, step in named.items():
+            require(name not in all_named or name == 'Classify the exact checked PR tree', "duplicate cross-job step")
+            all_named[name] = step
+    return all_named, native_unnamed
 
 
 def validate(text):
@@ -197,8 +267,10 @@ def validate(text):
     require("fetch-depth: 0" in unnamed[0], "exact PR parents must be available")
     require("go-version: '1.27.2'" in unnamed[1], "Go toolchain pin changed")
     public = named["Verify the public API policy consumer"]
-    require(text.index(unnamed[1]) < text.index(public) < text.index(named["Check the Go observer"]),
-            "public consumer must run after pinned Go setup and before expensive local verification")
+    native_job = workflow_jobs(text)['native-execution']
+    require(native_job.index(unnamed[1]) < native_job.index(public) <
+            native_job.index(named["Build and identify the pinned compiler from a clean checkout"]),
+            "public consumer must run after native Go setup and before native compiler/execution")
     require("python3 -B tools/check-api-policy-public-consumer_test.py -v" in named["Check the Go observer"],
             "bounded public-consumer diagnostic checks must remain in the common Go observer step")
     for name in COMMON:
@@ -435,7 +507,7 @@ class WorkflowScopeTests(unittest.TestCase):
     def setUp(self):
         self.text = WORKFLOW.read_text()
 
-    def test_public_consumer_runs_before_expensive_local_verification(self):
+    def test_public_consumer_stays_before_native_compilation_without_serial_observer_dependency(self):
         named, unnamed = named_steps(self.text)
         public = named["Verify the public API policy consumer"]
         without = self.text.replace(public, "", 1)
@@ -833,6 +905,119 @@ class WorkflowScopeTests(unittest.TestCase):
         broken = chunk.replace("            out/compiler-build.json\n", "            out/ci/\n")
         with self.assertRaises(ValueError):
             validate(self.text.replace(chunk, broken, 1))
+
+
+    def test_producer_jobs_are_parallel_exact_unconditional_scopes(self):
+        validate(self.text)
+        jobs = workflow_jobs(self.text)
+        for name in ('observer-checks', 'native-execution'):
+            chunk = jobs[name]
+            header, _, _ = job_steps(chunk)
+            self.assertNotIn('    needs:', header)
+            self.assertNotIn('    if:', header)
+            for addition in (
+                    "    if: github.event_name == 'push'\n",
+                    "    if: ${{ always() }}\n",
+                    "    needs: [native-ports]\n",
+                    "    needs: [observer-checks]\n",
+                    "    needs: [native-execution]\n",
+                    "    continue-on-error: true\n",
+                    "    permissions:\n      contents: write\n",
+                    "    strategy:\n      matrix:\n        optional: [true]\n"):
+                changed = chunk.replace('    runs-on:', addition + '    runs-on:', 1)
+                with self.subTest(job=name, addition=addition), self.assertRaises(ValueError):
+                    validate(self.text.replace(chunk, changed, 1))
+            for before, after in (("fetch-depth: 0", "fetch-depth: 1"),
+                                  ("go-version: '1.27.2'", "go-version: '1.27.1'"),
+                                  ('--expected-head "$GITHUB_SHA"', '--expected-head HEAD'),
+                                  ('timeout-minutes: 40', 'timeout-minutes: 90')):
+                self.assertIn(before, chunk)
+                with self.subTest(job=name, before=before), self.assertRaises(ValueError):
+                    validate(self.text.replace(chunk, chunk.replace(before, after, 1), 1))
+
+    def test_job_and_step_rosters_refuse_unknown_missing_and_duplicate_entries(self):
+        validate(self.text)
+        jobs = workflow_jobs(self.text)
+        for name in ('observer-checks', 'native-execution', 'native-ports'):
+            with self.subTest(missing=name), self.assertRaises(ValueError):
+                validate(self.text.replace(jobs[name], '', 1))
+            with self.subTest(duplicate=name), self.assertRaises(ValueError):
+                validate(self.text.replace(jobs[name], jobs[name] + jobs[name], 1))
+        unknown = '  unreviewed-success:\n    runs-on: ubuntu-latest\n    steps:\n      - run: true\n'
+        with self.assertRaises(ValueError):
+            validate(self.text.replace('  browser-demo:\n', unknown + '  browser-demo:\n', 1))
+        for name in ('observer-checks', 'native-execution'):
+            chunk = jobs[name]
+            extra = '      - name: Unreviewed work\n        run: go run ./cmd/verify\n'
+            changed = chunk.replace('    steps:\n', '    steps:\n' + extra, 1)
+            with self.subTest(extra_step=name), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, changed, 1))
+        _, named, _ = job_steps(jobs['observer-checks'])
+        classifier = named['Classify the exact checked PR tree']
+        with self.assertRaises(ValueError):
+            validate(self.text.replace(classifier, '', 1))
+        for name in MOVED:
+            step = named[name]
+            native = jobs['native-execution'].replace('    steps:\n', '    steps:\n' + step, 1)
+            with self.subTest(duplicate_common=name), self.assertRaises(ValueError):
+                validate(self.text.replace(jobs['native-execution'], native, 1))
+            with self.subTest(missing_common=name), self.assertRaises(ValueError):
+                validate(self.text.replace(step, '', 1))
+
+    def test_aggregate_graph_and_shell_cannot_skip_or_accept_failed_dependencies(self):
+        validate(self.text)
+        chunk = workflow_jobs(self.text)['native-ports']
+        mutations = (
+            ('    if: ${{ always() }}\n', ''),
+            ('always()', 'success()'),
+            ('always()', "github.event_name == 'pull_request'"),
+            ('needs: [observer-checks, native-execution]', 'needs: [native-execution]'),
+            ('needs: [observer-checks, native-execution]', 'needs: [observer-checks]'),
+            ('needs: [observer-checks, native-execution]', 'needs: [observer-checks, native-ports]'),
+            ('timeout-minutes: 2', 'timeout-minutes: 40'),
+            ('        shell: bash', '        continue-on-error: true\n        shell: bash'),
+            ('        shell: bash', '        shell: sh'),
+            ('${{ needs.observer-checks.result }}', '${{ needs.native-execution.result }}'),
+            ('${{ needs.native-execution.result }}', '${{ needs.observer-checks.result }}'),
+            ('test "$OBSERVER_RESULT" = "success"', 'test "$OBSERVER_RESULT" != "failure"'),
+            ('test "$NATIVE_RESULT" = "success"', 'test "$NATIVE_RESULT" != "failure"'),
+            ('test "$OBSERVER_RESULT" = "success"', 'test "$OBSERVER_RESULT" = "success" || true'),
+            ('test "$NATIVE_RESULT" = "success"', 'true'),
+            ('    steps:\n', '    permissions:\n      contents: write\n    steps:\n'),
+            ('    steps:\n', '    steps:\n      - uses: actions/checkout@main\n'),
+        )
+        for before, after in mutations:
+            self.assertIn(before, chunk)
+            with self.subTest(before=before, after=after), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, chunk.replace(before, after, 1), 1))
+
+    def test_actual_aggregate_inline_gate_all25_outcomes(self):
+        # Execute the candidate's actual two builtins, not a Python reimplementation
+        # of their condition. No repository checkout, toolchain or network runs.
+        validate(self.text)
+        aggregate = workflow_jobs(self.text)['native-ports']
+        self.assertIn('OBSERVER_RESULT: ${{ needs.observer-checks.result }}', aggregate)
+        self.assertIn('NATIVE_RESULT: ${{ needs.native-execution.result }}', aggregate)
+        raw_script = aggregate.split('        run: |\n', 1)[1]
+        script = '\n'.join(line[10:] for line in raw_script.splitlines() if line)
+        states = ('success', 'failure', 'cancelled', 'skipped', '')
+        for observer in states:
+            for native in states:
+                environment = {'PATH': '/usr/bin:/bin', 'OBSERVER_RESULT': observer, 'NATIVE_RESULT': native}
+                result = subprocess.run(['/bin/bash', '--noprofile', '--norc', '-e', '-o', 'pipefail', '-c', script],
+                                        env=environment, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE, timeout=5, check=False)
+                with self.subTest(observer=observer, native=native):
+                    self.assertEqual(result.returncode == 0, observer == native == 'success')
+                    self.assertEqual(result.stdout, b'')
+        for missing in ('OBSERVER_RESULT', 'NATIVE_RESULT'):
+            environment = {'PATH': '/usr/bin:/bin', 'OBSERVER_RESULT': 'success', 'NATIVE_RESULT': 'success'}
+            del environment[missing]
+            result = subprocess.run(['/bin/bash', '--noprofile', '--norc', '-e', '-o', 'pipefail', '-c', script],
+                                    env=environment, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE, timeout=5, check=False)
+            self.assertNotEqual(result.returncode, 0)
+
 
 
 if __name__ == "__main__":
