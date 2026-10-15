@@ -66,7 +66,9 @@ proposal, a refused expansion, and recovery of a discarded response by operation
 | Apply a constrained policy change automatically | [Service-grant application](examples/agentmesh-service-policy/conditional-apply.md) | Tighten a local grant, observe conflict and refusal, and recover a recorded result |
 | Search a diagnostic phrase locally | [Literal-text report](examples/literal-text-report/README.md) | Supply text and a phrase; export the first byte offset, non-overlapping count and both original inputs |
 | Split a literal separator or remove an edge affix | [Literal Cut report](examples/literal-cut-report/README.md) | Compare Cut, CutPrefix and CutSuffix while retaining both original inputs and all eleven returned fields |
-| Use a port in another project | [Import walkthrough](docs/use-in-your-project.md) | Build a separate application that imports `utf8.ValidRune` from a fixed source snapshot |
+| Use current ports in another Gooo project | [Current path import walkthrough](docs/use-current-path-in-your-project.md) | Copy a separate Gooo workspace, run `path.Ext` / `path.IsAbs` through its six-field report and save a replayable record |
+
+The [older ValidRune import walkthrough](docs/use-in-your-project.md) remains fixed to preview.2 and its own compiler. Use the current path walkthrough above for the `83928fa` compiler and Go 1.27.2.
 
 You can also [try 21 library functions in the browser](https://kimjooyoon.github.io/gooo-go-ports/).
 The library tools and tutorial run fixed, precompiled programs. The experimental
