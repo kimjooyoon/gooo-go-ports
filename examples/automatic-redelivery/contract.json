@@ -1,0 +1,409 @@
+{
+  "schema": "gooo/automatic-redelivery-contract/v1",
+  "status": "PUBLIC_SEMANTIC_SPECIFICATION",
+  "name": "Automatic redelivery admission over trusted current facts",
+  "original_policy": true,
+  "package_path": "app/automatic-redelivery",
+  "activity": "AssessRedelivery",
+  "signature": "AssessRedelivery(Text,Text,Boolean,Boolean,Boolean,Boolean,Boolean,Integer,Text)->RedeliveryDecision",
+  "semantic_ids": {
+    "activity": "gooo://automatic-redelivery/assess/v1",
+    "result": "gooo://automatic-redelivery/decision/v1",
+    "field_prefix": "gooo://automatic-redelivery/decision/v1/",
+    "field_id_rule": "Append the exact output field name, including underscores, to field_prefix."
+  },
+  "input_order": [
+    {
+      "index": 0,
+      "name": "method",
+      "type": "Text",
+      "domain": [
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "TRACE",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE"
+      ],
+      "meaning": "Exact method spelling; no empty default, trim or case folding."
+    },
+    {
+      "index": 1,
+      "name": "delivery_state",
+      "type": "Text",
+      "domain": [
+        "NOT_SENT",
+        "OUTCOME_UNKNOWN",
+        "APPLIED_CONFIRMED",
+        "NOT_APPLIED_CONFIRMED"
+      ],
+      "meaning": "Trusted aggregate state of the WHOLE bound logical operation across all relevant attempts/claims, not just the latest attempt."
+    },
+    {
+      "index": 2,
+      "name": "body_replayable",
+      "type": "Boolean",
+      "domain": [
+        false,
+        true
+      ],
+      "meaning": "Host can reconstruct the exact bound original body bytes or positively establishes no body."
+    },
+    {
+      "index": 3,
+      "name": "idempotency_key_present",
+      "type": "Boolean",
+      "domain": [
+        false,
+        true
+      ],
+      "meaning": "The same nonempty effective key will actually be sent in the same verified scope; pointer/header-map presence is insufficient."
+    },
+    {
+      "index": 4,
+      "name": "server_repeat_contract_verified",
+      "type": "Boolean",
+      "domain": [
+        false,
+        true
+      ],
+      "meaning": "Host verified the current endpoint repeat contract for this exact request; read-like repeat semantics or server key/request deduplication in its retained account/context/time scope. Method names or ALLOW alone do not establish this."
+    },
+    {
+      "index": 5,
+      "name": "request_binding_current",
+      "type": "Boolean",
+      "domain": [
+        false,
+        true
+      ],
+      "meaning": "Host verified the same logical operation ID, aggregate attempt history, original method/target/body/key, effective account/context/version/mode, current authority/contract generations and applicable provider-guidance observation against current trusted state."
+    },
+    {
+      "index": 6,
+      "name": "current_access_allowed",
+      "type": "Boolean",
+      "domain": [
+        false,
+        true
+      ],
+      "meaning": "Trusted host established current authority needed by the selected operation, including lookup/read/disclosure or fact refresh as applicable. A supplied true is not authentication; the host separately authorizes the actual selected effect."
+    },
+    {
+      "index": 7,
+      "name": "attempts_remaining",
+      "type": "Integer",
+      "domain": [
+        0,
+        1,
+        2
+      ],
+      "meaning": "Remaining application dispatch claims from a trusted durable ledger; not physical wire sends, SDK retry iterations or a latency forecast."
+    },
+    {
+      "index": 8,
+      "name": "provider_retry_guidance",
+      "type": "Text",
+      "domain": [
+        "ALLOW",
+        "VETO",
+        "ABSENT",
+        "UNKNOWN"
+      ],
+      "meaning": "Trusted current provider retry guidance bound to this same logical operation/request/effective scope and applicable observation cohort. It is an explicit independent input, not encoded by falsifying other facts."
+    }
+  ],
+  "output_fields": [
+    {
+      "index": 0,
+      "name": "method",
+      "type": "string",
+      "required": "one",
+      "id": "gooo://automatic-redelivery/decision/v1/method"
+    },
+    {
+      "index": 1,
+      "name": "delivery_state",
+      "type": "string",
+      "required": "one",
+      "id": "gooo://automatic-redelivery/decision/v1/delivery_state"
+    },
+    {
+      "index": 2,
+      "name": "body_replayable",
+      "type": "boolean",
+      "required": "one",
+      "id": "gooo://automatic-redelivery/decision/v1/body_replayable"
+    },
+    {
+      "index": 3,
+      "name": "idempotency_key_present",
+      "type": "boolean",
+      "required": "one",
+      "id": "gooo://automatic-redelivery/decision/v1/idempotency_key_present"
+    },
+    {
+      "index": 4,
+      "name": "server_repeat_contract_verified",
+      "type": "boolean",
+      "required": "one",
+      "id": "gooo://automatic-redelivery/decision/v1/server_repeat_contract_verified"
+    },
+    {
+      "index": 5,
+      "name": "request_binding_current",
+      "type": "boolean",
+      "required": "one",
+      "id": "gooo://automatic-redelivery/decision/v1/request_binding_current"
+    },
+    {
+      "index": 6,
+      "name": "current_access_allowed",
+      "type": "boolean",
+      "required": "one",
+      "id": "gooo://automatic-redelivery/decision/v1/current_access_allowed"
+    },
+    {
+      "index": 7,
+      "name": "attempts_remaining",
+      "type": "integer",
+      "required": "one",
+      "id": "gooo://automatic-redelivery/decision/v1/attempts_remaining"
+    },
+    {
+      "index": 8,
+      "name": "provider_retry_guidance",
+      "type": "string",
+      "required": "one",
+      "id": "gooo://automatic-redelivery/decision/v1/provider_retry_guidance"
+    },
+    {
+      "index": 9,
+      "name": "domain_status",
+      "type": "string",
+      "required": "one",
+      "id": "gooo://automatic-redelivery/decision/v1/domain_status"
+    },
+    {
+      "index": 10,
+      "name": "action",
+      "type": "string",
+      "required": "one",
+      "id": "gooo://automatic-redelivery/decision/v1/action"
+    },
+    {
+      "index": 11,
+      "name": "reason",
+      "type": "string",
+      "required": "one",
+      "id": "gooo://automatic-redelivery/decision/v1/reason"
+    },
+    {
+      "index": 12,
+      "name": "eligible_to_claim",
+      "type": "boolean",
+      "required": "one",
+      "id": "gooo://automatic-redelivery/decision/v1/eligible_to_claim"
+    },
+    {
+      "index": 13,
+      "name": "attempts_if_claimed",
+      "type": "integer",
+      "required": "one",
+      "id": "gooo://automatic-redelivery/decision/v1/attempts_if_claimed"
+    },
+    {
+      "index": 14,
+      "name": "dedup_required",
+      "type": "boolean",
+      "required": "one",
+      "id": "gooo://automatic-redelivery/decision/v1/dedup_required"
+    }
+  ],
+  "output_field_count": 15,
+  "echo_rule": "Fields0..8 preserve all nine decoded original scalar inputs exactly and in order for every produced report, including well-typed semantic-invalid enums and signed-int64 attempt boundaries. Do not default, normalize, narrow, trim or coerce any input. Raw JSON bytes/identity require a separate host input digest.",
+  "wire_boundary": {
+    "logical_request": "Exactly the nine named fields above, all explicitly present, with the stated exact scalar kinds. A future native transport adapter must preserve these nine positional values using pinned839 supported scalar input syntax; this is not a Gooo List/record input or an assumed bareCLI decoder policy.",
+    "Text": "Decoded valid Unicode scalar UTF-8 of at most1024 bytes for each Text input. Unknown enum values within that wire domain are semantic-invalid and are echoed.",
+    "Integer": "Signed int64 JSON integer tokens only, from -9223372036854775808 to9223372036854775807. Reject decimal/exponent spellings and booleans as integers; values outside0..2 but within signedint64 produce INVALID_INPUT with exact echo.",
+    "Boolean": "Only JSON true/false; no0/1/string/null coercion.",
+    "refuse_before_policy_report": [
+      "missing or null field",
+      "wrong scalar kind",
+      "unknown field",
+      "duplicate or escape-equivalent duplicate field",
+      "raw invalid UTF-8",
+      "unpaired surrogate escape",
+      "malformed/trailing JSON",
+      "over1024-byte decoded Text",
+      "nonfinite/decimal/exponent integer or out-of-signedint64 value"
+    ],
+    "no_fabricated_result": "Wire-invalid input is refused outside the Gooo activity and produces no fabricated policy report. The future strict host boundary needs its own fresh verification; no bareCLI rejection PASS is inherited."
+  },
+  "guidance_meaning": {
+    "ALLOW": "Authenticated/current applicable provider guidance explicitly permits retry. It does not establish current authority, binding, budget, body replayability, aggregate nonapplication, a server repeat contract or a bound key. All guards still apply.",
+    "VETO": "Authenticated/current applicable provider guidance explicitly refuses a NEW dispatch. It wins over budget/body/positive-nonapplication/repeat eligibility but does not suppress a prior authorized APPLIED_CONFIRMED lookup-only branch.",
+    "ABSENT": "Host positively established no applicable retry directive: a complete authenticated relevant response lacks it, or trustworthy whole-operation evidence establishes no applicable provider response/directive (for example an operation never sent). Absence is not permission by itself; independent positive nonapplication or verified repeat guards remain required.",
+    "UNKNOWN": "Applicable response/directive is unavailable, partial, unverified, stale, ambiguously scoped or otherwise not established. This is not trustworthy absence. After earlier guards it requests trusted machine refresh even for NOT_SENT/NOT_APPLIED_CONFIRMED."
+  },
+  "delivery_state_meaning": {
+    "NOT_SENT": "Positive trusted evidence that NO relevant attempt/claim for this logical operation could have reached the provider or applied. A latest unsent attempt cannot erase an earlier unknown/inflight attempt.",
+    "OUTCOME_UNKNOWN": "Any relevant prior/current claim has unresolved receipt/application/inflight state. Timeout, lost response, cached500, lookup absence, or a latest validation refusal while an earlier claim is unresolved remain here.",
+    "APPLIED_CONFIRMED": "Positive authoritative evidence establishes an applied business operation. It does NOT establish that the original response or recorded result is available. Response replay markers/cached errors alone do not establish this state.",
+    "NOT_APPLIED_CONFIRMED": "Positive terminal nonapplication evidence settles ALL relevant operation attempts/claims, with no unknown/inflight earlier effect. One4xx/validation refusal/latest failed attempt or lookup absence is insufficient."
+  },
+  "actions": [
+    "REDELIVER_ELIGIBLE",
+    "LOOKUP_RECORDED_RESULT",
+    "REFRESH_OUTCOME",
+    "STOP"
+  ],
+  "ordered_first_match_rules": [
+    {
+      "priority": 0,
+      "when": "Any well-typed method/state/guidance value is outside its exact listed enum, or attempts_remaining is outside0..2.",
+      "domain_status": "INVALID_INPUT",
+      "action": "STOP",
+      "reason": "INPUT_DOMAIN_INVALID"
+    },
+    {
+      "priority": 1,
+      "when": "Valid domain and current_access_allowed=false.",
+      "domain_status": "VALID_INPUT",
+      "action": "STOP",
+      "reason": "CURRENT_ACCESS_REFUSED"
+    },
+    {
+      "priority": 2,
+      "when": "Prior rules did not select and request_binding_current=false.",
+      "domain_status": "VALID_INPUT",
+      "action": "STOP",
+      "reason": "REQUEST_BINDING_CHANGED"
+    },
+    {
+      "priority": 3,
+      "when": "Prior rules did not select and delivery_state=APPLIED_CONFIRMED.",
+      "domain_status": "VALID_INPUT",
+      "action": "LOOKUP_RECORDED_RESULT",
+      "reason": "OPERATION_ALREADY_APPLIED"
+    },
+    {
+      "priority": 4,
+      "when": "Prior rules did not select and provider_retry_guidance=VETO.",
+      "domain_status": "VALID_INPUT",
+      "action": "STOP",
+      "reason": "PROVIDER_RETRY_VETO"
+    },
+    {
+      "priority": 5,
+      "when": "Prior rules did not select and attempts_remaining=0.",
+      "domain_status": "VALID_INPUT",
+      "action": "STOP",
+      "reason": "ATTEMPT_BUDGET_EXHAUSTED"
+    },
+    {
+      "priority": 6,
+      "when": "Prior rules did not select and body_replayable=false.",
+      "domain_status": "VALID_INPUT",
+      "action": "STOP",
+      "reason": "BODY_NOT_REPLAYABLE"
+    },
+    {
+      "priority": 7,
+      "when": "Prior rules did not select and provider_retry_guidance=UNKNOWN.",
+      "domain_status": "VALID_INPUT",
+      "action": "REFRESH_OUTCOME",
+      "reason": "PROVIDER_GUIDANCE_UNVERIFIED"
+    },
+    {
+      "priority": 8,
+      "when": "Prior rules did not select and delivery_state is NOT_SENT or NOT_APPLIED_CONFIRMED.",
+      "domain_status": "VALID_INPUT",
+      "action": "REDELIVER_ELIGIBLE",
+      "reason": "POSITIVE_NONAPPLICATION_EVIDENCE"
+    },
+    {
+      "priority": 9,
+      "when": "Prior rules did not select; delivery_state is OUTCOME_UNKNOWN and server_repeat_contract_verified=false.",
+      "domain_status": "VALID_INPUT",
+      "action": "REFRESH_OUTCOME",
+      "reason": "SERVER_REPEAT_CONTRACT_UNVERIFIED"
+    },
+    {
+      "priority": 10,
+      "when": "Prior rules did not select; delivery_state is OUTCOME_UNKNOWN and method is GET/HEAD/OPTIONS/TRACE.",
+      "domain_status": "VALID_INPUT",
+      "action": "REDELIVER_ELIGIBLE",
+      "reason": "VERIFIED_REPEAT_CONTRACT"
+    },
+    {
+      "priority": 11,
+      "when": "Prior rules did not select; delivery_state is OUTCOME_UNKNOWN and method is POST/PUT/PATCH/DELETE and idempotency_key_present=false.",
+      "domain_status": "VALID_INPUT",
+      "action": "REFRESH_OUTCOME",
+      "reason": "DEDUP_KEY_NOT_BOUND"
+    },
+    {
+      "priority": 12,
+      "when": "All earlier rules did not select; delivery_state is OUTCOME_UNKNOWN, method is POST/PUT/PATCH/DELETE, and verified server contract plus the bound nonempty key are present.",
+      "domain_status": "VALID_INPUT",
+      "action": "REDELIVER_ELIGIBLE",
+      "reason": "VERIFIED_SERVER_DEDUP"
+    }
+  ],
+  "derived_fields": {
+    "eligible_to_claim": "Exactly action==REDELIVER_ELIGIBLE.",
+    "attempts_if_claimed": "If and only if eligible_to_claim, attempts_remaining-1; every other branch echoes attempts_remaining exactly. Subtraction is permitted only after valid domain and positive budget select eligibility. No arithmetic is evaluated on semantic-invalid signedint64 extremes. This is hypothetical, not a reservation.",
+    "dedup_required": "Exactly valid semantic domain AND delivery_state==OUTCOME_UNKNOWN AND method in POST/PUT/PATCH/DELETE, irrespective of selected action, current access, binding, VETO, UNKNOWN, budget or body. Thus true may accompany STOP/REFRESH. It describes a requirement, not a claim/send instruction."
+  },
+  "action_effect_boundary": {
+    "LOOKUP_RECORDED_RESULT": "Lookup-only request under current lookup/read/disclosure authority and binding. Zero new dispatch/effect/attempt claim. Missing/unavailable lookup can remain unresolved and MUST NOT downgrade APPLIED_CONFIRMED to nonapplication or enable redelivery. No result availability, response reconstruction or liveness is promised.",
+    "REFRESH_OUTCOME": "Request trusted machine refresh/reconciliation of relevant facts under the required current read/disclosure authority; no new dispatch. Refresh may remain unresolved.",
+    "STOP": "No new dispatch or attempt claim.",
+    "REDELIVER_ELIGIBLE": "A pure admission result only. Trusted host must atomically claim one application attempt while rechecking current facts/authority/bindings before sending the exact bound request. The Gooo result itself performs no claim, network call or effect."
+  },
+  "trusted_host_obligations": [
+    "Bind durable logical operationID and ALL relevant attempt/claim outcomes; latest-attempt status cannot replace aggregate history.",
+    "Bind final effective method/origin/target/body bytes/nonempty sent key/parameter semantics, account/context/API family+version/test-live mode/header overrides and operation identity. Do not change the key or operation identity to escape an unknown outcome.",
+    "Bind provider guidance provenance, the same current applicable observation cohort and response identity to that operation/request/effective scope/contract/authority epoch. Do not reuse a convenient stale ALLOW/VETO or treat unavailable guidance as ABSENT; unresolved conflicting observations remain UNKNOWN.",
+    "Verify current server contract and retained scope using original first-attempt age, durable time evidence and clock uncertainty. Unknown/near-expired retention cannot assert a verified unresolved-write repeat contract. No exact provider-expiry timestamp is inferred.",
+    "Independently authenticate current authority, including the actual selected send/lookup/disclosure/refresh action. Caller-supplied booleans are compared facts, not proof.",
+    "After eligibility atomically claim one application attempt against the current ledger revision while rechecking operation/request/key/body/account/context/contract/authority/observation binding. Lost compare-and-swap, stale generation or revocation yields zero dispatch and fresh facts.",
+    "Own SDK/transport/application retry layers and record the outcome durably. attempts_remaining counts application claims only; no physical wire-send, end-to-end deadline, durability or exactly-once guarantee follows.",
+    "Saved replay reconstructs the prior decision, not current permission/contract/claim/effect. Verified cases may proceed automatically; unknown/refused states refresh or stop automatically without requiring human per-call approval."
+  ],
+  "full_finite_domain_plan": {
+    "formula": "8methods *4delivery_states *2^5Booleanfacts *3attemptcounts *4guidance =12288",
+    "valid_tuple_count": 12288,
+    "order": "Nested input-order loops with each listed domain order; last provider_retry_guidance varies fastest. Include every tuple without pruning apparently inconsistent trusted-fact combinations. The pure policy has deterministic values even when a caller asserts inconsistent facts; it does not verify their truth.",
+    "comparison": "All15 required field types/values, all9 exact echoes, exact IDs and first-match reasons; no old3072 coverage/PASS reuse. Native/saved-replay batching, strict wire negatives, tamper controls, host controls and finite runtime/storage budget remain root-owned later gates.",
+    "expected_action_partition_from_root_independent_static_review": {
+      "STOP": 10944,
+      "LOOKUP_RECORDED_RESULT": 768,
+      "REDELIVER_ELIGIBLE": 304,
+      "REFRESH_OUTCOME": 272
+    },
+    "expected_valid_reason_partition_from_root_independent_static_review": {
+      "CURRENT_ACCESS_REFUSED": 6144,
+      "REQUEST_BINDING_CHANGED": 3072,
+      "OPERATION_ALREADY_APPLIED": 768,
+      "PROVIDER_RETRY_VETO": 576,
+      "ATTEMPT_BUDGET_EXHAUSTED": 576,
+      "BODY_NOT_REPLAYABLE": 576,
+      "PROVIDER_GUIDANCE_UNVERIFIED": 192,
+      "POSITIVE_NONAPPLICATION_EVIDENCE": 256,
+      "SERVER_REPEAT_CONTRACT_UNVERIFIED": 64,
+      "VERIFIED_REPEAT_CONTRACT": 32,
+      "DEDUP_KEY_NOT_BOUND": 16,
+      "VERIFIED_SERVER_DEDUP": 16
+    },
+    "partition_limit": "Static contract crosschecks, not executed candidate results or a substitute for independently deriving expected values."
+  },
+  "limits": [
+    "Original policy over supplied trusted facts, not authentication or actual provider evidence.",
+    "No completed endpoint adapter, real API dispatch, whole Transport/SDK port, physical-send cap, production/full-safety, performance, adoption or guaranteed-liveness claim.",
+    "The semantic specification was frozen before the Gooo candidate; the independent reference policy was authored from that specification without reading the candidate. Public metadata normalization does not alter its rules."
+  ]
+}

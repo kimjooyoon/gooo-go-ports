@@ -1,0 +1,73 @@
+package main
+
+import (
+ "bufio"
+ "bytes"
+ "compress/gzip"
+ "crypto/sha256"
+ "encoding/hex"
+ "encoding/json"
+ "errors"
+ "fmt"
+ "hash"
+ "io"
+ "os"
+ "time"
+ "unicode/utf8"
+)
+
+const rawRowsCap int64 = 16<<20
+const compressedRowsCap int64 = 2<<20
+const rowLineCap = 4096
+var fixedGzipHeader = []byte{0x1f,0x8b,0x08,0,0,0,0,0,0x02,0xff}
+
+type limitedHashWriter struct { Writer io.Writer; Hash hash.Hash; Bytes,Max int64 }
+func(w *limitedHashWriter)Write(raw []byte)(int,error){if int64(len(raw))>w.Max-w.Bytes{return 0,fmt.Errorf("compressed rows exceed2MiB")};n,err:=w.Writer.Write(raw);if n>0{_,_=w.Hash.Write(raw[:n]);w.Bytes+=int64(n)};if err==nil&&n!=len(raw){err=io.ErrShortWrite};return n,err}
+type rowsWriter struct { file *os.File; gzip *gzip.Writer; compressed *limitedHashWriter; rawHash hash.Hash; rawBytes int64; rows int; closed bool }
+type rowsEvidence struct { Path string `json:"path"`; CompressedBytes int64 `json:"compressed_bytes"`; CompressedSHA256 string `json:"compressed_sha256"`; UncompressedBytes int64 `json:"uncompressed_bytes"`; UncompressedSHA256 string `json:"uncompressed_sha256"`; RowCount int `json:"row_count"` }
+
+func newRowsWriter(path string)(*rowsWriter,error){
+ f,err:=os.OpenFile(path,os.O_WRONLY|os.O_CREATE|os.O_EXCL,0600);if err!=nil{return nil,err}
+ compressed:=&limitedHashWriter{Writer:f,Hash:sha256.New(),Max:compressedRowsCap};gz,err:=gzip.NewWriterLevel(compressed,gzip.BestCompression);if err!=nil{_ = f.Close();return nil,err};gz.Header=gzip.Header{ModTime:time.Unix(0,0),OS:255}
+ return &rowsWriter{file:f,gzip:gz,compressed:compressed,rawHash:sha256.New()},nil
+}
+func(w *rowsWriter)WriteRow(row Row)error{
+ if w.closed{return fmt.Errorf("rows writer is closed")};if row.Index!=w.rows || w.rows>=domainCount{return fmt.Errorf("rows writer index/order/count")}
+ raw,err:=json.Marshal(row);if err!=nil{return err};raw=append(raw,'\n');if len(raw)>rowLineCap || int64(len(raw))>rawRowsCap-w.rawBytes{return fmt.Errorf("uncompressed row/proof cap")}
+ n,err:=w.gzip.Write(raw);if err!=nil{return err};if n!=len(raw){return io.ErrShortWrite};_,_=w.rawHash.Write(raw);w.rawBytes+=int64(n);w.rows++;return nil
+}
+func(w *rowsWriter)Close()error{if w.closed{return nil};w.closed=true;return errors.Join(w.gzip.Close(),w.file.Close())}
+func(w *rowsWriter)Evidence()rowsEvidence{return rowsEvidence{w.file.Name(),w.compressed.Bytes,hex.EncodeToString(w.compressed.Hash.Sum(nil)),w.rawBytes,hex.EncodeToString(w.rawHash.Sum(nil)),w.rows}}
+
+func decodeRow(raw []byte)(Row,error){
+ var row Row
+ if len(raw)==0 || len(raw)>rowLineCap || raw[len(raw)-1]!='\n' || !utf8.Valid(raw){return row,fmt.Errorf("row must be bounded validUTF8 and LF terminated")}
+ d:=json.NewDecoder(bytes.NewReader(raw));d.DisallowUnknownFields();if err:=d.Decode(&row);err!=nil{return row,err};var extra any;if err:=d.Decode(&extra);err!=io.EOF{return row,fmt.Errorf("row contains trailing JSON")}
+ canonical,err:=json.Marshal(row);if err!=nil{return row,err};canonical=append(canonical,'\n')
+ // Exact canonical bytes reject missing fields (including false/zero), null,
+ // duplicate names, altered order/escapes, invalid UTF16 and numeric spelling.
+ if !bytes.Equal(raw,canonical){return row,fmt.Errorf("row is not exact canonical nine-input/fifteen-output JSON")}
+ return row,nil
+}
+
+type hashReader struct { Reader io.Reader; Hash hash.Hash; Bytes int64 }
+func(r *hashReader)Read(p []byte)(int,error){n,err:=r.Reader.Read(p);if n>0{_,_=r.Hash.Write(p[:n]);r.Bytes+=int64(n)};return n,err}
+
+func verifyRows(path string,want rowsEvidence)(Stats,error){
+ stats:=Stats{};f,err:=os.Open(path);if err!=nil{return stats,err};defer f.Close();info,err:=f.Stat();if err!=nil{return stats,err};if !info.Mode().IsRegular()||info.Size()>compressedRowsCap||info.Size()!=want.CompressedBytes{return stats,fmt.Errorf("compressed rows file kind/size differs")}
+ header:=make([]byte,10);if _,err:=f.ReadAt(header,0);err!=nil{return stats,err};if !bytes.Equal(header,fixedGzipHeader){return stats,fmt.Errorf("noncanonical deterministic gzip header")}
+ br:=bufio.NewReader(f);gz,err:=gzip.NewReader(br);if err!=nil{return stats,err};defer gz.Close();gz.Multistream(false)
+ stream:=&hashReader{Reader:io.LimitReader(gz,rawRowsCap+1),Hash:sha256.New()};lines:=bufio.NewReaderSize(stream,rowLineCap)
+ err=ForEachValid(func(index int,in Input)error{
+  fixed,err:=inputAt(index);if err!=nil{return err};if index!=stats.InputCount||in!=fixed{return fmt.Errorf("readback independent tuple order differs")}
+  line,err:=lines.ReadSlice('\n');if err!=nil{return fmt.Errorf("row %d missing, oversized or unterminated: %w",index,err)};if len(line)>rowLineCap{return fmt.Errorf("oversized readback row")}
+  row,err:=decodeRow(line);if err!=nil{return fmt.Errorf("row %d: %w",index,err)};if row.Index!=index||row.Inputs!=in{return fmt.Errorf("row %d original index/input order differs",index)};stats.InputCount++
+  expected,err:=Evaluate(in);stats.OracleCalls++;if err!=nil{return err};if err:=compareValues(index,in,row.Actual,expected,&stats);err!=nil{return err};stats.ComparisonCount++;return nil
+ });if err!=nil{return stats,err}
+ rest,err:=lines.ReadSlice('\n');if err!=io.EOF || len(rest)!=0{return stats,fmt.Errorf("extra rows, tail bytes or invalid gzip CRC")}
+ if err:=gz.Close();err!=nil{return stats,err};if _,err:=br.ReadByte();err!=io.EOF{return stats,fmt.Errorf("extra gzip member or compressed trailing bytes")}
+ if stream.Bytes>rawRowsCap || stream.Bytes!=want.UncompressedBytes || hex.EncodeToString(stream.Hash.Sum(nil))!=want.UncompressedSHA256{return stats,fmt.Errorf("uncompressed row bytes/hash differs")}
+ current,err:=fileRef(path,compressedRowsCap);if err!=nil{return stats,err};if current.Bytes!=want.CompressedBytes || current.SHA256!=want.CompressedSHA256{return stats,fmt.Errorf("compressed row hash differs")}
+ if want.Path!=path || want.RowCount!=domainCount || stats.InputCount!=domainCount || stats.ComparisonCount!=domainCount || stats.GeneratedCalls!=0 || stats.OracleCalls!=domainCount || stats.FieldComparisons!=184320 || stats.EchoComparisons!=110592 || stats.Mismatches!=0{return stats,fmt.Errorf("readback count/comparison population differs")}
+ return stats,nil
+}

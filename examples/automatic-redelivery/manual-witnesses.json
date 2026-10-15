@@ -1,0 +1,247 @@
+{
+  "schema": "gooo/redelivery-independent-manual-inputs/v1",
+  "contract_sha256": "e9dadc2b2bfe776648b216477ffd9cfe7b23ee0deaf2b22bd3ab27c268acdac0",
+  "scope": "Input-only independent16 witnesses; no candidate or Go oracle executed.",
+  "cases": [
+    {
+      "index": 0,
+      "name": "invalid-enum-before-access",
+      "inputs": {
+        "method": "post",
+        "delivery_state": "OUTCOME_UNKNOWN",
+        "body_replayable": true,
+        "idempotency_key_present": true,
+        "server_repeat_contract_verified": true,
+        "request_binding_current": true,
+        "current_access_allowed": false,
+        "attempts_remaining": 1,
+        "provider_retry_guidance": "ABSENT"
+      }
+    },
+    {
+      "index": 1,
+      "name": "allow-does-not-bypass-access",
+      "inputs": {
+        "method": "POST",
+        "delivery_state": "OUTCOME_UNKNOWN",
+        "body_replayable": true,
+        "idempotency_key_present": true,
+        "server_repeat_contract_verified": true,
+        "request_binding_current": true,
+        "current_access_allowed": false,
+        "attempts_remaining": 1,
+        "provider_retry_guidance": "ALLOW"
+      }
+    },
+    {
+      "index": 2,
+      "name": "allow-does-not-bypass-binding",
+      "inputs": {
+        "method": "POST",
+        "delivery_state": "OUTCOME_UNKNOWN",
+        "body_replayable": true,
+        "idempotency_key_present": true,
+        "server_repeat_contract_verified": true,
+        "request_binding_current": false,
+        "current_access_allowed": true,
+        "attempts_remaining": 1,
+        "provider_retry_guidance": "ALLOW"
+      }
+    },
+    {
+      "index": 3,
+      "name": "applied-veto-is-lookup-only",
+      "inputs": {
+        "method": "POST",
+        "delivery_state": "APPLIED_CONFIRMED",
+        "body_replayable": false,
+        "idempotency_key_present": true,
+        "server_repeat_contract_verified": true,
+        "request_binding_current": true,
+        "current_access_allowed": true,
+        "attempts_remaining": 0,
+        "provider_retry_guidance": "VETO"
+      }
+    },
+    {
+      "index": 4,
+      "name": "veto-before-budget-and-body",
+      "inputs": {
+        "method": "POST",
+        "delivery_state": "OUTCOME_UNKNOWN",
+        "body_replayable": false,
+        "idempotency_key_present": true,
+        "server_repeat_contract_verified": true,
+        "request_binding_current": true,
+        "current_access_allowed": true,
+        "attempts_remaining": 0,
+        "provider_retry_guidance": "VETO"
+      }
+    },
+    {
+      "index": 5,
+      "name": "allow-does-not-bypass-budget",
+      "inputs": {
+        "method": "POST",
+        "delivery_state": "OUTCOME_UNKNOWN",
+        "body_replayable": true,
+        "idempotency_key_present": true,
+        "server_repeat_contract_verified": true,
+        "request_binding_current": true,
+        "current_access_allowed": true,
+        "attempts_remaining": 0,
+        "provider_retry_guidance": "ALLOW"
+      }
+    },
+    {
+      "index": 6,
+      "name": "body-before-unverified-guidance",
+      "inputs": {
+        "method": "POST",
+        "delivery_state": "OUTCOME_UNKNOWN",
+        "body_replayable": false,
+        "idempotency_key_present": true,
+        "server_repeat_contract_verified": true,
+        "request_binding_current": true,
+        "current_access_allowed": true,
+        "attempts_remaining": 1,
+        "provider_retry_guidance": "UNKNOWN"
+      }
+    },
+    {
+      "index": 7,
+      "name": "unknown-guidance-blocks-unsent",
+      "inputs": {
+        "method": "POST",
+        "delivery_state": "NOT_SENT",
+        "body_replayable": true,
+        "idempotency_key_present": true,
+        "server_repeat_contract_verified": true,
+        "request_binding_current": true,
+        "current_access_allowed": true,
+        "attempts_remaining": 1,
+        "provider_retry_guidance": "UNKNOWN"
+      }
+    },
+    {
+      "index": 8,
+      "name": "terminal-whole-operation-nonapplication",
+      "inputs": {
+        "method": "POST",
+        "delivery_state": "NOT_APPLIED_CONFIRMED",
+        "body_replayable": true,
+        "idempotency_key_present": false,
+        "server_repeat_contract_verified": false,
+        "request_binding_current": true,
+        "current_access_allowed": true,
+        "attempts_remaining": 1,
+        "provider_retry_guidance": "ABSENT"
+      }
+    },
+    {
+      "index": 9,
+      "name": "allow-does-not-prove-server-contract",
+      "inputs": {
+        "method": "POST",
+        "delivery_state": "OUTCOME_UNKNOWN",
+        "body_replayable": true,
+        "idempotency_key_present": true,
+        "server_repeat_contract_verified": false,
+        "request_binding_current": true,
+        "current_access_allowed": true,
+        "attempts_remaining": 1,
+        "provider_retry_guidance": "ALLOW"
+      }
+    },
+    {
+      "index": 10,
+      "name": "verified-read-repeat-without-key",
+      "inputs": {
+        "method": "GET",
+        "delivery_state": "OUTCOME_UNKNOWN",
+        "body_replayable": true,
+        "idempotency_key_present": false,
+        "server_repeat_contract_verified": true,
+        "request_binding_current": true,
+        "current_access_allowed": true,
+        "attempts_remaining": 1,
+        "provider_retry_guidance": "ABSENT"
+      }
+    },
+    {
+      "index": 11,
+      "name": "allow-does-not-supply-bound-key",
+      "inputs": {
+        "method": "POST",
+        "delivery_state": "OUTCOME_UNKNOWN",
+        "body_replayable": true,
+        "idempotency_key_present": false,
+        "server_repeat_contract_verified": true,
+        "request_binding_current": true,
+        "current_access_allowed": true,
+        "attempts_remaining": 1,
+        "provider_retry_guidance": "ALLOW"
+      }
+    },
+    {
+      "index": 12,
+      "name": "verified-write-dedup",
+      "inputs": {
+        "method": "POST",
+        "delivery_state": "OUTCOME_UNKNOWN",
+        "body_replayable": true,
+        "idempotency_key_present": true,
+        "server_repeat_contract_verified": true,
+        "request_binding_current": true,
+        "current_access_allowed": true,
+        "attempts_remaining": 1,
+        "provider_retry_guidance": "ALLOW"
+      }
+    },
+    {
+      "index": 13,
+      "name": "signed-min-echo-no-arithmetic",
+      "inputs": {
+        "method": "POST",
+        "delivery_state": "OUTCOME_UNKNOWN",
+        "body_replayable": true,
+        "idempotency_key_present": true,
+        "server_repeat_contract_verified": true,
+        "request_binding_current": true,
+        "current_access_allowed": true,
+        "attempts_remaining": -9223372036854775808,
+        "provider_retry_guidance": "VETO"
+      }
+    },
+    {
+      "index": 14,
+      "name": "signed-max-echo-no-arithmetic",
+      "inputs": {
+        "method": "POST",
+        "delivery_state": "OUTCOME_UNKNOWN",
+        "body_replayable": true,
+        "idempotency_key_present": true,
+        "server_repeat_contract_verified": true,
+        "request_binding_current": true,
+        "current_access_allowed": true,
+        "attempts_remaining": 9223372036854775807,
+        "provider_retry_guidance": "ALLOW"
+      }
+    },
+    {
+      "index": 15,
+      "name": "verified-unsent-automatic-claim",
+      "inputs": {
+        "method": "POST",
+        "delivery_state": "NOT_SENT",
+        "body_replayable": true,
+        "idempotency_key_present": true,
+        "server_repeat_contract_verified": true,
+        "request_binding_current": true,
+        "current_access_allowed": true,
+        "attempts_remaining": 2,
+        "provider_retry_guidance": "ABSENT"
+      }
+    }
+  ]
+}
