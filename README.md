@@ -619,16 +619,26 @@ has at most 128 rows and 30,000 bytes. This profile requires the pinned compiler
 and a checked source-derived bound on its rewritten activity keys; it refuses
 an unsupported bound rather than changing the partition or execution path.
 
-Full native CI selects this profile explicitly. The historical 66-suite partition
-calculation retains 159,909 cases and changes 2,337 legacy batches to 2,109
-(UUID: 195/197/239 batches), with 2,243 timing records. The decimal/payload
-extension preserves that prefix and adds two suites with 357 inputs in nine
-source-checked batches. The full profile therefore requires 2,118 batches and
-2,256 timing records; legacy requires 2,346 and 2,484 respectively. Actual native
-execution, saved replay and a complete timing footer must still pass fresh.
-The summary and timing header identify the selected profile. These partition
-counts do not establish native completion or a speedup; use the corresponding
-source's complete CI results. No case profile reuses a prior successful receipt.
+Full native CI selects `--case-profile uuid-and-literal-report-compact-v1`.
+This is the same UUID policy plus compact case JSON for
+`app/literal-text-report:Report` only. `Index` and `Count`, the Cut entries,
+and decimal/payload keep their existing writers and partitions. The new profile
+records its four entries, `basis_profile: "uuid-compact-v1"` and the exact bounds
+in the summary and timing header. Default `legacy` and explicit
+`uuid-compact-v1` remain available with their original behavior.
+
+The original 66-suite population retains 159,909 cases. Its historical legacy
+partition has 2,337 batches/2,471 timing records; the UUID-only profile has
+2,109/2,243. The combined profile requires 2,063 batches for those same cases:
+UUID retains 195/197/239 and the literal Report uses 235 instead of 281.
+Appending the unchanged parser256/5 and payload101/4 gives the required full
+68 suites, 160,266 cases, 2,072 batches and 2,210 timing records. These are
+strict source-partition requirements, not an assertion that a new execution
+has completed. Current full68 native execution, saved replay, all seven
+exhaustive checks and a complete timing footer must pass the corresponding
+source's CI. Legacy full68 remains 2,346 batches/2,484 records; UUID-only full68
+remains 2,118/2,256. No case profile reuses a previous successful receipt, and
+fewer batches alone do not establish a duration or memory improvement.
 
 ### Bootstrap recovery
 
@@ -891,7 +901,7 @@ byte 3성분 입력을 Go 원본과 비교합니다. 총 **33,554,432번**의 �
 이미지 압축·색상 프로파일을 검증한 것으로 해석하지 않습니다.
 
 다음 배치 수와 경계 보존 내역은 기본 `legacy` 프로필의 이전 포팅 단계를 설명합니다.
-CI에서 명시적으로 선택하는 `uuid-compact-v1`의 UUID 경계는 위 실행 안내처럼 별도로 계산합니다.
+현재 CI의 `uuid-and-literal-report-compact-v1`은 UUID 경계와 literal Report의 compact 경계를 위 실행 안내처럼 별도로 계산합니다. 기존 `uuid-compact-v1` 수치는 해당 이전 프로필에만 적용됩니다.
 이전 catalog는 Gooo 실행 입력 상한에 맞춰 총 **1,777개 배치**로 나눴습니다. 기존 833개 배치와
 그 경계를 유지하며 IndexByte 21개·Search 소비 앱 28개 배치를 추가합니다.
 IndexByte·Search와 UUID의 세 suite는 128행 이하에서 실제 JSON 30,000바이트 상한에 맞춰 최대 접두 배치를 선택합니다.
@@ -1025,8 +1035,10 @@ required-field record로 옮겼으며, 임의의 byte 문자열·더 긴 입력�
 workspace와 batch 경계를 보존하고 네 suite를 뒤에 추가합니다. 실제 JSON+LF 배치 분할 검증에서
 Cut·CutPrefix·CutSuffix는 각 **1개**, Report는 **2개** 배치로 계산됐습니다. 필수 통합 범위는
 기본 `legacy`에서는 **66개 suite·159,909건·2,337개 배치**이며 계측 완료 기록 수는 **2,471개**입니다.
-CI의 `uuid-compact-v1`에서는 같은 suite·입력·기대값을 **2,109개 배치**로 나누며,
-계측 완료 기록 수 **2,243개**와 새 프로필 식별자를 함께 검사합니다. Cut 네 suite의 경계는 그대로입니다.
+이전 `uuid-compact-v1`은 같은66개 suite·입력·기대값을 **2,109개 배치·2,243개 계측 기록**으로 나눕니다.
+현재 `uuid-and-literal-report-compact-v1`의 해당66개는 **2,063개 배치·2,197개 계측 기록**을 요구합니다.
+literal Report만281→235배치이며 Cut 네 suite와 Index·Count 경계는 그대로입니다.
+십진수·payload 두 suite까지 포함한 현재68개 요구 범위는 위 실행 안내의2,072배치·2,210기록입니다.
 이 분할 검사는 새 public entry의 전체 native 실행·저장 replay 완료를 대신하지 않습니다.
 완료된 실행과 유한 검증 범위는 해당 소스의 CI/native 보고서에서 확인합니다.
 기존 브라우저 프로그램과 검증 범위는 확장하지 않습니다.

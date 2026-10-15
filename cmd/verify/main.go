@@ -46,7 +46,7 @@ func run() error {
 	browser := flag.String("browser-fixtures", "", "write independent browser oracle fixtures to a new JSON file")
 	workers := flag.Int("workers", 1, "native suites to verify concurrently (1..4; default serial)")
 	timingOut := flag.String("timing-out", "", "optional new timing JSONL directly under --out (observation only)")
-	caseProfileFlag := flag.String("case-profile", "", "optional UUID wire profile: legacy or uuid-compact-v1")
+	caseProfileFlag := flag.String("case-profile", "", "optional case wire profile: legacy, uuid-compact-v1 or uuid-and-literal-report-compact-v1")
 	flag.Parse()
 	caseProfile, err := parseNativeCaseProfile(*caseProfileFlag, *browser != "")
 	if err != nil {

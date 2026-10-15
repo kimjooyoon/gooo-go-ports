@@ -62,6 +62,7 @@ var nativeTimingSourceNames = []string{
 	"literal-cut-report.workspace.json", "examples/literal-cut-report/inputs.json",
 	"examples/literal-cut-report/manual-contract.json", "examples/literal-cut-report/README.md", "CONTRIBUTING.md",
 	"cmd/verify/case_profile.go", "cmd/verify/case_profile_test.go", "cmd/verify/case_profile_integration_test.go",
+	"cmd/verify/literal_report_case_profile_test.go",
 	"cmd/verify/decimal_payload_corpus.go", "cmd/verify/decimal_payload_corpus_test.go",
 	"cmd/verify/decimal_payload_batches.go", "cmd/verify/decimal_payload_batches_test.go",
 	"cmd/verify/decimal_payload_contracts_test.go",
