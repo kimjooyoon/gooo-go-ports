@@ -23,6 +23,8 @@ type activityContract struct {
 func nativeActivityContracts() map[string]activityContract {
 	i := integerEntity
 	return map[string]activityContract{
+		pathCleanPackage + ":" + pathCleanActivity:               {"ports/path/clean.gooo", "gooo://go/path/Clean", []string{textEntity}},
+		pathAliasPackage + ":" + pathAliasActivity:               {"examples/path-alias-facts/main.gooo", "gooo://go-ports/examples/path-alias-facts/report/v1", []string{textEntity, textEntity}},
 		decimalPackage + ":" + decimalActivity:                   {"ports/strconv/decimal.gooo", "gooo://go/strconv/parse-int-decimal64/v1", []string{textEntity}},
 		payloadAdmissionPackage + ":" + payloadAdmissionActivity: {"examples/payload-admission/main.gooo", "gooo://go-ports/examples/payload-admission/report/v1", []string{textEntity, i, i, i, "gooo://std/boolean", "gooo://std/boolean", "gooo://std/boolean"}},
 		literalCutPackage + ":Cut":                               {"ports/strings/cut.gooo", "gooo://go/strings/Cut", []string{textEntity, textEntity}},

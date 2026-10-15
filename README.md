@@ -6,9 +6,9 @@ describing what programs should do and inspecting how they are built and run.
 **Try service-policy checks from Go:** open the [four-file service-policy quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726). With Go 1.27.2 already installed, follow its README to run Go generated from Gooo without a runtime Gooo compiler. Distinguish invalid input from denial, compare the same request before and after a rule change, and inspect a returned widening witness. These calls compare supplied policy facts; they do not apply a grant or call a service.
 
 This independent ecosystem project implements selected Go standard-library, x/image and Google UUID functions in Gooo,
-using independent Go references and saved replay. The source inventory includes 52 authored standard-library ports,
+using independent Go references and saved replay. The source inventory includes 53 authored standard-library ports,
 two ports from golang.org/x/image and two Google UUID adaptations. The current scope is
-56 authored HTTP, Unicode, IPv4 classification and prefix queries, signed-decimal parsing, literal-text splitting and byte search, slash-path, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, twenty-four importing consumer programs (twenty-seven activities),
+57 authored HTTP, Unicode, IPv4 classification and prefix queries, signed-decimal parsing, literal-text splitting and byte search, slash-path, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, twenty-five importing consumer programs (twenty-eight activities),
 and an importing browser dispatcher.
 The RectangleIn/FitsCrop suites have completed finite native execution and saved
 replay with an independent raw-receipt audit; see the [verification evidence](evidence/rectangle-in-fits-crop-20261012.json).
@@ -62,7 +62,7 @@ truthful current observations and enforce any effect. It is not HTTP framing,
 authorization or quota enforcement.
 
 These two ordinary native suites add 256 parser inputs and 101 unique policy
-tuples, preserving the original 17 policy witnesses first. The current required
+tuples, preserving the original 17 policy witnesses first. Before the path Clean/alias addition, the required
 roster is 46 ports, 20 consumer programs, 22 consumer activities, 68 suites and
 160,266 cases; all 66 historical suites and their inputs remain unchanged.
 The current source partition check gives five parser batches and four policy
@@ -72,6 +72,24 @@ required timing roster is 2,210 records (2,256 with UUID-only compact; 2,484 in
 legacy). These are
 source partition requirements, not completed native observations. Fresh native
 comparison and saved replay remain required for both additions.
+
+The [lexical path alias facts example](examples/path-alias-facts/README.md) adds
+Go `path.Clean` in Gooo and an original eleven-field report. The report preserves
+both raw paths and explains their cleaned values, absolute/change markers and
+exact/clean equality. An automatic policy diagnostic can retain these facts in a
+duplicate-key warning under an explicit host namespace contract; equal cleaned
+paths do not establish permission, safe paths or router/filesystem identity.
+Its two appended normal suites contain 9,841 shortlex Clean inputs and 120 input
+pairs, for 70 suites and 170,227 cases: 47 ports, 21 consumer programs and 23
+consumer activities. Existing 68 inputs and selected source closures, seven
+exhaustive checks and the path-facts sidecar remain unchanged. The focused source
+partition check gives 77 Clean batches and four Report batches: 81 new batches,
+for 2,153 with the current combined compact CI profile, 2,295 timing records
+(final sequence 2,294) and 140 current source identities. The largest raw case
+files are 17,823 and 29,661 bytes; the respective source-derived translated upper
+bounds are 13,970 and 22,680 bytes. These are measured source partition
+requirements, not completed full70 native or hosted-CI observations. Both entries
+have portable execution and saved-replay examples in the guide.
 
 The original [automatic redelivery policy](examples/automatic-redelivery/README.md)
 uses nine supplied facts to return fifteen fields, including every original input,

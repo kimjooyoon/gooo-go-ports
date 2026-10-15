@@ -1,0 +1,139 @@
+{
+  "schema": "gooo/path-alias-contract/v1",
+  "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+  "go_version": "go1.27.2",
+  "input": {
+    "named_fields": [
+      "left",
+      "right"
+    ],
+    "kinds": [
+      "Text",
+      "Text"
+    ],
+    "domain": "Both explicitly present decoded valid UTF8 Text,0..1024bytes inclusive; preserve original bytes. Raw malformed Unicode and unsupported sizes are outside compatible domain.",
+    "native_schema": "gooo/body-composition-inputs/v1",
+    "native_keys": [
+      "app/path-alias-facts:Report.input0",
+      "app/path-alias-facts:Report.input1"
+    ]
+  },
+  "entry": "app/path-alias-facts:Report",
+  "activity_id": "gooo://go-ports/examples/path-alias-facts/report/v1",
+  "result_entity_id": "gooo://go-ports/examples/path-alias-facts/result/v1",
+  "fields": [
+    {
+      "name": "left",
+      "type": "string",
+      "id": "gooo://go-ports/examples/path-alias-facts/result/left",
+      "required": true
+    },
+    {
+      "name": "right",
+      "type": "string",
+      "id": "gooo://go-ports/examples/path-alias-facts/result/right",
+      "required": true
+    },
+    {
+      "name": "left_clean",
+      "type": "string",
+      "id": "gooo://go-ports/examples/path-alias-facts/result/left-clean",
+      "required": true
+    },
+    {
+      "name": "right_clean",
+      "type": "string",
+      "id": "gooo://go-ports/examples/path-alias-facts/result/right-clean",
+      "required": true
+    },
+    {
+      "name": "left_is_abs",
+      "type": "boolean",
+      "id": "gooo://go-ports/examples/path-alias-facts/result/left-is-abs",
+      "required": true
+    },
+    {
+      "name": "right_is_abs",
+      "type": "boolean",
+      "id": "gooo://go-ports/examples/path-alias-facts/result/right-is-abs",
+      "required": true
+    },
+    {
+      "name": "left_changed",
+      "type": "boolean",
+      "id": "gooo://go-ports/examples/path-alias-facts/result/left-changed",
+      "required": true
+    },
+    {
+      "name": "right_changed",
+      "type": "boolean",
+      "id": "gooo://go-ports/examples/path-alias-facts/result/right-changed",
+      "required": true
+    },
+    {
+      "name": "exact_same",
+      "type": "boolean",
+      "id": "gooo://go-ports/examples/path-alias-facts/result/exact-same",
+      "required": true
+    },
+    {
+      "name": "same_clean",
+      "type": "boolean",
+      "id": "gooo://go-ports/examples/path-alias-facts/result/same-clean",
+      "required": true
+    },
+    {
+      "name": "lexical_alias",
+      "type": "boolean",
+      "id": "gooo://go-ports/examples/path-alias-facts/result/lexical-alias",
+      "required": true
+    }
+  ],
+  "semantics": {
+    "left": "original left Text",
+    "right": "original right Text",
+    "left_clean": "actual Go path.Clean(left)",
+    "right_clean": "actual Go path.Clean(right)",
+    "left_is_abs": "actual Go path.IsAbs(left)",
+    "right_is_abs": "actual Go path.IsAbs(right)",
+    "left_changed": "left_clean != left",
+    "right_changed": "right_clean != right",
+    "exact_same": "left == right",
+    "same_clean": "left_clean == right_clean",
+    "lexical_alias": "same_clean && !exact_same"
+  },
+  "kernel": {
+    "entry": "go/path:Clean",
+    "activity_id": "gooo://go/path/Clean",
+    "compatible_domain": "decoded valid UTF8 Text<=1024 bytes",
+    "output": "Go path.Clean string, including dot for empty and slash-root clamping. Relative leading dotdot retained; backslash/percent/NUL/Unicode lookalikes remain ordinary characters. No Unicode normalization.",
+    "source": "src/path/path.go",
+    "source_sha256": "0a5024c364387eeea9ab5fe0b285f0d62355e8cd181cdbddfdfa227f6916d94c"
+  },
+  "manual_corpus": "corpus-120.json",
+  "manual_rows": 120,
+  "scope": [
+    "Pure lexical path facts, not URL decoding/router equivalence/filesystem access/symlink resolution/wholepath compatibility.",
+    "same_clean or lexical_alias is not permission, operation identity, security or a safe-path certificate.",
+    "A host may use facts automatically under an explicit current namespace/router/key-binding contract; no per-call human approval is required or supplied.",
+    "Host must preserve/bind original request/account/body/authority facts; do not silently replace them with normalized keys.",
+    "Independent expectations use actual pinned Go path.Clean and path.IsAbs. Input fixtures contain no expected results. Finite fresh public CI is required separately from private observations."
+  ],
+  "input_population": {
+    "standalone_clean_corpus": "../../ports/path/clean-corpus-9841.json",
+    "standalone_clean_rows": 9841,
+    "alphabet": [
+      ".",
+      "/",
+      "a"
+    ],
+    "lengths": [
+      0,
+      8
+    ],
+    "pair_anchor_source": "anchor-pairs-24.json",
+    "pair_anchor_rows": 24,
+    "pair_total_rows": 120,
+    "no_full_UTF8_1024_domain_proof": true
+  }
+}

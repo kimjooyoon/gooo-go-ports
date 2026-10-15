@@ -273,6 +273,19 @@
       "sources": [
         "examples/payload-admission/main.gooo"
       ]
+    },
+    {
+      "path": "go/path",
+      "sources": [
+        "ports/path/path.gooo",
+        "ports/path/clean.gooo"
+      ]
+    },
+    {
+      "path": "app/path-alias-facts",
+      "sources": [
+        "examples/path-alias-facts/main.gooo"
+      ]
     }
   ]
 }

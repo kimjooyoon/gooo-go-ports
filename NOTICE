@@ -56,3 +56,10 @@ netip.go source reference and hash recorded in upstream.json. Its required IPv4
 records, domain/divisor lowering and the importing prefix-query and rule-pair
 compositions are repository code under LICENSE. Scope keys and prefix facts do
 not establish actual caller context, network permission or production safety.
+
+The bounded path.Clean adaptation in ports/path/clean.gooo also derives from
+Go src/path/path.go at the immutable revision and source hash in upstream.json.
+It retains the Go Authors' BSD terms in third_party/GO-LICENSE and uses the
+existing third_party/go/path.go.txt source reference. The original importing
+PathAliasFacts Report in examples/path-alias-facts is repository BSD code; it
+reports lexical facts and supplies no filesystem or authorization guarantee.

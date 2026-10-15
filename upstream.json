@@ -387,6 +387,59 @@
           "scope": "Current source-only partition observation; fresh native differential execution and saved replay remain required."
         }
       }
+    },
+    {
+      "source": "src/path/path.go",
+      "oracle_copy": "third_party/go/path.go.txt",
+      "target": "ports/path/clean.gooo",
+      "supporting_targets": [
+        "ports/path/path.gooo"
+      ],
+      "symbols": [
+        "Clean"
+      ],
+      "target_activities": [
+        "Clean"
+      ],
+      "internal_activities": [
+        "CleanPart"
+      ],
+      "license": "third_party/GO-LICENSE",
+      "provenance": "ports/path/provenance.json",
+      "api_mapping": "Explicitly present decoded valid UTF-8 Text of0..1024 bytes. Arbitrary Go byte strings and longer inputs are outside this adaptation. Raw malformed JSON Unicode is a separate transport boundary. Slash paths independent of host OS; empty becomes dot, root clamps parent traversal, leading relative parents remain. Backslash, percent escapes, NUL and Unicode lookalikes are ordinary characters; no Unicode normalization. No filepath/Windows semantics, URL decoding, routing identity, symlinks, filesystem effects, permission or safety guarantee.",
+      "verification": {
+        "command": "cmd/verify",
+        "suites": 2,
+        "standalone_clean_cases": 9841,
+        "original_report_cases": 120,
+        "input_fixture": "ports/path/clean-corpus-9841.json",
+        "input_fixture_sha256": "7ba203221673fe804c20d6f68e054fb909c528f50490e4b23aac4c395636b033",
+        "scope": "Two appended ordinary suites require actual independent Go expectations and fresh current-source native execution plus saved replay for every input. Existing68 suite source closures and the separate Ext/IsAbs/PathFacts sidecar remain unchanged. The source_partition object fixes measured serialized partition requirements; it is not full native or hosted acceptance. Inner typed Result-parent is not independently checked by this generic finite verifier.",
+        "public_CI_requires_fresh_execution": true,
+        "source_partition": {
+          "case_profile": "uuid-and-literal-report-compact-v1",
+          "standalone_clean": {
+            "cases": 9841,
+            "batches": 77,
+            "maximum_raw_bytes_including_LF": 17823,
+            "maximum_translated_upper_bound_bytes": 13970
+          },
+          "original_report": {
+            "cases": 120,
+            "batches": 4,
+            "maximum_raw_bytes_including_LF": 29661,
+            "maximum_translated_upper_bound_bytes": 22680
+          },
+          "new_batches": 81,
+          "required_full_suites": 70,
+          "required_full_cases": 170227,
+          "required_full_batches": 2153,
+          "required_timing_records": 2295,
+          "required_timing_final_sequence": 2294,
+          "required_timing_source_identities": 140,
+          "scope": "Focused source partition measurement only; fresh full70 native and saved replay plus original hosted CI remain required. Existing68 source closures, ordered cases and2072 combined-profile partitions remain unchanged."
+        }
+      }
     }
   ],
   "external_sources": [
@@ -666,6 +719,34 @@
       "independent_reference": "cmd/ipv4-oracle --profile prefix-rule-pair",
       "verification_status": "FRESH_NATIVE_REPLAY_AND_GENERATED_VALIDATION_REQUIRED",
       "scope": "Two required-record inputs return a Boolean through imported Gooo PrefixContains/PrefixOverlaps; neither a false query nor overlap establishes policy permission."
+    },
+    {
+      "source": "examples/path-alias-facts/main.gooo",
+      "source_sha256": "5b0c8436bf95c923730af71a316d3897839d734c53c0223fffad5b555488182e",
+      "package": "app/path-alias-facts",
+      "activity": "Report",
+      "activity_id": "gooo://go-ports/examples/path-alias-facts/report/v1",
+      "workspace": "path-alias-facts.workspace.json",
+      "contract": "examples/path-alias-facts/contract.json",
+      "contract_sha256": "54e31e485d1fb0ac9efe8d0eca81aa2db5709f4fe871b018ca9c4afd51430c19",
+      "input_corpus": "examples/path-alias-facts/corpus-120.json",
+      "input_corpus_sha256": "31999e8ce4fa75665f21180dd5cbb2ede3bf51179fefb1fc23c2eba59610029e",
+      "reference_cases": 120,
+      "required_fields": [
+        "left",
+        "right",
+        "left_clean",
+        "right_clean",
+        "left_is_abs",
+        "right_is_abs",
+        "left_changed",
+        "right_changed",
+        "exact_same",
+        "same_clean",
+        "lexical_alias"
+      ],
+      "mapping": "Original pure Gooo composition preserves both raw Text inputs and exposes clean/absolute/change/exact/clean-equality/lexical-alias facts. These supplied lexical facts do not prove router/filesystem identity, authority or safety. No per-request human approval or effect is implemented.",
+      "license": "LICENSE"
     }
   ]
 }

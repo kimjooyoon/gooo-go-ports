@@ -1,0 +1,75 @@
+// Copyright 2009 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license reproduced in third_party/GO-LICENSE.
+// Bounded adaptation of Go1.27.2 path.Clean, src/path/path.go
+// SHA256 0a5024c364387eeea9ab5fe0b285f0d62355e8cd181cdbddfdfa227f6916d94c.
+// Original lazybuf is replaced by whole-UTF8-segment Text concatenation and
+// guarded backward slices. Internal state keeps Go's rooted/dotdot floor.
+// Inputs are decoded validUTF8 Text<=1024 bytes. No arbitrary bytes, percent
+// decoding, OS paths, filesystem access, permission or fullpath claim.
+package path
+namespace gooo_ports_path
+
+entity Integer id "gooo://std/integer"
+entity CleanState id "gooo://go-ports/path/internal/clean-state/v1" fields {
+    field path id "gooo://go-ports/path/internal/clean-state/path/v1" type string required one
+    field dotdot id "gooo://go-ports/path/internal/clean-state/dotdot/v1" type integer required one
+}
+
+// This private helper is not an additional Go API or a separately supported
+// public contract. Clean alone creates its bounded, UTF8-boundary state.
+// Pop stays inline to preserve the pinned compiler static pure-call budget.
+activity CleanPart(Text, Integer, Boolean, Text) -> CleanState id "gooo://go-ports/path/internal/clean-part/v1" computes `if input3 == "" || input3 == "." { return CleanState{path: input0, dotdot: input1,} }
+if input3 == ".." {
+    if int64(len(input0)) > input1 {
+        let cut = int64(len(input0)) - 1
+        let step = 0
+        for step = 0; step < 1024; step = step + 1 {
+            if cut <= input1 { return CleanState{path: input0[0:input1], dotdot: input1,} }
+            if input0[cut] == 47 { return CleanState{path: input0[0:cut], dotdot: input1,} }
+            cut = cut - 1
+        }
+        return CleanState{path: input0[0:input1], dotdot: input1,}
+    }
+    if !input2 {
+        let parent = input0
+        if len(parent) > 0 { parent = parent + "/" }
+        parent = parent + ".."
+        return CleanState{path: parent, dotdot: int64(len(parent)),}
+    }
+    return CleanState{path: input0, dotdot: input1,}
+}
+let output = input0
+if input2 {
+    if len(output) != 1 { output = output + "/" }
+} else {
+    if len(output) != 0 { output = output + "/" }
+}
+output = output + input3
+return CleanState{path: output, dotdot: input1,}`
+
+activity Clean(Text) -> Text id "gooo://go/path/Clean" computes `let size = int64(len(input))
+if size == 0 { return "." }
+let rooted = IsAbs(input)
+let output = ""
+let floor = 0
+if rooted {
+    output = "/"
+    floor = 1
+}
+let start = 0
+let offset = 0
+for offset = 0; offset < 1024; offset = offset + 1 {
+    if offset < size {
+        if input[offset] == 47 {
+            let state = CleanPart(output, floor, rooted, input[start:offset])
+            output = state.path
+            floor = state.dotdot
+            start = offset + 1
+        }
+    }
+}
+let final = CleanPart(output, floor, rooted, input[start:size])
+output = final.path
+if len(output) == 0 { return "." }
+return output`
