@@ -44,7 +44,7 @@ REDELIVERY_COMMON_COMMANDS = (
 )
 PATH_COMMAND = 'python3 -B tools/check-path-facts.py --repository . --out out/path-facts --go "$(go env GOROOT)/bin/go" --compiler ./.gooo --timeout 300'
 PATH_COMMON_UNIT_BLOCK = '          # Full scope runs these13 Python controls inside the bounded sidecar once.\n          # Documentation-only PRs still run them as common non-native checks.\n          if [ "${{ steps.change-scope.outputs.docs_only }}" = "true" ]; then\n            python3 -I -B tools/check-path-facts_test.py\n          fi\n'
-NATIVE_COMPARISON_COMMAND = "go run ./cmd/verify --workers 2 --case-profile uuid-compact-v1 --out out/ci --timing-out out/ci/timing.jsonl"
+NATIVE_COMPARISON_COMMAND = "go run ./cmd/verify --workers 4 --case-profile uuid-compact-v1 --out out/ci --timing-out out/ci/timing.jsonl"
 CASE_PROFILE_ASSERTION = '''            .case_profile == {
               schema: "gooo/native-case-profile/v1", name: "uuid-compact-v1",
               compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.2",
@@ -61,7 +61,7 @@ TIMING_HEADER_ASSERTION = '''          head -n 1 out/ci/timing.jsonl | jq -e --s
             .schema == "gooo/native-verification-timing/v1" and .kind == "header" and .seq == 0 and
             .case_profile == $summary[0].case_profile and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
-            .configured_workers == 2 and .expected_suites == 66 and .expected_cases == 159909 and
+            .configured_workers == 4 and .expected_suites == 66 and .expected_cases == 159909 and
             .expected_boundaries_recomputed == false and
             .boundary_scope == "Actual contiguous batch coverage is observed. UUID3 use uuid-compact-v1 compact wire bytes and newly selected bounds; no original UUID batch boundaries or legacy2337 total are claimed preserved. Non-UUID suites retain nativeBatchEnd/save behavior. The recorder does not recompute expected partitions." and
             (.identity.source_files | length) == 100 and
@@ -290,8 +290,8 @@ def validate(text):
         require(field(named[name], "if") == "always() && " + FULL, "native artifact can upload on docs path: " + name)
     comparison = named["Compare the ports with Go and replay every batch"]
     require(literal_commands(comparison) == [NATIVE_COMPARISON_COMMAND]
-            and ".native_suite_workers == 2 and" in comparison,
-            "full native CI must bind two workers and source-bound timing")
+            and ".native_suite_workers == 4 and" in comparison,
+            "full native CI must bind four workers and source-bound timing")
     require(comparison.count(CASE_PROFILE_ASSERTION) == 1,
             "native CI must require the exact explicit UUID compact profile identity")
     require(comparison.count(TIMING_HEADER_ASSERTION) == 1,
@@ -652,12 +652,16 @@ class WorkflowScopeTests(unittest.TestCase):
             with self.subTest(source=source), self.assertRaises(ValueError):
                 validate(self.text.replace(line, "", 1))
 
-    def test_full_native_ci_binds_two_workers_and_timing(self):
-        for workers in (1, 3, 4, 5):
-            for before, after in (("--workers 2 --case-profile", f"--workers {workers} --case-profile"),
-                                  (".native_suite_workers == 2 and", f".native_suite_workers == {workers} and")):
+    def test_full_native_ci_binds_four_workers_and_timing(self):
+        for workers in (1, 2, 3, 5):
+            for before, after in (("--workers 4 --case-profile", f"--workers {workers} --case-profile"),
+                                  (".native_suite_workers == 4 and", f".native_suite_workers == {workers} and"),
+                                  (".configured_workers == 4 and", f".configured_workers == {workers} and")):
+                self.assertEqual(self.text.count(before), 1)
+                altered = self.text.replace(before, after, 1)
+                self.assertNotEqual(self.text, altered)
                 with self.subTest(workers=workers, before=before), self.assertRaises(ValueError):
-                    validate(self.text.replace(before, after, 1))
+                    validate(altered)
 
     def test_compact_profile_cannot_be_missing_unknown_legacy_or_rebound(self):
         named, _ = named_steps(self.text)

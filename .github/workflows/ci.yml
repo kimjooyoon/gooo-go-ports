@@ -370,10 +370,10 @@ jobs:
       - name: Compare the ports with Go and replay every batch
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
-          go run ./cmd/verify --workers 2 --case-profile uuid-compact-v1 --out out/ci --timing-out out/ci/timing.jsonl
+          go run ./cmd/verify --workers 4 --case-profile uuid-compact-v1 --out out/ci --timing-out out/ci/timing.jsonl
           jq -e '
             .schema == "gooo/go-ports-differential/v1" and
-            .native_suite_workers == 2 and
+            .native_suite_workers == 4 and
             .go_version == "go1.27.2" and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
             .case_profile == {
@@ -481,7 +481,7 @@ jobs:
             .schema == "gooo/native-verification-timing/v1" and .kind == "header" and .seq == 0 and
             .case_profile == $summary[0].case_profile and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
-            .configured_workers == 2 and .expected_suites == 66 and .expected_cases == 159909 and
+            .configured_workers == 4 and .expected_suites == 66 and .expected_cases == 159909 and
             .expected_boundaries_recomputed == false and
             .boundary_scope == "Actual contiguous batch coverage is observed. UUID3 use uuid-compact-v1 compact wire bytes and newly selected bounds; no original UUID batch boundaries or legacy2337 total are claimed preserved. Non-UUID suites retain nativeBatchEnd/save behavior. The recorder does not recompute expected partitions." and
             (.identity.source_files | length) == 100 and

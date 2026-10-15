@@ -583,7 +583,7 @@ execution, inspection, saved replay, and receipt-binding
 checks. The summary keeps corpus order and records the configured worker limit
 as `native_suite_workers`. A failing suite stops later suites between complete
 batches, and every started worker finishes before the private build cache is
-removed. Full native CI exercises two workers and retains every corpus and
+removed. Full native CI exercises four workers and retains every corpus and
 exhaustive check.
 
 `--case-profile uuid-compact-v1` selects compact JSON case files for UUID
