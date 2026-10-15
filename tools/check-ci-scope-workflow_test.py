@@ -18,9 +18,10 @@ WORKFLOW = Path(__file__).resolve().parent.parent / ".github/workflows/ci.yml"
 FULL = "steps.change-scope.outputs.docs_only != 'true'"
 DOCS = "steps.change-scope.outputs.docs_only == 'true'"
 HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
-# Reviewed browser delta: add API policy actual-Wasm/package checks after service-policy smoke.
-# Events, native skip guards and deployment dependencies stay byte-identical.
-BROWSER_SHA = "9842fdb57f69899aa53215451feeda87eca4ce90f4b1bb92ef18326608be3231"
+# Three producer jobs retain their original exact bytes. Only the deployment
+# dependency/condition prefix changes; its existing runner/permissions/body stays.
+BROWSER_JOB_SHA = "1aee9cc0cd8f75b2e4a438712aaf87bc8e1007a1318cb997ede369b6f6ce4e10"
+DEPLOY_BODY_SHA = "0fed0b124228b17bd80d8f95c7c7e69ac2ad854f719ca846c3e60a1359a480c8"
 PATH_STEP_SHA = 'b90f403ce804adea78dacebf554c45f3e21b1faf89b942e83f32aca2847f9df5'
 REDELIVERY_STEP_SHA = '2ce6496cbee29d77c9334f1f32dc518c96a12c193e37ab569144bdc4fd1a864e'
 IPV4_STEP_SHA = '6ce5d2f5e75f9ff9a7728718567ffb039c74232ef4e254ea244b7dc02fbc9ed8'
@@ -170,23 +171,9 @@ CLASSIFIER_STEP_SHA = '1864b9e0f27cc73595dd863c71640050cf046b2ec67cfd02c6ba5a8eb
 CHECKOUT_STEP_SHA = 'b60ba5d7bf95691b8baec3a3e402aeba552fbcb4a353d7de8946023e73e79603'
 SETUP_STEP_SHA = '742468cc6b855d4f2c2d9a5d45000899bc244f524539bad21505ef94018dceb2'
 MOVED = {'Check the Go observer', 'Check pinned Unicode table generation'}
-JOB_ORDER = ('observer-checks', 'native-execution', 'native-ports', 'browser-demo', 'deploy-browser-demo')
-AGGREGATE = """  native-ports:
-    if: ${{ always() }}
-    needs: [observer-checks, native-execution]
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
-    steps:
-      - name: Require both independent verification jobs
-        env:
-          OBSERVER_RESULT: ${{ needs.observer-checks.result }}
-          NATIVE_RESULT: ${{ needs.native-execution.result }}
-        shell: bash
-        run: |
-          test "$OBSERVER_RESULT" = "success"
-          test "$NATIVE_RESULT" = "success"
-
-"""
+JOB_ORDER = ('observer-checks', 'native-execution', 'browser-demo', 'deploy-browser-demo')
+DEPLOY_IF = "${{ always() && !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.observer-checks.result == 'success' && needs.native-execution.result == 'success' && needs.browser-demo.result == 'success' }}"
+DEPLOY_NEEDS = '    needs: [observer-checks, native-execution, browser-demo]'
 
 
 def literal_commands(chunk):
@@ -235,7 +222,6 @@ def job_steps(chunk):
 
 def named_steps(text):
     jobs = workflow_jobs(text)
-    require(jobs['native-ports'] == AGGREGATE, "aggregate must always require both concrete jobs to succeed")
     all_named, native_unnamed = {}, []
     for job, header_sha in (('observer-checks', OBSERVER_HEADER_SHA), ('native-execution', NATIVE_HEADER_SHA)):
         chunk = jobs[job]
@@ -266,12 +252,50 @@ def named_steps(text):
     return all_named, native_unnamed
 
 
+def deployment_expression(text):
+    deploy = workflow_jobs(text)['deploy-browser-demo']
+    conditions = re.findall(r"^    if: (.+)$", deploy, re.M)
+    dependencies = re.findall(r"^    needs: (.+)$", deploy, re.M)
+    require(conditions == [DEPLOY_IF], "deployment must explicitly require all three successes on uncanceled main pushes")
+    require(dependencies == [DEPLOY_NEEDS.strip().removeprefix('needs: ')],
+            "deployment must directly need each producer exactly once")
+    require('continue-on-error:' not in deploy, "deployment failure became optional")
+    return conditions[0]
+
+
+def deployment_condition_shell(expression):
+    # A limited source-derived conjunction model, not GitHub's expression
+    # evaluator. The public workflow must still be validated by actual CI.
+    match = re.fullmatch(r"\$\{\{ (.+) \}\}", expression)
+    require(match is not None, "explicit deployment expression required")
+    translations = {
+        'always()': 'true',
+        '!cancelled()': 'test "$WORKFLOW_CANCELLED" = false',
+        "github.event_name == 'push'": 'test "$EVENT_NAME" = push',
+        "github.ref == 'refs/heads/main'": 'test "$GITHUB_REF" = refs/heads/main',
+        "needs.observer-checks.result == 'success'": 'test "$OBSERVER_RESULT" = success',
+        "needs.native-execution.result == 'success'": 'test "$NATIVE_RESULT" = success',
+        "needs.browser-demo.result == 'success'": 'test "$BROWSER_RESULT" = success',
+    }
+    clauses = match[1].split(' && ')
+    require(clauses == list(translations), "unknown/repeated/reordered deployment conjunction")
+    return ' &&\n'.join(translations[clause] for clause in clauses)
+
+
 def validate(text):
     header = text[:text.index("jobs:\n")]
-    browser = text[text.index("  browser-demo:\n"):]
-    # These independently audited sections retain their previous exact behavior.
+    jobs = workflow_jobs(text)
+    # Preserve the browser producer byte-for-byte, separately from the changed
+    # deploy prefix. The old deployment runner/permissions/body is also exact.
     require(hashlib.sha256(header.encode()).hexdigest() == HEADER_SHA, "events or permissions changed")
-    require(hashlib.sha256(browser.encode()).hexdigest() == BROWSER_SHA, "browser/deployment behavior changed")
+    require(hashlib.sha256(jobs['browser-demo'].encode()).hexdigest() == BROWSER_JOB_SHA,
+            "browser producer behavior changed")
+    deployment_expression(text)
+    deploy = jobs['deploy-browser-demo']
+    prefix = '  deploy-browser-demo:\n    if: ' + DEPLOY_IF + '\n' + DEPLOY_NEEDS + '\n'
+    require(deploy.startswith(prefix) and
+            hashlib.sha256(deploy[len(prefix):].encode()).hexdigest() == DEPLOY_BODY_SHA,
+            "deployment may change only its reviewed direct dependency/status prefix")
     named, unnamed = named_steps(text)
     require(len(HEAVY) == 28, "full-scope native step count changed")
     require(set(named) == COMMON | HEAVY | UPLOADS | DOC_STEPS, "step roster changed without guard review")
@@ -885,11 +909,15 @@ class WorkflowScopeTests(unittest.TestCase):
                     validate(self.text.replace(chunk, changed, 1))
 
     def test_new_unreviewed_step_or_changed_browser_triggers_failure(self):
+        validate(self.text)
         extra = "      - name: Unreviewed native command\n        run: go run ./cmd/verify\n\n"
         with self.assertRaises(ValueError):
             validate(self.text.replace("  browser-demo:\n", extra + "  browser-demo:\n", 1))
+        self.assertIn(DEPLOY_NEEDS, self.text)
+        changed = self.text.replace(DEPLOY_NEEDS, '    needs: [browser-demo]', 1)
+        self.assertNotEqual(changed, self.text)
         with self.assertRaises(ValueError):
-            validate(self.text.replace("needs: [native-ports, browser-demo]", "needs: [browser-demo]"))
+            validate(changed)
         policy_smoke = "          node tools/service-policy-smoke.cjs out/browser/site | tee out/browser/service-policy-smoke.json\n"
         self.assertEqual(self.text.count(policy_smoke), 1)
         for replacement in ("", policy_smoke.replace("service-policy-smoke.cjs", "browser-smoke.cjs")):
@@ -990,11 +1018,18 @@ class WorkflowScopeTests(unittest.TestCase):
     def test_job_and_step_rosters_refuse_unknown_missing_and_duplicate_entries(self):
         validate(self.text)
         jobs = workflow_jobs(self.text)
-        for name in ('observer-checks', 'native-execution', 'native-ports'):
+        for name in JOB_ORDER:
             with self.subTest(missing=name), self.assertRaises(ValueError):
                 validate(self.text.replace(jobs[name], '', 1))
             with self.subTest(duplicate=name), self.assertRaises(ValueError):
                 validate(self.text.replace(jobs[name], jobs[name] + jobs[name], 1))
+        for left, right in zip(JOB_ORDER, JOB_ORDER[1:]):
+            adjacent = jobs[left] + jobs[right]
+            self.assertIn(adjacent, self.text)
+            changed = self.text.replace(adjacent, jobs[right] + jobs[left], 1)
+            self.assertNotEqual(changed, self.text)
+            with self.subTest(reordered=(left, right)), self.assertRaises(ValueError):
+                validate(changed)
         unknown = '  unreviewed-success:\n    runs-on: ubuntu-latest\n    steps:\n      - run: true\n'
         with self.assertRaises(ValueError):
             validate(self.text.replace('  browser-demo:\n', unknown + '  browser-demo:\n', 1))
@@ -1016,59 +1051,82 @@ class WorkflowScopeTests(unittest.TestCase):
             with self.subTest(missing_common=name), self.assertRaises(ValueError):
                 validate(self.text.replace(step, '', 1))
 
-    def test_aggregate_graph_and_shell_cannot_skip_or_accept_failed_dependencies(self):
+    def test_direct_deployment_graph_and_status_cannot_skip_or_accept_failed_producers(self):
         validate(self.text)
-        chunk = workflow_jobs(self.text)['native-ports']
+        jobs = workflow_jobs(self.text)
+        self.assertNotIn('native-ports', jobs)
+        deploy = jobs['deploy-browser-demo']
         mutations = (
-            ('    if: ${{ always() }}\n', ''),
+            ('    if: ' + DEPLOY_IF + '\n', ''),
             ('always()', 'success()'),
-            ('always()', "github.event_name == 'pull_request'"),
-            ('needs: [observer-checks, native-execution]', 'needs: [native-execution]'),
-            ('needs: [observer-checks, native-execution]', 'needs: [observer-checks]'),
-            ('needs: [observer-checks, native-execution]', 'needs: [observer-checks, native-ports]'),
-            ('timeout-minutes: 2', 'timeout-minutes: 40'),
-            ('        shell: bash', '        continue-on-error: true\n        shell: bash'),
-            ('        shell: bash', '        shell: sh'),
-            ('${{ needs.observer-checks.result }}', '${{ needs.native-execution.result }}'),
-            ('${{ needs.native-execution.result }}', '${{ needs.observer-checks.result }}'),
-            ('test "$OBSERVER_RESULT" = "success"', 'test "$OBSERVER_RESULT" != "failure"'),
-            ('test "$NATIVE_RESULT" = "success"', 'test "$NATIVE_RESULT" != "failure"'),
-            ('test "$OBSERVER_RESULT" = "success"', 'test "$OBSERVER_RESULT" = "success" || true'),
-            ('test "$NATIVE_RESULT" = "success"', 'true'),
-            ('    steps:\n', '    permissions:\n      contents: write\n    steps:\n'),
-            ('    steps:\n', '    steps:\n      - uses: actions/checkout@main\n'),
+            ('!cancelled() && ', ''),
+            ("github.event_name == 'push' && ", ''),
+            ("github.ref == 'refs/heads/main' && ", ''),
+            (DEPLOY_NEEDS, '    needs: [native-execution, browser-demo]'),
+            (DEPLOY_NEEDS, '    needs: [observer-checks, browser-demo]'),
+            (DEPLOY_NEEDS, '    needs: [observer-checks, native-execution]'),
+            (DEPLOY_NEEDS, '    needs: [observer-checks, native-execution, native-ports]'),
+            (DEPLOY_NEEDS, '    needs: [observer-checks, native-execution, native-execution]'),
+            (DEPLOY_NEEDS, '    needs: [observer-checks, native-execution, browser-demo, deploy-browser-demo]'),
+            ("needs.observer-checks.result == 'success'", "needs.observer-checks.result != 'failure'"),
+            ("needs.native-execution.result == 'success'", "needs.native-execution.result != 'failure'"),
+            ("needs.browser-demo.result == 'success'", "needs.browser-demo.result != 'failure'"),
+            (" && needs.observer-checks.result == 'success'", ''),
+            (" && needs.native-execution.result == 'success'", ''),
+            (" && needs.browser-demo.result == 'success'", ''),
+            (' && ', ' || '),
+            ('    runs-on:', '    continue-on-error: true\n    runs-on:'),
+            ('      pages: write', '      contents: write\n      pages: write'),
+            ('    steps:\n', '    steps:\n      - run: true\n'),
         )
         for before, after in mutations:
-            self.assertIn(before, chunk)
+            self.assertIn(before, deploy)
+            changed = self.text.replace(deploy, deploy.replace(before, after, 1), 1)
+            self.assertNotEqual(changed, self.text)
             with self.subTest(before=before, after=after), self.assertRaises(ValueError):
-                validate(self.text.replace(chunk, chunk.replace(before, after, 1), 1))
+                validate(changed)
+        legacy = ('  native-ports:\n    runs-on: ubuntu-latest\n    steps:\n'
+                  '      - name: Misleading success\n        run: true\n\n')
+        with self.assertRaises(ValueError):
+            validate(self.text.replace('  browser-demo:\n', legacy + '  browser-demo:\n', 1))
+        for name in ('observer-checks', 'native-execution', 'browser-demo'):
+            changed = self.text.replace('  ' + name + ':\n', '  native-ports:\n', 1)
+            self.assertNotEqual(changed, self.text)
+            with self.subTest(rename_only=name), self.assertRaises(ValueError):
+                validate(changed)
 
-    def test_actual_aggregate_inline_gate_all25_outcomes(self):
-        # Execute the candidate's actual two builtins, not a Python reimplementation
-        # of their condition. No repository checkout, toolchain or network runs.
+    def test_source_derived_deployment_conjunction_all125_producer_outcomes(self):
+        # Exercise a narrow translation of the actual workflow expression.
+        # This is not an execution of GitHub's status-expression interpreter.
         validate(self.text)
-        aggregate = workflow_jobs(self.text)['native-ports']
-        self.assertIn('OBSERVER_RESULT: ${{ needs.observer-checks.result }}', aggregate)
-        self.assertIn('NATIVE_RESULT: ${{ needs.native-execution.result }}', aggregate)
-        raw_script = aggregate.split('        run: |\n', 1)[1]
-        script = '\n'.join(line[10:] for line in raw_script.splitlines() if line)
+        expression = deployment_expression(self.text)
+        script = deployment_condition_shell(expression)
         states = ('success', 'failure', 'cancelled', 'skipped', '')
-        for observer in states:
-            for native in states:
-                environment = {'PATH': '/usr/bin:/bin', 'OBSERVER_RESULT': observer, 'NATIVE_RESULT': native}
-                result = subprocess.run(['/bin/bash', '--noprofile', '--norc', '-e', '-o', 'pipefail', '-c', script],
-                                        env=environment, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE, timeout=5, check=False)
-                with self.subTest(observer=observer, native=native):
-                    self.assertEqual(result.returncode == 0, observer == native == 'success')
-                    self.assertEqual(result.stdout, b'')
-        for missing in ('OBSERVER_RESULT', 'NATIVE_RESULT'):
-            environment = {'PATH': '/usr/bin:/bin', 'OBSERVER_RESULT': 'success', 'NATIVE_RESULT': 'success'}
-            del environment[missing]
+        base = {'PATH': '/usr/bin:/bin', 'WORKFLOW_CANCELLED': 'false',
+                'EVENT_NAME': 'push', 'GITHUB_REF': 'refs/heads/main'}
+
+        def outcome(environment):
             result = subprocess.run(['/bin/bash', '--noprofile', '--norc', '-e', '-o', 'pipefail', '-c', script],
                                     env=environment, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE, timeout=5, check=False)
-            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, b'')
+            return result.returncode == 0
+
+        for observer in states:
+            for native in states:
+                for browser in states:
+                    environment = dict(base, OBSERVER_RESULT=observer, NATIVE_RESULT=native, BROWSER_RESULT=browser)
+                    with self.subTest(observer=observer, native=native, browser=browser):
+                        self.assertEqual(outcome(environment), observer == native == browser == 'success')
+        success = dict(base, OBSERVER_RESULT='success', NATIVE_RESULT='success', BROWSER_RESULT='success')
+        for key, value in (('WORKFLOW_CANCELLED', 'true'), ('EVENT_NAME', 'pull_request'),
+                           ('GITHUB_REF', 'refs/tags/v1'), ('GITHUB_REF', 'refs/heads/other')):
+            with self.subTest(context=(key, value)):
+                self.assertFalse(outcome(dict(success, **{key: value})))
+        for missing in ('OBSERVER_RESULT', 'NATIVE_RESULT', 'BROWSER_RESULT'):
+            environment = dict(success); del environment[missing]
+            with self.subTest(missing=missing):
+                self.assertFalse(outcome(environment))
 
 
 
