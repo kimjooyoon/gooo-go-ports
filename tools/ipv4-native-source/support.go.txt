@@ -1,0 +1,337 @@
+package main
+
+import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
+	"go/ast"
+	"go/build/constraint"
+	"go/parser"
+	"go/token"
+	"io"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"unicode/utf8"
+)
+
+const compilerRevision = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+const recordID = "gooo://ipv4-address-facts/result/v1"
+const maxJSONBytes = 32 << 20
+
+var fieldNames = []string{"a", "b", "c", "d", "valid", "is_private", "is_loopback", "is_unspecified", "is_multicast", "is_link_local_unicast", "is_global_unicast"}
+
+type fileRef struct {
+	Path   string `json:"path"`
+	Bytes  int    `json:"bytes"`
+	SHA256 string `json:"sha256"`
+}
+
+func digest(raw []byte) string             { return fmt.Sprintf("sha256:%x", sha256.Sum256(raw)) }
+func rawDigest(raw []byte) string          { return fmt.Sprintf("%x", sha256.Sum256(raw)) }
+func namedDigest(prefix, id string) string { return prefix + rawDigest([]byte(id)) }
+
+// This scans every subtree, including opaque values consumed by the unchanged
+// typed Result serializer. Numbers remain json.Number, never float64.
+func decode(raw []byte) (any, error) {
+	if len(raw) == 0 || len(raw) > maxJSONBytes || !utf8.Valid(raw) {
+		return nil, fmt.Errorf("invalid JSON size or raw UTF-8")
+	}
+	d := json.NewDecoder(bytes.NewReader(raw))
+	d.UseNumber()
+	value, err := jsonValue(d, 0)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := d.Token(); err != io.EOF {
+		return nil, fmt.Errorf("trailing JSON")
+	}
+	return value, nil
+}
+
+func jsonValue(d *json.Decoder, depth int) (any, error) {
+	if depth > 64 {
+		return nil, fmt.Errorf("JSON exceeds64 nested levels")
+	}
+	t, err := d.Token()
+	if err != nil {
+		return nil, err
+	}
+	delim, container := t.(json.Delim)
+	if !container {
+		return t, nil
+	}
+	switch delim {
+	case '{':
+		out := make(map[string]any)
+		for d.More() {
+			t, err := d.Token()
+			if err != nil {
+				return nil, err
+			}
+			key, ok := t.(string)
+			if !ok {
+				return nil, fmt.Errorf("object key required")
+			}
+			if _, exists := out[key]; exists {
+				return nil, fmt.Errorf("duplicate JSON key %q", key)
+			}
+			value, err := jsonValue(d, depth+1)
+			if err != nil {
+				return nil, err
+			}
+			out[key] = value
+		}
+		close, err := d.Token()
+		if err != nil {
+			return nil, err
+		}
+		if close != json.Delim('}') {
+			return nil, fmt.Errorf("object close required")
+		}
+		return out, nil
+	case '[':
+		out := make([]any, 0)
+		for d.More() {
+			v, err := jsonValue(d, depth+1)
+			if err != nil {
+				return nil, err
+			}
+			out = append(out, v)
+		}
+		close, err := d.Token()
+		if err != nil {
+			return nil, err
+		}
+		if close != json.Delim(']') {
+			return nil, fmt.Errorf("array close required")
+		}
+		return out, nil
+	default:
+		return nil, fmt.Errorf("unexpected delimiter")
+	}
+}
+
+func readFile(path string, cap int) ([]byte, error) {
+	if !filepath.IsAbs(path) || filepath.Clean(path) != path {
+		return nil, fmt.Errorf("canonical absolute path required")
+	}
+	resolved, err := filepath.EvalSymlinks(path)
+	if err != nil || resolved != path {
+		return nil, fmt.Errorf("symlink or noncanonical path")
+	}
+	before, err := os.Lstat(path)
+	if err != nil {
+		return nil, err
+	}
+	if !before.Mode().IsRegular() || before.Size() <= 0 || before.Size() > int64(cap) {
+		return nil, fmt.Errorf("bounded regular file required")
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	info, err := f.Stat()
+	if err != nil || !os.SameFile(before, info) {
+		return nil, fmt.Errorf("file changed before read")
+	}
+	raw, err := io.ReadAll(io.LimitReader(f, int64(cap)+1))
+	if err != nil {
+		return nil, err
+	}
+	after, err := os.Lstat(path)
+	if err != nil || !after.Mode().IsRegular() || !os.SameFile(before, after) || before.Size() != after.Size() ||
+		after.Size() != int64(len(raw)) || len(raw) > cap || !before.ModTime().Equal(after.ModTime()) {
+		return nil, fmt.Errorf("file changed during read")
+	}
+	return raw, nil
+}
+
+func currentRef(path string, cap int) (fileRef, error) {
+	raw, err := readFile(path, cap)
+	if err != nil {
+		return fileRef{}, err
+	}
+	return fileRef{path, len(raw), rawDigest(raw)}, nil
+}
+
+func checkRef(ref fileRef, cap int) error {
+	actual, err := currentRef(ref.Path, cap)
+	if err != nil {
+		return err
+	}
+	if actual != ref {
+		return fmt.Errorf("file reference differs: %s", ref.Path)
+	}
+	return nil
+}
+
+func exactDecode(raw []byte, out any) error {
+	if _, err := decode(raw); err != nil {
+		return err
+	}
+	d := json.NewDecoder(bytes.NewReader(raw))
+	d.DisallowUnknownFields()
+	return d.Decode(out)
+}
+
+func nameIs(expr ast.Expr, name string) bool { v, ok := expr.(*ast.Ident); return ok && v.Name == name }
+
+// Validate before compiling the candidate into the harness. Source bytes are
+// never reformatted. Provenance/body equality is additionally checked by the
+// Python receipt observer; this is a concrete, effect-free compiler839 ABI.
+func validateGenerated(raw []byte) error {
+	if len(raw) == 0 || len(raw) > 1<<20 || !utf8.Valid(raw) {
+		return fmt.Errorf("generated source bound")
+	}
+	f, err := parser.ParseFile(token.NewFileSet(), "generated.go", raw, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	if f.Name.Name != "main" || len(f.Imports) != 0 {
+		return fmt.Errorf("generated package/import ABI")
+	}
+	for _, group := range f.Comments {
+		for _, c := range group.List {
+			text := strings.TrimSpace(c.Text)
+			if strings.HasPrefix(text, "//go:") || constraint.IsPlusBuild(text) {
+				return fmt.Errorf("generated directive forbidden")
+			}
+		}
+	}
+	recordName := namedDigest("GoooRecord", recordID)
+	funcs := make(map[string]*ast.FuncDecl)
+	records := 0
+	for _, declaration := range f.Decls {
+		switch d := declaration.(type) {
+		case *ast.GenDecl:
+			if d.Tok != token.TYPE || len(d.Specs) != 1 {
+				return fmt.Errorf("generated globals forbidden")
+			}
+			spec, ok := d.Specs[0].(*ast.TypeSpec)
+			if !ok || spec.Assign.IsValid() || spec.Name.Name != recordName {
+				return fmt.Errorf("generated record identity")
+			}
+			st, ok := spec.Type.(*ast.StructType)
+			if !ok || len(st.Fields.List) != len(fieldNames) {
+				return fmt.Errorf("generated record fields")
+			}
+			for i, field := range st.Fields.List {
+				kind := "bool"
+				if i < 4 {
+					kind = "int64"
+				}
+				tag := ""
+				if field.Tag != nil {
+					tag, _ = strconv.Unquote(field.Tag.Value)
+				}
+				if len(field.Names) != 1 || field.Names[0].Name != namedDigest("GoooField", recordID+"/"+fieldNames[i]) ||
+					!nameIs(field.Type, kind) || tag != "json:\""+fieldNames[i]+"\"" {
+					return fmt.Errorf("generated field identity/type/tag/order")
+				}
+			}
+			records++
+		case *ast.FuncDecl:
+			if funcs[d.Name.Name] != nil || d.Recv != nil || d.Type.TypeParams != nil {
+				return fmt.Errorf("generated function identity")
+			}
+			funcs[d.Name.Name] = d
+		default:
+			return fmt.Errorf("unexpected generated declaration")
+		}
+	}
+	if records != 1 || len(funcs) != 8 {
+		return fmt.Errorf("generated function/record count")
+	}
+	for i := -1; i < 7; i++ {
+		name := "GoooComposedActivity0"
+		if i >= 0 {
+			name += fmt.Sprint("Call", i)
+		}
+		fn := funcs[name]
+		if fn == nil || fn.Body == nil || len(fn.Type.Params.List) != 4 || fn.Type.Results == nil || len(fn.Type.Results.List) != 1 {
+			return fmt.Errorf("generated entry/callee signature")
+		}
+		for j, param := range fn.Type.Params.List {
+			if len(param.Names) != 1 || param.Names[0].Name != fmt.Sprint("input", j) || !nameIs(param.Type, "int64") {
+				return fmt.Errorf("generated four-int64 ABI")
+			}
+		}
+		result := "bool"
+		if i == -1 {
+			result = recordName
+		}
+		if len(fn.Type.Results.List[0].Names) != 0 || !nameIs(fn.Type.Results.List[0].Type, result) {
+			return fmt.Errorf("generated return ABI")
+		}
+		calls := make(map[string]int)
+		var invalid error
+		ast.Inspect(fn.Body, func(n ast.Node) bool {
+			if n == nil || invalid != nil {
+				return invalid == nil
+			}
+			switch node := n.(type) {
+			case *ast.BlockStmt, *ast.ReturnStmt, *ast.IfStmt, *ast.ParenExpr, *ast.Ident,
+				*ast.BasicLit, *ast.CompositeLit, *ast.KeyValueExpr, *ast.DeclStmt, *ast.ValueSpec:
+			case *ast.GenDecl:
+				if i != -1 || node.Tok != token.VAR {
+					invalid = fmt.Errorf("generated local declaration")
+				}
+			case *ast.UnaryExpr:
+				if node.Op != token.NOT {
+					invalid = fmt.Errorf("generated unary effect")
+				}
+			case *ast.BinaryExpr:
+				switch node.Op {
+				case token.LAND, token.LOR, token.EQL, token.NEQ, token.LSS, token.LEQ, token.GTR, token.GEQ:
+				default:
+					invalid = fmt.Errorf("generated binary effect")
+				}
+			case *ast.CallExpr:
+				target, ok := node.Fun.(*ast.Ident)
+				if !ok || node.Ellipsis.IsValid() || len(node.Args) != 4 {
+					invalid = fmt.Errorf("generated pure-call ABI")
+					break
+				}
+				for j, arg := range node.Args {
+					if !nameIs(arg, fmt.Sprint("input", j)) {
+						invalid = fmt.Errorf("generated pure-call arguments")
+					}
+				}
+				calls[target.Name]++
+			default:
+				invalid = fmt.Errorf("generated effect or unsupported node %T", node)
+			}
+			return invalid == nil
+		})
+		if invalid != nil {
+			return invalid
+		}
+		expected := make(map[string]int)
+		if i == -1 {
+			for j := 0; j < 7; j++ {
+				expected[fmt.Sprint("GoooComposedActivity0Call", j)] = 1
+			}
+		}
+		if i > 0 {
+			expected["GoooComposedActivity0Call0"] = 1
+		}
+		if i == 6 {
+			for _, j := range []int{2, 3, 4, 5} {
+				expected[fmt.Sprint("GoooComposedActivity0Call", j)] = 1
+			}
+		}
+		if len(calls) != len(expected) {
+			return fmt.Errorf("generated call graph")
+		}
+		for name, n := range expected {
+			if calls[name] != n {
+				return fmt.Errorf("generated call target/count")
+			}
+		}
+	}
+	return nil
+}

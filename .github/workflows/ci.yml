@@ -52,6 +52,8 @@ jobs:
           go -C examples/automatic-redelivery/reference vet ./...
           go -C examples/automatic-redelivery/reference test -race -count=1 ./...
           python3 -I -B tools/check-redelivery-policy_test.py
+          python3 -I -B tools/ipv4_receipts_test.py
+          python3 -I -B tools/check-ipv4_test.py
           python3 tools/bootstrap.test.py
           python3 tools/receipt_json_test.py
           python3 tools/check-drag-crop-example_test.py
@@ -115,6 +117,8 @@ jobs:
           ./.gooo check examples/literal-cut-report/main.gooo
           ./.gooo check ports/path/path.gooo
           ./.gooo check examples/path-facts/main.gooo
+          ./.gooo check ports/net/netip/ipv4.gooo
+          ./.gooo check examples/ipv4-address-facts/main.gooo
           ./.gooo check examples/automatic-redelivery/main.gooo
           ./.gooo check ports/cel/scalar_access.gooo
           ./.gooo check examples/cel-api-policy/main.gooo
@@ -306,6 +310,23 @@ jobs:
           assert sum(p.stat().st_size for p in root.rglob("*") if p.is_file()) <= 8 << 20
           print(json.dumps({"schema":"gooo/redelivery-public-ci-gate/v1","status":"CURRENT_TWO_LAYER_REFS_CHECKED","retained_current_paths":len(seen)}))
           PY
+      - name: Verify the isolated native IPv4 address facts sidecar
+        if: steps.change-scope.outputs.docs_only != 'true'
+        run: |
+          python3 -I -B tools/check-ipv4.py --repository . --compiler ./.gooo --go "$(go env GOROOT)/bin/go" --out out/ipv4 --timeout 180
+          python3 -I -B tools/check-ipv4.py --verify-summary "$PWD/out/ipv4/summary.json" > out/ipv4/summary-readback.json
+          jq -e '
+            .schema == "gooo/ipv4-public-sidecar/v1" and .status == "IPV4_CURRENT_NATIVE_REPLAY_GENERATED_PASS" and
+            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
+            .manual_execute_outputs == 352 and .manual_saved_replay_outputs == 352 and
+            .typed_scalar_fields_each_phase == 992 and .original_report_echoes_each_phase == 256 and
+            .native_internal_run_records == 60 and .independent_oracle_cases == 202 and
+            .generated_Report_calls == 202 and .generated_typed_fields == 2222 and .generated_original_echoes == 808 and
+            .extra_CLI_outputs == 0 and .extra_saved_replay_outputs == 0 and
+            .strict_wire_refusals == 42 and .receipt_tamper_refusals == 18 and
+            .top_level_stages == 54 and .automatic_retries == 0
+          ' out/ipv4/summary.json
+          jq -e '.schema == "gooo/ipv4-summary-readback/v1" and .status == "CURRENT_SOURCE_AND_EVIDENCE_RECHECKED"' out/ipv4/summary-readback.json
       - name: Retain unsupported-body probes
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |

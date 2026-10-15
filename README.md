@@ -6,9 +6,9 @@ describing what programs should do and inspecting how they are built and run.
 **Try service-policy checks from Go:** open the [four-file service-policy quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726). With Go 1.27.2 already installed, follow its README to run Go generated from Gooo without a runtime Gooo compiler. Distinguish invalid input from denial, compare the same request before and after a rule change, and inspect a returned widening witness. These calls compare supplied policy facts; they do not apply a grant or call a service.
 
 This independent ecosystem project implements selected Go standard-library, x/image and Google UUID functions in Gooo,
-with independent Go reference outputs and saved replay: 43 authored standard-library ports,
+with independent Go reference outputs and saved replay: 49 authored standard-library ports,
 two ports from golang.org/x/image and two Google UUID adaptations. The current scope is
-47 authored HTTP, Unicode, literal-text splitting and byte search, slash-path, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, twenty native importing consumer programs (twenty-two activities),
+53 authored HTTP, Unicode, IPv4 classification, literal-text splitting and byte search, slash-path, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, twenty-one native importing consumer programs (twenty-three activities),
 and an importing browser dispatcher.
 The RectangleIn/FitsCrop suites have completed finite native execution and saved
 replay with an independent raw-receipt audit; see the [verification evidence](evidence/rectangle-in-fits-crop-20261012.json).
@@ -26,6 +26,19 @@ with 72 CLI and 72 saved-replay outputs counted separately. The existing catalog
 continues to report 45 ports, 19 consumer programs, 21 consumer activities, 66 suites,
 159,909 cases, 2,109 CI-profile batches and 7 exhaustive checks. Authored totals
 include the sidecar; its values are not added to those catalog counters.
+
+The [IPv4 address facts sidecar](examples/ipv4-address-facts/README.md) adds six
+`netip.Addr` classification predicates over four integer octets and an original
+importing eleven-field Gooo report. It keeps every supplied integer, reports
+validity separately, and returns overlapping classification flags. Its CI requires
+352 fresh CLI outputs and 352 saved-replay outputs, then compares a freshly
+generated report on 202 finite tuples with an independent Go oracle: 2,222 typed
+fields, including 808 original integer echoes. The expanded tuples include
+otherwise-positive invalid octets and values that would wrap into recognized
+addresses if converted to bytes too early. These generated-function comparisons
+are separate from the CLI layer and the existing catalog. Private addresses can
+also be global unicast; neither flag is a destination permission or a promise of
+Internet reachability. Parsing and IPv6 are outside this port.
 
 The original [automatic redelivery policy](examples/automatic-redelivery/README.md)
 uses nine supplied facts to return fifteen fields, including every original input,
@@ -45,7 +58,7 @@ The separate [Agent Mesh service-pattern example](examples/agentmesh-service-pol
 adds a bounded adaptation of `MatchServicePattern` and an original three-field
 comparison for one supplied request before and after a pattern change. Its
 63 matcher cases (including 12 upstream tests) and 16 original impact cases are
-separate from the 47 authored APIs and the existing native catalog above. `WIDENED` means
+separate from the 53 authored APIs and the existing native catalog above. `WIDENED` means
 that this supplied request became allowed; it is not a global grant-inclusion
 proof or a current authorization. Gooo computes the matches and impact without
 per-call human approval; the host owns trusted facts and any actual effects.
@@ -81,6 +94,7 @@ proposal, a refused expansion, and recovery of a discarded response by operation
 | Search a diagnostic phrase locally | [Literal-text report](examples/literal-text-report/README.md) | Supply text and a phrase; export the first byte offset, non-overlapping count and both original inputs |
 | Split a literal separator or remove an edge affix | [Literal Cut report](examples/literal-cut-report/README.md) | Compare Cut, CutPrefix and CutSuffix while retaining both original inputs and all eleven returned fields |
 | Assess an uncertain API operation automatically | [Automatic redelivery policy](examples/automatic-redelivery/README.md) | Supply nine bound facts, inspect all fifteen returned fields and save a replay; eligibility requires a later host-owned atomic claim |
+| Classify four IPv4 octets in Gooo | [IPv4 address facts](examples/ipv4-address-facts/README.md) | Preserve all four supplied integers, distinguish invalid input from valid addresses, and inspect six overlapping classification flags |
 | Use current ports in another Gooo project | [Current path import walkthrough](docs/use-current-path-in-your-project.md) | Copy a separate Gooo workspace, run `path.Ext` / `path.IsAbs` through its six-field report and save a replayable record |
 
 The [older ValidRune import walkthrough](docs/use-in-your-project.md) remains fixed to preview.2 and its own compiler. Use the current path walkthrough above for the `83928fa` compiler and Go 1.27.2.
@@ -350,7 +364,7 @@ with the page URL or command and what happened. A working demo or shared input l
 is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-현재 Go 표준 라이브러리, x/image와 Google UUID의 HTTP·Unicode·문자열 검색·분할·슬래시 경로·UUID 형식 검사·파싱·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 API 47개를 소스로 표현합니다.
+현재 Go 표준 라이브러리, x/image와 Google UUID의 HTTP·Unicode·IPv4 분류·문자열 검색·분할·슬래시 경로·UUID 형식 검사·파싱·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 API 53개를 소스로 표현합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -1010,7 +1024,7 @@ Google UUID Validate와 importing inspector까지의 38개 포트·16개 소비 
 RectangleIn과 FitsCrop까지의 총계 40개 포트·17개 소비 프로그램·19개 소비 활동을 보존합니다.
 새 Index·Count와 Literal Text Report를 포함한 소스 목록은 42개 포트·18개 소비 프로그램·20개 소비 활동입니다.
 이 목록을 보존하고 Cut·CutPrefix·CutSuffix와 Literal Cut Report를 덧붙인 작성 소스는 45개 포트·19개 소비 프로그램·21개 소비 활동입니다. 신규 네 suite는 각 원래 입력 32쌍을 사용하며, 완료된 native 실행과 replay는 해당 소스의 CI 보고서로 구분합니다.
-그 목록과 별도로 `path.Ext`·`path.IsAbs` 및 importing Path Facts Report를 더한 작성 소스는 **47개 포트·20개 소비 프로그램·22개 소비 활동**입니다. 기존 catalog의 66개 suite·159,909건·2,109개 CI 배치·7개 전수 검사는 그대로이며, 새 sidecar의 29,523개 generated-native 출력과 CLI·replay 각 72개는 별도로 집계합니다. [Path Facts 안내](examples/path-facts/README.md)의 유효 UTF-8·1,024바이트 입력 범위와 strict transport 경계를 확인하세요. 전체 UTF-8 영역·전체 path 패키지·파일 시스템 안전성·성능 향상을 입증하는 수치는 아닙니다.
+그 목록과 별도로 `path.Ext`·`path.IsAbs`, IPv4 분류 함수 6개와 각각의 importing Report를 더한 작성 소스는 **53개 포트·21개 소비 프로그램·23개 소비 활동**입니다. 기존 catalog의 66개 suite·159,909건·2,109개 CI 배치·7개 전수 검사는 그대로입니다. [Path Facts](examples/path-facts/README.md)의 generated-native 출력 29,523개 및 CLI·replay 각 72개와, [IPv4 Address Facts](examples/ipv4-address-facts/README.md)의 CLI·replay 각 352개 및 생성 리포트 입력 202개는 따로 집계합니다. 각 입력 범위와 검사 방식을 확인하세요. 전체 라이브러리 호환성·네트워크 접근 안전성·성능 향상을 입증하는 수치는 아닙니다.
 원본 int32 전체의 동작을 구현하되 2^32 전수 검사를 주장하지 않습니다.
 브라우저 21함수와 두 crop 모드는 그대로입니다.
 

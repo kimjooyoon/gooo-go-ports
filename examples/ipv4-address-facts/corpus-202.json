@@ -1,0 +1,2227 @@
+{
+  "schema": "gooo/ipv4-classification-corpus/v1",
+  "cases": [
+    {
+      "index": 0,
+      "name": "unspecified-zero",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 1,
+      "name": "zero-prefix-nonzero",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 1
+      }
+    },
+    {
+      "index": 2,
+      "name": "all-ones",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 255,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 3,
+      "name": "before-private10",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 9,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 4,
+      "name": "private10-first",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 5,
+      "name": "private10-last",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 10,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 6,
+      "name": "after-private10",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 11,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 7,
+      "name": "before-private172",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 172,
+        "b": 15,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 8,
+      "name": "private172-first",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 172,
+        "b": 16,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 9,
+      "name": "private172-last",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 172,
+        "b": 31,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 10,
+      "name": "after-private172",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 172,
+        "b": 32,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 11,
+      "name": "before-private192",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 192,
+        "b": 167,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 12,
+      "name": "private192-first",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 192,
+        "b": 168,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 13,
+      "name": "private192-last",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 192,
+        "b": 168,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 14,
+      "name": "after-private192",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 192,
+        "b": 169,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 15,
+      "name": "before-loopback",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 126,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 16,
+      "name": "loopback-first",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 127,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 17,
+      "name": "loopback-last",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 127,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 18,
+      "name": "after-loopback",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 128,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 19,
+      "name": "before-link-local",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 169,
+        "b": 253,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 20,
+      "name": "link-local-first",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 169,
+        "b": 254,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 21,
+      "name": "link-local-last",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 169,
+        "b": 254,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 22,
+      "name": "after-link-local",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 169,
+        "b": 255,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 23,
+      "name": "before-multicast",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 223,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 24,
+      "name": "multicast-first",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 224,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 25,
+      "name": "multicast-last",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 239,
+        "b": 255,
+        "c": 255,
+        "d": 255
+      }
+    },
+    {
+      "index": 26,
+      "name": "after-multicast",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 240,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 27,
+      "name": "cgnat-example",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 100,
+        "b": 64,
+        "c": 0,
+        "d": 1
+      }
+    },
+    {
+      "index": 28,
+      "name": "documentation-one",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 192,
+        "b": 0,
+        "c": 2,
+        "d": 1
+      }
+    },
+    {
+      "index": 29,
+      "name": "documentation-two",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 198,
+        "b": 51,
+        "c": 100,
+        "d": 1
+      }
+    },
+    {
+      "index": 30,
+      "name": "documentation-three",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 203,
+        "b": 0,
+        "c": 113,
+        "d": 1
+      }
+    },
+    {
+      "index": 31,
+      "name": "reserved-high-example",
+      "cohort": "boundary",
+      "inputs": {
+        "a": 255,
+        "b": 0,
+        "c": 0,
+        "d": 1
+      }
+    },
+    {
+      "index": 32,
+      "name": "invalid-a-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -1,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 33,
+      "name": "invalid-a-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 256,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 34,
+      "name": "invalid-a-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -9223372036854775808,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 35,
+      "name": "invalid-a-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 9223372036854775807,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 36,
+      "name": "invalid-b-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": -1,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 37,
+      "name": "invalid-b-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 256,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 38,
+      "name": "invalid-b-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": -9223372036854775808,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 39,
+      "name": "invalid-b-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 9223372036854775807,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 40,
+      "name": "invalid-c-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": -1,
+        "d": 0
+      }
+    },
+    {
+      "index": 41,
+      "name": "invalid-c-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 256,
+        "d": 0
+      }
+    },
+    {
+      "index": 42,
+      "name": "invalid-c-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": -9223372036854775808,
+        "d": 0
+      }
+    },
+    {
+      "index": 43,
+      "name": "invalid-c-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 9223372036854775807,
+        "d": 0
+      }
+    },
+    {
+      "index": 44,
+      "name": "invalid-d-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": -1
+      }
+    },
+    {
+      "index": 45,
+      "name": "invalid-d-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 256
+      }
+    },
+    {
+      "index": 46,
+      "name": "invalid-d-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": -9223372036854775808
+      }
+    },
+    {
+      "index": 47,
+      "name": "invalid-d-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 9223372036854775807
+      }
+    },
+    {
+      "index": 48,
+      "name": "seed-sha256-000",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 228,
+        "b": 98,
+        "c": 0,
+        "d": 166
+      }
+    },
+    {
+      "index": 49,
+      "name": "seed-sha256-001",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 79,
+        "b": 101,
+        "c": 211,
+        "d": 165
+      }
+    },
+    {
+      "index": 50,
+      "name": "seed-sha256-002",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 29,
+        "b": 111,
+        "c": 74,
+        "d": 159
+      }
+    },
+    {
+      "index": 51,
+      "name": "seed-sha256-003",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 254,
+        "b": 220,
+        "c": 180,
+        "d": 159
+      }
+    },
+    {
+      "index": 52,
+      "name": "seed-sha256-004",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 247,
+        "b": 106,
+        "c": 75,
+        "d": 147
+      }
+    },
+    {
+      "index": 53,
+      "name": "seed-sha256-005",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 173,
+        "b": 88,
+        "c": 56,
+        "d": 205
+      }
+    },
+    {
+      "index": 54,
+      "name": "seed-sha256-006",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 155,
+        "b": 240,
+        "c": 2,
+        "d": 147
+      }
+    },
+    {
+      "index": 55,
+      "name": "seed-sha256-007",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 9,
+        "b": 80,
+        "c": 162,
+        "d": 187
+      }
+    },
+    {
+      "index": 56,
+      "name": "seed-sha256-008",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 175,
+        "b": 225,
+        "c": 206,
+        "d": 8
+      }
+    },
+    {
+      "index": 57,
+      "name": "seed-sha256-009",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 166,
+        "b": 18,
+        "c": 159,
+        "d": 151
+      }
+    },
+    {
+      "index": 58,
+      "name": "seed-sha256-010",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 190,
+        "b": 65,
+        "c": 169,
+        "d": 96
+      }
+    },
+    {
+      "index": 59,
+      "name": "seed-sha256-011",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 105,
+        "b": 92,
+        "c": 88,
+        "d": 212
+      }
+    },
+    {
+      "index": 60,
+      "name": "seed-sha256-012",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 245,
+        "b": 51,
+        "c": 52,
+        "d": 132
+      }
+    },
+    {
+      "index": 61,
+      "name": "seed-sha256-013",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 209,
+        "b": 97,
+        "c": 105,
+        "d": 30
+      }
+    },
+    {
+      "index": 62,
+      "name": "seed-sha256-014",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 79,
+        "b": 50,
+        "c": 25,
+        "d": 211
+      }
+    },
+    {
+      "index": 63,
+      "name": "seed-sha256-015",
+      "cohort": "seeded",
+      "inputs": {
+        "a": 206,
+        "b": 209,
+        "c": 25,
+        "d": 240
+      }
+    },
+    {
+      "index": 64,
+      "name": "invalid-positive-extrema-private10-first-b-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 10,
+        "b": -1,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 65,
+      "name": "invalid-positive-extrema-private10-first-b-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 10,
+        "b": 256,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 66,
+      "name": "invalid-positive-extrema-private10-first-b-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 10,
+        "b": -9223372036854775808,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 67,
+      "name": "invalid-positive-extrema-private10-first-b-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 10,
+        "b": 9223372036854775807,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 68,
+      "name": "invalid-positive-extrema-private10-first-c-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 10,
+        "b": 0,
+        "c": -1,
+        "d": 0
+      }
+    },
+    {
+      "index": 69,
+      "name": "invalid-positive-extrema-private10-first-c-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 10,
+        "b": 0,
+        "c": 256,
+        "d": 0
+      }
+    },
+    {
+      "index": 70,
+      "name": "invalid-positive-extrema-private10-first-c-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 10,
+        "b": 0,
+        "c": -9223372036854775808,
+        "d": 0
+      }
+    },
+    {
+      "index": 71,
+      "name": "invalid-positive-extrema-private10-first-c-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 10,
+        "b": 0,
+        "c": 9223372036854775807,
+        "d": 0
+      }
+    },
+    {
+      "index": 72,
+      "name": "invalid-positive-extrema-private10-first-d-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": -1
+      }
+    },
+    {
+      "index": 73,
+      "name": "invalid-positive-extrema-private10-first-d-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 256
+      }
+    },
+    {
+      "index": 74,
+      "name": "invalid-positive-extrema-private10-first-d-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": -9223372036854775808
+      }
+    },
+    {
+      "index": 75,
+      "name": "invalid-positive-extrema-private10-first-d-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": 9223372036854775807
+      }
+    },
+    {
+      "index": 76,
+      "name": "invalid-positive-extrema-private172-first-a-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -1,
+        "b": 16,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 77,
+      "name": "invalid-positive-extrema-private172-first-a-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 256,
+        "b": 16,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 78,
+      "name": "invalid-positive-extrema-private172-first-a-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -9223372036854775808,
+        "b": 16,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 79,
+      "name": "invalid-positive-extrema-private172-first-a-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 9223372036854775807,
+        "b": 16,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 80,
+      "name": "invalid-positive-extrema-private172-first-b-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 172,
+        "b": -1,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 81,
+      "name": "invalid-positive-extrema-private172-first-b-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 172,
+        "b": 256,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 82,
+      "name": "invalid-positive-extrema-private172-first-b-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 172,
+        "b": -9223372036854775808,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 83,
+      "name": "invalid-positive-extrema-private172-first-b-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 172,
+        "b": 9223372036854775807,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 84,
+      "name": "invalid-positive-extrema-private172-first-c-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 172,
+        "b": 16,
+        "c": -1,
+        "d": 0
+      }
+    },
+    {
+      "index": 85,
+      "name": "invalid-positive-extrema-private172-first-c-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 172,
+        "b": 16,
+        "c": 256,
+        "d": 0
+      }
+    },
+    {
+      "index": 86,
+      "name": "invalid-positive-extrema-private172-first-c-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 172,
+        "b": 16,
+        "c": -9223372036854775808,
+        "d": 0
+      }
+    },
+    {
+      "index": 87,
+      "name": "invalid-positive-extrema-private172-first-c-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 172,
+        "b": 16,
+        "c": 9223372036854775807,
+        "d": 0
+      }
+    },
+    {
+      "index": 88,
+      "name": "invalid-positive-extrema-private172-first-d-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 172,
+        "b": 16,
+        "c": 0,
+        "d": -1
+      }
+    },
+    {
+      "index": 89,
+      "name": "invalid-positive-extrema-private172-first-d-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 172,
+        "b": 16,
+        "c": 0,
+        "d": 256
+      }
+    },
+    {
+      "index": 90,
+      "name": "invalid-positive-extrema-private172-first-d-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 172,
+        "b": 16,
+        "c": 0,
+        "d": -9223372036854775808
+      }
+    },
+    {
+      "index": 91,
+      "name": "invalid-positive-extrema-private172-first-d-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 172,
+        "b": 16,
+        "c": 0,
+        "d": 9223372036854775807
+      }
+    },
+    {
+      "index": 92,
+      "name": "invalid-positive-extrema-private192-first-a-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -1,
+        "b": 168,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 93,
+      "name": "invalid-positive-extrema-private192-first-a-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 256,
+        "b": 168,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 94,
+      "name": "invalid-positive-extrema-private192-first-a-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -9223372036854775808,
+        "b": 168,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 95,
+      "name": "invalid-positive-extrema-private192-first-a-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 9223372036854775807,
+        "b": 168,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 96,
+      "name": "invalid-positive-extrema-private192-first-b-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 192,
+        "b": -1,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 97,
+      "name": "invalid-positive-extrema-private192-first-b-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 192,
+        "b": 256,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 98,
+      "name": "invalid-positive-extrema-private192-first-b-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 192,
+        "b": -9223372036854775808,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 99,
+      "name": "invalid-positive-extrema-private192-first-b-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 192,
+        "b": 9223372036854775807,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 100,
+      "name": "invalid-positive-extrema-private192-first-c-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 192,
+        "b": 168,
+        "c": -1,
+        "d": 0
+      }
+    },
+    {
+      "index": 101,
+      "name": "invalid-positive-extrema-private192-first-c-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 192,
+        "b": 168,
+        "c": 256,
+        "d": 0
+      }
+    },
+    {
+      "index": 102,
+      "name": "invalid-positive-extrema-private192-first-c-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 192,
+        "b": 168,
+        "c": -9223372036854775808,
+        "d": 0
+      }
+    },
+    {
+      "index": 103,
+      "name": "invalid-positive-extrema-private192-first-c-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 192,
+        "b": 168,
+        "c": 9223372036854775807,
+        "d": 0
+      }
+    },
+    {
+      "index": 104,
+      "name": "invalid-positive-extrema-private192-first-d-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 192,
+        "b": 168,
+        "c": 0,
+        "d": -1
+      }
+    },
+    {
+      "index": 105,
+      "name": "invalid-positive-extrema-private192-first-d-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 192,
+        "b": 168,
+        "c": 0,
+        "d": 256
+      }
+    },
+    {
+      "index": 106,
+      "name": "invalid-positive-extrema-private192-first-d-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 192,
+        "b": 168,
+        "c": 0,
+        "d": -9223372036854775808
+      }
+    },
+    {
+      "index": 107,
+      "name": "invalid-positive-extrema-private192-first-d-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 192,
+        "b": 168,
+        "c": 0,
+        "d": 9223372036854775807
+      }
+    },
+    {
+      "index": 108,
+      "name": "invalid-positive-extrema-loopback-first-b-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 127,
+        "b": -1,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 109,
+      "name": "invalid-positive-extrema-loopback-first-b-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 127,
+        "b": 256,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 110,
+      "name": "invalid-positive-extrema-loopback-first-b-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 127,
+        "b": -9223372036854775808,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 111,
+      "name": "invalid-positive-extrema-loopback-first-b-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 127,
+        "b": 9223372036854775807,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 112,
+      "name": "invalid-positive-extrema-loopback-first-c-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 127,
+        "b": 0,
+        "c": -1,
+        "d": 0
+      }
+    },
+    {
+      "index": 113,
+      "name": "invalid-positive-extrema-loopback-first-c-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 127,
+        "b": 0,
+        "c": 256,
+        "d": 0
+      }
+    },
+    {
+      "index": 114,
+      "name": "invalid-positive-extrema-loopback-first-c-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 127,
+        "b": 0,
+        "c": -9223372036854775808,
+        "d": 0
+      }
+    },
+    {
+      "index": 115,
+      "name": "invalid-positive-extrema-loopback-first-c-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 127,
+        "b": 0,
+        "c": 9223372036854775807,
+        "d": 0
+      }
+    },
+    {
+      "index": 116,
+      "name": "invalid-positive-extrema-loopback-first-d-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 127,
+        "b": 0,
+        "c": 0,
+        "d": -1
+      }
+    },
+    {
+      "index": 117,
+      "name": "invalid-positive-extrema-loopback-first-d-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 127,
+        "b": 0,
+        "c": 0,
+        "d": 256
+      }
+    },
+    {
+      "index": 118,
+      "name": "invalid-positive-extrema-loopback-first-d-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 127,
+        "b": 0,
+        "c": 0,
+        "d": -9223372036854775808
+      }
+    },
+    {
+      "index": 119,
+      "name": "invalid-positive-extrema-loopback-first-d-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 127,
+        "b": 0,
+        "c": 0,
+        "d": 9223372036854775807
+      }
+    },
+    {
+      "index": 120,
+      "name": "invalid-positive-extrema-multicast-first-b-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 224,
+        "b": -1,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 121,
+      "name": "invalid-positive-extrema-multicast-first-b-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 224,
+        "b": 256,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 122,
+      "name": "invalid-positive-extrema-multicast-first-b-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 224,
+        "b": -9223372036854775808,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 123,
+      "name": "invalid-positive-extrema-multicast-first-b-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 224,
+        "b": 9223372036854775807,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 124,
+      "name": "invalid-positive-extrema-multicast-first-c-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 224,
+        "b": 0,
+        "c": -1,
+        "d": 0
+      }
+    },
+    {
+      "index": 125,
+      "name": "invalid-positive-extrema-multicast-first-c-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 224,
+        "b": 0,
+        "c": 256,
+        "d": 0
+      }
+    },
+    {
+      "index": 126,
+      "name": "invalid-positive-extrema-multicast-first-c-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 224,
+        "b": 0,
+        "c": -9223372036854775808,
+        "d": 0
+      }
+    },
+    {
+      "index": 127,
+      "name": "invalid-positive-extrema-multicast-first-c-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 224,
+        "b": 0,
+        "c": 9223372036854775807,
+        "d": 0
+      }
+    },
+    {
+      "index": 128,
+      "name": "invalid-positive-extrema-multicast-first-d-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 224,
+        "b": 0,
+        "c": 0,
+        "d": -1
+      }
+    },
+    {
+      "index": 129,
+      "name": "invalid-positive-extrema-multicast-first-d-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 224,
+        "b": 0,
+        "c": 0,
+        "d": 256
+      }
+    },
+    {
+      "index": 130,
+      "name": "invalid-positive-extrema-multicast-first-d-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 224,
+        "b": 0,
+        "c": 0,
+        "d": -9223372036854775808
+      }
+    },
+    {
+      "index": 131,
+      "name": "invalid-positive-extrema-multicast-first-d-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 224,
+        "b": 0,
+        "c": 0,
+        "d": 9223372036854775807
+      }
+    },
+    {
+      "index": 132,
+      "name": "invalid-positive-extrema-link-local-first-a-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -1,
+        "b": 254,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 133,
+      "name": "invalid-positive-extrema-link-local-first-a-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 256,
+        "b": 254,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 134,
+      "name": "invalid-positive-extrema-link-local-first-a-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -9223372036854775808,
+        "b": 254,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 135,
+      "name": "invalid-positive-extrema-link-local-first-a-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 9223372036854775807,
+        "b": 254,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 136,
+      "name": "invalid-positive-extrema-link-local-first-b-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 169,
+        "b": -1,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 137,
+      "name": "invalid-positive-extrema-link-local-first-b-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 169,
+        "b": 256,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 138,
+      "name": "invalid-positive-extrema-link-local-first-b-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 169,
+        "b": -9223372036854775808,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 139,
+      "name": "invalid-positive-extrema-link-local-first-b-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 169,
+        "b": 9223372036854775807,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 140,
+      "name": "invalid-positive-extrema-link-local-first-c-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 169,
+        "b": 254,
+        "c": -1,
+        "d": 0
+      }
+    },
+    {
+      "index": 141,
+      "name": "invalid-positive-extrema-link-local-first-c-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 169,
+        "b": 254,
+        "c": 256,
+        "d": 0
+      }
+    },
+    {
+      "index": 142,
+      "name": "invalid-positive-extrema-link-local-first-c-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 169,
+        "b": 254,
+        "c": -9223372036854775808,
+        "d": 0
+      }
+    },
+    {
+      "index": 143,
+      "name": "invalid-positive-extrema-link-local-first-c-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 169,
+        "b": 254,
+        "c": 9223372036854775807,
+        "d": 0
+      }
+    },
+    {
+      "index": 144,
+      "name": "invalid-positive-extrema-link-local-first-d-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 169,
+        "b": 254,
+        "c": 0,
+        "d": -1
+      }
+    },
+    {
+      "index": 145,
+      "name": "invalid-positive-extrema-link-local-first-d-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 169,
+        "b": 254,
+        "c": 0,
+        "d": 256
+      }
+    },
+    {
+      "index": 146,
+      "name": "invalid-positive-extrema-link-local-first-d-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 169,
+        "b": 254,
+        "c": 0,
+        "d": -9223372036854775808
+      }
+    },
+    {
+      "index": 147,
+      "name": "invalid-positive-extrema-link-local-first-d-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 169,
+        "b": 254,
+        "c": 0,
+        "d": 9223372036854775807
+      }
+    },
+    {
+      "index": 148,
+      "name": "invalid-positive-extrema-zero-prefix-nonzero-a-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -1,
+        "b": 0,
+        "c": 0,
+        "d": 1
+      }
+    },
+    {
+      "index": 149,
+      "name": "invalid-positive-extrema-zero-prefix-nonzero-a-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 256,
+        "b": 0,
+        "c": 0,
+        "d": 1
+      }
+    },
+    {
+      "index": 150,
+      "name": "invalid-positive-extrema-zero-prefix-nonzero-a-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -9223372036854775808,
+        "b": 0,
+        "c": 0,
+        "d": 1
+      }
+    },
+    {
+      "index": 151,
+      "name": "invalid-positive-extrema-zero-prefix-nonzero-a-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 9223372036854775807,
+        "b": 0,
+        "c": 0,
+        "d": 1
+      }
+    },
+    {
+      "index": 152,
+      "name": "invalid-positive-extrema-zero-prefix-nonzero-b-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": -1,
+        "c": 0,
+        "d": 1
+      }
+    },
+    {
+      "index": 153,
+      "name": "invalid-positive-extrema-zero-prefix-nonzero-b-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 256,
+        "c": 0,
+        "d": 1
+      }
+    },
+    {
+      "index": 154,
+      "name": "invalid-positive-extrema-zero-prefix-nonzero-b-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": -9223372036854775808,
+        "c": 0,
+        "d": 1
+      }
+    },
+    {
+      "index": 155,
+      "name": "invalid-positive-extrema-zero-prefix-nonzero-b-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 9223372036854775807,
+        "c": 0,
+        "d": 1
+      }
+    },
+    {
+      "index": 156,
+      "name": "invalid-positive-extrema-zero-prefix-nonzero-c-negative-one",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": -1,
+        "d": 1
+      }
+    },
+    {
+      "index": 157,
+      "name": "invalid-positive-extrema-zero-prefix-nonzero-c-above-byte",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 256,
+        "d": 1
+      }
+    },
+    {
+      "index": 158,
+      "name": "invalid-positive-extrema-zero-prefix-nonzero-c-min-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": -9223372036854775808,
+        "d": 1
+      }
+    },
+    {
+      "index": 159,
+      "name": "invalid-positive-extrema-zero-prefix-nonzero-c-max-int64",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 9223372036854775807,
+        "d": 1
+      }
+    },
+    {
+      "index": 160,
+      "name": "invalid-positive-narrowing-private10-first-a-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -246,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 161,
+      "name": "invalid-positive-narrowing-private10-first-a-plus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 266,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 162,
+      "name": "invalid-positive-narrowing-private10-first-b-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 10,
+        "b": -256,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 163,
+      "name": "invalid-positive-narrowing-private10-first-c-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 10,
+        "b": 0,
+        "c": -256,
+        "d": 0
+      }
+    },
+    {
+      "index": 164,
+      "name": "invalid-positive-narrowing-private10-first-d-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 10,
+        "b": 0,
+        "c": 0,
+        "d": -256
+      }
+    },
+    {
+      "index": 165,
+      "name": "invalid-positive-narrowing-private172-first-a-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -84,
+        "b": 16,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 166,
+      "name": "invalid-positive-narrowing-private172-first-a-plus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 428,
+        "b": 16,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 167,
+      "name": "invalid-positive-narrowing-private172-first-b-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 172,
+        "b": -240,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 168,
+      "name": "invalid-positive-narrowing-private172-first-b-plus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 172,
+        "b": 272,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 169,
+      "name": "invalid-positive-narrowing-private172-first-c-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 172,
+        "b": 16,
+        "c": -256,
+        "d": 0
+      }
+    },
+    {
+      "index": 170,
+      "name": "invalid-positive-narrowing-private172-first-d-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 172,
+        "b": 16,
+        "c": 0,
+        "d": -256
+      }
+    },
+    {
+      "index": 171,
+      "name": "invalid-positive-narrowing-private192-first-a-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -64,
+        "b": 168,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 172,
+      "name": "invalid-positive-narrowing-private192-first-a-plus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 448,
+        "b": 168,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 173,
+      "name": "invalid-positive-narrowing-private192-first-b-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 192,
+        "b": -88,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 174,
+      "name": "invalid-positive-narrowing-private192-first-b-plus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 192,
+        "b": 424,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 175,
+      "name": "invalid-positive-narrowing-private192-first-c-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 192,
+        "b": 168,
+        "c": -256,
+        "d": 0
+      }
+    },
+    {
+      "index": 176,
+      "name": "invalid-positive-narrowing-private192-first-d-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 192,
+        "b": 168,
+        "c": 0,
+        "d": -256
+      }
+    },
+    {
+      "index": 177,
+      "name": "invalid-positive-narrowing-loopback-first-a-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -129,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 178,
+      "name": "invalid-positive-narrowing-loopback-first-a-plus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 383,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 179,
+      "name": "invalid-positive-narrowing-loopback-first-b-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 127,
+        "b": -256,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 180,
+      "name": "invalid-positive-narrowing-loopback-first-c-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 127,
+        "b": 0,
+        "c": -256,
+        "d": 0
+      }
+    },
+    {
+      "index": 181,
+      "name": "invalid-positive-narrowing-loopback-first-d-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 127,
+        "b": 0,
+        "c": 0,
+        "d": -256
+      }
+    },
+    {
+      "index": 182,
+      "name": "invalid-positive-narrowing-unspecified-zero-a-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -256,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 183,
+      "name": "invalid-positive-narrowing-unspecified-zero-b-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": -256,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 184,
+      "name": "invalid-positive-narrowing-unspecified-zero-c-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": -256,
+        "d": 0
+      }
+    },
+    {
+      "index": 185,
+      "name": "invalid-positive-narrowing-unspecified-zero-d-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": -256
+      }
+    },
+    {
+      "index": 186,
+      "name": "invalid-positive-narrowing-multicast-first-a-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -32,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 187,
+      "name": "invalid-positive-narrowing-multicast-first-a-plus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 480,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 188,
+      "name": "invalid-positive-narrowing-multicast-first-b-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 224,
+        "b": -256,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 189,
+      "name": "invalid-positive-narrowing-multicast-first-c-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 224,
+        "b": 0,
+        "c": -256,
+        "d": 0
+      }
+    },
+    {
+      "index": 190,
+      "name": "invalid-positive-narrowing-multicast-first-d-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 224,
+        "b": 0,
+        "c": 0,
+        "d": -256
+      }
+    },
+    {
+      "index": 191,
+      "name": "invalid-positive-narrowing-link-local-first-a-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -87,
+        "b": 254,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 192,
+      "name": "invalid-positive-narrowing-link-local-first-a-plus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 425,
+        "b": 254,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 193,
+      "name": "invalid-positive-narrowing-link-local-first-b-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 169,
+        "b": -2,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 194,
+      "name": "invalid-positive-narrowing-link-local-first-b-plus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 169,
+        "b": 510,
+        "c": 0,
+        "d": 0
+      }
+    },
+    {
+      "index": 195,
+      "name": "invalid-positive-narrowing-link-local-first-c-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 169,
+        "b": 254,
+        "c": -256,
+        "d": 0
+      }
+    },
+    {
+      "index": 196,
+      "name": "invalid-positive-narrowing-link-local-first-d-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 169,
+        "b": 254,
+        "c": 0,
+        "d": -256
+      }
+    },
+    {
+      "index": 197,
+      "name": "invalid-positive-narrowing-zero-prefix-nonzero-a-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": -256,
+        "b": 0,
+        "c": 0,
+        "d": 1
+      }
+    },
+    {
+      "index": 198,
+      "name": "invalid-positive-narrowing-zero-prefix-nonzero-b-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": -256,
+        "c": 0,
+        "d": 1
+      }
+    },
+    {
+      "index": 199,
+      "name": "invalid-positive-narrowing-zero-prefix-nonzero-c-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": -256,
+        "d": 1
+      }
+    },
+    {
+      "index": 200,
+      "name": "invalid-positive-narrowing-zero-prefix-nonzero-d-minus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": -255
+      }
+    },
+    {
+      "index": 201,
+      "name": "invalid-positive-narrowing-zero-prefix-nonzero-d-plus256",
+      "cohort": "invalid",
+      "inputs": {
+        "a": 0,
+        "b": 0,
+        "c": 0,
+        "d": 257
+      }
+    }
+  ]
+}

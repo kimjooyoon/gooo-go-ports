@@ -1,0 +1,21 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "app/ipv4-address-facts",
+    "activity": "Report"
+  },
+  "packages": [
+    {
+      "path": "go/net/netip",
+      "sources": [
+        "ports/net/netip/ipv4.gooo"
+      ]
+    },
+    {
+      "path": "app/ipv4-address-facts",
+      "sources": [
+        "examples/ipv4-address-facts/main.gooo"
+      ]
+    }
+  ]
+}

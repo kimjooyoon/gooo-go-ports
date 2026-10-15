@@ -42,3 +42,10 @@ The original automatic-redelivery policy in examples/automatic-redelivery, its
 contract-derived independent Go reference, and its verification tooling are
 repository code under LICENSE. They classify trusted facts and attempt eligibility;
 they do not implement a provider SDK, network delivery, ledger or atomic claim.
+
+The netip IPv4 predicate adaptation in ports/net/netip/ipv4.gooo preserves
+Copyright 2020 The Go Authors and the existing Go BSD terms. The byte-exact
+source reference third_party/go/netip.go.txt, immutable Go revision and SHA256
+are recorded in upstream.json. IPv4Valid and the importing eleven-field Address
+Facts Report are original repository code under LICENSE. They classify supplied
+facts and preserve invalid original integers; they do not grant network access.

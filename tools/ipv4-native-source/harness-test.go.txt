@@ -1,0 +1,194 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/netip"
+	"os"
+	"reflect"
+	"strings"
+	"testing"
+)
+
+// Synthetic regression inputs are separate from the production frozen202 rows
+// and counters. Expected flags call the real standard library, not Gooo formulas.
+func regressionCases() []corpusCase {
+	cases := make([]corpusCase, 202)
+	for i := range cases {
+		cases[i] = corpusCase{i, fmt.Sprint("synthetic-", i), "synthetic", input{int64(i), 16, 1, 2}}
+	}
+	for i, v := range []input{{0, 0, 0, 0}, {127, 0, 0, 1}, {224, 0, 0, 1}, {169, 254, 0, 1}, {192, 168, 0, 1}, {-1, 0, 0, 0}, {10, 256, 0, 0}} {
+		cases[i].Inputs = v
+	}
+	return cases
+}
+
+func regressionOracle(v input) report {
+	r := report{A: v.A, B: v.B, C: v.C, D: v.D}
+	for _, octet := range []int64{v.A, v.B, v.C, v.D} {
+		if octet < 0 || octet > 255 {
+			return r
+		}
+	}
+	a := netip.AddrFrom4([4]byte{byte(v.A), byte(v.B), byte(v.C), byte(v.D)})
+	r.Valid = true
+	r.IsPrivate = a.IsPrivate()
+	r.IsLoopback = a.IsLoopback()
+	r.IsUnspecified = a.IsUnspecified()
+	r.IsMulticast = a.IsMulticast()
+	r.IsLinkLocalUnicast = a.IsLinkLocalUnicast()
+	r.IsGlobalUnicast = a.IsGlobalUnicast()
+	return r
+}
+
+func TestActualBoundFunctionAndEveryReturnedField(t *testing.T) {
+	cases := regressionCases()
+	calls := 0
+	rows, err := generateRows(cases, func(v input) report { calls++; return actualReport(v) }, func(r row) error {
+		if r.Actual != regressionOracle(r.Inputs) {
+			return fmt.Errorf("actual bound function differs from Go")
+		}
+		return nil
+	})
+	if err != nil || calls != 202 || len(rows) != 202 {
+		t.Fatalf("actual positive invocation count=%d rows=%d err=%v", calls, len(rows), err)
+	}
+	for field := 0; field < 11; field++ {
+		t.Run(fieldNames[field], func(t *testing.T) {
+			mutantCalls := 0
+			_, err := generateRows(cases, func(v input) report {
+				mutantCalls++
+				r := actualReport(v)
+				f := reflect.ValueOf(&r).Elem().Field(field)
+				if f.Kind() == reflect.Bool {
+					f.SetBool(!f.Bool())
+				} else {
+					f.SetInt(f.Int() + 1)
+				}
+				return r
+			}, func(r row) error {
+				if r.Actual != regressionOracle(r.Inputs) {
+					return fmt.Errorf("semantic field mutant detected")
+				}
+				return nil
+			})
+			if err == nil || !strings.Contains(err.Error(), "semantic field mutant detected") || mutantCalls == 0 {
+				t.Fatalf("wrong actual field escaped: %v", err)
+			}
+		})
+	}
+	_, err = generateRows(cases, func(v input) report { return report{A: v.A, B: v.B, C: v.C, D: v.D} }, func(r row) error {
+		if r.Actual != regressionOracle(r.Inputs) {
+			return fmt.Errorf("wrong function detected")
+		}
+		return nil
+	})
+	if err == nil || !strings.Contains(err.Error(), "wrong function detected") {
+		t.Fatal("ABI-shaped wrong function escaped")
+	}
+}
+
+func TestGeneratedABIRejectsWrongBindingsAndEffects(t *testing.T) {
+	raw, err := os.ReadFile("generated.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := validateGenerated(raw); err != nil {
+		t.Fatal("actual positive ABI:", err)
+	}
+	source := string(raw)
+	mutations := map[string]string{
+		"record":           strings.Replace(source, namedDigest("GoooRecord", recordID), "WrongRecord", 1),
+		"field":            strings.Replace(source, namedDigest("GoooField", recordID+"/a"), "WrongField", 1),
+		"field-type":       strings.Replace(source, "int64 `json:\"a\"`", "bool `json:\"a\"`", 1),
+		"entry":            strings.Replace(source, "func GoooComposedActivity0(", "func WrongEntry(", 1),
+		"callee":           strings.Replace(source, "GoooComposedActivity0Call0(input0, input1, input2, input3)", "GoooComposedActivity0Call1(input0, input1, input2, input3)", 1),
+		"import":           strings.Replace(source, "package main", "package main\nimport \"os\"", 1),
+		"init":             source + "\nfunc init() {}\n",
+		"global":           source + "\nvar effect = true\n",
+		"directive":        "//go:build ignore\n" + source,
+		"legacy-directive": "// +build ignore\n" + source,
+	}
+	for name, mutant := range mutations {
+		t.Run(name, func(t *testing.T) {
+			if mutant == source {
+				t.Fatal("ineffective source mutation")
+			}
+			if err := validateGenerated([]byte(mutant)); err == nil {
+				t.Fatal("source/ABI mutant escaped")
+			}
+		})
+	}
+}
+
+func TestRowsPreserveAllFieldsOrderCountAndKinds(t *testing.T) {
+	cases := regressionCases()
+	var buf bytes.Buffer
+	rows, err := generateRows(cases, actualReport, func(r row) error { return json.NewEncoder(&buf).Encode(r) })
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw := buf.Bytes()
+	if err := readback(raw, rows); err != nil {
+		t.Fatal(err)
+	}
+	lines := bytes.Split(bytes.TrimSuffix(raw, []byte{'\n'}), []byte{'\n'})
+	variants := map[string][]byte{"missing": append(bytes.Join(lines[:201], []byte{'\n'}), '\n'), "extra": append(append(append([]byte{}, raw...), lines[0]...), '\n'), "missing-LF": bytes.TrimSuffix(raw, []byte{'\n'})}
+	swapped := append([][]byte{}, lines...)
+	swapped[0], swapped[1] = swapped[1], swapped[0]
+	variants["order"] = append(bytes.Join(swapped, []byte{'\n'}), '\n')
+	duplicate := append([][]byte{}, lines...)
+	duplicate[1] = duplicate[0]
+	variants["duplicate"] = append(bytes.Join(duplicate, []byte{'\n'}), '\n')
+	for _, field := range fieldNames {
+		var value map[string]any
+		if err := json.Unmarshal(lines[0], &value); err != nil {
+			t.Fatal(err)
+		}
+		actual := value["actual"].(map[string]any)
+		delete(actual, field)
+		changed, _ := json.Marshal(value)
+		rest := append(append(append([]byte{}, changed...), '\n'), bytes.Join(lines[1:], []byte{'\n'})...)
+		variants["missing-"+field] = append(rest, '\n')
+	}
+	variants["integer-float"] = bytes.Replace(raw, []byte(`"a":0`), []byte(`"a":0.0`), 1)
+	variants["zero-null"] = bytes.Replace(raw, []byte(`"a":0`), []byte(`"a":null`), 1)
+	variants["false-null"] = bytes.Replace(raw, []byte(`"is_private":false`), []byte(`"is_private":null`), 1)
+	variants["false-integer"] = bytes.Replace(raw, []byte(`"is_private":false`), []byte(`"is_private":0`), 1)
+	for name, variant := range variants {
+		t.Run(name, func(t *testing.T) {
+			if bytes.Equal(raw, variant) {
+				t.Fatal("ineffective row mutation")
+			}
+			if err := readback(variant, rows); err == nil {
+				t.Fatal("row mutant escaped")
+			}
+		})
+	}
+	bad := append([]corpusCase{}, cases...)
+	bad[1].Index = 0
+	if _, err := generateRows(bad, actualReport, func(row) error { return nil }); err == nil {
+		t.Fatal("invocation order escaped")
+	}
+	if _, err := generateRows(cases[:201], actualReport, func(row) error { return nil }); err == nil {
+		t.Fatal("invocation count escaped")
+	}
+}
+
+func TestStrictDecodeOpaqueDuplicateDepthAndNumber(t *testing.T) {
+	value, err := decode([]byte(`{"opaque":{"n":1e0}}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	n := value.(map[string]any)["opaque"].(map[string]any)["n"]
+	if number, ok := n.(json.Number); !ok || number.String() != "1e0" {
+		t.Fatal("numeric spelling lost")
+	}
+	invalid := [][]byte{[]byte(`{"a":{"x":1,"\u0078":2}}`), []byte(`{} {}`), {0xff}, []byte(strings.Repeat("[", 65) + "0" + strings.Repeat("]", 65))}
+	for _, raw := range invalid {
+		if _, err := decode(raw); err == nil {
+			t.Fatalf("strict decode accepted %q", raw)
+		}
+	}
+}
