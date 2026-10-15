@@ -29,6 +29,7 @@ type nativeTimingConfig struct {
 	Catalog                                        frozenVerificationCatalog
 	CompilerIdentity                               []byte
 	CaseProfile                                    nativeCaseProfile
+	WorkspaceProfile                               nativeWorkspaceProfile
 }
 
 type nativeTimingFile struct {
@@ -63,6 +64,7 @@ var nativeTimingSourceNames = []string{
 	"examples/literal-cut-report/manual-contract.json", "examples/literal-cut-report/README.md", "CONTRIBUTING.md",
 	"cmd/verify/case_profile.go", "cmd/verify/case_profile_test.go", "cmd/verify/case_profile_integration_test.go",
 	"cmd/verify/literal_report_case_profile_test.go",
+	"cmd/verify/workspace_profile.go", "cmd/verify/workspace_profile_test.go",
 	"cmd/verify/decimal_payload_corpus.go", "cmd/verify/decimal_payload_corpus_test.go",
 	"cmd/verify/decimal_payload_batches.go", "cmd/verify/decimal_payload_batches_test.go",
 	"cmd/verify/decimal_payload_contracts_test.go",
@@ -117,6 +119,7 @@ type nativeSuiteTiming struct {
 	observation           observation
 	status                string
 	sourceSet             map[string]sourceIdentity
+	expectedSourceSet     map[string]sourceIdentity
 	sourceSetSHA256       string
 }
 
@@ -186,6 +189,9 @@ func newNativeTimingWithSnapshot(cfg nativeTimingConfig, snapshot func(nativeTim
 	if err := cfg.CaseProfile.validateCompiler(cfg.Lock); err != nil {
 		return nil, err
 	}
+	if err := cfg.WorkspaceProfile.validateCompiler(cfg.Lock); err != nil {
+		return nil, err
+	}
 	if err := validateNativeTimingOutput(cfg.Output, cfg.EvidenceRoot); err != nil {
 		return nil, err
 	}
@@ -242,6 +248,15 @@ func newNativeTimingWithSnapshot(cfg nativeTimingConfig, snapshot func(nativeTim
 	t.expectedSources, err = snapshotSourceIdentities(t.cfg.Catalog.Catalog.Packages, t.cfg.Catalog.Sources)
 	if err != nil {
 		return nil, err
+	}
+	if cfg.WorkspaceProfile != "" {
+		for _, s := range cfg.Suites {
+			selected, err := cfg.WorkspaceProfile.workspaceForSuite(t.cfg.Catalog, s)
+			if err != nil {
+				return nil, fmt.Errorf("native timing workspace profile: %w", err)
+			}
+			t.byEntry[s.Package+":"+s.Activity].expectedSourceSet = selected.Identities
+		}
 	}
 	t.before, err = snapshot(t.cfg)
 	if err != nil {
@@ -304,6 +319,7 @@ func newNativeTimingWithSnapshot(cfg nativeTimingConfig, snapshot func(nativeTim
 		}
 	}
 	cfg.CaseProfile.decorateTimingHeader(header)
+	cfg.WorkspaceProfile.decorateTimingHeader(header)
 	t.emitLocked(header)
 	if t.err != nil {
 		_ = t.file.Close()
@@ -636,6 +652,10 @@ func (bt *nativeBatchTiming) bind(identity expectedIdentity, receiptSHA string) 
 	defer t.mu.Unlock()
 	if bt.done || bt.bound || identity.CompilerRevision != t.cfg.Lock.CompilerRevision || identity.GoVersion != t.cfg.Lock.GoVersion || !nativeTimingValidDigest(identity.ManifestDigest) || !nativeTimingValidDigest(identity.CasesDigest) || !nativeTimingValidDigest(receiptSHA) || len(identity.Sources) == 0 {
 		t.failLocked(fmt.Errorf("native timing batch has incomplete or repeated checked receipt bindings"))
+		return
+	}
+	if t.cfg.WorkspaceProfile != "" && !reflect.DeepEqual(identity.Sources, bt.suite.expectedSourceSet) {
+		t.failLocked(fmt.Errorf("native timing workspace profile source set differs from the exact selected closure"))
 		return
 	}
 	for name, source := range identity.Sources {
