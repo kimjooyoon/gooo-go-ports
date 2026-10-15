@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  native-ports:
+  observer-checks:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
@@ -34,13 +34,6 @@ jobs:
         with:
           go-version: '1.27.2'
           cache: false
-      - name: Verify the public API policy consumer
-        if: steps.change-scope.outputs.docs_only != 'true'
-        env:
-          PUBLIC_API_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: |
-          python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer"
-          jq -e '.schema == "gooo/api-policy-public-consumer/v1" and .status == "PUBLIC_API_POLICY_CONSUMER_PASS" and .acceptance.facts == 9 and .acceptance.positive_cases == 2 and .acceptance.decision_fields == 15 and .acceptance.difference_flags == 15 and .acceptance.summary_fields == 2 and .acceptance.public_asset_count == 36 and .acceptance.public_assets_exact == true and .acceptance.public_generation_exact == true and .acceptance.original_assets_exact == true and .acceptance.original_generation_unchanged == true and .acceptance.substitution_refused == true and .acceptance.runtime_empty_path == true and .acceptance.consumer_no_replace_or_workspace == true and .acceptance.substitution_stdout_bytes == 0 and .acceptance.original_version == "v0.0.0-20261014100709-8cddcc4e65af" and .acceptance.original_commit == "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"' out/api-policy-public-consumer/verification.json
       - name: Check the Go observer
         run: |
           # Upstream UUID archive files stay byte-exact; its added hash wrapper
@@ -76,6 +69,37 @@ jobs:
           go run ./cmd/gen-simple-fold --check
           go run ./cmd/gen-case-mapping --check
           python3 tools/gen-uuid-quote.py --check
+  native-execution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      GOTOOLCHAIN: local
+      GOWORK: 'off'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - name: Classify the exact checked PR tree
+        id: change-scope
+        run: |
+          python3 -B tools/classify-ci-scope.py \
+            --event-name "$GITHUB_EVENT_NAME" --event-path "$GITHUB_EVENT_PATH" \
+            --expected-head "$GITHUB_SHA" --summary out/ci-scope.json \
+            --github-output "$GITHUB_OUTPUT"
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version: '1.27.2'
+          cache: false
+      - name: Verify the public API policy consumer
+        if: steps.change-scope.outputs.docs_only != 'true'
+        env:
+          PUBLIC_API_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer"
+          jq -e '.schema == "gooo/api-policy-public-consumer/v1" and .status == "PUBLIC_API_POLICY_CONSUMER_PASS" and .acceptance.facts == 9 and .acceptance.positive_cases == 2 and .acceptance.decision_fields == 15 and .acceptance.difference_flags == 15 and .acceptance.summary_fields == 2 and .acceptance.public_asset_count == 36 and .acceptance.public_assets_exact == true and .acceptance.public_generation_exact == true and .acceptance.original_assets_exact == true and .acceptance.original_generation_unchanged == true and .acceptance.substitution_refused == true and .acceptance.runtime_empty_path == true and .acceptance.consumer_no_replace_or_workspace == true and .acceptance.substitution_stdout_bytes == 0 and .acceptance.original_version == "v0.0.0-20261014100709-8cddcc4e65af" and .acceptance.original_commit == "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"' out/api-policy-public-consumer/verification.json
       - name: Build and identify the pinned compiler from a clean checkout
         run: |
           mkdir -p out
@@ -1055,6 +1079,21 @@ jobs:
             out/compiler-build.json
           if-no-files-found: error
           retention-days: 14
+
+  native-ports:
+    if: ${{ always() }}
+    needs: [observer-checks, native-execution]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require both independent verification jobs
+        env:
+          OBSERVER_RESULT: ${{ needs.observer-checks.result }}
+          NATIVE_RESULT: ${{ needs.native-execution.result }}
+        shell: bash
+        run: |
+          test "$OBSERVER_RESULT" = "success"
+          test "$NATIVE_RESULT" = "success"
 
   browser-demo:
     runs-on: ubuntu-latest
