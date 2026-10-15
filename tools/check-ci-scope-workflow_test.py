@@ -61,10 +61,10 @@ TIMING_HEADER_ASSERTION = '''          head -n 1 out/ci/timing.jsonl | jq -e --s
             .schema == "gooo/native-verification-timing/v1" and .kind == "header" and .seq == 0 and
             .case_profile == $summary[0].case_profile and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
-            .configured_workers == 2 and .expected_suites == 66 and .expected_cases == 159909 and
+            .configured_workers == 2 and .expected_suites == 68 and .expected_cases == 160266 and
             .expected_boundaries_recomputed == false and
-            .boundary_scope == "Actual contiguous batch coverage is observed. UUID3 use uuid-compact-v1 compact wire bytes and newly selected bounds; no original UUID batch boundaries or legacy2337 total are claimed preserved. Non-UUID suites retain nativeBatchEnd/save behavior. The recorder does not recompute expected partitions." and
-            (.identity.source_files | length) == 100 and
+            .boundary_scope == "Actual contiguous batch coverage is observed. UUID3 use uuid-compact-v1 compact wire bytes and newly selected bounds; no original UUID batch boundaries or legacy2337 total are claimed preserved. Existing non-UUID suites retain nativeBatchEnd/save behavior; appended decimal/payload entries use source-bounded pretty JSON. The recorder does not recompute expected partitions." and
+            (.identity.source_files | length) == 119 and
             all(["cmd/verify/case_profile.go", "cmd/verify/case_profile_test.go", "cmd/verify/case_profile_integration_test.go"][];
               . as $path | ($header.identity.source_files[$path].bytes | type) == "number" and
               $header.identity.source_files[$path].bytes > 0 and
@@ -75,9 +75,9 @@ TIMING_CLAUSES = (
     '.schema == "gooo/native-verification-timing/v1"', '.kind == "run_end"',
     '.status == "COMPLETE"',
     '.complete == true and .aborted == false and .successful_close_return_required == true',
-    '.seq == 2242', '.expected_suites == 66', '.successful_suites == 66',
-    '.observed_batches == 2109', '.verified_batches == 2109', '.verified_cases == 159909',
-    '.event_count == 2243', '.failed_suites == 0', '.canceled_suites == 0',
+    '.seq == 2255', '.expected_suites == 68', '.successful_suites == 68',
+    '.observed_batches == 2118', '.verified_batches == 2118', '.verified_cases == 160266',
+    '.event_count == 2256', '.failed_suites == 0', '.canceled_suites == 0',
     '.not_started_suites == 0', '.missing_suite_finishes == 0',
     '.failed_batches == 0', '.incomplete_batches == 0', '.logger_errors == 0',
     '.source_bindings_unchanged == true',
@@ -161,7 +161,7 @@ OBSERVER_HEADER_SHA = '46cb0e7392dd3f3fb9562bccea6b27e5194ffcf59e1a58bab4c07b99a
 NATIVE_HEADER_SHA = '5f4d0761ec793a582d7d23c06f9a758bd71fa66f5448b50d01739915052b213e'
 # Add the record adapter controls and input-only corpus regeneration check;
 # every previously required observer command remains byte-identical and once.
-OBSERVER_STEP_SHA = '62328e8907108b200549846f212f99f0e74d3b106d64f732793be82562c185f8'
+OBSERVER_STEP_SHA = '9074348ace69478671218d3e12bad74d7abd5ac2cc2a0579443c6b1494760cee'
 GENERATOR_STEP_SHA = '081263b551a4d28aa8b46dc025fe951c62d91d13e164cb7927b70d7270aaf399'
 CLASSIFIER_STEP_SHA = '1864b9e0f27cc73595dd863c71640050cf046b2ec67cfd02c6ba5a8ebd11a61a'
 CHECKOUT_STEP_SHA = 'b60ba5d7bf95691b8baec3a3e402aeba552fbcb4a353d7de8946023e73e79603'
@@ -303,10 +303,10 @@ def validate(text):
             "native timing console summary must retain its exact source and actual input")
     require("continue-on-error:" not in comparison and "|| true" not in comparison,
             "native comparison or timing failure became optional")
-    for token in (".ported_functions == 45 and .consumer_programs == 19 and .consumer_activities == 21 and",
-                  "(.runs | length) == 66 and",
-                  ".cases == 159909 and .passed == 159909 and",
-                  "([.runs[].cases] | add) == 159909 and ([.runs[].batches] | add) == 2109 and",
+    for token in (".ported_functions == 46 and .consumer_programs == 20 and .consumer_activities == 22 and",
+                  "(.runs | length) == 68 and",
+                  ".cases == 160266 and .passed == 160266 and",
+                  "([.runs[].cases] | add) == 160266 and ([.runs[].batches] | add) == 2118 and",
                   "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2104 and",
                   "([.runs[:59][].cases] | add) == 131842 and ([.runs[:59][].batches] | add) == 1549 and",
                   "([.runs[:57][].cases] | add) == 130702 and ([.runs[:57][].batches] | add) == 1513 and",
@@ -342,6 +342,11 @@ def validate(text):
                   ".literal_cut_suffix_reference_cases == 32", ".literal_cut_report_reference_cases == 32",
                   '(.literal_cut_finite_provenance_scope | contains("Inner prior_result_sha256, full generation-report provenance and composition/runtime typed-plan equality are NOT_CHECKED")) and'):
         require(token in comparison, "Cut finite evidence scope missing: " + token)
+    for token in ('([.runs[:66][].cases] | add) == 159909 and ([.runs[:66][].batches] | add) == 2109 and', '.decimal_reference_cases == 256 and .payload_admission_reference_cases == 101 and', '(.decimal_payload_provenance_scope | contains("Inner prior_result_sha256 is NOT_CHECKED")) and', '.runs[66].package == "go/strconv" and .runs[66].activity == "ParseIntDecimal64" and', '.runs[66].cases == 256 and .runs[66].passed == 256 and .runs[66].batches == 5 and', '.runs[67].package == "app/payload-admission" and .runs[67].activity == "Report" and', '.runs[67].cases == 101 and .runs[67].passed == 101 and .runs[67].batches == 4 and'):
+        require(token in comparison, "decimal/payload finite roster or evidence scope missing: " + token)
+    require(named["Check the Go observer"].count("python3 -I -B tools/generate-payload-corpus.py --check") == 1, "payload input generator missing")
+    for source in ("ports/strconv/decimal.gooo", "examples/payload-admission/main.gooo"):
+        require(named["Check Gooo declarations"].count("./.gooo check " + source) == 1, "decimal/payload declaration missing")
     revision = named["Verify the sealed API policy revision comparison"]
     require('python3 -B examples/api-policy-revision/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/api-policy-revision"' in revision,
             "sealed revision native generator/test/fresh-process verifier missing")
@@ -674,7 +679,7 @@ class WorkflowScopeTests(unittest.TestCase):
             chunk.replace('name: "uuid-compact-v1"', 'name: "legacy"', 1),
             chunk.replace("maximum_rows: 128", "maximum_rows: 129", 1),
             chunk.replace("raw_bytes_including_LF: 30000", "raw_bytes_including_LF: 32768", 1),
-            chunk.replace("(.identity.source_files | length) == 100", "(.identity.source_files | length) >= 97", 1),
+            chunk.replace("(.identity.source_files | length) == 119", "(.identity.source_files | length) >= 97", 1),
             chunk.replace("--slurpfile summary out/ci/summary.json", "--slurpfile summary out/old/summary.json", 1),
             chunk.replace(".case_profile == $summary[0].case_profile", ".case_profile == null", 1),
         ))
@@ -738,9 +743,9 @@ class WorkflowScopeTests(unittest.TestCase):
         named, _ = named_steps(self.text)
         comparison = named["Compare the ports with Go and replay every batch"]
         clauses = (
-            ".ported_functions == 45 and .consumer_programs == 19 and .consumer_activities == 21 and",
-            "(.runs | length) == 66 and", ".cases == 159909 and .passed == 159909 and",
-            "([.runs[].cases] | add) == 159909 and ([.runs[].batches] | add) == 2109 and",
+            ".ported_functions == 46 and .consumer_programs == 20 and .consumer_activities == 22 and",
+            "(.runs | length) == 68 and", ".cases == 160266 and .passed == 160266 and",
+            "([.runs[].cases] | add) == 160266 and ([.runs[].batches] | add) == 2118 and",
             "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2104 and",
             ".literal_cut_reference_cases == 32", ".literal_cut_prefix_reference_cases == 32",
             ".literal_cut_suffix_reference_cases == 32", ".literal_cut_report_reference_cases == 32",

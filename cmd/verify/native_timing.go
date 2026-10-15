@@ -62,6 +62,13 @@ var nativeTimingSourceNames = []string{
 	"literal-cut-report.workspace.json", "examples/literal-cut-report/inputs.json",
 	"examples/literal-cut-report/manual-contract.json", "examples/literal-cut-report/README.md", "CONTRIBUTING.md",
 	"cmd/verify/case_profile.go", "cmd/verify/case_profile_test.go", "cmd/verify/case_profile_integration_test.go",
+	"cmd/verify/decimal_payload_corpus.go", "cmd/verify/decimal_payload_corpus_test.go",
+	"cmd/verify/decimal_payload_batches.go", "cmd/verify/decimal_payload_batches_test.go",
+	"cmd/verify/decimal_payload_contracts_test.go",
+	"ports/strconv/corpus-256.json", "ports/strconv/provenance.json", "ports/strconv/README.md", "ports/strconv/inputs.json",
+	"examples/payload-admission/corpus.json", "examples/payload-admission/manual17.json", "examples/payload-admission/contract.json",
+	"examples/payload-admission/inputs.json", "examples/payload-admission/README.md",
+	"decimal-int64.workspace.json", "payload-admission.workspace.json", "tools/generate-payload-corpus.py",
 }
 
 var nativeTimingPhaseNames = [...]string{
@@ -280,6 +287,12 @@ func newNativeTimingWithSnapshot(cfg nativeTimingConfig, snapshot func(nativeTim
 		"source_set_scope":   "Each suite_end stores its checked source set once. Batch events bind that exact map by SHA-256; source inputs and the complete frozen catalog are hashed in the header and rechecked at close.",
 		"timing_scope":       "Suite and batch elapsed intervals include recorder lock/event overhead; enqueue, slot wait, dispatch, CPU time and resource contention are not measured. Batch selection happens before beginBatch and is unmeasured. Run duration includes identity observations and ends before footer finalization. UTC is for correlation; durations use Go monotonic time.",
 		"finalization_scope": "A footer is diagnostic evidence only; successful close return and the original native verification/summary gates are also required. No effect authorization or performance causality is asserted.",
+	}
+	for _, s := range cfg.Suites {
+		if isDecimalPayloadSuite(s) {
+			header["boundary_scope"] = "Actual contiguous batch ranges are compared with the successful suite observation. Existing suites retain nativeBatchEnd/loop behavior; appended decimal/payload entries use source-bounded pretty JSON. Required full-summary gates bind each roster."
+			break
+		}
 	}
 	cfg.CaseProfile.decorateTimingHeader(header)
 	t.emitLocked(header)
@@ -639,6 +652,7 @@ func (bt *nativeBatchTiming) bind(identity expectedIdentity, receiptSHA string) 
 	}
 	bt.identity = identity
 	bt.identity.Sources = nil
+	bt.identity.SourceBytes = nil
 	bt.bound, bt.receipt = true, receiptSHA
 }
 

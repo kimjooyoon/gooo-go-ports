@@ -1,0 +1,8 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "go/strconv:ParseIntDecimal64": "9223372036854775807"
+    }
+  ]
+}

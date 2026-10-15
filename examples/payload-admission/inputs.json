@@ -1,0 +1,14 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "app/payload-admission:Report.input0": "128",
+      "app/payload-admission:Report.input1": 1,
+      "app/payload-admission:Report.input2": 128,
+      "app/payload-admission:Report.input3": 1024,
+      "app/payload-admission:Report.input4": false,
+      "app/payload-admission:Report.input5": true,
+      "app/payload-admission:Report.input6": true
+    }
+  ]
+}

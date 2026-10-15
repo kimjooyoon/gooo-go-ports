@@ -1,0 +1,78 @@
+// Original pure policy over caller-supplied payload observations.
+// This computes eligibility facts; it performs no HTTP framing, authorization
+// enforcement, body I/O, dispatch, reservation or per-request human approval.
+// A true binding flag is a host assertion, not a proof established by Gooo.
+// Contract: contract.json in this example directory.
+package payload_admission
+namespace gooo_ports_examples_payload_admission
+import decimal "go/strconv"
+
+entity Text id "gooo://std/text"
+entity Integer id "gooo://std/integer"
+entity Boolean id "gooo://std/boolean"
+entity PayloadAdmissionFacts id "gooo://go-ports/examples/payload-admission/facts/v1" fields {
+    field declared_length id "gooo://go-ports/examples/payload-admission/facts/v1/declared_length" type string required one
+    field content_length_occurrences id "gooo://go-ports/examples/payload-admission/facts/v1/content_length_occurrences" type integer required one
+    field observed_body_bytes id "gooo://go-ports/examples/payload-admission/facts/v1/observed_body_bytes" type integer required one
+    field maximum_payload_bytes id "gooo://go-ports/examples/payload-admission/facts/v1/maximum_payload_bytes" type integer required one
+    field transfer_encoding_present id "gooo://go-ports/examples/payload-admission/facts/v1/transfer_encoding_present" type boolean required one
+    field body_observation_bound_to_request id "gooo://go-ports/examples/payload-admission/facts/v1/body_observation_bound_to_request" type boolean required one
+    field current_access id "gooo://go-ports/examples/payload-admission/facts/v1/current_access" type boolean required one
+    field parse_error_kind id "gooo://go-ports/examples/payload-admission/facts/v1/parse_error_kind" type integer required one
+    field parsed_value id "gooo://go-ports/examples/payload-admission/facts/v1/parsed_value" type integer required one
+    field unsigned_decimal id "gooo://go-ports/examples/payload-admission/facts/v1/unsigned_decimal" type boolean required one
+    field length_matches id "gooo://go-ports/examples/payload-admission/facts/v1/length_matches" type boolean required one
+    field within_budget id "gooo://go-ports/examples/payload-admission/facts/v1/within_budget" type boolean required one
+    field eligible id "gooo://go-ports/examples/payload-admission/facts/v1/eligible" type boolean required one
+    field reason id "gooo://go-ports/examples/payload-admission/facts/v1/reason" type integer required one
+}
+
+// Inputs in order: raw decoded header Text, all original occurrences, observed
+// body bytes, route limit, TE presence, current observation binding and access.
+// All numeric metadata is exact signed64. Do not trim/coalesce or invent facts.
+// The domain is decoded valid UTF-8 Text<=1024 bytes. Leading zeros are allowed;
+// Go-valid +1 and -0 are not unsigned-decimal spellings for this policy.
+activity Report(Text, Integer, Integer, Integer, Boolean, Boolean, Boolean) -> PayloadAdmissionFacts id "gooo://go-ports/examples/payload-admission/report/v1" computes `let parsed = decimal.ParseIntDecimal64(input0)
+let length = int64(len(input0))
+let unsigned_decimal = length > 0 && length <= 1024
+let offset = 0
+for offset = 0; offset < 1024; offset = offset + 1 {
+    if offset < length {
+        let byte_value = int64(input0[offset])
+        if byte_value < 48 || byte_value > 57 { unsigned_decimal = false }
+    }
+}
+let metadata_invalid = input1 < 0 || input2 < 0 || input3 < 0 || (input1 == 0 && input0 != "")
+let parser_supported = parsed.input == input0 && parsed.error_kind >= 0 && parsed.error_kind <= 2 && parsed.parsed == (parsed.error_kind == 0)
+let length_matches = parsed.parsed && parsed.error_kind == 0 && parsed.value >= 0 && input2 >= 0 && parsed.value == input2
+let within_budget = input2 >= 0 && input3 >= 0 && input2 <= input3
+let reason = 0
+if metadata_invalid { reason = 1 }
+if reason == 0 && !input6 { reason = 2 }
+if reason == 0 && !input5 { reason = 3 }
+if reason == 0 && input4 { reason = 4 }
+if reason == 0 && input1 == 0 { reason = 5 }
+if reason == 0 && input1 > 1 { reason = 6 }
+if reason == 0 && !parser_supported { reason = 12 }
+if reason == 0 && parsed.error_kind == 1 { reason = 7 }
+if reason == 0 && parsed.error_kind == 2 { reason = 8 }
+if reason == 0 && !unsigned_decimal { reason = 9 }
+if reason == 0 && !length_matches { reason = 10 }
+if reason == 0 && !within_budget { reason = 11 }
+let eligible = reason == 0
+return PayloadAdmissionFacts{
+    declared_length: input0,
+    content_length_occurrences: input1,
+    observed_body_bytes: input2,
+    maximum_payload_bytes: input3,
+    transfer_encoding_present: input4,
+    body_observation_bound_to_request: input5,
+    current_access: input6,
+    parse_error_kind: parsed.error_kind,
+    parsed_value: parsed.value,
+    unsigned_decimal: unsigned_decimal,
+    length_matches: length_matches,
+    within_budget: within_budget,
+    eligible: eligible,
+    reason: reason,
+}`

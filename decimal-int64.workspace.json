@@ -1,0 +1,13 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "go/strconv",
+    "activity": "ParseIntDecimal64"
+  },
+  "packages": [
+    {
+      "path": "go/strconv",
+      "sources": ["ports/strconv/decimal.gooo"]
+    }
+  ]
+}

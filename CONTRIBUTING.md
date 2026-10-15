@@ -157,6 +157,7 @@ go run ./cmd/gen-unicode --check
 go run ./cmd/gen-simple-fold --check
 go run ./cmd/gen-case-mapping --check
 python3 tools/gen-uuid-quote.py --check
+python3 -I -B tools/generate-payload-corpus.py --check
 go run ./cmd/verify --out out/contribution
 ./tools/probe.sh --out out/contribution-probes
 ```
@@ -171,22 +172,35 @@ skipped test does not verify a receipt.
 파일을 해당 검사에 전달합니다. 건너뛴 검사를 receipt 검증으로 기록하지 않습니다.
 
 CI runs the complete native differential verifier with two bounded workers;
-the receipt must record that worker count. The original 62 suites, 159,781 cases
-and 2,332 replay batches remain a byte-preserved prefix. The appended literal Cut
-family adds three ports and one importing Report with the same 32 authored tuples
-each. The actual nativeBatchEnd partition check gives one batch for each port
-and two for Report: the required integrated roster is 66 suites, 159,909 case
-observations and 2,337 replay batches. CI also requires exactly 2,471 timing
-events, with a COMPLETE footer and no failed, canceled, missing or incomplete
-records. These partition counts are coverage requirements; completed native
-execution and saved replay must still pass for the current source. All previous
-gates remain required. Verifier correctness tests share only
+the receipt must record that worker count. The historical 66 suites retain all
+159,909 ordered cases: their legacy partition had 2,337 batches/2,471 timing
+records; the explicit UUID compact profile had 2,109 batches/2,243 timing records.
+The decimal parser adds 256 inputs and PayloadAdmissionFacts adds 101 unique
+seven-fact tuples, with the original 17 policy inputs first. The required current
+roster is 68 suites and 160,266 cases. The current source partition adds five
+parser batches and four policy batches: CI UUID compact totals are 2,118 batches
+and 2,256 timing records; legacy totals are 2,346 and 2,484. These are source
+partition requirements, not native completion. Require a COMPLETE footer and reject failed,
+canceled, missing or incomplete records. All original cases, oracles, source
+workspaces, independent regressions and other gates remain required. Every new
+batch needs fresh native execution and its own saved replay; input generation or
+a prior private observation is not public current-source acceptance. Verifier correctness tests share only
 compiled Go packages in a private cache owned and removed by that test process.
 Each fixture still executes fresh source and writes separate evidence; the
 nil-cache path and warm-cache changed-source rejection remain tested.
 Use the workflow's native oracle/replay checks and automated Node/Wasm checks
 for reproducible regression testing. Manual Chrome checks are optional UX
 observations and do not replace those checks.
+
+
+For the decimal/payload addition, preserve decoded valid UTF-8 Text<=1024 bytes
+and exact signed64 metadata before conversions. Keep syntax/range distinctions
+and original input echoes; Go `+1`/`-0` parse success must not imply unsigned
+payload spelling or HTTP eligibility. Expected records must come from actual
+pinned Go parsing plus an independently implemented policy. The 101-row fixture
+is input-only and is checked reproducibly by the generator command above.
+Host binding/current access remain caller facts; this pure example does not
+implement request framing, body I/O, authorization enforcement or atomic quotas.
 
 `--timing-out out/contribution/timing.jsonl` adds optional suite and batch phase
 wall-time observations under the new evidence directory. CI requires its complete
@@ -198,12 +212,14 @@ CI also prints a compact phase-total and per-suite timing summary, so analysis d
 not require downloading the complete native evidence archive.
 
 CI는 제한된 워커 2개로 전체 native 비교를 실행하고 receipt의 워커 수도 확인합니다.
-기존 62개 suite, 159,781개 case, 2,332개 replay batch를 원래 prefix로 보존합니다.
-Cut 세 함수와 importing Report는 같은 수동 입력 32쌍씩을 뒤에 추가하여 작성상
-nativeBatchEnd의 실제 분할 검증에서 Cut·CutPrefix·CutSuffix는 각 1개, Report는 2개 batch로
-계산됐습니다. 필수 통합 범위는 66개 suite·159,909개 case·2,337개 replay batch이며,
-CI는 실패·취소·누락·미완료가 없는 COMPLETE footer와 정확한 계측 event 2,471개도 요구합니다.
-분할 수치는 필수 검증 범위이며 현재 소스의 native 실행·저장 replay 완료를 대신하지 않습니다.
+기존66개 suite의159,909개 입력 순서·기대값·workspace를 보존합니다. 해당 역사적 목록은
+legacy에서2,337개 배치·2,471개 계측 기록, UUID compact profile에서2,109개 배치·2,243개
+기록이었습니다. 십진수 파서256개와 원본17개를 앞에 보존한 정책101개 입력을 더해 현재
+필수 범위는68개 suite·160,266개 case입니다. 현재 소스 분할에서 parser5·policy4배치를
+추가하여 CI profile은2,118배치·2,256계측기록, legacy는2,346·2,484를 요구합니다.
+이 분할 관측은 native 완료가 아닙니다. 실패·취소·누락·
+미완료 없이 COMPLETE footer가 있어야 하며 모든 기존 독립 회귀 검사를 유지합니다.
+입력 생성이나 이전 private 관측은 현재 공개 소스의 native 실행·저장 replay 성공이 아닙니다.
 검증기 테스트는
 프로세스가 소유하고 종료 시 제거하는 전용 캐시에서 Go 컴파일 결과만 공유합니다.
 입력 소스의 실행과 증거는 매번 새로 만들며, 캐시가 없는 경로와 캐시가 따뜻해진 뒤

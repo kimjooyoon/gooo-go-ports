@@ -1,0 +1,76 @@
+// Copyright 2009 The Go Authors. All rights reserved.
+// Copyright 2025 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license reproduced in third_party/GO-LICENSE.
+//
+// Adapted behavior: Go 1.27.2 strconv.ParseInt(input, 10, 64), public
+// src/strconv/number.go and src/internal/strconv/atoi.go, pinned in provenance.json.
+// Two nonnegative 32-bit limbs replace the upstream uint64 accumulator.
+// The unsigned overflow point precedes the final signed-range check, preserving
+// the upstream difference between signed-overflow+bad-suffix and uint64 overflow.
+//
+// Compatible inputs are decoded valid UTF-8 Text with at most 1024 bytes.
+// Original Text, returned value and syntax/range class are preserved.
+// Error kind 3 is a separate >1024-byte body extension, before the bounded scan;
+// native input validation may reject that value before this activity runs.
+package strconv
+namespace gooo_ports_strconv
+
+entity Text id "gooo://std/text"
+entity Integer id "gooo://std/integer"
+entity Boolean id "gooo://std/boolean"
+entity DecimalInt64Result id "gooo://go-ports/strconv/decimal-int64-result/v1" fields {
+    field input id "gooo://go-ports/strconv/decimal-int64-result/v1/input" type string required one
+    field value id "gooo://go-ports/strconv/decimal-int64-result/v1/value" type integer required one
+    field parsed id "gooo://go-ports/strconv/decimal-int64-result/v1/parsed" type boolean required one
+    field error_kind id "gooo://go-ports/strconv/decimal-int64-result/v1/error_kind" type integer required one
+}
+
+activity ParseIntDecimal64(Text) -> DecimalInt64Result id "gooo://go/strconv/parse-int-decimal64/v1" computes `let length = int64(len(input))
+if length > 1024 { return DecimalInt64Result{input: input, value: 0, parsed: false, error_kind: 3} }
+if length == 0 { return DecimalInt64Result{input: input, value: 0, parsed: false, error_kind: 1} }
+let negative = false
+let start = 0
+let first = int64(input[0])
+if first == 45 {
+    negative = true
+    start = 1
+}
+if first == 43 { start = 1 }
+if start == length { return DecimalInt64Result{input: input, value: 0, parsed: false, error_kind: 1} }
+let high = 0
+let low = 0
+let offset = 0
+for offset = 0; offset < 1024; offset = offset + 1 {
+    if offset >= start && offset < length {
+        let byte_value = int64(input[offset])
+        if byte_value < 48 || byte_value > 57 {
+            return DecimalInt64Result{input: input, value: 0, parsed: false, error_kind: 1}
+        }
+        let digit = byte_value - 48
+        let low_product = low * 10 + digit
+        let carry = low_product / 4294967296
+        low = low_product % 4294967296
+        let high_product = high * 10 + carry
+        if high_product > 4294967295 {
+            if negative { return DecimalInt64Result{input: input, value: -9223372036854775808, parsed: false, error_kind: 2} }
+            return DecimalInt64Result{input: input, value: 9223372036854775807, parsed: false, error_kind: 2}
+        }
+        high = high_product
+    }
+}
+if negative {
+    if high > 2147483648 || (high == 2147483648 && low > 0) {
+        return DecimalInt64Result{input: input, value: -9223372036854775808, parsed: false, error_kind: 2}
+    }
+    if high == 2147483648 {
+        return DecimalInt64Result{input: input, value: -9223372036854775808, parsed: true, error_kind: 0}
+    }
+} else {
+    if high >= 2147483648 {
+        return DecimalInt64Result{input: input, value: 9223372036854775807, parsed: false, error_kind: 2}
+    }
+}
+let value = high * 4294967296 + low
+if negative { value = -value }
+return DecimalInt64Result{input: input, value: value, parsed: true, error_kind: 0}`

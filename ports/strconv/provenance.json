@@ -1,0 +1,58 @@
+{
+  "schema": "gooo/strconv-decimal-source-provenance/v2",
+  "kind": "Gooo behavior adaptation; not a Go runtime wrapper",
+  "entry": "go/strconv:ParseIntDecimal64",
+  "activity_id": "gooo://go/strconv/parse-int-decimal64/v1",
+  "pins": {
+    "Go_version": "go1.27.2",
+    "Go_revision": "022c8636110ebac86a9b88724cda168ed713c21f",
+    "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2"
+  },
+  "upstream": [
+    {
+      "repository": "https://github.com/golang/go",
+      "revision": "022c8636110ebac86a9b88724cda168ed713c21f",
+      "repository_path": "src/strconv/number.go",
+      "lines": "112-143,230-277",
+      "bytes": 11360,
+      "sha256": "dda43e8c91d95f9dea0c46b2fec6637e5520cae099e40c5965dca0e41bbaab9e"
+    },
+    {
+      "repository": "https://github.com/golang/go",
+      "revision": "022c8636110ebac86a9b88724cda168ed713c21f",
+      "repository_path": "src/internal/strconv/atoi.go",
+      "lines": "47-157,172-217",
+      "bytes": 6629,
+      "sha256": "bd69756b79c2f007ce7900bea400051f9f9da600c9c6bad656e46900331663d8"
+    }
+  ],
+  "ported_source": {
+    "path": "ports/strconv/decimal.gooo",
+    "bytes": 3664,
+    "sha256": "409c83f22dd22264d60470fbfc37aaa49bfd8bdd49be8d6a4b6038c7ad19b2a1"
+  },
+  "upstream_license": {
+    "path": "third_party/GO-LICENSE",
+    "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+  },
+  "project_license": {
+    "path": "LICENSE",
+    "sha256": "099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48"
+  },
+  "fixture": {
+    "path": "ports/strconv/corpus-256.json",
+    "schema": "gooo/strconv-decimal-inputs/v1",
+    "cases": 256,
+    "bytes": 60889,
+    "sha256": "27a2a638f7de7d9b23c69539234e7bc6c61a8c628dca12c65dda46bb8d6b9c99",
+    "input_only": true
+  },
+  "domain": "Decoded valid UTF-8 Text0..1024 bytes; Integer is exact signed64. No raw malformed UTF-8/surrogate preservation/refusal claim.",
+  "differences": [
+    "Specializes ParseInt(s,10,64); no base inference, configurable bitSize, unsigned API or NumError object. Returns original input,value,parsed,error_kind.",
+    "Error kinds0success/1syntax/2range retain Go returned int64, including signed saturation and unsigned-overflow-before-invalid-suffix precedence.",
+    "Explicit >1024 body guard returns separate unsupported-domain kind3, outside Go-compatible domain; native Text validation may reject first. No native kind3 observation is claimed."
+  ],
+  "implementation": "Gooo counted loop and nonnegative32bit limbs avoid unsigned64 overflow while retaining the upstream scan order. Go supplies independent expected values only.",
+  "validation": "Fixture bytes contain no expected results; fresh public native differential execution and saved replay are required. Finite256 inputs do not establish all Text or whole strconv compatibility."
+}

@@ -1,0 +1,285 @@
+{
+  "schema": "gooo/payload-admission-contract/v1",
+  "status": "PUBLIC_FINITE_POLICY_CONTRACT",
+  "name": "PayloadAdmissionFacts",
+  "kind": "Original pure imported API-policy composition; not a Go HTTP framing port.",
+  "entry": "app/payload-admission:Report",
+  "package_name": "payload_admission",
+  "namespace": "gooo_ports_examples_payload_admission",
+  "activity_id": "gooo://go-ports/examples/payload-admission/report/v1",
+  "pins": {
+    "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+    "Go_version": "go1.27.2",
+    "parser_entry": "go/strconv:ParseIntDecimal64",
+    "parser_activity_id": "gooo://go/strconv/parse-int-decimal64/v1",
+    "parser_source": {
+      "path": "ports/strconv/decimal.gooo",
+      "bytes": 3664,
+      "sha256": "409c83f22dd22264d60470fbfc37aaa49bfd8bdd49be8d6a4b6038c7ad19b2a1"
+    },
+    "parser_specialization": "Decoded valid UTF-8 Text<=1024B; actual Go strconv.ParseInt(original,10,64) value and syntax/range class. Four result fields documented in ports/strconv/README.md."
+  },
+  "inputs": [
+    {
+      "position": 0,
+      "name": "declared_length",
+      "entity": "Text",
+      "native_port": "input0",
+      "native_key": "app/payload-admission:Report.input0"
+    },
+    {
+      "position": 1,
+      "name": "content_length_occurrences",
+      "entity": "Integer",
+      "native_port": "input1",
+      "native_key": "app/payload-admission:Report.input1"
+    },
+    {
+      "position": 2,
+      "name": "observed_body_bytes",
+      "entity": "Integer",
+      "native_port": "input2",
+      "native_key": "app/payload-admission:Report.input2"
+    },
+    {
+      "position": 3,
+      "name": "maximum_payload_bytes",
+      "entity": "Integer",
+      "native_port": "input3",
+      "native_key": "app/payload-admission:Report.input3"
+    },
+    {
+      "position": 4,
+      "name": "transfer_encoding_present",
+      "entity": "Boolean",
+      "native_port": "input4",
+      "native_key": "app/payload-admission:Report.input4"
+    },
+    {
+      "position": 5,
+      "name": "body_observation_bound_to_request",
+      "entity": "Boolean",
+      "native_port": "input5",
+      "native_key": "app/payload-admission:Report.input5"
+    },
+    {
+      "position": 6,
+      "name": "current_access",
+      "entity": "Boolean",
+      "native_port": "input6",
+      "native_key": "app/payload-admission:Report.input6"
+    }
+  ],
+  "input_domain": {
+    "declared_length": "Exact decoded validUTF8 Text,0..1024 bytes. It is not trimmed, normalized, sign-stripped, split or comma-joined. Missing header uses emptyText and occurrence0.",
+    "integers": "All three Integer values are exact signed64, including extrema. Negative metadata is semantically invalid but still returns a report preserving the inputs; no arithmetic is performed on invalid metadata.",
+    "booleans": "Exact Boolean values. Unknown/unverified access must be false; unknown/unverified request/body observation must be unbound. Unknown counts/byte counts/limit must not be invented as0; represent unavailability as a negative sentinel and/or unbound evidence.",
+    "wire": "Wrong/missing/null/type/oversize input route behavior requires its own future observation. No fabricated Report on upstream/compiler/import refusal. Native JSON may replace malformed rawUTF8/surrogates; no strict raw-wire preservation/refusal claim."
+  },
+  "result": {
+    "name": "PayloadAdmissionFacts",
+    "entity_id": "gooo://go-ports/examples/payload-admission/facts/v1",
+    "field_count": 14,
+    "fields": [
+      {
+        "name": "declared_length",
+        "type": "Text",
+        "id": "gooo://go-ports/examples/payload-admission/facts/v1/declared_length",
+        "required": true
+      },
+      {
+        "name": "content_length_occurrences",
+        "type": "Integer",
+        "id": "gooo://go-ports/examples/payload-admission/facts/v1/content_length_occurrences",
+        "required": true
+      },
+      {
+        "name": "observed_body_bytes",
+        "type": "Integer",
+        "id": "gooo://go-ports/examples/payload-admission/facts/v1/observed_body_bytes",
+        "required": true
+      },
+      {
+        "name": "maximum_payload_bytes",
+        "type": "Integer",
+        "id": "gooo://go-ports/examples/payload-admission/facts/v1/maximum_payload_bytes",
+        "required": true
+      },
+      {
+        "name": "transfer_encoding_present",
+        "type": "Boolean",
+        "id": "gooo://go-ports/examples/payload-admission/facts/v1/transfer_encoding_present",
+        "required": true
+      },
+      {
+        "name": "body_observation_bound_to_request",
+        "type": "Boolean",
+        "id": "gooo://go-ports/examples/payload-admission/facts/v1/body_observation_bound_to_request",
+        "required": true
+      },
+      {
+        "name": "current_access",
+        "type": "Boolean",
+        "id": "gooo://go-ports/examples/payload-admission/facts/v1/current_access",
+        "required": true
+      },
+      {
+        "name": "parse_error_kind",
+        "type": "Integer",
+        "id": "gooo://go-ports/examples/payload-admission/facts/v1/parse_error_kind",
+        "required": true
+      },
+      {
+        "name": "parsed_value",
+        "type": "Integer",
+        "id": "gooo://go-ports/examples/payload-admission/facts/v1/parsed_value",
+        "required": true
+      },
+      {
+        "name": "unsigned_decimal",
+        "type": "Boolean",
+        "id": "gooo://go-ports/examples/payload-admission/facts/v1/unsigned_decimal",
+        "required": true
+      },
+      {
+        "name": "length_matches",
+        "type": "Boolean",
+        "id": "gooo://go-ports/examples/payload-admission/facts/v1/length_matches",
+        "required": true
+      },
+      {
+        "name": "within_budget",
+        "type": "Boolean",
+        "id": "gooo://go-ports/examples/payload-admission/facts/v1/within_budget",
+        "required": true
+      },
+      {
+        "name": "eligible",
+        "type": "Boolean",
+        "id": "gooo://go-ports/examples/payload-admission/facts/v1/eligible",
+        "required": true
+      },
+      {
+        "name": "reason",
+        "type": "Integer",
+        "id": "gooo://go-ports/examples/payload-admission/facts/v1/reason",
+        "required": true
+      }
+    ]
+  },
+  "explicit_field_decision": {
+    "change_from_research": "Replace redundant parse_ok with parse_error_kind; rename http_decimal to unsigned_decimal. Seven original echoes plus seven derived facts stay14fields, below83916field limit.",
+    "why": "The range/syntax distinction and signed saturation remain visible even when an earlier access/context refusal wins. Parse success is derivable as kind0; neither a clamped numeric value nor Go ParseInt success grants admission."
+  },
+  "derived_facts": {
+    "echoes": "All seven original input values are copied exactly. Signed64 extrema and Text bytes are not coerced or normalized.",
+    "parse_error_kind": "Copy the imported parser error_kind:0 success,1 ErrSyntax,2 ErrRange. Compute parser facts for every in-domain Text even if metadata/access/context later refuses. The >1024 parser extension3 is outside this composition domain and is not claimed reachable.",
+    "parsed_value": "Copy the imported parser returned int64 exactly, including syntax0 and signed range saturation. Never infer success from the value alone.",
+    "unsigned_decimal": "True iff declared_length is nonempty and every decoded UTF8 byte is ASCII0x30..0x39. Leading zeros ARE accepted. Plus/minus signs, whitespace, comma,underscore,NUL,Unicode digits/sign lookalikes are false. This is a spelling fact, not HTTP framing validation.",
+    "length_matches": "True iff imported parsed==true,error_kind==0,parsed_value>=0,observed_body_bytes>=0,and parsed_value==observed_body_bytes. Thus saturated MaxInt64 equal to observedMaxInt64 is NOT a match on a range error.",
+    "within_budget": "True iff observed_body_bytes>=0,maximum_payload_bytes>=0,and observed_body_bytes<=maximum_payload_bytes. Descriptive independently of header validity/context/access. No sum/subtraction/multiplication can overflow.",
+    "eligible": "True iff metadata valid,current_access,true binding,no Transfer-Encoding,exactly one Content-Length occurrence,parser facts internally consistent,parsed true/error_kind0,unsigned_decimal,length_matches,within_budget alltrue. No other fact or reasonfalse is permission.",
+    "reason": "First matching entry in reason_precedence. Eligible iff reason0. Other booleans can be true in a refused report; never aggregate them as authorization.",
+    "defensive_parser_consistency": "Require imported input==originalText and (parsed==true iff error_kind==0), with error_kind in0..2. Unknown/error_kind3 or inconsistent typed result yields reason12 after structural header guards. Compiler/import failure produces no invented result."
+  },
+  "reason_precedence": [
+    {
+      "code": 1,
+      "name": "INVALID_METADATA",
+      "condition": "Any occurrence/observed/max integer<0, or occurrences==0 with nonempty declared_length."
+    },
+    {
+      "code": 2,
+      "name": "CURRENT_ACCESS_DENIED",
+      "condition": "current_access==false."
+    },
+    {
+      "code": 3,
+      "name": "OBSERVATION_UNBOUND",
+      "condition": "body_observation_bound_to_request==false."
+    },
+    {
+      "code": 4,
+      "name": "TRANSFER_ENCODING_PRESENT",
+      "condition": "transfer_encoding_present==true."
+    },
+    {
+      "code": 5,
+      "name": "CONTENT_LENGTH_MISSING",
+      "condition": "content_length_occurrences==0."
+    },
+    {
+      "code": 6,
+      "name": "CONTENT_LENGTH_REPEATED",
+      "condition": "content_length_occurrences>1; equal repeated fields are also refused."
+    },
+    {
+      "code": 12,
+      "name": "PARSER_FACT_UNSUPPORTED",
+      "condition": "Defensive unreachable branch for the pinned in-domain parser: unexpected error_kind, parsed/error inconsistency, or parser input echo mismatch. Never treat an unsupported/import failure as eligible."
+    },
+    {
+      "code": 7,
+      "name": "PARSE_SYNTAX",
+      "condition": "Imported parse_error_kind==1."
+    },
+    {
+      "code": 8,
+      "name": "PARSE_RANGE",
+      "condition": "Imported parse_error_kind==2; signed saturation is retained but never accepted as a length."
+    },
+    {
+      "code": 9,
+      "name": "UNSIGNED_DECIMAL_REQUIRED",
+      "condition": "unsigned_decimal==false after successful ParseInt; e.g.+1 or-0."
+    },
+    {
+      "code": 10,
+      "name": "BODY_LENGTH_MISMATCH",
+      "condition": "length_matches==false."
+    },
+    {
+      "code": 11,
+      "name": "PAYLOAD_BUDGET_EXCEEDED",
+      "condition": "within_budget==false."
+    },
+    {
+      "code": 0,
+      "name": "ELIGIBLE_WITHIN_DECLARED_FACTS",
+      "condition": "Every preceding refusal absent and all stated eligibility predicates true."
+    }
+  ],
+  "reason_order_notes": [
+    "Invalid metadata dominates all context refusals; current access dominates unbound; unbound dominates TE; TE dominates missing/repeated headers.",
+    "Missing/repeated headers dominate parser classification; a missing empty value can still expose syntax facts while reason remains missing.",
+    "Syntax and range retain imported Go precedence BEFORE unsigned spelling. Therefore uint64 overflow encountered before an invalid suffix can report PARSE_RANGE while unsigned_decimal=false. Both refuse.",
+    "Go-success+1/-0 reaches unsigned spelling refusal. Nonempty ASCII digits can still be range-rejected.",
+    "Mismatch dominates budget failure when both occur. Zero observed length and zero limit are valid when the exact declared0 header is otherwise eligible.",
+    "Reason12 is defensive and unreachable for the fixed compliant in-domain parser; finite input fixtures do not claim to cover it."
+  ],
+  "truthful_host_binding": {
+    "same_observation": "The host must truthfully supply the raw selected Content-Length value, count of ALL original field occurrences, TE presence, complete observed body byte count, applicable route limit and current access for the same exact request/body/principal/operation and policy context. This function has no request ID or proof verifier and cannot establish that truth.",
+    "occurrence_extraction": "Count original field occurrences before filtering/coalescing. A single comma-containing field remains one occurrence with its complete raw value; do not split/trim/coalesce it into a permissible input. For repeated fields raw declared_length may be one exact selected original value, but count>1 always refuses.",
+    "binding_boolean": "True means all payload-associated raw header/body observations correspond to the same exact selected request/body snapshot and are complete/verified. Any unavailable/unverified/normalized-away framing fact requires false; TE unknown must not masquerade as absent. Current-access and route-limit truth must also be bound to that same operation context by the host.",
+    "decision_use": "The host must enforce current authority and bind/check the decision at use; it must handle revocation, body changes, TOCTOU, quotas/reservations, cancellation and actual network framing. No adapter,atomic claim,enforcement,clock,network I/O,body reader or send is implemented.",
+    "human_approval": "The pure function requires no per-request human approval and performs no effect. This does not prove that an external effect is safe without a correctly enforcing host."
+  },
+  "HTTP_scope": "Deliberately stricter single-Content-Length/no-TE policy. It refuses some otherwise valid HTTP requests (including missing length), and does not implement net/http,RFC framing,chunked decoding,duplicate-header reconciliation,request-smuggling prevention,stream completeness or a security guarantee. unsigned_decimal is only ASCII spelling.",
+  "deterministic_Gooo_design": {
+    "signature": "Report(Text,Integer,Integer,Integer,Boolean,Boolean,Boolean)->PayloadAdmissionFacts",
+    "imports": "import decimal \"go/strconv\"; one call decimal.ParseIntDecimal64(input0) outside the local scan. Read its returned4field record with ordinary field selectors.",
+    "scan": "One local counter0..<literal1024 with unit step. Only read input0[offset] when offset<int64(len(input0)); set unsigned_decimal false on any nonASCII digit. EmptyText starts false. No nested loops/call-inside-loop,unbounded iteration,List,Go fallback,model/effect or optional fields.",
+    "facts_and_reason": "Local Boolean comparisons and ordered if/else decide one reason, then one required14field record preserves all7inputs. Parser numeric values are never reparsed by the consumer.",
+    "record_budget": "Two required scalar-field records: imported parser4fields and consumer14fields; each remains within the pinned compiler16field limit. Public validation must bind fresh workspace/source/type/native/replay evidence."
+  },
+  "status_boundary": "Public contract and input-only fixtures describe finite pure policy behavior. They are not a transport or host enforcement adapter; current checkout acceptance requires fresh native execution and saved replay against independent Go values.",
+  "input_corpus": {
+    "schema": "gooo/payload-admission-inputs/v1",
+    "file": "examples/payload-admission/corpus.json",
+    "original_seed": "examples/payload-admission/manual17.json",
+    "original_seed_cases": 17,
+    "input_only": true,
+    "expected_owner": "Independent pinned Go oracle uses actual strconv.ParseInt and separately implemented policy; fixtures contain no expected values.",
+    "scope": "Finite systematic metadata/context/count/parse/spelling/mismatch/budget witnesses, not an exhaustive product. Reason12, malformed wire, oversized Text, all HTTP or host truth are not established."
+  }
+}
