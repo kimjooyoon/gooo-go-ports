@@ -46,7 +46,7 @@ REDELIVERY_COMMON_COMMANDS = (
 )
 PATH_COMMAND = 'python3 -B tools/check-path-facts.py --repository . --out out/path-facts --go "$(go env GOROOT)/bin/go" --compiler ./.gooo --timeout 300'
 PATH_COMMON_UNIT_BLOCK = '          # Full scope runs these13 Python controls inside the bounded sidecar once.\n          # Documentation-only PRs still run them as common non-native checks.\n          if [ "${{ steps.change-scope.outputs.docs_only }}" = "true" ]; then\n            python3 -I -B tools/check-path-facts_test.py\n          fi\n'
-NATIVE_COMPARISON_COMMAND = "go run ./cmd/verify --workers 2 --case-profile uuid-and-literal-report-compact-v1 --workspace-profile dependency-closure-v1 --out out/ci --timing-out out/ci/timing.jsonl"
+NATIVE_COMPARISON_COMMAND = "go run -mod=readonly ./cmd/verify --workers 2 --case-profile uuid-and-literal-report-compact-v1 --workspace-profile dependency-closure-v1 --out out/ci --timing-out out/ci/timing.jsonl"
 CASE_PROFILE_ASSERTION = '''            .case_profile == {
               schema: "gooo/native-case-profile/v1", name: "uuid-and-literal-report-compact-v1",
               compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.2",
@@ -72,11 +72,11 @@ TIMING_HEADER_ASSERTION = '''          head -n 1 out/ci/timing.jsonl | jq -e --s
             .case_profile == $summary[0].case_profile and
             .workspace_profile == $summary[0].workspace_profile and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
-            .configured_workers == 2 and .expected_suites == 70 and .expected_cases == 170227 and
+            .configured_workers == 2 and .expected_suites == 73 and .expected_cases == 171167 and
             .expected_boundaries_recomputed == false and
             .boundary_scope == "Actual contiguous ranges only. UUID3 retain uuid-compact-v1 wire/partitions; literal-text Report uses a new compact writer/partition identity. No prior profile PASS or full batch total is inherited. Index/Count and other existing non-UUID suites retain their indented writer; decimal/payload retain their source-bounded pretty JSON policy. Fresh native/saved replay and the full summary gate remain required; no timing or speedup claim." and
-            (.identity.source_files | length) == 142 and
-            (.identity.source_files | keys) == [".github/workflows/ci.yml", "CONTRIBUTING.md", "README.md", "cmd/build-demo/api_policy.go", "cmd/build-demo/api_policy_test.go", "cmd/build-demo/main.go", "cmd/verify/case_exhaustive_test.go", "cmd/verify/case_profile.go", "cmd/verify/case_profile_integration_test.go", "cmd/verify/case_profile_test.go", "cmd/verify/contracts.go", "cmd/verify/contracts_test.go", "cmd/verify/decimal_payload_batches.go", "cmd/verify/decimal_payload_batches_test.go", "cmd/verify/decimal_payload_contracts_test.go", "cmd/verify/decimal_payload_corpus.go", "cmd/verify/decimal_payload_corpus_test.go", "cmd/verify/inspect.go", "cmd/verify/literal_cut_contracts.go", "cmd/verify/literal_cut_corpus.go", "cmd/verify/literal_cut_corpus_test.go", "cmd/verify/literal_cut_integration_test.go", "cmd/verify/literal_report_case_profile_test.go", "cmd/verify/main.go", "cmd/verify/native_build_cache.go", "cmd/verify/native_build_cache_test.go", "cmd/verify/native_correctness_cache_test.go", "cmd/verify/native_suite.go", "cmd/verify/native_timing.go", "cmd/verify/path_alias_batches.go", "cmd/verify/path_alias_batches_test.go", "cmd/verify/path_alias_contracts.go", "cmd/verify/path_alias_contracts_test.go", "cmd/verify/path_alias_corpus.go", "cmd/verify/path_alias_corpus_test.go", "cmd/verify/simple_fold_exhaustive_test.go", "cmd/verify/string_byte_batches.go", "cmd/verify/suite_workers.go", "cmd/verify/suite_workers_test.go", "cmd/verify/testdata/literal-cut-original62.json", "cmd/verify/whitespace_contracts.go", "cmd/verify/workspace_catalog.go", "cmd/verify/workspace_catalog_test.go", "cmd/verify/workspace_profile.go", "cmd/verify/workspace_profile_test.go", "cmd/verify/ycbcr_exhaustive_test.go", "decimal-int64.workspace.json", "examples/agentmesh-service-policy/checked_impact.gooo", "examples/agentmesh-service-policy/checked_matcher.gooo", "examples/agentmesh-service-policy/checked_refinement.gooo", "examples/agentmesh-service-policy/conditional_apply.gooo", "examples/agentmesh-service-policy/domain.gooo", "examples/agentmesh-service-policy/impact.gooo", "examples/agentmesh-service-policy/refinement.gooo", "examples/alpha-matte/main.gooo", "examples/byte-rotation/main.gooo", "examples/byte-summary/main.gooo", "examples/case-inspector/main.gooo", "examples/cel-api-policy/main.gooo", "examples/color-inspector/main.gooo", "examples/crop-planner/crop_planner.gooo", "examples/crop-planner/drag_crop.gooo", "examples/duration-quantizer/main.gooo", "examples/fits-crop/main.gooo", "examples/fixed-pixel-bounds/main.gooo", "examples/identifier-rune/main.gooo", "examples/literal-cut-report/README.md", "examples/literal-cut-report/inputs.json", "examples/literal-cut-report/main.gooo", "examples/literal-cut-report/manual-contract.json", "examples/literal-text-report/main.gooo", "examples/path-alias-facts/README.md", "examples/path-alias-facts/anchor-pairs-24.json", "examples/path-alias-facts/clean-inputs.json", "examples/path-alias-facts/contract.json", "examples/path-alias-facts/corpus-120.json", "examples/path-alias-facts/inputs.json", "examples/path-alias-facts/main.gooo", "examples/payload-admission/README.md", "examples/payload-admission/contract.json", "examples/payload-admission/corpus.json", "examples/payload-admission/inputs.json", "examples/payload-admission/main.gooo", "examples/payload-admission/manual17.json", "examples/response.gooo", "examples/simple-fold/main.gooo", "examples/string-byte-search/main.gooo", "examples/unicode-inspector/main.gooo", "examples/uuid-format-inspector/main.gooo", "examples/whitespace-inspector/main.gooo", "examples/ycbcr-inspector/main.gooo", "literal-cut-report.workspace.json", "path-alias-facts.workspace.json", "path-clean.workspace.json", "payload-admission.workspace.json", "ports/agentmesh/service_pattern.gooo", "ports/cel/scalar_access.gooo", "ports/google/uuid/quote.gooo", "ports/google/uuid/text/parse_canonical.gooo", "ports/google/uuid/validate.gooo", "ports/image/canon.gooo", "ports/image/color.gooo", "ports/image/fixed.gooo", "ports/image/geometry.gooo", "ports/image/nrgba.gooo", "ports/image/ycbcr.gooo", "ports/math/bits.gooo", "ports/net/http.gooo", "ports/path/README.md", "ports/path/clean-corpus-9841.json", "ports/path/clean.gooo", "ports/path/path.gooo", "ports/path/provenance.json", "ports/strconv/README.md", "ports/strconv/corpus-256.json", "ports/strconv/decimal.gooo", "ports/strconv/inputs.json", "ports/strconv/provenance.json", "ports/strings/cut.gooo", "ports/strings/literal.gooo", "ports/strings/search.gooo", "ports/time/duration.gooo", "ports/unicode/case_mapping.gooo", "ports/unicode/classification.gooo", "ports/unicode/simple_fold.gooo", "ports/unicode/space.gooo", "ports/unicode/utf16.gooo", "ports/unicode/utf8.gooo", "site/api-policy-worker.js", "site/api-policy.css", "site/api-policy.html", "site/api-policy.js", "tools/api-policy-app.test.cjs", "tools/api-policy-browser-bridge.go.txt", "tools/api-policy-browser-smoke.mjs", "tools/check-ci-scope-workflow_test.py", "tools/check-literal-text-inputs.py", "tools/check-literal-text-inputs_test.py", "tools/classify-ci-scope.py", "tools/generate-payload-corpus.py", "upstream.json", "verification-catalog.json"] and
+            (.identity.source_files | length) == 177 and
+            (.identity.source_files | keys) == [".github/workflows/ci.yml", "CONTRIBUTING.md", "NOTICE", "README.md", "cmd/build-demo/api_policy.go", "cmd/build-demo/api_policy_test.go", "cmd/build-demo/main.go", "cmd/header-facts-input/main.go", "cmd/header-facts-input/main_test.go", "cmd/verify/case_exhaustive_test.go", "cmd/verify/case_profile.go", "cmd/verify/case_profile_integration_test.go", "cmd/verify/case_profile_test.go", "cmd/verify/contracts.go", "cmd/verify/contracts_test.go", "cmd/verify/decimal_payload_batches.go", "cmd/verify/decimal_payload_batches_test.go", "cmd/verify/decimal_payload_contracts_test.go", "cmd/verify/decimal_payload_corpus.go", "cmd/verify/decimal_payload_corpus_test.go", "cmd/verify/external_oracles.go", "cmd/verify/external_oracles_test.go", "cmd/verify/header_contracts.go", "cmd/verify/header_contracts_test.go", "cmd/verify/header_corpus.go", "cmd/verify/header_corpus_test.go", "cmd/verify/inspect.go", "cmd/verify/legacy_workspace_test.go", "cmd/verify/literal_cut_contracts.go", "cmd/verify/literal_cut_corpus.go", "cmd/verify/literal_cut_corpus_test.go", "cmd/verify/literal_cut_integration_test.go", "cmd/verify/literal_report_case_profile_test.go", "cmd/verify/main.go", "cmd/verify/native_build_cache.go", "cmd/verify/native_build_cache_test.go", "cmd/verify/native_correctness_cache_test.go", "cmd/verify/native_suite.go", "cmd/verify/native_timing.go", "cmd/verify/path_alias_batches.go", "cmd/verify/path_alias_batches_test.go", "cmd/verify/path_alias_contracts.go", "cmd/verify/path_alias_contracts_test.go", "cmd/verify/path_alias_corpus.go", "cmd/verify/path_alias_corpus_test.go", "cmd/verify/simple_fold_exhaustive_test.go", "cmd/verify/string_byte_batches.go", "cmd/verify/suite_workers.go", "cmd/verify/suite_workers_test.go", "cmd/verify/testdata/literal-cut-original62.json", "cmd/verify/whitespace_contracts.go", "cmd/verify/workspace_catalog.go", "cmd/verify/workspace_catalog_test.go", "cmd/verify/workspace_profile.go", "cmd/verify/workspace_profile_test.go", "cmd/verify/ycbcr_exhaustive_test.go", "decimal-int64.workspace.json", "examples/agentmesh-service-policy/checked_impact.gooo", "examples/agentmesh-service-policy/checked_matcher.gooo", "examples/agentmesh-service-policy/checked_refinement.gooo", "examples/agentmesh-service-policy/conditional_apply.gooo", "examples/agentmesh-service-policy/domain.gooo", "examples/agentmesh-service-policy/impact.gooo", "examples/agentmesh-service-policy/refinement.gooo", "examples/alpha-matte/main.gooo", "examples/byte-rotation/main.gooo", "examples/byte-summary/main.gooo", "examples/case-inspector/main.gooo", "examples/cel-api-policy/main.gooo", "examples/color-inspector/main.gooo", "examples/crop-planner/crop_planner.gooo", "examples/crop-planner/drag_crop.gooo", "examples/duration-quantizer/main.gooo", "examples/fits-crop/main.gooo", "examples/fixed-pixel-bounds/main.gooo", "examples/header-field-facts/README.md", "examples/header-field-facts/contract.json", "examples/header-field-facts/corpus.json", "examples/header-field-facts/inputs.json", "examples/header-field-facts/main.gooo", "examples/header-field-facts/name-inputs.json", "examples/header-field-facts/request.json", "examples/header-field-facts/unicode-request.json", "examples/header-field-facts/valid-request.json", "examples/header-field-facts/value-inputs.json", "examples/identifier-rune/main.gooo", "examples/literal-cut-report/README.md", "examples/literal-cut-report/inputs.json", "examples/literal-cut-report/main.gooo", "examples/literal-cut-report/manual-contract.json", "examples/literal-text-report/main.gooo", "examples/path-alias-facts/README.md", "examples/path-alias-facts/anchor-pairs-24.json", "examples/path-alias-facts/clean-inputs.json", "examples/path-alias-facts/contract.json", "examples/path-alias-facts/corpus-120.json", "examples/path-alias-facts/inputs.json", "examples/path-alias-facts/main.gooo", "examples/payload-admission/README.md", "examples/payload-admission/contract.json", "examples/payload-admission/corpus.json", "examples/payload-admission/inputs.json", "examples/payload-admission/main.gooo", "examples/payload-admission/manual17.json", "examples/response.gooo", "examples/simple-fold/main.gooo", "examples/string-byte-search/main.gooo", "examples/unicode-inspector/main.gooo", "examples/uuid-format-inspector/main.gooo", "examples/whitespace-inspector/main.gooo", "examples/ycbcr-inspector/main.gooo", "go.mod", "go.sum", "header-field-facts.workspace.json", "header-field-name.workspace.json", "header-field-value.workspace.json", "internal/headerinput/preflight.go", "internal/headerinput/preflight_test.go", "literal-cut-report.workspace.json", "path-alias-facts.workspace.json", "path-clean.workspace.json", "payload-admission.workspace.json", "ports/agentmesh/service_pattern.gooo", "ports/cel/scalar_access.gooo", "ports/google/uuid/quote.gooo", "ports/google/uuid/text/parse_canonical.gooo", "ports/google/uuid/validate.gooo", "ports/image/canon.gooo", "ports/image/color.gooo", "ports/image/fixed.gooo", "ports/image/geometry.gooo", "ports/image/nrgba.gooo", "ports/image/ycbcr.gooo", "ports/math/bits.gooo", "ports/net/http.gooo", "ports/net/httpguts/README.md", "ports/net/httpguts/headers.gooo", "ports/net/httpguts/provenance.json", "ports/path/README.md", "ports/path/clean-corpus-9841.json", "ports/path/clean.gooo", "ports/path/path.gooo", "ports/path/provenance.json", "ports/strconv/README.md", "ports/strconv/corpus-256.json", "ports/strconv/decimal.gooo", "ports/strconv/inputs.json", "ports/strconv/provenance.json", "ports/strings/cut.gooo", "ports/strings/literal.gooo", "ports/strings/search.gooo", "ports/time/duration.gooo", "ports/unicode/case_mapping.gooo", "ports/unicode/classification.gooo", "ports/unicode/simple_fold.gooo", "ports/unicode/space.gooo", "ports/unicode/utf16.gooo", "ports/unicode/utf8.gooo", "site/api-policy-worker.js", "site/api-policy.css", "site/api-policy.html", "site/api-policy.js", "third_party/x-net/LICENSE", "third_party/x-net/http/httpguts/guts.go.txt", "third_party/x-net/http/httpguts/httplex.go.txt", "third_party/x-net/http/httpguts/httplex_test.go.txt", "tools/api-policy-app.test.cjs", "tools/api-policy-browser-bridge.go.txt", "tools/api-policy-browser-smoke.mjs", "tools/check-ci-scope-workflow_test.py", "tools/check-header-facts-inputs.py", "tools/check-literal-text-inputs.py", "tools/check-literal-text-inputs_test.py", "tools/classify-ci-scope.py", "tools/generate-payload-corpus.py", "upstream.json", "verification-catalog.json"] and
             all($header.identity.source_files[];
               (.bytes | type) == "number" and .bytes > 0 and
               (.sha256 | test("^[0-9a-f]{64}$")))
@@ -86,9 +86,9 @@ TIMING_CLAUSES = (
     '.schema == "gooo/native-verification-timing/v1"', '.kind == "run_end"',
     '.status == "COMPLETE"',
     '.complete == true and .aborted == false and .successful_close_return_required == true',
-    '.seq == 2294', '.expected_suites == 70', '.successful_suites == 70',
-    '.observed_batches == 2153', '.verified_batches == 2153', '.verified_cases == 170227',
-    '.event_count == 2295', '.failed_suites == 0', '.canceled_suites == 0',
+    '.seq == 2321', '.expected_suites == 73', '.successful_suites == 73',
+    '.observed_batches == 2174', '.verified_batches == 2174', '.verified_cases == 171167',
+    '.event_count == 2322', '.failed_suites == 0', '.canceled_suites == 0',
     '.not_started_suites == 0', '.missing_suite_finishes == 0',
     '.failed_batches == 0', '.incomplete_batches == 0', '.logger_errors == 0',
     '.source_bindings_unchanged == true',
@@ -99,6 +99,13 @@ TIMING_ASSERTION = ("          tail -n 1 out/ci/timing.jsonl | jq -e '\n"
                     + "\n          '\n")
 LITERAL_REPORT_COMPACT_SCOPE = 'Only app/literal-text-report:Report adds compact case JSON plus one LF, <=128 original rows, <=30000 raw bytes and a pinned839 source-derived nonexpanding-key <=32768 translated bound. Index/Count retain their prior indented writer and partitions. Native execution and saved replay must freshly inspect all9313 original Report pairs; count-only281-to235 is not native, full-CI or performance acceptance. Decimal/payload policies remain unchanged.'
 TIMING_SUMMARY_SHA = 'ca262e77de47a75e3c458a84862b7d5eb13333d1c1af7c6e313ce20f99ee3ae8'
+HEADER_WIRE_STEP_NAME = 'Verify strict header input reaches the actual native CLI'
+HEADER_WIRE_COMMAND = 'python3 -I -B tools/check-header-facts-inputs.py --root "$PWD" --compiler "$PWD/.gooo" --input-command "$PWD/out/header-facts-input" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/header-facts-input-route"'
+HEADER_WIRE_STEP_SHA = '04e719ee2669cf0cdde795740db470eba1a661bc98c7f02d3e1d6b98dfbb8d19'
+HEADER_MODULE_PREFLIGHT = "          go mod download golang.org/x/net golang.org/x/text\n          go mod verify\n"
+HEADER_SOURCE_SET_ASSERTION = '          jq -e -s --slurpfile summary out/ci/summary.json \'\n            . as $rows | $rows[0] as $header |\n            ([$rows[] | select(.kind == "suite_end")] | sort_by(.suite_index)) as $suites |\n            [$rows[] | select(.kind == "batch_end")] as $batches |\n            ($suites | length) == 73 and ($batches | length) == 2174 and\n            [$suites[].suite_index] == [range(0;73)] and\n            all(range(0;73); . as $i | $suites[$i] as $s | $summary[0].runs[$i] as $r |\n              $s.package == $r.package and $s.activity == $r.activity and\n              $s.status == "VERIFIED" and $s.covered_cases == $r.cases and\n              $s.observed_batches == $r.batches and\n              ($s.source_set | type) == "object" and ($s.source_set | length) > 0 and\n              ($s.source_set_sha256 | test("^sha256:[0-9a-f]{64}$")) and\n              all($s.source_set | to_entries[]; .key as $path |\n                (.value.Package | type) == "string" and (.value.Package | length) > 0 and\n                (.value.Digest | test("^sha256:[0-9a-f]{64}$")) and\n                $header.identity.source_files[$path].sha256 == $header.catalog_source_sha256[$path] and\n                $header.catalog_source_sha256[$path] == $summary[0].source_sha256[$path])) and\n            all($batches[]; . as $b | $b.suite_index >= 0 and $b.suite_index < 73 and\n              $b.source_set_sha256 == $suites[$b.suite_index].source_set_sha256) and\n            ($suites[70].source_set | keys) == ["ports/net/httpguts/headers.gooo"] and\n            ($suites[71].source_set | keys) == ["ports/net/httpguts/headers.gooo"] and\n            ($suites[72].source_set | keys) == ["examples/header-field-facts/main.gooo", "ports/net/httpguts/headers.gooo"]\n          \' out/ci/timing.jsonl\n'
+HEADER_DECLARATIONS = ("ports/net/httpguts/headers.gooo", "examples/header-field-facts/main.gooo")
+HEADER_CLAUSES = ('([.runs[:70][].cases] | add) == 170227 and ([.runs[:70][].batches] | add) == 2153 and', '.header_name_reference_cases == 232 and .header_value_reference_cases == 232 and .header_facts_reference_cases == 476 and', '.runs[70].package == "go/golang.org/x/net/http/httpguts" and .runs[70].activity == "ValidHeaderFieldName" and', '.runs[70].cases == 232 and .runs[70].passed == 232 and .runs[70].batches == 3 and', '.runs[71].package == "go/golang.org/x/net/http/httpguts" and .runs[71].activity == "ValidHeaderFieldValue" and', '.runs[71].cases == 232 and .runs[71].passed == 232 and .runs[71].batches == 3 and', '.runs[72].package == "app/header-field-facts" and .runs[72].activity == "Report" and', '.runs[72].cases == 476 and .runs[72].passed == 476 and .runs[72].batches == 15 and', '.source_sha256["ports/net/httpguts/headers.gooo"] == "a033b96ab0adb394a9d79137715d7a4170e22061e4ae9aa282f8ab3671da9f76" and', '.source_sha256["examples/header-field-facts/main.gooo"] == "4aa66012d230252bc120fdacaac555172e3a1d6c5654181aa07c7347257a805e" and', '.header_scope == "Bounded decoded validUTF8 Text<=1024 per field. Actual x/net/httpguts0.59 supplies predicate and prefix/single-byte witness references; original12-field diagnostics retain inputs. Fresh source/typed ABI/value/type/producer/raw outer saved-parent checks; independent inner typed canonical parent digest NOT_CHECKED. No arbitrary-length Go-string,HTTP2,authorization or production safety claim." and', '.header_provenance_scope == "Fresh Gooo execution and saved replay bind original Texts, exact typed12 fields, source images and generated ABI/calls, producers and raw outer receipt parents. Independent inner typed canonical prior_result_sha256 remains NOT_CHECKED; private pilot results are not fresh public acceptance." and')
 PATH_ALIAS_DECLARATIONS = ("ports/path/clean.gooo", "examples/path-alias-facts/main.gooo")
 PATH_ALIAS_CLAUSES = (
     '([.runs[:68][].cases] | add) == 160266 and ([.runs[:68][].batches] | add) == 2072 and',
@@ -107,7 +114,7 @@ PATH_ALIAS_CLAUSES = (
     '.runs[68].cases == 9841 and .runs[68].passed == 9841 and .runs[68].batches == 77 and',
     '.runs[69].package == "app/path-alias-facts" and .runs[69].activity == "Report" and',
     '.runs[69].cases == 120 and .runs[69].passed == 120 and .runs[69].batches == 4 and',
-    '(.source_sha256 | length) == 56 and',
+    '(.source_sha256 | length) == 58 and',
     '.source_sha256["ports/path/path.gooo"] == "593caad2ac3b443d353775a9f4e168282af1ab70181bcbc483c4b379c9ee3de3" and',
     '.source_sha256["ports/path/clean.gooo"] == "8430fc094b000fbd25b9d081408a9e8cdb59fca942f7a5541e7695c0291b790d" and',
     '.source_sha256["examples/path-alias-facts/main.gooo"] == "5b0c8436bf95c923730af71a316d3897839d734c53c0223fffad5b555488182e" and',
@@ -121,6 +128,7 @@ COMMON = {
     "Check Gooo declarations",
 }
 HEAVY = {
+    HEADER_WIRE_STEP_NAME,
     "Verify the isolated native path facts sidecar",
     "Verify the isolated native IPv4 address facts sidecar",
     "Verify the original automatic redelivery policy",
@@ -154,7 +162,7 @@ UPLOADS = {"Upload offline policy experiment evidence", "Upload execution and di
 DOC_STEPS = {"Report documentation-only native scope", "Preserve documentation scope and compiler identity"}
 NATIVE_COMMAND = re.compile(
     r"(?:\.gooo\s+package\s+(?:execute|replay)|\./cmd/(?:verify|check-unicode|check-literal-text-report)\b|"
-    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py|tools/check-path-facts\.py|tools/check-redelivery-policy\.py|tools/check-ipv4\.py)"
+    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py|tools/check-path-facts\.py|tools/check-redelivery-policy\.py|tools/check-ipv4\.py|tools/check-header-facts-inputs\.py)"
 )
 PUBLIC_CONSUMER_COMMAND = 'python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer"'
 PUBLIC_CONSUMER_CLAUSES = (
@@ -203,7 +211,7 @@ def literal_commands(chunk):
     # Continuation joining is deliberately limited to the reviewed fixed layout.
     joined = chunk.replace("\\\n          ", " ")
     return [" ".join(line.split()) for line in
-            re.findall(r"^          ((?:\./\.gooo|go run \./cmd/|python3 ).*)$", joined, re.M)]
+            re.findall(r"^          ((?:\./\.gooo|go run (?:-mod=readonly )?\./cmd/|python3 ).*)$", joined, re.M)]
 
 
 def require(condition, message):
@@ -320,7 +328,7 @@ def validate(text):
             hashlib.sha256(deploy[len(prefix):].encode()).hexdigest() == DEPLOY_BODY_SHA,
             "deployment may change only its reviewed direct dependency/status prefix")
     named, unnamed = named_steps(text)
-    require(len(HEAVY) == 28, "full-scope native step count changed")
+    require(len(HEAVY) == 29, "full-scope native step count changed")
     require(set(named) == COMMON | HEAVY | UPLOADS | DOC_STEPS, "step roster changed without guard review")
     require(len(unnamed) == 2 and all(field(c, "if") is None for c in unnamed), "checkout/Go setup became conditional")
     require("fetch-depth: 0" in unnamed[0], "exact PR parents must be available")
@@ -355,10 +363,10 @@ def validate(text):
             "native timing console summary must retain its exact source and actual input")
     require("continue-on-error:" not in comparison and "|| true" not in comparison,
             "native comparison or timing failure became optional")
-    for token in (".ported_functions == 47 and .consumer_programs == 21 and .consumer_activities == 23 and",
-                  "(.runs | length) == 70 and",
-                  ".cases == 170227 and .passed == 170227 and",
-                  "([.runs[].cases] | add) == 170227 and ([.runs[].batches] | add) == 2153 and",
+    for token in (".ported_functions == 49 and .consumer_programs == 22 and .consumer_activities == 24 and",
+                  "(.runs | length) == 73 and",
+                  ".cases == 171167 and .passed == 171167 and",
+                  "([.runs[].cases] | add) == 171167 and ([.runs[].batches] | add) == 2174 and",
                   "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2058 and",
                   "([.runs[:59][].cases] | add) == 131842 and ([.runs[:59][].batches] | add) == 1549 and",
                   "([.runs[:57][].cases] | add) == 130702 and ([.runs[:57][].batches] | add) == 1513 and",
@@ -401,6 +409,15 @@ def validate(text):
     require(named["Check the Go observer"].count("python3 -I -B tools/generate-payload-corpus.py --check") == 1, "payload input generator missing")
     for source in ("ports/strconv/decimal.gooo", "examples/payload-admission/main.gooo"):
         require(named["Check Gooo declarations"].count("./.gooo check " + source) == 1, "decimal/payload declaration missing")
+    require(comparison.count(HEADER_MODULE_PREFLIGHT) == 1 and
+            comparison.index(HEADER_MODULE_PREFLIGHT) < comparison.index(NATIVE_COMPARISON_COMMAND),
+            "native header dependencies must authenticate once before readonly verifier build")
+    require(comparison.count(HEADER_SOURCE_SET_ASSERTION) == 1,
+            "native timing must bind all73 exact source maps and summary suite identities")
+    for token in HEADER_CLAUSES:
+        require(comparison.count(token) == 1, "header exact source, field scope or appended roster missing: " + token)
+    for source in HEADER_DECLARATIONS:
+        require(named["Check Gooo declarations"].count("./.gooo check " + source) == 1, "header declaration missing or duplicated")
     for token in PATH_ALIAS_CLAUSES:
         require(comparison.count(token) == 1, "path Clean/alias exact source, scope or appended roster missing: " + token)
     for source in PATH_ALIAS_DECLARATIONS:
@@ -429,6 +446,14 @@ def validate(text):
     )
     require(public_consumer == expected_public_consumer,
             "public consumer must bind the actual PR head, exact Go command and every acceptance clause")
+    wire = named[HEADER_WIRE_STEP_NAME]
+    require(hashlib.sha256(wire.encode()).hexdigest() == HEADER_WIRE_STEP_SHA
+            and literal_commands(wire) == [HEADER_WIRE_COMMAND]
+            and text.count(HEADER_WIRE_COMMAND) == 1,
+            "header wire stage must retain the exact readonly helper build, actual CLI argv and acceptance counts once")
+    require(native_job.index(named["Check Gooo declarations"]) < native_job.index(wire) <
+            native_job.index(named["Verify the isolated native path facts sidecar"]),
+            "actual header wire route must run after declarations and before other native sidecars")
     path = named["Verify the isolated native path facts sidecar"]
     require(literal_commands(path) == [PATH_COMMAND] and hashlib.sha256(path.encode()).hexdigest() == PATH_STEP_SHA,
             "path sidecar must retain exact fresh producer/output/count/cleanup gates")
@@ -741,7 +766,7 @@ class WorkflowScopeTests(unittest.TestCase):
             chunk.replace(".literal_report_compact_scope == " + json.dumps(LITERAL_REPORT_COMPACT_SCOPE) + " and", "true and", 1),
             chunk.replace("maximum_rows: 128", "maximum_rows: 129", 1),
             chunk.replace("raw_bytes_including_LF: 30000", "raw_bytes_including_LF: 32768", 1),
-            chunk.replace("(.identity.source_files | length) == 142", "(.identity.source_files | length) >= 97", 1),
+            chunk.replace("(.identity.source_files | length) == 177", "(.identity.source_files | length) >= 97", 1),
             chunk.replace("--slurpfile summary out/ci/summary.json", "--slurpfile summary out/old/summary.json", 1),
             chunk.replace(".case_profile == $summary[0].case_profile", ".case_profile == null", 1),
         ))
@@ -770,8 +795,8 @@ class WorkflowScopeTests(unittest.TestCase):
                 (".workspace_profile == $summary[0].workspace_profile and", "true and"),
                 (".workspace_profile == $summary[0].workspace_profile", ".workspace_profile == null"),
                 (".workspace_profile == $summary[0].workspace_profile", ".workspace_profile == $summary[0].case_profile"),
-                ("(.identity.source_files | length) == 142", "(.identity.source_files | length) == 140"),
-                ("(.identity.source_files | length) == 142", "(.identity.source_files | length) >= 140"),
+                ("(.identity.source_files | length) == 177", "(.identity.source_files | length) == 140"),
+                ("(.identity.source_files | length) == 177", "(.identity.source_files | length) >= 140"),
                 ("(.identity.source_files | keys) ==", "(.identity.source_files | values) =="),
                 ("all($header.identity.source_files[];", "all($header.identity.source_files | del(.\"cmd/verify/workspace_profile.go\") | .[];"),
                 ("(.bytes | type) == \"number\" and .bytes > 0", "(.bytes | type) == \"number\"")):
@@ -806,6 +831,108 @@ class WorkflowScopeTests(unittest.TestCase):
             with self.subTest(runner=runner), self.assertRaises(ValueError):
                 validate(self.text.replace(native, changed, 1))
 
+    def test_actual_header_input_route_stage_argv_and_summary_cannot_be_dropped_or_weakened(self):
+        named, _ = named_steps(self.text)
+        chunk = named[HEADER_WIRE_STEP_NAME]
+        validate(self.text)
+        mutations = ["", chunk + chunk]
+        for before, after in (
+                ("        if: " + FULL + "\n", ""),
+                ("go build -mod=readonly -o out/header-facts-input ./cmd/header-facts-input", "true"),
+                ("--root \"$PWD\"", "--root /tmp/old"),
+                ("--compiler \"$PWD/.gooo\"", "--compiler /tmp/old-gooo"),
+                ("--input-command \"$PWD/out/header-facts-input\"", "--input-command /tmp/old-helper"),
+                ("--go \"$(go env GOROOT)/bin/go\"", "--go /usr/bin/go"),
+                ("--out \"$PWD/out/header-facts-input-route\"", "--out /tmp/old-results"),
+                (".status == \"THREE_INPUT_ROUTES_AND16_PRELAUNCH_REFUSALS_PASS\"", "true"),
+                (".failure == null", "true"),
+                (".positive_requests == 3", ".positive_requests >= 1"),
+                (".prelaunch_refusals == 16", ".prelaunch_refusals >= 1"),
+                (".actual_Gooo_commands == 6", ".actual_Gooo_commands == 0"),
+                (".typed_fields_checked == 72", ".typed_fields_checked == 12"),
+                ("(.observations | length) == 6", "(.observations | length) >= 1"),
+                ("' out/header-facts-input-route/summary.json", "' out/old/summary.json")):
+            self.assertIn(before, chunk)
+            mutations.append(chunk.replace(before, after, 1))
+        for altered in mutations:
+            with self.subTest(altered=altered), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, altered, 1))
+        declaration = named["Check Gooo declarations"]
+        misplaced = declaration + "          " + HEADER_WIRE_COMMAND + "\n"
+        with self.assertRaises(ValueError):
+            validate(self.text.replace(declaration, misplaced, 1))
+
+    def test_header73_roster_sources_fields_modules_and_timing_gates_are_required(self):
+        named, _ = named_steps(self.text)
+        comparison = named["Compare the ports with Go and replay every batch"]
+        validate(self.text)
+        for clause in HEADER_CLAUSES:
+            self.assertEqual(comparison.count(clause), 1)
+            for replacement in ("true and", clause.replace("==", ">=", 1)):
+                if replacement == clause:
+                    continue
+                with self.subTest(clause=clause, replacement=replacement), self.assertRaises(ValueError):
+                    validate(self.text.replace(comparison, comparison.replace(clause, replacement, 1), 1))
+        for before, after in (
+                ('.ported_functions == 49 and .consumer_programs == 22 and .consumer_activities == 24 and',
+                 '.ported_functions == 47 and .consumer_programs == 21 and .consumer_activities == 23 and'),
+                ('(.runs | length) == 73 and', '(.runs | length) == 70 and'),
+                ('.cases == 171167 and .passed == 171167 and', '.cases == 170227 and .passed == 170227 and'),
+                ('.expected_suites == 73', '.expected_suites == 70'),
+                ('.successful_suites == 73', '.successful_suites == 70'),
+                ('.expected_cases == 171167', '.expected_cases == 170227'),
+                ('.verified_cases == 171167', '.verified_cases == 170227'),
+                ('.observed_batches == 2174', '.observed_batches == 2153'),
+                ('.verified_batches == 2174', '.verified_batches == 2153'),
+                ('.event_count == 2322', '.event_count == 2295'),
+                ('.seq == 2321', '.seq == 2294'),
+                ('(.source_sha256 | length) == 58', '(.source_sha256 | length) == 56'),
+                ('(.identity.source_files | length) == 177', '(.identity.source_files | length) == 142'),
+                ('original12-field diagnostics', 'original11-field diagnostics'),
+                ('exact typed12 fields', 'exact typed11 fields'),
+                ('independent inner typed canonical parent digest NOT_CHECKED', 'independent inner typed canonical parent digest CHECKED')):
+            self.assertIn(before, comparison)
+            with self.subTest(before=before), self.assertRaises(ValueError):
+                validate(self.text.replace(comparison, comparison.replace(before, after, 1), 1))
+        # All177 identities are an exact roster; a count alone permits substitution.
+        for name in ("cmd/header-facts-input/main.go", "cmd/verify/header_contracts.go",
+                     "cmd/verify/header_contracts_test.go", "cmd/verify/legacy_workspace_test.go",
+                     "cmd/verify/header_corpus.go",
+                     "cmd/verify/header_corpus_test.go", "cmd/verify/external_oracles.go",
+                     "cmd/verify/external_oracles_test.go", "go.mod", "go.sum",
+                     "examples/header-field-facts/contract.json", "examples/header-field-facts/corpus.json",
+                     "ports/net/httpguts/headers.gooo", "ports/net/httpguts/provenance.json",
+                     "tools/check-header-facts-inputs.py"):
+            token = json.dumps(name) + ", "
+            self.assertIn(token, TIMING_HEADER_ASSERTION)
+            weakened = TIMING_HEADER_ASSERTION.replace(token, "", 1)
+            with self.subTest(source=name), self.assertRaises(ValueError):
+                validate(self.text.replace(TIMING_HEADER_ASSERTION, weakened, 1))
+        self.assertEqual(comparison.count(HEADER_SOURCE_SET_ASSERTION), 1)
+        weakened = [comparison.replace(HEADER_SOURCE_SET_ASSERTION, "", 1)]
+        for line in HEADER_SOURCE_SET_ASSERTION.splitlines()[1:-1]:
+            weakened.append(comparison.replace(HEADER_SOURCE_SET_ASSERTION,
+                            HEADER_SOURCE_SET_ASSERTION.replace(line + "\n", "", 1), 1))
+        for altered in weakened:
+            self.assertNotEqual(comparison, altered)
+            with self.subTest(source_map=altered[-500:]), self.assertRaises(ValueError):
+                validate(self.text.replace(comparison, altered, 1))
+        for replacement in ("", HEADER_MODULE_PREFLIGHT + HEADER_MODULE_PREFLIGHT,
+                            HEADER_MODULE_PREFLIGHT.replace("go mod verify", "true"),
+                            HEADER_MODULE_PREFLIGHT.replace("golang.org/x/text", "golang.org/x/image")):
+            with self.subTest(preflight=replacement), self.assertRaises(ValueError):
+                validate(self.text.replace(HEADER_MODULE_PREFLIGHT, replacement, 1))
+        for replacement in ("", "-mod=mod ", "-mod=vendor "):
+            altered = NATIVE_COMPARISON_COMMAND.replace("-mod=readonly ", replacement, 1)
+            with self.subTest(readonly=replacement), self.assertRaises(ValueError):
+                validate(self.text.replace(NATIVE_COMPARISON_COMMAND, altered, 1))
+        for source in HEADER_DECLARATIONS:
+            line = "          ./.gooo check " + source + "\n"
+            self.assertEqual(self.text.count(line), 1)
+            for replacement in ("", line + line):
+                with self.subTest(declaration=source), self.assertRaises(ValueError):
+                    validate(self.text.replace(line, replacement, 1))
+
     def test_path_clean_alias_exact_appended_roster_sources_and_scope_are_required(self):
         named, _ = named_steps(self.text)
         comparison = named["Compare the ports with Go and replay every batch"]
@@ -822,13 +949,13 @@ class WorkflowScopeTests(unittest.TestCase):
         for before, after in (
                 ('.runs[68].batches == 77', '.runs[68].batches == 76'),
                 ('.runs[69].batches == 4', '.runs[69].batches == 1'),
-                ('.expected_suites == 70', '.expected_suites == 68'),
-                ('.successful_suites == 70', '.successful_suites == 68'),
-                ('.verified_cases == 170227', '.verified_cases == 160266'),
-                ('.observed_batches == 2153', '.observed_batches == 2072'),
-                ('.verified_batches == 2153', '.verified_batches == 2072'),
-                ('.event_count == 2295', '.event_count == 2210'),
-                ('.seq == 2294', '.seq == 2209')):
+                ('.expected_suites == 73', '.expected_suites == 68'),
+                ('.successful_suites == 73', '.successful_suites == 68'),
+                ('.verified_cases == 171167', '.verified_cases == 160266'),
+                ('.observed_batches == 2174', '.observed_batches == 2072'),
+                ('.verified_batches == 2174', '.verified_batches == 2072'),
+                ('.event_count == 2322', '.event_count == 2210'),
+                ('.seq == 2321', '.seq == 2209')):
             self.assertIn(before, comparison)
             with self.subTest(before=before), self.assertRaises(ValueError):
                 validate(self.text.replace(comparison, comparison.replace(before, after, 1), 1))
@@ -846,10 +973,10 @@ class WorkflowScopeTests(unittest.TestCase):
             (".runs[61].batches == 235", ".runs[61].batches == 281"),
             ("([.runs[:62][].batches] | add) == 2058", "([.runs[:62][].batches] | add) == 2104"),
             ("([.runs[:66][].batches] | add) == 2063", "([.runs[:66][].batches] | add) == 2109"),
-            ("([.runs[].batches] | add) == 2153", "([.runs[].batches] | add) == 2072"),
-            (".event_count == 2295", ".event_count == 2210"),
-            (".seq == 2294", ".seq == 2209"),
-            ("(.identity.source_files | length) == 142", "(.identity.source_files | length) == 120"),
+            ("([.runs[].batches] | add) == 2174", "([.runs[].batches] | add) == 2072"),
+            (".event_count == 2322", ".event_count == 2210"),
+            (".seq == 2321", ".seq == 2209"),
+            ("(.identity.source_files | length) == 177", "(.identity.source_files | length) == 120"),
         )
         for before, after in changes:
             self.assertIn(before, comparison)
@@ -913,9 +1040,9 @@ class WorkflowScopeTests(unittest.TestCase):
         named, _ = named_steps(self.text)
         comparison = named["Compare the ports with Go and replay every batch"]
         clauses = (
-            ".ported_functions == 47 and .consumer_programs == 21 and .consumer_activities == 23 and",
-            "(.runs | length) == 70 and", ".cases == 170227 and .passed == 170227 and",
-            "([.runs[].cases] | add) == 170227 and ([.runs[].batches] | add) == 2153 and",
+            ".ported_functions == 49 and .consumer_programs == 22 and .consumer_activities == 24 and",
+            "(.runs | length) == 73 and", ".cases == 171167 and .passed == 171167 and",
+            "([.runs[].cases] | add) == 171167 and ([.runs[].batches] | add) == 2174 and",
             "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2058 and",
             ".literal_cut_reference_cases == 32", ".literal_cut_prefix_reference_cases == 32",
             ".literal_cut_suffix_reference_cases == 32", ".literal_cut_report_reference_cases == 32",

@@ -82,6 +82,7 @@ type nativeCaseBatchPolicy struct {
 	compact        bool
 	decimalPayload bool
 	pathAlias      bool
+	header         bool
 	literalReport  bool
 	// With a nonexpanding lowered key the translated compact struct cannot be
 	// larger than our compact map encoding without its final LF.
@@ -91,6 +92,9 @@ type nativeCaseBatchPolicy struct {
 func (p nativeCaseProfile) policy(s suite, selected suiteWorkspace, lock upstream) (nativeCaseBatchPolicy, error) {
 	if err := p.validateCompiler(lock); err != nil {
 		return nativeCaseBatchPolicy{}, err
+	}
+	if isHeaderSuite(s) {
+		return headerBatchPolicy(s, selected, lock)
 	}
 	if isPathAliasSuite(s) {
 		return pathAliasBatchPolicy(s, selected, lock)
@@ -143,6 +147,9 @@ func (p nativeCaseProfile) policy(s suite, selected suiteWorkspace, lock upstrea
 }
 
 func (p nativeCaseBatchPolicy) prepare(s suite, start int) (nativePreparedCaseBatch, error) {
+	if p.header {
+		return p.prepareHeader(s, start)
+	}
 	if p.literalReport {
 		return p.prepareLiteralReportCompact(s, start)
 	}

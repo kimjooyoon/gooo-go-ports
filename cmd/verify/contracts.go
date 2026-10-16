@@ -23,6 +23,9 @@ type activityContract struct {
 func nativeActivityContracts() map[string]activityContract {
 	i := integerEntity
 	return map[string]activityContract{
+		headerPortPackage + ":" + headerNameActivity:             {headerPortSource, "gooo://golang.org/x/net/http/httpguts/ValidHeaderFieldName", []string{textEntity}},
+		headerPortPackage + ":" + headerValueActivity:            {headerPortSource, "gooo://golang.org/x/net/http/httpguts/ValidHeaderFieldValue", []string{textEntity}},
+		headerReportPackage + ":" + headerReportActivity:         {headerReportSource, "gooo://go-ports/examples/header-field-facts/report/v1", []string{textEntity, textEntity}},
 		pathCleanPackage + ":" + pathCleanActivity:               {"ports/path/clean.gooo", "gooo://go/path/Clean", []string{textEntity}},
 		pathAliasPackage + ":" + pathAliasActivity:               {"examples/path-alias-facts/main.gooo", "gooo://go-ports/examples/path-alias-facts/report/v1", []string{textEntity, textEntity}},
 		decimalPackage + ":" + decimalActivity:                   {"ports/strconv/decimal.gooo", "gooo://go/strconv/parse-int-decimal64/v1", []string{textEntity}},

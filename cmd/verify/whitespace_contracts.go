@@ -21,6 +21,9 @@ type resultContract struct {
 // Existing activities retain their contracts; these new result identities also
 // bind the record's semantic field IDs, order and values to independent Go output.
 func whitespaceResultContract(s suite) resultContract {
+	if isHeaderSuite(s) {
+		return headerResultContract(s)
+	}
 	if isPathAliasSuite(s) {
 		return pathAliasResultContract(s)
 	}

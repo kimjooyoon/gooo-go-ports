@@ -210,6 +210,14 @@ func run() error {
 		return err
 	}
 	suites = append(suites, pathAlias...)
+	if err := verifyHTTPGutsRuntimeDependencies(); err != nil {
+		return err
+	}
+	headers, err := headerCorpus(".")
+	if err != nil {
+		return err
+	}
+	suites = append(suites, headers...)
 	if *out == "" {
 		return fmt.Errorf("provide --out for a new evidence directory")
 	}
@@ -351,6 +359,11 @@ func run() error {
 		"compiler_revision":    lock.CompilerRevision, "source_sha256": catalog.Hashes,
 		"verification_catalog_sha256": contentDigest(catalog.Raw),
 		"ported_functions":            portedFunctions, "consumer_programs": len(consumerPrograms), "consumer_activities": consumerActivities,
+		"header_name_reference_cases":       len(headers[0].Cases),
+		"header_value_reference_cases":      len(headers[1].Cases),
+		"header_facts_reference_cases":      len(headers[2].Cases),
+		"header_provenance_scope":           "Fresh Gooo execution and saved replay bind original Texts, exact typed12 fields, source images and generated ABI/calls, producers and raw outer receipt parents. Independent inner typed canonical prior_result_sha256 remains NOT_CHECKED; private pilot results are not fresh public acceptance.",
+		"header_scope":                      "Bounded decoded validUTF8 Text<=1024 per field. Actual x/net/httpguts0.59 supplies predicate and prefix/single-byte witness references; original12-field diagnostics retain inputs. Fresh source/typed ABI/value/type/producer/raw outer saved-parent checks; independent inner typed canonical parent digest NOT_CHECKED. No arbitrary-length Go-string,HTTP2,authorization or production safety claim.",
 		"path_clean_reference_cases":        len(pathAlias[0].Cases),
 		"path_alias_reference_cases":        len(pathAlias[1].Cases),
 		"path_alias_scope":                  "Decoded valid UTF-8 Text up to1024 bytes, slash-based lexical Go path.Clean. Original11-field Report preserves both original inputs and exposes clean/absolute/change/equality/alias facts. Actual Go path.Clean and path.IsAbs supply independent finite expectations; no URL, router, filesystem, authorization or safety claim.",

@@ -1,0 +1,20 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "go/golang.org/x/net/http/httpguts:ValidHeaderFieldValue": "ok"
+    },
+    {
+      "go/golang.org/x/net/http/httpguts:ValidHeaderFieldValue": ""
+    },
+    {
+      "go/golang.org/x/net/http/httpguts:ValidHeaderFieldValue": "ok\r\nInjected: yes"
+    },
+    {
+      "go/golang.org/x/net/http/httpguts:ValidHeaderFieldValue": "café"
+    },
+    {
+      "go/golang.org/x/net/http/httpguts:ValidHeaderFieldValue": "\tok "
+    }
+  ]
+}
