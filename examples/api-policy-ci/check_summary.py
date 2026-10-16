@@ -342,7 +342,14 @@ class SummaryChecks(unittest.TestCase):
                      b"[" * 1100 + b"0" + b"]" * 1100)
         for index, document in enumerate(malformed):
             with self.subTest(index=index):
-                self.assert_closed(self.invoke(document), "REPORT_JSON_REFUSED")
+                result = self.invoke(document)
+                # The unchanged 1,100-array input is valid JSON but not a report.
+                # Parser recursion bounds vary by interpreter: either a closed
+                # parse refusal or a post-parse shape refusal is correct here.
+                if index == 11 and result.stderr == ERROR_PREFIX + b"REPORT_SHAPE_REFUSED\n":
+                    self.assert_closed(result, "REPORT_SHAPE_REFUSED")
+                else:
+                    self.assert_closed(result, "REPORT_JSON_REFUSED")
 
     def test_valid_unicode_private_values_are_not_lossily_rejected(self):
         # Both direct UTF-8 and JSON's valid surrogate pair are legal transport.

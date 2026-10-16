@@ -16,6 +16,9 @@ from pathlib import Path
 
 WORKFLOW = Path(__file__).resolve().parent.parent / ".github/workflows/ci.yml"
 FULL = "steps.change-scope.outputs.docs_only != 'true'"
+PREFLIGHT_STEP_NAME = 'Verify lightweight API policy summary controls before native work'
+PREFLIGHT_STEP_SHA = '6e31886b6e7f6f6edcb6681b651bf985c5388c35141dc1b01d4310f298045f93'
+PREFLIGHT = {PREFLIGHT_STEP_NAME}
 DOCS = "steps.change-scope.outputs.docs_only == 'true'"
 HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
 # The observer/browser producers and deployment body retain their reviewed bytes.
@@ -294,7 +297,7 @@ def named_steps(text):
         classifier = named.get('Classify the exact checked PR tree', '')
         require(hashlib.sha256(classifier.encode()).hexdigest() == CLASSIFIER_STEP_SHA, "producer exact checkout classifier changed: " + job)
         require(chunk.index(unnamed[0]) < chunk.index(classifier) < chunk.index(unnamed[1]), "producer setup order changed: " + job)
-        expected = {'Classify the exact checked PR tree'} | MOVED if job == 'observer-checks' else (COMMON | HEAVY | UPLOADS | DOC_STEPS) - MOVED
+        expected = {'Classify the exact checked PR tree'} | MOVED if job == 'observer-checks' else (COMMON | HEAVY | PREFLIGHT | UPLOADS | DOC_STEPS) - MOVED
         require(set(named) == expected, "producer step roster changed: " + job)
         if job == 'observer-checks':
             require(hashlib.sha256(named['Check the Go observer'].encode()).hexdigest() == OBSERVER_STEP_SHA and
@@ -356,12 +359,17 @@ def validate(text):
             "deployment may change only its reviewed direct dependency/status prefix")
     named, unnamed = named_steps(text)
     require(len(HEAVY) == 31, "full-scope native step count changed")
-    require(set(named) == COMMON | HEAVY | UPLOADS | DOC_STEPS, "step roster changed without guard review")
+    require(set(named) == COMMON | HEAVY | PREFLIGHT | UPLOADS | DOC_STEPS, "step roster changed without guard review")
     require(len(unnamed) == 2 and all(field(c, "if") is None for c in unnamed), "checkout/Go setup became conditional")
     require("fetch-depth: 0" in unnamed[0], "exact PR parents must be available")
     require("go-version: '1.27.2'" in unnamed[1], "Go toolchain pin changed")
     public = named["Verify the public API policy consumer"]
     native_job = workflow_jobs(text)['native-execution']
+    preflight = named[PREFLIGHT_STEP_NAME]
+    require(hashlib.sha256(preflight.encode()).hexdigest() == PREFLIGHT_STEP_SHA,
+            "lightweight summary controls, source buffers, limits or first-failure evidence changed")
+    require(native_job.index(named['Classify the exact checked PR tree']) < native_job.index(preflight) <
+            native_job.index(unnamed[1]), "summary preflight must precede Go setup and all native work")
     require(native_job.index(unnamed[1]) < native_job.index(public) <
             native_job.index(named["Build and identify the pinned compiler from a clean checkout"]),
             "public consumer must run after native Go setup and before native compiler/execution")
@@ -369,7 +377,7 @@ def validate(text):
             "bounded public-consumer diagnostic checks must remain in the common Go observer step")
     for name in COMMON:
         require(field(named[name], "if") is None, "common check became conditional: " + name)
-    for name in HEAVY:
+    for name in HEAVY | PREFLIGHT:
         require(field(named[name], "if") == FULL, "missing full-execution guard: " + name)
     for name in UPLOADS:
         require(field(named[name], "if") == "always() && " + FULL, "native artifact can upload on docs path: " + name)
@@ -646,6 +654,25 @@ def validate(text):
 class WorkflowScopeTests(unittest.TestCase):
     def setUp(self):
         self.text = WORKFLOW.read_text()
+
+    def test_summary_preflight_is_exact_full_only_and_precedes_go_setup(self):
+        named, unnamed = named_steps(self.text)
+        chunk = named[PREFLIGHT_STEP_NAME]
+        for replacement in ("", chunk + chunk,
+                            chunk.replace("        if: " + FULL + "\n", "", 1),
+                            chunk.replace("'90s'", "'900s'", 1),
+                            chunk.replace("before = snapshot('before')", "before = {}", 1),
+                            chunk.replace("after = snapshot('after')", "after = {}", 1),
+                            chunk.replace("            break\n", "            pass\n", 1),
+                            chunk.replace("raise SystemExit(first_exit)", "raise SystemExit(0)", 1)):
+            self.assertNotEqual(replacement, chunk)
+            with self.subTest(replacement=replacement[:80]), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, replacement, 1))
+        without = self.text.replace(chunk, "", 1)
+        for anchor in (unnamed[0], unnamed[1], named["Verify the public API policy consumer"]):
+            moved = without.replace(anchor, anchor + chunk, 1)
+            with self.subTest(anchor=anchor.splitlines()[0]), self.assertRaises(ValueError):
+                validate(moved)
 
     def test_public_consumer_stays_before_native_compilation_without_serial_observer_dependency(self):
         named, unnamed = named_steps(self.text)
@@ -1239,7 +1266,7 @@ class WorkflowScopeTests(unittest.TestCase):
 
     def test_each_heavy_step_and_native_upload_requires_its_guard(self):
         named, _ = named_steps(self.text)
-        for name in HEAVY | UPLOADS:
+        for name in HEAVY | PREFLIGHT | UPLOADS:
             with self.subTest(step=name):
                 chunk = named[name]
                 condition = field(chunk, "if")

@@ -93,6 +93,128 @@ jobs:
             --event-name "$GITHUB_EVENT_NAME" --event-path "$GITHUB_EVENT_PATH" \
             --expected-head "$GITHUB_SHA" --summary out/ci-scope.json \
             --github-output "$GITHUB_OUTPUT"
+      - name: Verify lightweight API policy summary controls before native work
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 4
+        run: |
+          set -euo pipefail
+          umask 077
+          python3 -I -B - <<'PY'
+          import ast
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import stat
+          import subprocess
+          import sys
+          import traceback
+
+          root = pathlib.Path.cwd()
+          out = root / 'out/policy-summary-preflight'
+          out.mkdir(mode=0o700, parents=True, exist_ok=False)
+          names = [
+              '.github/workflows/ci.yml',
+              'tools/check-ci-scope-workflow_test.py',
+              'examples/api-policy-ci/action.yml',
+              'examples/api-policy-ci/summary.py',
+              'examples/api-policy-ci/check_summary.py',
+              'examples/api-policy-ci/check_summary_action.py',
+              'examples/api-policy-ci/fixtures/synthetic-write.comparison.json',
+          ]
+
+
+          def save_json(name, value):
+              (out / name).write_text(json.dumps(value, indent=2) + '\n', encoding='utf-8')
+
+
+          def snapshot(label):
+              refs = {}
+              for name in names:
+                  path = root / name
+                  info = path.lstat()
+                  if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o644:
+                      raise ValueError('source mode')
+                  raw = path.read_bytes()
+                  saved = out / label / name
+                  saved.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+                  saved.write_bytes(raw)
+                  saved.chmod(0o600)
+                  refs[name] = {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(), 'mode': '100644'}
+              save_json('source-' + label + '.json', refs)
+              return refs
+
+
+          result = {
+              'schema': 'gooo/api-policy-summary-native-preflight/v1',
+              'status': 'PREFLIGHT_STARTED_NOT_NATIVE_ACCEPTANCE',
+              'head': os.environ['GITHUB_SHA'],
+              'event': os.environ['GITHUB_EVENT_NAME'],
+              'run_id': os.environ['GITHUB_RUN_ID'],
+              'python': {'version': sys.version, 'executable': sys.executable},
+              'commands': [],
+              'source_bindings_unchanged': False,
+              'scope': 'Existing16 formatter and2 actual-wrapper transport controls only; no Go, compiler, policy recalculation, native-port or performance acceptance.',
+          }
+          save_json('result.json', result)
+          first_exit = 0
+          before = None
+          try:
+              before = snapshot('before')
+              head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+              if head != result['head']:
+                  raise ValueError('source head')
+              methods = {}
+              for name, count in [('check_summary.py', 16), ('check_summary_action.py', 2)]:
+                  tree = ast.parse((root / 'examples/api-policy-ci' / name).read_text(encoding='utf-8'))
+                  found = sorted(node.name for node in ast.walk(tree)
+                                 if isinstance(node, ast.FunctionDef) and node.name.startswith('test_'))
+                  if len(found) != count or len(set(found)) != count:
+                      raise ValueError('control roster')
+                  methods[name] = found
+              result['test_methods'] = methods
+              commands = [
+                  ('summary-controls', [sys.executable, '-I', '-B', 'examples/api-policy-ci/check_summary.py',
+                                        str(root / 'examples/api-policy-ci/summary.py')]),
+                  ('summary-action-controls', [sys.executable, '-I', '-B', 'examples/api-policy-ci/check_summary_action.py',
+                                               str(root / 'examples/api-policy-ci/action.yml'),
+                                               str(root / 'examples/api-policy-ci/summary.py'),
+                                               str(root / 'examples/api-policy-ci/fixtures/synthetic-write.comparison.json')]),
+              ]
+              for label, command in commands:
+                  argv = ['timeout', '--signal=TERM', '--kill-after=5s', '90s'] + command
+                  with (out / (label + '.stdout')).open('xb') as stdout, (out / (label + '.stderr')).open('xb') as stderr:
+                      completed = subprocess.run(argv, cwd=root, stdin=subprocess.DEVNULL,
+                                                 stdout=stdout, stderr=stderr, check=False)
+                  result['commands'].append({'label': label, 'argv': argv, 'exit_code': completed.returncode})
+                  save_json('result.json', result)
+                  if completed.returncode != 0:
+                      first_exit = completed.returncode if 0 < completed.returncode < 256 else 2
+                      result['first_failure'] = label
+                      break
+          except Exception:
+              traceback.print_exc()
+              if not first_exit:
+                  first_exit = 2
+              result.setdefault('first_failure', 'source-or-controller')
+          finally:
+              try:
+                  after = snapshot('after')
+                  result['source_bindings_unchanged'] = before is not None and before == after
+              except Exception:
+                  traceback.print_exc()
+                  result['source_bindings_unchanged'] = False
+              if not result['source_bindings_unchanged']:
+                  if not first_exit:
+                      first_exit = 2
+                  result.setdefault('first_failure', 'source-after')
+              result['status'] = ('SUMMARY_CONTROLS_PASS_NOT_NATIVE_ACCEPTANCE' if not first_exit
+                                  else 'SUMMARY_PREFLIGHT_FAILED_FIRST_OBSERVATION_PRESERVED')
+              result['exit_code'] = first_exit
+              save_json('result.json', result)
+          print(result['status'])
+          raise SystemExit(first_exit)
+          PY
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
           go-version: '1.27.2'
