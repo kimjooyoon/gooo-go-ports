@@ -228,6 +228,11 @@ func run() error {
 		return err
 	}
 	suites = append(suites, canonicalHeaderKeys...)
+	etags, err := etagCorpus(".")
+	if err != nil {
+		return err
+	}
+	suites = append(suites, etags...)
 	if *out == "" {
 		return fmt.Errorf("provide --out for a new evidence directory")
 	}
@@ -369,6 +374,16 @@ func run() error {
 		"compiler_revision":    lock.CompilerRevision, "source_sha256": catalog.Hashes,
 		"verification_catalog_sha256": contentDigest(catalog.Raw),
 		"ported_functions":            portedFunctions, "consumer_programs": len(consumerPrograms), "consumer_activities": consumerActivities,
+		"etag_scan_reference_cases":                    len(etags[0].Cases),
+		"etag_strong_reference_cases":                  len(etags[1].Cases),
+		"etag_report_reference_cases":                  len(etags[2].Cases),
+		"etag_scan_unique_inputs":                      190,
+		"etag_scan_duplicate_occurrences":              2,
+		"etag_report_fields":                           len(etagFactsNames),
+		"etag_port_source_count":                       1,
+		"etag_report_source_count":                     3,
+		"etag_scope":                                   "Bounded decoded Unicode-scalar validUTF8 Text0..1024bytes per operand, including empty/NUL/control/invalidETag grammar. Private pinned Go scanETag/etagStrongMatch are exposed as dedicated Gooo APIs; the original13field Report separates raw header validity from parsed tag facts. All192 scanner occurrences,31 raw pairs and24 facts inputs retained. No arbitrary-byte/unbounded strings, fullIfMatch, currentresource authority, effects or production-safety claim.",
+		"etag_provenance_scope":                        "Fresh native and saved replay bind original inputs, exact2/13 ordered typed fields, current1/3source closures, lowered bodies, generated ABI, Report3callee ordinals0/1/2, exact explicit Go binary and raw saved parent. All247 independent Go expectations are separately compared with literal anchors. Inner canonical/typed-plan hashing remains NOT_CHECKED; a label or private firstcase is not public acceptance.",
 		"canonical_header_reference_cases":             len(canonicalHeaderKeys[0].Cases),
 		"canonical_header_report_reference_cases":      len(canonicalHeaderKeys[1].Cases),
 		"canonical_header_raw_input_occurrences":       canonicalHeaderRawCases,

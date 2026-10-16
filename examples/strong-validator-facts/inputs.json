@@ -1,0 +1,17 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "app/strong-validator-facts:Report": "\"item-v1\""
+    },
+    {
+      "app/strong-validator-facts:Report": "W/\"item-v1\""
+    },
+    {
+      "app/strong-validator-facts:Report": "\"item-v1\", \"other\""
+    },
+    {
+      "app/strong-validator-facts:Report": "\r\n\"item-v1\""
+    }
+  ]
+}

@@ -120,6 +120,11 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 	if err := inspectWorkspace(e.Result.Program.Image, s, contract, identity.Sources); err != nil {
 		return fail(err.Error())
 	}
+	if isETagSuite(s) {
+		if err := inspectETagABI(raw, s, identity); err != nil {
+			return fail(err.Error())
+		}
+	}
 	if isPathAliasSuite(s) {
 		if err := inspectPathAliasABI(raw, s, identity); err != nil {
 			return fail(err.Error())
@@ -171,7 +176,7 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 			if len(d.Inputs) != 0 || !equalValue(d.Input, row.Inputs[0]) {
 				return fail("single input")
 			}
-			if (isUUIDSuite(s) || isDecimalPayloadSuite(s) || isPathAliasSuite(s) || isHeaderSuite(s) || isCanonicalHeaderSuite(s)) && len(d.InputFields) != 0 {
+			if (isUUIDSuite(s) || isDecimalPayloadSuite(s) || isPathAliasSuite(s) || isHeaderSuite(s) || isCanonicalHeaderSuite(s) || isETagSuite(s)) && len(d.InputFields) != 0 {
 				return fail("UUID Text input has record fields")
 			}
 			if err := inspectNRGBAInputFields(contract.InputEntities[0], d.InputFields, row.Inputs[0]); err != nil {
@@ -193,7 +198,7 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 				if in.Port != fmt.Sprintf("input%d", j) || in.Entity != contract.InputEntities[j] || !equalValue(in.Value, row.Inputs[j]) {
 					return fail("input order or value")
 				}
-				if (isStringByteSuite(s) || isLiteralTextSuite(s) || isLiteralCutSuite(s) || isDecimalPayloadSuite(s) || isPathAliasSuite(s) || isHeaderSuite(s)) && len(in.Fields) != 0 {
+				if (isStringByteSuite(s) || isLiteralTextSuite(s) || isLiteralCutSuite(s) || isDecimalPayloadSuite(s) || isPathAliasSuite(s) || isHeaderSuite(s) || isETagSuite(s)) && len(in.Fields) != 0 {
 					return fail("string byte scalar input has record fields")
 				}
 				if err := inspectNRGBAInputFields(contract.InputEntities[j], in.Fields, row.Inputs[j]); err != nil {

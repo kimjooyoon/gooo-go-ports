@@ -15,11 +15,13 @@ describing what programs should do and inspecting how they are built and run.
 
 **Compose an automatic header-addition decision:** the [diagnostic-header addition](examples/diagnostic-header-addition/README.md) combines header facts, payload admission and twelve supplied request observations. Inspect sixteen fields, preserve the candidate and byte witnesses, then use a [fresh Gooo-generated local host](examples/header-addition-host/README.md) for an atomic revision check and application.
 
+**Explain an ETag before using it:** [strong-validator facts](examples/strong-validator-facts/README.md) retain the original header, parsed tag, remaining input, validity, strength, byte lengths and a reason in thirteen fields. The Gooo composition calculates these facts automatically; it does not authorize or perform an API write.
+
 This independent ecosystem project implements selected Go standard-library, x/net, x/image and Google UUID functions in Gooo,
-using independent Go references and saved replay. The source inventory includes 54 authored standard-library ports,
-two ports from golang.org/x/net, two from golang.org/x/image and two Google UUID adaptations. The current scope is
-60 authored HTTP, Unicode, IPv4 classification and prefix queries, signed-decimal parsing, literal-text splitting and byte search, slash-path, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, the preceding twenty-seven importing consumer programs (thirty activities),
-the new eight-field canonical header-key composition, and an importing browser dispatcher.
+using independent Go references and saved replay. Its verification catalog contains 53 packages and 63 Gooo source files,
+including selected HTTP, Unicode, signed-decimal, literal-text, slash-path, UUID,
+integer, color, duration, rectangle and fixed-point APIs and importing diagnostic programs.
+Separate IPv4 and other sidecar examples have their own checks and are not added to the catalog's execution totals.
 The RectangleIn/FitsCrop suites have completed finite native execution and saved
 replay with an independent raw-receipt audit; see the [verification evidence](evidence/rectangle-in-fits-crop-20261012.json).
 The literal-text workflow includes a reviewed 24-input native pilot and repaired
@@ -129,9 +131,30 @@ existing Gooo token predicate. No per-case human approval or HTTP effect is
 introduced. Two appended normal suites retain all 1,059 input occurrences each,
 including five repeated keys; independent Go references and saved replay remain
 required. The preceding 74-suite/171,217-case/2,181-batch prefix is preserved.
-The required source roster is planned as 76 suites and 173,335 cases; its
-serialized batch count and complete source-identity roster await actual public
-profile measurement. Earlier private observations are not public acceptance.
+The completed historical roster contains 76 suites, 173,335 cases and 2,240 batches.
+The ETag extension below requires a new full run against the updated source tree;
+earlier observations do not validate the new addition.
+
+The [ETag port](ports/net/http/README.md) exposes bounded adaptations of Go's
+private `scanETag` and `etagStrongMatch` helpers. The original
+[strong-validator facts composition](examples/strong-validator-facts/README.md)
+keeps raw header validity separate from parsed-tag strength and leftover content.
+For example, `"a", "b"` has a parsed first tag and trailing content; `W/"a"`
+is complete but weak. Neither is reported as a single strong validator.
+All operands are decoded Unicode-scalar UTF-8 Text of 0–1,024 bytes; NUL,
+control characters and invalid ETag grammar remain part of the test domain.
+The raw strong-match API deliberately preserves Go's helper semantics, including
+grammar-invalid equal strings beginning with a quote.
+
+Three appended suites retain 192 scanner occurrences (190 distinct strings),
+31 raw comparison pairs and 24 thirteen-field reports. Their focused native
+execution and saved replay cover all 247 inputs in seven batches (3/2/2), with
+727 returned scalar values per layer compared with an independent Go reference.
+The complete required roster becomes 79 suites, 173,582 cases, 2,247 batches
+and 2,407 timing records, binding 251 current source files. Full CI and all seven
+existing exhaustive checks remain required. These are finite diagnostics;
+current-resource matching, authorization, atomic writes and full `If-Match`
+processing are outside this port.
 
 The original [diagnostic-header addition](examples/diagnostic-header-addition/README.md)
 adds one importing `AssessAddition` activity after the preceding 73 suites. It
@@ -513,6 +536,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | Gooo 패키지 경로 | 함수 | 원본과의 대응 |
 | --- | --- | --- |
 | `go/net/http` | `StatusText` | Go의 상태 코드 62개와 설명. 미등록 코드는 빈 문자열 |
+| `go/net/http/etag` | `ScanETag`, `ETagStrongMatch` | Unicode-scalar UTF-8 Text 0–1,024 bytes per operand; exact private Go helper semantics. [Domain and provenance](ports/net/http/README.md), [original thirteen-field composition](examples/strong-validator-facts/README.md) |
 | `go/golang.org/x/net/http/httpguts` | `ValidHeaderFieldName`, `ValidHeaderFieldValue` | decoded valid UTF-8 Text 각각 최대 1,024바이트. 이름은 비어 있지 않은 ASCII token, 값은 HTAB 외 C0와 DEL을 거부. [원본 차이와 도메인](ports/net/httpguts/README.md), [자동 판단용 12필드 구성](examples/header-field-facts/README.md) |
 | `go/net/textproto` | `CanonicalMIMEHeaderKey` | Decoded valid UTF-8 Text 0–1,024 bytes; valid-token ASCII casing, invalid/empty input identity. [Domain and source](ports/net/textproto/README.md), [original eight-field validity/witness composition](examples/canonical-header-key/README.md) |
 | `go/strconv` | `ParseIntDecimal64` | decoded valid UTF-8 Text 최대1,024바이트에서 ParseInt(s,10,64)의 원래 입력·정확한 int64·구문/범위 오류 구별을4필드로 보존. unsigned overflow와 뒤따른 잘못된 문자 우선순위도 유지. [도메인과 차이](ports/strconv/README.md) |

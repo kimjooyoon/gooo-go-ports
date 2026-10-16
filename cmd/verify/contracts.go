@@ -23,6 +23,9 @@ type activityContract struct {
 func nativeActivityContracts() map[string]activityContract {
 	i := integerEntity
 	return map[string]activityContract{
+		etagPortPackage + ":" + etagScanActivity:                           {etagPortSource, etagScanActivityID, []string{textEntity}},
+		etagPortPackage + ":" + etagStrongActivity:                         {etagPortSource, etagStrongActivityID, []string{textEntity, textEntity}},
+		etagReportPackage + ":" + etagReportActivity:                       {etagReportSource, etagReportActivityID, []string{textEntity}},
 		canonicalHeaderPackage + ":" + canonicalHeaderActivity:             {canonicalHeaderSource, canonicalHeaderActivityID, []string{textEntity}},
 		canonicalHeaderReportPackage + ":" + canonicalHeaderReportActivity: {canonicalHeaderReportSource, canonicalHeaderReportActivityID, []string{textEntity}},
 		headerAdditionPackage + ":" + headerAdditionActivity:               {headerAdditionSource, headerAdditionActivityID, []string{textEntity, textEntity, textEntity, headerAdditionInputEntity}},

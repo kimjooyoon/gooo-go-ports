@@ -85,6 +85,7 @@ type nativeCaseBatchPolicy struct {
 	header          bool
 	headerAddition  bool
 	canonicalHeader bool
+	etag            bool
 	literalReport   bool
 	// With a nonexpanding lowered key the translated compact struct cannot be
 	// larger than our compact map encoding without its final LF.
@@ -94,6 +95,9 @@ type nativeCaseBatchPolicy struct {
 func (p nativeCaseProfile) policy(s suite, selected suiteWorkspace, lock upstream) (nativeCaseBatchPolicy, error) {
 	if err := p.validateCompiler(lock); err != nil {
 		return nativeCaseBatchPolicy{}, err
+	}
+	if isETagSuite(s) {
+		return etagBatchPolicy(s, selected, lock)
 	}
 	if isCanonicalHeaderSuite(s) {
 		return canonicalHeaderBatchPolicy(s, selected, lock)
@@ -155,6 +159,9 @@ func (p nativeCaseProfile) policy(s suite, selected suiteWorkspace, lock upstrea
 }
 
 func (p nativeCaseBatchPolicy) prepare(s suite, start int) (nativePreparedCaseBatch, error) {
+	if p.etag {
+		return p.prepareETag(s, start)
+	}
 	if p.canonicalHeader {
 		return p.prepareCanonicalHeader(s, start)
 	}

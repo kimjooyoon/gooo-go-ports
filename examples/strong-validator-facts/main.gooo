@@ -1,0 +1,59 @@
+// Copyright 2026 Gooo Go Ports contributors. All rights reserved.
+// Use of this original Gooo composition is governed by the BSD-style LICENSE.
+// Imported ETag helpers preserve Go2009/2010 BSD notices and exact source pins
+// in ports/net/http/etag.gooo and third_party/GO-LICENSE. The unchanged imported
+// httpguts source retains its complete BSD and inherited MIT notices.
+//
+// One unchanged decoded Unicode-scalar validUTF8 Text of0..1024 bytes, including
+// empty/control/grammar-invalid strings. REQUIRED OUTER REFUSAL handles absent,
+// wrong-type, duplicate-key, malformedUTF8/unpaired-surrogate/>1024-byte input.
+// No truncation/normalization/casefolding/unescaping or JSON-spelling identity.
+// Header validity is computed on raw input, separately from Go scanner trimming.
+// Strong classification uses only the parsed tag, never raw input against self.
+// Complete means one parsed tag exhausts the edge-trimmed input. These thirteen
+// fields are local facts, not current-validator binding or permission to write.
+// No per-call human approval, inference, network/HTTP effect, full If-Match,
+// resource authenticity, authorization or atomic conditional-update guarantee.
+package strongvalidator
+namespace strongvalidator
+import etags "go/net/http/etag"
+import headers "go/golang.org/x/net/http/httpguts"
+entity Text id "gooo://std/text"
+entity StrongValidatorFacts id "gooo://go-ports/examples/strong-validator-facts" fields {
+    field raw id "gooo://go-ports/examples/strong-validator-facts/raw" type string required one
+    field tag id "gooo://go-ports/examples/strong-validator-facts/tag" type string required one
+    field remainder id "gooo://go-ports/examples/strong-validator-facts/remainder" type string required one
+    field header_valid id "gooo://go-ports/examples/strong-validator-facts/header_valid" type boolean required one
+    field present id "gooo://go-ports/examples/strong-validator-facts/present" type boolean required one
+    field weak id "gooo://go-ports/examples/strong-validator-facts/weak" type boolean required one
+    field complete id "gooo://go-ports/examples/strong-validator-facts/complete" type boolean required one
+    field strong id "gooo://go-ports/examples/strong-validator-facts/strong" type boolean required one
+    field single_strong id "gooo://go-ports/examples/strong-validator-facts/single_strong" type boolean required one
+    field input_bytes id "gooo://go-ports/examples/strong-validator-facts/input_bytes" type integer required one
+    field tag_bytes id "gooo://go-ports/examples/strong-validator-facts/tag_bytes" type integer required one
+    field remainder_bytes id "gooo://go-ports/examples/strong-validator-facts/remainder_bytes" type integer required one
+    field reason id "gooo://go-ports/examples/strong-validator-facts/reason" type string required one
+}
+
+activity Report(Text) -> StrongValidatorFacts id "gooo://go-ports/examples/strong-validator-facts/report" computes `let parsed = etags.ScanETag(input)
+let header_valid = headers.ValidHeaderFieldValue(input)
+let strong = etags.ETagStrongMatch(parsed.etag, parsed.etag)
+let tag = parsed.etag
+let remainder = parsed.remain
+let present = tag != ""
+let input_size = int64(len(input))
+let tag_size = int64(len(tag))
+let remainder_size = int64(len(remainder))
+let weak = false
+if tag_size >= 2 {
+    weak = int64(tag[0]) == 87 && int64(tag[1]) == 47
+}
+let complete = present && remainder == ""
+let single_strong = header_valid && present && complete && strong
+let reason = ""
+if !header_valid { reason = "HEADER_VALUE_INVALID" }
+if reason == "" && !present { reason = "NO_VALID_TAG" }
+if reason == "" && !complete { reason = "TRAILING_CONTENT" }
+if reason == "" && weak { reason = "WEAK_TAG" }
+if reason == "" { reason = "SINGLE_STRONG_TAG" }
+return StrongValidatorFacts{raw: input, tag: tag, remainder: remainder, header_valid: header_valid, present: present, weak: weak, complete: complete, strong: strong, single_strong: single_strong, input_bytes: input_size, tag_bytes: tag_size, remainder_bytes: remainder_size, reason: reason}`

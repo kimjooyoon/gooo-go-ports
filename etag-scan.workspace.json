@@ -1,0 +1,15 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "go/net/http/etag",
+    "activity": "ScanETag"
+  },
+  "packages": [
+    {
+      "path": "go/net/http/etag",
+      "sources": [
+        "ports/net/http/etag.gooo"
+      ]
+    }
+  ]
+}

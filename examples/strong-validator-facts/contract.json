@@ -1,0 +1,39 @@
+{
+  "schema": "gooo/strong-validator-facts-contract/v1",
+  "entry": "app/strong-validator-facts:Report",
+  "activity_id": "gooo://go-ports/examples/strong-validator-facts/report",
+  "result_id": "gooo://go-ports/examples/strong-validator-facts",
+  "domain": "Unchanged decoded Unicode-scalar validUTF8 Text0..1024bytes including empty/NUL/control/invalidETaggrammar. Caller enforces transport/domain preconditions.",
+  "input_entity_id": "gooo://std/text",
+  "ordered_fields": [
+    "raw",
+    "tag",
+    "remainder",
+    "header_valid",
+    "present",
+    "weak",
+    "complete",
+    "strong",
+    "single_strong",
+    "input_bytes",
+    "tag_bytes",
+    "remainder_bytes",
+    "reason"
+  ],
+  "reason_precedence": [
+    "HEADER_VALUE_INVALID",
+    "NO_VALID_TAG",
+    "TRAILING_CONTENT",
+    "WEAK_TAG",
+    "SINGLE_STRONG_TAG"
+  ],
+  "imports": [
+    "go/net/http/etag:ScanETag",
+    "go/golang.org/x/net/http/httpguts:ValidHeaderFieldValue",
+    "go/net/http/etag:ETagStrongMatch"
+  ],
+  "operations": "Header validation on raw; scan raw; strong helper on parsed tag twice; single_strong=header_valid && present && complete && strong.",
+  "effects": false,
+  "per_call_human_approval": false,
+  "authority": "Local parsing/validation facts only; no external validator binding, fullIfMatch, authorization, resource authenticity or atomic update."
+}
