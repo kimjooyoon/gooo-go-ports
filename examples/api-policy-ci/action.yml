@@ -1,0 +1,44 @@
+name: Gooo readonly policy review
+description: Compare caller facts with two sealed Gooo API policy profiles, or recheck a saved comparison.
+author: asketeddy
+branding:
+  icon: git-pull-request
+  color: blue
+inputs:
+  input-file:
+    description: Workspace-relative regular JSON file. Nine raw API facts in compare mode; saved comparison in replay mode.
+    required: true
+  mode:
+    description: compare or replay. Both use only the original and readonly sealed profiles.
+    required: false
+    default: compare
+  fail-on-newly-denied:
+    description: Set true to fail CI after saving a verified NEWLY_DENIED comparison. This does not authorize an API effect.
+    required: false
+    default: 'false'
+outputs:
+  classification:
+    description: Classification computed by the generated Gooo classifier.
+    value: ${{ steps.review.outputs.classification }}
+  changed-count:
+    description: Number of changed decision fields computed by Gooo.
+    value: ${{ steps.review.outputs.changed-count }}
+  report-path:
+    description: Private runner-local complete comparison JSON. Contains supplied raw facts; upload only if appropriate.
+    value: ${{ steps.review.outputs.report-path }}
+  receipt-path:
+    description: Runner-local input/report digest and actual compiled module identity record.
+    value: ${{ steps.review.outputs.receipt-path }}
+  report-sha256:
+    description: SHA256 of the saved complete comparison file.
+    value: ${{ steps.review.outputs.report-sha256 }}
+runs:
+  using: composite
+  steps:
+    - id: review
+      shell: bash
+      env:
+        GOOO_ACTION_INPUT: ${{ inputs.input-file }}
+        GOOO_ACTION_MODE: ${{ inputs.mode }}
+        GOOO_ACTION_FAIL_NEWLY_DENIED: ${{ inputs.fail-on-newly-denied }}
+      run: bash "$GITHUB_ACTION_PATH/entrypoint.sh"

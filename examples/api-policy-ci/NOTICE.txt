@@ -1,0 +1,15 @@
+Gooo readonly policy review — source-only Action pilot
+
+This wrapper imports the original generated Gooo policy modules; it does not
+replace their policy logic or modify their sealed generation assets.
+
+Revision module: github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision
+Public commit: e723f9af6dc33ecfff002a951e4b09a310439338
+Original module: github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy
+Public commit: 8cddcc4e65afb42431f8f42a86f29859ae2f4d69
+
+Their source archives retain their own license and attribution material,
+including the original CEL-related Apache 2.0 notices. This pilot does not vendor
+or rewrite those assets. Any future binary distribution must retain all required
+dependency notices in addition to this wrapper's LICENSE. No Google endorsement
+or official affiliation is claimed.
