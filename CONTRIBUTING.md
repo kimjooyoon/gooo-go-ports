@@ -67,16 +67,25 @@ Reports and contributions in English or Korean are welcome.
    and the selected consumer in each execution workspace. The pinned compiler
    allows at most 16 record types per program, so do not accumulate every example
    in the default `gooo.workspace.json`. Also register ports needed by the default
-   example in that workspace.
+   example in that workspace. The catalog is a source inventory; adding an entry
+   does not register an execution suite.
 4. Add inputs that use the original Go implementation as an independent oracle.
    Include normal, boundary, and invalid inputs, and fix the seed for random
    samples. Check the original input type's domain before converting values.
+   Add the corpus and suite to the roster assembled in `cmd/verify/main.go`.
+   Wire its activity/input contract in `cmd/verify/contracts.go` or the applicable
+   `*_contracts.go`, its expected result contract, and its selected source closure
+   in the workspace helpers. Keep existing suites' source rosters and batch
+   boundaries unchanged; the catalog does not discover suites or Go oracles.
 5. Update `upstream.json` and the API inventory. Add exact source hashes for new
    upstream files. Preserve observation and compiler/toolchain pins unless this
    contribution deliberately updates those pinned sources and identities.
 6. Run the validation commands below and record input counts, actual matches,
    failures, and scope. Do not edit generated code or execution receipts to make
-   a result appear successful.
+   a result appear successful. In the new execution's `summary.json`, confirm that
+   `runs` contains the new package/activity, positive `cases` and `batches`,
+   `passed == cases`, and `replay_equal: true`. A passing run of only the existing
+   entries does not validate the new port.
 
 ## 포트에 기여하기
 
@@ -90,12 +99,20 @@ Reports and contributions in English or Korean are welcome.
    공통 포트와 해당 소비 앱만 각 실행 workspace에 넣습니다. 고정 컴파일러의
    프로그램당 레코드 타입 16개 한도를 고려해 모든 예제를 기본 `gooo.workspace.json`에
    누적하지 않습니다. 기본 예제에 필요한 포트는 기본 workspace에도 등록합니다.
+   catalog는 소스 목록이며, 항목을 추가해도 실행 suite가 자동 등록되지는 않습니다.
 4. Go 원본을 독립 oracle로 사용하는 입력군을 추가합니다. 정상값·경계값·잘못된 입력을
    포함하고 난수를 사용하면 시드를 고정합니다. 변환 전에 원본 입력 타입 범위를 확인합니다.
+   corpus와 suite를 `cmd/verify/main.go`에서 조립하는 실행 목록에 추가합니다.
+   `cmd/verify/contracts.go` 또는 해당 `*_contracts.go`의 activity·입력 contract,
+   예상 결과 contract, workspace helper의 소스 선택도 연결합니다. 기존 suite의
+   소스 목록과 batch 경계는 유지합니다. catalog는 suite나 Go oracle을 자동 탐색하지 않습니다.
 5. `upstream.json`과 API 목록을 갱신합니다. 새로운 원본 파일은 정확한 source hash를
    추가합니다. 관측 소스와 compiler/toolchain pin을 함께 바꾸지 않았다면 유지합니다.
 6. 아래 검사를 실행한 뒤 입력 수, 실제 일치 수, 실패 사례와 범위를 기록합니다.
    생성 코드와 실행 receipt를 직접 수정해 성공한 결과를 만들지 않습니다.
+   새 실행의 `summary.json`에서 `runs`에 새 package·activity가 있고 `cases`와
+   `batches`가 양수이며, `passed == cases`와 `replay_equal: true`인지 확인합니다.
+   기존 항목만 통과한 실행은 새 포트를 검증한 결과가 아닙니다.
 
 Verify actual original inputs and outputs, entry and source bindings, producer
 and compiler/Go identities, and the execution's own saved replay. A `PASS` label
