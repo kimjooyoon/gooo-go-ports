@@ -1,0 +1,24 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "app/diagnostic-header-addition:AssessAddition.input0": "x-request-id",
+      "app/diagnostic-header-addition:AssessAddition.input1": "req-123",
+      "app/diagnostic-header-addition:AssessAddition.input2": "2",
+      "app/diagnostic-header-addition:AssessAddition.input3": {
+        "content_length_occurrences": 1,
+        "observed_body_bytes": 2,
+        "maximum_payload_bytes": 2,
+        "transfer_encoding_present": false,
+        "body_observation_bound_to_request": true,
+        "current_access": true,
+        "candidate_name_occurrences": 0,
+        "header_set_bound_to_request": true,
+        "policy_revision_current": true,
+        "allowed_header_name": "x-request-id",
+        "expected_request_revision": 1,
+        "observed_request_revision": 1
+      }
+    }
+  ]
+}

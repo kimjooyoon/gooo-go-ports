@@ -1,0 +1,433 @@
+package main
+
+import (
+	"bytes"
+	"errors"
+	"math"
+	"reflect"
+	"sync"
+	"sync/atomic"
+	"testing"
+)
+
+func fixture(t *testing.T) (*Owner, *Writer) {
+	t.Helper()
+	o, err := NewOwner("request-1", Request{[]Header{{"Content-Length", "02"}, {"X-Other", " untouched "}}, []byte("ok"), true}, Policy{"x-request-id", 16}, "worker")
+	if err != nil {
+		t.Fatal(err)
+	}
+	w, err := o.WriterForAuthenticated("worker")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return o, w
+}
+func plan(t *testing.T, w *Writer, name, value string) Plan {
+	t.Helper()
+	p, e := w.Prepare(name, value)
+	if e != nil {
+		t.Fatal(e)
+	}
+	return p
+}
+func view(t *testing.T, o *Owner) Snapshot {
+	t.Helper()
+	s, e := o.View()
+	if e != nil {
+		t.Fatal(e)
+	}
+	return s
+}
+func assertSame(t *testing.T, before, after Snapshot) {
+	t.Helper()
+	if !reflect.DeepEqual(before, after) {
+		t.Fatalf("request or policy changed on refusal: before=%+v after=%+v", before, after)
+	}
+}
+
+func TestExactAddPreservesOriginalRequestAndCannotApplyTwice(t *testing.T) {
+	o, w := fixture(t)
+	before := view(t, o)
+	p := plan(t, w, "x-request-id", "req-123")
+	if !p.Advisory.Eligible {
+		t.Fatalf("unexpected generated refusal: %+v", p.Advisory)
+	}
+	r, e := w.Apply(p)
+	if e != nil || r.Status != "APPLIED" || !r.HasDecision || !r.Decision.Eligible || r.BeforeRevision != 1 || r.AfterRevision != 2 {
+		t.Fatalf("%+v %v", r, e)
+	}
+	after := view(t, o)
+	if !bytes.Equal(after.Request.Body, before.Request.Body) || after.Request.Complete != before.Request.Complete || after.Policy != before.Policy || after.PolicyRevision != before.PolicyRevision || !reflect.DeepEqual(after.Request.Headers[:len(before.Request.Headers)], before.Request.Headers) || after.Request.Headers[len(before.Request.Headers)] != (Header{"x-request-id", "req-123"}) {
+		t.Fatalf("non-exact append: %+v", after)
+	}
+	if _, e = w.Apply(p); !errors.Is(e, ErrStaleRequest) {
+		t.Fatalf("duplicate apply: %v", e)
+	}
+	assertSame(t, after, view(t, o))
+}
+func TestConcurrentOnePlanAddsOnce(t *testing.T) {
+	o, w := fixture(t)
+	p := plan(t, w, "x-request-id", "once")
+	start := make(chan struct{})
+	var applied, stale, other atomic.Int32
+	var wg sync.WaitGroup
+	for i := 0; i < 32; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			<-start
+			r, e := w.Apply(p)
+			switch {
+			case e == nil && r.Status == "APPLIED":
+				applied.Add(1)
+			case errors.Is(e, ErrStaleRequest):
+				stale.Add(1)
+			default:
+				other.Add(1)
+			}
+		}()
+	}
+	close(start)
+	wg.Wait()
+	if applied.Load() != 1 || stale.Load() != 31 || other.Load() != 0 {
+		t.Fatalf("applied=%d stale=%d other=%d", applied.Load(), stale.Load(), other.Load())
+	}
+	s := view(t, o)
+	if s.RequestRevision != 2 || len(s.Request.Headers) != 3 || s.Request.Headers[2] != (Header{"x-request-id", "once"}) {
+		t.Fatal(s)
+	}
+}
+func TestConcurrentDifferentValuesCannotBothCommit(t *testing.T) {
+	o, w := fixture(t)
+	plans := []Plan{plan(t, w, "x-request-id", "a"), plan(t, w, "x-request-id", "b")}
+	results := make(chan ApplyResult, 2)
+	errs := make(chan error, 2)
+	start := make(chan struct{})
+	var wg sync.WaitGroup
+	for _, p := range plans {
+		wg.Add(1)
+		go func(p Plan) { defer wg.Done(); <-start; r, e := w.Apply(p); results <- r; errs <- e }(p)
+	}
+	close(start)
+	wg.Wait()
+	close(results)
+	close(errs)
+	winner := ""
+	for r := range results {
+		if r.Status == "APPLIED" {
+			if winner != "" {
+				t.Fatal("two commits")
+			}
+			winner = r.Decision.CandidateValue
+		}
+	}
+	stale := 0
+	for e := range errs {
+		if errors.Is(e, ErrStaleRequest) {
+			stale++
+		} else if e != nil {
+			t.Fatal(e)
+		}
+	}
+	s := view(t, o)
+	if winner == "" || stale != 1 || s.RequestRevision != 2 || len(s.Request.Headers) != 3 || s.Request.Headers[2].Value != winner {
+		t.Fatalf("winner=%q stale=%d snapshot=%+v", winner, stale, s)
+	}
+}
+func TestExistingFieldCountUsesASCIICaseAcrossAllOccurrences(t *testing.T) {
+	o, w := fixture(t)
+	s := view(t, o)
+	s.Request.Headers = append(s.Request.Headers, Header{"X-ReQuEsT-Id", "old"}, Header{"x-request-id", "older"})
+	if e := o.ReplaceRequest(s.RequestRevision, s.Request); e != nil {
+		t.Fatal(e)
+	}
+	before := view(t, o)
+	p := plan(t, w, "x-request-id", "new")
+	r, e := w.Apply(p)
+	if e != nil || r.Status != "REFUSED" || r.Decision.Reason != "FIELD_ALREADY_PRESENT" || r.Decision.Eligible {
+		t.Fatalf("%+v %v", r, e)
+	}
+	assertSame(t, before, view(t, o))
+}
+func TestRawPayloadObservationsAreExtractedWithoutCoalescing(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		headers  []Header
+		complete bool
+		reason   int64
+	}{
+		{"repeated-even-equal", []Header{{"Content-Length", "2"}, {"cOnTeNt-LeNgTh", "2"}}, true, 6},
+		{"comma-remains-one-raw-value", []Header{{"Content-Length", "2, 2"}}, true, 7},
+		{"te-presence-even-empty", []Header{{"Content-Length", "2"}, {"tRaNsFeR-EnCoDiNg", ""}}, true, 4},
+		{"missing-length", []Header{{"X-Other", "x"}}, true, 5},
+		{"incomplete-body", []Header{{"Content-Length", "2"}}, false, 3},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			o, w := fixture(t)
+			s := view(t, o)
+			s.Request.Headers = tc.headers
+			s.Request.Complete = tc.complete
+			if e := o.ReplaceRequest(s.RequestRevision, s.Request); e != nil {
+				t.Fatal(e)
+			}
+			before := view(t, o)
+			p := plan(t, w, "x-request-id", "new")
+			r, e := w.Apply(p)
+			if e != nil || r.Status != "REFUSED" || r.Decision.PayloadReason != tc.reason || r.Decision.Reason != "PAYLOAD_REFUSED" {
+				t.Fatalf("%+v %v", r, e)
+			}
+			assertSame(t, before, view(t, o))
+		})
+	}
+}
+func TestRequestReplacementAndSameLengthBodyChangeInvalidatePlan(t *testing.T) {
+	o, w := fixture(t)
+	p := plan(t, w, "x-request-id", "x")
+	s := view(t, o)
+	s.Request.Body = []byte("NO")
+	if e := o.ReplaceRequest(s.RequestRevision, s.Request); e != nil {
+		t.Fatal(e)
+	}
+	before := view(t, o)
+	if _, e := w.Apply(p); !errors.Is(e, ErrStaleRequest) {
+		t.Fatal(e)
+	}
+	assertSame(t, before, view(t, o))
+}
+func TestPolicyChangeAndUndoCannotRevivePlan(t *testing.T) {
+	o, w := fixture(t)
+	p := plan(t, w, "x-request-id", "x")
+	s := view(t, o)
+	if e := o.ReplacePolicy(s.PolicyRevision, Policy{"x-correlation-id", 16}); e != nil {
+		t.Fatal(e)
+	}
+	s = view(t, o)
+	if e := o.ReplacePolicy(s.PolicyRevision, Policy{"x-request-id", 16}); e != nil {
+		t.Fatal(e)
+	}
+	before := view(t, o)
+	if _, e := w.Apply(p); !errors.Is(e, ErrStalePolicy) {
+		t.Fatal(e)
+	}
+	assertSame(t, before, view(t, o))
+}
+func TestAuthorityIsReadAgainByGeneratedDecision(t *testing.T) {
+	o, w := fixture(t)
+	p := plan(t, w, "x-request-id", "x")
+	if !p.Advisory.Eligible {
+		t.Fatal(p.Advisory)
+	}
+	if e := o.SetAuthority("other-worker"); e != nil {
+		t.Fatal(e)
+	}
+	before := view(t, o)
+	r, e := w.Apply(p)
+	if e != nil || r.Status != "REFUSED" || !r.HasDecision || r.Decision.Eligible || r.Decision.PayloadReason != 2 || r.Decision.Reason != "PAYLOAD_REFUSED" {
+		t.Fatalf("%+v %v", r, e)
+	}
+	assertSame(t, before, view(t, o))
+	// This records a newly current local grant, not authority recovered from p.
+	if e = o.SetAuthority("worker"); e != nil {
+		t.Fatal(e)
+	}
+	r, e = w.Apply(p)
+	if e != nil || r.Status != "APPLIED" {
+		t.Fatalf("%+v %v", r, e)
+	}
+}
+func TestWrongTargetNameValueRevisionOrSubjectCannotReuseCapability(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		mutate func(*Plan)
+	}{
+		{"target", func(p *Plan) { p.Target = "another-request" }},
+		{"name", func(p *Plan) { p.Name = "x-correlation-id" }},
+		{"valid-alternative-value", func(p *Plan) { p.Value = "different-valid-value" }},
+		{"request-revision", func(p *Plan) { p.ExpectedRequestRevision++ }},
+		{"policy-revision", func(p *Plan) { p.ExpectedPolicyRevision++ }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			o, w := fixture(t)
+			p := plan(t, w, "x-request-id", "fixed")
+			tc.mutate(&p)
+			before := view(t, o)
+			if _, e := w.Apply(p); !errors.Is(e, ErrInvalidPlan) {
+				t.Fatal(e)
+			}
+			assertSame(t, before, view(t, o))
+		})
+	}
+	o, w := fixture(t)
+	p := plan(t, w, "x-request-id", "fixed")
+	other, e := o.WriterForAuthenticated("other-subject")
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = other.Apply(p); !errors.Is(e, ErrInvalidPlan) {
+		t.Fatal(e)
+	}
+	o2, w2 := fixture(t)
+	before := view(t, o2)
+	if _, e = w2.Apply(p); !errors.Is(e, ErrInvalidPlan) {
+		t.Fatal(e)
+	}
+	assertSame(t, before, view(t, o2))
+}
+func TestForgedAdvisoryEligibilityCannotAuthorizeInvalidCandidate(t *testing.T) {
+	o, w := fixture(t)
+	p := plan(t, w, "x-request-id", "bad\rvalue")
+	if p.Advisory.Eligible {
+		t.Fatal("bad fixture")
+	}
+	p.Advisory = Decision{Status: "ELIGIBLE", Eligible: true, PayloadEligible: true, HeaderNameValid: true, HeaderValueValid: true}
+	before := view(t, o)
+	r, e := w.Apply(p)
+	if e != nil || r.Status != "REFUSED" || !r.HasDecision || r.Decision.Eligible || r.Decision.Reason != "HEADER_VALUE_INVALID" || r.Decision.HeaderValueValid {
+		t.Fatalf("%+v %v", r, e)
+	}
+	assertSame(t, before, view(t, o))
+	forged := Plan{Target: "request-1", Name: "x-request-id", Value: "forged", ExpectedRequestRevision: 1, ExpectedPolicyRevision: 1, Advisory: Decision{Status: "ELIGIBLE", Eligible: true}}
+	if _, e = w.Apply(forged); !errors.Is(e, ErrInvalidPlan) {
+		t.Fatal(e)
+	}
+	assertSame(t, before, view(t, o))
+}
+func TestAdvisoryDenialDoesNotReplaceFreshGeneratedDecision(t *testing.T) {
+	o, w := fixture(t)
+	p := plan(t, w, "x-request-id", "real")
+	p.Advisory = Decision{Status: "REFUSED", Reason: "FORGED_DENIAL"}
+	r, e := w.Apply(p)
+	if e != nil || r.Status != "APPLIED" || !r.Decision.Eligible || r.Decision.CandidateValue != "real" {
+		t.Fatalf("%+v %v", r, e)
+	}
+	if view(t, o).Request.Headers[2].Value != "real" {
+		t.Fatal("wrong appended value")
+	}
+}
+func TestBodyHeaderAndCompleteFingerprintsDefendAgainstUnversionedOwnerFault(t *testing.T) {
+	// These bypasses simulate a faulty trusted embedding adapter, not a supported
+	// caller API. Ordinary owners must always use ReplaceRequest.
+	for _, tc := range []struct {
+		name   string
+		change func(*Request)
+	}{
+		{"same-length-body", func(r *Request) { r.Body[0] = 'N' }},
+		{"raw-content-length", func(r *Request) { r.Headers[0].Value = "2" }},
+		{"other-header", func(r *Request) { r.Headers[1].Value = "changed" }},
+		{"completeness", func(r *Request) { r.Complete = false }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			o, w := fixture(t)
+			p := plan(t, w, "x-request-id", "fixed")
+			o.store.mu.Lock()
+			tc.change(&o.store.request)
+			o.store.mu.Unlock()
+			before := view(t, o)
+			if _, e := w.Apply(p); !errors.Is(e, ErrSnapshotChanged) {
+				t.Fatal(e)
+			}
+			assertSame(t, before, view(t, o))
+		})
+	}
+}
+func TestMutableInputAndViewDoNotAliasOwnedState(t *testing.T) {
+	request := Request{[]Header{{"Content-Length", "2"}}, []byte("ok"), true}
+	o, e := NewOwner("target", request, Policy{"x-request-id", 16}, "worker")
+	if e != nil {
+		t.Fatal(e)
+	}
+	request.Body[0] = 'N'
+	request.Headers[0].Value = "999"
+	s := view(t, o)
+	if string(s.Request.Body) != "ok" || s.Request.Headers[0].Value != "2" {
+		t.Fatal("constructor aliases caller")
+	}
+	s.Request.Body[0] = 'X'
+	s.Request.Headers[0].Value = "777"
+	again := view(t, o)
+	if string(again.Request.Body) != "ok" || again.Request.Headers[0].Value != "2" {
+		t.Fatal("View leaks mutable state")
+	}
+	next := Request{[]Header{{"Content-Length", "2"}}, []byte("NO"), true}
+	if e = o.ReplaceRequest(again.RequestRevision, next); e != nil {
+		t.Fatal(e)
+	}
+	next.Body[0] = 'Y'
+	next.Headers[0].Value = "888"
+	after := view(t, o)
+	if string(after.Request.Body) != "NO" || after.Request.Headers[0].Value != "2" {
+		t.Fatal("replacement aliases caller")
+	}
+}
+func TestSigned64ExhaustionNeverWrapsOrAdds(t *testing.T) {
+	o, w := fixture(t)
+	o.store.mu.Lock()
+	o.store.requestRevision = math.MaxInt64 - 1
+	o.store.mu.Unlock()
+	p := plan(t, w, "x-request-id", "last")
+	r, e := w.Apply(p)
+	if e != nil || r.Status != "APPLIED" || r.AfterRevision != math.MaxInt64 {
+		t.Fatalf("%+v %v", r, e)
+	}
+	before := view(t, o)
+	p = plan(t, w, "x-request-id", "again")
+	r, e = w.Apply(p)
+	if !errors.Is(e, ErrRevisionExhausted) || !r.HasDecision || r.Decision.Status != "INVALID_INPUT" || r.Decision.Reason != "REQUEST_METADATA_INVALID" {
+		t.Fatalf("%+v %v", r, e)
+	}
+	assertSame(t, before, view(t, o))
+	if e = o.ReplaceRequest(math.MaxInt64, before.Request); !errors.Is(e, ErrRevisionExhausted) {
+		t.Fatal(e)
+	}
+	o.store.mu.Lock()
+	o.store.policyRevision = math.MaxInt64
+	o.store.mu.Unlock()
+	before = view(t, o)
+	if e = o.ReplacePolicy(math.MaxInt64, before.Policy); !errors.Is(e, ErrRevisionExhausted) {
+		t.Fatal(e)
+	}
+	assertSame(t, before, view(t, o))
+}
+func TestUnsupportedTypedInputsRefuseBeforeAssessment(t *testing.T) {
+	o, w := fixture(t)
+	before := view(t, o)
+	for _, value := range []string{string([]byte{255}), string(bytes.Repeat([]byte{'x'}, 1025))} {
+		if _, e := w.Prepare("x-request-id", value); !errors.Is(e, ErrUnsupportedInput) {
+			t.Fatal(e)
+		}
+	}
+	assertSame(t, before, view(t, o))
+}
+
+func TestHostCapacityRefusesWithoutReplacingGeneratedEligibility(t *testing.T) {
+	o, w := fixture(t)
+	s := view(t, o)
+	for len(s.Request.Headers) < maxHeaders {
+		s.Request.Headers = append(s.Request.Headers, Header{"X-Other", "x"})
+	}
+	if e := o.ReplaceRequest(s.RequestRevision, s.Request); e != nil {
+		t.Fatal(e)
+	}
+	before := view(t, o)
+	p := plan(t, w, "x-request-id", "valid")
+	r, e := w.Apply(p)
+	if !errors.Is(e, ErrCapacity) || !r.HasDecision || !r.Decision.Eligible {
+		t.Fatalf("%+v %v", r, e)
+	}
+	assertSame(t, before, view(t, o))
+}
+
+func TestUnsupportedRoutePolicyIsDecidedByGeneratedAssessor(t *testing.T) {
+	o, w := fixture(t)
+	s := view(t, o)
+	if e := o.ReplacePolicy(s.PolicyRevision, Policy{"authorization", 16}); e != nil {
+		t.Fatal(e)
+	}
+	before := view(t, o)
+	p := plan(t, w, "authorization", "valid")
+	r, e := w.Apply(p)
+	if e != nil || r.Status != "REFUSED" || r.Decision.Status != "INVALID_INPUT" || r.Decision.Reason != "ROUTE_HEADER_NOT_SUPPORTED" {
+		t.Fatalf("%+v %v", r, e)
+	}
+	assertSame(t, before, view(t, o))
+}

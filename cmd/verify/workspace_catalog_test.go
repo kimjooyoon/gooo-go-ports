@@ -14,8 +14,11 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(frozen.Catalog.Packages) != 48 || len(frozen.Sources) != 58 {
+	if len(frozen.Catalog.Packages) != 49 || len(frozen.Sources) != 59 {
 		t.Fatal("complete reviewed catalog roster changed")
+	}
+	if !reflect.DeepEqual(frozen.Catalog.Packages[48], sourcePackage{Path: headerAdditionPackage, Sources: []string{headerAdditionSource}}) {
+		t.Fatal("reviewed composition must be exactly one appended app package")
 	}
 	allIdentities, err := snapshotSourceIdentities(frozen.Catalog.Packages, frozen.Sources)
 	if err != nil {

@@ -1,0 +1,1407 @@
+{
+  "schema": "gooo/diagnostic-header-addition-design-cases/v2",
+  "status": "SPECIFICATION_ONLY_NOT_EXECUTED",
+  "case_count": 50,
+  "cases": [
+    {
+      "label": "request-id-eligible",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "ELIGIBLE",
+        "reason": "ROUTE_DIAGNOSTIC_FIELD_AND_PAYLOAD_ACCEPTED",
+        "payload_reason": 0,
+        "eligible": true
+      }
+    },
+    {
+      "label": "correlation-id-eligible",
+      "input": {
+        "name": "x-correlation-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-correlation-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "ELIGIBLE",
+        "reason": "ROUTE_DIAGNOSTIC_FIELD_AND_PAYLOAD_ACCEPTED",
+        "payload_reason": 0,
+        "eligible": true
+      }
+    },
+    {
+      "label": "128-ascii-value-boundary",
+      "input": {
+        "name": "x-request-id",
+        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "ELIGIBLE",
+        "reason": "ROUTE_DIAGNOSTIC_FIELD_AND_PAYLOAD_ACCEPTED",
+        "payload_reason": 0,
+        "eligible": true
+      }
+    },
+    {
+      "label": "internal-space-supported",
+      "input": {
+        "name": "x-request-id",
+        "value": "one two",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "ELIGIBLE",
+        "reason": "ROUTE_DIAGNOSTIC_FIELD_AND_PAYLOAD_ACCEPTED",
+        "payload_reason": 0,
+        "eligible": true
+      }
+    },
+    {
+      "label": "internal-tab-supported-deliberate-policy-choice",
+      "input": {
+        "name": "x-request-id",
+        "value": "one\ttwo",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "ELIGIBLE",
+        "reason": "ROUTE_DIAGNOSTIC_FIELD_AND_PAYLOAD_ACCEPTED",
+        "payload_reason": 0,
+        "eligible": true
+      }
+    },
+    {
+      "label": "uppercase-name-not-normalized",
+      "input": {
+        "name": "X-Request-ID",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "CANDIDATE_NAME_NOT_ALLOWED",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "route-cannot-approve-authorization",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "authorization",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "INVALID_INPUT",
+        "reason": "ROUTE_HEADER_NOT_SUPPORTED",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "name-space-first-invalid-byte",
+      "input": {
+        "name": "x request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "HEADER_NAME_INVALID",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "name-empty",
+      "input": {
+        "name": "",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "HEADER_NAME_INVALID",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "name-non-ascii",
+      "input": {
+        "name": "x-réquest-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "HEADER_NAME_INVALID",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "value-crlf",
+      "input": {
+        "name": "x-request-id",
+        "value": "ok\r\nInjected: yes",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "HEADER_VALUE_INVALID",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "value-nul",
+      "input": {
+        "name": "x-request-id",
+        "value": "ok\u0000late",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "HEADER_VALUE_INVALID",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "value-del",
+      "input": {
+        "name": "x-request-id",
+        "value": "ok",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "HEADER_VALUE_INVALID",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "value-empty-in-domain",
+      "input": {
+        "name": "x-request-id",
+        "value": "",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "VALUE_SIZE_NOT_ALLOWED",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "value129-in-domain",
+      "input": {
+        "name": "x-request-id",
+        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "VALUE_SIZE_NOT_ALLOWED",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "value1024-in-domain",
+      "input": {
+        "name": "x-request-id",
+        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "VALUE_SIZE_NOT_ALLOWED",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "value-valid-utf8-obs-text",
+      "input": {
+        "name": "x-request-id",
+        "value": "é",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "VALUE_NON_ASCII",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "value-leading-space",
+      "input": {
+        "name": "x-request-id",
+        "value": " req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "VALUE_EDGE_WHITESPACE",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "value-trailing-tab",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123\t",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "VALUE_EDGE_WHITESPACE",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "field-already-present-including-alternate-case-count",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 1,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "FIELD_ALREADY_PRESENT",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "field-count-int64-max",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 9223372036854775807,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "FIELD_ALREADY_PRESENT",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "negative-candidate-count",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": -1,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "INVALID_INPUT",
+        "reason": "REQUEST_METADATA_INVALID",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "zero-expected-revision",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 0,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "INVALID_INPUT",
+        "reason": "REQUEST_METADATA_INVALID",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "negative-observed-revision-min",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": -9223372036854775808
+        }
+      },
+      "expected": {
+        "status": "INVALID_INPUT",
+        "reason": "REQUEST_METADATA_INVALID",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "request-revision-changed",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 2
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "REQUEST_REVISION_CHANGED",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "header-snapshot-unbound",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": false,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "HEADER_CONTEXT_UNBOUND",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "policy-revision-unbound",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": false,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "POLICY_REVISION_UNBOUND",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "payload-access-denied",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": false,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "PAYLOAD_REFUSED",
+        "payload_reason": 2,
+        "eligible": false
+      }
+    },
+    {
+      "label": "payload-body-unbound",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": false,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "PAYLOAD_REFUSED",
+        "payload_reason": 3,
+        "eligible": false
+      }
+    },
+    {
+      "label": "payload-te-present",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": true,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "PAYLOAD_REFUSED",
+        "payload_reason": 4,
+        "eligible": false
+      }
+    },
+    {
+      "label": "payload-cl-missing",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "",
+        "facts": {
+          "content_length_occurrences": 0,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "PAYLOAD_REFUSED",
+        "payload_reason": 5,
+        "eligible": false
+      }
+    },
+    {
+      "label": "payload-cl-repeated",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 2,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "PAYLOAD_REFUSED",
+        "payload_reason": 6,
+        "eligible": false
+      }
+    },
+    {
+      "label": "payload-cl-syntax",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "two",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "PAYLOAD_REFUSED",
+        "payload_reason": 7,
+        "eligible": false
+      }
+    },
+    {
+      "label": "payload-cl-range",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "9223372036854775808",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "PAYLOAD_REFUSED",
+        "payload_reason": 8,
+        "eligible": false
+      }
+    },
+    {
+      "label": "payload-cl-signed-spelling",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "+2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "PAYLOAD_REFUSED",
+        "payload_reason": 9,
+        "eligible": false
+      }
+    },
+    {
+      "label": "payload-length-mismatch",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "3",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "PAYLOAD_REFUSED",
+        "payload_reason": 10,
+        "eligible": false
+      }
+    },
+    {
+      "label": "payload-budget-exceeded",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 1,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "PAYLOAD_REFUSED",
+        "payload_reason": 11,
+        "eligible": false
+      }
+    },
+    {
+      "label": "payload-negative-metadata",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": -1,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "PAYLOAD_REFUSED",
+        "payload_reason": 1,
+        "eligible": false
+      }
+    },
+    {
+      "label": "invalid-metadata-before-unsupported-route-and-other-failures",
+      "input": {
+        "name": "bad name",
+        "value": "\r",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": false,
+          "candidate_name_occurrences": -1,
+          "header_set_bound_to_request": false,
+          "policy_revision_current": true,
+          "allowed_header_name": "host",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "INVALID_INPUT",
+        "reason": "REQUEST_METADATA_INVALID",
+        "payload_reason": 2,
+        "eligible": false
+      }
+    },
+    {
+      "label": "header-binding-before-policy-revision-and-payload",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": false,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": false,
+          "policy_revision_current": false,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "HEADER_CONTEXT_UNBOUND",
+        "payload_reason": 2,
+        "eligible": false
+      }
+    },
+    {
+      "label": "payload-before-invalid-candidate",
+      "input": {
+        "name": "bad name",
+        "value": "\r",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": false,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "PAYLOAD_REFUSED",
+        "payload_reason": 2,
+        "eligible": false
+      }
+    },
+    {
+      "label": "candidate-name-before-existing-field-and-value",
+      "input": {
+        "name": "host",
+        "value": "\r",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 1,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "CANDIDATE_NAME_NOT_ALLOWED",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "existing-field-before-invalid-value",
+      "input": {
+        "name": "x-request-id",
+        "value": "\r",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 1,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "FIELD_ALREADY_PRESENT",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "invalid-value-before-obs-text-and-edge-space",
+      "input": {
+        "name": "x-request-id",
+        "value": " \ré ",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "HEADER_VALUE_INVALID",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "obs-text-before-edge-and-size",
+      "input": {
+        "name": "x-request-id",
+        "value": " éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé ",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "VALUE_NON_ASCII",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "expected-max-refused",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 9223372036854775807,
+          "observed_request_revision": 1
+        }
+      },
+      "expected": {
+        "status": "INVALID_INPUT",
+        "reason": "REQUEST_METADATA_INVALID",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "observed-max-refused",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 1,
+          "observed_request_revision": 9223372036854775807
+        }
+      },
+      "expected": {
+        "status": "INVALID_INPUT",
+        "reason": "REQUEST_METADATA_INVALID",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "both-max-refused",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 9223372036854775807,
+          "observed_request_revision": 9223372036854775807
+        }
+      },
+      "expected": {
+        "status": "INVALID_INPUT",
+        "reason": "REQUEST_METADATA_INVALID",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    },
+    {
+      "label": "max-minus-one-equal-has-room",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 9223372036854775806,
+          "observed_request_revision": 9223372036854775806
+        }
+      },
+      "expected": {
+        "status": "ELIGIBLE",
+        "reason": "ROUTE_DIAGNOSTIC_FIELD_AND_PAYLOAD_ACCEPTED",
+        "payload_reason": 0,
+        "eligible": true
+      }
+    },
+    {
+      "label": "max-minus-one-observed-stale",
+      "input": {
+        "name": "x-request-id",
+        "value": "req-123",
+        "declared_length": "2",
+        "facts": {
+          "content_length_occurrences": 1,
+          "observed_body_bytes": 2,
+          "maximum_payload_bytes": 2,
+          "transfer_encoding_present": false,
+          "body_observation_bound_to_request": true,
+          "current_access": true,
+          "candidate_name_occurrences": 0,
+          "header_set_bound_to_request": true,
+          "policy_revision_current": true,
+          "allowed_header_name": "x-request-id",
+          "expected_request_revision": 9223372036854775805,
+          "observed_request_revision": 9223372036854775806
+        }
+      },
+      "expected": {
+        "status": "REFUSED",
+        "reason": "REQUEST_REVISION_CHANGED",
+        "payload_reason": 0,
+        "eligible": false
+      }
+    }
+  ]
+}

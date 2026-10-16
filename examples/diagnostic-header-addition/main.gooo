@@ -1,0 +1,74 @@
+// Copyright 2026 Gooo Go Ports contributors. All rights reserved.
+// Use of this source code is governed by the repository BSD-style LICENSE.
+// Original pure plan for adding one route-approved diagnostic header.
+// Imported inputs must satisfy their decoded valid UTF-8 <=1024-byte domains.
+// Trusted host facts and an atomic final apply remain necessary; no effect here.
+package diagnostic_header_addition
+namespace gooo_original_diagnostic_header_addition
+import headers "app/header-field-facts"
+import payload "app/payload-admission"
+entity Text id "gooo://std/text"
+entity RequestFacts id "gooo://diagnostic-header-addition/request/v1" fields {
+ field content_length_occurrences id "gooo://diagnostic-header-addition/request/v1/content_length_occurrences" type integer required one
+ field observed_body_bytes id "gooo://diagnostic-header-addition/request/v1/observed_body_bytes" type integer required one
+ field maximum_payload_bytes id "gooo://diagnostic-header-addition/request/v1/maximum_payload_bytes" type integer required one
+ field transfer_encoding_present id "gooo://diagnostic-header-addition/request/v1/transfer_encoding_present" type boolean required one
+ field body_observation_bound_to_request id "gooo://diagnostic-header-addition/request/v1/body_observation_bound_to_request" type boolean required one
+ field current_access id "gooo://diagnostic-header-addition/request/v1/current_access" type boolean required one
+ field candidate_name_occurrences id "gooo://diagnostic-header-addition/request/v1/candidate_name_occurrences" type integer required one
+ field header_set_bound_to_request id "gooo://diagnostic-header-addition/request/v1/header_set_bound_to_request" type boolean required one
+ field policy_revision_current id "gooo://diagnostic-header-addition/request/v1/policy_revision_current" type boolean required one
+ field allowed_header_name id "gooo://diagnostic-header-addition/request/v1/allowed_header_name" type string required one
+ field expected_request_revision id "gooo://diagnostic-header-addition/request/v1/expected_request_revision" type integer required one
+ field observed_request_revision id "gooo://diagnostic-header-addition/request/v1/observed_request_revision" type integer required one
+}
+entity HeaderAdditionDecision id "gooo://diagnostic-header-addition/result/v1" fields {
+ field candidate_name id "gooo://diagnostic-header-addition/result/v1/candidate_name" type string required one
+ field candidate_value id "gooo://diagnostic-header-addition/result/v1/candidate_value" type string required one
+ field status id "gooo://diagnostic-header-addition/result/v1/status" type string required one
+ field reason id "gooo://diagnostic-header-addition/result/v1/reason" type string required one
+ field payload_eligible id "gooo://diagnostic-header-addition/result/v1/payload_eligible" type boolean required one
+ field payload_reason id "gooo://diagnostic-header-addition/result/v1/payload_reason" type integer required one
+ field header_name_valid id "gooo://diagnostic-header-addition/result/v1/header_name_valid" type boolean required one
+ field header_value_valid id "gooo://diagnostic-header-addition/result/v1/header_value_valid" type boolean required one
+ field name_invalid_offset id "gooo://diagnostic-header-addition/result/v1/name_invalid_offset" type integer required one
+ field name_invalid_octet id "gooo://diagnostic-header-addition/result/v1/name_invalid_octet" type integer required one
+ field value_invalid_offset id "gooo://diagnostic-header-addition/result/v1/value_invalid_offset" type integer required one
+ field value_invalid_octet id "gooo://diagnostic-header-addition/result/v1/value_invalid_octet" type integer required one
+ field value_has_obs_text id "gooo://diagnostic-header-addition/result/v1/value_has_obs_text" type boolean required one
+ field value_edge_whitespace id "gooo://diagnostic-header-addition/result/v1/value_edge_whitespace" type boolean required one
+ field request_revision id "gooo://diagnostic-header-addition/result/v1/request_revision" type integer required one
+ field eligible id "gooo://diagnostic-header-addition/result/v1/eligible" type boolean required one
+}
+
+// input0: candidate name; input1: candidate value; input2: original CL value;
+// input3: trusted current observations. Text is never trimmed or normalized.
+activity AssessAddition(Text, Text, Text, RequestFacts) -> HeaderAdditionDecision id "gooo://diagnostic-header-addition/assess/v1" computes `
+let field = headers.Report(input0, input1)
+let body = payload.Report(input2, input3.content_length_occurrences, input3.observed_body_bytes, input3.maximum_payload_bytes, input3.transfer_encoding_present, input3.body_observation_bound_to_request, input3.current_access)
+let status = "REFUSED"
+let reason = ""
+if input3.candidate_name_occurrences < 0 || input3.expected_request_revision <= 0 || input3.observed_request_revision <= 0 || input3.expected_request_revision == 9223372036854775807 || input3.observed_request_revision == 9223372036854775807 {
+ status = "INVALID_INPUT"
+ reason = "REQUEST_METADATA_INVALID"
+}
+if reason == "" && input3.allowed_header_name != "x-request-id" && input3.allowed_header_name != "x-correlation-id" {
+ status = "INVALID_INPUT"
+ reason = "ROUTE_HEADER_NOT_SUPPORTED"
+}
+if reason == "" && !input3.header_set_bound_to_request { reason = "HEADER_CONTEXT_UNBOUND" }
+if reason == "" && !input3.policy_revision_current { reason = "POLICY_REVISION_UNBOUND" }
+if reason == "" && input3.expected_request_revision != input3.observed_request_revision { reason = "REQUEST_REVISION_CHANGED" }
+if reason == "" && !body.eligible { reason = "PAYLOAD_REFUSED" }
+if reason == "" && !field.name_valid { reason = "HEADER_NAME_INVALID" }
+if reason == "" && input0 != input3.allowed_header_name { reason = "CANDIDATE_NAME_NOT_ALLOWED" }
+if reason == "" && input3.candidate_name_occurrences != 0 { reason = "FIELD_ALREADY_PRESENT" }
+if reason == "" && !field.value_valid { reason = "HEADER_VALUE_INVALID" }
+if reason == "" && field.value_has_obs_text { reason = "VALUE_NON_ASCII" }
+if reason == "" && field.value_edge_whitespace { reason = "VALUE_EDGE_WHITESPACE" }
+if reason == "" && (len(input1) == 0 || len(input1) > 128) { reason = "VALUE_SIZE_NOT_ALLOWED" }
+if reason == "" {
+ status = "ELIGIBLE"
+ reason = "ROUTE_DIAGNOSTIC_FIELD_AND_PAYLOAD_ACCEPTED"
+}
+return HeaderAdditionDecision{candidate_name: input0, candidate_value: input1, status: status, reason: reason, payload_eligible: body.eligible, payload_reason: body.reason, header_name_valid: field.name_valid, header_value_valid: field.value_valid, name_invalid_offset: field.name_invalid_offset, name_invalid_octet: field.name_invalid_octet, value_invalid_offset: field.value_invalid_offset, value_invalid_octet: field.value_invalid_octet, value_has_obs_text: field.value_has_obs_text, value_edge_whitespace: field.value_edge_whitespace, request_revision: input3.observed_request_revision, eligible: status == "ELIGIBLE"}`

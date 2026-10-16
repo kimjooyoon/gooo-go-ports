@@ -1,0 +1,72 @@
+// Explicit typed ABI binding to the byte-preserved freshly generated source.
+// This file only maps fields; it contains no policy predicates or fallback.
+package main
+
+type assessorFacts struct {
+	ContentLengthOccurrences      int64  `json:"content_length_occurrences"`
+	ObservedBodyBytes             int64  `json:"observed_body_bytes"`
+	MaximumPayloadBytes           int64  `json:"maximum_payload_bytes"`
+	TransferEncodingPresent       bool   `json:"transfer_encoding_present"`
+	BodyObservationBoundToRequest bool   `json:"body_observation_bound_to_request"`
+	CurrentAccess                 bool   `json:"current_access"`
+	CandidateNameOccurrences      int64  `json:"candidate_name_occurrences"`
+	HeaderSetBoundToRequest       bool   `json:"header_set_bound_to_request"`
+	PolicyRevisionCurrent         bool   `json:"policy_revision_current"`
+	AllowedHeaderName             string `json:"allowed_header_name"`
+	ExpectedRequestRevision       int64  `json:"expected_request_revision"`
+	ObservedRequestRevision       int64  `json:"observed_request_revision"`
+}
+
+type Decision struct {
+	CandidateName       string `json:"candidate_name"`
+	CandidateValue      string `json:"candidate_value"`
+	Status              string `json:"status"`
+	Reason              string `json:"reason"`
+	PayloadEligible     bool   `json:"payload_eligible"`
+	PayloadReason       int64  `json:"payload_reason"`
+	HeaderNameValid     bool   `json:"header_name_valid"`
+	HeaderValueValid    bool   `json:"header_value_valid"`
+	NameInvalidOffset   int64  `json:"name_invalid_offset"`
+	NameInvalidOctet    int64  `json:"name_invalid_octet"`
+	ValueInvalidOffset  int64  `json:"value_invalid_offset"`
+	ValueInvalidOctet   int64  `json:"value_invalid_octet"`
+	ValueHasObsText     bool   `json:"value_has_obs_text"`
+	ValueEdgeWhitespace bool   `json:"value_edge_whitespace"`
+	RequestRevision     int64  `json:"request_revision"`
+	Eligible            bool   `json:"eligible"`
+}
+
+func assessWithGooo(name, value, declaredLength string, facts assessorFacts) Decision {
+	raw := @@ASSESSOR_FUNCTION@@(name, value, declaredLength, @@REQUEST_RECORD@@{
+		@@REQUEST:content_length_occurrences@@: facts.ContentLengthOccurrences,
+		@@REQUEST:observed_body_bytes@@: facts.ObservedBodyBytes,
+		@@REQUEST:maximum_payload_bytes@@: facts.MaximumPayloadBytes,
+		@@REQUEST:transfer_encoding_present@@: facts.TransferEncodingPresent,
+		@@REQUEST:body_observation_bound_to_request@@: facts.BodyObservationBoundToRequest,
+		@@REQUEST:current_access@@: facts.CurrentAccess,
+		@@REQUEST:candidate_name_occurrences@@: facts.CandidateNameOccurrences,
+		@@REQUEST:header_set_bound_to_request@@: facts.HeaderSetBoundToRequest,
+		@@REQUEST:policy_revision_current@@: facts.PolicyRevisionCurrent,
+		@@REQUEST:allowed_header_name@@: facts.AllowedHeaderName,
+		@@REQUEST:expected_request_revision@@: facts.ExpectedRequestRevision,
+		@@REQUEST:observed_request_revision@@: facts.ObservedRequestRevision,
+	})
+	return Decision{
+		CandidateName:       raw.@@RESULT:candidate_name@@,
+		CandidateValue:      raw.@@RESULT:candidate_value@@,
+		Status:              raw.@@RESULT:status@@,
+		Reason:              raw.@@RESULT:reason@@,
+		PayloadEligible:     raw.@@RESULT:payload_eligible@@,
+		PayloadReason:       raw.@@RESULT:payload_reason@@,
+		HeaderNameValid:     raw.@@RESULT:header_name_valid@@,
+		HeaderValueValid:    raw.@@RESULT:header_value_valid@@,
+		NameInvalidOffset:   raw.@@RESULT:name_invalid_offset@@,
+		NameInvalidOctet:    raw.@@RESULT:name_invalid_octet@@,
+		ValueInvalidOffset:  raw.@@RESULT:value_invalid_offset@@,
+		ValueInvalidOctet:   raw.@@RESULT:value_invalid_octet@@,
+		ValueHasObsText:     raw.@@RESULT:value_has_obs_text@@,
+		ValueEdgeWhitespace: raw.@@RESULT:value_edge_whitespace@@,
+		RequestRevision:     raw.@@RESULT:request_revision@@,
+		Eligible:            raw.@@RESULT:eligible@@,
+	}
+}

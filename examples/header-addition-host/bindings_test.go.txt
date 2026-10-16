@@ -1,0 +1,67 @@
+package main
+
+import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+	"reflect"
+	"testing"
+)
+
+// This linkage probe calls the freshly extracted Gooo function through the typed
+// adapter against all 50 fresh independent Go expectations from the completed
+// differential case documents. It does not invoke the Gooo CLI again.
+func TestFreshGeneratedABI50(t *testing.T) {
+	for _, pin := range []struct{ path, sha string }{
+		{"assessor_generated.go", "@@GENERATED_SOURCE_SHA256@@"},
+		{"testdata/fresh-50.json", "@@ABI_FIXTURE_SHA256@@"},
+	} {
+		raw, e := os.ReadFile(pin.path)
+		if e != nil || fmt.Sprintf("%x", sha256.Sum256(raw)) != pin.sha {
+			t.Fatalf("source/reference pin %s: %v", pin.path, e)
+		}
+	}
+	raw, e := os.ReadFile("testdata/fresh-50.json")
+	if e != nil {
+		t.Fatal(e)
+	}
+	var fixture struct {
+		Schema string `json:"schema"`
+		Rows   []struct {
+			Label          string        `json:"label"`
+			Name           string        `json:"name"`
+			Value          string        `json:"value"`
+			DeclaredLength string        `json:"declared_length"`
+			Facts          assessorFacts `json:"facts"`
+			Expected       Decision      `json:"expected"`
+		} `json:"rows"`
+	}
+	d := json.NewDecoder(bytes.NewReader(raw))
+	d.DisallowUnknownFields()
+	if e = d.Decode(&fixture); e != nil {
+		t.Fatal(e)
+	}
+	var extra any
+	if d.Decode(&extra) != io.EOF {
+		t.Fatal("trailing fixture")
+	}
+	if fixture.Schema != "gooo/fresh-header-assessor-abi-fixture/v1" || len(fixture.Rows) != 50 {
+		t.Fatal("wrong fresh corpus")
+	}
+	seen := map[string]bool{}
+	for _, row := range fixture.Rows {
+		if seen[row.Label] {
+			t.Fatal("duplicate label")
+		}
+		seen[row.Label] = true
+		t.Run(row.Label, func(t *testing.T) {
+			got := assessWithGooo(row.Name, row.Value, row.DeclaredLength, row.Facts)
+			if !reflect.DeepEqual(got, row.Expected) {
+				t.Fatalf("typed ABI mapping differs: got=%+v want=%+v", got, row.Expected)
+			}
+		})
+	}
+}

@@ -87,6 +87,9 @@ var catalogImport = regexp.MustCompile(`(?m)^[\t ]*import[\t ]+(?:[A-Za-z_][A-Za
 // prior source rosters and keeps unrelated records out of the pinned compiler's
 // 16-record ABI. All bytes come from one snapshot.
 func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, error) {
+	if isHeaderAdditionSuite(s) {
+		return f.headerAdditionWorkspace(s)
+	}
 	if isHeaderSuite(s) {
 		return f.headerWorkspace(s)
 	}

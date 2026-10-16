@@ -1,0 +1,2 @@
+The host adapter and tests are original work in this repository under its BSD-3-Clause license.
+The checker extracts generated Gooo source without modifying its bytes. The rendered SOURCE-NOTICES.txt retains notices from the actual current five Gooo source inputs; their original licenses and attribution continue to apply.

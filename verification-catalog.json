@@ -298,6 +298,12 @@
       "sources": [
         "examples/header-field-facts/main.gooo"
       ]
+    },
+    {
+      "path": "app/diagnostic-header-addition",
+      "sources": [
+        "examples/diagnostic-header-addition/main.gooo"
+      ]
     }
   ]
 }

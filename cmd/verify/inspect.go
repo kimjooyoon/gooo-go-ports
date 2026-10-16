@@ -130,6 +130,11 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 			return fail(err.Error())
 		}
 	}
+	if isHeaderAdditionSuite(s) {
+		if err := inspectHeaderAdditionABI(raw, s, identity); err != nil {
+			return fail(err.Error())
+		}
+	}
 	if isHeaderSuite(s) {
 		if err := inspectHeaderABI(raw, s, identity); err != nil {
 			return fail(err.Error())
@@ -175,6 +180,11 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 				return fail("input arity")
 			}
 			for j, in := range d.Inputs {
+				if isHeaderAdditionSuite(s) {
+					if err := inspectHeaderAdditionInputFields(contract.InputEntities[j], in.Fields, row.Inputs[j]); err != nil {
+						return fail(err.Error())
+					}
+				}
 				if in.Port != fmt.Sprintf("input%d", j) || in.Entity != contract.InputEntities[j] || !equalValue(in.Value, row.Inputs[j]) {
 					return fail("input order or value")
 				}

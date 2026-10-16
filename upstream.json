@@ -697,6 +697,53 @@
         }
       },
       "scope": "Original14field/7echo policy imports ParseIntDecimal64. ASCII unsigned spelling is separate from signed ParseInt; precedence covers invalid metadata,access,binding,TE,count,parser,spelling,length,budget. Every supplied fact is echoed, including semantic-invalid signed64 values. Host must truthfully bind complete same-request observations/current authority and enforce use. No per-request human approval or effects; no HTTP framing,body I/O,adapter,authority proof,quota reservation,atomic claim or production safety. Adds one ordinary native suite to historical66; other sidecars/196CLI/422NodeWasm counts remain separate. Finite101 cases do not cover defensive reason12,allText/context or malformedwire."
+    },
+    {
+      "source": "examples/diagnostic-header-addition/main.gooo",
+      "source_sha256": "cd499d4bda6b40937882c77d67774b573c84aa93ec407e9a95b82f755d41eae8",
+      "package": "app/diagnostic-header-addition",
+      "activity": "AssessAddition",
+      "activity_id": "gooo://diagnostic-header-addition/assess/v1",
+      "workspace": "diagnostic-header-addition.workspace.json",
+      "contract": "examples/diagnostic-header-addition/contract.json",
+      "contract_sha256": "a933b51114c2df888cfc52db4ae4243556bbd0eeeeca7af7d83b080a0ad89101",
+      "input_corpus": "examples/diagnostic-header-addition/corpus.json",
+      "input_corpus_sha256": "6a2c688b2af7fb2d032d794b6a2cbab4d42aae3969a054001965ef559c1b970f",
+      "reference_cases": 50,
+      "input_record_fields": [
+        "content_length_occurrences",
+        "observed_body_bytes",
+        "maximum_payload_bytes",
+        "transfer_encoding_present",
+        "body_observation_bound_to_request",
+        "current_access",
+        "candidate_name_occurrences",
+        "header_set_bound_to_request",
+        "policy_revision_current",
+        "allowed_header_name",
+        "expected_request_revision",
+        "observed_request_revision"
+      ],
+      "required_fields": [
+        "candidate_name",
+        "candidate_value",
+        "status",
+        "reason",
+        "payload_eligible",
+        "payload_reason",
+        "header_name_valid",
+        "header_value_valid",
+        "name_invalid_offset",
+        "name_invalid_octet",
+        "value_invalid_offset",
+        "value_invalid_octet",
+        "value_has_obs_text",
+        "value_edge_whitespace",
+        "request_revision",
+        "eligible"
+      ],
+      "mapping": "Original deterministic Gooo policy composes current header and payload diagnostics. Three bounded Text inputs plus twelve trusted typed observations produce sixteen exact fields, including original candidate strings, header byte witnesses, payload refusal and request revision. No per-request human approval or effect is required to compute. Host authority, current bindings and atomic final application remain separate. Fresh public source/native/saved replay and host generation are required; private pilot PASS is not inherited.",
+      "license": "LICENSE"
     }
   ],
   "original_diagnostic_compositions": [

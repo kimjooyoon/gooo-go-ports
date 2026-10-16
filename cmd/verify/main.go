@@ -218,6 +218,11 @@ func run() error {
 		return err
 	}
 	suites = append(suites, headers...)
+	addition, err := headerAdditionCorpus(".")
+	if err != nil {
+		return err
+	}
+	suites = append(suites, addition...)
 	if *out == "" {
 		return fmt.Errorf("provide --out for a new evidence directory")
 	}
@@ -359,6 +364,13 @@ func run() error {
 		"compiler_revision":    lock.CompilerRevision, "source_sha256": catalog.Hashes,
 		"verification_catalog_sha256": contentDigest(catalog.Raw),
 		"ported_functions":            portedFunctions, "consumer_programs": len(consumerPrograms), "consumer_activities": consumerActivities,
+		"header_addition_reference_cases":   len(addition[0].Cases),
+		"header_addition_fixed_batch_rows":  8,
+		"header_addition_record_types":      5,
+		"header_addition_pure_activities":   6,
+		"header_addition_callee_edges":      5,
+		"header_addition_scope":             "Original deterministic12-field RequestFacts plus three bounded Text inputs return16 typed header-addition decision fields. Actual pinned x/net/httpguts and strconv references supply the50 finite expected results. No per-request human approval is required to compute; host authority/current binding and atomic final apply remain necessary.",
+		"header_addition_provenance_scope":  "Fresh native execution and saved replay bind five current sources, six pure activities, five record layouts, five callee edges, exact12 input/16 output fields, generated ABI and raw outer saved parents. Independent inner typed canonical prior_result_sha256 remains NOT_CHECKED; private pilot results are not fresh public acceptance.",
 		"header_name_reference_cases":       len(headers[0].Cases),
 		"header_value_reference_cases":      len(headers[1].Cases),
 		"header_facts_reference_cases":      len(headers[2].Cases),

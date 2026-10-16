@@ -1,0 +1,314 @@
+{
+  "schema": "gooo/diagnostic-header-addition-contract/v1",
+  "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+  "go_version": "go1.27.2",
+  "entry": "app/diagnostic-header-addition:AssessAddition",
+  "activity_id": "gooo://diagnostic-header-addition/assess/v1",
+  "input_entity_id": "gooo://diagnostic-header-addition/request/v1",
+  "result_entity_id": "gooo://diagnostic-header-addition/result/v1",
+  "input": {
+    "named_fields": [
+      "name",
+      "value",
+      "declared_length",
+      "facts"
+    ],
+    "kinds": [
+      "Text",
+      "Text",
+      "Text",
+      "RequestFacts"
+    ],
+    "domain": "Three explicitly present decoded valid UTF-8 Text values and allowed_header_name Text, each0..1024 UTF-8 bytes. Exact signed64 integers and exact Booleans; all12 record fields required. Semantic refusals (including empty/invalid headers, negative counts and MaxInt64 revisions) remain in-domain.",
+    "external_command": "go run ./cmd/header-addition-input",
+    "external_schema": "Exactly one JSON object with exactly name,value,declared_length,facts. Facts has exactly the12 declared unique fields. Raw bytes<=32768. Malformed/trailing JSON, invalid UTF-8, lone surrogate escapes, decoded duplicate/extra/missing/null/wrong-type fields, fractional/exponent/out-of-int64 integers and oversized decoded Text refuse before Gooo.",
+    "native_schema": "gooo/body-composition-inputs/v1",
+    "native_keys": [
+      "app/diagnostic-header-addition:AssessAddition.input0",
+      "app/diagnostic-header-addition:AssessAddition.input1",
+      "app/diagnostic-header-addition:AssessAddition.input2",
+      "app/diagnostic-header-addition:AssessAddition.input3"
+    ]
+  },
+  "input_fields": [
+    {
+      "name": "content_length_occurrences",
+      "type": "integer",
+      "id": "gooo://diagnostic-header-addition/request/v1/content_length_occurrences",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "observed_body_bytes",
+      "type": "integer",
+      "id": "gooo://diagnostic-header-addition/request/v1/observed_body_bytes",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "maximum_payload_bytes",
+      "type": "integer",
+      "id": "gooo://diagnostic-header-addition/request/v1/maximum_payload_bytes",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "transfer_encoding_present",
+      "type": "boolean",
+      "id": "gooo://diagnostic-header-addition/request/v1/transfer_encoding_present",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "body_observation_bound_to_request",
+      "type": "boolean",
+      "id": "gooo://diagnostic-header-addition/request/v1/body_observation_bound_to_request",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "current_access",
+      "type": "boolean",
+      "id": "gooo://diagnostic-header-addition/request/v1/current_access",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "candidate_name_occurrences",
+      "type": "integer",
+      "id": "gooo://diagnostic-header-addition/request/v1/candidate_name_occurrences",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "header_set_bound_to_request",
+      "type": "boolean",
+      "id": "gooo://diagnostic-header-addition/request/v1/header_set_bound_to_request",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "policy_revision_current",
+      "type": "boolean",
+      "id": "gooo://diagnostic-header-addition/request/v1/policy_revision_current",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "allowed_header_name",
+      "type": "string",
+      "id": "gooo://diagnostic-header-addition/request/v1/allowed_header_name",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "expected_request_revision",
+      "type": "integer",
+      "id": "gooo://diagnostic-header-addition/request/v1/expected_request_revision",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "observed_request_revision",
+      "type": "integer",
+      "id": "gooo://diagnostic-header-addition/request/v1/observed_request_revision",
+      "required": true,
+      "cardinality": "one"
+    }
+  ],
+  "fields": [
+    {
+      "name": "candidate_name",
+      "type": "string",
+      "id": "gooo://diagnostic-header-addition/result/v1/candidate_name",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "candidate_value",
+      "type": "string",
+      "id": "gooo://diagnostic-header-addition/result/v1/candidate_value",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "status",
+      "type": "string",
+      "id": "gooo://diagnostic-header-addition/result/v1/status",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "reason",
+      "type": "string",
+      "id": "gooo://diagnostic-header-addition/result/v1/reason",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "payload_eligible",
+      "type": "boolean",
+      "id": "gooo://diagnostic-header-addition/result/v1/payload_eligible",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "payload_reason",
+      "type": "integer",
+      "id": "gooo://diagnostic-header-addition/result/v1/payload_reason",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "header_name_valid",
+      "type": "boolean",
+      "id": "gooo://diagnostic-header-addition/result/v1/header_name_valid",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "header_value_valid",
+      "type": "boolean",
+      "id": "gooo://diagnostic-header-addition/result/v1/header_value_valid",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "name_invalid_offset",
+      "type": "integer",
+      "id": "gooo://diagnostic-header-addition/result/v1/name_invalid_offset",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "name_invalid_octet",
+      "type": "integer",
+      "id": "gooo://diagnostic-header-addition/result/v1/name_invalid_octet",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "value_invalid_offset",
+      "type": "integer",
+      "id": "gooo://diagnostic-header-addition/result/v1/value_invalid_offset",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "value_invalid_octet",
+      "type": "integer",
+      "id": "gooo://diagnostic-header-addition/result/v1/value_invalid_octet",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "value_has_obs_text",
+      "type": "boolean",
+      "id": "gooo://diagnostic-header-addition/result/v1/value_has_obs_text",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "value_edge_whitespace",
+      "type": "boolean",
+      "id": "gooo://diagnostic-header-addition/result/v1/value_edge_whitespace",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "request_revision",
+      "type": "integer",
+      "id": "gooo://diagnostic-header-addition/result/v1/request_revision",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "eligible",
+      "type": "boolean",
+      "id": "gooo://diagnostic-header-addition/result/v1/eligible",
+      "required": true,
+      "cardinality": "one"
+    }
+  ],
+  "semantics": {
+    "candidate_name": "Unchanged decoded candidate name; no normalization or lowercasing.",
+    "candidate_value": "Unchanged decoded candidate value; no trimming or sanitization.",
+    "status": "INVALID_INPUT for invalid candidate count/revisions or unsupported route field; REFUSED for a later failed guard; ELIGIBLE only if all guards pass.",
+    "reason": "First matching reason from refusal_order; successful reason ROUTE_DIAGNOSTIC_FIELD_AND_PAYLOAD_ACCEPTED.",
+    "payload_eligible": "Eligibility of the imported payload report, computed even when an earlier header-context guard wins.",
+    "payload_reason": "Imported payload report reason; independent Go reference uses actual strconv.ParseInt(text,10,64).",
+    "header_name_valid": "Pinned httpguts.ValidHeaderFieldName within bounded Text domain; empty is false.",
+    "header_value_valid": "Pinned httpguts.ValidHeaderFieldValue within bounded Text domain; empty is true.",
+    "name_invalid_offset": "First invalid UTF-8 byte offset, or -1; empty invalid name retains -1.",
+    "name_invalid_octet": "First invalid name byte0..255, or -1.",
+    "value_invalid_offset": "First invalid UTF-8 byte offset, or -1.",
+    "value_invalid_octet": "First invalid value byte0..255, or -1.",
+    "value_has_obs_text": "Any original decoded byte>=128, including after an earlier invalid byte.",
+    "value_edge_whitespace": "Nonempty value starts or ends with SP or HTAB, even after an earlier invalid byte.",
+    "request_revision": "Exact observed_request_revision input, including negative/extreme values; it is not a signed or authenticated identity.",
+    "eligible": "Exactly status==ELIGIBLE; a pure plan, not an applied header change."
+  },
+  "refusal_order": [
+    "REQUEST_METADATA_INVALID",
+    "ROUTE_HEADER_NOT_SUPPORTED",
+    "HEADER_CONTEXT_UNBOUND",
+    "POLICY_REVISION_UNBOUND",
+    "REQUEST_REVISION_CHANGED",
+    "PAYLOAD_REFUSED",
+    "HEADER_NAME_INVALID",
+    "CANDIDATE_NAME_NOT_ALLOWED",
+    "FIELD_ALREADY_PRESENT",
+    "HEADER_VALUE_INVALID",
+    "VALUE_NON_ASCII",
+    "VALUE_EDGE_WHITESPACE",
+    "VALUE_SIZE_NOT_ALLOWED"
+  ],
+  "policy": {
+    "allowed_names": [
+      "x-request-id",
+      "x-correlation-id"
+    ],
+    "exact_candidate_match": true,
+    "maximum_candidate_value_bytes": 128,
+    "minimum_candidate_value_bytes": 1,
+    "value_ascii_only": true,
+    "edge_SP_HTAB_refused": true,
+    "internal_HTAB_permitted": true,
+    "expected_and_observed_revision_domain": "1..9223372036854775806 inclusive; a value of9223372036854775807 is an INVALID_INPUT refusal, never an eligible increment"
+  },
+  "input_population": {
+    "file": "corpus.json",
+    "sha256": "6a2c688b2af7fb2d032d794b6a2cbab4d42aae3969a054001965ef559c1b970f",
+    "schema": "gooo/diagnostic-header-addition-design-cases/v2",
+    "cases": 50,
+    "contains_partial_specifications": [
+      "status",
+      "reason",
+      "payload_reason",
+      "eligible"
+    ],
+    "contains_complete_expected_records": false,
+    "interpretation": "The preserved SPECIFICATION_ONLY_NOT_EXECUTED marker describes these four-field specifications. It is not a current verification status. Public verifier computes all16 fields freshly, checks these assertions, and separately requires native execution/saved replay."
+  },
+  "source": {
+    "file": "main.gooo",
+    "sha256": "cd499d4bda6b40937882c77d67774b573c84aa93ec407e9a95b82f755d41eae8",
+    "license": "../../LICENSE",
+    "original_composition": true
+  },
+  "import_contracts": [
+    "../header-field-facts/contract.json",
+    "../payload-admission/contract.json",
+    "../../ports/net/httpguts/provenance.json",
+    "../../ports/strconv/provenance.json"
+  ],
+  "scope": [
+    "Pure automatic deterministic decision; no per-case human approval and no effects.",
+    "Trusted host must supply current observations from one request/body/principal/route/policy snapshot. Parsing claims does not authenticate them.",
+    "Host application requires an atomic compare of current request revision, authority/policy and field absence, followed by exactly one insertion and revision advance. This composition implements none of those effects.",
+    "Only an additive diagnostic field; no removal/replacement/coalescing, HTTP parsing/framing, streaming-body buffering, HTTP2 support, sending, authentication, UUID/uniqueness guarantee or production-safety claim.",
+    "No arbitrary-byte or arbitrary-length Go compatibility. Finite50 witnesses do not exhaust all inputs or contexts.",
+    "Fresh public source/case/producer/typed16-field checks and saved replay are required. Prior private PASS output is not current acceptance.",
+    "Independent typed inner canonical parent digest acceptance remains NOT_CHECKED."
+  ]
+}
