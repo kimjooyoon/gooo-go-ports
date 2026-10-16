@@ -246,6 +246,26 @@ IF_MATCH_ROUTE_CLAUSES = (
 )
 IF_MATCH_STEP_SHA = '34322d6d1d7ce6e2cdbaea58e5a92ae765a9e3e27acddcbc0b45dc80aa037de0'
 
+VERSIONED_GRANT_STEP = 'Verify versioned grant change composition'
+VERSIONED_GRANT_COMMAND = 'python3 -I -B examples/versioned-grant-change/verify.py --root "$PWD" --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --module-cache "$(go env GOMODCACHE)" --out "$PWD/out/versioned-grant-change"'
+VERSIONED_GRANT_COMMON_COMMAND = 'python3 -I -B examples/versioned-grant-change/verify_test.py'
+VERSIONED_GRANT_DECLARATION = 'examples/versioned-grant-change/main.gooo'
+VERSIONED_GRANT_CLAUSES = (
+    '.schema == "gooo/versioned-grant-change-verification/v1"',
+    '.status == "FINITE48_FRESH_REFERENCE_NATIVE_REPLAY_PASS"',
+    '.failure == null',
+    '.cases == 48',
+    '.input_echoes_each_phase == 288',
+    '.typed_fields_each_phase == 576',
+    '.source_images == 12',
+    '.model_calls == 0',
+    '.source_tool_unchanged == true',
+    '.processes_closed == true',
+    '.owned_work_removed == true',
+    '.compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2"',
+    "' out/versioned-grant-change/summary.json",
+)
+
 COMMON = {
     "Classify the exact checked PR tree", "Check the Go observer",
     "Check pinned Unicode table generation",
@@ -253,6 +273,7 @@ COMMON = {
     "Check Gooo declarations",
 }
 HEAVY = {
+    VERSIONED_GRANT_STEP,
     IF_MATCH_STEP_NAME,
     HEADER_ADDITION_INPUT_STEP_NAME, HEADER_ADDITION_HOST_STEP_NAME,
     HEADER_WIRE_STEP_NAME,
@@ -289,7 +310,7 @@ UPLOADS = {"Upload offline policy experiment evidence", "Upload execution and di
 DOC_STEPS = {"Report documentation-only native scope", "Preserve documentation scope and compiler identity"}
 NATIVE_COMMAND = re.compile(
     r"(?:\.gooo\s+package\s+(?:execute|replay)|\./cmd/(?:verify|check-unicode|check-literal-text-report)\b|"
-    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py|tools/check-path-facts\.py|tools/check-redelivery-policy\.py|tools/check-ipv4\.py|tools/check-header-facts-inputs\.py|tools/check-header-addition-inputs\.py|tools/check-header-addition-host\.py)"
+    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py|tools/check-path-facts\.py|tools/check-redelivery-policy\.py|tools/check-ipv4\.py|tools/check-header-facts-inputs\.py|tools/check-header-addition-inputs\.py|tools/check-header-addition-host\.py|examples/versioned-grant-change/verify\.py)"
 )
 PUBLIC_CONSUMER_COMMAND = 'python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer"'
 PUBLIC_CONSUMER_CLAUSES = (
@@ -323,7 +344,7 @@ OBSERVER_HEADER_SHA = '46cb0e7392dd3f3fb9562bccea6b27e5194ffcf59e1a58bab4c07b99a
 NATIVE_HEADER_SHA = '584d7a22663deb57be052a69d58f2b19e6233a7eefb7d4ce6ad1d5b650d48e69'
 # Add the record adapter controls, corpus regeneration and host-reader controls;
 # every previously required observer command remains byte-identical and once.
-OBSERVER_STEP_SHA = '9b1e2687e41417985c26ea238df8f64b5a7266c454473a5c470a67bc30a0ec23'
+OBSERVER_STEP_SHA = '6c3176310f77ddd11065127a7954c20861074c260cdf49dd48fd43a63b1ecd47'
 GENERATOR_STEP_SHA = '081263b551a4d28aa8b46dc025fe951c62d91d13e164cb7927b70d7270aaf399'
 CLASSIFIER_STEP_SHA = '1864b9e0f27cc73595dd863c71640050cf046b2ec67cfd02c6ba5a8ebd11a61a'
 CHECKOUT_STEP_SHA = 'b60ba5d7bf95691b8baec3a3e402aeba552fbcb4a353d7de8946023e73e79603'
@@ -349,6 +370,7 @@ ETAG_PROJECT_CLAUSES = (
     "' out/etag-project-evidence/summary.json",
 )
 POLICY_HEAVY = {
+    VERSIONED_GRANT_STEP,
     'Verify the offline decision-policy experiment',
     'Verify the imported CEL API policy',
     'Verify the sealed API policy revision comparison',
@@ -383,7 +405,8 @@ POLICY_STEP_SHAS = {
     'Verify the Agent Mesh service-pattern adaptation': '9af078924730a896c5c669e167803a2e3780e277cdcbe6231233b2cac97a471c',
     'Upload offline policy experiment evidence': 'e4adbb294f45d4dbe4af56338b800f0d637dda27ec83055f1d799d63dac60392',
     ETAG_PROJECT_STEP: 'f11ef3c03ed5cc096b30b3d44c8a20abeb73bc5e840b8033114d94208d64f4c7',
-    'Upload policy execution and diagnostic evidence': '1fcb3e254cfb7eb46b8c2e134179dd2e1b5db07e75900a57efbf0dc3c77dfb37',
+    VERSIONED_GRANT_STEP: '04e88171f2da9d7c19b58889ad27f71359456780fce7ef11dd03c3172cc7a860',
+    'Upload policy execution and diagnostic evidence': 'e0f602db9349722aa8c91faf5d5db9e4dcf1e301f0efc5cc800e206a154a5515',
     'Report documentation-only policy scope': '472165f458bfda43733f2a1ea6bc2236c19b425b5887f3417bbe1a9d9bcab6dd',
     'Preserve documentation-only policy scope': '185d1afbfd001734dc649c227526a84d5dd993bfcd9c1243e4a1966f13db60f7',
 }
@@ -499,7 +522,7 @@ def policy_steps(chunk):
             'policy checkout/classifier/Go/public-consumer/compiler order changed')
     ordered = INDEPENDENT_STEPS[1:] + ('Verify the offline decision-policy experiment', 'Verify the imported CEL API policy',
                'Verify the sealed API policy revision comparison', 'Verify the Agent Mesh service-pattern adaptation',
-               ETAG_PROJECT_STEP, POLICY_PILOT_UPLOAD, POLICY_UPLOAD, POLICY_DOC_REPORT, POLICY_DOC_ARTIFACT)
+               ETAG_PROJECT_STEP, VERSIONED_GRANT_STEP, POLICY_PILOT_UPLOAD, POLICY_UPLOAD, POLICY_DOC_REPORT, POLICY_DOC_ARTIFACT)
     previous = chunk.index(identity)
     for name in ordered:
         require(chunk.index(named[name]) > previous, 'policy producer/evidence/report order changed: ' + name)
@@ -516,6 +539,16 @@ def policy_steps(chunk):
     require('set -euo pipefail' in exported and 'export GOENV=off' in exported,
             'exported ETag dependency/source checks must fail on first failure')
 
+    versioned = named[VERSIONED_GRANT_STEP]
+    require(field(versioned, 'if') == FULL and field(versioned, 'timeout-minutes') == '8',
+            'versioned grant check must stay full-only with its bounded timeout')
+    require(literal_commands(versioned) == [VERSIONED_GRANT_COMMAND],
+            'versioned grant must use current root/compiler/Go/module cache and fresh output')
+    for token in VERSIONED_GRANT_CLAUSES:
+        require(versioned.count(token) == 1, 'versioned grant summary gate missing: ' + token)
+    require('set -euo pipefail' in versioned and '|| true' not in versioned,
+            'versioned grant execution and summary must preserve the first failure')
+
     for name in (POLICY_PILOT_UPLOAD, POLICY_UPLOAD):
         require(field(named[name], 'if') == 'always() && ' + FULL,
                 'policy evidence must upload on failure but never on docs-only: ' + name)
@@ -523,7 +556,7 @@ def policy_steps(chunk):
             field(named[POLICY_DOC_ARTIFACT], 'if') == 'always() && ' + DOCS,
             'policy docs-only scope must be explicit and separate')
     require('name: gooo-go-ports-policy-evidence\n' in named[POLICY_UPLOAD] and
-            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n            out/etag-project/\n            out/etag-project-evidence/\n            out/api-policy-public-consumer/\n            out/path-facts/\n            out/redelivery-policy/\n            out/ipv4/\n' in named[POLICY_UPLOAD] and
+            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n            out/etag-project/\n            out/etag-project-evidence/\n            out/api-policy-public-consumer/\n            out/path-facts/\n            out/redelivery-policy/\n            out/ipv4/\n            out/versioned-grant-change/\n' in named[POLICY_UPLOAD] and
             'if-no-files-found: warn\n' in named[POLICY_UPLOAD] and 'retention-days: 14\n' in named[POLICY_UPLOAD],
             'policy output artifacts must include current identity, original policy outputs and both exported ETag directories')
     require('name: gooo-go-ports-policy-documentation-scope\n' in named[POLICY_DOC_ARTIFACT] and
@@ -579,7 +612,7 @@ def validate(text):
             hashlib.sha256(deploy[len(prefix):].encode()).hexdigest() == DEPLOY_BODY_SHA,
             "deployment may change only its reviewed direct dependency/status prefix")
     named, unnamed = named_steps(text)
-    require(len(HEAVY) == 32, "full-scope native step count changed")
+    require(len(HEAVY) == 33, "full-scope native step count changed")
     require(set(named) == COMMON | HEAVY | PREFLIGHT | UPLOADS | DOC_STEPS, "step roster changed without guard review")
     require(len(unnamed) == 2 and all(field(c, "if") is None for c in unnamed), "checkout/Go setup became conditional")
     require("fetch-depth: 0" in unnamed[0], "exact PR parents must be available")
@@ -834,6 +867,10 @@ def validate(text):
     for command in ("go run ./cmd/gen-unicode --check", "go run ./cmd/gen-simple-fold --check",
                     "go run ./cmd/gen-case-mapping --check", "python3 tools/gen-uuid-quote.py --check"):
         require(command in named["Check pinned Unicode table generation"], "generator check missing")
+    require(literal_commands(observer).count(VERSIONED_GRANT_COMMON_COMMAND) == 1,
+            'versioned grant pure controls must run once unconditionally as common checks')
+    require(literal_commands(named['Check Gooo declarations']).count('./.gooo check ' + VERSIONED_GRANT_DECLARATION) == 1,
+            'versioned grant declaration must run once in the unconditional declaration step')
     identity = named["Build and identify the pinned compiler from a clean checkout"]
     for token in ("sh tools/bootstrap.sh", "version --build --json", '"0.6.32-dev"',
                   '"83928fa4538245abe33b08549da47f8cbdc50ed2"', '"CLEAN_VCS"', '"go1.27.2"'):
@@ -1883,6 +1920,84 @@ class WorkflowScopeTests(unittest.TestCase):
             with self.subTest(docs_artifact=before), self.assertRaises(ValueError):
                 validate(self.text.replace(artifact, artifact.replace(before, after, 1), 1))
 
+
+    def test_versioned_grant_step_is_owned_full_only_and_after_export(self):
+        validate(self.text)
+        jobs = workflow_jobs(self.text)
+        policy, _ = policy_steps(jobs['policy-native-checks'])
+        _, native, _ = job_steps(jobs['native-execution'])
+        chunk = policy[VERSIONED_GRANT_STEP]
+        self.assertEqual(self.text.count(chunk), 1)
+        self.assertNotIn(VERSIONED_GRANT_STEP, native)
+        self.assertLess(jobs['policy-native-checks'].index(policy[ETAG_PROJECT_STEP]),
+                        jobs['policy-native-checks'].index(chunk))
+        for replacement in ('', chunk + chunk,
+                            chunk.replace('        if: ' + FULL + '\n', '', 1),
+                            chunk.replace(FULL, DOCS, 1),
+                            chunk.replace(FULL, "steps.change-scope.outputs.docs_only == 'false'", 1),
+                            chunk.replace('timeout-minutes: 8', 'timeout-minutes: 40', 1),
+                            chunk.replace('        run: |', '        continue-on-error: true\n        run: |', 1)):
+            with self.subTest(step_mutation=replacement[:90]), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, replacement, 1))
+        without = self.text.replace(chunk, '', 1)
+        for anchor in (policy[ETAG_PROJECT_STEP], native['Compare the ports with Go and replay every batch']):
+            with self.subTest(wrong_owner_or_order=anchor[:80]), self.assertRaises(ValueError):
+                validate(without.replace(anchor, chunk + anchor, 1))
+
+    def test_versioned_grant_current_command_and_every_summary_gate_are_required(self):
+        policy, _ = policy_steps(workflow_jobs(self.text)['policy-native-checks'])
+        chunk = policy[VERSIONED_GRANT_STEP]
+        self.assertEqual(literal_commands(chunk), [VERSIONED_GRANT_COMMAND])
+        for token in (VERSIONED_GRANT_COMMAND,) + VERSIONED_GRANT_CLAUSES:
+            self.assertEqual(chunk.count(token), 1)
+            with self.subTest(missing_command_or_gate=token), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, chunk.replace(token, '', 1), 1))
+        for before, after in (('--module-cache "$(go env GOMODCACHE)"', '--module-cache /tmp/unbound'),
+                              ('--compiler "$PWD/.gooo"', '--compiler /tmp/unbound'),
+                              ('.cases == 48', '.cases == 47'),
+                              ('.input_echoes_each_phase == 288', '.input_echoes_each_phase == 282'),
+                              ('.typed_fields_each_phase == 576', '.typed_fields_each_phase == 564'),
+                              ('.source_images == 12', '.source_images == 1'),
+                              ('.failure == null', '.failure != null'),
+                              ('.processes_closed == true', '.processes_closed == false'),
+                              ('.owned_work_removed == true', '.owned_work_removed == false')):
+            with self.subTest(weakened_gate=before), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, chunk.replace(before, after, 1), 1))
+        self.assertNotRegex(chunk, r'\.(?:batches|batch_count|commands|command_count)\s*==')
+
+    def test_versioned_grant_common_checks_and_declaration_cannot_be_skipped(self):
+        named, _ = named_steps(self.text)
+        observer = named['Check the Go observer']
+        declarations = named['Check Gooo declarations']
+        self.assertTrue(NATIVE_COMMAND.search(VERSIONED_GRANT_COMMAND))
+        self.assertFalse(NATIVE_COMMAND.search(VERSIONED_GRANT_COMMON_COMMAND))
+        self.assertEqual(literal_commands(observer).count(VERSIONED_GRANT_COMMON_COMMAND), 1)
+        self.assertEqual(literal_commands(declarations).count('./.gooo check ' + VERSIONED_GRANT_DECLARATION), 1)
+        for chunk, command in ((observer, VERSIONED_GRANT_COMMON_COMMAND),
+                               (declarations, './.gooo check ' + VERSIONED_GRANT_DECLARATION)):
+            line = '          ' + command + '\n'
+            for replacement in ('', line + line,
+                                '          if false; then\n  ' + line + '          fi\n'):
+                with self.subTest(common_or_declaration=command, mutation=replacement[:80]), self.assertRaises(ValueError):
+                    validate(self.text.replace(chunk, chunk.replace(line, replacement, 1), 1))
+        with self.assertRaises(ValueError):
+            validate(self.text.replace(observer, observer.replace(VERSIONED_GRANT_COMMON_COMMAND, VERSIONED_GRANT_COMMAND, 1), 1))
+
+    def test_versioned_grant_artifact_is_failure_safe_and_never_documentation(self):
+        policy, _ = policy_steps(workflow_jobs(self.text)['policy-native-checks'])
+        upload, docs = policy[POLICY_UPLOAD], policy[POLICY_DOC_ARTIFACT]
+        line = '            out/versioned-grant-change/\n'
+        self.assertEqual(upload.count(line), 1)
+        for replacement in ('', line + line):
+            with self.subTest(artifact_path=replacement), self.assertRaises(ValueError):
+                validate(self.text.replace(upload, upload.replace(line, replacement, 1), 1))
+        with self.assertRaises(ValueError):
+            validate(self.text.replace(docs, docs.replace('path: out/ci-scope.json', 'path: out/versioned-grant-change/', 1), 1))
+        for condition in ('', FULL, DOCS, 'always()'):
+            changed = upload.replace('        if: always() && ' + FULL + '\n',
+                                     '        if: ' + condition + '\n' if condition else '', 1)
+            with self.subTest(upload_condition=condition), self.assertRaises(ValueError):
+                validate(self.text.replace(upload, changed, 1))
 
     def test_exported_etag_requires_full_scope_and_fresh_source_commands(self):
         validate(self.text)
