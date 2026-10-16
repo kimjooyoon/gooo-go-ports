@@ -17,6 +17,8 @@ describing what programs should do and inspecting how they are built and run.
 
 **Explain an ETag before using it:** [strong-validator facts](examples/strong-validator-facts/README.md) retain the original header, parsed tag, remaining input, validity, strength, byte lengths and a reason in thirteen fields. The Gooo composition calculates these facts automatically; it does not authorize or perform an API write.
 
+**Edit the ETag composition in your own directory:** [export an editable project](templates/etag-project/README.md) with three current Gooo sources and a separate Go reference checker. Exporting copies source only; run the exported checker to compare all247 original inputs in seven batches. The optional CRLF mutation demonstrates a typed result difference; these finite checks do not authorize API writes.
+
 This independent ecosystem project implements selected Go standard-library, x/net, x/image and Google UUID functions in Gooo,
 using independent Go references and saved replay. Its verification catalog contains 53 packages and 63 Gooo source files,
 including selected HTTP, Unicode, signed-decimal, literal-text, slash-path, UUID,

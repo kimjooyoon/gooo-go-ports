@@ -1,0 +1,63 @@
+name: Editable Gooo ETag
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  etag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GOTOOLCHAIN: local
+      GOWORK: 'off'
+      GOENV: 'off'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+        with:
+          go-version: '1.27.2'
+          cache: true
+      - name: Prepare a clean pinned compiler outside the project
+        shell: bash
+        run: |
+          set -eu
+          compiler_checkout="$RUNNER_TEMP/etag-engine"
+          compiler_binary="$RUNNER_TEMP/etag-gooo"
+          test ! -e "$compiler_checkout"
+          test ! -e "$compiler_binary"
+          git init "$compiler_checkout"
+          git -C "$compiler_checkout" remote add origin https://github.com/kimjooyoon/meta-ontology-go.git
+          git -C "$compiler_checkout" fetch --depth=1 origin 83928fa4538245abe33b08549da47f8cbdc50ed2
+          git -C "$compiler_checkout" checkout --detach FETCH_HEAD
+          test "$(git -C "$compiler_checkout" rev-parse HEAD)" = 83928fa4538245abe33b08549da47f8cbdc50ed2
+          test -z "$(git -C "$compiler_checkout" status --porcelain --untracked-files=all --ignored)"
+          (
+            cd "$compiler_checkout"
+            go mod download
+            go mod verify
+            go build -mod=readonly -o "$compiler_binary" ./cmd/gooo
+          )
+          test -z "$(git -C "$compiler_checkout" status --porcelain --untracked-files=all --ignored)"
+          "$compiler_binary" version --build --json
+      - name: Prepare pinned oracle dependencies
+        shell: bash
+        run: |
+          set -eu
+          go mod download
+          go mod verify
+      - name: Compare fresh results and CRLF mutation
+        shell: bash
+        run: |
+          set -eu
+          go_executable="$(go env GOROOT)/bin/go"
+          export GOPROXY=off GOSUMDB=off
+          "$go_executable" run -mod=readonly . \
+            --compiler "$RUNNER_TEMP/etag-gooo" --go "$go_executable" \
+            --out "$RUNNER_TEMP/etag-evidence" --mutation-check
+      - name: Retain fresh evidence on success or failure
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: etag-fresh-evidence
+          path: ${{ runner.temp }}/etag-evidence
+          if-no-files-found: warn
+          retention-days: 3
