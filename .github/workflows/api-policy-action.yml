@@ -1,0 +1,167 @@
+name: Experimental Gooo API policy CI action
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/api-policy-action.yml'
+      - 'examples/api-policy-ci/**'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/api-policy-action.yml'
+      - 'examples/api-policy-ci/**'
+  workflow_dispatch:
+
+# This additional job does not replace or filter the existing full ci.yml.
+permissions:
+  contents: read
+
+jobs:
+  api-policy-action-linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GOTOOLCHAIN: local
+      GOWORK: 'off'
+      GOENV: 'off'
+      CGO_ENABLED: '0'
+      GOMAXPROCS: '2'
+      GOOO_LAYA_URL: ''
+      GOOO_LAYA_API_KEY: ''
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+        with:
+          go-version: '1.27.2'
+          cache: false
+      - name: Record the exact hosted source and build Linux control binary
+        run: |
+          set -euo pipefail
+          umask 077
+          test "$(go env GOVERSION)" = go1.27.2
+          test "$(go env GOOS)" = linux
+          test "$(go env GOARCH)" = amd64
+          mkdir -p out/api-policy-ci-hosted
+          python3 -I -B - <<'PY'
+          import ast, hashlib, json, os, pathlib, subprocess
+          root = pathlib.Path.cwd()
+          names = ['.github/workflows/api-policy-action.yml']
+          names += ['examples/api-policy-ci/' + name for name in [
+              'action.yml', 'entrypoint.sh', 'go.mod', 'go.sum',
+              'cmd/gooo-policy-action/main.go', 'check_cli.py', 'README.md', 'LICENSE', 'NOTICE.txt']]
+          names += ['examples/api-policy-revision/testdata/read-facts.json',
+                    'examples/api-policy-revision/testdata/write-facts.json']
+          refs = {}
+          for name in names:
+              path = root / name
+              assert path.is_file() and not path.is_symlink()
+              raw = path.read_bytes()
+              refs[name] = {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()}
+          tree = ast.parse((root/'examples/api-policy-ci/check_cli.py').read_text())
+          methods = sorted(n.name for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name.startswith('test_'))
+          assert len(methods) == 21
+          head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          assert head == os.environ['GITHUB_SHA']
+          result = {'schema': 'gooo/api-policy-action-hosted-source/v1',
+                    'status': 'SOURCE_RECORDED_NOT_RUNTIME_ACCEPTANCE', 'head': head,
+                    'event': os.environ['GITHUB_EVENT_NAME'], 'run_id': os.environ['GITHUB_RUN_ID'],
+                    'source_files': refs, 'CLI_test_methods': methods}
+          (root/'out/api-policy-ci-hosted/source.json').write_text(json.dumps(result, indent=2)+'\n')
+          PY
+          control_work="$(mktemp -d "$RUNNER_TEMP/gooo-api-policy-controls.XXXXXXXX")"
+          chmod 700 "$control_work"
+          printf '%s\n' "$control_work" > out/api-policy-ci-hosted/control-work.txt
+          export GOCACHE="$control_work/build-cache" GOMODCACHE="$control_work/module-cache"
+          export GOTMPDIR="$control_work/tmp" TMPDIR="$control_work/tmp"
+          export GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org
+          export GOPRIVATE= GONOPROXY= GONOSUMDB= GOFLAGS=
+          mkdir -m 700 "$GOCACHE" "$GOMODCACHE" "$GOTMPDIR"
+          go version > out/api-policy-ci-hosted/go-version.stdout
+          timeout --signal=TERM --kill-after=5s 90s \
+            go -C examples/api-policy-ci vet ./... \
+            > out/api-policy-ci-hosted/vet.stdout 2> out/api-policy-ci-hosted/vet.stderr
+          timeout --signal=TERM --kill-after=5s 180s \
+            go -C examples/api-policy-ci build -mod=readonly -trimpath \
+            -o "$control_work/review" ./cmd/gooo-policy-action \
+            > out/api-policy-ci-hosted/build.stdout 2> out/api-policy-ci-hosted/build.stderr
+          go version -m "$control_work/review" > out/api-policy-ci-hosted/binary-version.stdout
+          sha256sum "$control_work/review" > out/api-policy-ci-hosted/binary.sha256
+      - name: Execute all twenty-one Linux CLI controls once
+        run: |
+          set -euo pipefail
+          control_work="$(cat out/api-policy-ci-hosted/control-work.txt)"
+          timeout --signal=TERM --kill-after=5s 420s \
+            python3 -I -B examples/api-policy-ci/check_cli.py "$control_work/review" \
+            > out/api-policy-ci-hosted/controls.stdout 2> out/api-policy-ci-hosted/controls.stderr
+      - name: Exercise the actual composite action with the supplied write case
+        id: policy
+        uses: ./examples/api-policy-ci
+        with:
+          mode: compare
+          input-file: examples/api-policy-revision/testdata/write-facts.json
+          fail-on-newly-denied: 'false'
+      - name: Check actual action transport against the frozen whole write literal
+        env:
+          ACTION_CLASSIFICATION: ${{ steps.policy.outputs.classification }}
+          ACTION_CHANGED_COUNT: ${{ steps.policy.outputs.changed-count }}
+          ACTION_REPORT_PATH: ${{ steps.policy.outputs.report-path }}
+          ACTION_RECEIPT_PATH: ${{ steps.policy.outputs.receipt-path }}
+          ACTION_REPORT_SHA256: ${{ steps.policy.outputs.report-sha256 }}
+        run: |
+          python3 -I -B - <<'PY'
+          import hashlib, json, os, pathlib, runpy, stat
+          root = pathlib.Path.cwd()
+          before = json.loads((root/'out/api-policy-ci-hosted/source.json').read_text())
+          for name, ref in before['source_files'].items():
+              current = (root/name).read_bytes()
+              assert len(current) == ref['bytes'] and hashlib.sha256(current).hexdigest() == ref['sha256']
+          literals = runpy.run_path(str(root/'examples/api-policy-ci/check_cli.py'), run_name='frozen_hosted_literals')
+          # Definitions only: run_name is not __main__, so the driver main and its
+          # twenty-one tests do not execute a second time.
+          def read_private(name, cap):
+              path = pathlib.Path(os.environ[name])
+              assert path.is_absolute() and path.resolve() == path and path.is_file() and not path.is_symlink()
+              assert path.is_relative_to(pathlib.Path(os.environ['RUNNER_TEMP']).resolve())
+              assert stat.S_IMODE(path.stat().st_mode) == 0o600 and path.stat().st_size <= cap
+              return path.read_bytes()
+          raw = read_private('ACTION_REPORT_PATH', 16 << 20)
+          receipt_raw = read_private('ACTION_RECEIPT_PATH', 65536)
+          report, receipt = json.loads(raw), json.loads(receipt_raw)
+          expected = literals['literal_report'](literals['facts']('write'), action='write')
+          assert literals['exact_types'](report, expected)
+          assert report == expected
+          assert os.environ['ACTION_CLASSIFICATION'] == 'NEWLY_DENIED'
+          assert os.environ['ACTION_CHANGED_COUNT'] == '2'
+          assert os.environ['ACTION_REPORT_SHA256'] == hashlib.sha256(raw).hexdigest()
+          assert receipt['schema'] == 'gooo/api-policy-action-observation/v1'
+          assert receipt['mode'] == 'compare' and receipt['saved_replay'] == 'COMPLETE_TYPED_REPORT_RECOMPUTED'
+          assert receipt['compiled_modules'] == literals['MODULES']
+          assert receipt['compiled_go'] == 'go1.27.2' and receipt['compiled_os'] == 'linux' and receipt['compiled_arch'] == 'amd64'
+          original = (root/'examples/api-policy-revision/testdata/write-facts.json').read_bytes()
+          assert receipt['input_sha256'] == hashlib.sha256(original).hexdigest() and receipt['input_bytes'] == len(original)
+          assert receipt['report_sha256'] == hashlib.sha256(raw).hexdigest() and receipt['report_bytes'] == len(raw)
+          out = root/'out/api-policy-ci-hosted'
+          # Only the known synthetic repository fixture is retained by this test
+          # workflow. The reusable action never uploads a caller's raw report.
+          (out/'synthetic-write.comparison.json').write_bytes(raw)
+          (out/'synthetic-write.receipt.json').write_bytes(receipt_raw)
+          (out/'composite-result.json').write_text(json.dumps({
+              'schema': 'gooo/api-policy-action-hosted-composite/v1',
+              'status': 'COMPLETE_COMPOSITE_OUTPUT_MATCHES_FROZEN_WRITE_LITERAL',
+              'classification': 'NEWLY_DENIED', 'changed_count': 2,
+              'report_sha256': hashlib.sha256(raw).hexdigest(),
+              'scope': 'Synthetic fixed-profile workflow validation only; no outside trial or current authorization.'}, indent=2)+'\n')
+          PY
+      - name: Preserve only synthetic hosted validation records
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: api-policy-action-linux-${{ github.sha }}
+          path: out/api-policy-ci-hosted/
+          if-no-files-found: warn
+          retention-days: 14
