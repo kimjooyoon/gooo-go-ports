@@ -42,10 +42,11 @@ jobs:
           go-version: '1.27.2'
           cache: false
       - id: policy
-        uses: kimjooyoon/gooo-go-ports/examples/api-policy-ci@7810fe0390cea4024b6e2ded8646ed54465adca3
+        uses: kimjooyoon/gooo-go-ports/examples/api-policy-ci@10363958cce2dd97418a3074e3c87743b96547dc
         with:
           input-file: ci/policy-case.json
           fail-on-newly-denied: 'false'
+          summary: 'true'
 ```
 
 Each file contains exactly these nine fields, using your representative values:
@@ -75,6 +76,31 @@ bounds facts to 4 MiB and saved reports to 16 MiB,
 and uses the public strict typed decoders. Missing, duplicate, unknown, malformed
 or wrongly typed facts fail rather than becoming an allow decision. Each decoded
 Text remains bounded to 65,536 UTF-8 bytes by the original API.
+
+## Optional job summary
+
+Set `summary: 'true'` to show the saved comparison's classification, changed-field
+count, original and candidate reason labels, and the names of changed fields in
+the GitHub Actions job summary. This is off by default. It includes no raw
+principal, group, tenant or other fact values and adds no action outputs; the
+five existing outputs below remain unchanged. Summary formatting requires the
+runner's Python 3 standard library and appends at most 4 KiB.
+
+For the supplied write example, the summary shows `NEWLY_DENIED`, count `2`,
+`ALLOW` → `ACTION_NOT_READ_ONLY`, and changed fields `allowed`, `reason`. The
+supplied read example shows `UNCHANGED`, count `0`, and `ALLOW` → `ALLOW`.
+The formatter displays allowlisted fields from the exact saved report after
+checking its SHA-256. It does not calculate the policy, recompute the complete
+typed comparison, or grant permission to execute an API call.
+
+When `fail-on-newly-denied: 'true'` saves a valid `NEWLY_DENIED` report and then
+fails the review, an enabled summary step can still run unless the job is
+cancelled. The Action keeps the original failure; a successful summary does not
+turn it into success. A malformed input that produces no saved report has no
+summary to display. Opted-in summary rendering or append errors also fail.
+Do not add `continue-on-error` to a consumer workflow just to obtain the summary.
+Outputs from a failed composite Action may be unavailable to later caller
+steps, so this option does not promise new failure-path output transport.
 
 ## Results and replay
 
@@ -119,11 +145,19 @@ pseudo-versions and checksum lines are retained in `go.mod`/`go.sum`. Consumer
 replacement modules and automatic toolchain switching are refused.
 
 The separate `.github/workflows/api-policy-action.yml` records the checked source,
-runs all twenty-one Linux CLI controls and then exercises the composite Action
-with the known synthetic write case. Its actual run supplies the result; a local
-crossbuild alone does not establish Linux runtime behavior. Existing repository
-verification remains required. The standalone Action does not upload callers'
-reports; the validation workflow retains only its own known synthetic records.
+runs all twenty-one Linux CLI controls, sixteen formatter controls and two
+summary-append transport controls. It preserves the complete synthetic write
+report comparison and exercises enabled summaries
+for the supplied write and read cases. A deliberately failed synthetic write
+review checks both the emitted summary and the preserved failing step outcome;
+`continue-on-error` appears only in that failure-path test. The two transport
+controls exercise the actual append wrapper with a synthetic runner file,
+including a late append refusal that must leave no completion file. These
+controls do not replace the actual hosted composite runs. The actual hosted run
+supplies the result; local source inspection or crossbuild alone does not
+establish Linux composite behavior. Existing full repository verification remains
+required. The standalone Action does not upload callers' reports; the validation
+workflow retains only its own known synthetic records.
 
 This in-repository path creates no separate Action repository and includes no
 Marketplace listing or agreement. Any later listing requires a separate review of
