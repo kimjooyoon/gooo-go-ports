@@ -354,6 +354,17 @@ POLICY_HEAVY = {
     'Verify the sealed API policy revision comparison',
     'Verify the Agent Mesh service-pattern adaptation',
 }
+# These four source-independent producers move byte-for-byte to the existing
+# policy runner. This roster does not add jobs, builds, cases or docs exemptions.
+INDEPENDENT_STEPS = (
+    'Verify the public API policy consumer',
+    'Verify the isolated native path facts sidecar',
+    'Verify the original automatic redelivery policy',
+    'Verify the isolated native IPv4 address facts sidecar',
+)
+INDEPENDENT_HEAVY = set(INDEPENDENT_STEPS)
+INDEPENDENT_ARTIFACT_PATHS = ('out/api-policy-public-consumer/', 'out/path-facts/',
+                              'out/redelivery-policy/', 'out/ipv4/')
 POLICY_PILOT_UPLOAD = 'Upload offline policy experiment evidence'
 POLICY_UPLOAD = 'Upload policy execution and diagnostic evidence'
 POLICY_DOC_REPORT = 'Report documentation-only policy scope'
@@ -361,6 +372,10 @@ POLICY_DOC_ARTIFACT = 'Preserve documentation-only policy scope'
 POLICY_HEADER_SHA = '3d5466a5dfca722bf38d6d81f26ff8f425188d473f6a0b9ae46cdd528d209cfe'
 POLICY_SETUP_SHA = '5ccf03022b3caeab1cc1fd46bbb3fa8b54e4fc0addba08c7d39d17f449f51703'
 POLICY_STEP_SHAS = {
+    'Verify the isolated native IPv4 address facts sidecar': '6ce5d2f5e75f9ff9a7728718567ffb039c74232ef4e254ea244b7dc02fbc9ed8',
+    'Verify the original automatic redelivery policy': '2ce6496cbee29d77c9334f1f32dc518c96a12c193e37ab569144bdc4fd1a864e',
+    'Verify the isolated native path facts sidecar': 'b90f403ce804adea78dacebf554c45f3e21b1faf89b942e83f32aca2847f9df5',
+    'Verify the public API policy consumer': 'bf26832b9a105e0ac1652771f2fe4a0cd156f7c145c2b8ac58a2639e1750e80d',
     'Build and identify the pinned compiler from a clean checkout': 'c7273984211d14f1b50f66438f1d90f68a42e8ad58be1d0d1d2a0213b0b4d2ae',
     'Verify the offline decision-policy experiment': '2d8e714f7dfb2963a682ce702485e3bccfaa7439cbaa67f7da6741aff6ce7c48',
     'Verify the imported CEL API policy': '064873f6b6288062964bde88c2f1f436bdc7316e586ae6066a4b3623f057b708',
@@ -368,7 +383,7 @@ POLICY_STEP_SHAS = {
     'Verify the Agent Mesh service-pattern adaptation': '9af078924730a896c5c669e167803a2e3780e277cdcbe6231233b2cac97a471c',
     'Upload offline policy experiment evidence': 'e4adbb294f45d4dbe4af56338b800f0d637dda27ec83055f1d799d63dac60392',
     ETAG_PROJECT_STEP: 'f11ef3c03ed5cc096b30b3d44c8a20abeb73bc5e840b8033114d94208d64f4c7',
-    'Upload policy execution and diagnostic evidence': '8bb271fa8bc6443987d919bf469e8e1d11e6b7d0b6e340876d1bddc9c4d311df',
+    'Upload policy execution and diagnostic evidence': '1fcb3e254cfb7eb46b8c2e134179dd2e1b5db07e75900a57efbf0dc3c77dfb37',
     'Report documentation-only policy scope': '472165f458bfda43733f2a1ea6bc2236c19b425b5887f3417bbe1a9d9bcab6dd',
     'Preserve documentation-only policy scope': '185d1afbfd001734dc649c227526a84d5dd993bfcd9c1243e4a1966f13db60f7',
 }
@@ -437,7 +452,7 @@ def named_steps(text):
         classifier = named.get('Classify the exact checked PR tree', '')
         require(hashlib.sha256(classifier.encode()).hexdigest() == CLASSIFIER_STEP_SHA, "producer exact checkout classifier changed: " + job)
         require(chunk.index(unnamed[0]) < chunk.index(classifier) < chunk.index(unnamed[1]), "producer setup order changed: " + job)
-        expected = {'Classify the exact checked PR tree'} | MOVED if job == 'observer-checks' else (COMMON | HEAVY | PREFLIGHT | UPLOADS | DOC_STEPS) - MOVED - POLICY_HEAVY - {POLICY_PILOT_UPLOAD}
+        expected = {'Classify the exact checked PR tree'} | MOVED if job == 'observer-checks' else (COMMON | HEAVY | PREFLIGHT | UPLOADS | DOC_STEPS) - MOVED - POLICY_HEAVY - INDEPENDENT_HEAVY - {POLICY_PILOT_UPLOAD}
         require(set(named) == expected, "producer step roster changed: " + job)
         if job == 'observer-checks':
             require(hashlib.sha256(named['Check the Go observer'].encode()).hexdigest() == OBSERVER_STEP_SHA and
@@ -451,7 +466,7 @@ def named_steps(text):
             require(name not in all_named or name == 'Classify the exact checked PR tree', "duplicate cross-job step")
             all_named[name] = step
     policy_named, _ = policy_steps(jobs['policy-native-checks'])
-    for name in POLICY_HEAVY | {POLICY_PILOT_UPLOAD}:
+    for name in POLICY_HEAVY | INDEPENDENT_HEAVY | {POLICY_PILOT_UPLOAD}:
         require(name not in all_named, 'policy producer was duplicated in another job: ' + name)
         all_named[name] = policy_named[name]
     return all_named, native_unnamed
@@ -468,7 +483,7 @@ def policy_steps(chunk):
             'policy producer requires exact checkout and full-only pinned Go setup')
     expected = {'Classify the exact checked PR tree',
                 'Build and identify the pinned compiler from a clean checkout',
-                POLICY_PILOT_UPLOAD, POLICY_UPLOAD, POLICY_DOC_REPORT, POLICY_DOC_ARTIFACT, ETAG_PROJECT_STEP} | POLICY_HEAVY
+                POLICY_PILOT_UPLOAD, POLICY_UPLOAD, POLICY_DOC_REPORT, POLICY_DOC_ARTIFACT, ETAG_PROJECT_STEP} | POLICY_HEAVY | INDEPENDENT_HEAVY
     require(set(named) == expected, 'policy producer exact step roster changed')
     classifier = named['Classify the exact checked PR tree']
     identity = named['Build and identify the pinned compiler from a clean checkout']
@@ -479,9 +494,10 @@ def policy_steps(chunk):
     for name, sha in POLICY_STEP_SHAS.items():
         require(hashlib.sha256(named[name].encode()).hexdigest() == sha,
                 'policy step must retain its exact source/commands/gates: ' + name)
-    require(chunk.index(unnamed[0]) < chunk.index(classifier) < chunk.index(unnamed[1]) < chunk.index(identity),
-            'policy checkout/classifier/Go/compiler order changed')
-    ordered = ('Verify the offline decision-policy experiment', 'Verify the imported CEL API policy',
+    public = named[INDEPENDENT_STEPS[0]]
+    require(chunk.index(unnamed[0]) < chunk.index(classifier) < chunk.index(unnamed[1]) < chunk.index(public) < chunk.index(identity),
+            'policy checkout/classifier/Go/public-consumer/compiler order changed')
+    ordered = INDEPENDENT_STEPS[1:] + ('Verify the offline decision-policy experiment', 'Verify the imported CEL API policy',
                'Verify the sealed API policy revision comparison', 'Verify the Agent Mesh service-pattern adaptation',
                ETAG_PROJECT_STEP, POLICY_PILOT_UPLOAD, POLICY_UPLOAD, POLICY_DOC_REPORT, POLICY_DOC_ARTIFACT)
     previous = chunk.index(identity)
@@ -490,7 +506,7 @@ def policy_steps(chunk):
         previous = chunk.index(named[name])
     require(field(unnamed[1], 'if') == FULL and field(identity, 'if') == FULL,
             'policy Go setup and compiler build must stay full-only')
-    for name in POLICY_HEAVY:
+    for name in POLICY_HEAVY | INDEPENDENT_HEAVY:
         require(field(named[name], 'if') == FULL, 'policy native producer must stay full-only: ' + name)
     exported = named[ETAG_PROJECT_STEP]
     require(field(exported, 'if') == FULL and field(exported, 'timeout-minutes') == '8',
@@ -507,7 +523,7 @@ def policy_steps(chunk):
             field(named[POLICY_DOC_ARTIFACT], 'if') == 'always() && ' + DOCS,
             'policy docs-only scope must be explicit and separate')
     require('name: gooo-go-ports-policy-evidence\n' in named[POLICY_UPLOAD] and
-            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n            out/etag-project/\n            out/etag-project-evidence/\n' in named[POLICY_UPLOAD] and
+            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n            out/etag-project/\n            out/etag-project-evidence/\n            out/api-policy-public-consumer/\n            out/path-facts/\n            out/redelivery-policy/\n            out/ipv4/\n' in named[POLICY_UPLOAD] and
             'if-no-files-found: warn\n' in named[POLICY_UPLOAD] and 'retention-days: 14\n' in named[POLICY_UPLOAD],
             'policy output artifacts must include current identity, original policy outputs and both exported ETag directories')
     require('name: gooo-go-ports-policy-documentation-scope\n' in named[POLICY_DOC_ARTIFACT] and
@@ -570,14 +586,16 @@ def validate(text):
     require("go-version: '1.27.2'" in unnamed[1], "Go toolchain pin changed")
     public = named["Verify the public API policy consumer"]
     native_job = workflow_jobs(text)['native-execution']
+    policy_job = workflow_jobs(text)['policy-native-checks']
+    policy_named, policy_unnamed = policy_steps(policy_job)
     preflight = named[PREFLIGHT_STEP_NAME]
     require(hashlib.sha256(preflight.encode()).hexdigest() == PREFLIGHT_STEP_SHA,
             "lightweight summary controls, source buffers, limits or first-failure evidence changed")
     require(native_job.index(named['Classify the exact checked PR tree']) < native_job.index(preflight) <
             native_job.index(unnamed[1]), "summary preflight must precede Go setup and all native work")
-    require(native_job.index(unnamed[1]) < native_job.index(public) <
-            native_job.index(named["Build and identify the pinned compiler from a clean checkout"]),
-            "public consumer must run after native Go setup and before native compiler/execution")
+    require(policy_job.index(policy_unnamed[1]) < policy_job.index(public) <
+            policy_job.index(policy_named["Build and identify the pinned compiler from a clean checkout"]),
+            "public consumer must run after its policy Go setup and before its policy compiler/execution")
     require("python3 -B tools/check-api-policy-public-consumer_test.py -v" in named["Check the Go observer"],
             "bounded public-consumer diagnostic checks must remain in the common Go observer step")
     for name in COMMON:
@@ -707,8 +725,8 @@ def validate(text):
             and text.count(HEADER_WIRE_COMMAND) == 1,
             "header wire stage must retain the exact readonly helper build, actual CLI argv and acceptance counts once")
     require(native_job.index(named["Check Gooo declarations"]) < native_job.index(wire) <
-            native_job.index(named["Verify the isolated native path facts sidecar"]),
-            "actual header wire route must run after declarations and before other native sidecars")
+            native_job.index(comparison),
+            "actual header wire route must run after declarations and before the full native comparison")
     if_match_input = named[IF_MATCH_STEP_NAME]
     require(hashlib.sha256(if_match_input.encode()).hexdigest() == IF_MATCH_STEP_SHA
             and literal_commands(if_match_input) == [IF_MATCH_UNIT, IF_MATCH_COMMAND]
@@ -738,8 +756,8 @@ def validate(text):
     require(hashlib.sha256(redelivery.encode()).hexdigest() == REDELIVERY_STEP_SHA
             and redelivery.count(REDELIVERY_COMMAND) == 1 and text.count(REDELIVERY_COMMAND) == 1,
             "redelivery sidecar must retain exact fresh two-layer/ref/cleanup gates once")
-    require(text.index(named["Check Gooo declarations"]) < text.index(redelivery)
-            < text.index(named["Retain unsupported-body probes"]), "redelivery producer order changed")
+    require(policy_job.index(policy_named["Build and identify the pinned compiler from a clean checkout"]) < policy_job.index(redelivery)
+            < policy_job.index(policy_named["Verify the offline decision-policy experiment"]), "redelivery requires its own pinned policy compiler before existing policy work")
     for command in REDELIVERY_COMMON_COMMANDS:
         require(named["Check the Go observer"].count(command) == 1 and text.count(command) == 1,
                 "redelivery unit/reference checks must run once as common checks")
@@ -750,8 +768,8 @@ def validate(text):
             and ipv4.count(IPV4_COMMAND) == text.count(IPV4_COMMAND) == 1
             and ipv4.count(IPV4_READBACK) == text.count(IPV4_READBACK) == 1,
             "IPv4 sidecar must retain fresh finite layers, current source readback and cleanup gates once")
-    require(text.index(named["Check Gooo declarations"]) < text.index(ipv4)
-            < text.index(named["Retain unsupported-body probes"]), "IPv4 producer order changed")
+    require(policy_job.index(policy_named["Build and identify the pinned compiler from a clean checkout"]) < policy_job.index(ipv4)
+            < policy_job.index(policy_named["Verify the offline decision-policy experiment"]), "IPv4 requires its own pinned policy compiler before existing policy work")
     for command in IPV4_COMMON_COMMANDS:
         require(named["Check the Go observer"].count(command) == text.count(command) == 1,
                 "IPv4 Python checks must run once as common checks")
@@ -1898,6 +1916,50 @@ class WorkflowScopeTests(unittest.TestCase):
             altered = docs.replace('path: out/ci-scope.json', 'path: ' + path, 1)
             with self.subTest(docs_artifact=path), self.assertRaises(ValueError):
                 validate(self.text.replace(docs, altered, 1))
+
+    def test_independent_sidecars_move_exactly_once_with_same_full_scope(self):
+        validate(self.text)
+        jobs = workflow_jobs(self.text)
+        _, native, _ = job_steps(jobs['native-execution'])
+        policy, _ = policy_steps(jobs['policy-native-checks'])
+        for name in INDEPENDENT_STEPS:
+            chunk = policy[name]
+            self.assertNotIn(name, native)
+            self.assertEqual(self.text.count(chunk), 1)
+            self.assertEqual(field(chunk, 'if'), FULL)
+            for replacement in ('', chunk + chunk,
+                                chunk.replace('        if: ' + FULL + '\n', '', 1),
+                                chunk.replace(FULL, DOCS, 1),
+                                chunk.replace(FULL, "steps.change-scope.outputs.docs_only == 'false'", 1),
+                                chunk.replace('        run: |', '        continue-on-error: true\n        run: |', 1)):
+                with self.subTest(step=name, mutation=replacement[:80]), self.assertRaises(ValueError):
+                    validate(self.text.replace(chunk, replacement, 1))
+            without = self.text.replace(chunk, '', 1)
+            anchor = native['Compare the ports with Go and replay every batch']
+            with self.subTest(moved_back_to_native=name), self.assertRaises(ValueError):
+                validate(without.replace(anchor, chunk + anchor, 1))
+        self.assertEqual(tuple(jobs), JOB_ORDER)
+        self.assertEqual(self.text.count('          sh tools/bootstrap.sh\n'), 3)
+        self.assertEqual(self.text.count('      - name: Classify the exact checked PR tree\n'), 3)
+        self.assertEqual(deployment_expression(self.text), DEPLOY_IF)
+
+    def test_independent_sidecar_artifacts_are_complete_failure_safe_and_not_docs(self):
+        validate(self.text)
+        policy, _ = policy_steps(workflow_jobs(self.text)['policy-native-checks'])
+        upload, docs = policy[POLICY_UPLOAD], policy[POLICY_DOC_ARTIFACT]
+        self.assertEqual(field(upload, 'if'), 'always() && ' + FULL)
+        for path in INDEPENDENT_ARTIFACT_PATHS:
+            line = '            ' + path + '\n'
+            self.assertEqual(upload.count(line), 1)
+            with self.subTest(missing_path=path), self.assertRaises(ValueError):
+                validate(self.text.replace(upload, upload.replace(line, '', 1), 1))
+            with self.subTest(docs_path=path), self.assertRaises(ValueError):
+                validate(self.text.replace(docs, docs.replace('path: out/ci-scope.json', 'path: ' + path, 1), 1))
+        for condition in ('', FULL, DOCS, 'always()'):
+            old = '        if: always() && ' + FULL + '\n'
+            changed = upload.replace(old, '        if: ' + condition + '\n' if condition else '', 1)
+            with self.subTest(upload_condition=condition), self.assertRaises(ValueError):
+                validate(self.text.replace(upload, changed, 1))
 
     def test_producer_jobs_are_parallel_exact_unconditional_scopes(self):
         validate(self.text)

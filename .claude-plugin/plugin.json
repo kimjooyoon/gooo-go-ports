@@ -1,0 +1,14 @@
+{
+  "name": "gooo-porting",
+  "version": "0.1.0",
+  "description": "Edit bounded Gooo ports of Go HTTP ETag helpers and compare actual native results with Go.",
+  "author": {
+    "name": "asketeddy",
+    "email": "asketeddy@gmail.com"
+  },
+  "homepage": "https://github.com/kimjooyoon/gooo-go-ports/blob/main/docs/ai-agents.md",
+  "repository": "https://github.com/kimjooyoon/gooo-go-ports",
+  "skills": [
+    "./.agents/skills/"
+  ]
+}
