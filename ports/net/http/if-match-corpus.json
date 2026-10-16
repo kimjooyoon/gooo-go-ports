@@ -1,0 +1,2281 @@
+{
+  "schema": "gooo/if-match-input-corpus/v1",
+  "input_order": [
+    "selectedIfMatchHeader",
+    "currentETag"
+  ],
+  "rows": [
+    {
+      "id": "upstream-ifmatch_matches",
+      "inputs": [
+        "\"Z\", \"A\"",
+        "\"A\""
+      ],
+      "category": "upstream-table-anchor"
+    },
+    {
+      "id": "upstream-ifmatch_star",
+      "inputs": [
+        "*",
+        "\"A\""
+      ],
+      "category": "upstream-table-anchor"
+    },
+    {
+      "id": "upstream-ifmatch_failed",
+      "inputs": [
+        "\"B\"",
+        "\"A\""
+      ],
+      "category": "upstream-table-anchor"
+    },
+    {
+      "id": "upstream-ifmatch_fails_on_weak_etag",
+      "inputs": [
+        "W/\"A\"",
+        "W/\"A\""
+      ],
+      "category": "upstream-table-anchor"
+    },
+    {
+      "id": "absent-empty-current",
+      "inputs": [
+        "",
+        ""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "absent-present-current",
+      "inputs": [
+        "",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "spaces-not-absent",
+      "inputs": [
+        "   ",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "trim-ascii-mixed",
+      "inputs": [
+        " \t\r\n\"A\"\n\r\t ",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "commas-only",
+      "inputs": [
+        ",,,,",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "trimmed-commas-only",
+      "inputs": [
+        " \t, \r\n,\t ",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "wildcard-no-current",
+      "inputs": [
+        "*",
+        ""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "wildcard-invalid-current",
+      "inputs": [
+        "*",
+        "bad"
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "wildcard-weak-current",
+      "inputs": [
+        "*",
+        "W/\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "wildcard-raw-suffix",
+      "inputs": [
+        "*invalid",
+        ""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "wildcard-second-star",
+      "inputs": [
+        "**",
+        "bad"
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "wildcard-comma-suffix",
+      "inputs": [
+        "*,bad",
+        ""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "wildcard-after-comma",
+      "inputs": [
+        ", \t*garbage",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "wildcard-after-mismatch",
+      "inputs": [
+        "\"B\"*suffix",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "early-match-bad-suffix",
+      "inputs": [
+        "\"A\"invalid",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "early-match-nul-suffix",
+      "inputs": [
+        "\"A\"\u0000",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "early-match-unclosed-suffix",
+      "inputs": [
+        "\"A\"\"",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "early-match-weak-suffix",
+      "inputs": [
+        "\"A\"W/\"B\"",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "adjacent-tags-match-second",
+      "inputs": [
+        "\"B\"\"A\"",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "adjacent-tags-no-match",
+      "inputs": [
+        "\"B\"\"C\"",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "adjacent-weak-then-strong",
+      "inputs": [
+        "W/\"A\"\"A\"",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "adjacent-strong-then-weak",
+      "inputs": [
+        "\"B\"W/\"A\"",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "malformed-prefix-blocks-match",
+      "inputs": [
+        "bad,\"A\"",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "mismatch-bad-before-match",
+      "inputs": [
+        "\"B\",bad,\"A\"",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "weak-header-strong-current",
+      "inputs": [
+        "W/\"A\"",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "strong-header-weak-current",
+      "inputs": [
+        "\"A\"",
+        "W/\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "empty-strong-tags",
+      "inputs": [
+        "\"\"",
+        "\"\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "empty-weak-tags",
+      "inputs": [
+        "W/\"\"",
+        "W/\"\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "lowercase-weak-prefix",
+      "inputs": [
+        "w/\"A\"",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "weak-prefix-missing-slash",
+      "inputs": [
+        "W\"A\"",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "slash-without-weak-prefix",
+      "inputs": [
+        "/\"A\"",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "space-inside-tag",
+      "inputs": [
+        "\"A B\"",
+        "\"A B\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "tab-inside-tag",
+      "inputs": [
+        "\"A\tB\"",
+        "\"A\tB\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "nul-inside-tag",
+      "inputs": [
+        "\"A\u0000B\"",
+        "\"A\u0000B\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "backslash-is-literal-allowed",
+      "inputs": [
+        "\"A\\B\"",
+        "\"A\\B\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "escaped-quote-is-not-json-escape-at-grammar-level",
+      "inputs": [
+        "\"A\\\"B\"",
+        "\"A\\\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "current-trailing-space-not-trimmed",
+      "inputs": [
+        "\"A\"",
+        "\"A\" "
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "current-leading-space-not-trimmed",
+      "inputs": [
+        "\"A\"",
+        " \"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "current-crlf-not-trimmed",
+      "inputs": [
+        "\"A\"",
+        "\r\n\"A\"\r\n"
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "current-malformed-suffix-not-reparsed",
+      "inputs": [
+        "\"A\"",
+        "\"A\"bad"
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "del-inside-tag",
+      "inputs": [
+        "\"AB\"",
+        "\"AB\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "crlf-trim-not-field-validation",
+      "inputs": [
+        "\r\n\"A\"\r\n",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "unicode-nfc",
+      "inputs": [
+        "\"é\"",
+        "\"é\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "unicode-nfd-not-normalized",
+      "inputs": [
+        "\"é\"",
+        "\"é\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "unicode-nbsp-outside",
+      "inputs": [
+        " \"A\" ",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "unicode-ideographic-space-outside",
+      "inputs": [
+        "　\"A\"",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "unicode-obs-text-inside",
+      "inputs": [
+        "\"한😀\"",
+        "\"한😀\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "literal-backslash-u",
+      "inputs": [
+        "\"\\u0041\"",
+        "\"A\""
+      ],
+      "category": "control-flow-and-grammar"
+    },
+    {
+      "id": "cross-h00-e00",
+      "inputs": [
+        "",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h00-e01",
+      "inputs": [
+        "",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h00-e02",
+      "inputs": [
+        "",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h00-e03",
+      "inputs": [
+        "",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h00-e04",
+      "inputs": [
+        "",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h00-e05",
+      "inputs": [
+        "",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h00-e06",
+      "inputs": [
+        "",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h00-e07",
+      "inputs": [
+        "",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h01-e00",
+      "inputs": [
+        "\"\"",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h01-e01",
+      "inputs": [
+        "\"\"",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h01-e02",
+      "inputs": [
+        "\"\"",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h01-e03",
+      "inputs": [
+        "\"\"",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h01-e04",
+      "inputs": [
+        "\"\"",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h01-e05",
+      "inputs": [
+        "\"\"",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h01-e06",
+      "inputs": [
+        "\"\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h01-e07",
+      "inputs": [
+        "\"\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h02-e00",
+      "inputs": [
+        "\"A\"",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h02-e01",
+      "inputs": [
+        "\"A\"",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h02-e02",
+      "inputs": [
+        "\"A\"",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h02-e03",
+      "inputs": [
+        "\"A\"",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h02-e04",
+      "inputs": [
+        "\"A\"",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h02-e05",
+      "inputs": [
+        "\"A\"",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h02-e06",
+      "inputs": [
+        "\"A\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h02-e07",
+      "inputs": [
+        "\"A\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h03-e00",
+      "inputs": [
+        "\"a\"",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h03-e01",
+      "inputs": [
+        "\"a\"",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h03-e02",
+      "inputs": [
+        "\"a\"",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h03-e03",
+      "inputs": [
+        "\"a\"",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h03-e04",
+      "inputs": [
+        "\"a\"",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h03-e05",
+      "inputs": [
+        "\"a\"",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h03-e06",
+      "inputs": [
+        "\"a\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h03-e07",
+      "inputs": [
+        "\"a\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h04-e00",
+      "inputs": [
+        "\"B\"",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h04-e01",
+      "inputs": [
+        "\"B\"",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h04-e02",
+      "inputs": [
+        "\"B\"",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h04-e03",
+      "inputs": [
+        "\"B\"",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h04-e04",
+      "inputs": [
+        "\"B\"",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h04-e05",
+      "inputs": [
+        "\"B\"",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h04-e06",
+      "inputs": [
+        "\"B\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h04-e07",
+      "inputs": [
+        "\"B\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h05-e00",
+      "inputs": [
+        "W/\"A\"",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h05-e01",
+      "inputs": [
+        "W/\"A\"",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h05-e02",
+      "inputs": [
+        "W/\"A\"",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h05-e03",
+      "inputs": [
+        "W/\"A\"",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h05-e04",
+      "inputs": [
+        "W/\"A\"",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h05-e05",
+      "inputs": [
+        "W/\"A\"",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h05-e06",
+      "inputs": [
+        "W/\"A\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h05-e07",
+      "inputs": [
+        "W/\"A\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h06-e00",
+      "inputs": [
+        "w/\"A\"",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h06-e01",
+      "inputs": [
+        "w/\"A\"",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h06-e02",
+      "inputs": [
+        "w/\"A\"",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h06-e03",
+      "inputs": [
+        "w/\"A\"",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h06-e04",
+      "inputs": [
+        "w/\"A\"",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h06-e05",
+      "inputs": [
+        "w/\"A\"",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h06-e06",
+      "inputs": [
+        "w/\"A\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h06-e07",
+      "inputs": [
+        "w/\"A\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h07-e00",
+      "inputs": [
+        "\"A\", \"B\"",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h07-e01",
+      "inputs": [
+        "\"A\", \"B\"",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h07-e02",
+      "inputs": [
+        "\"A\", \"B\"",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h07-e03",
+      "inputs": [
+        "\"A\", \"B\"",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h07-e04",
+      "inputs": [
+        "\"A\", \"B\"",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h07-e05",
+      "inputs": [
+        "\"A\", \"B\"",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h07-e06",
+      "inputs": [
+        "\"A\", \"B\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h07-e07",
+      "inputs": [
+        "\"A\", \"B\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h08-e00",
+      "inputs": [
+        "\"B\"\"A\"",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h08-e01",
+      "inputs": [
+        "\"B\"\"A\"",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h08-e02",
+      "inputs": [
+        "\"B\"\"A\"",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h08-e03",
+      "inputs": [
+        "\"B\"\"A\"",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h08-e04",
+      "inputs": [
+        "\"B\"\"A\"",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h08-e05",
+      "inputs": [
+        "\"B\"\"A\"",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h08-e06",
+      "inputs": [
+        "\"B\"\"A\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h08-e07",
+      "inputs": [
+        "\"B\"\"A\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h09-e00",
+      "inputs": [
+        ",, \"A\" ,",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h09-e01",
+      "inputs": [
+        ",, \"A\" ,",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h09-e02",
+      "inputs": [
+        ",, \"A\" ,",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h09-e03",
+      "inputs": [
+        ",, \"A\" ,",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h09-e04",
+      "inputs": [
+        ",, \"A\" ,",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h09-e05",
+      "inputs": [
+        ",, \"A\" ,",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h09-e06",
+      "inputs": [
+        ",, \"A\" ,",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h09-e07",
+      "inputs": [
+        ",, \"A\" ,",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h10-e00",
+      "inputs": [
+        "*",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h10-e01",
+      "inputs": [
+        "*",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h10-e02",
+      "inputs": [
+        "*",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h10-e03",
+      "inputs": [
+        "*",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h10-e04",
+      "inputs": [
+        "*",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h10-e05",
+      "inputs": [
+        "*",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h10-e06",
+      "inputs": [
+        "*",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h10-e07",
+      "inputs": [
+        "*",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h11-e00",
+      "inputs": [
+        "*invalid",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h11-e01",
+      "inputs": [
+        "*invalid",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h11-e02",
+      "inputs": [
+        "*invalid",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h11-e03",
+      "inputs": [
+        "*invalid",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h11-e04",
+      "inputs": [
+        "*invalid",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h11-e05",
+      "inputs": [
+        "*invalid",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h11-e06",
+      "inputs": [
+        "*invalid",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h11-e07",
+      "inputs": [
+        "*invalid",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h12-e00",
+      "inputs": [
+        ",",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h12-e01",
+      "inputs": [
+        ",",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h12-e02",
+      "inputs": [
+        ",",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h12-e03",
+      "inputs": [
+        ",",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h12-e04",
+      "inputs": [
+        ",",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h12-e05",
+      "inputs": [
+        ",",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h12-e06",
+      "inputs": [
+        ",",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h12-e07",
+      "inputs": [
+        ",",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h13-e00",
+      "inputs": [
+        "\"A\"bad",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h13-e01",
+      "inputs": [
+        "\"A\"bad",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h13-e02",
+      "inputs": [
+        "\"A\"bad",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h13-e03",
+      "inputs": [
+        "\"A\"bad",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h13-e04",
+      "inputs": [
+        "\"A\"bad",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h13-e05",
+      "inputs": [
+        "\"A\"bad",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h13-e06",
+      "inputs": [
+        "\"A\"bad",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h13-e07",
+      "inputs": [
+        "\"A\"bad",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h14-e00",
+      "inputs": [
+        "bad,\"A\"",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h14-e01",
+      "inputs": [
+        "bad,\"A\"",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h14-e02",
+      "inputs": [
+        "bad,\"A\"",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h14-e03",
+      "inputs": [
+        "bad,\"A\"",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h14-e04",
+      "inputs": [
+        "bad,\"A\"",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h14-e05",
+      "inputs": [
+        "bad,\"A\"",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h14-e06",
+      "inputs": [
+        "bad,\"A\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h14-e07",
+      "inputs": [
+        "bad,\"A\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h15-e00",
+      "inputs": [
+        "\"\u0000\"",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h15-e01",
+      "inputs": [
+        "\"\u0000\"",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h15-e02",
+      "inputs": [
+        "\"\u0000\"",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h15-e03",
+      "inputs": [
+        "\"\u0000\"",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h15-e04",
+      "inputs": [
+        "\"\u0000\"",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h15-e05",
+      "inputs": [
+        "\"\u0000\"",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h15-e06",
+      "inputs": [
+        "\"\u0000\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h15-e07",
+      "inputs": [
+        "\"\u0000\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h16-e00",
+      "inputs": [
+        "\"a b\"",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h16-e01",
+      "inputs": [
+        "\"a b\"",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h16-e02",
+      "inputs": [
+        "\"a b\"",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h16-e03",
+      "inputs": [
+        "\"a b\"",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h16-e04",
+      "inputs": [
+        "\"a b\"",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h16-e05",
+      "inputs": [
+        "\"a b\"",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h16-e06",
+      "inputs": [
+        "\"a b\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h16-e07",
+      "inputs": [
+        "\"a b\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h17-e00",
+      "inputs": [
+        " \"A\"",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h17-e01",
+      "inputs": [
+        " \"A\"",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h17-e02",
+      "inputs": [
+        " \"A\"",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h17-e03",
+      "inputs": [
+        " \"A\"",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h17-e04",
+      "inputs": [
+        " \"A\"",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h17-e05",
+      "inputs": [
+        " \"A\"",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h17-e06",
+      "inputs": [
+        " \"A\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h17-e07",
+      "inputs": [
+        " \"A\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h18-e00",
+      "inputs": [
+        "\"é\"",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h18-e01",
+      "inputs": [
+        "\"é\"",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h18-e02",
+      "inputs": [
+        "\"é\"",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h18-e03",
+      "inputs": [
+        "\"é\"",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h18-e04",
+      "inputs": [
+        "\"é\"",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h18-e05",
+      "inputs": [
+        "\"é\"",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h18-e06",
+      "inputs": [
+        "\"é\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h18-e07",
+      "inputs": [
+        "\"é\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h19-e00",
+      "inputs": [
+        "\"é\"",
+        ""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h19-e01",
+      "inputs": [
+        "\"é\"",
+        "\"\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h19-e02",
+      "inputs": [
+        "\"é\"",
+        "\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h19-e03",
+      "inputs": [
+        "\"é\"",
+        "\"B\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h19-e04",
+      "inputs": [
+        "\"é\"",
+        "W/\"A\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h19-e05",
+      "inputs": [
+        "\"é\"",
+        "bad"
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h19-e06",
+      "inputs": [
+        "\"é\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "cross-h19-e07",
+      "inputs": [
+        "\"é\"",
+        "\"é\""
+      ],
+      "category": "header-current-product"
+    },
+    {
+      "id": "byte-00-inside-tag",
+      "inputs": [
+        "\"A\u0000B\"",
+        "\"A\u0000B\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-00-before-tag",
+      "inputs": [
+        "\u0000\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-00-after-mismatch",
+      "inputs": [
+        "\"B\"\u0000\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-01-inside-tag",
+      "inputs": [
+        "\"A\u0001B\"",
+        "\"A\u0001B\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-01-before-tag",
+      "inputs": [
+        "\u0001\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-01-after-mismatch",
+      "inputs": [
+        "\"B\"\u0001\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-08-inside-tag",
+      "inputs": [
+        "\"A\bB\"",
+        "\"A\bB\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-08-before-tag",
+      "inputs": [
+        "\b\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-08-after-mismatch",
+      "inputs": [
+        "\"B\"\b\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-09-inside-tag",
+      "inputs": [
+        "\"A\tB\"",
+        "\"A\tB\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-09-before-tag",
+      "inputs": [
+        "\t\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-09-after-mismatch",
+      "inputs": [
+        "\"B\"\t\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-0a-inside-tag",
+      "inputs": [
+        "\"A\nB\"",
+        "\"A\nB\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-0a-before-tag",
+      "inputs": [
+        "\n\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-0a-after-mismatch",
+      "inputs": [
+        "\"B\"\n\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-0b-inside-tag",
+      "inputs": [
+        "\"A\u000bB\"",
+        "\"A\u000bB\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-0b-before-tag",
+      "inputs": [
+        "\u000b\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-0b-after-mismatch",
+      "inputs": [
+        "\"B\"\u000b\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-0c-inside-tag",
+      "inputs": [
+        "\"A\fB\"",
+        "\"A\fB\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-0c-before-tag",
+      "inputs": [
+        "\f\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-0c-after-mismatch",
+      "inputs": [
+        "\"B\"\f\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-0d-inside-tag",
+      "inputs": [
+        "\"A\rB\"",
+        "\"A\rB\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-0d-before-tag",
+      "inputs": [
+        "\r\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-0d-after-mismatch",
+      "inputs": [
+        "\"B\"\r\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-0e-inside-tag",
+      "inputs": [
+        "\"A\u000eB\"",
+        "\"A\u000eB\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-0e-before-tag",
+      "inputs": [
+        "\u000e\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-0e-after-mismatch",
+      "inputs": [
+        "\"B\"\u000e\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-1f-inside-tag",
+      "inputs": [
+        "\"A\u001fB\"",
+        "\"A\u001fB\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-1f-before-tag",
+      "inputs": [
+        "\u001f\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-1f-after-mismatch",
+      "inputs": [
+        "\"B\"\u001f\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-20-inside-tag",
+      "inputs": [
+        "\"A B\"",
+        "\"A B\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-20-before-tag",
+      "inputs": [
+        " \"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-20-after-mismatch",
+      "inputs": [
+        "\"B\" \"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-21-inside-tag",
+      "inputs": [
+        "\"A!B\"",
+        "\"A!B\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-21-before-tag",
+      "inputs": [
+        "!\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-21-after-mismatch",
+      "inputs": [
+        "\"B\"!\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-22-inside-tag",
+      "inputs": [
+        "\"A\"B\"",
+        "\"A\"B\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-22-before-tag",
+      "inputs": [
+        "\"\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-22-after-mismatch",
+      "inputs": [
+        "\"B\"\"\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-23-inside-tag",
+      "inputs": [
+        "\"A#B\"",
+        "\"A#B\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-23-before-tag",
+      "inputs": [
+        "#\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-23-after-mismatch",
+      "inputs": [
+        "\"B\"#\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-5c-inside-tag",
+      "inputs": [
+        "\"A\\B\"",
+        "\"A\\B\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-5c-before-tag",
+      "inputs": [
+        "\\\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-5c-after-mismatch",
+      "inputs": [
+        "\"B\"\\\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-7e-inside-tag",
+      "inputs": [
+        "\"A~B\"",
+        "\"A~B\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-7e-before-tag",
+      "inputs": [
+        "~\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-7e-after-mismatch",
+      "inputs": [
+        "\"B\"~\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-7f-inside-tag",
+      "inputs": [
+        "\"AB\"",
+        "\"AB\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-7f-before-tag",
+      "inputs": [
+        "\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "byte-7f-after-mismatch",
+      "inputs": [
+        "\"B\"\"A\"",
+        "\"A\""
+      ],
+      "category": "ascii-byte-boundaries"
+    },
+    {
+      "id": "1024-commas",
+      "inputs": [
+        ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
+        "\"A\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "1024-spaces",
+      "inputs": [
+        "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ",
+        "\"A\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "1024-nuls",
+      "inputs": [
+        "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+        "\"A\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "1024-nuls-both-operands",
+      "inputs": [
+        "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+        "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "1024-current-nuls",
+      "inputs": [
+        "*",
+        "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "1024-commas-current-nuls",
+      "inputs": [
+        ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
+        "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "512-empty-tags-no-match",
+      "inputs": [
+        "\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"",
+        "\"A\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "512-empty-tags-first-match",
+      "inputs": [
+        "\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"",
+        "\"\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "510-empty-tags-match-at-end-1024",
+      "inputs": [
+        "\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\",\"A\"",
+        "\"A\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "510-empty-tags-mismatch-at-end-1024",
+      "inputs": [
+        "\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\",\"B\"",
+        "\"A\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "1021-commas-match-at-end-1024",
+      "inputs": [
+        ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,\"A\"",
+        "\"A\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "1023-commas-star-at-end-1024",
+      "inputs": [
+        ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,*",
+        ""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "1023-commas-bad-at-end-1024",
+      "inputs": [
+        ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,x",
+        "\"A\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "ascii-tag-1024-match",
+      "inputs": [
+        "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"",
+        "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "ascii-tag-1024-last-byte-diff",
+      "inputs": [
+        "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"",
+        "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxy\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "ascii-unclosed-1024",
+      "inputs": [
+        "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "\"A\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "weak-tag-1024",
+      "inputs": [
+        "W/\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"",
+        "W/\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "utf8-2byte-tag-1024-match",
+      "inputs": [
+        "\"ééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé\"",
+        "\"ééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "utf8-4byte-tag-1024-match",
+      "inputs": [
+        "\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀ab\"",
+        "\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀ab\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "ascii-padding-1024",
+      "inputs": [
+        "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               \"\"\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+        "\"\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    },
+    {
+      "id": "unicode-nonspace-padding-1024",
+      "inputs": [
+        "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               \"\"",
+        "\"\""
+      ],
+      "category": "1024-byte-and-loop-boundaries"
+    }
+  ]
+}

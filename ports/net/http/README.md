@@ -36,3 +36,58 @@ HTTP server, resource authentication or authorization implementation.
 
 See [provenance.json](provenance.json) for immutable source hashes and the
 [Go license](../../../third_party/GO-LICENSE).
+
+
+## Selected If-Match compatibility core
+
+[`go/net/http/precondition`](precondition.gooo) exposes `IfMatchCondition(Text,
+Text) -> IfMatchResult`. The first Text is one **already selected** If-Match
+value; the second is the current ETag supplied by the caller. Its one required
+integer field `condition` retains Go's private enum: **0 = no condition**,
+**1 = true**, **2 = false**. This dedicated package is a Gooo API, rather than
+an official Go subpackage.
+
+The bounded state loop preserves the original Go behavior. Initially empty
+If-Match yields0; whitespace/comma-only yields2. `*suffix` yields1 immediately,
+even with empty current ETag. Adjacent quoted tags need no comma, and a strong
+match can return before an invalid trailing token. Weak tags do not strongly
+match. Neither input is normalized or repaired; current ETag is not parsed or
+trimmed. Treat raw header validity as a separate fact.
+
+Both Texts use the same unchanged Unicode-scalar UTF-8, 0–1,024-byte domain as
+the ETag port, including empty, NUL, CR/LF and invalid grammar. The pure Gooo
+body cannot enforce external JSON decoding. Use the strict before-binding
+adapter for external requests. From the repository root, after the pinned Go
+and compiler are ready:
+
+```sh
+set -eu
+mkdir -p out
+go build -mod=readonly -o out/if-match-input ./cmd/if-match-input
+out/if-match-input < ports/net/http/if-match-request.json > out/if-match.inputs.json
+./.gooo package execute --json --go "$(go env GOROOT)/bin/go" \
+  --inputs "$PWD/out/if-match.inputs.json" "$PWD/if-match.workspace.json" \
+  > out/if-match.execute.json
+./.gooo package replay --json --go "$(go env GOROOT)/bin/go" \
+  --inputs "$PWD/out/if-match.inputs.json" --receipt "$PWD/out/if-match.execute.json" \
+  "$PWD/if-match.workspace.json" > out/if-match.replay.json
+```
+
+The request accepts exactly `if_match` and `current_etag` string keys. It refuses
+wrong/missing/duplicate keys, invalid UTF-8, unpaired Unicode surrogates and
+values over1,024 UTF-8 bytes before the caller binds inputs. It deliberately
+accepts header-invalid controls and grammar-invalid Text without alteration.
+The adapter neither runs Gooo nor supplies an expected result.
+
+The [input-only corpus](if-match-corpus.json) retains284 occurrences, including
+four original Go tests. Fresh Go expectations are compared with Gooo execution
+and official saved replay in five bounded batches. The strict route's five
+input-only anchors and35 prelaunch refusals are separate transport checks;
+the direct-CLI malformed comparison adds28 shape/domain controls to the
+existing196, without claiming wire-invalid UTF-8/surrogate refusal by the
+compiler. Input-only receipts are `OBSERVED`, with finite counts0; they are not
+additional differential cases.
+
+This core does not select repeated HTTP fields, observe/authenticate the current
+resource, enforce authorization or execute a conditional/CAS write. See the
+[exact pins, enum mapping and scope](if-match-provenance.json).

@@ -1,0 +1,135 @@
+{
+  "schema": "gooo/if-match-port-provenance/v1",
+  "package": "go/net/http/precondition",
+  "activity": "IfMatchCondition",
+  "activity_id": "gooo://go/net/http/if-match-condition",
+  "source": "ports/net/http/precondition.gooo",
+  "source_sha256": "9924cde4a2e01222658929a87007d6e34db85f2d4f49c057d110bb8d1bf05aeb",
+  "computes_body_sha256": "5eb683c004afdb049f66f07c5a7517e62662e4968a7a9e7a2a276d8004bf3e3b",
+  "upstream": {
+    "repository": "https://github.com/golang/go",
+    "go_version": "go1.27.2",
+    "revision": "022c8636110ebac86a9b88724cda168ed713c21f",
+    "sources": [
+      {
+        "path": "src/net/http/fs.go",
+        "sha256": "21660cb61d17c258de99172683f9b41aca37d45c0af0556723f2a11179bdc45e",
+        "ranges": {
+          "enum": [
+            475,
+            483
+          ],
+          "checkIfMatch": [
+            485,
+            513
+          ],
+          "scanETag_and_etagStrongMatch": [
+            435,
+            467
+          ]
+        }
+      },
+      {
+        "path": "src/net/textproto/textproto.go",
+        "sha256": "e4f0d94752345b5dec4fe7f4805531e8036a9cd44131d807cafa700dd5323901",
+        "ranges": {
+          "TrimString_and_isASCIISpace": [
+            126,
+            150
+          ]
+        }
+      },
+      {
+        "path": "src/net/http/fs_test.go",
+        "sha256": "e72c3364ceee26c46b356eb5fb76d22b2a93a7bfe6cb9b61d898559726fd22a3",
+        "ranges": {
+          "upstream_table_anchors": [
+            1133,
+            1167
+          ]
+        }
+      }
+    ],
+    "license": "third_party/GO-LICENSE",
+    "license_sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad"
+  },
+  "api_mapping": {
+    "official_subpackage": false,
+    "input0": "selected If-Match value, without Header.Get or field selection",
+    "input1": "current ETag value, without private Header.get or current-truth observation",
+    "result": {
+      "entity": "gooo://go/net/http/if-match-result/v1",
+      "fields": [
+        {
+          "name": "condition",
+          "id": "gooo://go/net/http/if-match-result/v1/condition",
+          "type": "integer",
+          "native_go_type": "int64",
+          "required": true
+        }
+      ],
+      "enum": {
+        "condNone": 0,
+        "condTrue": 1,
+        "condFalse": 2
+      }
+    },
+    "reference_substitutions": [
+      "checkIfMatch signature accepts selectedIfMatchHeader,currentETag strings",
+      "r.Header.Get(\"If-Match\") becomes selectedIfMatchHeader",
+      "w.Header().get(\"Etag\") becomes currentETag"
+    ],
+    "preserved_quirks": [
+      "only initial empty input0 yields condNone; whitespace/comma-only yields condFalse",
+      "star returns condTrue without examining suffix or currentETag",
+      "adjacent tags need no separator; a strong match succeeds before an invalid tail",
+      "weak tags never strongly match; current ETag is not parsed or trimmed"
+    ]
+  },
+  "domain": {
+    "input_order": [
+      "selectedIfMatchHeader",
+      "currentETag"
+    ],
+    "text_kind": "unchanged decoded Unicode-scalar validUTF8",
+    "utf8_bytes_each": [
+      0,
+      1024
+    ],
+    "allowed": [
+      "empty",
+      "NUL",
+      "controls",
+      "CR/LF",
+      "invalid ETag grammar"
+    ],
+    "required_outer_refusal": [
+      "missing operand",
+      "wrong type",
+      "decoded duplicate keys",
+      "invalid UTF8",
+      "unpaired surrogate",
+      "operand over1024 UTF8 bytes"
+    ],
+    "normalization": "none; no trimming/repair/truncation/domain shrink"
+  },
+  "corpus": {
+    "path": "ports/net/http/if-match-corpus.json",
+    "sha256": "8569d7ddfa9b9cda385d3f648d9bad9ef514705a9353c5773a0a64182e774581",
+    "input_only": true,
+    "ordered_occurrences": 284,
+    "upstream_prefix_rows": 4,
+    "required_partition_ends": [
+      101,
+      201,
+      266,
+      270,
+      284
+    ],
+    "raw_case_budget_bytes": 30000,
+    "translated_case_budget_bytes": 32768,
+    "max_rows_per_batch": 128,
+    "expected_value_provider": "fresh pinned original Go reference only"
+  },
+  "validation_scope": "Finite comparison is separate from HTTP Header.Get/multiple-field selection, resource existence/current authenticity, authorization, atomic/CAS writes, effects, exhaustive all-strings equivalence or performance. Fresh current-source public checks remain required; no private receipt is rebound. Independent inner canonical/typed-plan hashing is NOT_CHECKED."
+}

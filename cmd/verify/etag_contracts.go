@@ -46,8 +46,11 @@ func etagGoToolPath() string {
 	return filepath.Join(runtime.GOROOT(), "bin", name)
 }
 func etagResultContract(s suite) resultContract {
-	if !isETagSuite(s) {
+	if !isHTTPConditionalSuite(s) {
 		return resultContract{}
+	}
+	if isIfMatchSuite(s) {
+		return resultContract{Entity: ifMatchEntity, Fields: []recordFieldContract{{"condition", ifMatchEntity + "/condition"}}}
 	}
 	if s.Activity == etagStrongActivity {
 		return resultContract{Entity: "gooo://std/boolean"}
@@ -82,6 +85,9 @@ type etagPackageSpec struct {
 }
 
 func etagSpecs(s suite) []etagPackageSpec {
+	if isIfMatchSuite(s) {
+		return []etagPackageSpec{{ifMatchPackage, ifMatchSource, "httpcondition", "httpcondition", map[string]string{"Text": textEntity, "IfMatchResult": ifMatchEntity}, []decimalPayloadBody{{Name: ifMatchActivity, ID: ifMatchActivityID, Inputs: []string{"Text", "Text"}, Output: "IfMatchResult"}}, nil}}
+	}
 	core := etagPackageSpec{etagPortPackage, etagPortSource, "httpetag", "httpetag", map[string]string{"Text": textEntity, "Boolean": "gooo://std/boolean", "ETagScanResult": etagScanEntity}, []decimalPayloadBody{
 		{Name: etagScanActivity, ID: etagScanActivityID, Inputs: []string{"Text"}, Output: "ETagScanResult"},
 		{Name: etagStrongActivity, ID: etagStrongActivityID, Inputs: []string{"Text", "Text"}, Output: "Boolean"}}, nil}
@@ -96,6 +102,7 @@ func etagSpecs(s suite) []etagPackageSpec {
 }
 
 var etagSourceSHA = map[string]string{
+	ifMatchSource:    "9924cde4a2e01222658929a87007d6e34db85f2d4f49c057d110bb8d1bf05aeb",
 	etagPortSource:   "2fc5b2c19acf8c040173859309dd687be37bca1c2c56b49efa293a8df98d42c4",
 	headerPortSource: "a033b96ab0adb394a9d79137715d7a4170e22061e4ae9aa282f8ab3671da9f76",
 	etagReportSource: "a7002b9db59ff68e732b66ef27c86426b8fff325cfb15f2665a0d0cf04f17a01",
@@ -104,7 +111,7 @@ var etagSourceSHA = map[string]string{
 // Source identities and authored declarations are independent of receipt names.
 // No init order or lowered numeric prefix is inferred from manifest order.
 func etagDefinitions(s suite, identity expectedIdentity) (map[string]etagDefinition, error) {
-	if !isETagSuite(s) || len(identity.SourceBytes) != len(etagSpecs(s)) || len(identity.Sources) != len(identity.SourceBytes) {
+	if !isHTTPConditionalSuite(s) || len(identity.SourceBytes) != len(etagSpecs(s)) || len(identity.Sources) != len(identity.SourceBytes) {
 		return nil, fmt.Errorf("etag exact selected source roster")
 	}
 	defs := map[string]etagDefinition{}
@@ -140,8 +147,8 @@ func etagDefinitions(s suite, identity expectedIdentity) (map[string]etagDefinit
 		}
 		recordSource = append(recordSource, raw...)
 	}
-	records, err := etagSourceRecords(recordSource, etagRecords(etagReportConsumer(s)))
-	if err != nil || len(records) != len(etagRecords(etagReportConsumer(s))) {
+	records, err := etagSourceRecords(recordSource, etagRecordsFor(s))
+	if err != nil || len(records) != len(etagRecordsFor(s)) {
 		return nil, fmt.Errorf("etag authored exact record declarations")
 	}
 	return defs, nil
@@ -254,12 +261,12 @@ func etagBindLowered(text string, s suite, defs map[string]etagDefinition) (map[
 			return nil, nil, fmt.Errorf("etag lowered authored body/callee binding: %s", key)
 		}
 	}
-	records, err := etagSourceRecords([]byte(text), etagRecords(etagReportConsumer(s)))
+	records, err := etagSourceRecords([]byte(text), etagRecordsFor(s))
 	if err != nil {
 		return nil, nil, err
 	}
 	for _, d := range bound {
-		if d.Declaration.Output != "ETagScanResult" && d.Declaration.Output != "StrongValidatorFacts" {
+		if d.Declaration.Output != "ETagScanResult" && d.Declaration.Output != "StrongValidatorFacts" && d.Declaration.Output != "IfMatchResult" {
 			continue
 		}
 		found := false

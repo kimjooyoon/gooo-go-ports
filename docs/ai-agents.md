@@ -56,6 +56,7 @@ for all inputs. Preserve a first failure and its diagnostic.
   [strong-validator workflow below](#inspect-etag-and-header-facts). It preserves
   raw input and separates parsed-tag strength, trailing content and raw header
   validity. It does not implement the write or full `If-Match` handling.
+- **Evaluate a selected If-Match condition:** use the [bounded compatibility core](../ports/net/http/README.md#selected-if-match-compatibility-core), `if-match.workspace.json` and its strict `cmd/if-match-input` handoff. Preserve both original Texts; `condition`0/1/2 means none/true/false. Header selection, authenticated current facts and applying a write are separate.
 - **Edit and regression-check an isolated ETag project:** [export the current
   three-source project](../templates/etag-project/README.md), edit its Gooo
   `computes` bodies under the fixed public ABI, then compare247 original inputs

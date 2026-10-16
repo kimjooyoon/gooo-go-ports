@@ -85,3 +85,12 @@ original files are retained byte-exact as third_party/go/net/{http,textproto}
 .txt references. The verification-only Go copies retain the original helpers.
 The importing StrongValidatorFacts13 composition and verification tooling are
 original repository BSD code. These local facts do not grant HTTP authority.
+
+The selected If-Match core in ports/net/http/precondition.gooo adapts private
+Go net/http checkIfMatch/condResult and the original scanner/strong comparison
+at Go1.27.2 revision022c8636110ebac86a9b88724cda168ed713c21f. Copyright2009/2010
+The Go Authors; BSD license: third_party/GO-LICENSE. The independent Go verifier
+changes only the signature and two header lookups, as recorded in
+ports/net/http/if-match-provenance.json. Original Gooo adaptation and transport
+integration are additionally covered by the repository LICENSE. This is not an
+official Go subpackage or a full HTTP/current-resource/authorization adapter.

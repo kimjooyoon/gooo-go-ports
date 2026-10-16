@@ -17,10 +17,12 @@ describing what programs should do and inspecting how they are built and run.
 
 **Explain an ETag before using it:** [strong-validator facts](examples/strong-validator-facts/README.md) retain the original header, parsed tag, remaining input, validity, strength, byte lengths and a reason in thirteen fields. The Gooo composition calculates these facts automatically; it does not authorize or perform an API write.
 
+**Compare a selected If-Match value with an ETag:** [the compatibility core](ports/net/http/README.md#selected-if-match-compatibility-core) returns Go's original three-state condition as one integer field. A strict two-Text input adapter preserves invalid header grammar while refusing malformed external JSON/Unicode. Header selection, current-resource authority and applying a write remain separate.
+
 **Edit the ETag composition in your own directory:** [export an editable project](templates/etag-project/README.md) with three current Gooo sources and a separate Go reference checker. Exporting copies source only; run the exported checker to compare all247 original inputs in seven batches. The optional CRLF mutation demonstrates a typed result difference; these finite checks do not authorize API writes.
 
 This independent ecosystem project implements selected Go standard-library, x/net, x/image and Google UUID functions in Gooo,
-using independent Go references and saved replay. Its verification catalog contains 53 packages and 63 Gooo source files,
+using independent Go references and saved replay. Its verification catalog contains 54 packages and 64 Gooo source files,
 including selected HTTP, Unicode, signed-decimal, literal-text, slash-path, UUID,
 integer, color, duration, rectangle and fixed-point APIs and importing diagnostic programs.
 Separate IPv4 and other sidecar examples have their own checks and are not added to the catalog's execution totals.
@@ -152,7 +154,7 @@ Three appended suites retain 192 scanner occurrences (190 distinct strings),
 31 raw comparison pairs and 24 thirteen-field reports. Their focused native
 execution and saved replay cover all 247 inputs in seven batches (3/2/2), with
 727 returned scalar values per layer compared with an independent Go reference.
-The complete required roster becomes 79 suites, 173,582 cases, 2,247 batches
+The ETag extension required 79 suites, 173,582 cases, 2,247 batches
 and 2,407 timing records, binding 251 current source files. Full CI and all seven
 existing exhaustive checks remain required. These are finite diagnostics;
 current-resource matching, authorization, atomic writes and full `If-Match`
@@ -233,6 +235,14 @@ a change to one in-memory grant only when the candidate is a recognized subset,
 one configured required request stays allowed, and the writer and revision are
 still valid. No per-change human approval is required. The demo also shows a stale
 proposal, a refused expansion, and recovery of a discarded response by operation ID.
+
+
+The appended selected If-Match core retains all284 original input occurrences
+in five batches. Its current required roster is80 suites,173,866 cases,2,252
+batches and2,414 timing rows; the original79 suites retain173,582 cases and2,247
+batches. Current-source hosted checks must establish these totals independently
+of private or historical receipts. Seven existing exhaustive dispatches remain
+unchanged. See the [domain, strict input route and reference mapping](ports/net/http/README.md#selected-if-match-compatibility-core).
 
 ## Start here
 
@@ -539,6 +549,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | --- | --- | --- |
 | `go/net/http` | `StatusText` | Go의 상태 코드 62개와 설명. 미등록 코드는 빈 문자열 |
 | `go/net/http/etag` | `ScanETag`, `ETagStrongMatch` | Unicode-scalar UTF-8 Text 0–1,024 bytes per operand; exact private Go helper semantics. [Domain and provenance](ports/net/http/README.md), [original thirteen-field composition](examples/strong-validator-facts/README.md) |
+| `go/net/http/precondition` | `IfMatchCondition` | Two selected UTF-8 Texts 0–1,024 bytes each; original Go enum in one integer record. [Input route and scope](ports/net/http/README.md#selected-if-match-compatibility-core) |
 | `go/golang.org/x/net/http/httpguts` | `ValidHeaderFieldName`, `ValidHeaderFieldValue` | decoded valid UTF-8 Text 각각 최대 1,024바이트. 이름은 비어 있지 않은 ASCII token, 값은 HTAB 외 C0와 DEL을 거부. [원본 차이와 도메인](ports/net/httpguts/README.md), [자동 판단용 12필드 구성](examples/header-field-facts/README.md) |
 | `go/net/textproto` | `CanonicalMIMEHeaderKey` | Decoded valid UTF-8 Text 0–1,024 bytes; valid-token ASCII casing, invalid/empty input identity. [Domain and source](ports/net/textproto/README.md), [original eight-field validity/witness composition](examples/canonical-header-key/README.md) |
 | `go/strconv` | `ParseIntDecimal64` | decoded valid UTF-8 Text 최대1,024바이트에서 ParseInt(s,10,64)의 원래 입력·정확한 int64·구문/범위 오류 구별을4필드로 보존. unsigned overflow와 뒤따른 잘못된 문자 우선순위도 유지. [도메인과 차이](ports/strconv/README.md) |

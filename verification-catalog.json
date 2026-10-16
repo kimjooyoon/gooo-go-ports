@@ -328,6 +328,12 @@
       "sources": [
         "examples/strong-validator-facts/main.gooo"
       ]
+    },
+    {
+      "path": "go/net/http/precondition",
+      "sources": [
+        "ports/net/http/precondition.gooo"
+      ]
     }
   ]
 }

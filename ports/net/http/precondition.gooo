@@ -1,0 +1,101 @@
+// Copyright 2009 The Go Authors. All rights reserved.
+// Copyright 2010 The Go Authors. All rights reserved.
+// Use of this source code is governed by the BSD-style license reproduced in
+// third_party/GO-LICENSE. Original Gooo adaptation is also covered by LICENSE.
+//
+// Bounded pure adaptation of Go1.27.2 at
+// 022c8636110ebac86a9b88724cda168ed713c21f:
+// src/net/http/fs.go checkIfMatch lines485..513 and condResult lines475..483;
+// scanETag/etagStrongMatch lines435..467, whole-file SHA256:
+// 21660cb61d17c258de99172683f9b41aca37d45c0af0556723f2a11179bdc45e.
+// src/net/textproto/textproto.go TrimString/isASCIISpace lines126..150, SHA256:
+// e4f0d94752345b5dec4fe7f4805531e8036a9cd44131d807cafa700dd5323901.
+//
+// API difference: checkIfMatch is private and takes ResponseWriter/*Request.
+// This is not an official Go net/http/precondition package. input0 is exactly
+// the selected If-Match Text; input1 is exactly one current response ETag Text.
+// Neither Header.Get selection nor the private Header.get call is performed.
+// Their lookup/multiple-field/current-observation contracts belong to an adapter.
+// The Go enum is exposed as one required integer field: condNone=0, condTrue=1,
+// condFalse=2. There are no added reasons, HTTP effects or authorization results.
+//
+// Modifications: one bounded byte-state loop fuses Go's repeated TrimString,
+// scanETag and strong equality. Only token-start ASCII SP/HT/CR/LF and commas
+// are skipped. Trimming trailing ASCII space cannot change a tag terminator:
+// it only removes bytes after the final token or leaves an unterminated scan
+// invalid. This loop consumes the untouched input instead of trimming it.
+// Each of at most1024 iterations handles one byte, including a closing quote
+// at byte1024; no token count bound shortens the supported domain. No imported
+// activity is invoked inside mutable control flow. Backslash remains literal.
+// Go quirks are preserved: only initial empty Text is NONE; whitespace/comma
+// only is FALSE; * immediately succeeds without checking a suffix/current tag;
+// adjacent quoted tags need no comma; a strong match returns before bad tails.
+// Weak parsed tags never match. Current ETag is never scanned, trimmed or fixed.
+//
+// DOMAIN: each input is decoded Unicode-scalar validUTF8 Text of0..1024 bytes,
+// including empty/NUL/controls/invalid grammar. REQUIRED OUTER REFUSAL rejects
+// missing/wrong types, duplicate binding keys, malformedUTF8, unpaired surrogates
+// or a larger input before binding. A result outside this domain is unsupported,
+// not a false/empty extension. No repair, normalization, truncation or Go fallback.
+// This compatibility core does not validate the whole raw header. Combine raw
+// header-validity facts separately. Selected/current values are supplied facts,
+// not proof of authenticity, resource existence, version binding or authority.
+// No full HTTP adapter, lost-update/CAS guarantee or live conditional write is
+// implemented. Current-source verification must bind this exact body and domain.
+package httpcondition
+namespace httpcondition
+entity Text id "gooo://std/text"
+entity IfMatchResult id "gooo://go/net/http/if-match-result/v1" fields {
+    field condition id "gooo://go/net/http/if-match-result/v1/condition" type integer required one
+}
+
+activity IfMatchCondition(Text, Text) -> IfMatchResult id "gooo://go/net/http/if-match-condition" computes `let size = int64(len(input0))
+if size == 0 { return IfMatchResult{condition: 0} }
+let state = 0
+let tag_start = 0
+let weak = false
+let position = 0
+for position = 0; position < 1024; position = position + 1 {
+    if position >= size { return IfMatchResult{condition: 2} }
+    let octet = int64(input0[position])
+    if state == 0 {
+        let space = octet == 32 || octet == 9 || octet == 10 || octet == 13
+        if !space && octet != 44 {
+            if octet == 42 { return IfMatchResult{condition: 1} }
+            tag_start = position
+            if octet == 34 {
+                weak = false
+                state = 3
+            } else {
+                if octet == 87 {
+                    weak = true
+                    state = 1
+                } else {
+                    return IfMatchResult{condition: 2}
+                }
+            }
+        }
+    } else {
+        if state == 1 {
+            if octet != 47 { return IfMatchResult{condition: 2} }
+            state = 2
+        } else {
+            if state == 2 {
+                if octet != 34 { return IfMatchResult{condition: 2} }
+                state = 3
+            } else {
+                if octet == 34 {
+                    let end = position + 1
+                    if !weak && input0[tag_start:end] == input1 {
+                        return IfMatchResult{condition: 1}
+                    }
+                    state = 0
+                } else {
+                    let allowed = octet == 33 || (octet >= 35 && octet <= 126) || octet >= 128
+                    if !allowed { return IfMatchResult{condition: 2} }
+                }
+            }
+        }
+    }
+}
+return IfMatchResult{condition: 2}`

@@ -489,6 +489,24 @@
         "ETagStrongMatch"
       ],
       "api_mapping": "DedicatedGooo go/net/http/etag is not an official Go subpackage. Private original scanner and raw strong comparison retain exact semantics for decoded Unicode-scalar validUTF8 Text0..1024bytes per argument including empty/NUL/control/invalidgrammar. Two scanner returns become required etag/remain record. Invalid byte strings and longer Go strings unsupported; outerdomain preconditions are not enforced by pure bodies. No fullIfMatch/currentresource/authorization/effect claim."
+    },
+    {
+      "source": "src/net/http/fs.go",
+      "supporting_sources": [
+        "src/net/textproto/textproto.go"
+      ],
+      "test_source": "src/net/http/fs_test.go",
+      "target": "ports/net/http/precondition.gooo",
+      "symbols": [
+        "condResult",
+        "checkIfMatch",
+        "scanETag",
+        "etagStrongMatch"
+      ],
+      "target_activities": [
+        "IfMatchCondition"
+      ],
+      "api_mapping": "Dedicated Gooo go/net/http/precondition is not an official Go subpackage. Selected If-Match and current ETag are unchanged independently bounded Unicode-scalar validUTF8 Text0..1024 bytes. Original private checkIfMatch enum becomes one required integer condition: condNone0/condTrue1/condFalse2. Original Go quirks preserved; reference adapter changes only signature/Header.Get/private Header.get. No header selection, HTTP adapter, authenticated current resource/version, authorization, effects or CAS guarantee. Strict outer JSON/Unicode/domain refusal is a separate before-binding route."
     }
   ],
   "external_sources": [

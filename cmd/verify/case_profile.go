@@ -96,7 +96,7 @@ func (p nativeCaseProfile) policy(s suite, selected suiteWorkspace, lock upstrea
 	if err := p.validateCompiler(lock); err != nil {
 		return nativeCaseBatchPolicy{}, err
 	}
-	if isETagSuite(s) {
+	if isHTTPConditionalSuite(s) {
 		return etagBatchPolicy(s, selected, lock)
 	}
 	if isCanonicalHeaderSuite(s) {

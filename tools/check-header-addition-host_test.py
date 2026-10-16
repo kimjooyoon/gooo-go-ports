@@ -39,9 +39,9 @@ class FreshHostTests(unittest.TestCase):
         self.assertTrue(set(CHECK.OWN_FILES).issubset(roster))
         self.assertIn('examples/diagnostic-header-addition/main.gooo',roster)
         self.assertIn('cmd/verify/header_addition_corpus.go',roster)
-        self.assertEqual(len(roster),251)
-        self.assertEqual(len(catalog['packages']),53)
-        self.assertEqual(sum(len(p['sources']) for p in catalog['packages']),63)
+        self.assertEqual(len(roster),264)
+        self.assertEqual(len(catalog['packages']),54)
+        self.assertEqual(sum(len(p['sources']) for p in catalog['packages']),64)
         for name in ('ports/net/textproto/canonical.gooo','examples/canonical-header-key/main.gooo','cmd/verify/canonical_header_contracts.go','cmd/verify/canonical_header_corpus_test.go','examples/canonical-header-key/manual20.json','third_party/go/net/textproto/reader.go.txt','cmd/verify/etag_contracts.go','cmd/verify/etag_native_test.go','ports/net/http/etag.gooo','examples/strong-validator-facts/main.gooo','examples/strong-validator-facts/manual247.json','third_party/go/net/http/fs.go.txt','etag-scan.workspace.json','etag-strong-match.workspace.json','strong-validator-facts.workspace.json'):
             self.assertIn(name,roster)
 
@@ -54,8 +54,9 @@ class FreshHostTests(unittest.TestCase):
             {'package':'app/canonical-header-key','activity':'Report','cases':1059,'passed':1059,'batches':37,'replay_equal':True},
             {'package':'go/net/http/etag','activity':'ScanETag','cases':192,'passed':192,'batches':3,'replay_equal':True},
             {'package':'go/net/http/etag','activity':'ETagStrongMatch','cases':31,'passed':31,'batches':2,'replay_equal':True},
-            {'package':'app/strong-validator-facts','activity':'Report','cases':24,'passed':24,'batches':2,'replay_equal':True}])
-        summary={'runs':runs,'cases':173582,'passed':173582,
+            {'package':'app/strong-validator-facts','activity':'Report','cases':24,'passed':24,'batches':2,'replay_equal':True},
+            {'package':'go/net/http/precondition','activity':'IfMatchCondition','cases':284,'passed':284,'batches':5,'replay_equal':True}])
+        summary={'runs':runs,'cases':173866,'passed':173866,
             'canonical_header_reference_cases':1059,'canonical_header_report_reference_cases':1059,
             'canonical_header_raw_input_occurrences':1059,'canonical_header_unique_keys':1054,
             'canonical_header_within_partition_duplicates':0,'canonical_header_cross_partition_duplicates':5,
@@ -63,12 +64,14 @@ class FreshHostTests(unittest.TestCase):
             'canonical_header_scope':CHECK.CANONICAL_SUMMARY['canonical_header_scope'],
             'canonical_header_provenance_scope':CHECK.CANONICAL_SUMMARY['canonical_header_provenance_scope']}
         summary.update(CHECK.ETAG_SUMMARY)
+        summary.update(CHECK.IF_MATCH_SUMMARY)
         planned=[{'index':i,'package':r['package'],'activity':r['activity'],'cases':r['cases']} for i,r in enumerate(runs)]
-        ends=[{'suite_index':i,'source_set':{}} for i in range(79)]
+        ends=[{'suite_index':i,'source_set':{}} for i in range(80)]
         ends[74]['source_set']={name:None for name in ['ports/net/httpguts/headers.gooo','ports/net/textproto/canonical.gooo']}
         ends[75]['source_set']={name:None for name in ['examples/canonical-header-key/main.gooo','examples/header-field-facts/main.gooo','ports/net/httpguts/headers.gooo','ports/net/textproto/canonical.gooo']}
         for i in (76,77):ends[i]['source_set']={'ports/net/http/etag.gooo':None}
         ends[78]['source_set']={name:None for name in ['examples/strong-validator-facts/main.gooo','ports/net/http/etag.gooo','ports/net/httpguts/headers.gooo']}
+        ends[79]['source_set']={'ports/net/http/precondition.gooo':None}
         return summary,planned,ends
 
     def test_current79_metadata_keeps_old76_and_three_exact_appended_entries(self):
@@ -145,6 +148,23 @@ class FreshHostTests(unittest.TestCase):
                 if mutation!='missing':e[index]['source_set']['ports/net/http.gooo']=None
                 with self.subTest(source=index,mutation=mutation),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
         s,p,e=copy.deepcopy((summary,planned,ends));e[78]['source_set'].pop('ports/net/httpguts/headers.gooo')
+        with self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+
+    def test_appended_ifmatch_cannot_borrow_old79_acceptance_or_wrong_abi(self):
+        summary,planned,ends=self.population()
+        self.assertEqual(sum(r['cases'] for r in summary['runs'][:79]),173582)
+        self.assertEqual(sum(r['batches'] for r in summary['runs'][:79]),2247)
+        for key in CHECK.IF_MATCH_SUMMARY:
+            s,p,e=copy.deepcopy((summary,planned,ends));s.pop(key)
+            with self.subTest(missing=key),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+            s,p,e=copy.deepcopy((summary,planned,ends));s[key]=True
+            with self.subTest(changed=key),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+        for key,value in [('cases',283),('batches',4),('passed',True),('activity','ETagStrongMatch')]:
+            s,p,e=copy.deepcopy((summary,planned,ends));s['runs'][79][key]=value
+            with self.subTest(key=key),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+        s,p,e=copy.deepcopy((summary,planned,ends));s['runs']=s['runs'][:79];p=p[:79];e=e[:79]
+        with self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+        s,p,e=copy.deepcopy((summary,planned,ends));e[79]['source_set']['ports/net/http/etag.gooo']=None
         with self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
 
     def verification(self):

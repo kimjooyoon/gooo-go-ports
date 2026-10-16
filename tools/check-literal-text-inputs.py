@@ -21,13 +21,16 @@ GO = "go1.27.2"
 SCHEMA = "gooo/body-composition-inputs/v1"
 ENTRIES = ("go/strings:Index", "go/strings:Count", "app/literal-text-report:Report")
 CUT_ENTRIES = ("go/strings:Cut", "go/strings:CutPrefix", "go/strings:CutSuffix", "app/literal-cut-report:Report")
-ALL_ENTRIES = (*ENTRIES, *CUT_ENTRIES)
+IF_MATCH_ENTRY = "go/net/http/precondition:IfMatchCondition"
+IF_MATCH_SOURCE = "ports/net/http/precondition.gooo"
+ALL_ENTRIES = (*ENTRIES, *CUT_ENTRIES, IF_MATCH_ENTRY)
 PORT_SOURCES = ("ports/strings/search.gooo", "ports/strings/literal.gooo")
 SOURCES = (*PORT_SOURCES, "examples/literal-text-report/main.gooo")
 CUT_PORT_SOURCES = (*PORT_SOURCES, "ports/strings/cut.gooo")
 CUT_SOURCES = (*CUT_PORT_SOURCES, "examples/literal-cut-report/main.gooo")
 FROZEN_FILES = ("literal-text-report.workspace.json", *SOURCES,
-                "literal-cut-report.workspace.json", "ports/strings/cut.gooo", CUT_SOURCES[-1])
+                "literal-cut-report.workspace.json", "ports/strings/cut.gooo", CUT_SOURCES[-1],
+                "if-match.workspace.json", IF_MATCH_SOURCE)
 RECEIPT_SCHEMA = "gooo/workspace-body-execution-receipt/v1"
 
 
@@ -163,13 +166,16 @@ def trusted_manifests(frozen):
     """Validate both exact closures before any subprocess; old bytes stay old."""
     require(ENTRIES == ("go/strings:Index", "go/strings:Count", "app/literal-text-report:Report")
             and CUT_ENTRIES == ("go/strings:Cut", "go/strings:CutPrefix", "go/strings:CutSuffix", "app/literal-cut-report:Report")
-            and ALL_ENTRIES == (*ENTRIES, *CUT_ENTRIES), "complete ordered seven-entry rejection roster")
+            and IF_MATCH_ENTRY == "go/net/http/precondition:IfMatchCondition"
+            and IF_MATCH_SOURCE == "ports/net/http/precondition.gooo"
+            and ALL_ENTRIES == (*ENTRIES, *CUT_ENTRIES, IF_MATCH_ENTRY), "complete ordered eight-entry rejection roster")
     require(PORT_SOURCES == ("ports/strings/search.gooo", "ports/strings/literal.gooo")
             and SOURCES == (*PORT_SOURCES, "examples/literal-text-report/main.gooo")
             and CUT_PORT_SOURCES == (*PORT_SOURCES, "ports/strings/cut.gooo")
             and CUT_SOURCES == (*CUT_PORT_SOURCES, "examples/literal-cut-report/main.gooo"), "exact separate old/new source closures")
     require(set(frozen) == {"literal-text-report.workspace.json", *SOURCES,
-                            "literal-cut-report.workspace.json", "ports/strings/cut.gooo", CUT_SOURCES[-1]},
+                            "literal-cut-report.workspace.json", "ports/strings/cut.gooo", CUT_SOURCES[-1],
+                            "if-match.workspace.json", IF_MATCH_SOURCE},
             "complete frozen source/manifest roster")
     original_manifest = loads_receipt(frozen["literal-text-report.workspace.json"])
     require(original_manifest == {"schema": "gooo/package-workspace-manifest/v1",
@@ -183,10 +189,17 @@ def trusted_manifests(frozen):
                             "packages": [{"path": "go/strings", "sources": list(CUT_PORT_SOURCES)},
                                          {"path": "app/literal-cut-report", "sources": [CUT_SOURCES[-1]]}]},
             "trusted separate Cut report manifest")
+    if_match_manifest = loads_receipt(frozen["if-match.workspace.json"])
+    require(if_match_manifest == {"schema":"gooo/package-workspace-manifest/v1",
+        "entry":{"package_path":"go/net/http/precondition","activity":"IfMatchCondition"},
+        "packages":[{"path":"go/net/http/precondition","sources":[IF_MATCH_SOURCE]}]},
+        "trusted one-source IfMatch manifest")
     manifests = {}
     for entry in ALL_ENTRIES:
         package, activity = entry.rsplit(":", 1)
-        if activity == "Report":
+        if entry == IF_MATCH_ENTRY:
+            name, raw = "if-match.workspace.json", frozen["if-match.workspace.json"]
+        elif activity == "Report":
             name = "literal-text-report.workspace.json" if entry in ENTRIES else "literal-cut-report.workspace.json"
             raw = frozen[name]
         else:
@@ -196,7 +209,7 @@ def trusted_manifests(frozen):
                           "entry": {"package_path": package, "activity": activity},
                           "packages": [{"path": "go/strings", "sources": list(sources)}]}) + b"\n"
         manifests[entry] = (name, raw)
-    require(len(manifests) == 7 and len({name for name, _ in manifests.values()}) == 7,
+    require(len(manifests) == 8 and len({name for name, _ in manifests.values()}) == 8,
             "distinct complete manifest roster")
     return manifests
 
@@ -225,9 +238,9 @@ def observe(root, out, compiler):
     require(version.returncode == 0, "compiler identity command")
     validate_identity(loads_receipt(version.stdout), lock)
     cases = list(negative_inputs())
-    require(len(cases) == 196 and len({case["name"] for case in cases}) == 196
+    require(len(cases) == 224 and len({case["name"] for case in cases}) == 224
             and all(sum(case["entry"] == entry for case in cases) == 28 for entry in ALL_ENTRIES),
-            "frozen legacy84 plus new112 rejection request roster")
+            "frozen legacy84 plus Cut112 and IfMatch28 rejection request roster")
     rows, failures = [], []
     for case in cases:
         fixture = out / (case["name"] + ".inputs.json")
@@ -275,7 +288,7 @@ def observe(root, out, compiler):
                "compiler_identity_binding": binding(out / "compiler.json"), "compiler_executable_binding": executable_binding,
                "source_bindings": [binding(out / name) for name in frozen],
                "manifest_bindings": [binding(path) for path, _ in manifests.values()], "cases": rows, "failures": failures,
-               "scope": "Finite malformed request/domain observations: original84 for Index/Count/literal-text Report followed by112 for Cut/CutPrefix/CutSuffix/literal-cut Report, with separate exact source closures; no Go comparisons. Absent native stages/counters/builds/runs remain NOT_REPORTED. Wire-invalid UTF-8 and surrogate replacement are not included or claimed as rejected. Stop on the first incompatibility."}
+               "scope": "Finite malformed request/domain observations: original84 for Index/Count/literal-text Report followed by112 for Cut/CutPrefix/CutSuffix/literal-cut Report, then28 for IfMatchCondition, with separate exact source closures; no Go comparisons. Absent native stages/counters/builds/runs remain NOT_REPORTED. Wire-invalid UTF-8 and surrogate replacement are not included or claimed as rejected. Stop on the first incompatibility."}
     (out / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n")
     require(summary["status"] == "PASS", "rejection observation failure: " + "; ".join(failures))
     return summary

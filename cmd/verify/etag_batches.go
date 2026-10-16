@@ -14,6 +14,9 @@ import (
 // Keep each core entry self-contained. The importing Report retains the
 // original manifest order: ETag core, unchanged httpguts, original consumer.
 func etagPackages(s suite) []sourcePackage {
+	if isIfMatchSuite(s) {
+		return []sourcePackage{{Path: ifMatchPackage, Sources: []string{ifMatchSource}}}
+	}
 	packages := []sourcePackage{{Path: etagPortPackage, Sources: []string{etagPortSource}}}
 	if etagReportConsumer(s) {
 		packages = append(packages,
@@ -25,13 +28,13 @@ func etagPackages(s suite) []sourcePackage {
 
 func (f frozenVerificationCatalog) etagWorkspace(s suite) (suiteWorkspace, error) {
 	w := suiteWorkspace{Sources: map[string][]byte{}}
-	if !isETagSuite(s) {
+	if !isHTTPConditionalSuite(s) {
 		return w, fmt.Errorf("ETag exact entry required")
 	}
 	w.Manifest.Schema = "gooo/package-workspace-manifest/v1"
 	w.Manifest.Entry.Package, w.Manifest.Entry.Activity = s.Package, s.Activity
 	imports := map[string][]string{
-		etagPortSource: nil, headerPortSource: nil,
+		etagPortSource: nil, headerPortSource: nil, ifMatchSource: nil,
 		etagReportSource: {etagPortPackage, headerPortPackage},
 	}
 	for _, want := range etagPackages(s) {
@@ -67,14 +70,14 @@ func (f frozenVerificationCatalog) etagWorkspace(s suite) (suiteWorkspace, error
 }
 
 func etagBatchArity(s suite) int {
-	if s.Package == etagPortPackage && s.Activity == etagStrongActivity {
+	if isIfMatchSuite(s) || s.Package == etagPortPackage && s.Activity == etagStrongActivity {
 		return 2
 	}
 	return 1
 }
 
 func validateETagBatchInputs(s suite, values []any) error {
-	if !isETagSuite(s) || len(values) != etagBatchArity(s) {
+	if !isHTTPConditionalSuite(s) || len(values) != etagBatchArity(s) {
 		return fmt.Errorf("ETag original Text input arity differs")
 	}
 	for _, value := range values {
@@ -87,7 +90,7 @@ func validateETagBatchInputs(s suite, values []any) error {
 }
 
 func etagBatchPolicy(s suite, w suiteWorkspace, lock upstream) (nativeCaseBatchPolicy, error) {
-	if !isETagSuite(s) || len(s.Cases) == 0 || lock.CompilerRevision != uuidCompactCompilerRevision || lock.GoVersion != "go1.27.2" {
+	if !isHTTPConditionalSuite(s) || len(s.Cases) == 0 || lock.CompilerRevision != uuidCompactCompilerRevision || lock.GoVersion != "go1.27.2" {
 		return nativeCaseBatchPolicy{}, fmt.Errorf("ETag nonempty original suite and pinned839/Go1.27.2 required")
 	}
 	if w.Manifest.Schema != "gooo/package-workspace-manifest/v1" || w.Manifest.Entry.Package != s.Package || w.Manifest.Entry.Activity != s.Activity || !reflect.DeepEqual(w.Manifest.Packages, etagPackages(s)) || len(w.Names) != len(w.Manifest.Packages) || len(w.Sources) != len(w.Names) {
@@ -119,7 +122,7 @@ func etagBatchPolicy(s suite, w suiteWorkspace, lock upstream) (nativeCaseBatchP
 // key growth. It is not evidence of native transport capacity for either the
 // two-Text entry or the full finite population. An oversized row is an error.
 func (p nativeCaseBatchPolicy) prepareETag(s suite, start int) (nativePreparedCaseBatch, error) {
-	if !p.etag || !isETagSuite(s) || start < 0 || start >= len(s.Cases) || p.sourceBytes < 1 || p.sourceBytes > uuidCompactMaxSourceBytes || p.loweredKeyBytesUpperBound != len("GoooPackage")+len(strconv.Itoa(p.sourceBytes))+len("Activity")+len(s.Activity) {
+	if !p.etag || !isHTTPConditionalSuite(s) || start < 0 || start >= len(s.Cases) || p.sourceBytes < 1 || p.sourceBytes > uuidCompactMaxSourceBytes || p.loweredKeyBytesUpperBound != len("GoooPackage")+len(strconv.Itoa(p.sourceBytes))+len("Activity")+len(s.Activity) {
 		return nativePreparedCaseBatch{}, fmt.Errorf("ETag batch/source lowering bound differs")
 	}
 	growth := max(0, p.loweredKeyBytesUpperBound-len(s.Package+":"+s.Activity))
