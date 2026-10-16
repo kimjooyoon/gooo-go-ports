@@ -16,6 +16,10 @@ inputs:
     description: Set true to fail CI after saving a verified NEWLY_DENIED comparison. This does not authorize an API effect.
     required: false
     default: 'false'
+  summary:
+    description: Set true to append a bounded presentation of the saved comparison without raw fact values to the job summary. The original CI failure remains unchanged.
+    required: false
+    default: 'false'
 outputs:
   classification:
     description: Classification computed by the generated Gooo classifier.
@@ -42,3 +46,128 @@ runs:
         GOOO_ACTION_MODE: ${{ inputs.mode }}
         GOOO_ACTION_FAIL_NEWLY_DENIED: ${{ inputs.fail-on-newly-denied }}
       run: bash "$GITHUB_ACTION_PATH/entrypoint.sh"
+    - id: summary
+      if: ${{ !cancelled() && inputs.summary == 'true' && steps.review.outputs.report-path != '' && steps.review.outputs.report-sha256 != '' }}
+      shell: bash
+      env:
+        GOOO_SUMMARY_REPORT_PATH: ${{ steps.review.outputs.report-path }}
+        GOOO_SUMMARY_REPORT_SHA256: ${{ steps.review.outputs.report-sha256 }}
+      run: |
+        set -euo pipefail
+        umask 077
+        python3 -I -B - <<'PY'
+        import os, pathlib, re, selectors, signal, stat, subprocess, sys, time
+
+        child = None
+        summary_fd = None
+        selector = selectors.DefaultSelector()
+        streams = {}
+        failed = False
+
+        def require(value):
+            if not value:
+                raise RuntimeError('closed summary refusal')
+
+        def regular(path):
+            require(path.is_absolute() and path.resolve() == path and not path.is_symlink())
+            info = path.lstat()
+            require(stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and info.st_uid == os.geteuid())
+            return info
+
+        def interrupted(number, frame):
+            raise RuntimeError('summary interrupted')
+
+        handlers = {number: signal.signal(number, interrupted) for number in (signal.SIGTERM, signal.SIGINT)}
+        try:
+            report = pathlib.Path(os.environ['GOOO_SUMMARY_REPORT_PATH'])
+            report_sha = os.environ['GOOO_SUMMARY_REPORT_SHA256']
+            temporary = pathlib.Path(os.environ['RUNNER_TEMP']).resolve()
+            report_info = regular(report)
+            require(report.name == 'comparison.json' and report.is_relative_to(temporary) and stat.S_IMODE(report_info.st_mode) == 0o600)
+            require(re.fullmatch('[0-9a-f]{64}', report_sha) is not None)
+            summary = pathlib.Path(os.environ['GITHUB_STEP_SUMMARY'])
+            before = regular(summary)
+            require(summary.is_relative_to(temporary) and not summary.is_relative_to(report.parent))
+            require(not os.path.samestat(before, report_info) and before.st_size <= (1 << 20)-4096)
+            summary_fd = os.open(summary, os.O_WRONLY | os.O_APPEND | os.O_NOFOLLOW | os.O_NONBLOCK)
+            opened = os.fstat(summary_fd)
+            require(os.path.samestat(before, opened) and before.st_size == opened.st_size)
+            script = pathlib.Path(os.environ['GITHUB_ACTION_PATH'])/'summary.py'
+            child = subprocess.Popen([sys.executable, '-I', '-B', str(script), '--report', str(report),
+                                      '--report-sha256', report_sha], stdin=subprocess.DEVNULL,
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+            deadline = time.monotonic()+10
+            buffers = {'stdout': bytearray(), 'stderr': bytearray()}
+            for name in buffers:
+                stream = getattr(child, name)
+                streams[name] = stream
+                selector.register(stream, selectors.EVENT_READ, name)
+            while child.poll() is None or selector.get_map():
+                require(time.monotonic() < deadline)
+                for key, _ in selector.select(0.05):
+                    chunk = os.read(key.fileobj.fileno(), 4096)
+                    if not chunk:
+                        selector.unregister(key.fileobj)
+                        key.fileobj.close()
+                        continue
+                    limit = 4096 if key.data == 'stdout' else 128
+                    require(len(buffers[key.data])+len(chunk) <= limit)
+                    buffers[key.data].extend(chunk)
+            require(child.wait(timeout=2) == 0 and not buffers['stderr'])
+            markdown = bytes(buffers['stdout'])
+            require(0 < len(markdown) <= 4096 and markdown.decode('utf-8').endswith('\n'))
+            current = regular(summary)
+            require(os.path.samestat(before, current) and current.st_size == before.st_size)
+            require(os.path.samestat(opened, os.fstat(summary_fd)))
+            require(os.write(summary_fd, markdown) == len(markdown))
+            os.fsync(summary_fd)
+            current = regular(summary)
+            require(os.path.samestat(before, current) and current.st_size == before.st_size+len(markdown))
+            # Read back the exact segment from the actual runner summary file while
+            # this composite step owns it; later runner cleanup is not assumed.
+            descriptor = os.open(summary, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+            with os.fdopen(descriptor, 'rb') as stream:
+                require(os.path.samestat(current, os.fstat(stream.fileno())))
+                stream.seek(before.st_size)
+                require(stream.read(len(markdown)+1) == markdown)
+            # Only after actual runner-summary append and exact segment readback,
+            # create completion evidence required by the deliberate-failure test.
+            # No new public output or raw facts are added.
+            saved = report.with_name('summary.md')
+            descriptor = os.open(saved, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+            with os.fdopen(descriptor, 'wb') as stream:
+                require(stream.write(markdown) == len(markdown))
+                stream.flush()
+                os.fsync(stream.fileno())
+            saved_info = regular(saved)
+            require(stat.S_IMODE(saved_info.st_mode) == 0o600 and saved_info.st_size == len(markdown))
+        except BaseException:
+            failed = True
+        finally:
+            if child is not None:
+                if child.poll() is None:
+                    try:
+                        os.killpg(child.pid, signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                try:
+                    child.wait(timeout=2)
+                except BaseException:
+                    failed = True
+            selector.close()
+            for stream in streams.values():
+                try:
+                    stream.close()
+                except BaseException:
+                    failed = True
+            if summary_fd is not None:
+                try:
+                    os.close(summary_fd)
+                except BaseException:
+                    failed = True
+            for number, previous in handlers.items():
+                signal.signal(number, previous)
+        if failed:
+            print('Gooo policy summary: SUMMARY_RENDER_OR_APPEND_REFUSED', file=sys.stderr)
+            sys.exit(2)
+        PY
