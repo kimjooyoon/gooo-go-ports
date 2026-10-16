@@ -1223,6 +1223,80 @@ jobs:
             (.cases | length) == 90 and (.failures | length) == 0 and
             all(.cases[]; .rejection_verified == true and .exit_code == 1 and .timed_out == false)
           ' out/fits-crop-input-rejections/summary.json
+      - name: Upload execution and diagnostic evidence
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: gooo-go-ports-evidence
+          # Keep receipts and diagnostics; Go build caches are regenerable.
+          path: |
+            out/
+            !out/ci/simple-fold-exhaustive/cache/**
+            !out/ci/ycbcr-exhaustive-RGBToYCbCr/cache/**
+            !out/ci/ycbcr-exhaustive-YCbCrToRGB/cache/**
+            !out/ci/case-mapping-exhaustive-To/cache/**
+            !out/ci/case-mapping-exhaustive-ToUpper/cache/**
+            !out/ci/case-mapping-exhaustive-ToLower/cache/**
+            !out/ci/case-mapping-exhaustive-ToTitle/cache/**
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Report documentation-only native scope
+        if: steps.change-scope.outputs.docs_only == 'true'
+        run: |
+          printf '%s\n' \
+            'Allowlisted static-document content-only PR: common checks, compiler identity and declarations ran.' \
+            'This native-execution job did not run differential, exhaustive, probe, native-example or policy commands.' \
+            'No new native-port execution/replay receipts were produced; existing observations are not rebound to this commit.' \
+            'The browser-demo job retains its separate full build, checks and receipts.' | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Preserve documentation scope and compiler identity
+        if: always() && steps.change-scope.outputs.docs_only == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: gooo-go-ports-documentation-scope
+          path: |
+            out/ci-scope.json
+            out/compiler-build.json
+          if-no-files-found: error
+          retention-days: 14
+
+  policy-native-checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      GOTOOLCHAIN: local
+      GOWORK: 'off'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - name: Classify the exact checked PR tree
+        id: change-scope
+        run: |
+          python3 -B tools/classify-ci-scope.py \
+            --event-name "$GITHUB_EVENT_NAME" --event-path "$GITHUB_EVENT_PATH" \
+            --expected-head "$GITHUB_SHA" --summary out/ci-scope.json \
+            --github-output "$GITHUB_OUTPUT"
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        if: steps.change-scope.outputs.docs_only != 'true'
+        with:
+          go-version: '1.27.2'
+          cache: false
+      - name: Build and identify the pinned compiler from a clean checkout
+        if: steps.change-scope.outputs.docs_only != 'true'
+        run: |
+          mkdir -p out
+          sh tools/bootstrap.sh
+          ./.gooo version --build --json > out/compiler-build.json
+          jq -e '
+            .version == "0.6.32-dev" and
+            .compiler_source_sha == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+            .source_status == "CLEAN_VCS" and .vcs_modified == "false" and
+            .go_version == "go1.27.2" and .native_go_required == "go1.27.2"
+          ' out/compiler-build.json
       - name: Verify the offline decision-policy experiment
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
@@ -1319,40 +1393,32 @@ jobs:
           path: examples/decision-policy-pilot/out/
           if-no-files-found: warn
           retention-days: 14
-      - name: Upload execution and diagnostic evidence
+      - name: Upload policy execution and diagnostic evidence
         if: always() && steps.change-scope.outputs.docs_only != 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          name: gooo-go-ports-evidence
-          # Keep receipts and diagnostics; Go build caches are regenerable.
-          path: |
-            out/
-            !out/ci/simple-fold-exhaustive/cache/**
-            !out/ci/ycbcr-exhaustive-RGBToYCbCr/cache/**
-            !out/ci/ycbcr-exhaustive-YCbCrToRGB/cache/**
-            !out/ci/case-mapping-exhaustive-To/cache/**
-            !out/ci/case-mapping-exhaustive-ToUpper/cache/**
-            !out/ci/case-mapping-exhaustive-ToLower/cache/**
-            !out/ci/case-mapping-exhaustive-ToTitle/cache/**
-          if-no-files-found: warn
-          retention-days: 14
-
-      - name: Report documentation-only native scope
-        if: steps.change-scope.outputs.docs_only == 'true'
-        run: |
-          printf '%s\n' \
-            'Allowlisted static-document content-only PR: common checks, compiler identity and declarations ran.' \
-            'This native-execution job did not run differential, exhaustive, probe, native-example or policy commands.' \
-            'No new native-port execution/replay receipts were produced; existing observations are not rebound to this commit.' \
-            'The browser-demo job retains its separate full build, checks and receipts.' | tee -a "$GITHUB_STEP_SUMMARY"
-      - name: Preserve documentation scope and compiler identity
-        if: always() && steps.change-scope.outputs.docs_only == 'true'
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-        with:
-          name: gooo-go-ports-documentation-scope
+          name: gooo-go-ports-policy-evidence
           path: |
             out/ci-scope.json
             out/compiler-build.json
+            out/cel-api-policy/
+            out/api-policy-revision/
+            out/agentmesh-service-policy/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Report documentation-only policy scope
+        if: steps.change-scope.outputs.docs_only == 'true'
+        run: |
+          printf '%s\n' \
+            'Allowlisted static-document content-only PR: policy execution is omitted by the unchanged exact-tree classifier.' \
+            'Common checks, pinned compiler identity and declarations remain required in their original jobs.' \
+            'This policy-native-checks job produced no native policy execution/replay receipts; existing observations are not rebound.' | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Preserve documentation-only policy scope
+        if: always() && steps.change-scope.outputs.docs_only == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: gooo-go-ports-policy-documentation-scope
+          path: out/ci-scope.json
           if-no-files-found: error
           retention-days: 14
 
@@ -1419,8 +1485,8 @@ jobs:
           path: out/browser/site
 
   deploy-browser-demo:
-    if: ${{ always() && !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.observer-checks.result == 'success' && needs.native-execution.result == 'success' && needs.browser-demo.result == 'success' }}
-    needs: [observer-checks, native-execution, browser-demo]
+    if: ${{ always() && !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.observer-checks.result == 'success' && needs.native-execution.result == 'success' && needs.policy-native-checks.result == 'success' && needs.browser-demo.result == 'success' }}
+    needs: [observer-checks, native-execution, policy-native-checks, browser-demo]
     runs-on: ubuntu-latest
     permissions:
       pages: write

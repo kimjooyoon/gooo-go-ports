@@ -80,15 +80,8 @@ func TestNativeBuildCacheRejectsUploadedLocations(t *testing.T) {
 
 func TestNativeBuildCacheKeepsExecutionAndResultsFresh(t *testing.T) {
 	root := t.TempDir()
-	cache, err := newNativeBuildCache(root)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if err := cache.close(); err != nil {
-			t.Error(err)
-		}
-	})
+	// Share compiled packages; all three checks still execute in fresh directories.
+	cache := nativeCorrectnessCache(t)
 	t.Setenv("GOCACHE", "/must-not-use-caller-cache")
 	t.Setenv("GOCACHEPROG", "/must-not-use-caller-cache-program")
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
