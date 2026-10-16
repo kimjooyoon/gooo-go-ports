@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Focused runtime checks for the private fixed-profile CLI pilot.
+"""Focused runtime checks for the fixed-profile CI Action.
 
 Root supplies ONE already-built absolute binary; this driver never builds,
 downloads, invokes a shell, calls Go/Gooo or runs the Action entrypoint. Expected
 policy fields/bindings come from the two immutable public API commits listed in
-test-source-handoff.json, never from the first output of this new wrapper.
+MODULES and their frozen source bindings, never from this wrapper's first output.
 """
 import copy
 import hashlib

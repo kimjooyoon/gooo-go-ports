@@ -17,9 +17,10 @@ dispatcher, GitHub token, PR comment, human approval step or GitHub API write.
 
 ## Try the supplied migration cases
 
-For a checkout of this repository, use `./examples/api-policy-ci`. To evaluate
-your representative facts elsewhere, copy this directory into your repository
-and retain the two module pins.
+Save the nine-field JSON sample below as `ci/policy-case.json` in your repository,
+then add this workflow. The Action reference pins the supplied experimental
+implementation to an immutable commit. For a checkout of this repository,
+`./examples/api-policy-ci` also works.
 Use a GitHub-hosted Ubuntu runner with Go **1.27.2** selected. The pilot uses Bash,
 GNU `timeout`, standard tools and two checksum-pinned public Go modules; initial
 dependency retrieval reads the Go proxy/checksum service. It does not install a
@@ -34,9 +35,6 @@ jobs:
   review:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    strategy:
-      matrix:
-        facts: [ci/policy-cases/read.json, ci/policy-cases/write.json]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
@@ -44,9 +42,9 @@ jobs:
           go-version: '1.27.2'
           cache: false
       - id: policy
-        uses: ./examples/api-policy-ci
+        uses: kimjooyoon/gooo-go-ports/examples/api-policy-ci@7810fe0390cea4024b6e2ded8646ed54465adca3
         with:
-          input-file: ${{ matrix.facts }}
+          input-file: ci/policy-case.json
           fail-on-newly-denied: 'false'
 ```
 
