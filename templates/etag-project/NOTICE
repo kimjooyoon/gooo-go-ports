@@ -1,0 +1,28 @@
+This project begins with source bytes from kimjooyoon/gooo-go-ports commit
+ e3a14fff67bcd47c311c6f5ec992c9b19b96ae1c.
+The original source comments and complete inherited notices are retained.
+
+Go reference and ETag adaptation:
+Copyright2009/2010 The Go Authors. BSD-style terms: third_party/GO-LICENSE.
+Go1.27.2 revision022c8636110ebac86a9b88724cda168ed713c21f:
+ src/net/http/fs.go:435..467 (scanETag/etagStrongMatch)
+ SHA25621660cb61d17c258de99172683f9b41aca37d45c0af0556723f2a11179bdc45e
+ src/net/textproto/textproto.go:126..150 (actual stdlib TrimString)
+ SHA256e4f0d94752345b5dec4fe7f4805531e8036a9cd44131d807cafa700dd5323901
+check.go retains the original two HTTP helpers/comments byte-for-byte and calls
+actual net/textproto.TrimString. Original Go helpers generate expectations only;
+they do not replace native Gooo results.
+
+HTTP header validation:
+ golang.org/x/net v0.59.0, revision540d04cfe5028e2655754591a4d3e08c586809f2
+ http/httpguts/httplex.go (actual imported Go helper)
+ SHA2568cfd5819dc821d45f82fde10afff4b2e652535b0091e0559fc8ad7766051a2c2
+Its Go Authors BSD license is byte-identical to third_party/GO-LICENSE; that
+existing path serves both Go and x/net notices. headers.gooo also preserves the
+complete inherited2026 Kim Joo-yoon MIT notice directly in its source comments.
+
+The Gooo adaptation, original StrongValidatorFacts composition and development
+checker carry the project BSD license in LICENSE. The module pins x/netv0.59.0
+and indirect x/textv0.42.0 with go.sum; no workspace/replace is required.
+Compiler pin: kimjooyoon/meta-ontology-go83928fa4538245abe33b08549da47f8cbdc50ed2.
+No endorsement by the upstream projects is implied.

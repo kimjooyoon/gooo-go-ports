@@ -279,6 +279,25 @@ CLASSIFIER_STEP_SHA = '1864b9e0f27cc73595dd863c71640050cf046b2ec67cfd02c6ba5a8eb
 CHECKOUT_STEP_SHA = 'b60ba5d7bf95691b8baec3a3e402aeba552fbcb4a353d7de8946023e73e79603'
 SETUP_STEP_SHA = '742468cc6b855d4f2c2d9a5d45000899bc244f524539bad21505ef94018dceb2'
 MOVED = {'Check the Go observer', 'Check pinned Unicode table generation'}
+ETAG_PROJECT_STEP = 'Verify the exported editable ETag project'
+ETAG_PROJECT_COMMANDS = (
+    'python3 -B tools/export-etag-project.py --out "$PWD/out/etag-project"',
+    'go_executable="$(go env GOROOT)/bin/go"',
+    '"$go_executable" -C out/etag-project mod download',
+    '"$go_executable" -C out/etag-project mod verify',
+    'GOPROXY=off GOSUMDB=off "$go_executable" -C out/etag-project vet -mod=readonly ./...',
+    'GOPROXY=off GOSUMDB=off "$go_executable" -C out/etag-project run -race -mod=readonly . --compiler "$PWD/.gooo" --go "$go_executable" --out "$PWD/out/etag-project-evidence" --mutation-check',
+)
+ETAG_PROJECT_CLAUSES = (
+    '.schema == "gooo/portable-etag-check/v1"', '.decision == "PASS"',
+    '.baseline_rows == 247', '.verified_returned_scalars == 727', '.baseline_execute_commands == 7',
+    '.mutation_checked == true', '.mutation_rows == 19', '.mutation_execute_commands == 1',
+    '.source_tool_unchanged_after == true', '.first_failure == null',
+    '.compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2"',
+    '.corpus_sha256 == "sha256:ce9015cc12bc37e785761f4ee6907a77603082cd69b4d8edc80a634ff4478345"',
+    '.mutation_witness == "CRLF-trim-does-not-sanitize-header: single_strong false→true"',
+    "' out/etag-project-evidence/summary.json",
+)
 POLICY_HEAVY = {
     'Verify the offline decision-policy experiment',
     'Verify the imported CEL API policy',
@@ -298,7 +317,8 @@ POLICY_STEP_SHAS = {
     'Verify the sealed API policy revision comparison': '64f49e759cf3df80876f369330143f4c7e229cf33beed788dc1e434225b17cae',
     'Verify the Agent Mesh service-pattern adaptation': '9af078924730a896c5c669e167803a2e3780e277cdcbe6231233b2cac97a471c',
     'Upload offline policy experiment evidence': 'e4adbb294f45d4dbe4af56338b800f0d637dda27ec83055f1d799d63dac60392',
-    'Upload policy execution and diagnostic evidence': 'b8818870e6810271eaa7ccba99fdf0ae24518c553d172d6648d432ef10cda516',
+    ETAG_PROJECT_STEP: 'f11ef3c03ed5cc096b30b3d44c8a20abeb73bc5e840b8033114d94208d64f4c7',
+    'Upload policy execution and diagnostic evidence': '8bb271fa8bc6443987d919bf469e8e1d11e6b7d0b6e340876d1bddc9c4d311df',
     'Report documentation-only policy scope': '472165f458bfda43733f2a1ea6bc2236c19b425b5887f3417bbe1a9d9bcab6dd',
     'Preserve documentation-only policy scope': '185d1afbfd001734dc649c227526a84d5dd993bfcd9c1243e4a1966f13db60f7',
 }
@@ -398,7 +418,7 @@ def policy_steps(chunk):
             'policy producer requires exact checkout and full-only pinned Go setup')
     expected = {'Classify the exact checked PR tree',
                 'Build and identify the pinned compiler from a clean checkout',
-                POLICY_PILOT_UPLOAD, POLICY_UPLOAD, POLICY_DOC_REPORT, POLICY_DOC_ARTIFACT} | POLICY_HEAVY
+                POLICY_PILOT_UPLOAD, POLICY_UPLOAD, POLICY_DOC_REPORT, POLICY_DOC_ARTIFACT, ETAG_PROJECT_STEP} | POLICY_HEAVY
     require(set(named) == expected, 'policy producer exact step roster changed')
     classifier = named['Classify the exact checked PR tree']
     identity = named['Build and identify the pinned compiler from a clean checkout']
@@ -413,7 +433,7 @@ def policy_steps(chunk):
             'policy checkout/classifier/Go/compiler order changed')
     ordered = ('Verify the offline decision-policy experiment', 'Verify the imported CEL API policy',
                'Verify the sealed API policy revision comparison', 'Verify the Agent Mesh service-pattern adaptation',
-               POLICY_PILOT_UPLOAD, POLICY_UPLOAD, POLICY_DOC_REPORT, POLICY_DOC_ARTIFACT)
+               ETAG_PROJECT_STEP, POLICY_PILOT_UPLOAD, POLICY_UPLOAD, POLICY_DOC_REPORT, POLICY_DOC_ARTIFACT)
     previous = chunk.index(identity)
     for name in ordered:
         require(chunk.index(named[name]) > previous, 'policy producer/evidence/report order changed: ' + name)
@@ -422,6 +442,14 @@ def policy_steps(chunk):
             'policy Go setup and compiler build must stay full-only')
     for name in POLICY_HEAVY:
         require(field(named[name], 'if') == FULL, 'policy native producer must stay full-only: ' + name)
+    exported = named[ETAG_PROJECT_STEP]
+    require(field(exported, 'if') == FULL and field(exported, 'timeout-minutes') == '8',
+            'exported ETag check must keep the fail-closed full-only scope and finite timeout')
+    for token in ETAG_PROJECT_COMMANDS + ETAG_PROJECT_CLAUSES:
+        require(exported.count(token) == 1, 'exported ETag command/source/count gate missing: ' + token)
+    require('set -euo pipefail' in exported and 'export GOENV=off' in exported,
+            'exported ETag dependency/source checks must fail on first failure')
+
     for name in (POLICY_PILOT_UPLOAD, POLICY_UPLOAD):
         require(field(named[name], 'if') == 'always() && ' + FULL,
                 'policy evidence must upload on failure but never on docs-only: ' + name)
@@ -429,9 +457,9 @@ def policy_steps(chunk):
             field(named[POLICY_DOC_ARTIFACT], 'if') == 'always() && ' + DOCS,
             'policy docs-only scope must be explicit and separate')
     require('name: gooo-go-ports-policy-evidence\n' in named[POLICY_UPLOAD] and
-            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n' in named[POLICY_UPLOAD] and
+            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n            out/etag-project/\n            out/etag-project-evidence/\n' in named[POLICY_UPLOAD] and
             'if-no-files-found: warn\n' in named[POLICY_UPLOAD] and 'retention-days: 14\n' in named[POLICY_UPLOAD],
-            'policy output artifacts must include exact current local identity and three producer outputs')
+            'policy output artifacts must include current identity, original policy outputs and both exported ETag directories')
     require('name: gooo-go-ports-policy-documentation-scope\n' in named[POLICY_DOC_ARTIFACT] and
             'path: out/ci-scope.json\n' in named[POLICY_DOC_ARTIFACT] and
             'if-no-files-found: error\n' in named[POLICY_DOC_ARTIFACT] and 'retention-days: 14\n' in named[POLICY_DOC_ARTIFACT],
@@ -1704,6 +1732,39 @@ class WorkflowScopeTests(unittest.TestCase):
             with self.subTest(docs_artifact=before), self.assertRaises(ValueError):
                 validate(self.text.replace(artifact, artifact.replace(before, after, 1), 1))
 
+
+    def test_exported_etag_requires_full_scope_and_fresh_source_commands(self):
+        validate(self.text)
+        jobs = workflow_jobs(self.text)
+        policy, _ = policy_steps(jobs['policy-native-checks'])
+        chunk = policy[ETAG_PROJECT_STEP]
+        self.assertEqual(field(chunk, 'if'), FULL)
+        for condition in ('', DOCS, "steps.change-scope.outputs.docs_only == 'false'", 'always()'):
+            altered = chunk.replace('        if: ' + FULL + '\n',
+                                    ('        if: ' + condition + '\n') if condition else '', 1)
+            with self.subTest(condition=condition), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, altered, 1))
+        for token in ETAG_PROJECT_COMMANDS + ETAG_PROJECT_CLAUSES:
+            self.assertEqual(chunk.count(token), 1)
+            with self.subTest(missing_command_or_gate=token), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, chunk.replace(token, '', 1), 1))
+        for replacement in ('', chunk + chunk):
+            with self.subTest(step_roster=replacement[:40]), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, replacement, 1))
+
+    def test_exported_etag_artifacts_cannot_be_dropped_or_mixed_with_docs(self):
+        validate(self.text)
+        policy, _ = policy_steps(workflow_jobs(self.text)['policy-native-checks'])
+        upload = policy[POLICY_UPLOAD]
+        for path in ('out/etag-project/', 'out/etag-project-evidence/'):
+            line = '            ' + path + '\n'
+            self.assertEqual(upload.count(line), 1)
+            with self.subTest(missing_artifact=path), self.assertRaises(ValueError):
+                validate(self.text.replace(upload, upload.replace(line, '', 1), 1))
+            docs = policy[POLICY_DOC_ARTIFACT]
+            altered = docs.replace('path: out/ci-scope.json', 'path: ' + path, 1)
+            with self.subTest(docs_artifact=path), self.assertRaises(ValueError):
+                validate(self.text.replace(docs, altered, 1))
 
     def test_producer_jobs_are_parallel_exact_unconditional_scopes(self):
         validate(self.text)

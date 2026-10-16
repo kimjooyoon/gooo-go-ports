@@ -56,6 +56,12 @@ for all inputs. Preserve a first failure and its diagnostic.
   [strong-validator workflow below](#inspect-etag-and-header-facts). It preserves
   raw input and separates parsed-tag strength, trailing content and raw header
   validity. It does not implement the write or full `If-Match` handling.
+- **Edit and regression-check an isolated ETag project:** [export the current
+  three-source project](../templates/etag-project/README.md), edit its Gooo
+  `computes` bodies under the fixed public ABI, then compare247 original inputs
+  with fresh Go expectations in seven batches. Exporting is a source copy;
+  the separate checker verifies actual Gooo results and an optional19-row CRLF
+  mutation witness. Saved-receipt replay is a separate workflow.
 - **Import current ports into a separate Gooo project:** follow the
   [current path-import walkthrough](use-current-path-in-your-project.md) with
   its pinned toolchain, source mapping and saved execution/replay.
