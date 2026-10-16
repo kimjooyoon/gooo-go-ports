@@ -1,0 +1,51 @@
+{
+  "schema": "gooo/etag-port-provenance/v1",
+  "upstream_repository": "https://github.com/golang/go",
+  "revision": "022c8636110ebac86a9b88724cda168ed713c21f",
+  "go_version": "go1.27.2",
+  "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+  "sources": [
+    {
+      "path": "src/net/http/fs.go",
+      "sha256": "21660cb61d17c258de99172683f9b41aca37d45c0af0556723f2a11179bdc45e",
+      "symbols": [
+        "scanETag",
+        "etagStrongMatch"
+      ],
+      "snapshot": "third_party/go/net/http/fs.go.txt"
+    },
+    {
+      "path": "src/net/http/fs_test.go",
+      "sha256": "e72c3364ceee26c46b356eb5fb76d22b2a93a7bfe6cb9b61d898559726fd22a3",
+      "symbols": [
+        "TestScanETag"
+      ],
+      "snapshot": "third_party/go/net/http/fs_test.go.txt"
+    },
+    {
+      "path": "src/net/textproto/textproto.go",
+      "sha256": "e4f0d94752345b5dec4fe7f4805531e8036a9cd44131d807cafa700dd5323901",
+      "symbols": [
+        "TrimString",
+        "isASCIISpace"
+      ],
+      "snapshot": "third_party/go/net/textproto/textproto.go.txt"
+    }
+  ],
+  "target": "ports/net/http/etag.gooo",
+  "package_path": "go/net/http/etag",
+  "official_Go_subpackage": false,
+  "license": "third_party/GO-LICENSE",
+  "modifications": [
+    "Private original helpers exposed as dedicated Gooo activities; this path is not an official Go subpackage.",
+    "Go strings mapped to decoded Unicode-scalar validUTF8 Text0..1024bytes per argument, including NUL, controls and invalid ETag grammar. Arbitrary-byte and longer Go strings unsupported.",
+    "scanETag two returns become required etag/remain record in original order; bounded loops preserve ASCIIedge trimming and firstquote semantics.",
+    "ETagStrongMatch preserves raw equality/nonempty/openingquote behavior even on invalid grammar. No additional parser or normalization."
+  ],
+  "finite_case_counts": {
+    "scanner_occurrences": 192,
+    "strong_pairs": 31,
+    "original_composition": 24
+  },
+  "scope": "Finite differential execution/replay evidence only. No fullIfMatch/currentresource/authorization/effect or allstrings equivalence."
+}

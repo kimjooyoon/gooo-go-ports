@@ -76,3 +76,12 @@ The importing HeaderFacts12 composition and strict request preflight are
 original repository code under LICENSE. They preserve decoded Text and expose
 finite byte diagnostics. They do not supply HTTP/2 validation, authorization,
 network transmission, enforcement or production-safety guarantees.
+
+The bounded ETag helpers in ports/net/http/etag.gooo adapt private Go
+net/http scanETag/etagStrongMatch and textproto ASCII-edge trimming at the
+immutable revision and file hashes in upstream.json. Copyright 2009 and 2010
+The Go Authors. BSD terms are retained in third_party/GO-LICENSE; three whole
+original files are retained byte-exact as third_party/go/net/{http,textproto}
+.txt references. The verification-only Go copies retain the original helpers.
+The importing StrongValidatorFacts13 composition and verification tooling are
+original repository BSD code. These local facts do not grant HTTP authority.

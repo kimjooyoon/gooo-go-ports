@@ -92,7 +92,12 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 		identity := expectedIdentity{CompilerRevision: v.lock.CompilerRevision, GoVersion: v.lock.GoVersion, ManifestDigest: "sha256:" + manifestSHA, CasesDigest: "sha256:" + casesSHA, Sources: selected.Identities, SourceBytes: selected.Sources}
 		receipt := filepath.Join(dir, "execution.json")
 		pendingTiming.phase("execute")
-		raw, err := v.execute(v.commands, v.compiler, receipt, "package", "execute", "--json", "--cases", cases, workspace)
+		executeArgs := []string{"package", "execute", "--json", "--cases", cases}
+		if isETagSuite(s) {
+			executeArgs = append(executeArgs, "--go", etagGoToolPath())
+		}
+		executeArgs = append(executeArgs, workspace)
+		raw, err := v.execute(v.commands, v.compiler, receipt, executeArgs...)
 		if err != nil {
 			return result, err
 		}
@@ -103,7 +108,12 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 		}
 		replayPath := filepath.Join(dir, "replay.json")
 		pendingTiming.phase("replay")
-		raw, err = v.execute(v.commands, v.compiler, replayPath, "package", "replay", "--json", "--receipt", receipt, "--cases", cases, workspace)
+		replayArgs := []string{"package", "replay", "--json", "--receipt", receipt, "--cases", cases}
+		if isETagSuite(s) {
+			replayArgs = append(replayArgs, "--go", etagGoToolPath())
+		}
+		replayArgs = append(replayArgs, workspace)
+		raw, err = v.execute(v.commands, v.compiler, replayPath, replayArgs...)
 		if err != nil {
 			return result, err
 		}

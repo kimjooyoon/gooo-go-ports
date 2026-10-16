@@ -31,7 +31,10 @@
     "src/net/netip/netip.go": "32295f4761825d8c6fdade4dad093b08683bdd1945010bee8a90a298e18cf208",
     "src/strconv/number.go": "dda43e8c91d95f9dea0c46b2fec6637e5520cae099e40c5965dca0e41bbaab9e",
     "src/internal/strconv/atoi.go": "bd69756b79c2f007ce7900bea400051f9f9da600c9c6bad656e46900331663d8",
-    "src/net/textproto/reader.go": "98a3ebb83bb6d2df4fb1f303ead592efbdb125f00f9a2b961c1496c66e49ae0e"
+    "src/net/textproto/reader.go": "98a3ebb83bb6d2df4fb1f303ead592efbdb125f00f9a2b961c1496c66e49ae0e",
+    "src/net/http/fs.go": "21660cb61d17c258de99172683f9b41aca37d45c0af0556723f2a11179bdc45e",
+    "src/net/http/fs_test.go": "e72c3364ceee26c46b356eb5fb76d22b2a93a7bfe6cb9b61d898559726fd22a3",
+    "src/net/textproto/textproto.go": "e4f0d94752345b5dec4fe7f4805531e8036a9cd44131d807cafa700dd5323901"
   },
   "ports": [
     {
@@ -469,6 +472,23 @@
         "public_CI_requires_fresh_execution": true,
         "scope": "Two appended ordinary native suites must compare every original occurrence and all typed values with actual Go references, then saved replay. Original74suite171217case2181batch prefix remains required. Public partition count/source roster are pending profile measurement; private67batches are not substituted."
       }
+    },
+    {
+      "source": "src/net/http/fs.go",
+      "supporting_sources": [
+        "src/net/textproto/textproto.go"
+      ],
+      "test_source": "src/net/http/fs_test.go",
+      "target": "ports/net/http/etag.gooo",
+      "symbols": [
+        "scanETag",
+        "etagStrongMatch"
+      ],
+      "target_activities": [
+        "ScanETag",
+        "ETagStrongMatch"
+      ],
+      "api_mapping": "DedicatedGooo go/net/http/etag is not an official Go subpackage. Private original scanner and raw strong comparison retain exact semantics for decoded Unicode-scalar validUTF8 Text0..1024bytes per argument including empty/NUL/control/invalidgrammar. Two scanner returns become required etag/remain record. Invalid byte strings and longer Go strings unsupported; outerdomain preconditions are not enforced by pure bodies. No fullIfMatch/currentresource/authorization/effect claim."
     }
   ],
   "external_sources": [
@@ -906,6 +926,36 @@
         "name_invalid_octet"
       ],
       "mapping": "Original8field Gooo diagnostics separate unchanged canonical output from validity and retain original Text plus first invalid byte witness. No human approval,external effect,request authority or production safety.",
+      "license": "LICENSE"
+    },
+    {
+      "source": "examples/strong-validator-facts/main.gooo",
+      "source_sha256": "a7002b9db59ff68e732b66ef27c86426b8fff325cfb15f2665a0d0cf04f17a01",
+      "package": "app/strong-validator-facts",
+      "activity": "Report",
+      "activity_id": "gooo://go-ports/examples/strong-validator-facts/report",
+      "workspace": "strong-validator-facts.workspace.json",
+      "contract": "examples/strong-validator-facts/contract.json",
+      "contract_sha256": "161bd133d42126e02019ec26385b17a6c907d88a4f39519070ad018a45ef77c9",
+      "input_corpus": "examples/strong-validator-facts/corpus.json",
+      "input_corpus_sha256": "ce9015cc12bc37e785761f4ee6907a77603082cd69b4d8edc80a634ff4478345",
+      "reference_cases": 24,
+      "required_fields": [
+        "raw",
+        "tag",
+        "remainder",
+        "header_valid",
+        "present",
+        "weak",
+        "complete",
+        "strong",
+        "single_strong",
+        "input_bytes",
+        "tag_bytes",
+        "remainder_bytes",
+        "reason"
+      ],
+      "mapping": "Original13fieldGooo composition validates raw header separately from scanneredge trimming and strong-classifies only parsed tag; preserves raw,tag,remainder,bytecounts and ordered reason. Local facts without per-call approval; no currentresource/auth/effect/atomicupdate guarantee.",
       "license": "LICENSE"
     }
   ]

@@ -316,6 +316,18 @@
       "sources": [
         "examples/canonical-header-key/main.gooo"
       ]
+    },
+    {
+      "path": "go/net/http/etag",
+      "sources": [
+        "ports/net/http/etag.gooo"
+      ]
+    },
+    {
+      "path": "app/strong-validator-facts",
+      "sources": [
+        "examples/strong-validator-facts/main.gooo"
+      ]
     }
   ]
 }

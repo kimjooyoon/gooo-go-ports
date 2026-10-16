@@ -1,0 +1,27 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "app/strong-validator-facts",
+    "activity": "Report"
+  },
+  "packages": [
+    {
+      "path": "go/net/http/etag",
+      "sources": [
+        "ports/net/http/etag.gooo"
+      ]
+    },
+    {
+      "path": "go/golang.org/x/net/http/httpguts",
+      "sources": [
+        "ports/net/httpguts/headers.gooo"
+      ]
+    },
+    {
+      "path": "app/strong-validator-facts",
+      "sources": [
+        "examples/strong-validator-facts/main.gooo"
+      ]
+    }
+  ]
+}

@@ -635,7 +635,7 @@ func TestWorkspaceProfileSyntheticNativeReplayAndExactTimingMap(t *testing.T) {
 				t.Fatal("explicit timing identity missing")
 			}
 			inputs := header["identity"].(map[string]any)["source_files"].(map[string]any)
-			if len(inputs) != 228 || inputs["cmd/verify/workspace_profile.go"] == nil || inputs["cmd/verify/workspace_profile_test.go"] == nil {
+			if len(inputs) != 251 || inputs["cmd/verify/workspace_profile.go"] == nil || inputs["cmd/verify/workspace_profile_test.go"] == nil {
 				t.Fatal("timing provenance shrank to selected workspace or omitted profile sources", len(inputs))
 			}
 			mapSHA := contentDigest(mustJSON(t, selected.Identities))

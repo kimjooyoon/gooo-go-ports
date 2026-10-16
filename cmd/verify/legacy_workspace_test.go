@@ -190,9 +190,11 @@ func TestLegacy445CatalogSourcesManifestsInputsCasesAndBatchesRemainIdentical(t 
 		sourcePackage{Path: headerAdditionPackage, Sources: []string{headerAdditionSource}},
 		sourcePackage{Path: canonicalHeaderPackage, Sources: []string{canonicalHeaderSource}},
 		sourcePackage{Path: canonicalHeaderReportPackage, Sources: []string{canonicalHeaderReportSource}},
+		sourcePackage{Path: etagPortPackage, Sources: []string{etagPortSource}},
+		sourcePackage{Path: etagReportPackage, Sources: []string{etagReportSource}},
 	)
-	if !reflect.DeepEqual(frozen.Catalog, expectedCatalog) || len(frozen.Sources) != len(fixture.Sources)+24 {
-		t.Fatal("catalog changed beyond the reviewed literal, Cut, CEL, AgentMesh, checked-domain, conditional-apply, decimal/payload, path Clean/alias, header, original header-addition and canonical-key/report sources")
+	if !reflect.DeepEqual(frozen.Catalog, expectedCatalog) || len(frozen.Sources) != len(fixture.Sources)+26 {
+		t.Fatal("catalog changed beyond the reviewed literal, Cut, CEL, AgentMesh, checked-domain, conditional-apply, decimal/payload, path Clean/alias, header, original header-addition, canonical-key/report and ETag/strong-validator-facts sources")
 	}
 	sources := map[string]legacy445Source{}
 	for _, old := range fixture.Sources {
