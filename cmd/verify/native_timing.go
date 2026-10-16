@@ -45,6 +45,19 @@ type nativeTimingSnapshot struct {
 // This is the reviewed 23-file CI roster, followed by the two runtime additions.
 // Hash current bytes; never import a private preparation file or an old receipt.
 var nativeTimingSourceNames = []string{
+	"if-match.workspace.json",
+	"cmd/if-match-input/main.go",
+	"cmd/if-match-input/main_test.go",
+	"cmd/verify/if_match_contracts.go",
+	"cmd/verify/if_match_corpus.go",
+	"cmd/verify/if_match_reference.go",
+	"cmd/verify/if_match_test.go",
+	"ports/net/http/if-match-corpus.json",
+	"ports/net/http/if-match-provenance.json",
+	"ports/net/http/if-match-request.json",
+	"tools/check-if-match-inputs.py",
+	"tools/check-if-match-inputs_test.py",
+
 	"etag-scan.workspace.json",
 	"etag-strong-match.workspace.json",
 	"strong-validator-facts.workspace.json",

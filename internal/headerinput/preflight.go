@@ -47,11 +47,20 @@ type Request struct {
 // it may launch Gooo, but this package neither launches it nor attests a result.
 // The command-line adapter passes nil and emits the document on stdout only.
 func Prepare(reader io.Reader, invoke func([]byte) error) ([]byte, error) {
-	request, err := Read(reader)
+	return preparePair(reader, invoke, "name", "value", "app/header-field-facts:Report")
+}
+
+// PrepareIfMatch validates exactly two selected caller-supplied Texts before
+// binding. It does not select headers, validate their grammar or decide a result.
+func PrepareIfMatch(reader io.Reader, invoke func([]byte) error) ([]byte, error) {
+	return preparePair(reader, invoke, "if_match", "current_etag", "go/net/http/precondition:IfMatchCondition")
+}
+
+func preparePair(reader io.Reader, invoke func([]byte) error, first, second, entry string) ([]byte, error) {
+	request, err := readPair(reader, first, second)
 	if err != nil {
 		return nil, err
 	}
-	const entry = "app/header-field-facts:Report"
 	// The pinned839 DecodeCompositionInputs wire contract has top-level inputs,
 	// not a finite-cases wrapper: internal/bodyexecution/composition_observation.go
 	// at83928fa4538245abe33b08549da47f8cbdc50ed2, SHA256 cbf56139bad4b9197a0c8219e240e13941e4bcd28830588af84c6f8f4b20e6bf.
@@ -77,6 +86,10 @@ func Prepare(reader io.Reader, invoke func([]byte) error) ([]byte, error) {
 // Read bounds bytes before decoding. Any read/decode error must return before
 // launching Gooo; an error is not a false validity value or HeaderFacts result.
 func Read(reader io.Reader) (Request, error) {
+	return readPair(reader, "name", "value")
+}
+
+func readPair(reader io.Reader, first, second string) (Request, error) {
 	if reader == nil {
 		return Request{}, fmt.Errorf("read header request: nil reader")
 	}
@@ -84,13 +97,19 @@ func Read(reader io.Reader) (Request, error) {
 	if err != nil {
 		return Request{}, fmt.Errorf("read header request: %w", err)
 	}
-	return Decode(raw)
+	return decodePair(raw, first, second)
 }
 
 // Decode accepts exactly one object with exactly the decoded keys name/value.
 // Empty strings and JSON-escaped NUL/CR/LF are valid transport Texts, regardless
 // of the later header predicates. Every refusal returns a zero Request.
 func Decode(raw []byte) (Request, error) {
+	return decodePair(raw, "name", "value")
+}
+
+// Both fixed callers share the same original JSON/Unicode/duplicate validator.
+// The key pair selects a transport, not a new semantic or canonical ABI.
+func decodePair(raw []byte, first, second string) (Request, error) {
 	if len(raw) > MaxRawBytes {
 		return Request{}, ErrRawTooLarge
 	}
@@ -125,7 +144,7 @@ func Decode(raw []byte) (Request, error) {
 		if !ok {
 			return Request{}, ErrMalformedJSON
 		}
-		if key != "name" && key != "value" {
+		if key != first && key != second {
 			return Request{}, ErrUnknownField
 		}
 		if seen[key] {
@@ -146,7 +165,7 @@ func Decode(raw []byte) (Request, error) {
 		if len(text) > MaxTextBytes {
 			return Request{}, ErrTextTooLarge
 		}
-		if key == "name" {
+		if key == first {
 			request.Name = text
 		} else {
 			request.ValueText = text
@@ -159,7 +178,7 @@ func Decode(raw []byte) (Request, error) {
 	if _, err := decoder.Token(); err != io.EOF {
 		return Request{}, ErrMalformedJSON
 	}
-	if !seen["name"] || !seen["value"] {
+	if !seen[first] || !seen[second] {
 		return Request{}, ErrMissingField
 	}
 	return request, nil

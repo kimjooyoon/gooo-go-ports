@@ -1,0 +1,15 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "go/net/http/precondition",
+    "activity": "IfMatchCondition"
+  },
+  "packages": [
+    {
+      "path": "go/net/http/precondition",
+      "sources": [
+        "ports/net/http/precondition.gooo"
+      ]
+    }
+  ]
+}

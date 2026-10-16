@@ -32,8 +32,8 @@ class LiteralMalformedRequestTests(unittest.TestCase):
         self.cases = list(PROBE.negative_inputs())
 
     def test_all_three_entries_and_both_arguments_have_independent_rejection_rosters(self):
-        self.assertEqual(len(self.cases), 196)
-        self.assertEqual(len({case["name"] for case in self.cases}), 196)
+        self.assertEqual(len(self.cases), 224)
+        self.assertEqual(len({case["name"] for case in self.cases}), 224)
         for entry in PROBE.ALL_ENTRIES:
             selected = [case for case in self.cases if case["entry"] == entry]
             self.assertEqual(len(selected), 28)
@@ -212,16 +212,16 @@ class LiteralCutAppendOnlyRequestTests(unittest.TestCase):
         original = list(frozen_legacy_negative_inputs())
         current = list(PROBE.negative_inputs())
         self.assertEqual(len(original), 84)
-        self.assertEqual(len(current), 196)
+        self.assertEqual(len(current), 224)
         self.assertEqual([row["name"] for row in current[:84]], [row["name"] for row in original])
         for before, after in zip(original, current[:84]):
             with self.subTest(case=before["name"]):
                 self.assertEqual(before, after)
                 self.assertEqual(hashlib.sha256(before["raw"]).hexdigest(), hashlib.sha256(after["raw"]).hexdigest())
-        self.assertEqual(len({row["name"] for row in current}), 196)
-        self.assertTrue(all(row["entry"] in PROBE.CUT_ENTRIES for row in current[84:]))
+        self.assertEqual(len({row["name"] for row in current}), 224)
+        self.assertTrue(all(row["entry"] in PROBE.CUT_ENTRIES for row in current[84:196]))
         self.assertEqual(current[84]["entry"], "go/strings:Cut")
-        self.assertEqual(current[-1]["entry"], "app/literal-cut-report:Report")
+        self.assertEqual(current[195]["entry"], "app/literal-cut-report:Report")
         self.assertTrue(all(row["name"].startswith("cutreport-") for row in current if row["entry"] == "app/literal-cut-report:Report"))
         for entry in PROBE.CUT_ENTRIES:
             selected = [row for row in current[84:] if row["entry"] == entry]
@@ -260,6 +260,7 @@ class LiteralCutSeparateManifestTests(unittest.TestCase):
                            {"path":"app/literal-cut-report","sources":[PROBE.CUT_SOURCES[-1]]}]}
         frozen["literal-text-report.workspace.json"] = (json.dumps(old, indent=2)+"\n").encode()
         frozen["literal-cut-report.workspace.json"] = (json.dumps(new, indent=2)+"\n").encode()
+        frozen["if-match.workspace.json"] = PROBE.encode({"schema":"gooo/package-workspace-manifest/v1", "entry":{"package_path":"go/net/http/precondition","activity":"IfMatchCondition"}, "packages":[{"path":"go/net/http/precondition","sources":[PROBE.IF_MATCH_SOURCE]}]})+b"\n"
         return frozen
 
     def test_old_three_source_bytes_and_new_closures_are_separate(self):
@@ -267,12 +268,15 @@ class LiteralCutSeparateManifestTests(unittest.TestCase):
         before = dict(frozen)
         manifests = PROBE.trusted_manifests(frozen)
         self.assertEqual(list(manifests), list(PROBE.ALL_ENTRIES))
-        self.assertEqual(len({name for name, raw in manifests.values()}), 7)
+        self.assertEqual(len({name for name, raw in manifests.values()}), 8)
         self.assertEqual(manifests["app/literal-text-report:Report"], ("literal-text-report.workspace.json",frozen["literal-text-report.workspace.json"]))
         self.assertEqual(manifests["app/literal-cut-report:Report"], ("literal-cut-report.workspace.json",frozen["literal-cut-report.workspace.json"]))
         for entry, (name, raw) in manifests.items():
             manifest = json.loads(raw)
             self.assertEqual(manifest["entry"], dict(zip(("package_path","activity"),entry.rsplit(":",1))))
+            if entry == PROBE.IF_MATCH_ENTRY:
+                self.assertEqual(manifest["packages"], [{"path":"go/net/http/precondition","sources":[PROBE.IF_MATCH_SOURCE]}])
+                continue
             expected = list(PROBE.PORT_SOURCES if entry in PROBE.ENTRIES else PROBE.CUT_PORT_SOURCES)
             self.assertEqual(manifest["packages"][0], {"path":"go/strings","sources":expected})
             if entry.rsplit(":",1)[1] == "Report":
@@ -288,7 +292,7 @@ class LiteralCutSeparateManifestTests(unittest.TestCase):
 
     def test_missing_new_entry_or_source_cannot_silently_reduce_the_gate(self):
         frozen = self.frozen()
-        for missing in ("literal-cut-report.workspace.json","ports/strings/cut.gooo",PROBE.CUT_SOURCES[-1]):
+        for missing in ("literal-cut-report.workspace.json","ports/strings/cut.gooo",PROBE.CUT_SOURCES[-1],"if-match.workspace.json",PROBE.IF_MATCH_SOURCE):
             altered = dict(frozen)
             del altered[missing]
             with self.subTest(missing=missing), self.assertRaises(ValueError):
@@ -327,6 +331,15 @@ class LiteralCutSeparateManifestTests(unittest.TestCase):
                     run.assert_not_called()
                 self.assertEqual((root/name).read_bytes(),frozen[name])
 
+
+class IfMatchAppendOnlyCLIRequestTests(unittest.TestCase):
+    def test_original196_then_exact_new28_without_wire_unicode_claim(self):
+        rows=list(PROBE.negative_inputs())
+        self.assertEqual(len(rows),224)
+        self.assertEqual([row['entry'] for row in rows[:196]], [entry for entry in (*PROBE.ENTRIES,*PROBE.CUT_ENTRIES) for _ in range(28)])
+        self.assertEqual([row['entry'] for row in rows[196:]], [PROBE.IF_MATCH_ENTRY]*28)
+        self.assertEqual(len({row['name'] for row in rows}),224)
+        self.assertFalse(any('surrogate' in row['name'] or 'wire-utf8' in row['name'] for row in rows))
 
 if __name__ == "__main__":
     unittest.main()

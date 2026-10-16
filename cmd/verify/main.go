@@ -233,6 +233,11 @@ func run() error {
 		return err
 	}
 	suites = append(suites, etags...)
+	ifMatches, err := ifMatchCorpus(".")
+	if err != nil {
+		return err
+	}
+	suites = append(suites, ifMatches...)
 	if *out == "" {
 		return fmt.Errorf("provide --out for a new evidence directory")
 	}
@@ -374,6 +379,13 @@ func run() error {
 		"compiler_revision":    lock.CompilerRevision, "source_sha256": catalog.Hashes,
 		"verification_catalog_sha256": contentDigest(catalog.Raw),
 		"ported_functions":            portedFunctions, "consumer_programs": len(consumerPrograms), "consumer_activities": consumerActivities,
+		"if_match_reference_cases":                     len(ifMatches[0].Cases),
+		"if_match_input_ports":                         2,
+		"if_match_result_fields":                       1,
+		"if_match_port_source_count":                   1,
+		"if_match_conditions":                          map[string]int64{"condNone": 0, "condTrue": 1, "condFalse": 2},
+		"if_match_scope":                               ifMatchScope,
+		"if_match_provenance_scope":                    ifMatchProvenanceScope,
 		"etag_scan_reference_cases":                    len(etags[0].Cases),
 		"etag_strong_reference_cases":                  len(etags[1].Cases),
 		"etag_report_reference_cases":                  len(etags[2].Cases),

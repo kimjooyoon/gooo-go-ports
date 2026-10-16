@@ -87,7 +87,7 @@ var catalogImport = regexp.MustCompile(`(?m)^[\t ]*import[\t ]+(?:[A-Za-z_][A-Za
 // prior source rosters and keeps unrelated records out of the pinned compiler's
 // 16-record ABI. All bytes come from one snapshot.
 func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, error) {
-	if isETagSuite(s) {
+	if isHTTPConditionalSuite(s) {
 		return f.etagWorkspace(s)
 	}
 	if isCanonicalHeaderSuite(s) {
@@ -116,7 +116,7 @@ func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, e
 	for _, pkg := range f.Catalog.Packages {
 		// The decimal and path additions must not add packages or records to
 		// earlier workspaces. Their suites select concrete closures above.
-		if pkg.Path == decimalPackage || pkg.Path == pathCleanPackage || pkg.Path == headerPortPackage || pkg.Path == canonicalHeaderPackage || pkg.Path == etagPortPackage {
+		if pkg.Path == decimalPackage || pkg.Path == pathCleanPackage || pkg.Path == headerPortPackage || pkg.Path == canonicalHeaderPackage || pkg.Path == etagPortPackage || pkg.Path == ifMatchPackage {
 			continue
 		}
 		// The bounded CEL and AgentMesh rules have separate verifiers and importing

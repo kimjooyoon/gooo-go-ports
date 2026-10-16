@@ -93,7 +93,7 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 		receipt := filepath.Join(dir, "execution.json")
 		pendingTiming.phase("execute")
 		executeArgs := []string{"package", "execute", "--json", "--cases", cases}
-		if isETagSuite(s) {
+		if isHTTPConditionalSuite(s) {
 			executeArgs = append(executeArgs, "--go", etagGoToolPath())
 		}
 		executeArgs = append(executeArgs, workspace)
@@ -109,7 +109,7 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 		replayPath := filepath.Join(dir, "replay.json")
 		pendingTiming.phase("replay")
 		replayArgs := []string{"package", "replay", "--json", "--receipt", receipt, "--cases", cases}
-		if isETagSuite(s) {
+		if isHTTPConditionalSuite(s) {
 			replayArgs = append(replayArgs, "--go", etagGoToolPath())
 		}
 		replayArgs = append(replayArgs, workspace)
