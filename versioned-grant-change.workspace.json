@@ -1,0 +1,81 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "gooo/service-policy/versioned-change",
+    "activity": "AssessVersionedGrantChange"
+  },
+  "packages": [
+    {
+      "path": "gooo/service-domain",
+      "sources": [
+        "examples/agentmesh-service-policy/domain.gooo"
+      ]
+    },
+    {
+      "path": "go/google/agentmesh/api",
+      "sources": [
+        "ports/agentmesh/service_pattern.gooo"
+      ]
+    },
+    {
+      "path": "app/service-grant-impact",
+      "sources": [
+        "examples/agentmesh-service-policy/impact.gooo"
+      ]
+    },
+    {
+      "path": "app/service-grant-refinement",
+      "sources": [
+        "examples/agentmesh-service-policy/refinement.gooo"
+      ]
+    },
+    {
+      "path": "gooo/service-policy/checked-impact",
+      "sources": [
+        "examples/agentmesh-service-policy/checked_impact.gooo"
+      ]
+    },
+    {
+      "path": "gooo/service-policy/checked-refinement",
+      "sources": [
+        "examples/agentmesh-service-policy/checked_refinement.gooo"
+      ]
+    },
+    {
+      "path": "gooo/service-policy/conditional-apply",
+      "sources": [
+        "examples/agentmesh-service-policy/conditional_apply.gooo"
+      ]
+    },
+    {
+      "path": "go/net/http/etag",
+      "sources": [
+        "ports/net/http/etag.gooo"
+      ]
+    },
+    {
+      "path": "go/golang.org/x/net/http/httpguts",
+      "sources": [
+        "ports/net/httpguts/headers.gooo"
+      ]
+    },
+    {
+      "path": "app/strong-validator-facts",
+      "sources": [
+        "examples/strong-validator-facts/main.gooo"
+      ]
+    },
+    {
+      "path": "go/net/http/precondition",
+      "sources": [
+        "ports/net/http/precondition.gooo"
+      ]
+    },
+    {
+      "path": "gooo/service-policy/versioned-change",
+      "sources": [
+        "examples/versioned-grant-change/main.gooo"
+      ]
+    }
+  ]
+}

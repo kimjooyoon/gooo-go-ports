@@ -1,0 +1,1253 @@
+{
+  "schema": "gooo/body-composition-cases/v1",
+  "cases": [
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "ELIGIBLE",
+          "reason": "VERSION_MATCHED_SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "expected_validator_strict": true,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": true,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_GLOBAL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v6\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "POLICY_VERSION_CHANGED",
+          "expected_validator_strict": true,
+          "current_validator_strict": true,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_GLOBAL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "PRECONDITION_REQUIRED",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 0,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_GLOBAL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_GLOBAL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"invalid",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_GLOBAL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\r\n\"v7\"\t\r\n",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_GLOBAL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "W/\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_GLOBAL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "W/\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "CURRENT_VALIDATOR_UNUSABLE",
+          "expected_validator_strict": true,
+          "current_validator_strict": false,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_GLOBAL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "ELIGIBLE",
+          "reason": "VERSION_MATCHED_SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "expected_validator_strict": true,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": true,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_TYPED_ALL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v6\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "POLICY_VERSION_CHANGED",
+          "expected_validator_strict": true,
+          "current_validator_strict": true,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_TYPED_ALL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "PRECONDITION_REQUIRED",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 0,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_TYPED_ALL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_TYPED_ALL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"invalid",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_TYPED_ALL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\r\n\"v7\"\t\r\n",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_TYPED_ALL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "W/\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_TYPED_ALL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "W/\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "CURRENT_VALIDATOR_UNUSABLE",
+          "expected_validator_strict": true,
+          "current_validator_strict": false,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "OLD_TYPED_ALL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "GRANT_REFUSED",
+          "expected_validator_strict": true,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": true,
+          "grant_status": "REFUSED",
+          "grant_reason": "WIDENING_WITNESS",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v6\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "POLICY_VERSION_CHANGED",
+          "expected_validator_strict": true,
+          "current_validator_strict": true,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "REFUSED",
+          "grant_reason": "WIDENING_WITNESS",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "PRECONDITION_REQUIRED",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 0,
+          "version_match": false,
+          "grant_status": "REFUSED",
+          "grant_reason": "WIDENING_WITNESS",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "REFUSED",
+          "grant_reason": "WIDENING_WITNESS",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"invalid",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "REFUSED",
+          "grant_reason": "WIDENING_WITNESS",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\r\n\"v7\"\t\r\n",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "REFUSED",
+          "grant_reason": "WIDENING_WITNESS",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "W/\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "REFUSED",
+          "grant_reason": "WIDENING_WITNESS",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "W/\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "CURRENT_VALIDATOR_UNUSABLE",
+          "expected_validator_strict": true,
+          "current_validator_strict": false,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "REFUSED",
+          "grant_reason": "WIDENING_WITNESS",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://other",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "GRANT_REFUSED",
+          "expected_validator_strict": true,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": true,
+          "grant_status": "REFUSED",
+          "grant_reason": "REQUIRED_REQUEST_REMOVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": false,
+          "subset_rule_id": "OLD_TYPED_ALL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v6\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://other",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "POLICY_VERSION_CHANGED",
+          "expected_validator_strict": true,
+          "current_validator_strict": true,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "REFUSED",
+          "grant_reason": "REQUIRED_REQUEST_REMOVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": false,
+          "subset_rule_id": "OLD_TYPED_ALL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://other",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "PRECONDITION_REQUIRED",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 0,
+          "version_match": false,
+          "grant_status": "REFUSED",
+          "grant_reason": "REQUIRED_REQUEST_REMOVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": false,
+          "subset_rule_id": "OLD_TYPED_ALL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://other",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "REFUSED",
+          "grant_reason": "REQUIRED_REQUEST_REMOVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": false,
+          "subset_rule_id": "OLD_TYPED_ALL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"invalid",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://other",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "REFUSED",
+          "grant_reason": "REQUIRED_REQUEST_REMOVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": false,
+          "subset_rule_id": "OLD_TYPED_ALL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\r\n\"v7\"\t\r\n",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://other",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "REFUSED",
+          "grant_reason": "REQUIRED_REQUEST_REMOVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": false,
+          "subset_rule_id": "OLD_TYPED_ALL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "W/\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://other",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "REFUSED",
+          "grant_reason": "REQUIRED_REQUEST_REMOVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": false,
+          "subset_rule_id": "OLD_TYPED_ALL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "W/\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://other",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "CURRENT_VALIDATOR_UNUSABLE",
+          "expected_validator_strict": true,
+          "current_validator_strict": false,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "REFUSED",
+          "grant_reason": "REQUIRED_REQUEST_REMOVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": false,
+          "subset_rule_id": "OLD_TYPED_ALL"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "ELIGIBLE",
+          "reason": "VERSION_MATCHED_SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "expected_validator_strict": true,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": true,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "IDENTICAL_PATTERNS"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v6\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "POLICY_VERSION_CHANGED",
+          "expected_validator_strict": true,
+          "current_validator_strict": true,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "IDENTICAL_PATTERNS"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "PRECONDITION_REQUIRED",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 0,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "IDENTICAL_PATTERNS"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "IDENTICAL_PATTERNS"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"invalid",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "IDENTICAL_PATTERNS"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\r\n\"v7\"\t\r\n",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "IDENTICAL_PATTERNS"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "W/\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "IF_MATCH_NOT_SINGLE_STRONG",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "IDENTICAL_PATTERNS"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "W/\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "REFUSED",
+          "reason": "CURRENT_VALIDATOR_UNUSABLE",
+          "expected_validator_strict": true,
+          "current_validator_strict": false,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "ELIGIBLE",
+          "grant_reason": "SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+          "invalid_field": "",
+          "required_before_match": true,
+          "required_after_match": true,
+          "subset_rule_id": "IDENTICAL_PATTERNS"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://bad..name",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "INVALID_INPUT",
+          "reason": "INVALID_CANONICAL_INPUT",
+          "expected_validator_strict": true,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": true,
+          "grant_status": "INVALID_INPUT",
+          "grant_reason": "INVALID_CANONICAL_INPUT",
+          "invalid_field": "before",
+          "required_before_match": false,
+          "required_after_match": false,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v6\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://bad..name",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "INVALID_INPUT",
+          "reason": "INVALID_CANONICAL_INPUT",
+          "expected_validator_strict": true,
+          "current_validator_strict": true,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "INVALID_INPUT",
+          "grant_reason": "INVALID_CANONICAL_INPUT",
+          "invalid_field": "before",
+          "required_before_match": false,
+          "required_after_match": false,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://bad..name",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "INVALID_INPUT",
+          "reason": "INVALID_CANONICAL_INPUT",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 0,
+          "version_match": false,
+          "grant_status": "INVALID_INPUT",
+          "grant_reason": "INVALID_CANONICAL_INPUT",
+          "invalid_field": "before",
+          "required_before_match": false,
+          "required_after_match": false,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "*",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://bad..name",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "INVALID_INPUT",
+          "reason": "INVALID_CANONICAL_INPUT",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "INVALID_INPUT",
+          "grant_reason": "INVALID_CANONICAL_INPUT",
+          "invalid_field": "before",
+          "required_before_match": false,
+          "required_after_match": false,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"invalid",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://bad..name",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "INVALID_INPUT",
+          "reason": "INVALID_CANONICAL_INPUT",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "INVALID_INPUT",
+          "grant_reason": "INVALID_CANONICAL_INPUT",
+          "invalid_field": "before",
+          "required_before_match": false,
+          "required_after_match": false,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\r\n\"v7\"\t\r\n",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://bad..name",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "INVALID_INPUT",
+          "reason": "INVALID_CANONICAL_INPUT",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 1,
+          "version_match": false,
+          "grant_status": "INVALID_INPUT",
+          "grant_reason": "INVALID_CANONICAL_INPUT",
+          "invalid_field": "before",
+          "required_before_match": false,
+          "required_after_match": false,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "W/\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://bad..name",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "INVALID_INPUT",
+          "reason": "INVALID_CANONICAL_INPUT",
+          "expected_validator_strict": false,
+          "current_validator_strict": true,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "INVALID_INPUT",
+          "grant_reason": "INVALID_CANONICAL_INPUT",
+          "invalid_field": "before",
+          "required_before_match": false,
+          "required_after_match": false,
+          "subset_rule_id": ""
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0": "\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1": "W/\"v7\"",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2": "mcp://bad..name",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3": "mcp://weather",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4": "mcp",
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5": "weather"
+      },
+      "expected": {
+        "gooo/service-policy/versioned-change:AssessVersionedGrantChange": {
+          "status": "INVALID_INPUT",
+          "reason": "INVALID_CANONICAL_INPUT",
+          "expected_validator_strict": true,
+          "current_validator_strict": false,
+          "if_match_condition": 2,
+          "version_match": false,
+          "grant_status": "INVALID_INPUT",
+          "grant_reason": "INVALID_CANONICAL_INPUT",
+          "invalid_field": "before",
+          "required_before_match": false,
+          "required_after_match": false,
+          "subset_rule_id": ""
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+// Copyright 2026 Gooo Go Ports contributors. All rights reserved.
+// Original Gooo composition governed by the repository's BSD-style LICENSE.
+// Imported source files retain their own unchanged source and license notices.
+//
+// Experimental original Gooo composition for version-bound service-grant changes.
+// The accompanying verifier uses an independent 48-case corpus and current sources.
+// Source declarations and this contract alone are not runtime acceptance for an edit.
+// Inputs, in order: selected If-Match, observed policy ETag, before grant,
+// candidate grant, configured required type, configured required name.
+// Each is unchanged decoded Unicode-scalar validUTF8 Text of0..1024 bytes.
+// The last four values retain the existing checked Gooo128-byte semantic grammar;
+// overlength/noncanonical input must remain a typed INVALID_INPUT diagnosis.
+// It is not an added128-byte ingress refusal or a repaired/truncated value.
+//
+// REQUIRED OUTER CONTRACT, NOT IMPLEMENTED HERE: exact six Text bindings, no
+// missing/duplicate/wrong-type/malformedUTF8/unpaired-surrogate/>1024-byte input.
+// The supported joint evidence domain also requires the actual complete Go case
+// document (including expected results) <=30000 bytes/128 rows and its pinned
+// source-lowered upper bound <=32768 bytes. Refuse an individually oversized row
+// before launch; never omit, normalize or split its operands. Six1024-byte NUL
+// operands do not fit, so this is not the full six-by1024 Cartesian domain.
+// No public six-field strict ingress or general transport capacity is supplied.
+//
+// This automatically classifies local facts without per-request human approval.
+// A strong tag and ELIGIBLE are not identity, authority, freshness or APPLIED.
+// The trusted host obtains owned grant/tag/required configuration, binds versions
+// to all relevant configuration without ABA reuse, and under one lock/CAS rechecks
+// target/store/subject/generation/version/current authority and evaluates Gooo on
+// current observations before atomic publication. No host effect, arbitrary policy
+// loading, model inference, new engine primitive or Go policy fallback is present.
+package versioned_grant_change
+namespace gooo_original_versioned_grant_change_v1
+import validators "app/strong-validator-facts"
+import preconditions "go/net/http/precondition"
+import grants "gooo/service-policy/conditional-apply"
+entity Text id "gooo://std/text"
+entity VersionedGrantChangeDecision id "gooo://service-policy/versioned-change/decision/v1" fields {
+ field status id "gooo://service-policy/versioned-change/decision/v1/status" type string required one
+ field reason id "gooo://service-policy/versioned-change/decision/v1/reason" type string required one
+ field expected_validator_strict id "gooo://service-policy/versioned-change/decision/v1/expected_validator_strict" type boolean required one
+ field current_validator_strict id "gooo://service-policy/versioned-change/decision/v1/current_validator_strict" type boolean required one
+ field if_match_condition id "gooo://service-policy/versioned-change/decision/v1/if_match_condition" type integer required one
+ field version_match id "gooo://service-policy/versioned-change/decision/v1/version_match" type boolean required one
+ field grant_status id "gooo://service-policy/versioned-change/decision/v1/grant_status" type string required one
+ field grant_reason id "gooo://service-policy/versioned-change/decision/v1/grant_reason" type string required one
+ field invalid_field id "gooo://service-policy/versioned-change/decision/v1/invalid_field" type string required one
+ field required_before_match id "gooo://service-policy/versioned-change/decision/v1/required_before_match" type boolean required one
+ field required_after_match id "gooo://service-policy/versioned-change/decision/v1/required_after_match" type boolean required one
+ field subset_rule_id id "gooo://service-policy/versioned-change/decision/v1/subset_rule_id" type string required one
+}
+
+activity AssessVersionedGrantChange(Text, Text, Text, Text, Text, Text) -> VersionedGrantChangeDecision id "gooo://service-policy/versioned-change/assess/v1" computes `
+let selected = validators.Report(input0)
+let current = validators.Report(input1)
+let condition = preconditions.IfMatchCondition(input0, input1)
+let grant = grants.AssessServiceGrantUpdate(input2, input3, input4, input5)
+let expectedStrict = selected.raw == input0 && selected.tag == input0 && selected.remainder == "" && selected.header_valid && selected.present && selected.complete && selected.strong && selected.single_strong && !selected.weak
+let currentStrict = current.raw == input1 && current.tag == input1 && current.remainder == "" && current.header_valid && current.present && current.complete && current.strong && current.single_strong && !current.weak
+let conditionKnown = condition.condition == 0 || condition.condition == 1 || condition.condition == 2
+let versionMatch = expectedStrict && currentStrict && condition.condition == 1
+let knownRule = grant.subset_rule_id == "CANDIDATE_EMPTY" || grant.subset_rule_id == "IDENTICAL_PATTERNS" || grant.subset_rule_id == "OLD_GLOBAL" || grant.subset_rule_id == "OLD_TYPED_ALL" || grant.subset_rule_id == "EXACT_CANDIDATE_ACCEPTED_BY_OLD" || grant.subset_rule_id == "PREFIX_HIERARCHY" || grant.subset_rule_id == "SUFFIX_HIERARCHY"
+let grantEligible = grant.status == "ELIGIBLE" && grant.reason == "SUBSET_AND_REQUIRED_REQUEST_PRESERVED" && grant.invalid_field == "" && grant.required_observed && grant.required_before_match && grant.required_after_match && knownRule
+let status = "REFUSED"
+let reason = "DEPENDENCY_RESULT_INVALID"
+if grant.status == "INVALID_INPUT" {
+ status = "INVALID_INPUT"
+ reason = grant.reason
+} else {
+ if input0 == "" {
+  reason = "PRECONDITION_REQUIRED"
+ } else {
+  if !expectedStrict {
+   reason = "IF_MATCH_NOT_SINGLE_STRONG"
+  } else {
+   if !currentStrict {
+    reason = "CURRENT_VALIDATOR_UNUSABLE"
+   } else {
+    if !conditionKnown {
+     reason = "DEPENDENCY_RESULT_INVALID"
+    } else {
+     if !versionMatch {
+      reason = "POLICY_VERSION_CHANGED"
+     } else {
+      if grant.status == "REFUSED" {
+       reason = "GRANT_REFUSED"
+      } else {
+       if grantEligible {
+        status = "ELIGIBLE"
+        reason = "VERSION_MATCHED_SUBSET_AND_REQUIRED_REQUEST_PRESERVED"
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+}
+return VersionedGrantChangeDecision{status: status, reason: reason, expected_validator_strict: expectedStrict, current_validator_strict: currentStrict, if_match_condition: condition.condition, version_match: versionMatch, grant_status: grant.status, grant_reason: grant.reason, invalid_field: grant.invalid_field, required_before_match: grant.required_before_match, required_after_match: grant.required_after_match, subset_rule_id: grant.subset_rule_id}
+`

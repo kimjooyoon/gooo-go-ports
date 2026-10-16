@@ -1,0 +1,874 @@
+{
+  "schema": "gooo/versioned-grant-change-contract/v1",
+  "kind": "experimental_pure_original_composition",
+  "entry": {
+    "package_path": "gooo/service-policy/versioned-change",
+    "activity": "AssessVersionedGrantChange",
+    "activity_id": "gooo://service-policy/versioned-change/assess/v1",
+    "result_entity_id": "gooo://service-policy/versioned-change/decision/v1"
+  },
+  "workspace": "versioned-grant-change.workspace.json",
+  "input_order": [
+    {
+      "port": "input0",
+      "name": "selected_if_match",
+      "binding": "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input0",
+      "type": "Text",
+      "entity_id": "gooo://std/text",
+      "required": true,
+      "minimum_utf8_bytes": 0,
+      "maximum_utf8_bytes": 1024
+    },
+    {
+      "port": "input1",
+      "name": "observed_policy_etag",
+      "binding": "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input1",
+      "type": "Text",
+      "entity_id": "gooo://std/text",
+      "required": true,
+      "minimum_utf8_bytes": 0,
+      "maximum_utf8_bytes": 1024
+    },
+    {
+      "port": "input2",
+      "name": "before_grant",
+      "binding": "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input2",
+      "type": "Text",
+      "entity_id": "gooo://std/text",
+      "required": true,
+      "minimum_utf8_bytes": 0,
+      "maximum_utf8_bytes": 1024
+    },
+    {
+      "port": "input3",
+      "name": "candidate_grant",
+      "binding": "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input3",
+      "type": "Text",
+      "entity_id": "gooo://std/text",
+      "required": true,
+      "minimum_utf8_bytes": 0,
+      "maximum_utf8_bytes": 1024
+    },
+    {
+      "port": "input4",
+      "name": "required_type",
+      "binding": "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input4",
+      "type": "Text",
+      "entity_id": "gooo://std/text",
+      "required": true,
+      "minimum_utf8_bytes": 0,
+      "maximum_utf8_bytes": 1024
+    },
+    {
+      "port": "input5",
+      "name": "required_name",
+      "binding": "gooo/service-policy/versioned-change:AssessVersionedGrantChange.input5",
+      "type": "Text",
+      "entity_id": "gooo://std/text",
+      "required": true,
+      "minimum_utf8_bytes": 0,
+      "maximum_utf8_bytes": 1024
+    }
+  ],
+  "output_record": "VersionedGrantChangeDecision",
+  "output_fields": [
+    {
+      "name": "status",
+      "id": "gooo://service-policy/versioned-change/decision/v1/status",
+      "type": "string",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "reason",
+      "id": "gooo://service-policy/versioned-change/decision/v1/reason",
+      "type": "string",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "expected_validator_strict",
+      "id": "gooo://service-policy/versioned-change/decision/v1/expected_validator_strict",
+      "type": "boolean",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "current_validator_strict",
+      "id": "gooo://service-policy/versioned-change/decision/v1/current_validator_strict",
+      "type": "boolean",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "if_match_condition",
+      "id": "gooo://service-policy/versioned-change/decision/v1/if_match_condition",
+      "type": "integer",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "version_match",
+      "id": "gooo://service-policy/versioned-change/decision/v1/version_match",
+      "type": "boolean",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "grant_status",
+      "id": "gooo://service-policy/versioned-change/decision/v1/grant_status",
+      "type": "string",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "grant_reason",
+      "id": "gooo://service-policy/versioned-change/decision/v1/grant_reason",
+      "type": "string",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "invalid_field",
+      "id": "gooo://service-policy/versioned-change/decision/v1/invalid_field",
+      "type": "string",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "required_before_match",
+      "id": "gooo://service-policy/versioned-change/decision/v1/required_before_match",
+      "type": "boolean",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "required_after_match",
+      "id": "gooo://service-policy/versioned-change/decision/v1/required_after_match",
+      "type": "boolean",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "subset_rule_id",
+      "id": "gooo://service-policy/versioned-change/decision/v1/subset_rule_id",
+      "type": "string",
+      "required": true,
+      "cardinality": "one"
+    }
+  ],
+  "sources": [
+    {
+      "package": "gooo/service-domain",
+      "path": "examples/agentmesh-service-policy/domain.gooo",
+      "sha256": "b866ea5aa827e6122541faa54fd920c9ec1942a308bf72adb82fb244f1b3c33c"
+    },
+    {
+      "package": "go/google/agentmesh/api",
+      "path": "ports/agentmesh/service_pattern.gooo",
+      "sha256": "e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d"
+    },
+    {
+      "package": "app/service-grant-impact",
+      "path": "examples/agentmesh-service-policy/impact.gooo",
+      "sha256": "e7e84b71beab8661298ed2d6fdd85e8d01586d3546b1c0a7f5f86bb0d155f647"
+    },
+    {
+      "package": "app/service-grant-refinement",
+      "path": "examples/agentmesh-service-policy/refinement.gooo",
+      "sha256": "90bcc738c88eb5bec8b41b5306cccf274a5740560d7dd62b7f3a57b30b441ff0"
+    },
+    {
+      "package": "gooo/service-policy/checked-impact",
+      "path": "examples/agentmesh-service-policy/checked_impact.gooo",
+      "sha256": "c47c196e58bfc43f9a8d1e0faa11388b50f13012dc2190c105bef740b8ab5a02"
+    },
+    {
+      "package": "gooo/service-policy/checked-refinement",
+      "path": "examples/agentmesh-service-policy/checked_refinement.gooo",
+      "sha256": "6628f15bf8a260e48bc7b58e5d05699c48138b145a1e42c6e6f872efd6f81772"
+    },
+    {
+      "package": "gooo/service-policy/conditional-apply",
+      "path": "examples/agentmesh-service-policy/conditional_apply.gooo",
+      "sha256": "09b1d63aa9ad970989c0857bdf9dbe8b02bb0c096df9b1256face673bc0e5f51"
+    },
+    {
+      "package": "go/net/http/etag",
+      "path": "ports/net/http/etag.gooo",
+      "sha256": "2fc5b2c19acf8c040173859309dd687be37bca1c2c56b49efa293a8df98d42c4"
+    },
+    {
+      "package": "go/golang.org/x/net/http/httpguts",
+      "path": "ports/net/httpguts/headers.gooo",
+      "sha256": "a033b96ab0adb394a9d79137715d7a4170e22061e4ae9aa282f8ab3671da9f76"
+    },
+    {
+      "package": "app/strong-validator-facts",
+      "path": "examples/strong-validator-facts/main.gooo",
+      "sha256": "a7002b9db59ff68e732b66ef27c86426b8fff325cfb15f2665a0d0cf04f17a01"
+    },
+    {
+      "package": "go/net/http/precondition",
+      "path": "ports/net/http/precondition.gooo",
+      "sha256": "9924cde4a2e01222658929a87007d6e34db85f2d4f49c057d110bb8d1bf05aeb"
+    },
+    {
+      "package": "gooo/service-policy/versioned-change",
+      "path": "examples/versioned-grant-change/main.gooo",
+      "sha256": "41029db971a7b9b2f2f162dbe0f43d7d229bbe22210d4c27ac35be09d2a0e362"
+    }
+  ],
+  "records": [
+    {
+      "name": "GrantImpact",
+      "id": "gooo://service-impact/decision/v1",
+      "source": "examples/agentmesh-service-policy/impact.gooo",
+      "fields": [
+        {
+          "name": "before_match",
+          "id": "gooo://service-impact/before",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "after_match",
+          "id": "gooo://service-impact/after",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "change",
+          "id": "gooo://service-impact/change",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        }
+      ]
+    },
+    {
+      "name": "GrantRefinement",
+      "id": "gooo://service-refinement/decision/v1",
+      "source": "examples/agentmesh-service-policy/refinement.gooo",
+      "fields": [
+        {
+          "name": "status",
+          "id": "gooo://service-refinement/status",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "rule_id",
+          "id": "gooo://service-refinement/rule_id",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "supported_subset",
+          "id": "gooo://service-refinement/supported_subset",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "has_witness",
+          "id": "gooo://service-refinement/has_witness",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "witness_type",
+          "id": "gooo://service-refinement/witness_type",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "witness_name",
+          "id": "gooo://service-refinement/witness_name",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "before_match",
+          "id": "gooo://service-refinement/before_match",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "after_match",
+          "id": "gooo://service-refinement/after_match",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        }
+      ]
+    },
+    {
+      "name": "CheckedImpactDecision",
+      "id": "gooo://service-policy/checked-impact/decision/v1",
+      "source": "examples/agentmesh-service-policy/checked_impact.gooo",
+      "fields": [
+        {
+          "name": "domain_status",
+          "id": "gooo://service-policy/checked-impact/domain_status",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "invalid_field",
+          "id": "gooo://service-policy/checked-impact/invalid_field",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "before_match",
+          "id": "gooo://service-policy/checked-impact/before_match",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "after_match",
+          "id": "gooo://service-policy/checked-impact/after_match",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "change",
+          "id": "gooo://service-policy/checked-impact/change",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        }
+      ]
+    },
+    {
+      "name": "CheckedRefinementDecision",
+      "id": "gooo://service-policy/checked-refinement/decision/v1",
+      "source": "examples/agentmesh-service-policy/checked_refinement.gooo",
+      "fields": [
+        {
+          "name": "domain_status",
+          "id": "gooo://service-policy/checked-refinement/domain_status",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "invalid_field",
+          "id": "gooo://service-policy/checked-refinement/invalid_field",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "status",
+          "id": "gooo://service-policy/checked-refinement/status",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "rule_id",
+          "id": "gooo://service-policy/checked-refinement/rule_id",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "supported_subset",
+          "id": "gooo://service-policy/checked-refinement/supported_subset",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "has_witness",
+          "id": "gooo://service-policy/checked-refinement/has_witness",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "witness_type",
+          "id": "gooo://service-policy/checked-refinement/witness_type",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "witness_name",
+          "id": "gooo://service-policy/checked-refinement/witness_name",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "before_match",
+          "id": "gooo://service-policy/checked-refinement/before_match",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "after_match",
+          "id": "gooo://service-policy/checked-refinement/after_match",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        }
+      ]
+    },
+    {
+      "name": "GrantUpdateDecision",
+      "id": "gooo://service-policy/conditional-apply/decision/v1",
+      "source": "examples/agentmesh-service-policy/conditional_apply.gooo",
+      "fields": [
+        {
+          "name": "status",
+          "id": "gooo://service-policy/conditional-apply/status",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "reason",
+          "id": "gooo://service-policy/conditional-apply/reason",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "invalid_field",
+          "id": "gooo://service-policy/conditional-apply/invalid_field",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "required_observed",
+          "id": "gooo://service-policy/conditional-apply/required_observed",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "required_before_match",
+          "id": "gooo://service-policy/conditional-apply/required_before_match",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "required_after_match",
+          "id": "gooo://service-policy/conditional-apply/required_after_match",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "subset_rule_id",
+          "id": "gooo://service-policy/conditional-apply/subset_rule_id",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        }
+      ]
+    },
+    {
+      "name": "ETagScanResult",
+      "id": "gooo://go/net/http/etag-scan-result/v1",
+      "source": "ports/net/http/etag.gooo",
+      "fields": [
+        {
+          "name": "etag",
+          "id": "gooo://go/net/http/etag-scan-result/v1/etag",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "remain",
+          "id": "gooo://go/net/http/etag-scan-result/v1/remain",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        }
+      ]
+    },
+    {
+      "name": "StrongValidatorFacts",
+      "id": "gooo://go-ports/examples/strong-validator-facts",
+      "source": "examples/strong-validator-facts/main.gooo",
+      "fields": [
+        {
+          "name": "raw",
+          "id": "gooo://go-ports/examples/strong-validator-facts/raw",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "tag",
+          "id": "gooo://go-ports/examples/strong-validator-facts/tag",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "remainder",
+          "id": "gooo://go-ports/examples/strong-validator-facts/remainder",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "header_valid",
+          "id": "gooo://go-ports/examples/strong-validator-facts/header_valid",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "present",
+          "id": "gooo://go-ports/examples/strong-validator-facts/present",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "weak",
+          "id": "gooo://go-ports/examples/strong-validator-facts/weak",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "complete",
+          "id": "gooo://go-ports/examples/strong-validator-facts/complete",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "strong",
+          "id": "gooo://go-ports/examples/strong-validator-facts/strong",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "single_strong",
+          "id": "gooo://go-ports/examples/strong-validator-facts/single_strong",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "input_bytes",
+          "id": "gooo://go-ports/examples/strong-validator-facts/input_bytes",
+          "type": "integer",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "tag_bytes",
+          "id": "gooo://go-ports/examples/strong-validator-facts/tag_bytes",
+          "type": "integer",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "remainder_bytes",
+          "id": "gooo://go-ports/examples/strong-validator-facts/remainder_bytes",
+          "type": "integer",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "reason",
+          "id": "gooo://go-ports/examples/strong-validator-facts/reason",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        }
+      ]
+    },
+    {
+      "name": "IfMatchResult",
+      "id": "gooo://go/net/http/if-match-result/v1",
+      "source": "ports/net/http/precondition.gooo",
+      "fields": [
+        {
+          "name": "condition",
+          "id": "gooo://go/net/http/if-match-result/v1/condition",
+          "type": "integer",
+          "required": true,
+          "cardinality": "one"
+        }
+      ]
+    },
+    {
+      "name": "VersionedGrantChangeDecision",
+      "id": "gooo://service-policy/versioned-change/decision/v1",
+      "source": "examples/versioned-grant-change/main.gooo",
+      "fields": [
+        {
+          "name": "status",
+          "id": "gooo://service-policy/versioned-change/decision/v1/status",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "reason",
+          "id": "gooo://service-policy/versioned-change/decision/v1/reason",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "expected_validator_strict",
+          "id": "gooo://service-policy/versioned-change/decision/v1/expected_validator_strict",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "current_validator_strict",
+          "id": "gooo://service-policy/versioned-change/decision/v1/current_validator_strict",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "if_match_condition",
+          "id": "gooo://service-policy/versioned-change/decision/v1/if_match_condition",
+          "type": "integer",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "version_match",
+          "id": "gooo://service-policy/versioned-change/decision/v1/version_match",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "grant_status",
+          "id": "gooo://service-policy/versioned-change/decision/v1/grant_status",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "grant_reason",
+          "id": "gooo://service-policy/versioned-change/decision/v1/grant_reason",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "invalid_field",
+          "id": "gooo://service-policy/versioned-change/decision/v1/invalid_field",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "required_before_match",
+          "id": "gooo://service-policy/versioned-change/decision/v1/required_before_match",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "required_after_match",
+          "id": "gooo://service-policy/versioned-change/decision/v1/required_after_match",
+          "type": "boolean",
+          "required": true,
+          "cardinality": "one"
+        },
+        {
+          "name": "subset_rule_id",
+          "id": "gooo://service-policy/versioned-change/decision/v1/subset_rule_id",
+          "type": "string",
+          "required": true,
+          "cardinality": "one"
+        }
+      ]
+    }
+  ],
+  "closure": {
+    "packages": 12,
+    "sources": 12,
+    "existing_source_files_unchanged": 11,
+    "new_original_composition_files": 1,
+    "records": 9,
+    "record_fields": 61
+  },
+  "corpus": {
+    "path": "examples/versioned-grant-change/cases.json",
+    "schema": "gooo/body-composition-cases/v1",
+    "sha256": "cd8faa4f6493d1ca63ca3124473ec369f4979d5836ac1ae9c695aa1f34fafc09",
+    "occurrences": 48,
+    "ordered": true,
+    "duplicates_must_be_retained": true,
+    "provenance": "Independent explicit contract literals: six grant transitions crossed with eight selected/current-validator pairs. No final business decision is computed from generated Gooo or copied from native receipts.",
+    "input_echoes_each_phase": 288,
+    "typed_output_fields_each_phase": 576
+  },
+  "wire_bounds": {
+    "text_kind": "unchanged decoded Unicode-scalar validUTF8",
+    "each_scalar_utf8_bytes": [
+      0,
+      1024
+    ],
+    "raw_go_case_document_max_bytes": 30000,
+    "raw_serializer": "Go1.27.2 encoding/json.MarshalIndent plus one LF; includes independent expected records",
+    "translated_compact_upper_max_bytes": 32768,
+    "absolute_max_rows_per_batch": 128,
+    "initial_max_rows_per_batch": 8,
+    "selection": "Greedy contiguous original occurrences; no omission, deduplication, repair, normalization or operand splitting. Refuse an oversized singleton before native launch.",
+    "lowered_key_bound": "Pinned839 GoooPackage<ordinal>Activity<name>; ordinal decimal digits bounded by selected original source-byte sum. Compact original bytes + 7*N*max(0,lowered_activity_key_upper-original_activity_key_bytes). Each row has six input keys and one expected key; .inputN suffixes do not expand.",
+    "maximum_selected_source_bytes": 10485760,
+    "joint_domain": "Intersection of six scalar domains and both complete-document evidence bounds, not the full six-by1024 Cartesian domain. Six1024-byte NUL strings exceed the joint wire envelope.",
+    "transport_refusal": [
+      "missing or extra binding",
+      "decoded duplicate binding",
+      "wrong scalar type",
+      "malformed UTF8",
+      "unpaired surrogate",
+      "decoded operand above1024 UTF8 bytes",
+      "complete raw or source-lowered document above the joint bounds"
+    ],
+    "semantic_grammar": "The last four policy inputs retain the existing checked128-byte canonical ASCII grammar. Supported raw overlength/noncanonical values produce typed INVALID_INPUT; they are not silently converted into a128-byte transport refusal.",
+    "network_ingress": "Verifier fixture preflight is not a public six-field HTTP/network adapter."
+  },
+  "decision_contract": {
+    "pure": true,
+    "per_request_human_approval": false,
+    "model_calls": 0,
+    "effects": false,
+    "eligible_status": "ELIGIBLE",
+    "eligible_reason": "VERSION_MATCHED_SUBSET_AND_REQUIRED_REQUEST_PRESERVED",
+    "if_match_conditions": {
+      "condNone": 0,
+      "condTrue": 1,
+      "condFalse": 2
+    },
+    "precedence": [
+      "Preserve grant INVALID_INPUT and original grant reason/invalid_field/diagnostics.",
+      "Empty selected If-Match => REFUSED/PRECONDITION_REQUIRED.",
+      "Selected input is not exactly one complete strong header-valid tag => REFUSED/IF_MATCH_NOT_SINGLE_STRONG.",
+      "Observed current ETag fails the same strict test => REFUSED/CURRENT_VALIDATOR_UNUSABLE.",
+      "Unknown IfMatch enum => REFUSED/DEPENDENCY_RESULT_INVALID.",
+      "Known condition without strict strong match => REFUSED/POLICY_VERSION_CHANGED.",
+      "Grant REFUSED => REFUSED/GRANT_REFUSED while preserving grant_reason.",
+      "Only an internally consistent eligible grant with the represented subset rule and required-request preservation => ELIGIBLE; otherwise REFUSED/DEPENDENCY_RESULT_INVALID."
+    ],
+    "known_subset_rules": [
+      "CANDIDATE_EMPTY",
+      "IDENTICAL_PATTERNS",
+      "OLD_GLOBAL",
+      "OLD_TYPED_ALL",
+      "EXACT_CANDIDATE_ACCEPTED_BY_OLD",
+      "PREFIX_HIERARCHY",
+      "SUFFIX_HIERARCHY"
+    ],
+    "scope": "Original composition of unchanged bounded components, not an upstream Go/AgentMesh business-policy API. It adds a strict single-strong version prerequisite without changing the original IfMatchCondition compatibility quirks."
+  },
+  "host_responsibilities": [
+    "Obtain grant, policy ETag and required request from owned current state; authenticate the subject and determine current write authority. Caller-provided tags/facts alone confer no authority.",
+    "Bind source generation, target/store/subject, policy revision and all relevant required/authority configuration to a version without ABA reuse.",
+    "Under one lock or equivalent compare-and-swap boundary, recheck authority/target/generation/version and evaluate Gooo over the exact current observations before committing candidate, next version and operation result atomically.",
+    "Handle conflict, durability/recovery and operation idempotency at the application boundary; ELIGIBLE is not APPLIED or a guarantee that a write occurred."
+  ],
+  "pins": {
+    "go_version": "go1.27.2",
+    "compiler_repository": "https://github.com/kimjooyoon/meta-ontology-go",
+    "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+    "compiler_version": "0.6.32-dev",
+    "compiler_source_status": "CLEAN_VCS",
+    "upstream_lock": "upstream.json",
+    "go_repository": "https://github.com/golang/go",
+    "go_revision": "022c8636110ebac86a9b88724cda168ed713c21f",
+    "x_net_version": "v0.59.0",
+    "x_net_revision": "540d04cfe5028e2655754591a4d3e08c586809f2",
+    "x_text_version": "v0.42.0",
+    "agentmesh_repository": "https://github.com/google/agentmesh",
+    "agentmesh_revision": "9fd1a41a15174df0aaef601c942410c2116bff91"
+  },
+  "upstream_and_license_refs": [
+    {
+      "path": "LICENSE",
+      "scope": "Original composition and consumer code; repository BSD-style license."
+    },
+    {
+      "path": "NOTICE",
+      "scope": "Repository attribution; imported files retain their original notices."
+    },
+    {
+      "path": "ports/net/http/provenance.json",
+      "scope": "Pinned Go scanETag/etagStrongMatch and TrimString; original Go files and BSD references."
+    },
+    {
+      "path": "ports/net/http/if-match-provenance.json",
+      "scope": "Original checkIfMatch enum and three explicit selected-string adapter substitutions; not an official Go subpackage."
+    },
+    {
+      "path": "third_party/GO-LICENSE",
+      "scope": "Original Go helpers BSD-3-Clause."
+    },
+    {
+      "path": "ports/net/httpguts/provenance.json",
+      "scope": "Actual pinned x/net and x/text module/source sums; bounded Gooo header predicate attribution."
+    },
+    {
+      "path": "third_party/x-net/LICENSE",
+      "scope": "x/net BSD-3-Clause."
+    },
+    {
+      "path": "ports/net/httpguts/headers.gooo",
+      "scope": "Retains full original BSD and inherited bounded-loop MIT notices."
+    },
+    {
+      "path": "ports/agentmesh/NOTICE.md",
+      "scope": "Bounded original MatchServicePattern adaptation and Apache-2.0 attribution."
+    },
+    {
+      "path": "ports/agentmesh/LICENSE-APACHE-2.0",
+      "scope": "Google Agent Mesh Apache-2.0."
+    },
+    {
+      "path": "examples/agentmesh-service-policy/NOTICE.md",
+      "scope": "Original upstream extracts plus distinct Gooo subset/refinement/conditional-grant composition."
+    }
+  ],
+  "verification": {
+    "command": "examples/versioned-grant-change/verify.py",
+    "fresh_current_source_execution_required": true,
+    "required_finite_occurrences": 48,
+    "required_original_input_echoes_each_phase": 288,
+    "required_typed_output_fields_each_phase": 576,
+    "required_phases": [
+      "fresh_execute",
+      "official_saved_replay"
+    ],
+    "component_reference": "Fresh pinned original Go component observations; grant subset/status/reason remain independent explicit contract literals, not a claimed upstream Go equivalent.",
+    "inner_canonical_verification": "Official pinned CLI owns inner canonical/replay verification; no duplicate verifier is implied.",
+    "acceptance": "A source contract or historical result does not establish current runtime acceptance. New source bytes, current raw case documents and each saved parent require fresh verification."
+  }
+}

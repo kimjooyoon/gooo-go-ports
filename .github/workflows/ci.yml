@@ -64,6 +64,7 @@ jobs:
           python3 -B tools/check-ci-scope-workflow_test.py -v
           python3 -B tools/check-api-policy-public-consumer_test.py -v
           python3 -I -B tools/check-header-addition-host_test.py -v
+          python3 -I -B examples/versioned-grant-change/verify_test.py
           # Full scope runs these13 Python controls inside the bounded sidecar once.
           # Documentation-only PRs still run them as common non-native checks.
           if [ "${{ steps.change-scope.outputs.docs_only }}" = "true" ]; then
@@ -274,6 +275,7 @@ jobs:
           ./.gooo check ports/net/http/etag.gooo
           ./.gooo check examples/strong-validator-facts/main.gooo
           ./.gooo check ports/net/http/precondition.gooo
+          ./.gooo check examples/versioned-grant-change/main.gooo
           ./.gooo check ports/net/netip/ipv4.gooo
           ./.gooo check examples/ipv4-address-facts/main.gooo
           ./.gooo check ports/net/netip/prefix.gooo
@@ -1430,6 +1432,26 @@ jobs:
             .corpus_sha256 == "sha256:ce9015cc12bc37e785761f4ee6907a77603082cd69b4d8edc80a634ff4478345" and
             .mutation_witness == "CRLF-trim-does-not-sanitize-header: single_strong false→true"
           ' out/etag-project-evidence/summary.json
+      - name: Verify versioned grant change composition
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 8
+        run: |
+          set -euo pipefail
+          python3 -I -B examples/versioned-grant-change/verify.py --root "$PWD" --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --module-cache "$(go env GOMODCACHE)" --out "$PWD/out/versioned-grant-change"
+          jq -e '
+            .schema == "gooo/versioned-grant-change-verification/v1" and
+            .status == "FINITE48_FRESH_REFERENCE_NATIVE_REPLAY_PASS" and
+            .failure == null and
+            .cases == 48 and
+            .input_echoes_each_phase == 288 and
+            .typed_fields_each_phase == 576 and
+            .source_images == 12 and
+            .model_calls == 0 and
+            .source_tool_unchanged == true and
+            .processes_closed == true and
+            .owned_work_removed == true and
+            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2"
+          ' out/versioned-grant-change/summary.json
       - name: Upload offline policy experiment evidence
         if: always() && steps.change-scope.outputs.docs_only != 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
@@ -1455,6 +1477,7 @@ jobs:
             out/path-facts/
             out/redelivery-policy/
             out/ipv4/
+            out/versioned-grant-change/
           if-no-files-found: warn
           retention-days: 14
       - name: Report documentation-only policy scope

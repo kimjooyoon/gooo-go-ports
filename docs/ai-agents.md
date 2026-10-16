@@ -63,6 +63,12 @@ for all inputs. Preserve a first failure and its diagnostic.
   with fresh Go expectations in seven batches. Exporting is a source copy;
   the separate checker verifies actual Gooo results and an optional19-row CRLF
   mutation witness. Saved-receipt replay is a separate workflow.
+- **Automatically check a versioned service-grant tightening:** use the
+  [versioned grant-change example](../examples/versioned-grant-change/README.md).
+  Gooo combines strict version matching with supported grant narrowing and
+  required-request preservation. Its verifier compares 48 fixed cases with fresh
+  component references and saved replay. An ELIGIBLE result is not an APPLIED
+  write; current authority and atomic application remain host responsibilities.
 - **Import current ports into a separate Gooo project:** follow the
   [current path-import walkthrough](use-current-path-in-your-project.md) with
   its pinned toolchain, source mapping and saved execution/replay.
