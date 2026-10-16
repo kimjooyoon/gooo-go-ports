@@ -203,8 +203,13 @@ the receipt must record that worker count. The historical 66 suites retain all
 159,909 ordered cases: their legacy partition had 2,337 batches/2,471 timing
 records; the explicit UUID compact profile had 2,109 batches/2,243 timing records.
 The decimal parser adds 256 inputs and PayloadAdmissionFacts adds 101 unique
-seven-fact tuples, with the original 17 policy inputs first. The required current
-roster is 68 suites and 160,266 cases. CI now selects
+seven-fact tuples, with the original 17 policy inputs first. That historical
+roster totals 68 suites and 160,266 cases; the partition counts below describe
+that 68-suite prefix. The current full CI roster is 74 suites and 171,217 cases,
+with 2,181 batches under the CI case profile. See
+[Full native port verification](README.md#full-native-port-verification) for the
+case/workspace profiles and the difference from the default local command.
+CI selects
 `uuid-and-literal-report-compact-v1`: the same UUID3 plus literal Report only.
 Report has 235 compact batches; Index/Count and the Cut entries retain their
 prior partitions. The original66 combined-profile requirement is 2,063 batches;
@@ -247,8 +252,12 @@ not require downloading the complete native evidence archive.
 CI는 제한된 워커 2개로 전체 native 비교를 실행하고 receipt의 워커 수도 확인합니다.
 기존66개 suite의159,909개 입력 순서·기대값·workspace를 보존합니다. 해당 역사적 목록은
 legacy에서2,337개 배치·2,471개 계측 기록, UUID compact profile에서2,109개 배치·2,243개
-기록이었습니다. 십진수 파서256개와 원본17개를 앞에 보존한 정책101개 입력을 더해 현재
-필수 범위는68개 suite·160,266개 case입니다. 현재 CI의 `uuid-and-literal-report-compact-v1`은
+기록이었습니다. 십진수 파서256개와 원본17개를 앞에 보존한 정책101개 입력을 더한
+역사적 목록은68개 suite·160,266개 case이며, 아래 분할 수치는 이68개 prefix 기준입니다.
+현재 전체 CI 범위는74개 suite·171,217개 case이며, CI case profile의 배치는2,181개입니다.
+기본 로컬 명령과 CI의 case/workspace profile 차이는
+[Full native port verification](README.md#full-native-port-verification)을 참고합니다.
+현재 CI의 `uuid-and-literal-report-compact-v1`은
 기존 UUID3와 literal Report만 compact 형식을 사용합니다. Report는235배치이며 Index·Count·Cut과
 십진수·payload 경계는 그대로입니다. 해당66개는2,063배치를, parser5·policy4까지 더한 전체68개는
 2,072배치·2,210계측기록을 요구합니다. 기본 legacy 전체68개는2,346·2,484,

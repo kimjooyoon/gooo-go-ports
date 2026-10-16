@@ -96,4 +96,115 @@ class FreshHostTests(unittest.TestCase):
                 name=node.func.attr if isinstance(node.func,ast.Attribute) else node.func.id if isinstance(node.func,ast.Name) else ''
                 self.assertNotIn(name,forbidden)
 
+
+    def test_owned_regular_files_count_exact_logical_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            work=pathlib.Path(directory);(work/'empty').write_bytes(b'');(work/'three').write_bytes(b'abc')
+            nested=work/'nested';nested.mkdir();(nested/'seven').write_bytes(b'1234567')
+            self.assertEqual(CHECK.owned_bytes(work),10)
+
+    def test_owned_empty_directory_counts_zero(self):
+        with tempfile.TemporaryDirectory() as directory:self.assertEqual(CHECK.owned_bytes(pathlib.Path(directory)),0)
+
+    def test_owned_directory_removed_during_scandir_is_ignored(self):
+        with tempfile.TemporaryDirectory() as directory:
+            work=pathlib.Path(directory);(work/'keep').write_bytes(b'abc')
+            nested=work/'vanishes';nested.mkdir();victim=nested/'file';victim.write_bytes(b'gone')
+            original=CHECK.os.scandir;removed=[]
+            def scan(path):
+                if pathlib.Path(path)==nested and not removed:
+                    victim.unlink();nested.rmdir();removed.append(True)
+                return original(path)
+            with mock.patch.object(CHECK.os,'scandir',side_effect=scan):self.assertEqual(CHECK.owned_bytes(work),3)
+            self.assertEqual(removed,[True])
+
+    def test_owned_file_removed_before_lstat_is_ignored(self):
+        with tempfile.TemporaryDirectory() as directory:
+            work=pathlib.Path(directory);(work/'keep').write_bytes(b'abc');victim=work/'vanishes';victim.write_bytes(b'gone')
+            original=pathlib.Path.lstat;removed=[]
+            def lstat(path,*args,**kwargs):
+                if path==victim and not removed:victim.unlink();removed.append(True)
+                return original(path,*args,**kwargs)
+            with mock.patch.object(pathlib.Path,'lstat',lstat):self.assertEqual(CHECK.owned_bytes(work),3)
+            self.assertEqual(removed,[True])
+
+    def test_owned_scandir_permission_error_propagates(self):
+        with tempfile.TemporaryDirectory() as directory:
+            work=pathlib.Path(directory);nested=work/'private';nested.mkdir();original=CHECK.os.scandir
+            failure=PermissionError(13,'controlled directory permission refusal',str(nested))
+            def scan(path):
+                if pathlib.Path(path)==nested:raise failure
+                return original(path)
+            with mock.patch.object(CHECK.os,'scandir',side_effect=scan),self.assertRaises(PermissionError) as caught:CHECK.owned_bytes(work)
+            self.assertIs(caught.exception,failure)
+
+    def test_owned_lstat_permission_error_propagates(self):
+        with tempfile.TemporaryDirectory() as directory:
+            work=pathlib.Path(directory);victim=work/'private';victim.write_bytes(b'data');original=pathlib.Path.lstat
+            failure=PermissionError(13,'controlled file permission refusal',str(victim))
+            def lstat(path,*args,**kwargs):
+                if path==victim:raise failure
+                return original(path,*args,**kwargs)
+            with mock.patch.object(pathlib.Path,'lstat',lstat),self.assertRaises(PermissionError) as caught:CHECK.owned_bytes(work)
+            self.assertIs(caught.exception,failure)
+
+    def test_owned_other_scandir_error_propagates(self):
+        with tempfile.TemporaryDirectory() as directory:
+            failure=OSError(5,'controlled directory I/O refusal',directory)
+            with mock.patch.object(CHECK.os,'scandir',side_effect=failure),self.assertRaises(OSError) as caught:CHECK.owned_bytes(pathlib.Path(directory))
+            self.assertIs(caught.exception,failure)
+
+    def test_owned_symlinks_are_not_followed_or_counted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=pathlib.Path(directory);work=root/'work';work.mkdir();outside=root/'outside';outside.mkdir()
+            (outside/'large').write_bytes(b'x'*8192);(work/'keep').write_bytes(b'abc')
+            (work/'file-link').symlink_to(outside/'large');(work/'directory-link').symlink_to(outside,target_is_directory=True)
+            (work/'broken-link').symlink_to(root/'absent');(work/'cycle').symlink_to(work,target_is_directory=True)
+            self.assertEqual(CHECK.owned_bytes(work),3)
+
+    def test_owned_guard_survives_a_disappearing_enumerated_directory(self):
+        # Deterministic scheduling point in the real filesystem walk; no child is started.
+        class Child:
+            pid=424242
+            returncode=None
+            waited=False
+            polls=0
+            def poll(self):
+                self.polls+=1
+                if self.polls>=3:self.returncode=0
+                return self.returncode
+            def wait(self,timeout):self.waited=True;self.returncode=0
+        child=Child()
+        with tempfile.TemporaryDirectory() as directory:
+            out=pathlib.Path(directory);work=out/'owned';work.mkdir();(work/'keep').write_bytes(b'abc')
+            nested=work/'vanishes';nested.mkdir();victim=nested/'file';victim.write_bytes(b'gone')
+            original=CHECK.os.scandir;removed=[]
+            def scan(path):
+                if pathlib.Path(path)==nested and not removed:
+                    victim.unlink();nested.rmdir();removed.append(True)
+                return original(path)
+            runner=CHECK.OwnedCommands(out,work,out,{},{} )
+            with mock.patch.object(CHECK.subprocess,'Popen',return_value=child),mock.patch.object(CHECK,'processes',return_value={}),mock.patch.object(CHECK.os,'scandir',side_effect=scan),mock.patch.object(CHECK.os,'killpg') as kill,mock.patch.object(CHECK.time,'sleep'):
+                self.assertEqual(runner.call('guard',['mocked-no-process'],1),b'')
+            self.assertEqual(removed,[True]);self.assertTrue(child.waited);self.assertTrue(runner.closed);kill.assert_not_called()
+            self.assertEqual(runner.observations[0]['exit_code'],0);self.assertIsNone(runner.observations[0]['failure'])
+
+    def test_owned_guard_still_refuses_over_one_gib(self):
+        # A sparse file supplies a real st_size boundary without allocating1GiB data.
+        class Child:
+            pid=424242
+            returncode=None
+            waited=False
+            def poll(self):return self.returncode
+            def wait(self,timeout):self.waited=True;self.returncode=-9
+        child=Child()
+        with tempfile.TemporaryDirectory() as directory:
+            out=pathlib.Path(directory);work=out/'owned';work.mkdir()
+            with (work/'large').open('wb') as stream:stream.truncate((1<<30)+1)
+            self.assertEqual(CHECK.owned_bytes(work),(1<<30)+1)
+            runner=CHECK.OwnedCommands(out,work,out,{},{} )
+            with mock.patch.object(CHECK.subprocess,'Popen',return_value=child),mock.patch.object(CHECK,'processes',return_value={}),mock.patch.object(CHECK.os,'killpg') as kill:
+                with self.assertRaisesRegex(RuntimeError,'owned work1GiB bound'):runner.call('guard',['mocked-no-process'],1)
+            kill.assert_called_once_with(child.pid,CHECK.signal.SIGKILL);self.assertTrue(child.waited)
+
 if __name__=='__main__':unittest.main()
