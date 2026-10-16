@@ -4,7 +4,7 @@
 read_verification is intentionally side-effect-free and is shared by the input
 route checker. Expected ABI values come from fresh independent Go case documents.
 """
-import argparse, hashlib, json, os, pathlib, re, shutil, signal, subprocess, sys, tempfile, time
+import argparse, hashlib, json, os, pathlib, re, shutil, signal, stat, subprocess, sys, tempfile, time
 
 REV='83928fa4538245abe33b08549da47f8cbdc50ed2'
 ROOT='app/diagnostic-header-addition'
@@ -272,11 +272,15 @@ def processes():
     return rows
 
 def owned_bytes(work):
+    """Count regular owned bytes while Go removes temporary files/directories."""
+    def walk_error(error):
+        if not isinstance(error,FileNotFoundError):raise error
     size=0
-    for path in work.rglob('*'):
-        try:
-            if path.is_file():size+=path.stat().st_size
-        except FileNotFoundError:pass  # Go removes its own temporary build files.
+    for directory,_,files in os.walk(work,onerror=walk_error,followlinks=False):
+        for name in files:
+            try:info=(pathlib.Path(directory)/name).lstat()
+            except FileNotFoundError:continue
+            if stat.S_ISREG(info.st_mode):size+=info.st_size
     return size
 
 class OwnedCommands:

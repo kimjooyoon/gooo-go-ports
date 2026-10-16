@@ -672,6 +672,12 @@ native 실행 영수증이나 보안 인증이 아닙니다. 이 화면의 유�
 
 This checks the port corpus and saved replay; it is separate from the small tutorial above.
 
+The current full CI roster is 74 suites and 171,217 cases, with 2,181 batches
+under `--case-profile uuid-and-literal-report-compact-v1`. CI also selects
+`--workspace-profile dependency-closure-v1`. The default local command below
+uses the legacy profiles and has different batch boundaries. The 66- and
+68-suite counts below describe historical prefixes, not the current full roster.
+
 Go 1.27.2, Git, POSIX shell이 필요합니다. `go.mod`를 인식하는 Go 설치는 필요한
 도구 체인을 자동 선택할 수 있습니다. 저장소 루트에서 실행합니다.
 
@@ -717,14 +723,15 @@ The original 66-suite population retains 159,909 cases. Its historical legacy
 partition has 2,337 batches/2,471 timing records; the UUID-only profile has
 2,109/2,243. The combined profile requires 2,063 batches for those same cases:
 UUID retains 195/197/239 and the literal Report uses 235 instead of 281.
-Appending the unchanged parser256/5 and payload101/4 gives the required full
-68 suites, 160,266 cases, 2,072 batches and 2,210 timing records. These are
-strict source-partition requirements, not an assertion that a new execution
-has completed. Current full68 native execution, saved replay, all seven
-exhaustive checks and a complete timing footer must pass the corresponding
-source's CI. Legacy full68 remains 2,346 batches/2,484 records; UUID-only full68
-remains 2,118/2,256. No case profile reuses a previous successful receipt, and
-fewer batches alone do not establish a duration or memory improvement.
+Appending the unchanged parser256/5 and payload101/4 gives the historical
+68-suite prefix: 160,266 cases, 2,072 batches and 2,210 timing records. These
+source-partition counts are not an assertion that a new execution has completed.
+The current full roster requires fresh native execution, saved replay, all seven
+exhaustive checks and a complete timing footer for the corresponding source's CI.
+Within that historical 68-suite prefix, legacy requires 2,346 batches/2,484
+records and UUID-only requires 2,118/2,256. No case profile reuses a previous
+successful receipt, and fewer batches alone do not establish a duration or
+memory improvement.
 
 ### Bootstrap recovery
 
