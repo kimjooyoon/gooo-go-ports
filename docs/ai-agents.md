@@ -67,6 +67,39 @@ for all inputs. Preserve a first failure and its diagnostic.
   [current path-import walkthrough](use-current-path-in-your-project.md) with
   its pinned toolchain, source mapping and saved execution/replay.
 
+## Optional Claude Code ETag workflow
+
+Use the experimental `gooo-porting` adapter for requested Gooo ETag body edits
+checked against Go. The [Gooo language and compiler](https://github.com/kimjooyoon/meta-ontology-go)
+are developed in `meta-ontology-go`.
+
+In a Claude Code session (2.1.275 or later), explicitly add this GitHub
+marketplace and install the adapter:
+
+```text
+/plugin install gooo-porting --marketplace kimjooyoon/gooo-go-ports
+```
+
+Review the source and choose an installation scope in the
+[official install flow](https://code.claude.com/docs/en/plugins/install#add-a-marketplace-and-install-in-one-command).
+
+On macOS or Linux, prepare Git, Python 3, a POSIX shell, Go **1.27.2**, and a
+clean Gooo compiler at `83928fa4538245abe33b08549da47f8cbdc50ed2`.
+Reuse matching tools and prepare the pinned Go modules once using the
+[project setup guide](../templates/etag-project/README.md#prepare-and-run).
+Keep setup and exported projects outside the installed plugin bundle.
+
+Then request a concrete edit with the
+[gooo-etag-project skill](../.agents/skills/gooo-etag-project/SKILL.md), for example:
+
+> Use `gooo-etag-project`. Export to a new directory outside the plugin bundle,
+> run the baseline, then reorder the Report's `single_strong` boolean checks
+> without changing their behavior. Compare the edit with Go, preserve my
+> existing files, and show the source changes, actual results and new evidence.
+
+Claude Code 2.1.301 checked the marketplace and plugin manifests; real Claude
+installation, skill loading and activation have not yet been verified.
+
 ## Inspect ETag and header facts
 
 For an agent task such as “inspect this API's ETag or `If-Match` data in Gooo,”

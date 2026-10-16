@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gooo ETag Project"
+  short_description: "Edit Gooo ETag bodies and compare with Go"
+  default_prompt: "Use $gooo-etag-project to export the ETag project, make my requested Gooo edit, and compare its actual results with Go."

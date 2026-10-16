@@ -1,0 +1,14 @@
+{
+  "name": "gooo-go-ports",
+  "description": "Bounded Gooo source workflows with independent Go comparison.",
+  "owner": {
+    "name": "asketeddy"
+  },
+  "plugins": [
+    {
+      "name": "gooo-porting",
+      "source": "./",
+      "description": "Gooo source edits with independent Go comparison and bounded native evidence."
+    }
+  ]
+}
