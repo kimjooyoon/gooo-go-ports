@@ -42,7 +42,7 @@ jobs:
           go-version: '1.27.2'
           cache: false
       - id: policy
-        uses: kimjooyoon/gooo-go-ports/examples/api-policy-ci@10363958cce2dd97418a3074e3c87743b96547dc
+        uses: kimjooyoon/gooo-go-ports/examples/api-policy-ci@0ba571af75fd84dac70f38877b7b07e4275fdd06
         with:
           input-file: ci/policy-case.json
           fail-on-newly-denied: 'false'
