@@ -647,7 +647,8 @@ def validate(text):
                   '.saved_api_replay.consumer.application_state_unchanged == true'):
         require(token in cel, "Saved API replay check missing: " + token)
     log = named["Report documentation-only native scope"]
-    require("No new native-port execution/replay receipts" in log
+    require("Allowlisted static-document content-only PR" in log
+            and "No new native-port execution/replay receipts" in log
             and "browser-demo job retains its separate" in log, "misleading execution scope log")
 
 
@@ -1421,6 +1422,13 @@ class WorkflowScopeTests(unittest.TestCase):
                                       "      - name: Check Gooo declarations\n        run: python3 -B examples/agentmesh-service-policy/verify.py\n", 1)
         with self.assertRaises(ValueError):
             validate(misplaced)
+
+    def test_docs_log_cannot_describe_the_old_root_only_scope(self):
+        old = "Root README/CONTRIBUTING content-only PR"
+        current = "Allowlisted static-document content-only PR"
+        self.assertIn(current, self.text)
+        with self.assertRaises(ValueError):
+            validate(self.text.replace(current, old, 1))
 
     def test_docs_artifact_cannot_include_native_receipts(self):
         named, _ = named_steps(self.text)

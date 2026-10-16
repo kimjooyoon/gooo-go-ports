@@ -1317,8 +1317,8 @@ jobs:
         if: steps.change-scope.outputs.docs_only == 'true'
         run: |
           printf '%s\n' \
-            'Root README/CONTRIBUTING content-only PR: common checks, compiler identity and declarations ran.' \
-            'This native-ports job did not run differential, exhaustive, probe, native-example or policy commands.' \
+            'Allowlisted static-document content-only PR: common checks, compiler identity and declarations ran.' \
+            'This native-execution job did not run differential, exhaustive, probe, native-example or policy commands.' \
             'No new native-port execution/replay receipts were produced; existing observations are not rebound to this commit.' \
             'The browser-demo job retains its separate full build, checks and receipts.' | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Preserve documentation scope and compiler identity

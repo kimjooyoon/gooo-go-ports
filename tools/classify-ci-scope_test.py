@@ -18,6 +18,19 @@ scope = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(scope)
 
 
+AGENT_DOCUMENTS = (
+    ".agents/skills/gooo-first-program/SKILL.md",
+    ".agents/skills/gooo-first-program/agents/openai.yaml",
+    "docs/ai-agents.md", "context7.json",
+)
+OTHER_DOCUMENTS = (
+    ".agents/skills/another/SKILL.md",
+    ".agents/skills/gooo-first-program/agents/openai.yml",
+    ".agents/skills/gooo-first-program/references/README.md",
+    "docs/ai-agents.md.bak", "context7.local.json",
+)
+
+
 class GitScopeTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -33,7 +46,8 @@ class GitScopeTests(unittest.TestCase):
         self.git("init", "-q", "--object-format=sha1")
         for name in ("README.md", "CONTRIBUTING.md", "ports/example.gooo",
                      "examples/sample/README.md", "third_party/google-uuid/README.md",
-                     "AGENTS.md", "tools/check.py", ".github/workflows/ci.yml"):
+                     "AGENTS.md", "tools/check.py", ".github/workflows/ci.yml",
+                     *AGENT_DOCUMENTS, *OTHER_DOCUMENTS):
             path = self.repo / name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("original\n")
@@ -62,24 +76,69 @@ class GitScopeTests(unittest.TestCase):
     def result(self, event_name="pull_request", expected=None):
         return scope.classify(self.repo, event_name, self.event, expected or self.tested)
 
-    def test_each_allowed_document_and_both(self):
-        for paths in (["README.md"], ["CONTRIBUTING.md"], ["README.md", "CONTRIBUTING.md"]):
+    def test_each_allowed_document_and_mixed_delta(self):
+        cases = (["README.md"], ["CONTRIBUTING.md"],
+                 *([name] for name in AGENT_DOCUMENTS),
+                 ["README.md", "CONTRIBUTING.md"], list(AGENT_DOCUMENTS),
+                 ["README.md", "CONTRIBUTING.md", *AGENT_DOCUMENTS])
+        for paths in cases:
             with self.subTest(paths=paths):
                 self.git("checkout", "-q", "--detach", self.base)
                 self.merge(paths)
                 result = self.result()
                 self.assertTrue(result["docs_only"])
                 self.assertEqual(result["status"], "DOCS_ONLY_CONTENT_CHANGE")
+                self.assertEqual(result["reason"], "exact_static_document_content_delta")
                 self.assertEqual({c["path"] for c in result["changes"]}, set(paths))
                 self.assertEqual(result["checkout_parents"], [self.base, self.pr_head])
 
     def test_mixed_code_and_policy_changes_require_full(self):
         for name in ("ports/example.gooo", "AGENTS.md", "tools/check.py", ".github/workflows/ci.yml",
-                     "examples/sample/README.md", "third_party/google-uuid/README.md"):
+                     "examples/sample/README.md", "third_party/google-uuid/README.md", *OTHER_DOCUMENTS):
             with self.subTest(path=name):
                 self.git("checkout", "-q", "--detach", self.base)
-                self.merge(["README.md", name])
+                self.merge(["README.md", *AGENT_DOCUMENTS, name])
                 self.assertFalse(self.result()["docs_only"])
+
+    def test_static_agent_paths_still_require_existing_regular_content_only(self):
+        baseline = self.base
+        for name in (AGENT_DOCUMENTS[0], "context7.json"):
+            for mutation in ("add", "delete", "executable", "symlink"):
+                with self.subTest(path=name, mutation=mutation):
+                    self.git("checkout", "-q", "--detach", baseline)
+                    self.base = baseline
+                    path = self.repo / name
+                    if mutation == "add":
+                        self.git("rm", "-q", name)
+                        self.base = self.commit("base without agent document")
+                        path.parent.mkdir(parents=True, exist_ok=True)
+                        path.write_text("new document\n")
+                    elif mutation == "delete":
+                        path.unlink()
+                    elif mutation == "symlink":
+                        path.unlink()
+                        path.symlink_to("ports/example.gooo")
+                    else:
+                        path.chmod(0o755)
+                        with path.open("a") as stream:
+                            stream.write("changed\n")
+                    self.merge()
+                    result = self.result()
+                    self.assertFalse(result["docs_only"])
+                    self.assertEqual(result["status"], "FULL_REQUIRED")
+        self.base = baseline
+
+    def test_rename_between_allowed_agent_paths_requires_full(self):
+        self.git("rm", "-q", "context7.json")
+        self.base = self.commit("base without allowed rename target")
+        self.git("mv", AGENT_DOCUMENTS[0], "context7.json")
+        self.merge()
+        result = self.result()
+        self.assertFalse(result["docs_only"])
+        self.assertEqual(result["status"], "FULL_REQUIRED")
+        self.assertEqual(result["reason"], "not_existing_regular_document_content_only")
+        self.assertEqual({c["status"] for c in result["changes"]}, {"A", "D"})
+        self.assertTrue(all(c["allowed_path"] for c in result["changes"]))
 
     def test_added_document_requires_full(self):
         (self.repo / "new.md").write_text("new\n")
