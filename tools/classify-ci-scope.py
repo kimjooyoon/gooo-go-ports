@@ -9,7 +9,12 @@ import sys
 from pathlib import Path
 
 
-DOC_PATHS = frozenset((b"README.md", b"CONTRIBUTING.md"))
+DOC_PATHS = frozenset((
+    b"README.md", b"CONTRIBUTING.md",
+    b".agents/skills/gooo-first-program/SKILL.md",
+    b".agents/skills/gooo-first-program/agents/openai.yaml",
+    b"docs/ai-agents.md", b"context7.json",
+))
 SHA = re.compile(r"[0-9a-f]{40}\Z")
 RAW_HEADER = re.compile(
     rb":([0-7]{6}) ([0-7]{6}) ([0-9a-f]{40}) ([0-9a-f]{40}) ([A-Z])\Z"
@@ -117,7 +122,7 @@ def classify(repo, event_name, event, expected_head):
         return result
     for change in changes:
         if not change["allowed_path"]:
-            result["reason"] = "path_outside_root_document_allowlist"
+            result["reason"] = "path_outside_static_document_allowlist"
             return result
         if (change["status"] != "M" or change["old_mode"] != "100644"
                 or change["new_mode"] != "100644"
@@ -126,7 +131,7 @@ def classify(repo, event_name, event, expected_head):
             result["reason"] = "not_existing_regular_document_content_only"
             return result
     result.update(docs_only=True, status="DOCS_ONLY_CONTENT_CHANGE",
-                  reason="exact_root_document_content_delta")
+                  reason="exact_static_document_content_delta")
     return result
 
 
