@@ -1,0 +1,34 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+)
+
+func main() {
+	owner, err := NewOwner("prepared-request-1", Request{Headers: []Header{{"Content-Length", "2"}}, Body: []byte("ok"), Complete: true}, Policy{"x-request-id", 16}, "local-worker")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	writer, err := owner.WriterForAuthenticated("local-worker")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	plan, err := writer.Prepare("x-request-id", "req-123")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	result, err := writer.Apply(plan)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	if err = json.NewEncoder(os.Stdout).Encode(result); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}

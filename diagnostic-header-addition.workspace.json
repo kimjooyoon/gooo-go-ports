@@ -1,0 +1,39 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "app/diagnostic-header-addition",
+    "activity": "AssessAddition"
+  },
+  "packages": [
+    {
+      "path": "go/golang.org/x/net/http/httpguts",
+      "sources": [
+        "ports/net/httpguts/headers.gooo"
+      ]
+    },
+    {
+      "path": "app/header-field-facts",
+      "sources": [
+        "examples/header-field-facts/main.gooo"
+      ]
+    },
+    {
+      "path": "go/strconv",
+      "sources": [
+        "ports/strconv/decimal.gooo"
+      ]
+    },
+    {
+      "path": "app/payload-admission",
+      "sources": [
+        "examples/payload-admission/main.gooo"
+      ]
+    },
+    {
+      "path": "app/diagnostic-header-addition",
+      "sources": [
+        "examples/diagnostic-header-addition/main.gooo"
+      ]
+    }
+  ]
+}

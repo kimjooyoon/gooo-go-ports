@@ -27,7 +27,7 @@ func TestPathAliasCatalogPreservesAllEarlier68WorkspaceClosures(t *testing.T) {
 	for key := range nativeActivityContracts() {
 		parts := strings.SplitN(key, ":", 2)
 		s := suite{Package: parts[0], Activity: parts[1]}
-		if !isPathAliasSuite(s) && !isHeaderSuite(s) {
+		if !isPathAliasSuite(s) && !isHeaderSuite(s) && !isHeaderAdditionSuite(s) {
 			old = append(old, s)
 		}
 	}

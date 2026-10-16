@@ -1,0 +1,310 @@
+// In-process host example. Policy semantics belong only to generated Gooo.
+// The trusted embedding adapter authenticates subjects and supplies observations.
+package main
+
+import (
+	"crypto/sha256"
+	"encoding/json"
+	"errors"
+	"math"
+	"strings"
+	"sync"
+	"unicode/utf8"
+)
+
+const maxBodyBytes = 1 << 20
+const maxHeaders = 64
+
+var (
+	ErrInvalidHandle     = errors.New("invalid host handle")
+	ErrUnsupportedInput  = errors.New("unsupported bounded typed input")
+	ErrInvalidPlan       = errors.New("plan does not match its issuing store, subject or exact candidate")
+	ErrStaleRequest      = errors.New("request revision changed")
+	ErrStalePolicy       = errors.New("policy revision changed")
+	ErrSnapshotChanged   = errors.New("request bytes changed without a matching revision")
+	ErrRevisionExhausted = errors.New("signed64 revision exhausted")
+	ErrCapacity          = errors.New("bounded header capacity reached")
+)
+
+type Header struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+type Request struct {
+	Headers  []Header
+	Body     []byte
+	Complete bool
+}
+type Policy struct {
+	AllowedHeaderName   string
+	MaximumPayloadBytes int64
+}
+type Snapshot struct {
+	Target                          string
+	RequestRevision, PolicyRevision int64
+	Request                         Request
+	Policy                          Policy
+}
+
+// Plan is an in-process capability, not a serializable proof. Advisory is display
+// data. It is never consumed by Apply. The private binding contains only immutable
+// value fields and a store identity pointer; no caller-owned slice/map survives.
+type Plan struct {
+	Target, Name, Value                             string
+	ExpectedRequestRevision, ExpectedPolicyRevision int64
+	Advisory                                        Decision
+	binding                                         *prepared
+}
+type prepared struct {
+	store                           *requestStore
+	subject, target, name, value    string
+	requestRevision, policyRevision int64
+	stamp                           requestStamp
+}
+type requestStamp struct {
+	Body, Headers [32]byte
+	Complete      bool
+}
+type ApplyResult struct {
+	Status                                        string
+	HasDecision                                   bool
+	Decision                                      Decision
+	BeforeRevision, AfterRevision, PolicyRevision int64
+}
+type requestStore struct {
+	mu                              sync.Mutex
+	target, allowedSubject          string
+	requestRevision, policyRevision int64
+	request                         Request
+	policy                          Policy
+}
+type Owner struct{ store *requestStore }
+type Writer struct {
+	store   *requestStore
+	subject string
+}
+
+// NewOwner accepts already-observed request facts from the trusted adapter.
+// Complete is that adapter's assertion; this example does not read a network body.
+func NewOwner(target string, request Request, policy Policy, allowedSubject string) (*Owner, error) {
+	if !bounded(target, 128, true) || !bounded(allowedSubject, 128, false) || !bounded(policy.AllowedHeaderName, 1024, false) {
+		return nil, ErrUnsupportedInput
+	}
+	owned, err := ownRequest(request)
+	if err != nil {
+		return nil, err
+	}
+	return &Owner{store: &requestStore{target: strings.Clone(target), allowedSubject: strings.Clone(allowedSubject), requestRevision: 1, policyRevision: 1, request: owned, policy: ownPolicy(policy)}}, nil
+}
+
+// This is an adapter entry point, not authentication. Never pass an untrusted
+// claimed identity here. Current local authority is re-evaluated during Apply.
+func (o *Owner) WriterForAuthenticated(subject string) (*Writer, error) {
+	if o == nil || o.store == nil {
+		return nil, ErrInvalidHandle
+	}
+	if !bounded(subject, 128, true) {
+		return nil, ErrUnsupportedInput
+	}
+	return &Writer{store: o.store, subject: strings.Clone(subject)}, nil
+}
+func (o *Owner) View() (Snapshot, error) {
+	if o == nil || o.store == nil {
+		return Snapshot{}, ErrInvalidHandle
+	}
+	s := o.store
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	r, err := ownRequest(s.request)
+	if err != nil {
+		return Snapshot{}, err
+	}
+	return Snapshot{s.target, s.requestRevision, s.policyRevision, r, s.policy}, nil
+}
+
+// Trusted owner updates. Request and policy revisions are monotonic even for an
+// equal-value replacement, so a stale proposal cannot survive a change and undo.
+func (o *Owner) ReplaceRequest(expected int64, next Request) error {
+	if o == nil || o.store == nil {
+		return ErrInvalidHandle
+	}
+	owned, err := ownRequest(next)
+	if err != nil {
+		return err
+	}
+	s := o.store
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if expected != s.requestRevision {
+		return ErrStaleRequest
+	}
+	if s.requestRevision == math.MaxInt64 {
+		return ErrRevisionExhausted
+	}
+	s.request = owned
+	s.requestRevision++
+	return nil
+}
+func (o *Owner) ReplacePolicy(expected int64, next Policy) error {
+	if o == nil || o.store == nil {
+		return ErrInvalidHandle
+	}
+	if !bounded(next.AllowedHeaderName, 1024, false) {
+		return ErrUnsupportedInput
+	}
+	next = ownPolicy(next)
+	s := o.store
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if expected != s.policyRevision {
+		return ErrStalePolicy
+	}
+	if s.policyRevision == math.MaxInt64 {
+		return ErrRevisionExhausted
+	}
+	s.policy = next
+	s.policyRevision++
+	return nil
+}
+
+// Authority is current trusted local state, rather than an assertion saved in a
+// plan. Revocation under this same lock prevents the next Apply from using it.
+// An empty subject expresses no current authority. Regranting is a new current fact.
+func (o *Owner) SetAuthority(subject string) error {
+	if o == nil || o.store == nil {
+		return ErrInvalidHandle
+	}
+	if !bounded(subject, 128, false) {
+		return ErrUnsupportedInput
+	}
+	s := o.store
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.allowedSubject = strings.Clone(subject)
+	return nil
+}
+
+func (w *Writer) Prepare(name, value string) (Plan, error) {
+	if w == nil || w.store == nil {
+		return Plan{}, ErrInvalidHandle
+	}
+	if !bounded(name, 1024, false) || !bounded(value, 1024, false) {
+		return Plan{}, ErrUnsupportedInput
+	}
+	name, value = strings.Clone(name), strings.Clone(value)
+	s := w.store
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	b := &prepared{s, w.subject, s.target, name, value, s.requestRevision, s.policyRevision, stamp(s.request)}
+	cl, facts := factsLocked(s, w.subject, name, s.requestRevision)
+	decision := assessWithGooo(name, value, cl, facts)
+	return Plan{s.target, name, value, s.requestRevision, s.policyRevision, decision, b}, nil
+}
+
+// One lock covers the current trusted state, policy/authority, fresh generated
+// evaluation, exact append and revision publication. No public evaluator callback
+// or caller decision can grant an exception. There is no network effect or ledger.
+func (w *Writer) Apply(p Plan) (ApplyResult, error) {
+	if w == nil || w.store == nil {
+		return ApplyResult{}, ErrInvalidHandle
+	}
+	s := w.store
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	b := p.binding
+	if b == nil || b.store != s || b.subject != w.subject || b.target != s.target || p.Target != b.target || p.Name != b.name || p.Value != b.value || p.ExpectedRequestRevision != b.requestRevision || p.ExpectedPolicyRevision != b.policyRevision {
+		return ApplyResult{}, ErrInvalidPlan
+	}
+	if s.requestRevision != b.requestRevision {
+		return ApplyResult{}, ErrStaleRequest
+	}
+	if s.policyRevision != b.policyRevision {
+		return ApplyResult{}, ErrStalePolicy
+	}
+	if stamp(s.request) != b.stamp {
+		return ApplyResult{}, ErrSnapshotChanged
+	}
+	cl, facts := factsLocked(s, w.subject, b.name, b.requestRevision)
+	decision := assessWithGooo(b.name, b.value, cl, facts)
+	r := ApplyResult{Status: "REFUSED", HasDecision: true, Decision: decision, BeforeRevision: s.requestRevision, AfterRevision: s.requestRevision, PolicyRevision: s.policyRevision}
+	// The counter guard is a host publication invariant even if a later evaluator
+	// were inconsistent. The current pinned Gooo also refuses the exhausted input.
+	if s.requestRevision == math.MaxInt64 {
+		return r, ErrRevisionExhausted
+	}
+	if !decision.Eligible || decision.Status != "ELIGIBLE" {
+		return r, nil
+	}
+	if len(s.request.Headers) >= maxHeaders {
+		return r, ErrCapacity
+	}
+	next := make([]Header, len(s.request.Headers)+1)
+	copy(next, s.request.Headers)
+	next[len(s.request.Headers)] = Header{b.name, b.value}
+	s.request.Headers = next
+	s.requestRevision++
+	r.Status = "APPLIED"
+	r.AfterRevision = s.requestRevision
+	return r, nil
+}
+
+// Only extracts current owned observations. Header syntax, decimal parsing,
+// allowed-name policy, value policy and eligibility remain in generated Gooo.
+func factsLocked(s *requestStore, subject, candidate string, expected int64) (string, assessorFacts) {
+	f := assessorFacts{ObservedBodyBytes: int64(len(s.request.Body)), MaximumPayloadBytes: s.policy.MaximumPayloadBytes, BodyObservationBoundToRequest: s.request.Complete, CurrentAccess: subject != "" && subject == s.allowedSubject, HeaderSetBoundToRequest: true, PolicyRevisionCurrent: true, AllowedHeaderName: s.policy.AllowedHeaderName, ExpectedRequestRevision: expected, ObservedRequestRevision: s.requestRevision}
+	declared := ""
+	for _, h := range s.request.Headers {
+		if asciiEqualFold(h.Name, "content-length") {
+			if f.ContentLengthOccurrences == 0 {
+				declared = h.Value
+			}
+			f.ContentLengthOccurrences++
+		}
+		if asciiEqualFold(h.Name, "transfer-encoding") {
+			f.TransferEncodingPresent = true
+		}
+		if asciiEqualFold(h.Name, candidate) {
+			f.CandidateNameOccurrences++
+		}
+	}
+	return declared, f
+}
+func asciiEqualFold(a, b string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := 0; i < len(a); i++ {
+		x, y := a[i], b[i]
+		if x >= 'A' && x <= 'Z' {
+			x += 'a' - 'A'
+		}
+		if y >= 'A' && y <= 'Z' {
+			y += 'a' - 'A'
+		}
+		if x != y {
+			return false
+		}
+	}
+	return true
+}
+func stamp(r Request) requestStamp {
+	encoded, _ := json.Marshal(r.Headers)
+	return requestStamp{sha256.Sum256(r.Body), sha256.Sum256(encoded), r.Complete}
+}
+func bounded(s string, limit int, nonempty bool) bool {
+	return utf8.ValidString(s) && len(s) <= limit && (!nonempty || s != "")
+}
+func ownPolicy(p Policy) Policy { p.AllowedHeaderName = strings.Clone(p.AllowedHeaderName); return p }
+func ownRequest(r Request) (Request, error) {
+	if len(r.Headers) > maxHeaders || len(r.Body) > maxBodyBytes {
+		return Request{}, ErrUnsupportedInput
+	}
+	out := Request{Headers: make([]Header, len(r.Headers)), Body: append([]byte(nil), r.Body...), Complete: r.Complete}
+	for i, h := range r.Headers {
+		if !bounded(h.Name, 1024, false) || !bounded(h.Value, 1024, false) {
+			return Request{}, ErrUnsupportedInput
+		}
+		out.Headers[i] = Header{strings.Clone(h.Name), strings.Clone(h.Value)}
+	}
+	return out, nil
+}

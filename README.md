@@ -9,10 +9,12 @@ describing what programs should do and inspecting how they are built and run.
 
 **Try automatic header diagnostics:** [inspect a header name and value](examples/header-field-facts/README.md#run-one-external-json-request), strictly decode external JSON, then retain both strings and the first invalid byte in a twelve-field Gooo report. No per-request human approval is needed to calculate the facts.
 
+**Compose an automatic header-addition decision:** the [diagnostic-header addition](examples/diagnostic-header-addition/README.md) combines header facts, payload admission and twelve supplied request observations. Inspect sixteen fields, preserve the candidate and byte witnesses, then use a [fresh Gooo-generated local host](examples/header-addition-host/README.md) for an atomic revision check and application.
+
 This independent ecosystem project implements selected Go standard-library, x/net, x/image and Google UUID functions in Gooo,
 using independent Go references and saved replay. The source inventory includes 53 authored standard-library ports,
 two ports from golang.org/x/net, two from golang.org/x/image and two Google UUID adaptations. The current scope is
-59 authored HTTP, Unicode, IPv4 classification and prefix queries, signed-decimal parsing, literal-text splitting and byte search, slash-path, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, twenty-six importing consumer programs (twenty-nine activities),
+59 authored HTTP, Unicode, IPv4 classification and prefix queries, signed-decimal parsing, literal-text splitting and byte search, slash-path, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, twenty-seven importing consumer programs (thirty activities),
 and an importing browser dispatcher.
 The RectangleIn/FitsCrop suites have completed finite native execution and saved
 replay with an independent raw-receipt audit; see the [verification evidence](evidence/rectangle-in-fits-crop-20261012.json).
@@ -113,6 +115,22 @@ addition. The report is suitable for an explicit automatic header policy and
 does not require a human decision to compute. HTTP framing, authority and actual
 effects remain host responsibilities.
 
+The original [diagnostic-header addition](examples/diagnostic-header-addition/README.md)
+adds one importing `AssessAddition` activity after the preceding 73 suites. It
+combines the header and payload reports with a twelve-field `RequestFacts` record
+to return sixteen typed fields: candidate strings, status/reason, imported facts,
+first invalid bytes, the observed revision and eligibility. No per-case human
+approval is needed to compute the decision. The new suite retains all 50 frozen
+cases in seven fixed batches of at most eight rows; actual Go serialization must
+fit both raw and translated limits before each CLI launch. The required roster
+is 74 suites, 171,217 cases and 2,181 batches, with the original 73-suite
+171,167-case/2,174-batch prefix unchanged. Fresh public native/replay acceptance
+is required for this source; private results are not substituted. A later CI
+stage extracts the unchanged generated program from those fresh receipt bytes,
+compares all 50 Go-reference outputs, and checks a local atomic host. The host
+example does not implement a distributed transaction, persistent ledger or
+authenticated request source.
+
 Full CI selects `--workspace-profile dependency-closure-v1` independently of the
 existing `--case-profile uuid-and-literal-report-compact-v1`. The workspace profile
 starts with each suite's historical selected workspace, then follows imports over
@@ -190,6 +208,7 @@ proposal, a refused expansion, and recovery of a discarded response by operation
 | Split a literal separator or remove an edge affix | [Literal Cut report](examples/literal-cut-report/README.md) | Compare Cut, CutPrefix and CutSuffix while retaining both original inputs and all eleven returned fields |
 | Parse an exact decimal or inspect payload eligibility | [Payload admission facts](examples/payload-admission/README.md) | Preserve all seven observations, distinguish syntax/range/spelling and inspect the first policy refusal; no request or effect is enforced |
 | Diagnose a header automatically | [Header facts](examples/header-field-facts/README.md) | Strictly preprocess external JSON, preserve both decoded strings, and inspect the first invalid byte and twelve returned fields |
+| Plan and apply one diagnostic header locally | [Original header-addition policy](examples/diagnostic-header-addition/README.md) and [generated host](examples/header-addition-host/README.md) | Combine header/payload diagnostics with exact request facts, inspect the first refusal, and atomically recheck a local revision before applying |
 | Assess an uncertain API operation automatically | [Automatic redelivery policy](examples/automatic-redelivery/README.md) | Supply nine bound facts, inspect all fifteen returned fields and save a replay; eligibility requires a later host-owned atomic claim |
 | Classify four IPv4 octets in Gooo | [IPv4 address facts](examples/ipv4-address-facts/README.md) | Preserve all four supplied integers, distinguish invalid input from valid addresses, and inspect six overlapping classification flags |
 | Compare two IPv4 rule scopes | [IPv4 rule-pair facts](examples/ipv4-rule-pair/README.md) | Preserve typed inputs, distinguish invalid/non-comparable rules and inspect a conflict witness |
