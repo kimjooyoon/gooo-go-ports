@@ -22,7 +22,7 @@ PREFLIGHT = {PREFLIGHT_STEP_NAME}
 DOCS = "steps.change-scope.outputs.docs_only == 'true'"
 HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
 # The observer/browser producers and deployment body retain their reviewed bytes.
-# Native alone uses the explicit workspace profile and a pinned Ubuntu 24.04 runner.
+# Native and the independent policy producer use the pinned Ubuntu 24.04 runner.
 BROWSER_JOB_SHA = "1aee9cc0cd8f75b2e4a438712aaf87bc8e1007a1318cb997ede369b6f6ce4e10"
 DEPLOY_BODY_SHA = "0fed0b124228b17bd80d8f95c7c7e69ac2ad854f719ca846c3e60a1359a480c8"
 PATH_STEP_SHA = 'b90f403ce804adea78dacebf554c45f3e21b1faf89b942e83f32aca2847f9df5'
@@ -279,9 +279,32 @@ CLASSIFIER_STEP_SHA = '1864b9e0f27cc73595dd863c71640050cf046b2ec67cfd02c6ba5a8eb
 CHECKOUT_STEP_SHA = 'b60ba5d7bf95691b8baec3a3e402aeba552fbcb4a353d7de8946023e73e79603'
 SETUP_STEP_SHA = '742468cc6b855d4f2c2d9a5d45000899bc244f524539bad21505ef94018dceb2'
 MOVED = {'Check the Go observer', 'Check pinned Unicode table generation'}
-JOB_ORDER = ('observer-checks', 'native-execution', 'browser-demo', 'deploy-browser-demo')
-DEPLOY_IF = "${{ always() && !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.observer-checks.result == 'success' && needs.native-execution.result == 'success' && needs.browser-demo.result == 'success' }}"
-DEPLOY_NEEDS = '    needs: [observer-checks, native-execution, browser-demo]'
+POLICY_HEAVY = {
+    'Verify the offline decision-policy experiment',
+    'Verify the imported CEL API policy',
+    'Verify the sealed API policy revision comparison',
+    'Verify the Agent Mesh service-pattern adaptation',
+}
+POLICY_PILOT_UPLOAD = 'Upload offline policy experiment evidence'
+POLICY_UPLOAD = 'Upload policy execution and diagnostic evidence'
+POLICY_DOC_REPORT = 'Report documentation-only policy scope'
+POLICY_DOC_ARTIFACT = 'Preserve documentation-only policy scope'
+POLICY_HEADER_SHA = '3d5466a5dfca722bf38d6d81f26ff8f425188d473f6a0b9ae46cdd528d209cfe'
+POLICY_SETUP_SHA = '5ccf03022b3caeab1cc1fd46bbb3fa8b54e4fc0addba08c7d39d17f449f51703'
+POLICY_STEP_SHAS = {
+    'Build and identify the pinned compiler from a clean checkout': 'c7273984211d14f1b50f66438f1d90f68a42e8ad58be1d0d1d2a0213b0b4d2ae',
+    'Verify the offline decision-policy experiment': '2d8e714f7dfb2963a682ce702485e3bccfaa7439cbaa67f7da6741aff6ce7c48',
+    'Verify the imported CEL API policy': '064873f6b6288062964bde88c2f1f436bdc7316e586ae6066a4b3623f057b708',
+    'Verify the sealed API policy revision comparison': '64f49e759cf3df80876f369330143f4c7e229cf33beed788dc1e434225b17cae',
+    'Verify the Agent Mesh service-pattern adaptation': '9af078924730a896c5c669e167803a2e3780e277cdcbe6231233b2cac97a471c',
+    'Upload offline policy experiment evidence': 'e4adbb294f45d4dbe4af56338b800f0d637dda27ec83055f1d799d63dac60392',
+    'Upload policy execution and diagnostic evidence': 'b8818870e6810271eaa7ccba99fdf0ae24518c553d172d6648d432ef10cda516',
+    'Report documentation-only policy scope': '472165f458bfda43733f2a1ea6bc2236c19b425b5887f3417bbe1a9d9bcab6dd',
+    'Preserve documentation-only policy scope': '185d1afbfd001734dc649c227526a84d5dd993bfcd9c1243e4a1966f13db60f7',
+}
+JOB_ORDER = ('observer-checks', 'native-execution', 'policy-native-checks', 'browser-demo', 'deploy-browser-demo')
+DEPLOY_IF = "${{ always() && !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.observer-checks.result == 'success' && needs.native-execution.result == 'success' && needs.policy-native-checks.result == 'success' && needs.browser-demo.result == 'success' }}"
+DEPLOY_NEEDS = '    needs: [observer-checks, native-execution, policy-native-checks, browser-demo]'
 
 
 def literal_commands(chunk):
@@ -344,7 +367,7 @@ def named_steps(text):
         classifier = named.get('Classify the exact checked PR tree', '')
         require(hashlib.sha256(classifier.encode()).hexdigest() == CLASSIFIER_STEP_SHA, "producer exact checkout classifier changed: " + job)
         require(chunk.index(unnamed[0]) < chunk.index(classifier) < chunk.index(unnamed[1]), "producer setup order changed: " + job)
-        expected = {'Classify the exact checked PR tree'} | MOVED if job == 'observer-checks' else (COMMON | HEAVY | PREFLIGHT | UPLOADS | DOC_STEPS) - MOVED
+        expected = {'Classify the exact checked PR tree'} | MOVED if job == 'observer-checks' else (COMMON | HEAVY | PREFLIGHT | UPLOADS | DOC_STEPS) - MOVED - POLICY_HEAVY - {POLICY_PILOT_UPLOAD}
         require(set(named) == expected, "producer step roster changed: " + job)
         if job == 'observer-checks':
             require(hashlib.sha256(named['Check the Go observer'].encode()).hexdigest() == OBSERVER_STEP_SHA and
@@ -357,14 +380,70 @@ def named_steps(text):
         for name, step in named.items():
             require(name not in all_named or name == 'Classify the exact checked PR tree', "duplicate cross-job step")
             all_named[name] = step
+    policy_named, _ = policy_steps(jobs['policy-native-checks'])
+    for name in POLICY_HEAVY | {POLICY_PILOT_UPLOAD}:
+        require(name not in all_named, 'policy producer was duplicated in another job: ' + name)
+        all_named[name] = policy_named[name]
     return all_named, native_unnamed
+
+
+def policy_steps(chunk):
+    header, named, unnamed = job_steps(chunk)
+    require(hashlib.sha256(header.encode()).hexdigest() == POLICY_HEADER_SHA,
+            'policy producer header must be independent, unconditional and pinned')
+    require('continue-on-error:' not in chunk, 'policy producer failure became optional')
+    require(len(unnamed) == 2 and
+            hashlib.sha256(unnamed[0].encode()).hexdigest() == CHECKOUT_STEP_SHA and
+            hashlib.sha256(unnamed[1].encode()).hexdigest() == POLICY_SETUP_SHA,
+            'policy producer requires exact checkout and full-only pinned Go setup')
+    expected = {'Classify the exact checked PR tree',
+                'Build and identify the pinned compiler from a clean checkout',
+                POLICY_PILOT_UPLOAD, POLICY_UPLOAD, POLICY_DOC_REPORT, POLICY_DOC_ARTIFACT} | POLICY_HEAVY
+    require(set(named) == expected, 'policy producer exact step roster changed')
+    classifier = named['Classify the exact checked PR tree']
+    identity = named['Build and identify the pinned compiler from a clean checkout']
+    require(hashlib.sha256(classifier.encode()).hexdigest() == CLASSIFIER_STEP_SHA,
+            'policy classifier must bind its own actual checked tree')
+    require(set(POLICY_STEP_SHAS) == expected - {'Classify the exact checked PR tree'},
+            'policy exact reviewed step digest roster changed')
+    for name, sha in POLICY_STEP_SHAS.items():
+        require(hashlib.sha256(named[name].encode()).hexdigest() == sha,
+                'policy step must retain its exact source/commands/gates: ' + name)
+    require(chunk.index(unnamed[0]) < chunk.index(classifier) < chunk.index(unnamed[1]) < chunk.index(identity),
+            'policy checkout/classifier/Go/compiler order changed')
+    ordered = ('Verify the offline decision-policy experiment', 'Verify the imported CEL API policy',
+               'Verify the sealed API policy revision comparison', 'Verify the Agent Mesh service-pattern adaptation',
+               POLICY_PILOT_UPLOAD, POLICY_UPLOAD, POLICY_DOC_REPORT, POLICY_DOC_ARTIFACT)
+    previous = chunk.index(identity)
+    for name in ordered:
+        require(chunk.index(named[name]) > previous, 'policy producer/evidence/report order changed: ' + name)
+        previous = chunk.index(named[name])
+    require(field(unnamed[1], 'if') == FULL and field(identity, 'if') == FULL,
+            'policy Go setup and compiler build must stay full-only')
+    for name in POLICY_HEAVY:
+        require(field(named[name], 'if') == FULL, 'policy native producer must stay full-only: ' + name)
+    for name in (POLICY_PILOT_UPLOAD, POLICY_UPLOAD):
+        require(field(named[name], 'if') == 'always() && ' + FULL,
+                'policy evidence must upload on failure but never on docs-only: ' + name)
+    require(field(named[POLICY_DOC_REPORT], 'if') == DOCS and
+            field(named[POLICY_DOC_ARTIFACT], 'if') == 'always() && ' + DOCS,
+            'policy docs-only scope must be explicit and separate')
+    require('name: gooo-go-ports-policy-evidence\n' in named[POLICY_UPLOAD] and
+            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n' in named[POLICY_UPLOAD] and
+            'if-no-files-found: warn\n' in named[POLICY_UPLOAD] and 'retention-days: 14\n' in named[POLICY_UPLOAD],
+            'policy output artifacts must include exact current local identity and three producer outputs')
+    require('name: gooo-go-ports-policy-documentation-scope\n' in named[POLICY_DOC_ARTIFACT] and
+            'path: out/ci-scope.json\n' in named[POLICY_DOC_ARTIFACT] and
+            'if-no-files-found: error\n' in named[POLICY_DOC_ARTIFACT] and 'retention-days: 14\n' in named[POLICY_DOC_ARTIFACT],
+            'policy docs artifact must contain only its own classifier scope')
+    return named, unnamed
 
 
 def deployment_expression(text):
     deploy = workflow_jobs(text)['deploy-browser-demo']
     conditions = re.findall(r"^    if: (.+)$", deploy, re.M)
     dependencies = re.findall(r"^    needs: (.+)$", deploy, re.M)
-    require(conditions == [DEPLOY_IF], "deployment must explicitly require all three successes on uncanceled main pushes")
+    require(conditions == [DEPLOY_IF], "deployment must explicitly require all four successes on uncanceled main pushes")
     require(dependencies == [DEPLOY_NEEDS.strip().removeprefix('needs: ')],
             "deployment must directly need each producer exactly once")
     require('continue-on-error:' not in deploy, "deployment failure became optional")
@@ -383,6 +462,7 @@ def deployment_condition_shell(expression):
         "github.ref == 'refs/heads/main'": 'test "$GITHUB_REF" = refs/heads/main',
         "needs.observer-checks.result == 'success'": 'test "$OBSERVER_RESULT" = success',
         "needs.native-execution.result == 'success'": 'test "$NATIVE_RESULT" = success',
+        "needs.policy-native-checks.result == 'success'": 'test "$POLICY_RESULT" = success',
         "needs.browser-demo.result == 'success'": 'test "$BROWSER_RESULT" = success',
     }
     clauses = match[1].split(' && ')
@@ -943,15 +1023,17 @@ class WorkflowScopeTests(unittest.TestCase):
 
     def test_only_native_execution_runner_is_pinned_to_reviewed_ubuntu_24_04(self):
         jobs = workflow_jobs(self.text)
-        native = jobs["native-execution"]
-        self.assertIn("    runs-on: ubuntu-24.04\n", native)
         self.assertIn("    runs-on: ubuntu-latest\n", jobs["observer-checks"])
         self.assertIn("    runs-on: ubuntu-latest\n", jobs["browser-demo"])
-        for runner in ("ubuntu-latest", "ubuntu-26.04", "ubuntu-22.04"):
-            changed = native.replace("runs-on: ubuntu-24.04", "runs-on: " + runner, 1)
-            self.assertNotEqual(changed, native)
-            with self.subTest(runner=runner), self.assertRaises(ValueError):
-                validate(self.text.replace(native, changed, 1))
+        # The original runner check now also covers the independent policy job.
+        for name in ("native-execution", "policy-native-checks"):
+            chunk = jobs[name]
+            self.assertIn("    runs-on: ubuntu-24.04\n", chunk)
+            for runner in ("ubuntu-latest", "ubuntu-26.04", "ubuntu-22.04"):
+                changed = chunk.replace("runs-on: ubuntu-24.04", "runs-on: " + runner, 1)
+                self.assertNotEqual(changed, chunk)
+                with self.subTest(job=name, runner=runner), self.assertRaises(ValueError):
+                    validate(self.text.replace(chunk, changed, 1))
 
 
 
@@ -1537,11 +1619,96 @@ class WorkflowScopeTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate(self.text.replace(chunk, broken, 1))
 
+    def test_policy_producers_remain_exactly_once_in_their_independent_job(self):
+        validate(self.text)
+        jobs = workflow_jobs(self.text)
+        policy, _ = policy_steps(jobs['policy-native-checks'])
+        _, native, _ = job_steps(jobs['native-execution'])
+        for name in POLICY_HEAVY | {POLICY_PILOT_UPLOAD}:
+            chunk = policy[name]
+            self.assertNotIn(name, native)
+            self.assertEqual(self.text.count(chunk), 1)
+            for replacement in ('', chunk + chunk):
+                with self.subTest(step=name, replacement=replacement[:80]), self.assertRaises(ValueError):
+                    validate(self.text.replace(chunk, replacement, 1))
+            without = self.text.replace(chunk, '', 1)
+            anchor = native['Upload execution and diagnostic evidence']
+            with self.subTest(moved_back_to_native=name), self.assertRaises(ValueError):
+                validate(without.replace(anchor, chunk + anchor, 1))
+        self.assertEqual(self.text.count('      - name: Classify the exact checked PR tree\n'), 3)
+
+    def test_policy_setup_identity_and_native_steps_keep_fail_closed_full_scope(self):
+        jobs = workflow_jobs(self.text)
+        policy, unnamed = policy_steps(jobs['policy-native-checks'])
+        identity = policy['Build and identify the pinned compiler from a clean checkout']
+        for name, chunk in [('Go setup', unnamed[1]), ('compiler identity', identity)] + [
+                (name, policy[name]) for name in sorted(POLICY_HEAVY)]:
+            self.assertEqual(field(chunk, 'if'), FULL)
+            # Missing/unknown classifier output must retain the original full
+            # path; equality to false would silently omit that work.
+            for replacement in ('', 'steps.change-scope.outputs.docs_only == \'false\'',
+                                DOCS, 'always()', "github.event_name == 'push'"):
+                altered = chunk.replace('        if: ' + FULL + '\n',
+                                        ('        if: ' + replacement + '\n') if replacement else '', 1)
+                with self.subTest(step=name, condition=replacement), self.assertRaises(ValueError):
+                    validate(self.text.replace(chunk, altered, 1))
+        for before, after in (('sh tools/bootstrap.sh', 'true'),
+                              ('version --build --json', 'version --json'),
+                              ('"83928fa4538245abe33b08549da47f8cbdc50ed2"', '"old-source"'),
+                              ('"CLEAN_VCS"', '"MODIFIED_VCS"'),
+                              ('"go1.27.2"', '"go1.27.1"'),
+                              ('        run: |', '        continue-on-error: true\n        run: |')):
+            self.assertIn(before, identity)
+            with self.subTest(identity=before), self.assertRaises(ValueError):
+                validate(self.text.replace(identity, identity.replace(before, after, 1), 1))
+
+    def test_policy_evidence_and_documentation_scopes_cannot_mix_or_disappear(self):
+        jobs = workflow_jobs(self.text)
+        policy, _ = policy_steps(jobs['policy-native-checks'])
+        for name in (POLICY_PILOT_UPLOAD, POLICY_UPLOAD):
+            chunk = policy[name]
+            for condition in ('', FULL, 'always()', 'always() && ' + DOCS):
+                altered = chunk.replace('        if: always() && ' + FULL + '\n',
+                                        ('        if: ' + condition + '\n') if condition else '', 1)
+                with self.subTest(upload=name, condition=condition), self.assertRaises(ValueError):
+                    validate(self.text.replace(chunk, altered, 1))
+        upload = policy[POLICY_UPLOAD]
+        for token in ('            out/ci-scope.json\n', '            out/compiler-build.json\n',
+                      '            out/cel-api-policy/\n', '            out/api-policy-revision/\n',
+                      '            out/agentmesh-service-policy/\n'):
+            self.assertIn(token, upload)
+            with self.subTest(missing_path=token), self.assertRaises(ValueError):
+                validate(self.text.replace(upload, upload.replace(token, '', 1), 1))
+        for before, after in (('name: gooo-go-ports-policy-evidence', 'name: gooo-go-ports-evidence'),
+                              ('if-no-files-found: warn', 'if-no-files-found: ignore'),
+                              ('retention-days: 14', 'retention-days: 1'),
+                              ('            out/agentmesh-service-policy/\n', '            out/\n')):
+            with self.subTest(upload_field=before), self.assertRaises(ValueError):
+                validate(self.text.replace(upload, upload.replace(before, after, 1), 1))
+        report, artifact = policy[POLICY_DOC_REPORT], policy[POLICY_DOC_ARTIFACT]
+        for name, chunk in ((POLICY_UPLOAD, upload), (POLICY_DOC_REPORT, report), (POLICY_DOC_ARTIFACT, artifact)):
+            with self.subTest(missing_step=name), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, '', 1))
+        for before, after in (('        if: ' + DOCS, '        if: ' + FULL),
+                              ('produced no native policy execution/replay receipts', 'produced fresh native policy execution/replay receipts'),
+                              ('existing observations are not rebound', 'existing observations are rebound')):
+            self.assertIn(before, report)
+            with self.subTest(docs_report=before), self.assertRaises(ValueError):
+                validate(self.text.replace(report, report.replace(before, after, 1), 1))
+        for before, after in (('always() && ' + DOCS, 'always()'),
+                              ('name: gooo-go-ports-policy-documentation-scope', 'name: gooo-go-ports-policy-evidence'),
+                              ('path: out/ci-scope.json', 'path: out/compiler-build.json'),
+                              ('path: out/ci-scope.json', 'path: out/'),
+                              ('if-no-files-found: error', 'if-no-files-found: warn'),
+                              ('retention-days: 14', 'retention-days: 1')):
+            with self.subTest(docs_artifact=before), self.assertRaises(ValueError):
+                validate(self.text.replace(artifact, artifact.replace(before, after, 1), 1))
+
 
     def test_producer_jobs_are_parallel_exact_unconditional_scopes(self):
         validate(self.text)
         jobs = workflow_jobs(self.text)
-        for name in ('observer-checks', 'native-execution'):
+        for name in ('observer-checks', 'native-execution', 'policy-native-checks'):
             chunk = jobs[name]
             header, _, _ = job_steps(chunk)
             self.assertNotIn('    needs:', header)
@@ -1552,6 +1719,7 @@ class WorkflowScopeTests(unittest.TestCase):
                     "    needs: [native-ports]\n",
                     "    needs: [observer-checks]\n",
                     "    needs: [native-execution]\n",
+                    "    needs: [policy-native-checks]\n",
                     "    continue-on-error: true\n",
                     "    permissions:\n      contents: write\n",
                     "    strategy:\n      matrix:\n        optional: [true]\n"):
@@ -1584,7 +1752,7 @@ class WorkflowScopeTests(unittest.TestCase):
         unknown = '  unreviewed-success:\n    runs-on: ubuntu-latest\n    steps:\n      - run: true\n'
         with self.assertRaises(ValueError):
             validate(self.text.replace('  browser-demo:\n', unknown + '  browser-demo:\n', 1))
-        for name in ('observer-checks', 'native-execution'):
+        for name in ('observer-checks', 'native-execution', 'policy-native-checks'):
             chunk = jobs[name]
             extra = '      - name: Unreviewed work\n        run: go run ./cmd/verify\n'
             changed = chunk.replace('    steps:\n', '    steps:\n' + extra, 1)
@@ -1619,11 +1787,15 @@ class WorkflowScopeTests(unittest.TestCase):
             (DEPLOY_NEEDS, '    needs: [observer-checks, native-execution, native-ports]'),
             (DEPLOY_NEEDS, '    needs: [observer-checks, native-execution, native-execution]'),
             (DEPLOY_NEEDS, '    needs: [observer-checks, native-execution, browser-demo, deploy-browser-demo]'),
+            (DEPLOY_NEEDS, '    needs: [observer-checks, native-execution, browser-demo]'),
+            (DEPLOY_NEEDS, '    needs: [observer-checks, native-execution, policy-native-checks, policy-native-checks]'),
             ("needs.observer-checks.result == 'success'", "needs.observer-checks.result != 'failure'"),
             ("needs.native-execution.result == 'success'", "needs.native-execution.result != 'failure'"),
+            ("needs.policy-native-checks.result == 'success'", "needs.policy-native-checks.result != 'failure'"),
             ("needs.browser-demo.result == 'success'", "needs.browser-demo.result != 'failure'"),
             (" && needs.observer-checks.result == 'success'", ''),
             (" && needs.native-execution.result == 'success'", ''),
+            (" && needs.policy-native-checks.result == 'success'", ''),
             (" && needs.browser-demo.result == 'success'", ''),
             (' && ', ' || '),
             ('    runs-on:', '    continue-on-error: true\n    runs-on:'),
@@ -1640,7 +1812,7 @@ class WorkflowScopeTests(unittest.TestCase):
                   '      - name: Misleading success\n        run: true\n\n')
         with self.assertRaises(ValueError):
             validate(self.text.replace('  browser-demo:\n', legacy + '  browser-demo:\n', 1))
-        for name in ('observer-checks', 'native-execution', 'browser-demo'):
+        for name in ('observer-checks', 'native-execution', 'policy-native-checks', 'browser-demo'):
             changed = self.text.replace('  ' + name + ':\n', '  native-ports:\n', 1)
             self.assertNotEqual(changed, self.text)
             with self.subTest(rename_only=name), self.assertRaises(ValueError):
@@ -1649,6 +1821,8 @@ class WorkflowScopeTests(unittest.TestCase):
     def test_source_derived_deployment_conjunction_all125_producer_outcomes(self):
         # Exercise a narrow translation of the actual workflow expression.
         # This is not an execution of GitHub's status-expression interpreter.
+        # Retain the original125 outcome submatrix and extend it to all625
+        # combinations after adding the fourth required producer.
         validate(self.text)
         expression = deployment_expression(self.text)
         script = deployment_condition_shell(expression)
@@ -1665,16 +1839,19 @@ class WorkflowScopeTests(unittest.TestCase):
 
         for observer in states:
             for native in states:
-                for browser in states:
-                    environment = dict(base, OBSERVER_RESULT=observer, NATIVE_RESULT=native, BROWSER_RESULT=browser)
-                    with self.subTest(observer=observer, native=native, browser=browser):
-                        self.assertEqual(outcome(environment), observer == native == browser == 'success')
-        success = dict(base, OBSERVER_RESULT='success', NATIVE_RESULT='success', BROWSER_RESULT='success')
+                for policy in states:
+                    for browser in states:
+                        environment = dict(base, OBSERVER_RESULT=observer, NATIVE_RESULT=native,
+                                           POLICY_RESULT=policy, BROWSER_RESULT=browser)
+                        with self.subTest(observer=observer, native=native, policy=policy, browser=browser):
+                            self.assertEqual(outcome(environment), observer == native == policy == browser == 'success')
+        success = dict(base, OBSERVER_RESULT='success', NATIVE_RESULT='success',
+                       POLICY_RESULT='success', BROWSER_RESULT='success')
         for key, value in (('WORKFLOW_CANCELLED', 'true'), ('EVENT_NAME', 'pull_request'),
                            ('GITHUB_REF', 'refs/tags/v1'), ('GITHUB_REF', 'refs/heads/other')):
             with self.subTest(context=(key, value)):
                 self.assertFalse(outcome(dict(success, **{key: value})))
-        for missing in ('OBSERVER_RESULT', 'NATIVE_RESULT', 'BROWSER_RESULT'):
+        for missing in ('OBSERVER_RESULT', 'NATIVE_RESULT', 'POLICY_RESULT', 'BROWSER_RESULT'):
             environment = dict(success); del environment[missing]
             with self.subTest(missing=missing):
                 self.assertFalse(outcome(environment))
