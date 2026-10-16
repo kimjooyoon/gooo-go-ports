@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Source/expectation/provenance rejection tests. No Go or native invocation."""
 import importlib.util
+import copy
 import json
 import pathlib
 import tempfile
@@ -38,6 +39,72 @@ class FreshHostTests(unittest.TestCase):
         self.assertTrue(set(CHECK.OWN_FILES).issubset(roster))
         self.assertIn('examples/diagnostic-header-addition/main.gooo',roster)
         self.assertIn('cmd/verify/header_addition_corpus.go',roster)
+        self.assertEqual(len(roster),228)
+        self.assertEqual(len(catalog['packages']),51)
+        self.assertEqual(sum(len(p['sources']) for p in catalog['packages']),61)
+        for name in ('ports/net/textproto/canonical.gooo','examples/canonical-header-key/main.gooo','cmd/verify/canonical_header_contracts.go','cmd/verify/canonical_header_corpus_test.go','examples/canonical-header-key/manual20.json','third_party/go/net/textproto/reader.go.txt'):
+            self.assertIn(name,roster)
+
+    def population(self):
+        # Small synthetic metadata only, never a replacement native fixture/corpus.
+        runs=[{'package':'legacy/'+str(i),'activity':'Old','cases':1,'passed':1,'batches':1,'replay_equal':True} for i in range(74)]
+        runs[0].update(cases=171144,passed=171144,batches=2108)
+        runs.extend([
+            {'package':'go/net/textproto','activity':'CanonicalMIMEHeaderKey','cases':1059,'passed':1059,'batches':22,'replay_equal':True},
+            {'package':'app/canonical-header-key','activity':'Report','cases':1059,'passed':1059,'batches':37,'replay_equal':True}])
+        summary={'runs':runs,'cases':173335,'passed':173335,
+            'canonical_header_reference_cases':1059,'canonical_header_report_reference_cases':1059,
+            'canonical_header_raw_input_occurrences':1059,'canonical_header_unique_keys':1054,
+            'canonical_header_within_partition_duplicates':0,'canonical_header_cross_partition_duplicates':5,
+            'canonical_header_report_fields':8,'canonical_header_port_source_count':2,'canonical_header_report_source_count':4,
+            'canonical_header_scope':CHECK.CANONICAL_SUMMARY['canonical_header_scope'],
+            'canonical_header_provenance_scope':CHECK.CANONICAL_SUMMARY['canonical_header_provenance_scope']}
+        planned=[{'index':i,'package':r['package'],'activity':r['activity'],'cases':r['cases']} for i,r in enumerate(runs)]
+        ends=[{'suite_index':i,'source_set':{}} for i in range(76)]
+        ends[74]['source_set']={name:None for name in ['ports/net/httpguts/headers.gooo','ports/net/textproto/canonical.gooo']}
+        ends[75]['source_set']={name:None for name in ['examples/canonical-header-key/main.gooo','examples/header-field-facts/main.gooo','ports/net/httpguts/headers.gooo','ports/net/textproto/canonical.gooo']}
+        return summary,planned,ends
+
+    def test_current76_metadata_keeps_old74_and_two_exact_appended_entries(self):
+        summary,planned,ends=self.population()
+        CHECK.current_population(summary,planned,ends)
+        self.assertEqual(sum(r['cases'] for r in summary['runs'][:74]),171217)
+        self.assertEqual(sum(r['batches'] for r in summary['runs'][:74]),2181)
+        for which in ('runs','planned','ends'):
+            s,p,e=copy.deepcopy((summary,planned,ends))
+            (s['runs'] if which=='runs' else p if which=='planned' else e).pop()
+            with self.subTest(omitted=which),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+        for key,value in [('cases',171217),('passed',171217)]:
+            s,p,e=copy.deepcopy((summary,planned,ends));s[key]=value
+            with self.subTest(rollback=key),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+
+    def test_current76_metadata_rejects_old_prefix_and_appended_population_drift(self):
+        summary,planned,ends=self.population()
+        for key in ('cases','batches'):
+            s,p,e=copy.deepcopy((summary,planned,ends));s['runs'][0][key]-=1
+            with self.subTest(prefix=key),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+        for index,key,value in [
+            (74,'cases',1054),(74,'batches',21),(75,'batches',36),(75,'activity','CanonicalMIMEHeaderKey'),
+            (74,'replay_equal',False),(75,'passed',1058)]:
+            s,p,e=copy.deepcopy((summary,planned,ends));s['runs'][index][key]=value
+            with self.subTest(index=index,key=key),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+        s,p,e=copy.deepcopy((summary,planned,ends));p[75]['index']=74
+        with self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+        s,p,e=copy.deepcopy((summary,planned,ends));e[75]=copy.deepcopy(e[74])
+        with self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+
+    def test_current76_metadata_rejects_typed_counter_scope_and_closure_changes(self):
+        summary,planned,ends=self.population()
+        for key in CHECK.CANONICAL_SUMMARY:
+            s,p,e=copy.deepcopy((summary,planned,ends));s.pop(key)
+            with self.subTest(missing=key),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+            s,p,e=copy.deepcopy((summary,planned,ends));s[key]=True if type(s[key]) is int else s[key]+' changed'
+            with self.subTest(changed=key),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+        for index in (74,75):
+            s,p,e=copy.deepcopy((summary,planned,ends));e[index]['source_set'].pop('ports/net/httpguts/headers.gooo')
+            e[index]['source_set']['ports/path/path.gooo']=None
+            with self.subTest(substituted_source=index),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+
     def verification(self):
         definitions,records=CHECK.contracts([(pkg,name,(ROOT/name).read_text()) for pkg,name in CHECK.PACKAGES])
         rows=[]

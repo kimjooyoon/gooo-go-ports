@@ -304,6 +304,18 @@
       "sources": [
         "examples/diagnostic-header-addition/main.gooo"
       ]
+    },
+    {
+      "path": "go/net/textproto",
+      "sources": [
+        "ports/net/textproto/canonical.gooo"
+      ]
+    },
+    {
+      "path": "app/canonical-header-key",
+      "sources": [
+        "examples/canonical-header-key/main.gooo"
+      ]
     }
   ]
 }

@@ -1,0 +1,22 @@
+// Original importing diagnostics. Canonicalization is computed in the Gooo port;
+// existing HeaderFacts supplies its unchanged validity and invalid-byte witness.
+// Same full validUTF8 Text0..1024B precondition; no network/HTTP parsing/effect.
+package canonical_header_key
+namespace gooo_original_canonical_header_key
+import textproto "go/net/textproto"
+import headers "app/header-field-facts"
+entity Text id "gooo://std/text"
+entity CanonicalHeaderKeyFacts id "gooo://canonical-header-key/report-result/v1" fields {
+ field key id "gooo://canonical-header-key/report-result/v1/key" type string required one
+ field canonical_key id "gooo://canonical-header-key/report-result/v1/canonical_key" type string required one
+ field changed id "gooo://canonical-header-key/report-result/v1/changed" type boolean required one
+ field name_valid id "gooo://canonical-header-key/report-result/v1/name_valid" type boolean required one
+ field input_bytes id "gooo://canonical-header-key/report-result/v1/input_bytes" type integer required one
+ field canonical_bytes id "gooo://canonical-header-key/report-result/v1/canonical_bytes" type integer required one
+ field name_invalid_offset id "gooo://canonical-header-key/report-result/v1/name_invalid_offset" type integer required one
+ field name_invalid_octet id "gooo://canonical-header-key/report-result/v1/name_invalid_octet" type integer required one
+}
+
+activity Report(Text) -> CanonicalHeaderKeyFacts id "gooo://canonical-header-key/report/v1" computes `let field = headers.Report(input, "")
+let canonical = textproto.CanonicalMIMEHeaderKey(input)
+return CanonicalHeaderKeyFacts{key: input, canonical_key: canonical, changed: canonical != input, name_valid: field.name_valid, input_bytes: int64(len(input)), canonical_bytes: int64(len(canonical)), name_invalid_offset: field.name_invalid_offset, name_invalid_octet: field.name_invalid_octet}`

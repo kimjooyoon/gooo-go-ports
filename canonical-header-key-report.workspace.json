@@ -1,0 +1,33 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "app/canonical-header-key",
+    "activity": "Report"
+  },
+  "packages": [
+    {
+      "path": "go/golang.org/x/net/http/httpguts",
+      "sources": [
+        "ports/net/httpguts/headers.gooo"
+      ]
+    },
+    {
+      "path": "app/header-field-facts",
+      "sources": [
+        "examples/header-field-facts/main.gooo"
+      ]
+    },
+    {
+      "path": "go/net/textproto",
+      "sources": [
+        "ports/net/textproto/canonical.gooo"
+      ]
+    },
+    {
+      "path": "app/canonical-header-key",
+      "sources": [
+        "examples/canonical-header-key/main.gooo"
+      ]
+    }
+  ]
+}

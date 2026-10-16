@@ -130,6 +130,11 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 			return fail(err.Error())
 		}
 	}
+	if isCanonicalHeaderSuite(s) {
+		if err := inspectCanonicalHeaderABI(raw, s, identity); err != nil {
+			return fail(err.Error())
+		}
+	}
 	if isHeaderAdditionSuite(s) {
 		if err := inspectHeaderAdditionABI(raw, s, identity); err != nil {
 			return fail(err.Error())
@@ -166,7 +171,7 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 			if len(d.Inputs) != 0 || !equalValue(d.Input, row.Inputs[0]) {
 				return fail("single input")
 			}
-			if (isUUIDSuite(s) || isDecimalPayloadSuite(s) || isPathAliasSuite(s) || isHeaderSuite(s)) && len(d.InputFields) != 0 {
+			if (isUUIDSuite(s) || isDecimalPayloadSuite(s) || isPathAliasSuite(s) || isHeaderSuite(s) || isCanonicalHeaderSuite(s)) && len(d.InputFields) != 0 {
 				return fail("UUID Text input has record fields")
 			}
 			if err := inspectNRGBAInputFields(contract.InputEntities[0], d.InputFields, row.Inputs[0]); err != nil {
