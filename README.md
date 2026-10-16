@@ -3,6 +3,8 @@
 [Gooo](https://github.com/kimjooyoon/meta-ontology-go) is an experimental language for
 describing what programs should do and inspecting how they are built and run.
 
+**Use Gooo with a coding agent:** follow the [first-program skill](.agents/skills/gooo-first-program/SKILL.md) to edit actual Gooo source, execute it and save a replay. The [agent setup guide](docs/ai-agents.md) covers repository discovery in Codex and Cursor, explicit use in Claude Code, and the limits of the existing policy examples.
+
 **Compare API policy decisions in CI:** [run the existing policy review](examples/api-policy-ci/README.md) with nine supplied facts against [two fixed original and readonly Gooo profiles](examples/api-policy-revision/README.md). An otherwise allowed `write` changes from `ALLOW` to `ACTION_NOT_READ_ONLY`; an allowed `read` stays unchanged. Optionally fail CI on `NEWLY_DENIED`. These profiles cannot load arbitrary policies, and their results do not authorize live API actions.
 
 **Try service-policy checks from Go:** open the [four-file service-policy quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726). With Go 1.27.2 already installed, follow its README to run Go generated from Gooo without a runtime Gooo compiler. Distinguish invalid input from denial, compare the same request before and after a rule change, and inspect a returned widening witness. These calls compare supplied policy facts; they do not apply a grant or call a service.
