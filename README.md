@@ -7,10 +7,12 @@ describing what programs should do and inspecting how they are built and run.
 
 **Try a Gooo path diagnostic:** [compare two path spellings](examples/path-alias-facts/README.md#run-and-inspect-three-pairs), keep both originals, and see whether slash cleaning makes them equal. Run the supplied inputs, inspect three results and save a replay; these lexical facts do not grant access or establish router/filesystem identity.
 
-This independent ecosystem project implements selected Go standard-library, x/image and Google UUID functions in Gooo,
+**Try automatic header diagnostics:** [inspect a header name and value](examples/header-field-facts/README.md#run-one-external-json-request), strictly decode external JSON, then retain both strings and the first invalid byte in a twelve-field Gooo report. No per-request human approval is needed to calculate the facts.
+
+This independent ecosystem project implements selected Go standard-library, x/net, x/image and Google UUID functions in Gooo,
 using independent Go references and saved replay. The source inventory includes 53 authored standard-library ports,
-two ports from golang.org/x/image and two Google UUID adaptations. The current scope is
-57 authored HTTP, Unicode, IPv4 classification and prefix queries, signed-decimal parsing, literal-text splitting and byte search, slash-path, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, twenty-five importing consumer programs (twenty-eight activities),
+two ports from golang.org/x/net, two from golang.org/x/image and two Google UUID adaptations. The current scope is
+59 authored HTTP, Unicode, IPv4 classification and prefix queries, signed-decimal parsing, literal-text splitting and byte search, slash-path, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, twenty-six importing consumer programs (twenty-nine activities),
 and an importing browser dispatcher.
 The RectangleIn/FitsCrop suites have completed finite native execution and saved
 replay with an independent raw-receipt audit; see the [verification evidence](evidence/rectangle-in-fits-crop-20261012.json).
@@ -97,17 +99,32 @@ and its merged-main CI. Those completed checks do not establish acceptance of
 the new workspace profile below. Both entries have portable execution and
 saved-replay examples in the guide.
 
+The [header facts example](examples/header-field-facts/README.md) adds the bounded
+x/net `ValidHeaderFieldName` and `ValidHeaderFieldValue` predicates and an original
+importing report. It preserves both decoded strings, validity, first-invalid
+byte witnesses and whole-input descriptive flags. A strict external JSON helper
+refuses malformed or unsupported input before the Gooo invocation. Its frozen
+corpus adds 232 name cases, 232 value cases and 476 pairs: 940 new cases across
+three suites, bringing the required source roster to 73 suites and 171,167 cases.
+The preceding 70 suites and seven exhaustive checks remain required. Current
+source native execution, saved replay and CI remain required; earlier completed
+runs and the historical partition/timing numbers below do not validate this
+addition. The report is suitable for an explicit automatic header policy and
+does not require a human decision to compute. HTTP framing, authority and actual
+effects remain host responsibilities.
+
 Full CI selects `--workspace-profile dependency-closure-v1` independently of the
 existing `--case-profile uuid-and-literal-report-compact-v1`. The workspace profile
 starts with each suite's historical selected workspace, then follows imports over
-whole selected packages in their original order. It narrows 56 of the 70 manifests;
+whole selected packages in their original order. Before the header addition it narrowed 56 of the 70 manifests;
 the 14 already isolated UUID, literal-text, decimal and path manifests stay exact.
 Omitting the option, or choosing `legacy`, preserves the historical workspace and
 emits no `workspace_profile` metadata. The explicit profile appears in both the
 summary and timing header. Timing still binds all 140 existing inputs plus the
-selector and its tests, for 142 source identities, and prints each suite's actual
-`source_set` and `source_set_sha256`. This does not reduce the required 70 suites,
-170,227 cases, 2,153 batches, 2,295 timing records or seven exhaustive checks.
+selector and its tests, for 142 historical source identities, and prints each suite's actual
+`source_set` and `source_set_sha256`. For that historical roster it did not reduce
+the required 70 suites, 170,227 cases, 2,153 batches, 2,295 timing records or seven
+exhaustive checks. The new header roster requires a fresh partition measurement.
 
 A local serial ABBA pilot using legacy case-wire serialization on
 `go/net/http:StatusText` and `app/color-inspector:InspectRGB` ran 208 fresh
@@ -172,6 +189,7 @@ proposal, a refused expansion, and recovery of a discarded response by operation
 | Search a diagnostic phrase locally | [Literal-text report](examples/literal-text-report/README.md) | Supply text and a phrase; export the first byte offset, non-overlapping count and both original inputs |
 | Split a literal separator or remove an edge affix | [Literal Cut report](examples/literal-cut-report/README.md) | Compare Cut, CutPrefix and CutSuffix while retaining both original inputs and all eleven returned fields |
 | Parse an exact decimal or inspect payload eligibility | [Payload admission facts](examples/payload-admission/README.md) | Preserve all seven observations, distinguish syntax/range/spelling and inspect the first policy refusal; no request or effect is enforced |
+| Diagnose a header automatically | [Header facts](examples/header-field-facts/README.md) | Strictly preprocess external JSON, preserve both decoded strings, and inspect the first invalid byte and twelve returned fields |
 | Assess an uncertain API operation automatically | [Automatic redelivery policy](examples/automatic-redelivery/README.md) | Supply nine bound facts, inspect all fifteen returned fields and save a replay; eligibility requires a later host-owned atomic claim |
 | Classify four IPv4 octets in Gooo | [IPv4 address facts](examples/ipv4-address-facts/README.md) | Preserve all four supplied integers, distinguish invalid input from valid addresses, and inspect six overlapping classification flags |
 | Compare two IPv4 rule scopes | [IPv4 rule-pair facts](examples/ipv4-rule-pair/README.md) | Preserve typed inputs, distinguish invalid/non-comparable rules and inspect a conflict witness |
@@ -458,6 +476,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | Gooo 패키지 경로 | 함수 | 원본과의 대응 |
 | --- | --- | --- |
 | `go/net/http` | `StatusText` | Go의 상태 코드 62개와 설명. 미등록 코드는 빈 문자열 |
+| `go/golang.org/x/net/http/httpguts` | `ValidHeaderFieldName`, `ValidHeaderFieldValue` | decoded valid UTF-8 Text 각각 최대 1,024바이트. 이름은 비어 있지 않은 ASCII token, 값은 HTAB 외 C0와 DEL을 거부. [원본 차이와 도메인](ports/net/httpguts/README.md), [자동 판단용 12필드 구성](examples/header-field-facts/README.md) |
 | `go/strconv` | `ParseIntDecimal64` | decoded valid UTF-8 Text 최대1,024바이트에서 ParseInt(s,10,64)의 원래 입력·정확한 int64·구문/범위 오류 구별을4필드로 보존. unsigned overflow와 뒤따른 잘못된 문자 우선순위도 유지. [도메인과 차이](ports/strconv/README.md) |
 | `go/path` | `Ext`, `IsAbs` | 명시적 valid UTF-8 Text 최대 1,024바이트. 마지막 slash 이후 확장자와 선행 slash 여부를 Gooo로 계산. 역슬래시는 일반 문자이며 정규화·파일 접근·권한 판정 없음. 기존 catalog와 별도 native sidecar |
 | `go/strings` | `IndexByte` | UTF-8 Text 최대 1,024바이트에서 0..255 byte의 첫 위치 또는 -1. 원본 바이트 offset과 길이 보존; 영역 밖 Integer는 별도 -1 확장. Native 전용 |

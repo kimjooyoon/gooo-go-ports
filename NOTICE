@@ -63,3 +63,16 @@ It retains the Go Authors' BSD terms in third_party/GO-LICENSE and uses the
 existing third_party/go/path.go.txt source reference. The original importing
 PathAliasFacts Report in examples/path-alias-facts is repository BSD code; it
 reports lexical facts and supplies no filesystem or authorization guarantee.
+
+The bounded HTTP header predicates in ports/net/httpguts/headers.gooo adapt
+golang.org/x/net/http/httpguts at v0.59.0, immutable revision recorded in
+upstream.json. Copyright 2016 The Go Authors. All rights reserved. BSD 3-Clause
+terms are preserved in that source and third_party/x-net/LICENSE. Three whole
+original package files are retained byte-exact as .txt references; the Go oracle
+imports the actual net/text modules, not those source references or a predicate
+copy. The bounded traversal syntax retains its inherited Gooo MIT notice.
+
+The importing HeaderFacts12 composition and strict request preflight are
+original repository code under LICENSE. They preserve decoded Text and expose
+finite byte diagnostics. They do not supply HTTP/2 validation, authorization,
+network transmission, enforcement or production-safety guarantees.

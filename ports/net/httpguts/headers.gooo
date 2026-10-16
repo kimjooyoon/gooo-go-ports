@@ -1,0 +1,91 @@
+// Copyright 2016 The Go Authors. All rights reserved.
+// Adapted from golang.org/x/net v0.59.0 (540d04cfe5028e2655754591a4d3e08c586809f2)
+// http/httpguts/httplex.go SHA256:
+// 8cfd5819dc821d45f82fde10afff4b2e652535b0091e0559fc8ad7766051a2c2.
+// Upstream module/source and license pins are recorded in
+// ports/net/httpguts/provenance.json; this ports only the two named predicates.
+// BSD3 license, preserved verbatim as comment text:
+// Copyright 2009 The Go Authors.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//    * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//    * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//    * Neither the name of Google LLC nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// Bounded-loop syntax follows immutable gooo-go-ports 807adb4f examples,
+// including ports/strings/search.gooo, whose Gooo MIT notice follows.
+// MIT License
+//
+// Copyright (c) 2026 Kim Joo-yoon
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+// Modifications: expand the token table into numeric byte predicates and use
+// a fixed 1024-byte scan. Domain: decoded valid UTF-8 Text, byte length 0..1024.
+// REQUIRED OUTER REFUSAL: absent/wrong-type/invalid UTF-8/>1024-byte input.
+// These activities cannot enforce that transport contract themselves. An
+// out-of-domain call has no supported result; do not interpret one as false.
+// Empty name is false; empty value is true. No trim or normalization.
+// Names retain HTTP/1.x uppercase semantics. Values retain the upstream
+// leading/trailing SP/HTAB allowance. No HTTP/2, authorization or send claim.
+package httpguts
+namespace gooo_ports_x_net_httpguts
+entity Text id "gooo://std/text"
+entity Boolean id "gooo://std/boolean"
+
+activity ValidHeaderFieldName(Text) -> Boolean id "gooo://golang.org/x/net/http/httpguts/ValidHeaderFieldName" computes `let size = int64(len(input))
+if size == 0 { return false }
+let offset = 0
+for offset = 0; offset < 1024; offset = offset + 1 {
+    if offset >= size { return true }
+    let octet = int64(input[offset])
+    let token = (octet >= 48 && octet <= 57) || (octet >= 65 && octet <= 90) || (octet >= 97 && octet <= 122) || octet == 33 || (octet >= 35 && octet <= 39) || octet == 42 || octet == 43 || octet == 45 || octet == 46 || octet == 94 || octet == 95 || octet == 96 || octet == 124 || octet == 126
+    if !token { return false }
+}
+return true`
+
+activity ValidHeaderFieldValue(Text) -> Boolean id "gooo://golang.org/x/net/http/httpguts/ValidHeaderFieldValue" computes `let size = int64(len(input))
+let offset = 0
+for offset = 0; offset < 1024; offset = offset + 1 {
+    if offset >= size { return true }
+    let octet = int64(input[offset])
+    if (octet < 32 && octet != 9) || octet == 127 { return false }
+}
+return true`

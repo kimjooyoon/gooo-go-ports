@@ -518,6 +518,36 @@
         "ParseCanonical"
       ],
       "api_mapping": "Separate Text ParseCanonical composition adapts the original Parse return value plus UUID.String into parsed/canonical_uuid/error/invalid_length. It preserves the returned lowercase UUID text on both success and error, including partial UUID bytes and the raw32 failed-byte commit difference. The 38-byte form follows Parse middle-byte behavior rather than Validate brace validation. Original valid UTF-8 decoded Text <=1024 bytes is the stated domain; arbitrary-byte Go strings, binary UUID values, ParseBytes and full Parse or whole-module compatibility are not provided. Existing DecimalLength/URNPrefix and internal quote helpers are shared without changing Validate. Original uuid.go/util.go/LICENSE hashes, compiled source embeds and the exact original31-file module h1 remain the same; added wrappers/provenance remain outside that upstream archive."
+    },
+    {
+      "module": "golang.org/x/net",
+      "repository": "https://github.com/golang/net",
+      "version": "v0.59.0",
+      "revision": "540d04cfe5028e2655754591a4d3e08c586809f2",
+      "module_h1": "h1:5zfYln+w5XCxwrnMMJPufRgNoXEaGxl0wo5GqPXyues=",
+      "source": "http/httpguts/httplex.go",
+      "source_sha256": "8cfd5819dc821d45f82fde10afff4b2e652535b0091e0559fc8ad7766051a2c2",
+      "oracle_copy": "third_party/x-net/http/httpguts/httplex.go.txt",
+      "license": "third_party/x-net/LICENSE",
+      "license_sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+      "target": "ports/net/httpguts/headers.gooo",
+      "symbols": [
+        "ValidHeaderFieldName",
+        "ValidHeaderFieldValue"
+      ],
+      "target_activities": [
+        "ValidHeaderFieldName",
+        "ValidHeaderFieldValue"
+      ],
+      "supporting_sources": [
+        "http/httpguts/guts.go",
+        "http/httpguts/httplex_test.go"
+      ],
+      "supporting_source_sha256": {
+        "http/httpguts/guts.go": "3da54270a625540809f2f767e54e18acf27199aca64b6cf16d6d3fa3999de959",
+        "http/httpguts/httplex_test.go": "0b16792c7042fe4b955d9335cf8ffe895f4b32d857c15244a8e0801c7081dba0"
+      },
+      "api_mapping": "Two original Boolean predicates over decoded valid UTF-8 Text of0..1024 bytes,with empty name false/empty value true. No trim,normalization or arbitrary-byte/unbounded Go-string compatibility. Required host preflight refuses missing/non-string/raw malformed or invalidUTF8/unpaired surrogate/decoded oversized input before Gooo. Uppercase names and edge SP/HTAB values retain HTTP/1.x predicate behavior. Original HeaderFacts12 is a separate importing diagnostic composition; no HTTP/2,authorization,sending,enforcement or production-safety claim. Oracle imports the actual whole pinned net/text packages; .txt files are byte-preserved source references,not an extracted oracle implementation."
     }
   ],
   "bounded_cel_adaptations": [
@@ -746,6 +776,35 @@
         "lexical_alias"
       ],
       "mapping": "Original pure Gooo composition preserves both raw Text inputs and exposes clean/absolute/change/exact/clean-equality/lexical-alias facts. These supplied lexical facts do not prove router/filesystem identity, authority or safety. No per-request human approval or effect is implemented.",
+      "license": "LICENSE"
+    },
+    {
+      "source": "examples/header-field-facts/main.gooo",
+      "source_sha256": "4aa66012d230252bc120fdacaac555172e3a1d6c5654181aa07c7347257a805e",
+      "package": "app/header-field-facts",
+      "activity": "Report",
+      "activity_id": "gooo://go-ports/examples/header-field-facts/report/v1",
+      "workspace": "header-field-facts.workspace.json",
+      "contract": "examples/header-field-facts/contract.json",
+      "contract_sha256": "2c217e71bab3dd8682a3b0d8ddf311af7495af5e336ea51617e303458a5cc999",
+      "input_corpus": "examples/header-field-facts/corpus.json",
+      "input_corpus_sha256": "16d88045a78fe43f239f7b22ad12635a852529abb74733aa82b5073fdd892053",
+      "reference_cases": 476,
+      "required_fields": [
+        "name",
+        "value",
+        "name_valid",
+        "value_valid",
+        "name_empty",
+        "name_has_uppercase",
+        "value_has_obs_text",
+        "value_edge_whitespace",
+        "name_invalid_offset",
+        "name_invalid_octet",
+        "value_invalid_offset",
+        "value_invalid_octet"
+      ],
+      "mapping": "Original pure Gooo diagnostics retain two unchanged Text inputs, expose Boolean header facts and first bad byte offset/octet. No human approval or external effect is performed. Supplied header facts do not prove authorization or production safety.",
       "license": "LICENSE"
     }
   ]

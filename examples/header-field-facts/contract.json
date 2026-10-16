@@ -1,0 +1,164 @@
+{
+  "schema": "gooo/header-field-facts-contract/v1",
+  "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+  "go_version": "go1.27.2",
+  "entry": "app/header-field-facts:Report",
+  "activity_id": "gooo://go-ports/examples/header-field-facts/report/v1",
+  "result_entity_id": "gooo://go-ports/examples/header-field-facts/result/v1",
+  "input": {
+    "named_fields": [
+      "name",
+      "value"
+    ],
+    "kinds": [
+      "Text",
+      "Text"
+    ],
+    "domain": "Both explicitly present decoded valid UTF-8 Text,0..1024 UTF-8 bytes inclusive. Missing,wrong-type,malformed UTF-8,lone surrogate escapes or unsupported length must be refused before native execution. Header-invalid in-domain strings remain diagnostic inputs.",
+    "external_command": "go run ./cmd/header-facts-input",
+    "external_schema": "exactly one JSON object with exactly two unique string fields name and value; raw bytes<=16384",
+    "native_schema": "gooo/body-composition-inputs/v1",
+    "native_keys": [
+      "app/header-field-facts:Report.input0",
+      "app/header-field-facts:Report.input1"
+    ]
+  },
+  "fields": [
+    {
+      "name": "name",
+      "type": "string",
+      "id": "gooo://go-ports/examples/header-field-facts/name",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "id": "gooo://go-ports/examples/header-field-facts/value",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "name_valid",
+      "type": "boolean",
+      "id": "gooo://go-ports/examples/header-field-facts/name-valid",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "value_valid",
+      "type": "boolean",
+      "id": "gooo://go-ports/examples/header-field-facts/value-valid",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "name_empty",
+      "type": "boolean",
+      "id": "gooo://go-ports/examples/header-field-facts/name-empty",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "name_has_uppercase",
+      "type": "boolean",
+      "id": "gooo://go-ports/examples/header-field-facts/name-has-uppercase",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "value_has_obs_text",
+      "type": "boolean",
+      "id": "gooo://go-ports/examples/header-field-facts/value-has-obs-text",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "value_edge_whitespace",
+      "type": "boolean",
+      "id": "gooo://go-ports/examples/header-field-facts/value-edge-whitespace",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "name_invalid_offset",
+      "type": "integer",
+      "id": "gooo://go-ports/examples/header-field-facts/name-invalid-offset",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "name_invalid_octet",
+      "type": "integer",
+      "id": "gooo://go-ports/examples/header-field-facts/name-invalid-octet",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "value_invalid_offset",
+      "type": "integer",
+      "id": "gooo://go-ports/examples/header-field-facts/value-invalid-offset",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "value_invalid_octet",
+      "type": "integer",
+      "id": "gooo://go-ports/examples/header-field-facts/value-invalid-octet",
+      "required": true,
+      "cardinality": "one"
+    }
+  ],
+  "semantics": {
+    "name": "unchanged decoded name Text; preserves UTF-8 bytes rather than original JSON escape spelling",
+    "value": "unchanged decoded value Text",
+    "name_valid": "actual pinned httpguts.ValidHeaderFieldName(name) within bounded valid UTF-8 domain",
+    "value_valid": "actual pinned httpguts.ValidHeaderFieldValue(value) within bounded valid UTF-8 domain",
+    "name_empty": "decoded name UTF-8 byte length is zero",
+    "name_has_uppercase": "any original name byte is ASCII A through Z, including after an earlier invalid byte",
+    "value_has_obs_text": "any original value byte is at least 128, including after an earlier invalid byte",
+    "value_edge_whitespace": "nonempty value begins or ends with SP(32) or HTAB(9)",
+    "name_invalid_offset": "zero-based UTF-8 byte offset of first non-token name byte, otherwise -1; empty name remains -1 although invalid",
+    "name_invalid_octet": "first non-token name byte value 0..255, otherwise -1",
+    "value_invalid_offset": "zero-based UTF-8 byte offset of first value byte below32 except HTAB, or DEL(127), otherwise -1",
+    "value_invalid_octet": "first forbidden value byte value 0..255, otherwise -1"
+  },
+  "kernels": [
+    {
+      "entry": "go/golang.org/x/net/http/httpguts:ValidHeaderFieldName",
+      "activity_id": "gooo://golang.org/x/net/http/httpguts/ValidHeaderFieldName",
+      "output": "Boolean; nonempty ASCII HTTP token; uppercase allowed"
+    },
+    {
+      "entry": "go/golang.org/x/net/http/httpguts:ValidHeaderFieldValue",
+      "activity_id": "gooo://golang.org/x/net/http/httpguts/ValidHeaderFieldValue",
+      "output": "Boolean; empty allowed, rejects C0 except HTAB and DEL, permits obs-text and edge SP/HTAB"
+    }
+  ],
+  "upstream": {
+    "module": "golang.org/x/net",
+    "version": "v0.59.0",
+    "revision": "540d04cfe5028e2655754591a4d3e08c586809f2",
+    "source": "http/httpguts/httplex.go",
+    "source_sha256": "8cfd5819dc821d45f82fde10afff4b2e652535b0091e0559fc8ad7766051a2c2",
+    "provenance": "../../ports/net/httpguts/provenance.json"
+  },
+  "input_population": {
+    "file": "corpus.json",
+    "sha256": "16d88045a78fe43f239f7b22ad12635a852529abb74733aa82b5073fdd892053",
+    "schema": "gooo/header-native-inputs/v1",
+    "name_rows": 232,
+    "value_rows": 232,
+    "report_pairs": 476,
+    "total_cases": 940,
+    "contains_expectations": false
+  },
+  "scope": [
+    "Pure deterministic diagnostics require no per-case human approval and perform no effects.",
+    "Input preprocessing establishes the bounded Text domain, not header validity or request authority.",
+    "No trimming,normalization,lowercasing,raw JSON escape preservation,HTTP2,field occurrence policy,HTTP framing,authorization or sending.",
+    "Fixed finite inputs do not cover all UTF-8 strings,all positions or arbitrary invalid UTF-8.",
+    "Exact typed12 fields/source/producer/raw saved outer-parent checks do not establish independent inner typed canonical parent digest acceptance; NOT_CHECKED remains explicit.",
+    "Fresh current public native execution,saved replay and CI are required; private pilot evidence is not current public acceptance."
+  ]
+}

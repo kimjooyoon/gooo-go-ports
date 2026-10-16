@@ -1,0 +1,17 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "app/header-field-facts:Report.input0": "X-Request-ID",
+      "app/header-field-facts:Report.input1": "req-17"
+    },
+    {
+      "app/header-field-facts:Report.input0": "X Request",
+      "app/header-field-facts:Report.input1": "ok\r\nInjected: yes"
+    },
+    {
+      "app/header-field-facts:Report.input0": "X-Label",
+      "app/header-field-facts:Report.input1": "café"
+    }
+  ]
+}

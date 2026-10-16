@@ -1,0 +1,61 @@
+// Original header facts over two unchanged decoded Text inputs.
+// Byte token/control predicates adapt the 2016 Go Authors' httpguts source;
+// its complete BSD3 notice is preserved in ports/net/httpguts/headers.gooo.
+// Preconditions: both values present, correct Text type, valid UTF-8 and each
+// <=1024 bytes. REQUIRED OUTER REFUSAL handles every violation before execution.
+// Empty values are supported. Offsets are zero-based bytes, never rune indices.
+// No wire-byte preservation, trimming, normalization, authorization or sending.
+package header_field_facts
+namespace gooo_ports_examples_header_field_facts
+import headers "go/golang.org/x/net/http/httpguts"
+entity Text id "gooo://std/text"
+entity HeaderFacts id "gooo://go-ports/examples/header-field-facts/result/v1" fields {
+    field name id "gooo://go-ports/examples/header-field-facts/name" type string required one
+    field value id "gooo://go-ports/examples/header-field-facts/value" type string required one
+    field name_valid id "gooo://go-ports/examples/header-field-facts/name-valid" type boolean required one
+    field value_valid id "gooo://go-ports/examples/header-field-facts/value-valid" type boolean required one
+    field name_empty id "gooo://go-ports/examples/header-field-facts/name-empty" type boolean required one
+    field name_has_uppercase id "gooo://go-ports/examples/header-field-facts/name-has-uppercase" type boolean required one
+    field value_has_obs_text id "gooo://go-ports/examples/header-field-facts/value-has-obs-text" type boolean required one
+    field value_edge_whitespace id "gooo://go-ports/examples/header-field-facts/value-edge-whitespace" type boolean required one
+    field name_invalid_offset id "gooo://go-ports/examples/header-field-facts/name-invalid-offset" type integer required one
+    field name_invalid_octet id "gooo://go-ports/examples/header-field-facts/name-invalid-octet" type integer required one
+    field value_invalid_offset id "gooo://go-ports/examples/header-field-facts/value-invalid-offset" type integer required one
+    field value_invalid_octet id "gooo://go-ports/examples/header-field-facts/value-invalid-octet" type integer required one
+}
+
+activity Report(Text, Text) -> HeaderFacts id "gooo://go-ports/examples/header-field-facts/report/v1" computes `let name_size = int64(len(input0))
+let value_size = int64(len(input1))
+let name_has_uppercase = false
+let value_has_obs_text = false
+let value_edge_whitespace = false
+let name_invalid_offset = -1
+let name_invalid_octet = -1
+let value_invalid_offset = -1
+let value_invalid_octet = -1
+if value_size > 0 {
+    let first = int64(input1[0])
+    let last = int64(input1[value_size - 1])
+    value_edge_whitespace = first == 9 || first == 32 || last == 9 || last == 32
+}
+let offset = 0
+for offset = 0; offset < 1024; offset = offset + 1 {
+    if offset < name_size {
+        let octet = int64(input0[offset])
+        if octet >= 65 && octet <= 90 { name_has_uppercase = true }
+        let token = (octet >= 48 && octet <= 57) || (octet >= 65 && octet <= 90) || (octet >= 97 && octet <= 122) || octet == 33 || (octet >= 35 && octet <= 39) || octet == 42 || octet == 43 || octet == 45 || octet == 46 || octet == 94 || octet == 95 || octet == 96 || octet == 124 || octet == 126
+        if !token && name_invalid_offset < 0 {
+            name_invalid_offset = offset
+            name_invalid_octet = octet
+        }
+    }
+    if offset < value_size {
+        let octet = int64(input1[offset])
+        if octet >= 128 { value_has_obs_text = true }
+        if ((octet < 32 && octet != 9) || octet == 127) && value_invalid_offset < 0 {
+            value_invalid_offset = offset
+            value_invalid_octet = octet
+        }
+    }
+}
+return HeaderFacts{name: input0, value: input1, name_valid: headers.ValidHeaderFieldName(input0), value_valid: headers.ValidHeaderFieldValue(input1), name_empty: name_size == 0, name_has_uppercase: name_has_uppercase, value_has_obs_text: value_has_obs_text, value_edge_whitespace: value_edge_whitespace, name_invalid_offset: name_invalid_offset, name_invalid_octet: name_invalid_octet, value_invalid_offset: value_invalid_offset, value_invalid_octet: value_invalid_octet}`

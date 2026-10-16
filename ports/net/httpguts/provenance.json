@@ -1,0 +1,78 @@
+{
+  "schema": "gooo/httpguts-provenance/v1",
+  "go_version": "go1.27.2",
+  "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+  "upstream": {
+    "module": "golang.org/x/net",
+    "repository": "https://github.com/golang/net",
+    "version": "v0.59.0",
+    "revision": "540d04cfe5028e2655754591a4d3e08c586809f2",
+    "module_h1": "h1:5zfYln+w5XCxwrnMMJPufRgNoXEaGxl0wo5GqPXyues=",
+    "source": "http/httpguts/httplex.go",
+    "source_sha256": "8cfd5819dc821d45f82fde10afff4b2e652535b0091e0559fc8ad7766051a2c2",
+    "oracle_copy": "third_party/x-net/http/httpguts/httplex.go.txt",
+    "license": "third_party/x-net/LICENSE",
+    "license_sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+    "target": "ports/net/httpguts/headers.gooo",
+    "symbols": [
+      "ValidHeaderFieldName",
+      "ValidHeaderFieldValue"
+    ],
+    "target_activities": [
+      "ValidHeaderFieldName",
+      "ValidHeaderFieldValue"
+    ],
+    "supporting_sources": [
+      "http/httpguts/guts.go",
+      "http/httpguts/httplex_test.go"
+    ],
+    "supporting_source_sha256": {
+      "http/httpguts/guts.go": "3da54270a625540809f2f767e54e18acf27199aca64b6cf16d6d3fa3999de959",
+      "http/httpguts/httplex_test.go": "0b16792c7042fe4b955d9335cf8ffe895f4b32d857c15244a8e0801c7081dba0"
+    },
+    "api_mapping": "Two original Boolean predicates over decoded valid UTF-8 Text of0..1024 bytes,with empty name false/empty value true. No trim,normalization or arbitrary-byte/unbounded Go-string compatibility. Required host preflight refuses missing/non-string/raw malformed or invalidUTF8/unpaired surrogate/decoded oversized input before Gooo. Uppercase names and edge SP/HTAB values retain HTTP/1.x predicate behavior. Original HeaderFacts12 is a separate importing diagnostic composition; no HTTP/2,authorization,sending,enforcement or production-safety claim. Oracle imports the actual whole pinned net/text packages; .txt files are byte-preserved source references,not an extracted oracle implementation."
+  },
+  "dependency": {
+    "module": "golang.org/x/text",
+    "version": "v0.42.0",
+    "module_h1": "h1:JbOZXgfeCPU9gacVtYliJqOhD+zhrEqK4LfdpmlUZqI=",
+    "module_go_mod_h1": "h1:ojzP1Z+2QtioaF8DTtO8K5q7JWVVYwZKenzujK0Zd0E=",
+    "purpose": "Actual imported httpguts whole package reaches net/idna and text bidirule,transform,bidi,norm; not a replacement predicate."
+  },
+  "net_go_mod_h1": "h1:2DA/G1UfVbCpQPeWTmMPGY7Cs2PkBkwu743bVX5PIVg=",
+  "original_source_references": {
+    "LICENSE": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+    "http/httpguts/guts.go.txt": "3da54270a625540809f2f767e54e18acf27199aca64b6cf16d6d3fa3999de959",
+    "http/httpguts/httplex.go.txt": "8cfd5819dc821d45f82fde10afff4b2e652535b0091e0559fc8ad7766051a2c2",
+    "http/httpguts/httplex_test.go.txt": "0b16792c7042fe4b955d9335cf8ffe895f4b32d857c15244a8e0801c7081dba0"
+  },
+  "source_reference_scope": "Exactly the three original http/httpguts Go files and BSD LICENSE,retained as non-build .txt references. The original module sums bind complete dependency archives; these four references alone do not authenticate or implement the imported oracle. CI authenticates whole downloads,verifies before building and after offline readonly verification; linked build info must contain exact unreplaced net/text module pins.",
+  "input_corpus": {
+    "path": "examples/header-field-facts/corpus.json",
+    "schema": "gooo/header-native-inputs/v1",
+    "sha256": "16d88045a78fe43f239f7b22ad12635a852529abb74733aa82b5073fdd892053",
+    "names": 232,
+    "values": 232,
+    "pairs": 476,
+    "native_cases": 940
+  },
+  "ported_activities": [
+    "go/golang.org/x/net/http/httpguts:ValidHeaderFieldName",
+    "go/golang.org/x/net/http/httpguts:ValidHeaderFieldValue"
+  ],
+  "original_consumer": "app/header-field-facts:Report",
+  "domain": "Decoded valid UTF-8 strings,each at most1024 bytes. Name/value empty supported. No Unicode normalization or JSON-spelling preservation; offsets and bad octets are byte diagnostics. Required raw host preflight has independent16384-byte request cap. Unsupported input is refusal,never a Boolean false/zero/sentinel extension.",
+  "licenses": {
+    "upstream": "BSD-3-Clause; Copyright2016 The Go Authors; full notice retained in headers.gooo and third_party/x-net/LICENSE",
+    "Gooo_bounded_loop_attribution": "MIT; Copyright2026 Kim Joo-yoon; complete inherited notice retained in headers.gooo",
+    "original_host_and_consumer": "Repository BSD-style LICENSE; original composition is not an upstream API or security policy."
+  },
+  "claims_excluded": [
+    "full Go arbitrary-byte/unbounded-string compatibility",
+    "HTTP/2 or whole httpguts API",
+    "authorization or authenticated current facts",
+    "network sending/enforcement/production safety"
+  ],
+  "native_acceptance": "Requires fresh public candidate execution and saved replay with source/case/producer/typed result bindings; source/provenance metadata is not native PASS.",
+  "target_source_sha256": "a033b96ab0adb394a9d79137715d7a4170e22061e4ae9aa282f8ab3671da9f76"
+}

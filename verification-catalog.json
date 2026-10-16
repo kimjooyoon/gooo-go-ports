@@ -286,6 +286,18 @@
       "sources": [
         "examples/path-alias-facts/main.gooo"
       ]
+    },
+    {
+      "path": "go/golang.org/x/net/http/httpguts",
+      "sources": [
+        "ports/net/httpguts/headers.gooo"
+      ]
+    },
+    {
+      "path": "app/header-field-facts",
+      "sources": [
+        "examples/header-field-facts/main.gooo"
+      ]
     }
   ]
 }
