@@ -53,7 +53,8 @@ jobs:
           names = ['.github/workflows/api-policy-action.yml']
           names += ['examples/api-policy-ci/' + name for name in [
               'action.yml', 'entrypoint.sh', 'go.mod', 'go.sum',
-              'cmd/gooo-policy-action/main.go', 'check_cli.py', 'README.md', 'LICENSE', 'NOTICE.txt']]
+              'cmd/gooo-policy-action/main.go', 'check_cli.py', 'summary.py', 'check_summary.py', 'check_summary_action.py',
+              'fixtures/synthetic-write.comparison.json', 'README.md', 'LICENSE', 'NOTICE.txt']]
           names += ['examples/api-policy-revision/testdata/read-facts.json',
                     'examples/api-policy-revision/testdata/write-facts.json']
           refs = {}
@@ -65,12 +66,18 @@ jobs:
           tree = ast.parse((root/'examples/api-policy-ci/check_cli.py').read_text())
           methods = sorted(n.name for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name.startswith('test_'))
           assert len(methods) == 21
+          summary_tree = ast.parse((root/'examples/api-policy-ci/check_summary.py').read_text())
+          summary_methods = sorted(n.name for n in ast.walk(summary_tree) if isinstance(n, ast.FunctionDef) and n.name.startswith('test_'))
+          assert len(summary_methods) == 16
+          summary_action_tree = ast.parse((root/'examples/api-policy-ci/check_summary_action.py').read_text())
+          summary_action_methods = sorted(n.name for n in ast.walk(summary_action_tree) if isinstance(n, ast.FunctionDef) and n.name.startswith('test_'))
+          assert len(summary_action_methods) == 2
           head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
           assert head == os.environ['GITHUB_SHA']
           result = {'schema': 'gooo/api-policy-action-hosted-source/v1',
                     'status': 'SOURCE_RECORDED_NOT_RUNTIME_ACCEPTANCE', 'head': head,
                     'event': os.environ['GITHUB_EVENT_NAME'], 'run_id': os.environ['GITHUB_RUN_ID'],
-                    'source_files': refs, 'CLI_test_methods': methods}
+                    'source_files': refs, 'CLI_test_methods': methods, 'summary_test_methods': summary_methods, 'summary_action_test_methods': summary_action_methods}
           (root/'out/api-policy-ci-hosted/source.json').write_text(json.dumps(result, indent=2)+'\n')
           PY
           control_work="$(mktemp -d "$RUNNER_TEMP/gooo-api-policy-controls.XXXXXXXX")"
@@ -98,6 +105,21 @@ jobs:
           timeout --signal=TERM --kill-after=5s 420s \
             python3 -I -B examples/api-policy-ci/check_cli.py "$control_work/review" \
             > out/api-policy-ci-hosted/controls.stdout 2> out/api-policy-ci-hosted/controls.stderr
+      - name: Exercise all sixteen bounded summary formatter controls once
+        run: |
+          set -euo pipefail
+          timeout --signal=TERM --kill-after=5s 90s \
+            python3 -I -B examples/api-policy-ci/check_summary.py "$GITHUB_WORKSPACE/examples/api-policy-ci/summary.py" \
+            > out/api-policy-ci-hosted/summary-controls.stdout 2> out/api-policy-ci-hosted/summary-controls.stderr
+      - name: Exercise the real summary wrapper and late append failure control
+        run: |
+          set -euo pipefail
+          timeout --signal=TERM --kill-after=5s 90s \
+            python3 -I -B examples/api-policy-ci/check_summary_action.py \
+            "$GITHUB_WORKSPACE/examples/api-policy-ci/action.yml" \
+            "$GITHUB_WORKSPACE/examples/api-policy-ci/summary.py" \
+            "$GITHUB_WORKSPACE/examples/api-policy-ci/fixtures/synthetic-write.comparison.json" \
+            > out/api-policy-ci-hosted/summary-action-controls.stdout 2> out/api-policy-ci-hosted/summary-action-controls.stderr
       - name: Exercise the actual composite action with the supplied write case
         id: policy
         uses: ./examples/api-policy-ci
@@ -105,6 +127,7 @@ jobs:
           mode: compare
           input-file: examples/api-policy-revision/testdata/write-facts.json
           fail-on-newly-denied: 'false'
+          summary: 'true'
       - name: Check actual action transport against the frozen whole write literal
         env:
           ACTION_CLASSIFICATION: ${{ steps.policy.outputs.classification }}
@@ -156,6 +179,126 @@ jobs:
               'classification': 'NEWLY_DENIED', 'changed_count': 2,
               'report_sha256': hashlib.sha256(raw).hexdigest(),
               'scope': 'Synthetic fixed-profile workflow validation only; no outside trial or current authorization.'}, indent=2)+'\n')
+          PY
+      - name: Exercise the actual enabled summary for a supplied read case
+        id: policy_read
+        uses: ./examples/api-policy-ci
+        with:
+          mode: compare
+          input-file: examples/api-policy-revision/testdata/read-facts.json
+          fail-on-newly-denied: 'false'
+          summary: 'true'
+      - name: Record synthetic action directories before requested failure
+        run: |
+          python3 -I -B - <<'PY'
+          import json, os, pathlib, stat
+          root = pathlib.Path(os.environ['RUNNER_TEMP']).resolve()
+          paths = sorted(root.glob('gooo-api-policy-action.*'))
+          assert len(paths) <= 8
+          for path in paths:
+              assert path.resolve() == path and path.is_dir() and not path.is_symlink()
+              assert stat.S_IMODE(path.stat().st_mode) == 0o700
+          pathlib.Path('out/api-policy-ci-hosted/before-requested-failure.json').write_text(json.dumps([str(path) for path in paths])+'\n')
+          PY
+      - name: Deliberately fail the synthetic write review and still produce its enabled summary
+        id: policy_expected_failure
+        # This is only a failure-path test. Consumer workflows keep the failure.
+        continue-on-error: true
+        uses: ./examples/api-policy-ci
+        with:
+          mode: compare
+          input-file: examples/api-policy-revision/testdata/write-facts.json
+          fail-on-newly-denied: 'true'
+          summary: 'true'
+      - name: Check actual enabled write read and failure summaries against complete literals
+        if: ${{ !cancelled() }}
+        env:
+          WRITE_REPORT: ${{ steps.policy.outputs.report-path }}
+          WRITE_RECEIPT: ${{ steps.policy.outputs.receipt-path }}
+          WRITE_SHA256: ${{ steps.policy.outputs.report-sha256 }}
+          READ_CLASSIFICATION: ${{ steps.policy_read.outputs.classification }}
+          READ_CHANGED_COUNT: ${{ steps.policy_read.outputs.changed-count }}
+          READ_REPORT: ${{ steps.policy_read.outputs.report-path }}
+          READ_RECEIPT: ${{ steps.policy_read.outputs.receipt-path }}
+          READ_SHA256: ${{ steps.policy_read.outputs.report-sha256 }}
+          FAILURE_OUTCOME: ${{ steps.policy_expected_failure.outcome }}
+          FAILURE_CONCLUSION: ${{ steps.policy_expected_failure.conclusion }}
+        run: |
+          python3 -I -B - <<'PY'
+          import hashlib, json, os, pathlib, runpy, stat
+          root = pathlib.Path.cwd()
+          temporary = pathlib.Path(os.environ['RUNNER_TEMP']).resolve()
+          out = root/'out/api-policy-ci-hosted'
+          literals = runpy.run_path(str(root/'examples/api-policy-ci/check_cli.py'), run_name='frozen_summary_hosted_literals')
+          # Definitions only: the original twenty-one CLI controls do not rerun.
+          def private_file(path, cap):
+              path = pathlib.Path(path)
+              assert path.is_absolute() and path.resolve() == path and path.is_file() and not path.is_symlink()
+              info = path.stat()
+              assert path.is_relative_to(temporary) and stat.S_IMODE(info.st_mode) == 0o600
+              assert info.st_nlink == 1 and info.st_uid == os.geteuid() and info.st_size <= cap
+              return path.read_bytes()
+          def summary_literal(action):
+              classification, count, after, names = ('NEWLY_DENIED', 2, 'ACTION_NOT_READ_ONLY', '`allowed`, `reason`') if action == 'write' else ('UNCHANGED', 0, 'ALLOW', '(none)')
+              return ('### Gooo readonly policy review\n\n'
+                      '| Result | Value |\n| --- | --- |\n'
+                      '| Classification | `'+classification+'` |\n'
+                      '| Changed fields | '+str(count)+' |\n'
+                      '| Before reason | `ALLOW` |\n'
+                      '| After reason | `'+after+'` |\n\n'
+                      'Changed field names: '+names+'.\n\n'
+                      'Two supplied sealed profiles; this summary does not authorize a live action.\n').encode()
+          def inspect(label, action, report_path, receipt_path, report_sha=None):
+              report_path, receipt_path = pathlib.Path(report_path), pathlib.Path(receipt_path)
+              raw, receipt_raw = private_file(report_path, 16 << 20), private_file(receipt_path, 65536)
+              report, receipt = json.loads(raw), json.loads(receipt_raw)
+              expected = literals['literal_report'](literals['facts'](action), action=action)
+              assert literals['exact_types'](report, expected) and report == expected
+              digest = hashlib.sha256(raw).hexdigest()
+              assert report_sha is None or digest == report_sha
+              assert receipt['schema'] == 'gooo/api-policy-action-observation/v1' and receipt['mode'] == 'compare'
+              assert receipt['saved_replay'] == 'COMPLETE_TYPED_REPORT_RECOMPUTED'
+              assert receipt['compiled_modules'] == literals['MODULES']
+              assert (receipt['compiled_go'], receipt['compiled_os'], receipt['compiled_arch']) == ('go1.27.2', 'linux', 'amd64')
+              original = (root/('examples/api-policy-revision/testdata/'+action+'-facts.json')).read_bytes()
+              assert receipt['input_sha256'] == hashlib.sha256(original).hexdigest() and receipt['input_bytes'] == len(original)
+              assert receipt['report_sha256'] == digest and receipt['report_bytes'] == len(raw)
+              markdown = private_file(report_path.with_name('summary.md'), 4096)
+              assert markdown == summary_literal(action)
+              assert all(value not in markdown for value in [b'synthetic:user', b'tenant-a', b'admin', b'effective_principal'])
+              (out/(label+'.comparison.json')).write_bytes(raw)
+              (out/(label+'.receipt.json')).write_bytes(receipt_raw)
+              (out/(label+'.summary.md')).write_bytes(markdown)
+              return {'report_sha256': digest, 'summary_bytes': len(markdown), 'summary_sha256': hashlib.sha256(markdown).hexdigest()}
+          assert os.environ['READ_CLASSIFICATION'] == 'UNCHANGED' and os.environ['READ_CHANGED_COUNT'] == '0'
+          write = inspect('enabled-write', 'write', os.environ['WRITE_REPORT'], os.environ['WRITE_RECEIPT'], os.environ['WRITE_SHA256'])
+          read = inspect('enabled-read', 'read', os.environ['READ_REPORT'], os.environ['READ_RECEIPT'], os.environ['READ_SHA256'])
+          assert os.environ['FAILURE_OUTCOME'] == 'failure'
+          # GitHub's test-only continue-on-error changes conclusion, not outcome.
+          assert os.environ['FAILURE_CONCLUSION'] == 'success'
+          before = set(json.loads((out/'before-requested-failure.json').read_text()))
+          after = {str(path) for path in temporary.glob('gooo-api-policy-action.*')}
+          created = after-before
+          assert len(created) == 1
+          failed_root = pathlib.Path(created.pop())
+          assert failed_root.resolve() == failed_root and failed_root.is_dir() and not failed_root.is_symlink()
+          assert stat.S_IMODE(failed_root.stat().st_mode) == 0o700
+          # Failed composite outputs are not assumed available to caller steps.
+          # This test owns all three known synthetic runs and inspects the one
+          # newly-created result directory instead of adding a sixth output.
+          failed = inspect('requested-failure-write', 'write', failed_root/'result/comparison.json', failed_root/'result/receipt.json')
+          before_sources = json.loads((out/'source.json').read_text())
+          for name, ref in before_sources['source_files'].items():
+              raw = (root/name).read_bytes()
+              assert len(raw) == ref['bytes'] and hashlib.sha256(raw).hexdigest() == ref['sha256']
+          (out/'enabled-summaries.json').write_text(json.dumps({
+              'schema': 'gooo/api-policy-action-enabled-summary-hosted/v1',
+              'status': 'ACTUAL_WRITE_READ_AND_REQUESTED_FAILURE_SUMMARIES_MATCH_COMPLETE_LITERALS',
+              'original_CLI_controls': 21, 'formatter_controls': 16, 'summary_append_transport_controls': 2,
+              'enabled_write': write, 'enabled_read': read, 'requested_failure_write': failed,
+              'requested_failure_outcome': 'failure', 'test_only_continue_on_error': True,
+              'source_bindings_unchanged': True,
+              'scope': 'Actual synthetic composite transport/presentation validation. Formatter SHA/presentation is not a typed-policy verifier, new policy computation, current authority or outside use.'}, indent=2)+'\n')
           PY
       - name: Preserve only synthetic hosted validation records
         if: always()
