@@ -323,7 +323,7 @@ OBSERVER_HEADER_SHA = '46cb0e7392dd3f3fb9562bccea6b27e5194ffcf59e1a58bab4c07b99a
 NATIVE_HEADER_SHA = '584d7a22663deb57be052a69d58f2b19e6233a7eefb7d4ce6ad1d5b650d48e69'
 # Add the record adapter controls, corpus regeneration and host-reader controls;
 # every previously required observer command remains byte-identical and once.
-OBSERVER_STEP_SHA = '9752b431a2e7102064c3dd42ce56d1ee300170963cd3b16d2e5ed9d4d884f31c'
+OBSERVER_STEP_SHA = '9b1e2687e41417985c26ea238df8f64b5a7266c454473a5c470a67bc30a0ec23'
 GENERATOR_STEP_SHA = '081263b551a4d28aa8b46dc025fe951c62d91d13e164cb7927b70d7270aaf399'
 CLASSIFIER_STEP_SHA = '1864b9e0f27cc73595dd863c71640050cf046b2ec67cfd02c6ba5a8ebd11a61a'
 CHECKOUT_STEP_SHA = 'b60ba5d7bf95691b8baec3a3e402aeba552fbcb4a353d7de8946023e73e79603'
@@ -802,7 +802,7 @@ def validate(text):
                   '"$GITHUB_SHA"', '"$GITHUB_OUTPUT"', "--summary out/ci-scope.json"):
         require(token in classifier, "classifier identity/output input missing: " + token)
     observer = named["Check the Go observer"]
-    for command in ("gofmt -l", "go vet ./...", "go test -race ./...",
+    for command in ("gofmt -l", "go vet ./...", "go test -race -timeout=15m ./...",
                     "python3 tools/bootstrap.test.py", "python3 tools/receipt_json_test.py",
                     "python3 tools/check-drag-crop-example_test.py",
                     "python3 tools/check-fixed-pixel-bounds_test.py",

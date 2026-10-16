@@ -52,8 +52,21 @@ func (p nativeWorkspaceProfile) workspaceForSuite(f frozenVerificationCatalog, s
 	// Always apply the original source exclusions first. In particular, a whole
 	// selected package must not re-add literal/Cut/UUID/path/decimal exclusions.
 	original, err := f.workspaceForSuite(s)
-	if err != nil || p == "" {
+	if err != nil {
 		return original, err
+	}
+	return p.workspaceForSelected(f, s, original)
+}
+
+// Apply the profile to one already-selected legacy workspace. The production
+// wrapper always performs the original selector and propagates its error first.
+// No source, case, validation result or derived workspace is cached here.
+func (p nativeWorkspaceProfile) workspaceForSelected(f frozenVerificationCatalog, s suite, original suiteWorkspace) (suiteWorkspace, error) {
+	if err := p.validate(); err != nil {
+		return suiteWorkspace{}, err
+	}
+	if p == "" {
+		return original, nil
 	}
 	if original.Manifest.Schema != "gooo/package-workspace-manifest/v1" || original.Manifest.Entry.Package != s.Package || original.Manifest.Entry.Activity != s.Activity {
 		return suiteWorkspace{}, fmt.Errorf("dependency-closure-v1 original workspace entry differs")

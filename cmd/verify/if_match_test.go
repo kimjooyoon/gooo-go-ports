@@ -229,12 +229,20 @@ func TestIfMatchFiveLosslessPartitionsAndOriginal79WorkspacePrefix(t *testing.T)
 	cases := 0
 	for _, s := range old {
 		cases += len(s.Cases)
+		beforeLegacy, err := prior.workspaceForSuite(s)
+		if err != nil {
+			t.Fatal(err)
+		}
+		afterLegacy, err := f.workspaceForSuite(s)
+		if err != nil {
+			t.Fatal(err)
+		}
 		for _, profile := range []nativeWorkspaceProfile{"", dependencyClosureWorkspaceProfile} {
-			before, err := profile.workspaceForSuite(prior, s)
+			before, err := profile.workspaceForSelected(prior, s, beforeLegacy)
 			if err != nil {
 				t.Fatal(err)
 			}
-			after, err := profile.workspaceForSuite(f, s)
+			after, err := profile.workspaceForSelected(f, s, afterLegacy)
 			if err != nil || !reflect.DeepEqual(before, after) {
 				t.Fatal("IfMatch changed original79 selected workspace", s.Package, s.Activity, err)
 			}
