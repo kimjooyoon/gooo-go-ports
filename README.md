@@ -14,10 +14,10 @@ describing what programs should do and inspecting how they are built and run.
 **Compose an automatic header-addition decision:** the [diagnostic-header addition](examples/diagnostic-header-addition/README.md) combines header facts, payload admission and twelve supplied request observations. Inspect sixteen fields, preserve the candidate and byte witnesses, then use a [fresh Gooo-generated local host](examples/header-addition-host/README.md) for an atomic revision check and application.
 
 This independent ecosystem project implements selected Go standard-library, x/net, x/image and Google UUID functions in Gooo,
-using independent Go references and saved replay. The source inventory includes 53 authored standard-library ports,
+using independent Go references and saved replay. The source inventory includes 54 authored standard-library ports,
 two ports from golang.org/x/net, two from golang.org/x/image and two Google UUID adaptations. The current scope is
-59 authored HTTP, Unicode, IPv4 classification and prefix queries, signed-decimal parsing, literal-text splitting and byte search, slash-path, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, twenty-seven importing consumer programs (thirty activities),
-and an importing browser dispatcher.
+60 authored HTTP, Unicode, IPv4 classification and prefix queries, signed-decimal parsing, literal-text splitting and byte search, slash-path, UUID format and parsing, 8-bit integer, color, duration, rectangle and fixed-point APIs, the preceding twenty-seven importing consumer programs (thirty activities),
+the new eight-field canonical header-key composition, and an importing browser dispatcher.
 The RectangleIn/FitsCrop suites have completed finite native execution and saved
 replay with an independent raw-receipt audit; see the [verification evidence](evidence/rectangle-in-fits-crop-20261012.json).
 The literal-text workflow includes a reviewed 24-input native pilot and repaired
@@ -116,6 +116,20 @@ runs and the historical partition/timing numbers below do not validate this
 addition. The report is suitable for an explicit automatic header policy and
 does not require a human decision to compute. HTTP framing, authority and actual
 effects remain host responsibilities.
+
+The [canonical header-key composition](examples/canonical-header-key/README.md)
+separates canonical Text from name validity. It retains the original name,
+canonical form, change flag, byte lengths and first invalid byte witness in
+eight required fields. `fOO-bAr` becomes `Foo-Bar`; `x bad` remains unchanged and
+invalid, with byte offset 1 and octet 32. The port reproduces bounded
+`net/textproto.CanonicalMIMEHeaderKey` Text content in Gooo and imports the
+existing Gooo token predicate. No per-case human approval or HTTP effect is
+introduced. Two appended normal suites retain all 1,059 input occurrences each,
+including five repeated keys; independent Go references and saved replay remain
+required. The preceding 74-suite/171,217-case/2,181-batch prefix is preserved.
+The required source roster is planned as 76 suites and 173,335 cases; its
+serialized batch count and complete source-identity roster await actual public
+profile measurement. Earlier private observations are not public acceptance.
 
 The original [diagnostic-header addition](examples/diagnostic-header-addition/README.md)
 adds one importing `AssessAddition` activity after the preceding 73 suites. It
@@ -498,6 +512,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | --- | --- | --- |
 | `go/net/http` | `StatusText` | Go의 상태 코드 62개와 설명. 미등록 코드는 빈 문자열 |
 | `go/golang.org/x/net/http/httpguts` | `ValidHeaderFieldName`, `ValidHeaderFieldValue` | decoded valid UTF-8 Text 각각 최대 1,024바이트. 이름은 비어 있지 않은 ASCII token, 값은 HTAB 외 C0와 DEL을 거부. [원본 차이와 도메인](ports/net/httpguts/README.md), [자동 판단용 12필드 구성](examples/header-field-facts/README.md) |
+| `go/net/textproto` | `CanonicalMIMEHeaderKey` | Decoded valid UTF-8 Text 0–1,024 bytes; valid-token ASCII casing, invalid/empty input identity. [Domain and source](ports/net/textproto/README.md), [original eight-field validity/witness composition](examples/canonical-header-key/README.md) |
 | `go/strconv` | `ParseIntDecimal64` | decoded valid UTF-8 Text 최대1,024바이트에서 ParseInt(s,10,64)의 원래 입력·정확한 int64·구문/범위 오류 구별을4필드로 보존. unsigned overflow와 뒤따른 잘못된 문자 우선순위도 유지. [도메인과 차이](ports/strconv/README.md) |
 | `go/path` | `Ext`, `IsAbs` | 명시적 valid UTF-8 Text 최대 1,024바이트. 마지막 slash 이후 확장자와 선행 slash 여부를 Gooo로 계산. 역슬래시는 일반 문자이며 정규화·파일 접근·권한 판정 없음. 기존 catalog와 별도 native sidecar |
 | `go/strings` | `IndexByte` | UTF-8 Text 최대 1,024바이트에서 0..255 byte의 첫 위치 또는 -1. 원본 바이트 offset과 길이 보존; 영역 밖 Integer는 별도 -1 확장. Native 전용 |

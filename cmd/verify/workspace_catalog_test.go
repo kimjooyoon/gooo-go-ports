@@ -14,7 +14,7 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(frozen.Catalog.Packages) != 49 || len(frozen.Sources) != 59 {
+	if len(frozen.Catalog.Packages) != 51 || len(frozen.Sources) != 61 {
 		t.Fatal("complete reviewed catalog roster changed")
 	}
 	if !reflect.DeepEqual(frozen.Catalog.Packages[48], sourcePackage{Path: headerAdditionPackage, Sources: []string{headerAdditionSource}}) {

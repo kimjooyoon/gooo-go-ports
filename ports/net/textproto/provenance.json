@@ -1,0 +1,64 @@
+{
+  "schema": "gooo/textproto-canonical-header-key-provenance/v1",
+  "go_version": "go1.27.2",
+  "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+  "upstream": {
+    "repository": "https://github.com/golang/go",
+    "revision": "022c8636110ebac86a9b88724cda168ed713c21f",
+    "source": "src/net/textproto/reader.go",
+    "source_sha256": "98a3ebb83bb6d2df4fb1f303ead592efbdb125f00f9a2b961c1496c66e49ae0e",
+    "oracle_copy": "third_party/go/net/textproto/reader.go.txt",
+    "license": "third_party/GO-LICENSE",
+    "license_sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+    "copyright": "Copyright2010 The Go Authors. All rights reserved.",
+    "symbols": [
+      "CanonicalMIMEHeaderKey"
+    ],
+    "supporting_symbols": [
+      "canonicalMIMEHeaderKey",
+      "validHeaderFieldByte"
+    ],
+    "api_mapping": "Original exported Text content on decoded validUTF8 strings0..1024bytes. Empty or any invalid token byte returns the complete original input. Valid ASCII token bytes are uppercased initially and after hyphen, lowercased otherwise; non-hyphen punctuation/digits consume the upper state. No trim,repair,Unicode normalization,common-header interning/allocation or Go pointer-identity guarantee."
+  },
+  "target": "ports/net/textproto/canonical.gooo",
+  "target_source_sha256": "a3e09e26baa01cdafa0b27edb7eb3a32c09237b3d510bc1a80b17eb63969e1b5",
+  "supporting_sources": [
+    {
+      "target": "ports/net/httpguts/headers.gooo",
+      "sha256": "a033b96ab0adb394a9d79137715d7a4170e22061e4ae9aa282f8ab3671da9f76",
+      "provenance": "ports/net/httpguts/provenance.json"
+    }
+  ],
+  "original_consumer": {
+    "source": "examples/canonical-header-key/main.gooo",
+    "source_sha256": "f7da15ccb5c52dff714f2338b9bedf79074d009ad07bfca9d8ddf2f81d119c06",
+    "entry": "app/canonical-header-key:Report",
+    "required_output_fields": 8,
+    "contract": "examples/canonical-header-key/contract.json",
+    "mapping": "Preserve original and canonical Text,changed,name_valid,byte lengths and first invalid byte offset/octet. Existing HeaderFacts supplies validity/witnesses; canonicalization remains Gooo-owned."
+  },
+  "input_corpus": {
+    "path": "examples/canonical-header-key/corpus.json",
+    "schema": "gooo/canonical-header-key-corpus/v1",
+    "sha256": "e5deb0c69d9b7ae99cfb6ed91ed6a57449d616e45cb04fb38f5ed3dbbe128aa1",
+    "raw_occurrences": 1059,
+    "unique_exact_keys": 1054,
+    "duplicate_occurrences": 5,
+    "contains_expectations": false,
+    "accounting": "examples/canonical-header-key/corpus-accounting.json"
+  },
+  "independent_reference": "Actual pinned Go net/textproto.CanonicalMIMEHeaderKey unchanged key; existing independent headerReference(key,empty_value) for validity/witnesses. No candidate-derived expected values.",
+  "licenses": {
+    "upstream": "Go BSD-style copyright retained in canonical.gooo and exact original reader reference; full third_party/GO-LICENSE retained.",
+    "imported_header_predicate": "Existing x/net source retains its BSD3 and inherited Gooo bounded-loop MIT notices unchanged.",
+    "original_consumer": "Repository BSD-style LICENSE."
+  },
+  "native_acceptance": "Fresh current public source native execution and saved replay are required for both entries. Metadata and earlier private finite observations are not public acceptance.",
+  "claims_excluded": [
+    "whole net/textproto package",
+    "arbitrary-byte or unbounded Go strings",
+    "HTTP parsing/repair/sending/HTTP2/authorization",
+    "production safety/performance/external adoption",
+    "actual malformed transport refusal by generic Gooo CLI"
+  ]
+}

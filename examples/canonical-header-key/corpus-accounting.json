@@ -1,0 +1,166 @@
+{
+  "schema": "gooo/canonical-header-key-occurrence-accounting/v1",
+  "corpus": {
+    "file": "corpus.json",
+    "bytes": 265691,
+    "sha256": "e5deb0c69d9b7ae99cfb6ed91ed6a57449d616e45cb04fb38f5ed3dbbe128aa1"
+  },
+  "raw_rows": 1059,
+  "unique_keys": 1054,
+  "duplicate_occurrences": 5,
+  "within_partition_duplicate_occurrences": 0,
+  "cross_partition_duplicate_occurrences": 5,
+  "duplicate_definition": "Within=rows minus distinct keys per partition; cross=sum of partition distinct keys minus global distinct keys. Categories are disjoint/additive: a within-partition repeat is counted only within.",
+  "partitions": [
+    {
+      "name": "manual",
+      "start_inclusive": 0,
+      "end_exclusive": 20,
+      "raw_rows": 20,
+      "unique_keys": 20,
+      "within_partition_duplicate_occurrences": 0,
+      "cross_partition_duplicate_occurrences": 0,
+      "first_id": "empty",
+      "last_id": "edge1024-unicode-invalid"
+    },
+    {
+      "name": "ascii-single",
+      "start_inclusive": 20,
+      "end_exclusive": 148,
+      "raw_rows": 128,
+      "unique_keys": 128,
+      "within_partition_duplicate_occurrences": 0,
+      "cross_partition_duplicate_occurrences": 0,
+      "first_id": "ascii-single/000",
+      "last_id": "ascii-single/127"
+    },
+    {
+      "name": "ascii-initial",
+      "start_inclusive": 148,
+      "end_exclusive": 276,
+      "raw_rows": 128,
+      "unique_keys": 128,
+      "within_partition_duplicate_occurrences": 0,
+      "cross_partition_duplicate_occurrences": 0,
+      "first_id": "ascii-initial/000",
+      "last_id": "ascii-initial/127"
+    },
+    {
+      "name": "ascii-middle-lower",
+      "start_inclusive": 276,
+      "end_exclusive": 404,
+      "raw_rows": 128,
+      "unique_keys": 128,
+      "within_partition_duplicate_occurrences": 0,
+      "cross_partition_duplicate_occurrences": 0,
+      "first_id": "ascii-middle-lower/000",
+      "last_id": "ascii-middle-lower/127"
+    },
+    {
+      "name": "ascii-middle-dash",
+      "start_inclusive": 404,
+      "end_exclusive": 532,
+      "raw_rows": 128,
+      "unique_keys": 128,
+      "within_partition_duplicate_occurrences": 0,
+      "cross_partition_duplicate_occurrences": 0,
+      "first_id": "ascii-middle-dash/000",
+      "last_id": "ascii-middle-dash/127"
+    },
+    {
+      "name": "ascii-terminal-lower",
+      "start_inclusive": 532,
+      "end_exclusive": 660,
+      "raw_rows": 128,
+      "unique_keys": 128,
+      "within_partition_duplicate_occurrences": 0,
+      "cross_partition_duplicate_occurrences": 0,
+      "first_id": "ascii-terminal-lower/000",
+      "last_id": "ascii-terminal-lower/127"
+    },
+    {
+      "name": "ascii-terminal-dash",
+      "start_inclusive": 660,
+      "end_exclusive": 788,
+      "raw_rows": 128,
+      "unique_keys": 128,
+      "within_partition_duplicate_occurrences": 0,
+      "cross_partition_duplicate_occurrences": 0,
+      "first_id": "ascii-terminal-dash/000",
+      "last_id": "ascii-terminal-dash/127"
+    },
+    {
+      "name": "named",
+      "start_inclusive": 788,
+      "end_exclusive": 821,
+      "raw_rows": 33,
+      "unique_keys": 33,
+      "within_partition_duplicate_occurrences": 0,
+      "cross_partition_duplicate_occurrences": 2,
+      "first_id": "named/00",
+      "last_id": "named/32"
+    },
+    {
+      "name": "unicode-boundaries",
+      "start_inclusive": 821,
+      "end_exclusive": 857,
+      "raw_rows": 36,
+      "unique_keys": 36,
+      "within_partition_duplicate_occurrences": 0,
+      "cross_partition_duplicate_occurrences": 1,
+      "first_id": "unicode-boundaries/000",
+      "last_id": "unicode-boundaries/035"
+    },
+    {
+      "name": "byte-length-edges",
+      "start_inclusive": 857,
+      "end_exclusive": 867,
+      "raw_rows": 10,
+      "unique_keys": 10,
+      "within_partition_duplicate_occurrences": 0,
+      "cross_partition_duplicate_occurrences": 0,
+      "first_id": "byte-length-edges/000",
+      "last_id": "byte-length-edges/009"
+    },
+    {
+      "name": "seed-token",
+      "start_inclusive": 867,
+      "end_exclusive": 931,
+      "raw_rows": 64,
+      "unique_keys": 64,
+      "within_partition_duplicate_occurrences": 0,
+      "cross_partition_duplicate_occurrences": 0,
+      "first_id": "seed-token/000",
+      "last_id": "seed-token/063"
+    },
+    {
+      "name": "seed-ascii",
+      "start_inclusive": 931,
+      "end_exclusive": 995,
+      "raw_rows": 64,
+      "unique_keys": 64,
+      "within_partition_duplicate_occurrences": 0,
+      "cross_partition_duplicate_occurrences": 0,
+      "first_id": "seed-ascii/000",
+      "last_id": "seed-ascii/063"
+    },
+    {
+      "name": "seed-unicode",
+      "start_inclusive": 995,
+      "end_exclusive": 1059,
+      "raw_rows": 64,
+      "unique_keys": 64,
+      "within_partition_duplicate_occurrences": 0,
+      "cross_partition_duplicate_occurrences": 2,
+      "first_id": "seed-unicode/000",
+      "last_id": "seed-unicode/063"
+    }
+  ],
+  "raw_utf8_key_bytes": 120984,
+  "maximum_key_bytes": 1024,
+  "generator": {
+    "seed": "math/rand/v2 PCG(17,29), shared token/ASCII/Unicode stream",
+    "scope": "Frozen original input asset with explicit materialized values and measured occurrence accounting. No public generator command or expected-output generation is claimed."
+  },
+  "scope": "Input-only occurrence accounting. All1059 original rows, including five duplicate key occurrences, remain ordered; no Unicode normalization or deduplication. These finite inputs do not exhaust all validUTF8 Text0..1024bytes. No native or public CI acceptance claim."
+}

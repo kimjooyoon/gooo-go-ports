@@ -30,7 +30,8 @@
     "src/path/path.go": "0a5024c364387eeea9ab5fe0b285f0d62355e8cd181cdbddfdfa227f6916d94c",
     "src/net/netip/netip.go": "32295f4761825d8c6fdade4dad093b08683bdd1945010bee8a90a298e18cf208",
     "src/strconv/number.go": "dda43e8c91d95f9dea0c46b2fec6637e5520cae099e40c5965dca0e41bbaab9e",
-    "src/internal/strconv/atoi.go": "bd69756b79c2f007ce7900bea400051f9f9da600c9c6bad656e46900331663d8"
+    "src/internal/strconv/atoi.go": "bd69756b79c2f007ce7900bea400051f9f9da600c9c6bad656e46900331663d8",
+    "src/net/textproto/reader.go": "98a3ebb83bb6d2df4fb1f303ead592efbdb125f00f9a2b961c1496c66e49ae0e"
   },
   "ports": [
     {
@@ -439,6 +440,34 @@
           "required_timing_source_identities": 140,
           "scope": "Focused source partition measurement only; fresh full70 native and saved replay plus original hosted CI remain required. Existing68 source closures, ordered cases and2072 combined-profile partitions remain unchanged."
         }
+      }
+    },
+    {
+      "source": "src/net/textproto/reader.go",
+      "oracle_copy": "third_party/go/net/textproto/reader.go.txt",
+      "target": "ports/net/textproto/canonical.gooo",
+      "supporting_targets": [
+        "ports/net/httpguts/headers.gooo"
+      ],
+      "symbols": [
+        "CanonicalMIMEHeaderKey"
+      ],
+      "target_activities": [
+        "CanonicalMIMEHeaderKey"
+      ],
+      "license": "third_party/GO-LICENSE",
+      "provenance": "ports/net/textproto/provenance.json",
+      "api_mapping": "Original exported Text content on decoded validUTF8 strings0..1024bytes. Empty or any invalid token byte returns the complete original input. Valid ASCII token bytes are uppercased initially and after hyphen, lowercased otherwise; non-hyphen punctuation/digits consume the upper state. No trim,repair,Unicode normalization,common-header interning/allocation or Go pointer-identity guarantee.",
+      "verification": {
+        "command": "cmd/verify",
+        "standalone_cases": 1059,
+        "original_report_cases": 1059,
+        "input_fixture": "examples/canonical-header-key/corpus.json",
+        "input_fixture_sha256": "e5deb0c69d9b7ae99cfb6ed91ed6a57449d616e45cb04fb38f5ed3dbbe128aa1",
+        "manual_scalar_guard": "examples/canonical-header-key/manual20.json",
+        "manual_scalar_guard_sha256": "753b8ed8beda42912a1fef7c376482189eb92652a8a9e0d7bda806c1bd6ffb6e",
+        "public_CI_requires_fresh_execution": true,
+        "scope": "Two appended ordinary native suites must compare every original occurrence and all typed values with actual Go references, then saved replay. Original74suite171217case2181batch prefix remains required. Public partition count/source roster are pending profile measurement; private67batches are not substituted."
       }
     }
   ],
@@ -852,6 +881,31 @@
         "value_invalid_octet"
       ],
       "mapping": "Original pure Gooo diagnostics retain two unchanged Text inputs, expose Boolean header facts and first bad byte offset/octet. No human approval or external effect is performed. Supplied header facts do not prove authorization or production safety.",
+      "license": "LICENSE"
+    },
+    {
+      "source": "examples/canonical-header-key/main.gooo",
+      "source_sha256": "f7da15ccb5c52dff714f2338b9bedf79074d009ad07bfca9d8ddf2f81d119c06",
+      "package": "app/canonical-header-key",
+      "activity": "Report",
+      "activity_id": "gooo://canonical-header-key/report/v1",
+      "workspace": "canonical-header-key-report.workspace.json",
+      "contract": "examples/canonical-header-key/contract.json",
+      "contract_sha256": "d4753ff7fee5d0dd33a438bd9463f6152478c9097ff9ce3093c84107b12931b8",
+      "input_corpus": "examples/canonical-header-key/corpus.json",
+      "input_corpus_sha256": "e5deb0c69d9b7ae99cfb6ed91ed6a57449d616e45cb04fb38f5ed3dbbe128aa1",
+      "reference_cases": 1059,
+      "required_fields": [
+        "key",
+        "canonical_key",
+        "changed",
+        "name_valid",
+        "input_bytes",
+        "canonical_bytes",
+        "name_invalid_offset",
+        "name_invalid_octet"
+      ],
+      "mapping": "Original8field Gooo diagnostics separate unchanged canonical output from validity and retain original Text plus first invalid byte witness. No human approval,external effect,request authority or production safety.",
       "license": "LICENSE"
     }
   ]

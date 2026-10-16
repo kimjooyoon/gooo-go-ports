@@ -1,0 +1,144 @@
+{
+  "schema": "gooo/canonical-header-key-contract/v1",
+  "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+  "go_version": "go1.27.2",
+  "entries": {
+    "canonical": {
+      "entry": "go/net/textproto:CanonicalMIMEHeaderKey",
+      "activity_id": "gooo://go/net/textproto/CanonicalMIMEHeaderKey",
+      "input_type": "Text",
+      "output_type": "Text",
+      "source": "ports/net/textproto/canonical.gooo",
+      "workspace": "canonical-header-key.workspace.json"
+    },
+    "report": {
+      "entry": "app/canonical-header-key:Report",
+      "activity_id": "gooo://canonical-header-key/report/v1",
+      "input_type": "Text",
+      "output_type": "CanonicalHeaderKeyFacts",
+      "entity_id": "gooo://canonical-header-key/report-result/v1",
+      "source": "examples/canonical-header-key/main.gooo",
+      "workspace": "canonical-header-key-report.workspace.json"
+    }
+  },
+  "input": {
+    "arity": 1,
+    "kind": "Text",
+    "domain": "Explicitly present decoded validUTF8 Text0..1024bytes inclusive. Empty and invalid-header-name strings remain supported diagnostic inputs. Missing/wrong types/malformed rawUTF8/lone surrogate escapes/decoded1025bytes are outside the supported pure call.",
+    "native_inputs_schema": "gooo/body-composition-inputs/v1",
+    "native_input_keys": [
+      "go/net/textproto:CanonicalMIMEHeaderKey",
+      "app/canonical-header-key:Report"
+    ],
+    "wire_limit": "The bundled inputs are trusted fixtures. This example adds no external JSON preprocessor and does not establish malformed-input refusal by the generic nativeCLI."
+  },
+  "fields": [
+    {
+      "name": "key",
+      "id": "gooo://canonical-header-key/report-result/v1/key",
+      "type": "string",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "canonical_key",
+      "id": "gooo://canonical-header-key/report-result/v1/canonical_key",
+      "type": "string",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "changed",
+      "id": "gooo://canonical-header-key/report-result/v1/changed",
+      "type": "boolean",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "name_valid",
+      "id": "gooo://canonical-header-key/report-result/v1/name_valid",
+      "type": "boolean",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "input_bytes",
+      "id": "gooo://canonical-header-key/report-result/v1/input_bytes",
+      "type": "integer",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "canonical_bytes",
+      "id": "gooo://canonical-header-key/report-result/v1/canonical_bytes",
+      "type": "integer",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "name_invalid_offset",
+      "id": "gooo://canonical-header-key/report-result/v1/name_invalid_offset",
+      "type": "integer",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "name": "name_invalid_octet",
+      "id": "gooo://canonical-header-key/report-result/v1/name_invalid_octet",
+      "type": "integer",
+      "required": true,
+      "cardinality": "one"
+    }
+  ],
+  "semantics": {
+    "key": "Exact decoded input Text, no normalization.",
+    "canonical_key": "Only actual imported Gooo CanonicalMIMEHeaderKey output. Invalid-token or empty input returns whole original key.",
+    "changed": "canonical_key != key, computed by original Gooo consumer.",
+    "name_valid": "Existing HeaderFacts.Report(key,empty_value).name_valid; empty isfalse. This diagnostic is separate from canonicalization success.",
+    "input_bytes": "Original decoded UTF8 byte length, exact signed64.",
+    "canonical_bytes": "Canonical output UTF8 byte length, equal to input length in this bounded contract.",
+    "name_invalid_offset": "Existing HeaderFacts first invalid raw UTF8 byte offset, or-1; empty has no bad byte so-1 despite name_validfalse.",
+    "name_invalid_octet": "Existing HeaderFacts first invalid byte0..255, or-1 for valid/empty."
+  },
+  "empty_literal": {
+    "key": "",
+    "canonical_key": "",
+    "changed": false,
+    "name_valid": false,
+    "input_bytes": 0,
+    "canonical_bytes": 0,
+    "name_invalid_offset": -1,
+    "name_invalid_octet": -1
+  },
+  "input_population": {
+    "file": "corpus.json",
+    "schema": "gooo/canonical-header-key-corpus/v1",
+    "sha256": "e5deb0c69d9b7ae99cfb6ed91ed6a57449d616e45cb04fb38f5ed3dbbe128aa1",
+    "raw_occurrences": 1059,
+    "unique_exact_keys": 1054,
+    "duplicate_occurrences": 5,
+    "contains_expectations": false,
+    "accounting": "corpus-accounting.json",
+    "manual_scalar_truth_guard": {
+      "file": "manual20.json",
+      "bytes": 7880,
+      "sha256": "753b8ed8beda42912a1fef7c376482189eb92652a8a9e0d7bda806c1bd6ffb6e",
+      "scope": "Twenty manually authored canonical Text anchors, unchanged; not generated Go expected outputs or1059 extra tests."
+    }
+  },
+  "upstream": {
+    "repository": "https://github.com/golang/go",
+    "revision": "022c8636110ebac86a9b88724cda168ed713c21f",
+    "source": "src/net/textproto/reader.go",
+    "sha256": "98a3ebb83bb6d2df4fb1f303ead592efbdb125f00f9a2b961c1496c66e49ae0e",
+    "provenance": "../../ports/net/textproto/provenance.json"
+  },
+  "scope": [
+    "Original Gooo computes canonical Text and the full8field report; Go supplies only independent references/evidence.",
+    "No per-request human approval, external effect or model call is needed for these pure calculations.",
+    "Normalization is ASCII header-name casing only for valid tokens. Invalid header names return the whole input unchanged; unchanged never implies valid.",
+    "No HTTP parser,header repair,sending,HTTP2 name rules,authority,request binding or production safety.",
+    "Fresh current public source native execution/saved replay/fullCI remain required. Private original receipts are not rebound as public acceptance.",
+    "The generic finite receipt checker does not independently establish the entire inner canonical generation/typed-parent protocol."
+  ]
+}

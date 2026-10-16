@@ -1,0 +1,127 @@
+{
+  "schema": "gooo/canonical-header-key-manual/v1",
+  "basis": "Manually specified expected Text values from the original Go algorithm; written before any oracle/source program execution. Fixed20 observations, not whole-domain proof.",
+  "domain": "Original validUTF8 Text0..1024bytes; exact echo, no trimming/newline/Unicode normalization.",
+  "cases": [
+    {
+      "id": "empty",
+      "key": "",
+      "expected": "",
+      "purpose": "Empty is returned unchanged; not a nonempty HTTP field-name acceptance claim."
+    },
+    {
+      "id": "canonical",
+      "key": "Content-Type",
+      "expected": "Content-Type",
+      "purpose": "Already canonical token."
+    },
+    {
+      "id": "all-lower",
+      "key": "content-type",
+      "expected": "Content-Type",
+      "purpose": "Uppercase first byte and post-hyphen letters."
+    },
+    {
+      "id": "all-upper",
+      "key": "CONTENT-TYPE",
+      "expected": "Content-Type",
+      "purpose": "Lowercase other ASCII letters."
+    },
+    {
+      "id": "mixed",
+      "key": "x-cUsToM-iD",
+      "expected": "X-Custom-Id",
+      "purpose": "Mixed case across multiple words."
+    },
+    {
+      "id": "dash-runs",
+      "key": "-x--FOO-",
+      "expected": "-X--Foo-",
+      "purpose": "Leading/repeated/trailing hyphens; only hyphen resets upper state."
+    },
+    {
+      "id": "token-punctuation",
+      "key": "!#$%&'*+-.^_`|~",
+      "expected": "!#$%&'*+-.^_`|~",
+      "purpose": "Every allowed token punctuation is preserved."
+    },
+    {
+      "id": "punctuation-first",
+      "key": "!FOO",
+      "expected": "!foo",
+      "purpose": "Initial punctuation consumes first-byte upper state."
+    },
+    {
+      "id": "digit-first",
+      "key": "1FOO",
+      "expected": "1foo",
+      "purpose": "Initial digit consumes first-byte upper state."
+    },
+    {
+      "id": "punctuation-after-dash",
+      "key": "X-!FOO",
+      "expected": "X-!foo",
+      "purpose": "Nonletter after dash consumes upper state."
+    },
+    {
+      "id": "token-non-dash-separators",
+      "key": "x_foo.bar+BAZ",
+      "expected": "X_foo.bar+baz",
+      "purpose": "Underscore/dot/plus do not reset upper state."
+    },
+    {
+      "id": "invalid-colon-suffix",
+      "key": "x-header:TAIL",
+      "expected": "x-header:TAIL",
+      "purpose": "Invalid later byte must preserve original earlier lowercase prefix."
+    },
+    {
+      "id": "invalid-space",
+      "key": "x-HEADER NAME",
+      "expected": "x-HEADER NAME",
+      "purpose": "Space preserves whole original key."
+    },
+    {
+      "id": "invalid-tab",
+      "key": "x-HEADER\tNAME",
+      "expected": "x-HEADER\tNAME",
+      "purpose": "Tab preserves whole original key."
+    },
+    {
+      "id": "invalid-control",
+      "key": "x-HEADER\u0001TAIL",
+      "expected": "x-HEADER\u0001TAIL",
+      "purpose": "ASCII control preserves whole original key."
+    },
+    {
+      "id": "invalid-nul",
+      "key": "x-HEADER\u0000TAIL",
+      "expected": "x-HEADER\u0000TAIL",
+      "purpose": "Embedded NUL is valid Text but invalid header byte; no truncation."
+    },
+    {
+      "id": "invalid-crlf",
+      "key": "x-HEADER\r\nTAIL",
+      "expected": "x-HEADER\r\nTAIL",
+      "purpose": "CRLF stays byte-exact; no newline normalization."
+    },
+    {
+      "id": "invalid-nonascii",
+      "key": "x-HEADER-é",
+      "expected": "x-HEADER-é",
+      "purpose": "Well-formed Unicode is outside ASCII token and remains unchanged."
+    },
+    {
+      "id": "edge1024-token",
+      "key": "xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "expected": "Xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "purpose": "Exactly1024 UTF8 bytes; transformation reaches final byte."
+    },
+    {
+      "id": "edge1024-unicode-invalid",
+      "key": "xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAé",
+      "expected": "xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAé",
+      "purpose": "Exactly1024 UTF8 bytes with nonASCII tail; whole original unchanged."
+    }
+  ]
+}

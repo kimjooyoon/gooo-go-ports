@@ -1,0 +1,21 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "go/net/textproto",
+    "activity": "CanonicalMIMEHeaderKey"
+  },
+  "packages": [
+    {
+      "path": "go/golang.org/x/net/http/httpguts",
+      "sources": [
+        "ports/net/httpguts/headers.gooo"
+      ]
+    },
+    {
+      "path": "go/net/textproto",
+      "sources": [
+        "ports/net/textproto/canonical.gooo"
+      ]
+    }
+  ]
+}

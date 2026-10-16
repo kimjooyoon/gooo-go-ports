@@ -79,12 +79,13 @@ type nativePreparedCaseBatch struct {
 }
 
 type nativeCaseBatchPolicy struct {
-	compact        bool
-	decimalPayload bool
-	pathAlias      bool
-	header         bool
-	headerAddition bool
-	literalReport  bool
+	compact         bool
+	decimalPayload  bool
+	pathAlias       bool
+	header          bool
+	headerAddition  bool
+	canonicalHeader bool
+	literalReport   bool
 	// With a nonexpanding lowered key the translated compact struct cannot be
 	// larger than our compact map encoding without its final LF.
 	sourceBytes, loweredKeyBytesUpperBound int
@@ -93,6 +94,9 @@ type nativeCaseBatchPolicy struct {
 func (p nativeCaseProfile) policy(s suite, selected suiteWorkspace, lock upstream) (nativeCaseBatchPolicy, error) {
 	if err := p.validateCompiler(lock); err != nil {
 		return nativeCaseBatchPolicy{}, err
+	}
+	if isCanonicalHeaderSuite(s) {
+		return canonicalHeaderBatchPolicy(s, selected, lock)
 	}
 	if isHeaderAdditionSuite(s) {
 		return headerAdditionBatchPolicy(s, selected, lock)
@@ -151,6 +155,9 @@ func (p nativeCaseProfile) policy(s suite, selected suiteWorkspace, lock upstrea
 }
 
 func (p nativeCaseBatchPolicy) prepare(s suite, start int) (nativePreparedCaseBatch, error) {
+	if p.canonicalHeader {
+		return p.prepareCanonicalHeader(s, start)
+	}
 	if p.headerAddition {
 		return p.prepareHeaderAddition(s, start)
 	}

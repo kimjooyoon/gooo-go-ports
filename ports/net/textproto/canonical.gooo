@@ -1,0 +1,40 @@
+// Copyright 2010 The Go Authors. All rights reserved.
+// Use of this source code is governed by the BSD-style license preserved in
+// third_party/GO-LICENSE. Adapted from Go1.27.2 src/net/textproto/reader.go,
+// CanonicalMIMEHeaderKey/canonicalMIMEHeaderKey; exact source pin: provenance.json.
+// Reuse the existing x/net/httpguts token predicate before changing any byte.
+// Domain: decoded valid UTF-8 Text of EVERY byte length 0..1024 inclusive.
+// Required outer refusal handles invalid UTF-8/wrong type/missing/>1024 Text.
+// In-domain invalid token bytes and empty Text return the whole original key.
+// No Go fallback, Unicode title casing, trim, repair, HTTP/2 or authorization.
+package textproto
+namespace gooo_ports_net_textproto
+import headers "go/golang.org/x/net/http/httpguts"
+entity Text id "gooo://std/text"
+
+activity CanonicalMIMEHeaderKey(Text) -> Text id "gooo://go/net/textproto/CanonicalMIMEHeaderKey" computes `let valid = headers.ValidHeaderFieldName(input)
+if !valid { return input }
+let size = int64(len(input))
+let upper = true
+let output = ""
+let uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+let lowercase = "abcdefghijklmnopqrstuvwxyz"
+let offset = 0
+for offset = 0; offset < 1024; offset = offset + 1 {
+    if offset < size {
+        let octet = int64(input[offset])
+        let piece = input[offset:offset + 1]
+        if upper && octet >= 97 && octet <= 122 {
+            let letter = octet - 97
+            piece = uppercase[letter:letter + 1]
+        } else {
+            if !upper && octet >= 65 && octet <= 90 {
+                let letter = octet - 65
+                piece = lowercase[letter:letter + 1]
+            }
+        }
+        output = output + piece
+        upper = octet == 45
+    }
+}
+return output`
