@@ -49,6 +49,7 @@ After opening a checkout in your agent, ask:
 | --- | --- |
 | Codex | Discovers repository `.agents/skills` metadata; explicitly select `$gooo-first-program` or use the task above. |
 | Cursor | Supports repository `.agents/skills`; use its skill selector or the task above. |
+| GitHub Copilot CLI | Documents repository `.agents/skills` support; use the explicit task above. Copilot activation has not been tested here. |
 | Claude Code | Use the explicit file-based task above. For native skill discovery, copy this skill directory into a new `.claude/skills/gooo-first-program` directory without replacing an existing skill. |
 
 These are local repository or user-installed workflows. A public skill file does
@@ -56,6 +57,7 @@ not install itself into unrelated sessions. Follow the client's scope and trust
 settings when copying or installing a skill. Official discovery guidance:
 [Codex](https://learn.chatgpt.com/docs/build-skills),
 [Cursor](https://cursor.com/docs/skills),
+[GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills),
 [Claude Code](https://code.claude.com/docs/en/skills).
 
 The task changes actual Gooo source. The [browser tutorial](https://kimjooyoon.github.io/gooo-go-ports/tutorial.html)
@@ -64,7 +66,46 @@ The skill explains the signed-int64 and 1,024-byte Text limits of this example.
 An input-only `OBSERVED` result is a finite execution observation, not a proof
 for all inputs. Preserve a first failure and its diagnostic.
 
-### Optional project-local skill installation
+### Install the skill with GitHub CLI
+
+GitHub CLI's preview `skill` commands can fetch this skill directly. This route
+was tested with `gh` **2.97.0**. Start in a fresh Git project, or a project with
+no existing `.agents/skills/gooo-first-program`, and review the pinned content:
+
+```sh
+gh skill preview kimjooyoon/gooo-go-ports \
+  .agents/skills/gooo-first-program@9ac1f5786999be9affec14bd4dc73ce3fc3e97f0 \
+  --allow-hidden-dirs
+```
+
+Then install for Codex at project scope and inspect the installed version:
+
+```sh
+gh skill install kimjooyoon/gooo-go-ports .agents/skills/gooo-first-program \
+  --pin 9ac1f5786999be9affec14bd4dc73ce3fc3e97f0 \
+  --allow-hidden-dirs --agent codex --scope project
+gh skill list --agent codex --scope project \
+  --json skillName,sourceURL,scope,version,pinned,path
+```
+
+Use the exact path and pin: the skill lives under the hidden `.agents`
+directory, which requires the explicit flag. The installed instructions still
+guide a separate example checkout and pinned compiler setup; installation
+alone does not run an agent, install Gooo or execute the example.
+
+One fresh macOS project installation returned this source version with
+`pinned: true` and installed two files. GitHub CLI added source metadata to
+`SKILL.md` and removed its first body blank line; the remaining body and the
+agent manifest matched the pinned source. Client activation and independent
+use were not tested. See the official
+[preview](https://cli.github.com/manual/gh_skill_preview),
+[install](https://cli.github.com/manual/gh_skill_install) and
+[list](https://cli.github.com/manual/gh_skill_list) commands. In this CLI version,
+keyword search does not expose an opt-in for the supported hidden paths; an
+empty search result does not determine whether the file is indexed. Use the
+explicit preview and install commands above.
+
+### Optional project-local installation with npm
 
 To start outside a repository checkout, review the
 [pinned skill](https://github.com/kimjooyoon/gooo-go-ports/tree/c4d0c54ffc51cd2cc015d81a828bb1e96fbe1b79/.agents/skills/gooo-first-program)
