@@ -131,14 +131,34 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 	if len(contracts) != len(expected.Suites) || len(suites) != 66 {
 		t.Fatal("contract/suite roster changed")
 	}
+	assertReviewedNativeRegistry(t, contracts, expected.Suites)
+	total := reviewedOriginalSuiteCaseCount(t, suites, catalog)
+	added := reviewedAdditionalCorpusCases(t)
+	if total != 24770+added {
+		t.Fatalf("corpus changed: %d", total)
+	}
+	if _, err := contractFor(suite{Package: "go/net/http", Activity: "Unknown"}); err == nil {
+		t.Fatal("accepted missing contract")
+	}
+	if _, err := contractFor(suite{Package: "untrusted", Activity: "StatusText"}); err == nil {
+		t.Fatal("accepted wrong package contract")
+	}
+}
+
+func assertReviewedNativeRegistry(t *testing.T, contracts map[string]activityContract, entries []ContractSuite) {
+	t.Helper()
 	// The registry is a map: visit the ledger's ordered entries and require its
 	// exact key set, rather than treating equal counts as sufficient coverage.
-	for _, entry := range expected.Suites {
+	for _, entry := range entries {
 		key := entry.Package + ":" + entry.Activity
 		if _, exists := contracts[key]; !exists {
 			t.Fatal("expected native entry missing from contract registry", key)
 		}
 	}
+}
+
+func reviewedOriginalSuiteCaseCount(t *testing.T, suites []suite, catalog frozenVerificationCatalog) int {
+	t.Helper()
 	seen := map[string]bool{}
 	total := 0
 	for _, s := range suites {
@@ -164,47 +184,7 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		if len(inputs) != len(contract.InputEntities) {
 			t.Fatal("contract arity differs from source", key)
 		}
-		for i, input := range inputs {
-			if contract.InputEntities[i] == textEntity {
-				declarations := source
-				if contract.Source == "ports/strings/literal.gooo" && s.Package == literalTextPackage && (s.Activity == "Index" || s.Activity == "Count") || contract.Source == "ports/strings/cut.gooo" && isLiteralCutSuite(s) {
-					// These trusted same-package search/split activities share search.gooo.
-					declarations = catalog.Sources["ports/strings/search.gooo"]
-				}
-				if strings.TrimSpace(input) != "Text" || !strings.Contains(string(declarations), `entity Text id "`+textEntity+`"`) {
-					t.Fatal("contract Text input entity differs from source", key)
-				}
-				continue
-			}
-			if contract.InputEntities[i] == nrgbaEntity || contract.InputEntities[i] == nrgbaRGBEntity {
-				name, declaration := "NRGBA", "ports/image/nrgba.gooo"
-				if contract.InputEntities[i] == nrgbaRGBEntity {
-					name, declaration = "RGB", "ports/image/color.gooo"
-				}
-				if strings.TrimSpace(input) != name || !strings.Contains(string(catalog.Sources[declaration]), `entity `+name+` id "`+contract.InputEntities[i]+`"`) {
-					t.Fatal("contract color record input differs from source", key)
-				}
-				continue
-			}
-			if contract.InputEntities[i] == rectangleEntity {
-				declarations := catalog.Sources["ports/image/geometry.gooo"]
-				if strings.TrimSpace(input) != "Rectangle" || !strings.Contains(string(declarations), `entity Rectangle id "`+rectangleEntity+`"`) {
-					t.Fatal("contract Rectangle input entity differs from source", key)
-				}
-				continue
-			}
-			// Generated classifications share the package's reviewed entity declarations.
-			declarations := source
-			if contract.Source == "ports/unicode/classification.gooo" || contract.Source == "ports/unicode/simple_fold.gooo" || contract.Source == "ports/unicode/case_mapping.gooo" {
-				declarations = catalog.Sources["ports/unicode/space.gooo"]
-			}
-			if contract.Source == "ports/image/ycbcr.gooo" {
-				declarations = catalog.Sources["ports/image/color.gooo"]
-			}
-			if strings.TrimSpace(input) != "Integer" || contract.InputEntities[i] != integerEntity || !strings.Contains(string(declarations), `entity Integer id "`+integerEntity+`"`) {
-				t.Fatal("contract input entity differs from source", key)
-			}
-		}
+		assertReviewedContractInputEntities(t, s, contract, catalog, source, inputs, key)
 		for _, c := range s.Cases {
 			if len(c.Inputs) != len(contract.InputEntities) {
 				t.Fatal("corpus arity differs from contract", key)
@@ -212,6 +192,56 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		}
 		total += len(s.Cases)
 	}
+	return total
+}
+
+func assertReviewedContractInputEntities(t *testing.T, s suite, contract activityContract, catalog frozenVerificationCatalog, source []byte, inputs []string, key string) {
+	t.Helper()
+	for i, input := range inputs {
+		if contract.InputEntities[i] == textEntity {
+			declarations := source
+			if contract.Source == "ports/strings/literal.gooo" && s.Package == literalTextPackage && (s.Activity == "Index" || s.Activity == "Count") || contract.Source == "ports/strings/cut.gooo" && isLiteralCutSuite(s) {
+				// These trusted same-package search/split activities share search.gooo.
+				declarations = catalog.Sources["ports/strings/search.gooo"]
+			}
+			if strings.TrimSpace(input) != "Text" || !strings.Contains(string(declarations), `entity Text id "`+textEntity+`"`) {
+				t.Fatal("contract Text input entity differs from source", key)
+			}
+			continue
+		}
+		if contract.InputEntities[i] == nrgbaEntity || contract.InputEntities[i] == nrgbaRGBEntity {
+			name, declaration := "NRGBA", "ports/image/nrgba.gooo"
+			if contract.InputEntities[i] == nrgbaRGBEntity {
+				name, declaration = "RGB", "ports/image/color.gooo"
+			}
+			if strings.TrimSpace(input) != name || !strings.Contains(string(catalog.Sources[declaration]), `entity `+name+` id "`+contract.InputEntities[i]+`"`) {
+				t.Fatal("contract color record input differs from source", key)
+			}
+			continue
+		}
+		if contract.InputEntities[i] == rectangleEntity {
+			declarations := catalog.Sources["ports/image/geometry.gooo"]
+			if strings.TrimSpace(input) != "Rectangle" || !strings.Contains(string(declarations), `entity Rectangle id "`+rectangleEntity+`"`) {
+				t.Fatal("contract Rectangle input entity differs from source", key)
+			}
+			continue
+		}
+		// Generated classifications share the package's reviewed entity declarations.
+		declarations := source
+		if contract.Source == "ports/unicode/classification.gooo" || contract.Source == "ports/unicode/simple_fold.gooo" || contract.Source == "ports/unicode/case_mapping.gooo" {
+			declarations = catalog.Sources["ports/unicode/space.gooo"]
+		}
+		if contract.Source == "ports/image/ycbcr.gooo" {
+			declarations = catalog.Sources["ports/image/color.gooo"]
+		}
+		if strings.TrimSpace(input) != "Integer" || contract.InputEntities[i] != integerEntity || !strings.Contains(string(declarations), `entity Integer id "`+integerEntity+`"`) {
+			t.Fatal("contract input entity differs from source", key)
+		}
+	}
+}
+
+func reviewedAdditionalCorpusCases(t *testing.T) int {
+	t.Helper()
 	geometry, err := geometryCorpus()
 	if err != nil {
 		t.Fatal(err)
@@ -275,15 +305,7 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	added += cut.CutReferenceCases + cut.CutPrefixReferenceCases + cut.CutSuffixReferenceCases + cut.ReportReferenceCases
-	if total != 24770+added {
-		t.Fatalf("corpus changed: %d", total)
-	}
-	if _, err := contractFor(suite{Package: "go/net/http", Activity: "Unknown"}); err == nil {
-		t.Fatal("accepted missing contract")
-	}
-	if _, err := contractFor(suite{Package: "untrusted", Activity: "StatusText"}); err == nil {
-		t.Fatal("accepted wrong package contract")
-	}
+	return added
 }
 
 func TestFrozenSourceIdentities(t *testing.T) {

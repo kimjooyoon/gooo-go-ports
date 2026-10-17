@@ -32,31 +32,7 @@ func nativeTimingTestConfig(t *testing.T, evidenceRoot string, suites []suite) n
 		t.Fatal(err)
 	}
 	repo := nativeTimingTestRoot(t)
-	expected, err := nativeExpectedVerificationContract()
-	if err != nil {
-		t.Fatal(err)
-	}
-	modes := nativeVerificationSourceModes(expected)
-	write := func(name string, raw []byte) {
-		t.Helper()
-		path := filepath.Join(repo, name)
-		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-			t.Fatal(err)
-		}
-		if name == nativeVerificationContractPath {
-			raw = nativeVerificationContractJSON
-		}
-		mode := os.FileMode(0644)
-		if modes[name] == "100755" {
-			mode = 0755
-		}
-		if err := os.WriteFile(path, raw, mode); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.Chmod(path, mode); err != nil {
-			t.Fatal(err)
-		}
-	}
+	write := nativeTimingFixtureWriter(t, repo)
 	for _, name := range nativeTimingSourceNames {
 		write(name, []byte("fixture source: "+name+"\n"))
 	}
@@ -106,6 +82,35 @@ func nativeTimingTestConfig(t *testing.T, evidenceRoot string, suites []suite) n
 	}
 	return nativeTimingConfig{Output: filepath.Join(evidence, "native-timing.jsonl"), EvidenceRoot: evidence, RepositoryRoot: repo, Compiler: filepath.Join(repo, "fixture-compiler"), Workers: 2, Suites: suites, Lock: lock,
 		Catalog: frozenVerificationCatalog{Catalog: catalog, Raw: catalogBytes, Sources: sources, Hashes: hashes}, CompilerIdentity: identity}
+}
+
+func nativeTimingFixtureWriter(t *testing.T, repo string) func(string, []byte) {
+	t.Helper()
+	expected, err := nativeExpectedVerificationContract()
+	if err != nil {
+		t.Fatal(err)
+	}
+	modes := nativeVerificationSourceModes(expected)
+	return func(name string, raw []byte) {
+		t.Helper()
+		path := filepath.Join(repo, name)
+		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+			t.Fatal(err)
+		}
+		if name == nativeVerificationContractPath {
+			raw = nativeVerificationContractJSON
+		}
+		mode := os.FileMode(0644)
+		if modes[name] == "100755" {
+			mode = 0755
+		}
+		if err := os.WriteFile(path, raw, mode); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Chmod(path, mode); err != nil {
+			t.Fatal(err)
+		}
+	}
 }
 
 // Reuse production source/pin checks; only the expensive host binary observer is

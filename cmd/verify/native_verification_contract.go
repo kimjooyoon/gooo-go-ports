@@ -340,50 +340,66 @@ func canonicalContractDigest(v any) (string, error) {
 // Current Git bytes, historical inputs and actual CI equality remain mandatory
 // caller checks; successful loading alone proves none of those observations.
 func LoadNativeVerificationContract(raw []byte, frozenPrefix, frozenSources FrozenGuard) (*NativeVerificationContract, error) {
+	m, c, err := loadNativeContractEnvelope(raw, frozenPrefix, frozenSources)
+	if err != nil {
+		return nil, err
+	}
+	qualified, err := loadNativeContractSources(m, c, frozenSources)
+	if err != nil {
+		return nil, err
+	}
+	return loadNativeContractSuites(m, c, qualified, frozenPrefix)
+}
+
+func loadNativeContractEnvelope(raw []byte, frozenPrefix, frozenSources FrozenGuard) (map[string]any, *NativeVerificationContract, error) {
 	if !validFrozenGuard(frozenPrefix) || !validFrozenGuard(frozenSources) {
-		return nil, fmt.Errorf("invalid external guard")
+		return nil, nil, fmt.Errorf("invalid external guard")
 	}
 	if len(raw) > MaxContractBytes || !utf8.Valid(raw) {
-		return nil, fmt.Errorf("contract exceeds1MiB or is not valid UTF8")
+		return nil, nil, fmt.Errorf("contract exceeds1MiB or is not valid UTF8")
 	}
 	d := json.NewDecoder(bytes.NewReader(raw))
 	d.UseNumber()
 	v, err := readStrictValue(d, 0)
 	if err != nil {
-		return nil, fmt.Errorf("strict JSON: %w", err)
+		return nil, nil, fmt.Errorf("strict JSON: %w", err)
 	}
 	if _, err := d.Token(); err != io.EOF {
-		return nil, fmt.Errorf("trailing JSON or invalid suffix")
+		return nil, nil, fmt.Errorf("trailing JSON or invalid suffix")
 	}
 	m, err := contractObject(v, "schema", "profiles", "prefix", "suites", "source_baseline", "sources")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if m["schema"] != "gooo/native-verification-contract/v1" {
-		return nil, fmt.Errorf("unknown contract schema")
+		return nil, nil, fmt.Errorf("unknown contract schema")
 	}
 	p, err := contractObject(m["profiles"], "case", "workspace")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if p["case"] != "uuid-and-literal-report-compact-v1" || p["workspace"] != "dependency-closure-v1" {
-		return nil, fmt.Errorf("unexpected exact profiles")
+		return nil, nil, fmt.Errorf("unexpected exact profiles")
 	}
 	prefix, err := contractGuard(m["prefix"])
 	if err != nil {
-		return nil, fmt.Errorf("prefix metadata: %w", err)
+		return nil, nil, fmt.Errorf("prefix metadata: %w", err)
 	}
 	if prefix != frozenPrefix {
-		return nil, fmt.Errorf("prefix metadata differs from external guard")
+		return nil, nil, fmt.Errorf("prefix metadata differs from external guard")
 	}
 	baseline, err := contractGuard(m["source_baseline"])
 	if err != nil {
-		return nil, fmt.Errorf("source baseline metadata: %w", err)
+		return nil, nil, fmt.Errorf("source baseline metadata: %w", err)
 	}
 	if baseline != frozenSources {
-		return nil, fmt.Errorf("source baseline metadata differs from external guard")
+		return nil, nil, fmt.Errorf("source baseline metadata differs from external guard")
 	}
 	c := &NativeVerificationContract{Schema: "gooo/native-verification-contract/v1", Profiles: ContractProfiles{"uuid-and-literal-report-compact-v1", "dependency-closure-v1"}, Prefix: prefix, SourceBaseline: baseline}
+	return m, c, nil
+}
+
+func loadNativeContractSources(m map[string]any, c *NativeVerificationContract, frozenSources FrozenGuard) (map[string]bool, error) {
 	rows, ok := m["sources"].([]any)
 	if !ok || len(rows) == 0 {
 		return nil, fmt.Errorf("sources must be a nonempty array")
@@ -428,6 +444,10 @@ func LoadNativeVerificationContract(raw []byte, frozenPrefix, frozenSources Froz
 	if err != nil || baselineDigest != frozenSources.SHA256 {
 		return nil, fmt.Errorf("baseline path digest differs")
 	}
+	return qualified, nil
+}
+
+func loadNativeContractSuites(m map[string]any, c *NativeVerificationContract, qualified map[string]bool, frozenPrefix FrozenGuard) (*NativeVerificationContract, error) {
 	suiteRows, ok := m["suites"].([]any)
 	if !ok || len(suiteRows) == 0 || frozenPrefix.Count > int64(len(suiteRows)) {
 		return nil, fmt.Errorf("suite roster shorter than frozen prefix")
