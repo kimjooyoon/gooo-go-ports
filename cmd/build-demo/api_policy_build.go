@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-const apiPolicyCurrentSourceFiles = 82
+const apiPolicyCurrentSourceFiles = 83
 
 type apiPolicyBuild struct {
 	site, dir, root     string
@@ -386,7 +386,7 @@ func (b *apiPolicyBuild) publish() error {
 	}
 	wasmFile := apiPolicyDescribe(b.wasm)
 	wasmFile.Path = "./program.wasm"
-	buildRecord := map[string]any{"schema": "gooo/browser-api-policy-build/v1", "status": "NATIVE_FIXTURES_AND_WASM_BUILD_PASS", "scope": "source_local_generated_Gooo_native_to_Wasm_build_not_browser_execution", "source": map[string]any{"head": b.checkout.Head, "tree": b.checkout.Tree, "dirty": b.checkout.Dirty, "native_sources": b.source.Files, "control_sources": controlFiles, "source_before_after_equal": true, "historical_git_objects_checked": false}, "go": b.goIdentity, "native_executable": b.nativeFile, "temporary_main_module_sha256": digest([]byte(b.module)), "explicit_local_replacements": 2, "temporary_sources_native_binary_module_cache_removed": true, "normal_build_cache_retained_not_copied": true, "wasm": wasmFile, "runtime": b.runtimeFile, "native_fixtures": b.fixtureFile, "native_fixture_receipt": b.receiptFile, "acceptance": b.acceptance, "published_source_subset": b.published, "verbose_process_logs_published": false, "limits": []string{"Build and fresh native literal controls only; actual Wasm/Worker/browser tests remain separate mandatory validation.", "Full original28/revision37 binding maps do not claim every sealed source was fetched by the browser.", "Current checkout head/tree/dirty observed; frozen33 verified from fixed byte contracts without historical Git objects."}}
+	buildRecord := map[string]any{"schema": "gooo/browser-api-policy-build/v1", "status": "NATIVE_FIXTURES_AND_WASM_BUILD_PASS", "scope": "source_local_generated_Gooo_native_to_Wasm_build_not_browser_execution", "source": map[string]any{"head": b.checkout.Head, "tree": b.checkout.Tree, "dirty": b.checkout.Dirty, "native_sources": b.source.Files, "control_sources": controlFiles, "source_before_after_equal": true, "historical_git_objects_checked": false}, "go": b.goIdentity, "native_executable": b.nativeFile, "temporary_main_module_sha256": digest([]byte(b.module)), "explicit_local_replacements": 2, "temporary_sources_native_binary_module_cache_removed": true, "normal_build_cache_retained_not_copied": true, "wasm": wasmFile, "runtime": b.runtimeFile, "native_fixtures": b.fixtureFile, "native_fixture_receipt": b.receiptFile, "acceptance": b.acceptance, "published_source_subset": b.published, "verbose_process_logs_published": false, "limits": []string{"Build and fresh native literal controls only; actual Wasm/Worker/browser tests remain separate mandatory validation.", "Full original28/revision38 binding maps do not claim every sealed source was fetched by the browser.", "Current checkout head/tree/dirty observed; frozen33 verified from fixed byte contracts without historical Git objects."}}
 	buildRaw, err := apiPolicyPutJSON(filepath.Join(b.asset, "build.json"), buildRecord, b.root)
 	if err != nil {
 		return err

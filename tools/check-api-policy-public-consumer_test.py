@@ -132,23 +132,41 @@ class PublicConsumerIdentityTests(unittest.TestCase):
                 "original_generation_sha256": "sha256:" + HELPER.sha(original),
                 "revision_generation_sha256": "sha256:" + HELPER.sha(current)}
 
+    def prior_source(self, generation):
+        raw = self.source()
+        current = self.wanted()["revision_generation_sha256"].encode()
+        self.assertEqual(raw.count(current), 1)
+        old = raw.replace(current, generation.encode(), 1)
+        # Both historical callers bound the original 37-asset packaging.
+        current_count = b"\t\tlen(report.After.Bindings.Assets) != 38 ||\n"
+        self.assertEqual(old.count(current_count), 1)
+        return old.replace(current_count,
+                           b"\t\tlen(report.After.Bindings.Assets) != 37 ||\n", 1)
+
     def test_current_known_fixture_matches_independent_source_manifests(self):
         self.assertEqual(set(HELPER.KNOWN_CONSUMER_FIXTURES), {
             "8c9f27b3993d0810431cf33817ad6cb1ed726738eb90a68dfc52c4876c99713f",
-            "ed24455944545110d0aae02209845086b5a8aafc9ea408a07240ee576cd59617"})
+            "ed24455944545110d0aae02209845086b5a8aafc9ea408a07240ee576cd59617",
+            "ca4fc8ab3a120898ae43dd5f46bf1d4273502a77563211871ccaaa5b71662bd2"})
         with mock.patch.object(HELPER.subprocess, "run", side_effect=AssertionError("no process")):
             self.assertIsNone(HELPER.verify_fixture_identities(self.source(), self.wanted()))
 
-    def test_known_prior_fixture_refuses_current_target_but_retains_its_own_origin(self):
-        raw = self.source()
-        old_generation = "sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e"
-        old = raw.replace(self.wanted()["revision_generation_sha256"].encode(), old_generation.encode(), 1)
-        self.assertNotEqual(old, raw)
-        self.assertEqual(HELPER.sha(old), "8c9f27b3993d0810431cf33817ad6cb1ed726738eb90a68dfc52c4876c99713f")
-        with self.assertRaisesRegex(HELPER.Refused, "identity tuple"):
-            HELPER.verify_fixture_identities(old, self.wanted())
-        wanted = dict(self.wanted(), revision_generation_sha256=old_generation)
-        self.assertIsNone(HELPER.verify_fixture_identities(old, wanted))
+    def test_known_prior_fixtures_refuse_current_target_but_retain_their_origins(self):
+        historical = {
+            "sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e":
+                "8c9f27b3993d0810431cf33817ad6cb1ed726738eb90a68dfc52c4876c99713f",
+            "sha256:af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee":
+                "ed24455944545110d0aae02209845086b5a8aafc9ea408a07240ee576cd59617",
+        }
+        for generation, source_hash in historical.items():
+            with self.subTest(generation=generation):
+                old = self.prior_source(generation)
+                self.assertNotEqual(old, self.source())
+                self.assertEqual(HELPER.sha(old), source_hash)
+                with self.assertRaisesRegex(HELPER.Refused, "identity tuple"):
+                    HELPER.verify_fixture_identities(old, self.wanted())
+                wanted = dict(self.wanted(), revision_generation_sha256=generation)
+                self.assertIsNone(HELPER.verify_fixture_identities(old, wanted))
 
     def test_unregistered_source_edits_are_refused(self):
         raw = self.source()
@@ -167,7 +185,7 @@ class PublicConsumerIdentityTests(unittest.TestCase):
     def test_block_comment_raw_string_and_formatting_spoofs_do_not_register_source(self):
         raw = self.source()
         generation = self.wanted()["revision_generation_sha256"].encode()
-        old = raw.replace(generation, b"sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e", 1)
+        old = self.prior_source("sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e")
         line = next(line for line in old.splitlines(keepends=True)
                     if line.lstrip().startswith(b"expectedRevisionGeneration "))
         stale = old.replace(line, line.rstrip(b"\n") + b" // stale\n", 1)
@@ -211,6 +229,80 @@ class PublicConsumerIdentityTests(unittest.TestCase):
                         and node.value.func.id == "Recorder")
         self.assertLess(expected.lineno, calls[0].lineno)
         self.assertLess(calls[0].lineno, recorder.lineno)
+
+
+class PublicConsumerInstallBuildInfoTests(unittest.TestCase):
+    PARENT_VERSION = "v0.0.0-20261017220000-0123456789ab"
+    PARENT_SUM = "h1:" + "A" * 43 + "="
+    ORIGINAL_SUM = "h1:" + "B" * 43 + "="
+
+    def info(self):
+        return {"GoVersion": "go1.27.2", "Path": HELPER.PARENT + "/cmd/compare",
+                "Main": {"Path": HELPER.PARENT, "Version": self.PARENT_VERSION, "Sum": self.PARENT_SUM},
+                "Deps": [{"Path": HELPER.ORIGINAL, "Version": HELPER.ORIGINAL_VERSION,
+                          "Sum": self.ORIGINAL_SUM}], "Settings": [{"Key": "CGO_ENABLED", "Value": "0"}]}
+
+    def checked(self, value):
+        with mock.patch.object(HELPER.subprocess, "run", side_effect=AssertionError("no process")):
+            return HELPER.check_install_build_info(value, self.PARENT_VERSION,
+                                                   self.PARENT_SUM, self.ORIGINAL_SUM)
+
+    def test_exact_installed_command_binds_both_authenticated_module_checksums(self):
+        value = self.info()
+        observed = self.checked(value)
+        self.assertEqual(observed["go_version"], "go1.27.2")
+        self.assertEqual(observed["package"], HELPER.PARENT + "/cmd/compare")
+        self.assertEqual(observed["main"], value["Main"])
+        self.assertEqual(observed["dependencies"], value["Deps"])
+        self.assertTrue(observed["no_replacements"])
+
+    def test_other_command_toolchain_or_module_identity_is_refused_even_with_valid_sums(self):
+        for field, wrong in (("GoVersion", "go1.27.1"), ("Path", HELPER.PARENT + "/cmd/other")):
+            value = self.info()
+            value[field] = wrong
+            with self.subTest(field=field), self.assertRaises(HELPER.Refused):
+                self.checked(value)
+        for section in ("Main", "Deps"):
+            for field, wrong in (("Path", "example.invalid/other"), ("Version", "v1.0.0")):
+                value = self.info()
+                module = value[section] if section == "Main" else value[section][0]
+                module[field] = wrong
+                with self.subTest(section=section, field=field), self.assertRaises(HELPER.Refused):
+                    self.checked(value)
+
+    def test_each_module_checksum_must_match_its_own_download(self):
+        for section in ("Main", "Deps"):
+            for checksum in (None, "", self.ORIGINAL_SUM if section == "Main" else self.PARENT_SUM):
+                value = self.info()
+                module = value[section] if section == "Main" else value[section][0]
+                module["Sum"] = checksum
+                with self.subTest(section=section, checksum=checksum), self.assertRaises(HELPER.Refused):
+                    self.checked(value)
+
+    def test_main_or_dependency_replacement_cannot_masquerade_as_the_same_identity(self):
+        for section in ("Main", "Deps"):
+            for replacement in ({}, False, {"Path": "./alternate"},
+                                {"Path": HELPER.ORIGINAL, "Version": HELPER.ORIGINAL_VERSION,
+                                 "Sum": self.ORIGINAL_SUM}):
+                value = self.info()
+                module = value[section] if section == "Main" else value[section][0]
+                module["Replace"] = replacement
+                with self.subTest(section=section, replacement=replacement), self.assertRaises(HELPER.Refused):
+                    self.checked(value)
+
+    def test_missing_duplicate_or_unreviewed_dependency_graph_is_refused(self):
+        original = self.info()["Deps"][0]
+        for dependencies in (None, {}, [], [original, original],
+                             [original, {"Path": "example.invalid/unreviewed", "Version": "v1.0.0"}], [None]):
+            value = self.info()
+            value["Deps"] = dependencies
+            with self.subTest(dependencies=dependencies), self.assertRaises(HELPER.Refused):
+                self.checked(value)
+        for main in (None, [], "not a module"):
+            value = self.info()
+            value["Main"] = main
+            with self.subTest(main=main), self.assertRaises(HELPER.Refused):
+                self.checked(value)
 
 
 class RevisionFixtureInputTests(unittest.TestCase):

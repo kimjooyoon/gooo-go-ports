@@ -29,7 +29,7 @@ ORIGINAL = "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
 ORIGINAL_COMMIT = "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"
 ORIGINAL_VERSION = "v0.0.0-20261014100709-8cddcc4e65af"
 ORIGINAL_GENERATION = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
-PARENT_GENERATION = "sha256:af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee"
+PARENT_GENERATION = "sha256:24f37267a7f4ad723b7228eeecd55fdc151c8534fa8a95bca19bb73d9b3973d0"
 COMPILER = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 REPOSITORY = "https://github.com/kimjooyoon/gooo-go-ports"
 # Exact owned fixture bytes and their independently reviewed source identities.
@@ -44,6 +44,11 @@ KNOWN_CONSUMER_FIXTURES = {
         "compiler_source_sha": "83928fa4538245abe33b08549da47f8cbdc50ed2",
         "original_generation_sha256": "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46",
         "revision_generation_sha256": "sha256:af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee",
+    },
+    "ca4fc8ab3a120898ae43dd5f46bf1d4273502a77563211871ccaaa5b71662bd2": {
+        "compiler_source_sha": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+        "original_generation_sha256": "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46",
+        "revision_generation_sha256": "sha256:24f37267a7f4ad723b7228eeecd55fdc151c8534fa8a95bca19bb73d9b3973d0",
     },
 }
 
@@ -153,7 +158,7 @@ def sealed_source(root, count, expected_generation):
         raw = read_regular(root, name)
         require(digest == "sha256:" + sha(raw), "checked-out asset differs: " + name)
         result[name] = raw
-    if count == 37:
+    if count == 38:
         require(document.get("schema") == "gooo/api-policy-revision-generation/v1"
                 and document.get("compiler_source_sha") == COMPILER,
                 "unexpected parent generation schema/compiler identity")
@@ -257,6 +262,113 @@ def module_identity(value, path, revision, version=None):
             "resolver origin does not bind the requested repository/commit/subdirectory")
     require(not value.get("Replace"), "resolver unexpectedly substituted a module")
     return value["Version"]
+
+
+def check_install_build_info(value, parent_version, parent_sum, original_sum):
+    require(isinstance(value, dict) and value.get("GoVersion") == "go1.27.2"
+            and value.get("Path") == PARENT + "/cmd/compare",
+            "installed command toolchain/package identity differs")
+    main = value.get("Main")
+    dependencies = value.get("Deps")
+    require(isinstance(main, dict) and main.get("Path") == PARENT
+            and main.get("Version") == parent_version and main.get("Sum") == parent_sum
+            and main.get("Replace") is None,
+            "installed command main module differs from authenticated download")
+    require(isinstance(dependencies, list) and len(dependencies) == 1,
+            "installed command has an unexpected dependency graph")
+    original = dependencies[0]
+    require(isinstance(original, dict) and original.get("Path") == ORIGINAL
+            and original.get("Version") == ORIGINAL_VERSION
+            and original.get("Sum") == original_sum and original.get("Replace") is None,
+            "installed command original module differs from authenticated download")
+    return {"go_version": value["GoVersion"], "package": value["Path"],
+            "main": {key: main[key] for key in ("Path", "Version", "Sum")},
+            "dependencies": [{key: original[key] for key in ("Path", "Version", "Sum")}],
+            "no_replacements": True}
+
+
+def install_versioned_cli(recorder, go, parent_version, public_sources, work, env):
+    install_cwd, private_bin = work / "install-cwd", work / "private-bin"
+    install_cwd.mkdir(mode=0o700)
+    private_bin.mkdir(mode=0o700)
+    require(not list(install_cwd.iterdir()) and not list(private_bin.iterdir()),
+            "versioned installation directories are not empty")
+    install_env = dict(env, GOBIN=str(private_bin))
+    target = PARENT + "/cmd/compare@" + parent_version
+    recorder.success("direct-install", [go, "install", target], install_cwd, install_env, 300)
+    require(not list(install_cwd.iterdir()), "versioned installation changed the empty working directory")
+    binary = private_bin / ("compare.exe" if os.name == "nt" else "compare")
+    require(binary.is_file() and not binary.is_symlink() and os.access(binary, os.X_OK),
+            "versioned installation did not produce a regular executable")
+    build_info_raw = recorder.success("direct-install-build-info", [go, "version", "-m", "-json", binary],
+                                      install_cwd, install_env, 30)
+    build_info = check_install_build_info(decode(build_info_raw), parent_version,
+                                         public_sources["parent"]["sum"], public_sources["original"]["sum"])
+    return binary, {"target": target, "working_directory": str(install_cwd),
+                    "gobin": str(private_bin), "working_directory_empty": True,
+                    "binary": file_ref(binary), "build_info": build_info,
+                    "build_info_source": recorder.steps[-1]["stdout"]}
+
+
+def installed_cli_output(recorder, binary, mode, input_path, work, env, label):
+    code, stdout, stderr = recorder.run(label, [binary, "--diagnostics=json", "--mode", mode,
+                                               "--input", input_path], work / "fresh-cwd", env, 30)
+    require(code == 0 and not stderr, label + " failed or emitted stderr")
+    return stdout
+
+
+def check_installed_cli(recorder, binary, observed, work, env):
+    inputs = work / "direct-install-inputs"
+    inputs.mkdir(mode=0o700)
+    cases = []
+    for case in observed["cases"]:
+        action, expected = case["action"], case["report"]
+        facts_path, request_path = inputs / (action + "-facts.json"), inputs / (action + "-request.json")
+        report_path = inputs / (action + "-report.json")
+        save_json(facts_path, expected["before"]["facts"])
+        baseline_raw = installed_cli_output(recorder, binary, "baseline", facts_path, work, env,
+                                            "direct-" + action + "-baseline")
+        baseline = {"before_profile": expected["before_profile"],
+                    "candidate_profile": expected["candidate_profile"], "before": expected["before"]}
+        require(same_typed_json(decode(baseline_raw), baseline), "installed baseline differs from checked consumer")
+        request_path.write_bytes(baseline_raw)
+        request_path.chmod(0o600)
+        compared_raw = installed_cli_output(recorder, binary, "compare", request_path, work, env,
+                                            "direct-" + action + "-compare")
+        require(same_typed_json(decode(compared_raw), expected), "installed comparison differs from checked consumer")
+        report_path.write_bytes(compared_raw)
+        report_path.chmod(0o600)
+        replay_raw = installed_cli_output(recorder, binary, "replay", report_path, work, env,
+                                          "direct-" + action + "-replay")
+        require(replay_raw == compared_raw and same_typed_json(decode(replay_raw), expected),
+                "installed saved replay bytes or complete report differ")
+        cases.append({"action": action, "baseline_complete": True, "comparison_complete": True,
+                      "replay_bytes_exact": True, "report_sha256": sha(compared_raw)})
+    write_report = next(case["report"] for case in observed["cases"] if case["action"] == "write")
+    tampered = decode(json.dumps(write_report).encode())
+    tampered["differences"]["reason"] = not tampered["differences"]["reason"]
+    tampered_path = inputs / "write-tampered-report.json"
+    save_json(tampered_path, tampered)
+    code, stdout, stderr = recorder.run("direct-write-tampered-replay",
+                                       [binary, "--diagnostics=json", "--mode", "replay", "--input", tampered_path],
+                                       work / "fresh-cwd", env, 30)
+    require(code == 1 and not stdout, "installed CLI accepted a tampered report or emitted a result")
+    diagnostic = decode(stderr)
+    require(isinstance(diagnostic, dict)
+            and set(diagnostic) == {"schema", "command", "mode", "status", "diagnostics"}
+            and diagnostic["schema"] == "gooo/api-policy-revision-diagnostic/v1"
+            and diagnostic["command"] == "compare" and diagnostic["mode"] == "replay"
+            and diagnostic["status"] == "REFUSED", "installed refusal diagnostic context differs")
+    details = diagnostic["diagnostics"]
+    require(isinstance(details, list) and len(details) == 1 and isinstance(details[0], dict)
+            and set(details[0]) == {"severity", "code", "stage", "message"}
+            and details[0]["severity"] == "error" and details[0]["code"] == "REPORT_MISMATCH"
+            and details[0]["stage"] == "verify_comparison"
+            and isinstance(details[0]["message"], str) and bool(details[0]["message"]),
+            "installed tamper refusal code/stage differs")
+    return {"cases": cases, "runtime_empty_path": env["PATH"] == "",
+            "tampered_report": {"field": "differences.reason", "exit_code": code,
+                                "stdout_bytes": len(stdout), "diagnostic": diagnostic}}
 
 
 def cached_file(value, cache):
@@ -424,7 +536,7 @@ def verify(args, out, report):
     require(go.is_file() and os.access(go, os.X_OK), "--go is not an installed executable")
     require(re.fullmatch(r"[0-9a-f]{40}", args.revision) is not None,
             "--revision must be a full lowercase commit SHA")
-    parent_files = sealed_source(source, 37, PARENT_GENERATION)
+    parent_files = sealed_source(source, 38, PARENT_GENERATION)
     original_files = sealed_source(source / "profiles/original", 28, ORIGINAL_GENERATION)
     parent_assets = decode(parent_files["generation.json"])["assets"]
     original_assets = decode(original_files["generation.json"])["assets"]
@@ -479,17 +591,20 @@ def verify(args, out, report):
                                                                    ORIGINAL + "@" + ORIGINAL_COMMIT], work / "query", env))
         module_identity(original_query, ORIGINAL, ORIGINAL_COMMIT, ORIGINAL_VERSION)
         report["resolved"] = {"parent": parent_query, "original": original_query}
+        public_sources = {}
         for label, module, resolved, expected, count in (
-                ("parent", PARENT, parent_version, parent_files, 37),
+                ("parent", PARENT, parent_version, parent_files, 38),
                 ("original", ORIGINAL, ORIGINAL_VERSION, original_files, 28)):
             download = decode(recorder.success(label + "-download", [go, "mod", "download", "-json",
                                                                       module + "@" + resolved], work / "query", env))
-            inspect_zip(download, cache, module, resolved, expected,
-                        parent_files["go.mod"] if label == "parent" else original_go_mod,
-                        count, out, label)
+            public_sources[label] = inspect_zip(download, cache, module, resolved, expected,
+                                               parent_files["go.mod"] if label == "parent" else original_go_mod,
+                                               count, out, label)
             require(cached_file(download["GoMod"], cache).read_bytes()
                     == (parent_files["go.mod"] if label == "parent" else original_go_mod),
                     label + " downloaded go.mod differs")
+        installed_binary, report["direct_install"] = install_versioned_cli(
+            recorder, go, parent_version, public_sources, work, env)
         consumer = work / "consumer"
         (consumer / "main.go").write_bytes(fixture_raw)
         (consumer / "go.mod").write_text("module example.invalid/gooo-api-policy-public-consumer\n\ngo 1.27.2\n\n"
@@ -516,6 +631,7 @@ def verify(args, out, report):
         require(code == 0 and not stderr, "actual external consumer failed or emitted stderr")
         observed = check_observations(stdout, parent_assets, original_assets)
         save_json(out / "observations.json", observed)
+        report["direct_install"].update(check_installed_cli(recorder, installed_binary, observed, work, run_env))
 
         # Copy only the source-owned exact 33-file distribution. Never alter the
         # downloaded module/cache. This exercises a consumer main's own replace.
@@ -560,10 +676,12 @@ def verify(args, out, report):
                                   "exit_code": code, "stdout_bytes": len(stdout), "stderr_bytes": len(stderr)}
         report["acceptance"] = {
             "facts": 9, "positive_cases": 2, "decision_fields": 15, "difference_flags": 15,
-            "summary_fields": 2, "public_asset_count": 37, "public_assets_exact": True,
+            "summary_fields": 2, "public_asset_count": 38, "public_assets_exact": True,
             "public_generation_exact": True, "original_assets_exact": True,
             "original_generation_unchanged": True, "substitution_refused": True,
             "runtime_empty_path": True, "consumer_no_replace_or_workspace": True,
+            "direct_install": True, "direct_install_cases": 2,
+            "direct_install_tampered_report_refused": True,
             "substitution_stdout_bytes": 0, "original_version": ORIGINAL_VERSION,
             "original_commit": ORIGINAL_COMMIT,
         }

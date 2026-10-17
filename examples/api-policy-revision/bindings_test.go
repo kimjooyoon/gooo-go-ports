@@ -110,8 +110,42 @@ func TestRevisionBindingsActualEmbeddedEvidence(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(actual, public) || actual.CompilerSourceSHA != CompilerPin || actual.GenerationSHA256 != fmt.Sprintf("sha256:%x", sha256.Sum256(manifest)) {
+	if len(files) != 38 || len(actual.Assets) != 38 || !reflect.DeepEqual(actual, public) || actual.CompilerSourceSHA != CompilerPin || actual.GenerationSHA256 != fmt.Sprintf("sha256:%x", sha256.Sum256(manifest)) {
 		t.Fatal("embedded entrypoint did not preserve the complete checked source bindings")
+	}
+}
+
+func TestRevisionBindingsRequireSealedOriginalModuleChecksums(t *testing.T) {
+	const moduleVersion = "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy v0.0.0-20261014100709-8cddcc4e65af"
+	expected := []byte(moduleVersion + " h1:fvrka7xThFrx1JkbTEp+lZ7hjcUsK4csF/XbpmF4VuM=\n" + moduleVersion + "/go.mod h1:8bu+v2g7hKzRE72QrBMPJRCTJRVvlk4pqwTaA4DQrtc=\n")
+	files, manifest := revisionBindingFixture(t)
+	if !bytes.Equal(files["go.sum"], expected) {
+		t.Fatal("original module checksums differ from the verified public module")
+	}
+	if _, err := checkRevisionBindings(files, manifest); err != nil {
+		t.Fatal("valid checksum fixture was refused", err)
+	}
+	for _, attack := range []string{"missing-file", "altered-file", "missing-generation-entry"} {
+		t.Run(attack, func(t *testing.T) {
+			files, manifest := revisionBindingFixture(t)
+			switch attack {
+			case "missing-file":
+				delete(files, "go.sum")
+			case "altered-file":
+				files["go.sum"] = append(files["go.sum"], '\n')
+			case "missing-generation-entry":
+				generation := bindingTestJSON(t, manifest)
+				delete(generation["assets"].(map[string]any), "go.sum")
+				encoded, err := json.Marshal(generation)
+				if err != nil {
+					t.Fatal(err)
+				}
+				manifest = encoded
+			}
+			if _, err := checkRevisionBindings(files, manifest); err == nil {
+				t.Fatal("accepted a missing or changed sealed checksum asset")
+			}
+		})
 	}
 }
 

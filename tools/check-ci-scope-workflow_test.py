@@ -381,11 +381,12 @@ PUBLIC_CONSUMER_CLAUSES = (
     '.status == "PUBLIC_API_POLICY_CONSUMER_PASS"',
     '.acceptance.facts == 9', '.acceptance.positive_cases == 2',
     '.acceptance.decision_fields == 15', '.acceptance.difference_flags == 15',
-    '.acceptance.summary_fields == 2', '.acceptance.public_asset_count == 37',
+    '.acceptance.summary_fields == 2', '.acceptance.public_asset_count == 38',
     '.acceptance.public_assets_exact == true', '.acceptance.public_generation_exact == true',
     '.acceptance.original_assets_exact == true', '.acceptance.original_generation_unchanged == true',
     '.acceptance.substitution_refused == true', '.acceptance.runtime_empty_path == true',
-    '.acceptance.consumer_no_replace_or_workspace == true', '.acceptance.substitution_stdout_bytes == 0',
+    '.acceptance.consumer_no_replace_or_workspace == true', '.acceptance.direct_install == true', '.acceptance.direct_install_cases == 2',
+    '.acceptance.direct_install_tampered_report_refused == true', '.acceptance.substitution_stdout_bytes == 0',
     '.acceptance.original_version == "v0.0.0-20261014100709-8cddcc4e65af"',
     '.acceptance.original_commit == "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"',
 )
@@ -468,16 +469,16 @@ POLICY_STEP_SHAS = {
     'Verify the isolated native IPv4 address facts sidecar': '6ce5d2f5e75f9ff9a7728718567ffb039c74232ef4e254ea244b7dc02fbc9ed8',
     'Verify the original automatic redelivery policy': '2ce6496cbee29d77c9334f1f32dc518c96a12c193e37ab569144bdc4fd1a864e',
     'Verify the isolated native path facts sidecar': 'b90f403ce804adea78dacebf554c45f3e21b1faf89b942e83f32aca2847f9df5',
-    'Verify the public API policy consumer': 'a17b7fa2307ad63bf8642bcbf4e08b28538acd970f9e3284011f18e6dee1a9ab',
+    'Verify the public API policy consumer': 'addc0ac90e9cb5110153387eff283dc5cd11c34fc53d5d86a6c97cef70b6d44a',
     'Build and identify the pinned compiler from a clean checkout': 'c7273984211d14f1b50f66438f1d90f68a42e8ad58be1d0d1d2a0213b0b4d2ae',
     'Verify the offline decision-policy experiment': '2d8e714f7dfb2963a682ce702485e3bccfaa7439cbaa67f7da6741aff6ce7c48',
     'Verify the imported CEL API policy': '064873f6b6288062964bde88c2f1f436bdc7316e586ae6066a4b3623f057b708',
-    'Verify the sealed API policy revision comparison': '64f49e759cf3df80876f369330143f4c7e229cf33beed788dc1e434225b17cae',
+    'Verify the sealed API policy revision comparison': 'd814d5880193ec157b5f08182302fa3b25904dfaecc6fde2e65fa6e936f5a2b3',
     'Verify the Agent Mesh service-pattern adaptation': '9af078924730a896c5c669e167803a2e3780e277cdcbe6231233b2cac97a471c',
     'Upload offline policy experiment evidence': 'e4adbb294f45d4dbe4af56338b800f0d637dda27ec83055f1d799d63dac60392',
     ETAG_PROJECT_STEP: 'f11ef3c03ed5cc096b30b3d44c8a20abeb73bc5e840b8033114d94208d64f4c7',
     VERSIONED_GRANT_STEP: '04e88171f2da9d7c19b58889ad27f71359456780fce7ef11dd03c3172cc7a860',
-    'Upload policy execution and diagnostic evidence': 'f309b80306e9bc4bc1d76d642d59eb4d29b795d317f20a9e7be12963406782cc',
+    'Upload policy execution and diagnostic evidence': 'b6a551bee8e2e2e6ac82174aaffabb7816325abb8083354051d5be1e70132fe7',
     'Report documentation-only policy scope': '472165f458bfda43733f2a1ea6bc2236c19b425b5887f3417bbe1a9d9bcab6dd',
     'Preserve documentation-only policy scope': '185d1afbfd001734dc649c227526a84d5dd993bfcd9c1243e4a1966f13db60f7',
 }
@@ -658,7 +659,7 @@ def policy_steps(chunk):
             field(named[POLICY_DOC_ARTIFACT], 'if') == 'always() && ' + DOCS,
             'policy docs-only scope must be explicit and separate')
     require('name: gooo-go-ports-policy-evidence\n' in named[POLICY_UPLOAD] and
-            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n            out/etag-project/\n            out/etag-project-evidence/\n            out/api-policy-public-consumer/\n            out/path-facts/\n            out/redelivery-policy/\n            out/ipv4/\n            out/versioned-grant-change/\n            out/editable-api-policy/\n            out/autobot-resolver/\n' in named[POLICY_UPLOAD] and
+            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n            out/etag-project/\n            out/etag-project-evidence/\n            out/api-policy-public-consumer/\n            out/api-policy-original-download.json\n            out/path-facts/\n            out/redelivery-policy/\n            out/ipv4/\n            out/versioned-grant-change/\n            out/editable-api-policy/\n            out/autobot-resolver/\n' in named[POLICY_UPLOAD] and
             'if-no-files-found: warn\n' in named[POLICY_UPLOAD] and 'retention-days: 14\n' in named[POLICY_UPLOAD],
             'policy output artifacts must include current identity, original policy outputs and both exported ETag directories')
     require('name: gooo-go-ports-policy-documentation-scope\n' in named[POLICY_DOC_ARTIFACT] and
@@ -2287,6 +2288,7 @@ class WorkflowScopeTests(unittest.TestCase):
         upload = policy[POLICY_UPLOAD]
         for token in ('            out/ci-scope.json\n', '            out/compiler-build.json\n',
                       '            out/cel-api-policy/\n', '            out/api-policy-revision/\n',
+                      '            out/api-policy-original-download.json\n',
                       '            out/agentmesh-service-policy/\n'):
             self.assertIn(token, upload)
             with self.subTest(missing_path=token), self.assertRaises(ValueError):
