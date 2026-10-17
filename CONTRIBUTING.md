@@ -228,15 +228,15 @@ skipped test does not verify a receipt.
 [CI workflow](.github/workflows/ci.yml)는 importing 예제도 실행하고 저장한 실행·재실행
 파일을 해당 검사에 전달합니다. 건너뛴 검사를 receipt 검증으로 기록하지 않습니다.
 
-CI runs the complete native differential verifier with two bounded workers;
+CI runs the complete native differential verifier with three bounded workers;
 the receipt must record that worker count. The historical 66 suites retain all
 159,909 ordered cases: their legacy partition had 2,337 batches/2,471 timing
 records; the explicit UUID compact profile had 2,109 batches/2,243 timing records.
 The decimal parser adds 256 inputs and PayloadAdmissionFacts adds 101 unique
 seven-fact tuples, with the original 17 policy inputs first. That historical
 roster totals 68 suites and 160,266 cases; the partition counts below describe
-that 68-suite prefix. The current full CI roster is 74 suites and 171,217 cases,
-with 2,181 batches under the CI case profile. See
+that 68-suite prefix. The current full CI roster is 82 suites and 175,649 cases,
+with 2,305 batches and 2,471 timing records under the CI case profile. See
 [Full native port verification](README.md#full-native-port-verification) for the
 case/workspace profiles and the difference from the default local command.
 CI selects
@@ -276,15 +276,21 @@ footer as well as the original differential summary. The records bind source,
 compiler and Go identities and report the worker/CPU context; CPU quota and memory
 limits remain unknown. Incomplete, failed and canceled runs are not successful
 cost samples. Concurrent wall times are not CPU time or a speed forecast.
+Each batch also records optional execute/replay OS wait accounting for CPU and
+MaxRSS. Missing accounting is null with an explicit status, never an invented
+zero. Preserve OS units and scope; do not add MaxRSS values across commands.
+See the README for the distinction between waited-command accounting and a
+complete process tree, memory limit or effect authorization.
 CI also prints a compact phase-total and per-suite timing summary, so analysis does
 not require downloading the complete native evidence archive.
 
-CI는 제한된 워커 2개로 전체 native 비교를 실행하고 receipt의 워커 수도 확인합니다.
+CI는 제한된 워커 3개로 전체 native 비교를 실행하고 receipt의 워커 수도 확인합니다.
 기존66개 suite의159,909개 입력 순서·기대값·workspace를 보존합니다. 해당 역사적 목록은
 legacy에서2,337개 배치·2,471개 계측 기록, UUID compact profile에서2,109개 배치·2,243개
 기록이었습니다. 십진수 파서256개와 원본17개를 앞에 보존한 정책101개 입력을 더한
 역사적 목록은68개 suite·160,266개 case이며, 아래 분할 수치는 이68개 prefix 기준입니다.
-현재 전체 CI 범위는74개 suite·171,217개 case이며, CI case profile의 배치는2,181개입니다.
+현재 전체 CI 범위는82개 suite·175,649개 case이며, CI case profile의 배치는2,305개,
+계측 기록은2,471개입니다.
 기본 로컬 명령과 CI의 case/workspace profile 차이는
 [Full native port verification](README.md#full-native-port-verification)을 참고합니다.
 현재 CI의 `uuid-and-literal-report-compact-v1`은
@@ -308,6 +314,10 @@ summary/header의 새4entry 식별자·basis_profile·전체소스·경계 범�
 검사합니다. 소스·컴파일러·Go 식별자와 워커·CPU 정보를 기록하며, CPU 할당량과 메모리
 제한은 미확인으로 둡니다. 미완료·실패·취소된 실행은 성공 비용 자료로 쓰지 않습니다.
 동시에 실행한 작업의 경과 시간은 CPU 사용 시간이나 성능 예측값이 아닙니다.
+배치별 execute·replay에는 종료 후 OS 회계가 제공하는 CPU·MaxRSS도 선택적으로
+기록합니다. 관측할 수 없는 값은 상태와 null로 남기며 0으로 만들지 않습니다.
+OS별 단위와 측정 범위를 보존하고, 여러 명령의 MaxRSS를 합산하지 않습니다.
+전체 프로세스 트리·메모리 제한·효과 승인과의 차이는 README를 참고합니다.
 CI 로그에는 단계별 합계와 suite별 소요 시간도 작게 남기므로, 병목 분석을 위해 전체
 native 증거 묶음을 내려받을 필요가 없습니다.
 

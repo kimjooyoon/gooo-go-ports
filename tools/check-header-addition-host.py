@@ -93,6 +93,38 @@ def source_roster(root,catalog):
     need(set(OWN_FILES).issubset(names),'all host templates/checker must be in current timing source identity')
     return names
 
+def validate_command_resources(header,batches):
+    """Check optional wait accounting, independently of semantic verification.
+
+    This current-source acceptance reader requires the new schema and both CLI
+    observations. Historical timing without accounting is not current evidence.
+    NOT_AVAILABLE is valid accounting coverage; a value is never a resource limit,
+    an effect authorization or a substitute for receipt/replay verification.
+    """
+    need(type(header) is dict and header.get('command_resources_schema')=='gooo/native-command-resources/v1','current command resources schema')
+    goos=header.get('goos');need(type(goos) is str and goos.strip(),'command resources header GOOS')
+    need(type(batches) is list,'command resources batch list')
+    metrics=('user_cpu_ns','system_cpu_ns','maxrss_raw','maxrss_bytes')
+    fields={'status','goos','scope','maxrss_unit',*metrics}
+    for batch in batches:
+        need(type(batch) is dict,'command resources batch object')
+        resources=batch.get('command_resources')
+        need(type(resources) is dict and set(resources)=={'execute','replay'},'both exact execute/replay command resources')
+        for phase in ('execute','replay'):
+            value=resources[phase];need(type(value) is dict,'command resources '+phase+' object')
+            status=value.get('status')
+            need(status in ('OBSERVED','NOT_AVAILABLE'),'current command resources '+phase+' wait coverage')
+            need(set(value)==fields|({'reason'} if status=='NOT_AVAILABLE' else set()),'exact command resources '+phase+' fields')
+            need(value['goos']==goos and value['scope']=='waited-command-accounting','command resources '+phase+' GOOS/scope binding')
+            if status=='NOT_AVAILABLE':
+                need(type(value['reason']) is str and value['reason'].strip(),'command resources '+phase+' unavailable reason')
+                need(all(value[key] is None for key in (*metrics,'maxrss_unit')),'unavailable command resources '+phase+' are null')
+                continue
+            need(all(type(value[key]) is int and 0<=value[key]<=9223372036854775807 for key in metrics),'observed command resources '+phase+' bounded integer accounting')
+            need(goos in ('linux','darwin'),'observed command resources '+phase+' supported wait units')
+            unit,scale=('KiB',1024) if goos=='linux' else ('bytes',1)
+            need(value['maxrss_unit']==unit and value['maxrss_bytes']==value['maxrss_raw']*scale,'observed command resources '+phase+' exact OS RSS conversion')
+
 ACTIVITY = re.compile(r'activity\s+(\w+)\(([^)]*)\)\s*->\s*(\w+)\s+id\s+"([^"]+)"\s+computes\s*(?:`([^`]*)`|("(?:\\.|[^"\\])*"))',re.S)
 RECORD = re.compile(r'entity\s+(\w+)\s+id\s+"([^"]+)"\s+fields\s*\{(.*?)\}',re.S)
 FIELD = re.compile(r'field\s+(\w+)\s+id\s+"([^"]+)"\s+type\s+(string|integer|boolean)\s+required\s+one')
@@ -243,7 +275,7 @@ def read_verification(root,verification_out,timing):
     need(summary['verification_catalog_sha256']==digest(catalog_raw) and header['catalog']==reference(catalog_raw),'current catalog bytes')
     need(equal(summary['source_sha256'],header['catalog_source_sha256']),'summary/header source map')
     roster=source_roster(root,catalog);sources=header['identity']['source_files']
-    need(len(roster)==276 and set(sources)==roster,'exact current276 full native timing source roster')
+    need(len(roster)==282 and set(sources)==roster,'exact current282 full native timing source roster')
     need(len(catalog['packages'])==56 and len(summary['source_sha256'])==67,'exact current56 packages/67 Gooo sources')
     for name in sorted(roster):need(equal(reference(read(root/name)),sources[name]),'current timing source bytes: '+name)
     catalog_sources={name:sha(read(root/name)) for pkg in catalog['packages'] for name in pkg['sources']}
@@ -259,6 +291,7 @@ def read_verification(root,verification_out,timing):
     need(equal(footer['not_started_suite_indices'],[]) and footer['expected_suites']==footer['successful_suites']==header['expected_suites']==82 and header['expected_cases']==footer['verified_cases']==175649,'complete suite/case counts')
     planned=header['planned_suites'];need(len(planned)==82 and all(equal(p['index'],i) for i,p in enumerate(planned)),'planned82 suite order')
     beginnings=[e for e in events if e['kind']=='suite_begin'];ends=[e for e in events if e['kind']=='suite_end'];batches=[e for e in events if e['kind']=='batch_end']
+    validate_command_resources(header,batches)
     need(len(beginnings)==len(ends)==82 and len(batches)==footer['observed_batches']==footer['verified_batches']==2305,'all successful suite/batch events')
     need(set(e['suite_index'] for e in beginnings)==set(range(82)) and set(e['suite_index'] for e in ends)==set(range(82)),'every suite begins/ends once')
     need(set(e['kind'] for e in events)=={'header','suite_begin','batch_end','suite_end','run_end'},'only recognized complete timing events')

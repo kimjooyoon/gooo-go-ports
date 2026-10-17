@@ -859,7 +859,7 @@ execution, inspection, saved replay, and receipt-binding
 checks. The summary keeps corpus order and records the configured worker limit
 as `native_suite_workers`. A failing suite stops later suites between complete
 batches, and every started worker finishes before the private build cache is
-removed. Full native CI exercises two workers and retains every corpus and
+removed. Full native CI uses three workers and retains every corpus and
 exhaustive check.
 
 `--case-profile uuid-compact-v1` selects compact JSON case files for UUID
@@ -892,6 +892,24 @@ Within that historical 68-suite prefix, legacy requires 2,346 batches/2,484
 records and UUID-only requires 2,118/2,256. No case profile reuses a previous
 successful receipt, and fewer batches alone do not establish a duration or
 memory improvement.
+
+With `--timing-out`, each batch's existing `batch_end` record also carries
+`command_resources.execute` and `.replay`, identified in the header as
+`gooo/native-command-resources/v1`. The observer reads the completed command's
+existing OS wait accounting; it adds no process, wait, polling or receipt file.
+`OBSERVED` reports user/system CPU nanoseconds, raw MaxRSS with its OS unit,
+and normalized MaxRSS bytes. Linux reports raw KiB; Darwin reports bytes.
+`NOT_AVAILABLE` records a reason and null numeric fields when accounting cannot
+be read. `NOT_OBSERVED` means the command has not reported accounting, including
+a phase never reached after failure; it is not a zero resource measurement.
+
+These values cover the waited CLI and only descendants included in its OS
+accounting. CPU is accumulated execution time, while MaxRSS is an OS high-water
+mark: neither represents a complete live process tree, CPU quota, simultaneous
+memory usage, or a memory limit. Do not sum MaxRSS across batches. The existing
+elapsed phases, corpus order, native results, saved replay and failure behavior
+remain required. No resource value authorizes an effect or proves a speedup.
+Without `--timing-out`, command resource accounting is not collected.
 
 ### Bootstrap recovery
 
