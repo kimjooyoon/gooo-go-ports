@@ -117,5 +117,136 @@ class PublicConsumerDiagnosticsTests(unittest.TestCase):
             run.assert_called_once()
 
 
+class PublicConsumerIdentityTests(unittest.TestCase):
+    def root(self):
+        return Path(__file__).resolve().parents[1]
+
+    def source(self):
+        return (self.root() / "testdata/api-policy-consumer/main.go.txt").read_bytes()
+
+    def wanted(self):
+        root = self.root() / "examples/api-policy-revision"
+        current = (root / "generation.json").read_bytes()
+        original = (root / "profiles/original/generation.json").read_bytes()
+        return {"compiler_source_sha": json.loads(current)["compiler_source_sha"],
+                "original_generation_sha256": "sha256:" + HELPER.sha(original),
+                "revision_generation_sha256": "sha256:" + HELPER.sha(current)}
+
+    def test_current_known_fixture_matches_independent_source_manifests(self):
+        self.assertEqual(set(HELPER.KNOWN_CONSUMER_FIXTURES), {
+            "8c9f27b3993d0810431cf33817ad6cb1ed726738eb90a68dfc52c4876c99713f",
+            "ed24455944545110d0aae02209845086b5a8aafc9ea408a07240ee576cd59617"})
+        with mock.patch.object(HELPER.subprocess, "run", side_effect=AssertionError("no process")):
+            self.assertIsNone(HELPER.verify_fixture_identities(self.source(), self.wanted()))
+
+    def test_known_prior_fixture_refuses_current_target_but_retains_its_own_origin(self):
+        raw = self.source()
+        old_generation = "sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e"
+        old = raw.replace(self.wanted()["revision_generation_sha256"].encode(), old_generation.encode(), 1)
+        self.assertNotEqual(old, raw)
+        self.assertEqual(HELPER.sha(old), "8c9f27b3993d0810431cf33817ad6cb1ed726738eb90a68dfc52c4876c99713f")
+        with self.assertRaisesRegex(HELPER.Refused, "identity tuple"):
+            HELPER.verify_fixture_identities(old, self.wanted())
+        wanted = dict(self.wanted(), revision_generation_sha256=old_generation)
+        self.assertIsNone(HELPER.verify_fixture_identities(old, wanted))
+
+    def test_unregistered_source_edits_are_refused(self):
+        raw = self.source()
+        for name in ("expectedCompiler", "expectedOriginalGeneration", "expectedRevisionGeneration"):
+            line = next(line for line in raw.splitlines(keepends=True)
+                        if line.lstrip().startswith(name.encode() + b" "))
+            for mutation in ("missing", "duplicate", "changed"):
+                replacement = b"" if mutation == "missing" else line + line
+                if mutation == "changed":
+                    replacement = line[:line.index(b'"') + 1] + b"changed\"\n"
+                mutant = raw.replace(line, replacement, 1)
+                self.assertNotEqual(mutant, raw)
+                with self.subTest(name=name, mutation=mutation), self.assertRaisesRegex(HELPER.Refused, "source hash"):
+                    HELPER.verify_fixture_identities(mutant, self.wanted())
+
+    def test_block_comment_raw_string_and_formatting_spoofs_do_not_register_source(self):
+        raw = self.source()
+        generation = self.wanted()["revision_generation_sha256"].encode()
+        old = raw.replace(generation, b"sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e", 1)
+        line = next(line for line in old.splitlines(keepends=True)
+                    if line.lstrip().startswith(b"expectedRevisionGeneration "))
+        stale = old.replace(line, line.rstrip(b"\n") + b" // stale\n", 1)
+        fake = b'expectedRevisionGeneration = "' + generation + b'"\n'
+        mutants = (stale + b"/*\n" + fake + b"*/\n",
+                   stale + b"var ignored = `\n" + fake + b"`\n",
+                   raw + b"\n// a formatting-only source change\n",
+                   raw + b"\n/* unterminated comment\n")
+        for mutant in mutants:
+            self.assertNotEqual(mutant, raw)
+            with self.subTest(hash=HELPER.sha(mutant)), self.assertRaisesRegex(HELPER.Refused, "source hash"):
+                HELPER.verify_fixture_identities(mutant, self.wanted())
+
+    def test_current_source_does_not_choose_its_own_desired_identity_tuple(self):
+        wanted = self.wanted()
+        mutants = [dict(wanted, **{name: "changed"}) for name in wanted]
+        mutants.extend((dict(wanted, compiler_source_sha=True), {}, None,
+                        dict(wanted, unreviewed="extra")))
+        for mutant in mutants:
+            with self.subTest(wanted=mutant), self.assertRaisesRegex(HELPER.Refused, "identity tuple"):
+                HELPER.verify_fixture_identities(self.source(), mutant)
+
+    def test_fixture_preflight_uses_manifests_unconditionally_before_module_queries(self):
+        import ast
+        tree = ast.parse(Path(HELPER.__file__).read_text())
+        verify = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "verify")
+        calls = [node.value for node in verify.body if isinstance(node, ast.Expr)
+                 and isinstance(node.value, ast.Call) and isinstance(node.value.func, ast.Name)
+                 and node.value.func.id == "verify_fixture_identities"]
+        self.assertEqual(len(calls), 1)
+        self.assertEqual([node.id for node in calls[0].args], ["fixture_raw", "wanted_fixture_identities"])
+        self.assertFalse(calls[0].keywords)
+        expected = next(node for node in verify.body if isinstance(node, ast.Assign)
+                        and any(isinstance(t, ast.Name) and t.id == "wanted_fixture_identities" for t in node.targets))
+        self.assertIsInstance(expected.value, ast.Dict)
+        names = {node.id for node in ast.walk(expected.value) if isinstance(node, ast.Name)}
+        self.assertTrue({"parent_files", "original_files"}.issubset(names))
+        self.assertNotIn("KNOWN_CONSUMER_FIXTURES", names)
+        recorder = next(node for node in verify.body if isinstance(node, ast.Assign)
+                        and isinstance(node.value, ast.Call) and isinstance(node.value.func, ast.Name)
+                        and node.value.func.id == "Recorder")
+        self.assertLess(expected.lineno, calls[0].lineno)
+        self.assertLess(calls[0].lineno, recorder.lineno)
+
+
+class RevisionFixtureInputTests(unittest.TestCase):
+    def verifier(self):
+        path = Path(__file__).resolve().parents[1] / "examples/api-policy-revision/verify.py"
+        spec = importlib.util.spec_from_file_location("revision_fixture_inputs", path)
+        module = importlib.util.module_from_spec(spec)
+        with mock.patch.object(sys, "dont_write_bytecode", True):
+            spec.loader.exec_module(module)
+        return module
+
+    def test_all_current_independent_json_fixtures_are_source_bound(self):
+        verifier = self.verifier()
+        paths, before, _, _ = verifier.check_bindings()
+        expected = {source.relative_to(verifier.ROOT).as_posix()
+                    for source in verifier.ROOT.rglob("*.json")
+                    if "testdata" in source.relative_to(verifier.ROOT).parts
+                    and "profiles" not in source.relative_to(verifier.ROOT).parts}
+        self.assertIn("testdata/principal-expected.json", expected)
+        self.assertTrue(expected.issubset(paths))
+        for name in expected:
+            self.assertEqual(before[name], "sha256:" + HELPER.sha(paths[name].read_bytes()))
+
+    def test_later_independent_fixture_is_included_without_a_new_manual_path(self):
+        import shutil
+        verifier = self.verifier()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "revision"
+            shutil.copytree(verifier.ROOT, root)
+            extra = root / "testdata/later-case.json"
+            extra.write_bytes(b'{"scope":"synthetic-source-input"}\n')
+            with mock.patch.object(verifier, "ROOT", root):
+                paths, before, _, _ = verifier.check_bindings()
+            self.assertEqual(paths["testdata/later-case.json"], extra)
+            self.assertEqual(before["testdata/later-case.json"], "sha256:" + HELPER.sha(extra.read_bytes()))
+
+
 if __name__ == "__main__":
     unittest.main()

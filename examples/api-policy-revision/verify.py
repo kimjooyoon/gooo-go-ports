@@ -19,7 +19,7 @@ MODULE = 'github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision'
 PIN = '83928fa4538245abe33b08549da47f8cbdc50ed2'
 OLD_GENERATION = 'sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46'
 OLD_PROFILE = 'cel-api-original-v1'
-NEW_PROFILE = 'cel-api-readonly-v1'
+NEW_PROFILE = 'cel-api-readonly-principal-v1'
 FIELDS = (
     'allowed', 'reason', 'authenticated', 'tenant_present', 'tenant_matched',
     'action_present', 'action_matched', 'access_allowed', 'access_error', 'access_result',
@@ -128,6 +128,12 @@ def check_bindings():
         relative = source.relative_to(ROOT)
         if 'profiles' not in relative.parts:
             paths[str(relative)] = source
+    for source in ROOT.rglob('*.json'):
+        relative = source.relative_to(ROOT)
+        if 'profiles' in relative.parts or 'testdata' not in relative.parts:
+            continue
+        need(source.is_file() and not source.is_symlink(), 'nonregular test fixture source')
+        paths[relative.as_posix()] = source
     before = {name: digest(path.read_bytes()) for name, path in sorted(paths.items())}
     expected_old = {'compiler_source_sha': PIN, 'assets': old['assets'], 'generation_sha256': OLD_GENERATION}
     expected_new = {'compiler_source_sha': PIN, 'assets': current['assets'], 'generation_sha256': digest(current_raw)}

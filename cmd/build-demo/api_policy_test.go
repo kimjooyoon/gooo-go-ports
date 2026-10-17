@@ -19,7 +19,7 @@ import (
 
 const (
 	apiPolicyTestCompiler = "83928fa4538245abe33b08549da47f8cbdc50ed2"
-	apiPolicyTestRevision = "sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e"
+	apiPolicyTestRevision = "sha256:af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee"
 	apiPolicyTestOriginal = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
 )
 
@@ -353,7 +353,7 @@ func TestAPIPolicyPublicMetadataRetainsNativeLimitsAndEveryBinding(t *testing.T)
 		"scope":  "unsigned_historical_hypothetical_comparison",
 		"modes":  []string{"baseline", "compare", "replay"},
 		"profiles": map[string]string{
-			"original": "cel-api-original-v1", "candidate": "cel-api-readonly-v1",
+			"original": "cel-api-original-v1", "candidate": "cel-api-readonly-principal-v1",
 		},
 		"limits": map[string]int{
 			"text_utf8_bytes": 65536, "baseline_input_bytes": 4194304, "compare_input_bytes": 4194304,

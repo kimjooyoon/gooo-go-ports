@@ -46,6 +46,10 @@ func transportReport() ComparisonReport {
 func TestRequestStrictNestedTransport(t *testing.T) {
 	request := transportFixture()
 	raw := marshalTest(t, request)
+	candidateField := append([]byte(`"candidate_profile":`), marshalTest(t, request.CandidateProfile)...)
+	if bytes.Count(raw, candidateField) != 1 {
+		t.Fatal("transport fixture must contain one candidate profile field")
+	}
 	decoded, err := DecodeCompareRequest(raw)
 	if err != nil || !reflect.DeepEqual(decoded, request) {
 		t.Fatalf("typed transport roundtrip: %v", err)
@@ -53,7 +57,7 @@ func TestRequestStrictNestedTransport(t *testing.T) {
 	malformed := [][]byte{
 		[]byte("null"), []byte("[]"), append(append([]byte(nil), raw...), []byte(" {}")...),
 		bytes.Replace(raw, []byte(`"before_profile":"cel-api-original-v1"`), []byte(`"before_profile":null`), 1),
-		bytes.Replace(raw, []byte(`"candidate_profile":"cel-api-readonly-v1"`), []byte(`"candidate_profile":17`), 1),
+		bytes.Replace(raw, candidateField, []byte(`"candidate_profile":17`), 1),
 		bytes.Replace(raw, []byte(`"before":{`), []byte(`"unexpected":0,"before":{`), 1),
 		bytes.Replace(raw, []byte(`"before":{`), []byte(`"before":null,"discard":{`), 1),
 		bytes.Replace(raw, []byte(`"before_profile":`), []byte(`"before_profile":"cel-api-original-v1","before_profile":`), 1),

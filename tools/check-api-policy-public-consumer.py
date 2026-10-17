@@ -29,9 +29,24 @@ ORIGINAL = "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
 ORIGINAL_COMMIT = "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"
 ORIGINAL_VERSION = "v0.0.0-20261014100709-8cddcc4e65af"
 ORIGINAL_GENERATION = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
-PARENT_GENERATION = "sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e"
+PARENT_GENERATION = "sha256:af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee"
 COMPILER = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 REPOSITORY = "https://github.com/kimjooyoon/gooo-go-ports"
+# Exact owned fixture bytes and their independently reviewed source identities.
+# These rows describe inputs; every source still compiles and executes its caller.
+KNOWN_CONSUMER_FIXTURES = {
+    "8c9f27b3993d0810431cf33817ad6cb1ed726738eb90a68dfc52c4876c99713f": {
+        "compiler_source_sha": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+        "original_generation_sha256": "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46",
+        "revision_generation_sha256": "sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e",
+    },
+    "ed24455944545110d0aae02209845086b5a8aafc9ea408a07240ee576cd59617": {
+        "compiler_source_sha": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+        "original_generation_sha256": "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46",
+        "revision_generation_sha256": "sha256:af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee",
+    },
+}
+
 FIELDS = (
     "allowed", "reason", "authenticated", "tenant_present", "tenant_matched",
     "action_present", "action_matched", "access_allowed", "access_error",
@@ -325,6 +340,19 @@ def json_stream(raw):
     return result
 
 
+def verify_fixture_identities(raw, wanted):
+    """Bind this fixed fixture's raw source to independently read manifests.
+
+    Unknown source bytes require a reviewed source contract. This function does
+    not parse Go, attest code authenticity or replace fresh native verification.
+    """
+    source_hash = sha(raw)
+    known = KNOWN_CONSUMER_FIXTURES.get(source_hash)
+    require(known is not None, "consumer fixture source hash is not registered: " + source_hash)
+    require(same_typed_json(known, wanted),
+            "consumer fixture identity tuple differs from current source manifests")
+
+
 def check_observations(raw, parent_assets, original_assets):
     observed = decode(raw)
     require(set(observed) == {"schema", "scope", "cases"}
@@ -344,7 +372,7 @@ def check_observations(raw, parent_assets, original_assets):
                 and report["status"] == "COMPARED"
                 and report["scope"] == "same_saved_facts_two_sealed_profiles"
                 and report["before_profile"] == "cel-api-original-v1"
-                and report["candidate_profile"] == "cel-api-readonly-v1", "comparison identities differ")
+                and report["candidate_profile"] == "cel-api-readonly-principal-v1", "comparison identities differ")
         facts = {"group_present": True, "group_value": "admin", "principal_present": True,
                  "principal_value": "synthetic:user", "authenticated": True,
                  "caller_tenant": "tenant-a", "resource_tenant": "tenant-a",
@@ -407,6 +435,16 @@ def verify(args, out, report):
     report["source"] = {"helper": file_ref(Path(__file__).resolve()), "consumer_fixture": file_ref(fixture),
                         "current_parent_generation": PARENT_GENERATION,
                         "current_original_generation": ORIGINAL_GENERATION}
+    wanted_fixture_identities = {
+        "compiler_source_sha": decode(parent_files["generation.json"])["compiler_source_sha"],
+        "original_generation_sha256": "sha256:" + sha(original_files["generation.json"]),
+        "revision_generation_sha256": "sha256:" + sha(parent_files["generation.json"]),
+    }
+    verify_fixture_identities(fixture_raw, wanted_fixture_identities)
+    report["consumer_fixture_identities_verified"] = True
+    report["consumer_fixture_source_contract"] = {
+        "source_sha256": sha(fixture_raw), "identities": wanted_fixture_identities,
+    }
     recorder = Recorder(out)
     work = Path(tempfile.mkdtemp(prefix="gooo-public-consumer-"))
     work.chmod(0o700)
