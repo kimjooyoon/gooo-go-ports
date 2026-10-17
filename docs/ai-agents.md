@@ -116,6 +116,10 @@ compiler issue before passing a minimal case to the language repository.
   displays fixed reason labels and changed-field names while preserving a
   requested failure. The Action cannot load arbitrary policies or authorize
   live API effects.
+- **Compare API policies without a checkout:** use the [Go CLI quickstart](https://gist.github.com/kimjooyoon/a46e67c4830fdfb67a9b75e45aaceee8).
+  With Go **1.27.2** and initial network downloads, build a pinned CLI for two fixed
+  profiles, then compare and replay supplied facts. Its local trial used macOS arm64.
+  Report the first failed command, exit status and diagnostic in the [feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml); choose **Native setup, verification, or replay**.
 - **Read a policy-comparison failure from an agent:** the repository's
   [comparison CLI](../examples/api-policy-revision/README.md#read-failures-from-an-ai-agent-or-automation)
   accepts `--diagnostics=json` before other options. Read its versioned error
