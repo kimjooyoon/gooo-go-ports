@@ -25,7 +25,7 @@ func workerTestContext(t *testing.T) context.Context {
 }
 
 func TestNativeSuiteWorkersBoundCoverageAndOrder(t *testing.T) {
-	for _, workers := range []int{1, 2, maxNativeSuiteWorkers} {
+	for _, workers := range []int{1, 2, 3, maxNativeSuiteWorkers} {
 		t.Run(fmt.Sprint(workers), func(t *testing.T) {
 			ctx := workerTestContext(t)
 			suites := workerTestSuites(59)
