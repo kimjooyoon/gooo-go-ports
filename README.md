@@ -1,7 +1,48 @@
 # Gooo Go Ports
 
-[Gooo](https://github.com/kimjooyoon/meta-ontology-go) is an experimental language for
-describing what programs should do and inspecting how they are built and run.
+[Gooo](https://github.com/kimjooyoon/meta-ontology-go) is an experimental language
+for describing program behavior and retaining how a program was built and run.
+This repository provides independently checked Go ports and original Gooo
+compositions. Start with one source change and an observable result.
+
+## First task for a coding agent
+
+Open this checkout in Codex, Cursor or Claude Code and ask:
+
+> Follow `.agents/skills/gooo-first-program/SKILL.md`. Run the Gooo example,
+> change its score threshold from 60 to 80, then save and replay a new execution.
+> Show the actual changed result and keep my existing files.
+
+With the supplied inputs, score `75` changes from `sensor: high` to
+`sensor: low`; its other three returned fields stay unchanged. The
+[first-program skill](.agents/skills/gooo-first-program/SKILL.md) and
+[setup guide](docs/ai-agents.md) use compiler `83928fa` and Go **1.27.2** on
+macOS or Linux. Reuse matching tools; initial setup may download and build them.
+A source edit needs native execution. Saving generated Go alone is not a run.
+
+If setup or execution fails, [report the first failed step and diagnostic](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml).
+An incomplete attempt is useful feedback. Share public source and inputs only.
+
+## Choose the next useful task
+
+| Your task | Entry | Observable result |
+| --- | --- | --- |
+| Check an API policy change in CI | [Existing policy Action](examples/api-policy-ci/README.md) | Compare the same nine facts under two sealed profiles; inspect newly denied requests and optionally fail CI. |
+| Use Gooo from an existing Go program | [Four-file Go quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726) | Run generated Go with Go 1.27.2; inspect input refusal, policy differences and a widening witness. |
+| Edit an importing Gooo project | [Separate ETag project](templates/etag-project/README.md) | Export three source files, edit supported bodies and compare 247 supplied inputs with Go. |
+
+These examples calculate bounded facts and policy decisions. Live effects still
+need current host-owned authority and atomic application. Input-only `OBSERVED`
+records describe finite runs; they are not expected-output verification or a
+proof for all inputs. Tell us the real API or automation task you want to solve
+in the [feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml).
+
+The [language engine](https://github.com/kimjooyoon/meta-ontology-go) owns Gooo
+syntax and compiler development. This ecosystem repository owns the ports,
+examples and their independent Go references.
+
+<details>
+<summary>More workflows, supported domains and verification history</summary>
 
 **Use Gooo with a coding agent:** follow the [first-program skill](.agents/skills/gooo-first-program/SKILL.md) to edit actual Gooo source, execute it and save a replay. The [agent setup guide](docs/ai-agents.md) covers repository discovery in Codex and Cursor, explicit use in Claude Code, and the limits of the existing policy examples.
 
@@ -1237,3 +1278,5 @@ license and source attribution in [the port notice](ports/agentmesh/NOTICE.md)
 and [the example notice](examples/agentmesh-service-policy/NOTICE.md).
 
 십진수 파서와 [Payload Admission Facts](examples/payload-admission/README.md)를 더한 현재 작성 소스는 **56개 포트·24개 소비 프로그램·27개 소비 활동**입니다. 새 일반 native suite 두 개는 parser 256개와 policy 101개 입력을 추가하여 **68개 suite·160,266개 case**를 요구합니다. 기존 66개 suite의 입력·기대값·workspace는 보존하며 현재 소스 분할 검사는 새 9개 배치(parser 5·policy 4)를 추가하여 UUID와 Literal Report를 함께 압축하는 현재 CI profile에서 **2,072개 배치·2,210개 계측 기록**을 요구합니다. UUID-only compact profile은 2,118개 배치·2,256개 기록, legacy는 2,346개 배치·2,484개 기록을 유지합니다. 이는 분할 관측이며 현재 소스의 native·저장 replay 완료는 별도로 필요합니다. 입력 파일 생성이나 이전 receipt를 새 native 실행 성공으로 계산하지 않습니다. 이 순수 정책은 원본 7개 관찰과 14개 판단 필드를 제공하지만 실제 HTTP framing·권한·호스트 사실의 진위·quota나 효과를 보장하지 않습니다.
+
+</details>
