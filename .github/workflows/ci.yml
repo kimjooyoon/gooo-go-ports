@@ -84,6 +84,7 @@ jobs:
           python3 -B tools/check-api-policy-public-consumer_test.py -v
           python3 -I -B tools/check-header-addition-host_test.py -v
           python3 -I -B examples/versioned-grant-change/verify_test.py
+          python3 -I -B examples/editable-api-policy/run_test.py
           # Full scope runs these13 Python controls inside the bounded sidecar once.
           # Documentation-only PRs still run them as common non-native checks.
           if [ "${{ steps.change-scope.outputs.docs_only }}" = "true" ]; then
@@ -306,6 +307,8 @@ jobs:
           ./.gooo check examples/strong-validator-facts/main.gooo
           ./.gooo check ports/net/http/precondition.gooo
           ./.gooo check examples/versioned-grant-change/main.gooo
+          ./.gooo check examples/editable-api-policy/before.gooo
+          ./.gooo check examples/editable-api-policy/after.gooo
           ./.gooo check ports/net/netip/ipv4.gooo
           ./.gooo check examples/ipv4-address-facts/main.gooo
           ./.gooo check ports/net/netip/prefix.gooo
@@ -1482,6 +1485,25 @@ jobs:
             .owned_work_removed == true and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2"
           ' out/versioned-grant-change/summary.json
+      - name: Verify editable API policy source comparison
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+          python3 -I -B examples/editable-api-policy/run.py --root "$PWD" --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/editable-api-policy" --check-demo
+          jq -e '
+            .schema == "gooo/editable-api-policy-comparison/v1" and
+            .status == "EDITABLE_POLICY_COMPARISON_AND_OFFICIAL_REPLAY_PASS" and
+            .failure == null and .rows == 3 and .positive_receipts == 4 and .package_commands == 5 and
+            .input_echoes_checked == 108 and .typed_output_fields_checked == 180 and
+            .finite_total == 0 and .model_calls == 0 and .demo_checked == true and
+            .cross_workspace_refused == true and .cross_workspace_refusal_stage == "manifest" and
+            .source_tool_unchanged == true and
+            .processes_closed == true and .owned_work_removed == true and
+            ([.comparisons[].changed_count] == [0,2,0]) and
+            ([.comparisons[].status] == ["UNCHANGED","NEWLY_DENIED","UNCHANGED"]) and
+            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2"
+          ' out/editable-api-policy/summary.json
       - name: Upload offline policy experiment evidence
         if: always() && steps.change-scope.outputs.docs_only != 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
@@ -1508,6 +1530,7 @@ jobs:
             out/redelivery-policy/
             out/ipv4/
             out/versioned-grant-change/
+            out/editable-api-policy/
           if-no-files-found: warn
           retention-days: 14
       - name: Report documentation-only policy scope

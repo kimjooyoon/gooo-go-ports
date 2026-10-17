@@ -1,0 +1,123 @@
+{
+  "schema": "gooo/editable-api-policy-demo-expectations/v1",
+  "origin": "Authored synthetic literals, separate from input-only execution.",
+  "rows": [
+    {
+      "before": {
+        "allowed": true,
+        "reason": "ALLOW",
+        "authenticated": true,
+        "tenant_present": true,
+        "tenant_matched": true,
+        "action_present": true,
+        "action_matched": true,
+        "access_allowed": true,
+        "access_error": false,
+        "access_result": "ALLOW",
+        "group_matched": true,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": "synthetic:user"
+      },
+      "after": {
+        "allowed": true,
+        "reason": "ALLOW",
+        "authenticated": true,
+        "tenant_present": true,
+        "tenant_matched": true,
+        "action_present": true,
+        "action_matched": true,
+        "access_allowed": true,
+        "access_error": false,
+        "access_result": "ALLOW",
+        "group_matched": true,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": "synthetic:user"
+      },
+      "status": "UNCHANGED",
+      "changed_fields": []
+    },
+    {
+      "before": {
+        "allowed": true,
+        "reason": "ALLOW",
+        "authenticated": true,
+        "tenant_present": true,
+        "tenant_matched": true,
+        "action_present": true,
+        "action_matched": true,
+        "access_allowed": true,
+        "access_error": false,
+        "access_result": "ALLOW",
+        "group_matched": true,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": "synthetic:user"
+      },
+      "after": {
+        "allowed": false,
+        "reason": "WRITE_REQUIRES_DEPLOY_BOT",
+        "authenticated": true,
+        "tenant_present": true,
+        "tenant_matched": true,
+        "action_present": true,
+        "action_matched": true,
+        "access_allowed": true,
+        "access_error": false,
+        "access_result": "ALLOW",
+        "group_matched": true,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": "synthetic:user"
+      },
+      "status": "NEWLY_DENIED",
+      "changed_fields": [
+        "allowed",
+        "reason"
+      ]
+    },
+    {
+      "before": {
+        "allowed": true,
+        "reason": "ALLOW",
+        "authenticated": true,
+        "tenant_present": true,
+        "tenant_matched": true,
+        "action_present": true,
+        "action_matched": true,
+        "access_allowed": true,
+        "access_error": false,
+        "access_result": "ALLOW",
+        "group_matched": true,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": "synthetic:deploy-bot"
+      },
+      "after": {
+        "allowed": true,
+        "reason": "ALLOW",
+        "authenticated": true,
+        "tenant_present": true,
+        "tenant_matched": true,
+        "action_present": true,
+        "action_matched": true,
+        "access_allowed": true,
+        "access_error": false,
+        "access_result": "ALLOW",
+        "group_matched": true,
+        "principal_matched": false,
+        "group_missing": false,
+        "principal_defaulted": false,
+        "effective_principal": "synthetic:deploy-bot"
+      },
+      "status": "UNCHANGED",
+      "changed_fields": []
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "app/editable-api-policy:EvaluateAPI.input0": true,
+      "app/editable-api-policy:EvaluateAPI.input1": "admin",
+      "app/editable-api-policy:EvaluateAPI.input2": true,
+      "app/editable-api-policy:EvaluateAPI.input3": "synthetic:user",
+      "app/editable-api-policy:EvaluateAPI.input4": true,
+      "app/editable-api-policy:EvaluateAPI.input5": "tenant-a",
+      "app/editable-api-policy:EvaluateAPI.input6": "tenant-a",
+      "app/editable-api-policy:EvaluateAPI.input7": "read",
+      "app/editable-api-policy:EvaluateAPI.input8": "read"
+    },
+    {
+      "app/editable-api-policy:EvaluateAPI.input0": true,
+      "app/editable-api-policy:EvaluateAPI.input1": "admin",
+      "app/editable-api-policy:EvaluateAPI.input2": true,
+      "app/editable-api-policy:EvaluateAPI.input3": "synthetic:user",
+      "app/editable-api-policy:EvaluateAPI.input4": true,
+      "app/editable-api-policy:EvaluateAPI.input5": "tenant-a",
+      "app/editable-api-policy:EvaluateAPI.input6": "tenant-a",
+      "app/editable-api-policy:EvaluateAPI.input7": "write",
+      "app/editable-api-policy:EvaluateAPI.input8": "write"
+    },
+    {
+      "app/editable-api-policy:EvaluateAPI.input0": true,
+      "app/editable-api-policy:EvaluateAPI.input1": "admin",
+      "app/editable-api-policy:EvaluateAPI.input2": true,
+      "app/editable-api-policy:EvaluateAPI.input3": "synthetic:deploy-bot",
+      "app/editable-api-policy:EvaluateAPI.input4": true,
+      "app/editable-api-policy:EvaluateAPI.input5": "tenant-a",
+      "app/editable-api-policy:EvaluateAPI.input6": "tenant-a",
+      "app/editable-api-policy:EvaluateAPI.input7": "write",
+      "app/editable-api-policy:EvaluateAPI.input8": "write"
+    }
+  ]
+}
