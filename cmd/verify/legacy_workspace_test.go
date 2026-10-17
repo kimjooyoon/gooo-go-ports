@@ -205,7 +205,7 @@ func TestLegacy445HistoricalSnapshotCatalogSourcesManifestsInputsCasesAndBatches
 	}
 	for i := range expectedCatalog.Packages {
 		if expectedCatalog.Packages[i].Path == "go/strings" {
-			expectedCatalog.Packages[i].Sources = append(expectedCatalog.Packages[i].Sources, "ports/strings/literal.gooo", "ports/strings/cut.gooo")
+			expectedCatalog.Packages[i].Sources = append(expectedCatalog.Packages[i].Sources, "ports/strings/literal.gooo", "ports/strings/cut.gooo", lastIndexSource)
 		}
 	}
 	expectedCatalog.Packages = append(expectedCatalog.Packages, sourcePackage{Path: "app/literal-text-report", Sources: []string{"examples/literal-text-report/main.gooo"}})
@@ -234,9 +234,10 @@ func TestLegacy445HistoricalSnapshotCatalogSourcesManifestsInputsCasesAndBatches
 		sourcePackage{Path: etagReportPackage, Sources: []string{etagReportSource}},
 		sourcePackage{Path: ifMatchPackage, Sources: []string{ifMatchSource}},
 		sourcePackage{Path: "gooo/autobot/ai-lines", Sources: []string{"ports/autobot/ai_lines.gooo"}},
+		sourcePackage{Path: lastIndexConsumerPackage, Sources: []string{lastIndexConsumerSource}},
 	)
-	if !reflect.DeepEqual(current.Catalog, expectedCatalog) || len(current.Sources) != len(fixture.Sources)+28 {
-		t.Fatal("catalog changed beyond the reviewed literal, Cut, CEL, AgentMesh, checked-domain, conditional-apply, decimal/payload, path Clean/alias, header, original header-addition, canonical-key/report, ETag/strong-validator-facts and AutoBot resolver sources")
+	if !reflect.DeepEqual(current.Catalog, expectedCatalog) || len(current.Sources) != len(fixture.Sources)+30 {
+		t.Fatal("catalog changed beyond the reviewed literal, Cut, CEL, AgentMesh, checked-domain, conditional-apply, decimal/payload, path Clean/alias, header, original header-addition, canonical-key/report, ETag/strong-validator-facts, AutoBot resolver and separate LastIndex/v1 Report sources")
 	}
 	historical := legacy445HistoricalSnapshot(t, current, fixture)
 	sources := map[string]legacy445Source{}

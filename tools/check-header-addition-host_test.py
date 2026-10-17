@@ -40,10 +40,15 @@ class FreshHostTests(unittest.TestCase):
         self.assertIn('examples/diagnostic-header-addition/main.gooo',roster)
         self.assertIn('cmd/verify/header_addition_corpus.go',roster)
         self.assertIn('ports/autobot/ai_lines.gooo',roster)
-        self.assertEqual(len(roster),265)
-        self.assertEqual(len(catalog['packages']),55)
-        self.assertEqual(sum(len(p['sources']) for p in catalog['packages']),65)
+        self.assertEqual(len(roster),276)
+        self.assertEqual(len(catalog['packages']),56)
+        self.assertEqual(sum(len(p['sources']) for p in catalog['packages']),67)
         for name in ('ports/net/textproto/canonical.gooo','examples/canonical-header-key/main.gooo','cmd/verify/canonical_header_contracts.go','cmd/verify/canonical_header_corpus_test.go','examples/canonical-header-key/manual20.json','third_party/go/net/textproto/reader.go.txt','cmd/verify/etag_contracts.go','cmd/verify/etag_native_test.go','ports/net/http/etag.gooo','examples/strong-validator-facts/main.gooo','examples/strong-validator-facts/manual247.json','third_party/go/net/http/fs.go.txt','etag-scan.workspace.json','etag-strong-match.workspace.json','strong-validator-facts.workspace.json'):
+            self.assertIn(name,roster)
+        for name in ('ports/strings/last_index.gooo','examples/literal-final-marker-report/main.gooo',
+                     'literal-final-marker-report.workspace.json','examples/literal-final-marker-report/inputs.json',
+                     'cmd/verify/last_index_corpus.go','cmd/verify/last_index_contracts.go',
+                     'tools/check-last-index-inputs.py','tools/check-last-index-inputs_test.py'):
             self.assertIn(name,roster)
 
     def population(self):
@@ -56,8 +61,10 @@ class FreshHostTests(unittest.TestCase):
             {'package':'go/net/http/etag','activity':'ScanETag','cases':192,'passed':192,'batches':3,'replay_equal':True},
             {'package':'go/net/http/etag','activity':'ETagStrongMatch','cases':31,'passed':31,'batches':2,'replay_equal':True},
             {'package':'app/strong-validator-facts','activity':'Report','cases':24,'passed':24,'batches':2,'replay_equal':True},
-            {'package':'go/net/http/precondition','activity':'IfMatchCondition','cases':284,'passed':284,'batches':5,'replay_equal':True}])
-        summary={'runs':runs,'cases':173866,'passed':173866,
+            {'package':'go/net/http/precondition','activity':'IfMatchCondition','cases':284,'passed':284,'batches':5,'replay_equal':True},
+            {'package':'go/strings','activity':'LastIndex','cases':1694,'passed':1694,'batches':50,'replay_equal':True},
+            {'package':'app/literal-final-marker-report','activity':'Report','cases':89,'passed':89,'batches':3,'replay_equal':True}])
+        summary={'runs':runs,'cases':175649,'passed':175649,
             'canonical_header_reference_cases':1059,'canonical_header_report_reference_cases':1059,
             'canonical_header_raw_input_occurrences':1059,'canonical_header_unique_keys':1054,
             'canonical_header_within_partition_duplicates':0,'canonical_header_cross_partition_duplicates':5,
@@ -66,13 +73,16 @@ class FreshHostTests(unittest.TestCase):
             'canonical_header_provenance_scope':CHECK.CANONICAL_SUMMARY['canonical_header_provenance_scope']}
         summary.update(CHECK.ETAG_SUMMARY)
         summary.update(CHECK.IF_MATCH_SUMMARY)
+        summary.update(CHECK.LAST_INDEX_SUMMARY)
         planned=[{'index':i,'package':r['package'],'activity':r['activity'],'cases':r['cases']} for i,r in enumerate(runs)]
-        ends=[{'suite_index':i,'source_set':{}} for i in range(80)]
+        ends=[{'suite_index':i,'source_set':{}} for i in range(82)]
         ends[74]['source_set']={name:None for name in ['ports/net/httpguts/headers.gooo','ports/net/textproto/canonical.gooo']}
         ends[75]['source_set']={name:None for name in ['examples/canonical-header-key/main.gooo','examples/header-field-facts/main.gooo','ports/net/httpguts/headers.gooo','ports/net/textproto/canonical.gooo']}
         for i in (76,77):ends[i]['source_set']={'ports/net/http/etag.gooo':None}
         ends[78]['source_set']={name:None for name in ['examples/strong-validator-facts/main.gooo','ports/net/http/etag.gooo','ports/net/httpguts/headers.gooo']}
         ends[79]['source_set']={'ports/net/http/precondition.gooo':None}
+        ends[80]['source_set']={name:None for name in ['ports/strings/search.gooo','ports/strings/last_index.gooo']}
+        ends[81]['source_set']={name:None for name in ['ports/strings/search.gooo','ports/strings/literal.gooo','ports/strings/last_index.gooo','examples/literal-final-marker-report/main.gooo']}
         return summary,planned,ends
 
     def test_current79_metadata_keeps_old76_and_three_exact_appended_entries(self):
@@ -167,6 +177,65 @@ class FreshHostTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
         s,p,e=copy.deepcopy((summary,planned,ends));e[79]['source_set']['ports/net/http/etag.gooo']=None
         with self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+
+    def test_current82_keeps_exact_old80_prefix_and_two_new_entries(self):
+        summary,planned,ends=self.population()
+        CHECK.current_population(summary,planned,ends)
+        self.assertEqual(len(summary['runs']),82)
+        self.assertEqual(sum(r['cases'] for r in summary['runs'][:80]),173866)
+        self.assertEqual(sum(r['batches'] for r in summary['runs'][:80]),2252)
+        self.assertEqual(sum(r['cases'] for r in summary['runs']),175649)
+        self.assertEqual(sum(r['batches'] for r in summary['runs']),2305)
+        self.assertEqual(summary['runs'][80]['cases'],1694)
+        self.assertEqual(summary['runs'][81]['cases'],89)
+        # Old80 acceptance cannot become current by changing its outer totals.
+        for forged_totals in (False,True):
+            s,p,e=copy.deepcopy((summary,planned,ends));s['runs']=s['runs'][:80];p=p[:80];e=e[:80]
+            if not forged_totals:s['cases']=s['passed']=173866
+            with self.subTest(forged_totals=forged_totals),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+        for key,value in [('cases',173866),('passed',173866),('cases',True),('passed',175649.0)]:
+            s,p,e=copy.deepcopy((summary,planned,ends));s[key]=value
+            with self.subTest(rollback=key,value=value),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+        # Shift counts across the old80/new boundary while preserving full totals.
+        for key in ('cases','batches'):
+            s,p,e=copy.deepcopy((summary,planned,ends));s['runs'][0][key]-=1;s['runs'][80][key]+=1
+            with self.subTest(prefix_transfer=key),self.assertRaisesRegex(RuntimeError,'complete80 prefix'):CHECK.current_population(s,p,e)
+
+    def test_current82_rejects_appended_counts_order_and_closure_drift(self):
+        summary,planned,ends=self.population()
+        for index,key,value in [
+            (80,'package','go/other'),(80,'activity','Index'),(80,'cases',1693),(80,'passed',1693),
+            (80,'batches',49),(80,'replay_equal',False),(80,'passed',True),
+            (81,'package','app/literal-text-report'),(81,'activity','LastIndex'),(81,'cases',88),
+            (81,'passed',88),(81,'batches',2),(81,'replay_equal',False),(81,'passed',89.0)]:
+            s,p,e=copy.deepcopy((summary,planned,ends));s['runs'][index][key]=value
+            with self.subTest(index=index,key=key),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+        for index in (80,81):
+            s,p,e=copy.deepcopy((summary,planned,ends));p[index]['index']=79
+            with self.subTest(planned=index),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+            s,p,e=copy.deepcopy((summary,planned,ends));e[index]=copy.deepcopy(e[79])
+            with self.subTest(end=index),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+            for mutation in ('missing','substituted','extra'):
+                s,p,e=copy.deepcopy((summary,planned,ends))
+                if mutation!='extra':e[index]['source_set'].pop('ports/strings/last_index.gooo')
+                if mutation!='missing':e[index]['source_set']['ports/strings/cut.gooo']=None
+                with self.subTest(source=index,mutation=mutation),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+        for key in ('runs','planned','ends'):
+            s,p,e=copy.deepcopy((summary,planned,ends));items=s['runs'] if key=='runs' else p if key=='planned' else e
+            items[80],items[81]=items[81],items[80]
+            # Completion events may arrive out of order, unlike planned/runs.
+            if key=='ends':CHECK.current_population(s,p,e)
+            else:
+                with self.subTest(swapped=key),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+
+    def test_current82_rejects_missing_or_changed_last_index_summary(self):
+        summary,planned,ends=self.population()
+        for key,value in CHECK.LAST_INDEX_SUMMARY.items():
+            s,p,e=copy.deepcopy((summary,planned,ends));s.pop(key)
+            with self.subTest(missing=key),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
+            for replacement in ([True,value-1,float(value)] if type(value) is int else [value+' changed','NOT_CHECKED']):
+                s,p,e=copy.deepcopy((summary,planned,ends));s[key]=replacement
+                with self.subTest(changed=key,value=replacement),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
 
     def verification(self):
         definitions,records=CHECK.contracts([(pkg,name,(ROOT/name).read_text()) for pkg,name in CHECK.PACKAGES])

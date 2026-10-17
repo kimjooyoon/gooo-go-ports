@@ -157,7 +157,8 @@
       "sources": [
         "ports/strings/search.gooo",
         "ports/strings/literal.gooo",
-        "ports/strings/cut.gooo"
+        "ports/strings/cut.gooo",
+        "ports/strings/last_index.gooo"
       ]
     },
     {
@@ -339,6 +340,12 @@
       "path": "gooo/autobot/ai-lines",
       "sources": [
         "ports/autobot/ai_lines.gooo"
+      ]
+    },
+    {
+      "path": "app/literal-final-marker-report",
+      "sources": [
+        "examples/literal-final-marker-report/main.gooo"
       ]
     }
   ]

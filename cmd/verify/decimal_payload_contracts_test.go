@@ -379,7 +379,7 @@ func TestDecimalPayloadWorkspacesIsolateAllPrior66Sources(t *testing.T) {
 		s := suite{Package: parts[0], Activity: parts[1]}
 		// Keep this regression scoped to the original 66 entries. The later
 		// path addition has its own regression over the preceding 68 entries.
-		if isDecimalPayloadSuite(s) || isPathAliasSuite(s) || isHeaderSuite(s) || isHeaderAdditionSuite(s) || isCanonicalHeaderSuite(s) || isHTTPConditionalSuite(s) {
+		if isDecimalPayloadSuite(s) || isPathAliasSuite(s) || isHeaderSuite(s) || isHeaderAdditionSuite(s) || isCanonicalHeaderSuite(s) || isHTTPConditionalSuite(s) || isLastIndexSuite(s) {
 			continue
 		}
 		old++

@@ -14,7 +14,7 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(frozen.Catalog.Packages) != 55 || len(frozen.Sources) != 65 {
+	if len(frozen.Catalog.Packages) != 56 || len(frozen.Sources) != 67 {
 		t.Fatal("complete reviewed catalog roster changed")
 	}
 	if !reflect.DeepEqual(frozen.Catalog.Packages[54], sourcePackage{Path: "gooo/autobot/ai-lines", Sources: []string{"ports/autobot/ai_lines.gooo"}}) {

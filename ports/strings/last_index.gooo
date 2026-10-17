@@ -1,0 +1,30 @@
+// Copyright 2009 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license reproduced in third_party/GO-LICENSE.
+// Go 1.27.2 strings.LastIndex contract: src/strings/strings.go at
+// 022c8636110ebac86a9b88724cda168ed713c21f.
+// Source SHA256: a81bdf73a308277c322e35d0c602e3813f57b6f769c091f8f8962c8884a45ea3.
+//
+// Modification: replace the original optimized reverse search with a guarded
+// forward scan of at most 1024 byte positions, retaining the latest match.
+// Advancing one byte after each match preserves overlapping matches. An empty
+// needle returns the text's byte length. The caller must enforce decoded valid
+// UTF-8 Text of at most 1024 bytes per argument before native execution; this
+// activity does not validate those host preconditions or truncate inputs.
+// No arbitrary-byte Go strings, regex, normalization, whole-package or
+// algorithmic-performance equivalence claim. Text and Integer declarations are
+// shared with search.gooo.
+package strings
+namespace gooo_ports_strings
+
+activity LastIndex(Text, Text) -> Integer id "gooo://go/strings/LastIndex" computes `let text_length = int64(len(input0))
+let needle_length = int64(len(input1))
+if needle_length == 0 { return text_length }
+let last_offset = -1
+let offset = 0
+for offset = 0; offset < 1024; offset = offset + 1 {
+    let end = offset + needle_length
+    if end > text_length { return last_offset }
+    if input0[offset:end] == input1 { last_offset = offset }
+}
+return last_offset`

@@ -45,6 +45,15 @@ type nativeTimingSnapshot struct {
 // This is the reviewed 23-file CI roster, followed by the two runtime additions.
 // Hash current bytes; never import a private preparation file or an old receipt.
 var nativeTimingSourceNames = []string{
+	"cmd/verify/last_index_corpus.go",
+	"cmd/verify/last_index_corpus_test.go",
+	"cmd/verify/last_index_contracts.go",
+	"cmd/verify/last_index_contracts_test.go",
+	"literal-final-marker-report.workspace.json",
+	"examples/literal-final-marker-report/inputs.json",
+	"examples/literal-final-marker-report/README.md",
+	"tools/check-last-index-inputs.py",
+	"tools/check-last-index-inputs_test.py",
 	"if-match.workspace.json",
 	"cmd/if-match-input/main.go",
 	"cmd/if-match-input/main_test.go",
