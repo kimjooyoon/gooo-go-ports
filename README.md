@@ -32,6 +32,7 @@ An incomplete attempt is useful feedback. Share public source and inputs only.
 | Check an API policy change in CI | [Existing policy Action](examples/api-policy-ci/README.md) | Compare the same nine facts under two sealed profiles; inspect newly denied requests and optionally fail CI. |
 | Use Gooo from an existing Go program | [Four-file Go quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726) | Run generated Go with Go 1.27.2; inspect input refusal, policy differences and a widening witness. |
 | Edit an importing Gooo project | [Separate ETag project](templates/etag-project/README.md) | Export three source files, edit supported bodies and compare 247 supplied inputs with Go. |
+| Find a Go API to migrate | [Ported API table](#이식한-함수) | Check available functions, input domains and Go-to-Gooo result differences before choosing a port. |
 
 These examples calculate bounded facts and policy decisions. Live effects still
 need current host-owned authority and atomic application. Input-only `OBSERVED`
@@ -65,7 +66,7 @@ examples and their independent Go references.
 **Edit the ETag composition in your own directory:** [export an editable project](templates/etag-project/README.md) with three current Gooo sources and a separate Go reference checker. Exporting copies source only; run the exported checker to compare all247 original inputs in seven batches. The optional CRLF mutation demonstrates a typed result difference; these finite checks do not authorize API writes.
 
 This independent ecosystem project implements selected Go standard-library, x/net, x/image and Google UUID functions in Gooo,
-using independent Go references and saved replay. Its verification catalog contains 55 packages and 65 Gooo source files,
+using independent Go references and saved replay. Its verification catalog contains 56 packages and 67 Gooo source files,
 including selected HTTP, Unicode, signed-decimal, literal-text, slash-path, UUID,
 integer, color, duration, rectangle and fixed-point APIs and importing diagnostic programs.
 Separate IPv4 and other sidecar examples have their own checks and are not added to the catalog's execution totals.
@@ -658,10 +659,13 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | `go/net/textproto` | `CanonicalMIMEHeaderKey` | Decoded valid UTF-8 Text 0–1,024 bytes; valid-token ASCII casing, invalid/empty input identity. [Domain and source](ports/net/textproto/README.md), [original eight-field validity/witness composition](examples/canonical-header-key/README.md) |
 | `go/strconv` | `ParseIntDecimal64` | decoded valid UTF-8 Text 최대1,024바이트에서 ParseInt(s,10,64)의 원래 입력·정확한 int64·구문/범위 오류 구별을4필드로 보존. unsigned overflow와 뒤따른 잘못된 문자 우선순위도 유지. [도메인과 차이](ports/strconv/README.md) |
 | `go/path` | `Ext`, `IsAbs` | 명시적 valid UTF-8 Text 최대 1,024바이트. 마지막 slash 이후 확장자와 선행 slash 여부를 Gooo로 계산. 역슬래시는 일반 문자이며 정규화·파일 접근·권한 판정 없음. 기존 catalog와 별도 native sidecar |
+| `go/path` | `Clean` | Decoded valid UTF-8 Text up to 1,024 bytes; slash-only lexical cleaning, with empty input becoming `.`. No URL decoding, filesystem access or permission check. [Domain and provenance](ports/path/README.md), [original alias-facts composition](examples/path-alias-facts/README.md) |
 | `go/strings` | `IndexByte` | UTF-8 Text 최대 1,024바이트에서 0..255 byte의 첫 위치 또는 -1. 원본 바이트 offset과 길이 보존; 영역 밖 Integer는 별도 -1 확장. Native 전용 |
 | `go/strings` | `Index`, `Count` | 두 UTF-8 Text 각각 최대 1,024바이트. 첫 literal byte offset 또는 -1, 겹치지 않는 개수. 빈 needle은 offset 0·code point 수+1. Native 전용 |
+| `go/strings` | `LastIndex` | Two decoded valid UTF-8 Texts up to 1,024 bytes each; final literal byte offset or `-1`, including overlapping matches. An empty needle returns the text's byte length. Native only; no regex or normalization. [Original final-marker composition and domain](examples/literal-final-marker-report/README.md) |
 | `go/strings` | `Cut`, `CutPrefix`, `CutSuffix` | 각 decoded valid UTF-8 Text 최대 1,024바이트. 첫 separator 분할 또는 가장자리 affix만 제거하고 Go 다중 반환을 required-field record로 보존. 빈 needle은 성공. Native 전용 |
 | `go/github.com/google/uuid` | `Validate` | 원본 네 표기와 정확한 오류·길이 오류 분류를 `{valid,error,invalid_length}`로 보존. 유효한 UTF-8 Text 최대 1,024바이트; native 전용 |
+| `go/github.com/google/uuid/text` | `ParseCanonical` | Decoded valid UTF-8 Text up to 1,024 bytes; adapts `uuid.Parse` plus `UUID.String` into four required fields. Check `parsed`: returned UUID text can be nonzero on failure. [API differences and domain](docs/google-uuid-parse-canonical.md), [execute and replay example](examples/uuid-parse-canonical/README.md) |
 | `go/unicode` | `IsLetter`, `IsDigit` | Unicode 17.0.0 전체 Letter(L)·decimal digit(Nd) 범위와 stride 보존. 원본 표에서 결정적으로 Gooo 분기 생성 |
 | `go/unicode` | `IsSpace` | Unicode 17.0.0 White_Space 속성의 25개 코드 포인트 판정. 전체 signed int32 rune 입력 유지 |
 | `go/unicode` | `SimpleFold` | Unicode 17.0.0 단순 대소문자 접기의 다음 순환 멤버. ASCII·특수 순환·case range 우선순위 및 전체 int32 입력 보존. Native 전용 |
