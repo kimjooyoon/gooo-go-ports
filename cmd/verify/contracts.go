@@ -23,6 +23,8 @@ type activityContract struct {
 func nativeActivityContracts() map[string]activityContract {
 	i := integerEntity
 	return map[string]activityContract{
+		literalTextPackage + ":LastIndex":                                  {lastIndexSource, "gooo://go/strings/LastIndex", []string{textEntity, textEntity}},
+		lastIndexConsumerPackage + ":Report":                               {lastIndexConsumerSource, lastIndexConsumerID, []string{textEntity, textEntity}},
 		ifMatchPackage + ":" + ifMatchActivity:                             {ifMatchSource, ifMatchActivityID, []string{textEntity, textEntity}},
 		etagPortPackage + ":" + etagScanActivity:                           {etagPortSource, etagScanActivityID, []string{textEntity}},
 		etagPortPackage + ":" + etagStrongActivity:                         {etagPortSource, etagStrongActivityID, []string{textEntity, textEntity}},

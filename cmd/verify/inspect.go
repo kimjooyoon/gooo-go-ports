@@ -198,7 +198,7 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 				if in.Port != fmt.Sprintf("input%d", j) || in.Entity != contract.InputEntities[j] || !equalValue(in.Value, row.Inputs[j]) {
 					return fail("input order or value")
 				}
-				if (isStringByteSuite(s) || isLiteralTextSuite(s) || isLiteralCutSuite(s) || isDecimalPayloadSuite(s) || isPathAliasSuite(s) || isHeaderSuite(s) || isHTTPConditionalSuite(s)) && len(in.Fields) != 0 {
+				if (isStringByteSuite(s) || isLiteralTextSuite(s) || isLiteralCutSuite(s) || isLastIndexSuite(s) || isDecimalPayloadSuite(s) || isPathAliasSuite(s) || isHeaderSuite(s) || isHTTPConditionalSuite(s)) && len(in.Fields) != 0 {
 					return fail("string byte scalar input has record fields")
 				}
 				if err := inspectNRGBAInputFields(contract.InputEntities[j], in.Fields, row.Inputs[j]); err != nil {

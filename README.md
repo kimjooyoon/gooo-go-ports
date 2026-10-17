@@ -281,9 +281,11 @@ proposal, a refused expansion, and recovery of a discarded response by operation
 
 
 The appended selected If-Match core retains all284 original input occurrences
-in five batches. Its current required roster is80 suites,173,866 cases,2,252
-batches and2,414 timing rows; the original79 suites retain173,582 cases and2,247
-batches. Current-source hosted checks must establish these totals independently
+in five batches. The preserved80-suite prefix has173,866 cases,2,252 batches
+and2,414 timing rows; its original79 suites retain173,582 cases and2,247
+batches. The separate LastIndex port and final-marker consumer append1,783
+cases in53 batches. The current required roster is82 suites,175,649 cases,
+2,305 batches and2,471 timing rows. Current-source hosted checks must establish these totals independently
 of private or historical receipts. Seven existing exhaustive dispatches remain
 unchanged. See the [domain, strict input route and reference mapping](ports/net/http/README.md#selected-if-match-compatibility-core).
 
@@ -301,6 +303,7 @@ unchanged. See the [domain, strict input route and reference mapping](ports/net/
 | Edit and run Gooo code locally | [Run and edit locally](#run-and-edit-locally) | Install the pinned compiler, then change the tutorial's condition and rerun it |
 | Apply a constrained policy change automatically | [Service-grant application](examples/agentmesh-service-policy/conditional-apply.md) | Tighten a local grant, observe conflict and refusal, and recover a recorded result |
 | Search a diagnostic phrase locally | [Literal-text report](examples/literal-text-report/README.md) | Supply text and a phrase; export the first byte offset, non-overlapping count and both original inputs |
+| Find the final repeated diagnostic marker locally | [Final-marker report](examples/literal-final-marker-report/README.md) | Compare first and last UTF-8 byte positions, retain overlapping last matches, and replay the eight-field result |
 | Split a literal separator or remove an edge affix | [Literal Cut report](examples/literal-cut-report/README.md) | Compare Cut, CutPrefix and CutSuffix while retaining both original inputs and all eleven returned fields |
 | Parse an exact decimal or inspect payload eligibility | [Payload admission facts](examples/payload-admission/README.md) | Preserve all seven observations, distinguish syntax/range/spelling and inspect the first policy refusal; no request or effect is enforced |
 | Diagnose a header automatically | [Header facts](examples/header-field-facts/README.md) | Strictly preprocess external JSON, preserve both decoded strings, and inspect the first invalid byte and twelve returned fields |
@@ -486,6 +489,17 @@ program. Inputs stay local. It shows the captured strings and the decoded string
 sent to Gooo, including explicit replacement of lone UTF-16 surrogates with U+FFFD.
 The downloaded JSON is a browser observation, separate from the checked native
 report. The existing 21-function dispatcher and Unicode inspector are unchanged.
+
+The native [final-marker report](examples/literal-final-marker-report/README.md)
+adds `strings.LastIndex` through a separate versioned eight-field entry. For
+`"aaaaa"` and `"aa"`, it returns first position0, last position3 and
+non-overlapping count2. LastIndex includes overlapping matches and returns the
+text's byte length for an empty phrase. Both arguments retain the same decoded
+valid UTF-8 Text limit of1,024 bytes. Its1,694 port cases and89 consumer cases
+use independent Go reference outputs, fresh native execution and saved replay;
+the original seven-field report and its source closures remain unchanged.
+These are required finite checks, not a claim that an untested source revision
+has passed or that diagnostic text is trustworthy.
 
 The native [UUID format inspector](examples/uuid-format-inspector/README.md) imports
 Google's `github.com/google/uuid` v1.6.0 `Validate` port. It accepts the original
@@ -1258,6 +1272,12 @@ Index **137**, Count **137**, Report **281** 배치를 유도했습니다. 기�
 결합은 **NOT_CHECKED**입니다. 별도 필수 input-only **24쌍** Report 검사는 독립 검토된
 고정 profile에서 그 세 결합까지 검사합니다. 그 profile을 finite `--cases`에 재사용하지 않습니다.
 input-only native 영수증은 `OBSERVED`·`finite_total=0`을 유지하며 Go oracle 검사는 별도입니다.
+
+별도 [마지막 표식 보고서](examples/literal-final-marker-report/README.md)는
+`strings.LastIndex`를 추가한 버전1의8필드 진입점입니다. 겹친 일치도 마지막 위치에
+포함하므로 `aaaaa`/`aa`는 첫 위치0·마지막 위치3·비중첩 개수2를 반환합니다.
+기존7필드 Report의 소스·입력·진입점은 유지하며, 새 두 suite의1,783건을 별도로
+검사합니다. 기본 예제26쌍은 실제 실행과 저장 replay로 다시 확인할 수 있습니다.
 
 ## Literal Cut 분할 보고서
 

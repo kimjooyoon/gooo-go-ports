@@ -87,6 +87,9 @@ var catalogImport = regexp.MustCompile(`(?m)^[\t ]*import[\t ]+(?:[A-Za-z_][A-Za
 // prior source rosters and keeps unrelated records out of the pinned compiler's
 // 16-record ABI. All bytes come from one snapshot.
 func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, error) {
+	if isLastIndexSuite(s) {
+		return f.lastIndexWorkspace(s)
+	}
 	if isHTTPConditionalSuite(s) {
 		return f.etagWorkspace(s)
 	}
@@ -139,6 +142,9 @@ func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, e
 		}
 		names := make([]string, 0, len(pkg.Sources))
 		for _, name := range pkg.Sources {
+			if name == lastIndexSource {
+				continue
+			}
 			if name == "ports/strings/cut.gooo" && !isLiteralCutSuite(s) {
 				continue
 			}

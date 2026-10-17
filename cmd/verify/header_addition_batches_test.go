@@ -25,7 +25,7 @@ func TestHeaderAdditionPreservesAllEarlier73Workspaces(t *testing.T) {
 	for key := range nativeActivityContracts() {
 		parts := strings.SplitN(key, ":", 2)
 		s := suite{Package: parts[0], Activity: parts[1]}
-		if isHeaderAdditionSuite(s) || isCanonicalHeaderSuite(s) || isHTTPConditionalSuite(s) {
+		if isHeaderAdditionSuite(s) || isCanonicalHeaderSuite(s) || isHTTPConditionalSuite(s) || isLastIndexSuite(s) {
 			continue
 		}
 		seen++

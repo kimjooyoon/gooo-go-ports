@@ -1,0 +1,23 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "app/literal-final-marker-report",
+    "activity": "Report"
+  },
+  "packages": [
+    {
+      "path": "go/strings",
+      "sources": [
+        "ports/strings/search.gooo",
+        "ports/strings/literal.gooo",
+        "ports/strings/last_index.gooo"
+      ]
+    },
+    {
+      "path": "app/literal-final-marker-report",
+      "sources": [
+        "examples/literal-final-marker-report/main.gooo"
+      ]
+    }
+  ]
+}

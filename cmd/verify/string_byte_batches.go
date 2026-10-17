@@ -20,7 +20,7 @@ func nativeBatchEnd(s suite, start, rowLimit int) (int, error) {
 		return 0, fmt.Errorf("invalid native batch start or row limit")
 	}
 	end := min(start+rowLimit, len(s.Cases))
-	if !isStringByteSuite(s) && !isUUIDSuite(s) && !isLiteralTextSuite(s) && !isLiteralCutSuite(s) {
+	if !isStringByteSuite(s) && !isUUIDSuite(s) && !isLiteralTextSuite(s) && !isLiteralCutSuite(s) && !isLastIndexSuite(s) {
 		return end, nil
 	}
 	// Unknown/named marshalers retain the original full-document evaluations.

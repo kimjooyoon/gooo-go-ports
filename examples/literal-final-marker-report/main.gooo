@@ -1,0 +1,22 @@
+// Inspect the first and final occurrences of a supplied literal marker. The
+// three imported search/count activities and this record assembly run in Gooo.
+// This v1 entry preserves the separate seven-field literal-text Report.
+package literal_final_marker_report
+namespace gooo_ports_examples_literal_final_marker_report
+import strings "go/strings"
+entity Text id "gooo://std/text"
+entity Integer id "gooo://std/integer"
+entity FinalMarkerReportV1 id "gooo://go-ports/examples/literal-final-marker-report/v1/result" fields {
+    field text id "gooo://go-ports/examples/literal-final-marker-report/v1/result/text" type string required one
+    field needle id "gooo://go-ports/examples/literal-final-marker-report/v1/result/needle" type string required one
+    field first_byte_offset id "gooo://go-ports/examples/literal-final-marker-report/v1/result/first-byte-offset" type integer required one
+    field last_byte_offset id "gooo://go-ports/examples/literal-final-marker-report/v1/result/last-byte-offset" type integer required one
+    field found id "gooo://go-ports/examples/literal-final-marker-report/v1/result/found" type boolean required one
+    field non_overlapping_count id "gooo://go-ports/examples/literal-final-marker-report/v1/result/non-overlapping-count" type integer required one
+    field text_byte_length id "gooo://go-ports/examples/literal-final-marker-report/v1/result/text-byte-length" type integer required one
+    field needle_byte_length id "gooo://go-ports/examples/literal-final-marker-report/v1/result/needle-byte-length" type integer required one
+}
+activity Report(Text, Text) -> FinalMarkerReportV1 id "gooo://go-ports/examples/literal-final-marker-report/v1/report" computes `let first = strings.Index(input0, input1)
+let last = strings.LastIndex(input0, input1)
+let count = strings.Count(input0, input1)
+return FinalMarkerReportV1{text: input0, needle: input1, first_byte_offset: first, last_byte_offset: last, found: first >= 0, non_overlapping_count: count, text_byte_length: int64(len(input0)), needle_byte_length: int64(len(input1))}`

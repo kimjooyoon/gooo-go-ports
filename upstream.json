@@ -259,6 +259,23 @@
       "supporting_sources": [
         "src/internal/stringslite/strings.go"
       ],
+      "target": "ports/strings/last_index.gooo",
+      "supporting_targets": [
+        "ports/strings/search.gooo"
+      ],
+      "symbols": [
+        "LastIndex"
+      ],
+      "target_activities": [
+        "LastIndex"
+      ],
+      "api_mapping": "Each Go string maps to explicitly present decoded valid UTF-8 Text <=1024 bytes. LastIndex preserves the final literal byte offset including overlapping matches, -1 on a miss, and the original text byte length for an empty needle. A bounded forward scan retains the final matching offset; it does not infer the result from Index or non-overlapping Count. The separate versioned FinalMarkerReport v1 imports Gooo Index/LastIndex/Count and exposes eight scalar fields, including the original inputs and byte lengths. The existing seven-field literal-text Report, its 9313-pair corpus and compact profile remain unchanged. The new finite v1 corpus includes short-pair Cartesian coverage, all 1024 final byte offsets, boundary anchors and fixed seeded samples; fresh source/compiler-bound native execution and saved replay are required. No arbitrary-byte Go strings, longer inputs, normalization, whole-package, performance or production-safety claim."
+    },
+    {
+      "source": "src/strings/strings.go",
+      "supporting_sources": [
+        "src/internal/stringslite/strings.go"
+      ],
       "target": "ports/strings/cut.gooo",
       "supporting_targets": [
         "ports/strings/search.gooo",
