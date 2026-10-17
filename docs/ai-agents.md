@@ -93,6 +93,12 @@ compiler issue before passing a minimal case to the language repository.
 
 - **Write a Gooo program:** use the first-program skill, then the existing
   [local edit-and-replay guide](../examples/learn-gooo/README.md#make-one-visible-change).
+- **Edit an API policy rule:** use the [editable source comparison](../examples/editable-api-policy/README.md).
+  Keep the supplied inputs fixed, edit `after.gooo`, and run the comparison into
+  a new output directory. Inspect changed fields and replay each source's own
+  execution. The initial three synthetic requests demonstrate a write rule
+  that keeps access for a deploy bot. Report a setup failure or the real task
+  this helps with through the feedback form above.
 - **Port a Go function:** use the [contribution contract](../CONTRIBUTING.md)
   and [porting instructions](../AGENTS.md). Preserve the original API contract,
   full input domain, upstream license and independent Go reference. Unsupported

@@ -1,0 +1,27 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "app/editable-api-policy",
+    "activity": "EvaluateAPI"
+  },
+  "packages": [
+    {
+      "path": "go/cel.dev/cel-go/codelab",
+      "sources": [
+        "ports/cel/scalar_access.gooo"
+      ]
+    },
+    {
+      "path": "app/cel-api-policy",
+      "sources": [
+        "examples/cel-api-policy/main.gooo"
+      ]
+    },
+    {
+      "path": "app/editable-api-policy",
+      "sources": [
+        "examples/editable-api-policy/after.gooo"
+      ]
+    }
+  ]
+}

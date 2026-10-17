@@ -247,6 +247,25 @@ IF_MATCH_ROUTE_CLAUSES = (
 )
 IF_MATCH_STEP_SHA = '34322d6d1d7ce6e2cdbaea58e5a92ae765a9e3e27acddcbc0b45dc80aa037de0'
 
+EDITABLE_POLICY_STEP = 'Verify editable API policy source comparison'
+EDITABLE_POLICY_COMMAND = 'python3 -I -B examples/editable-api-policy/run.py --root "$PWD" --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/editable-api-policy" --check-demo'
+EDITABLE_POLICY_COMMON = 'python3 -I -B examples/editable-api-policy/run_test.py'
+EDITABLE_POLICY_DECLARATIONS = ('examples/editable-api-policy/before.gooo', 'examples/editable-api-policy/after.gooo')
+EDITABLE_POLICY_CLAUSES = (
+    '.schema == "gooo/editable-api-policy-comparison/v1"',
+    '.status == "EDITABLE_POLICY_COMPARISON_AND_OFFICIAL_REPLAY_PASS"',
+    '.failure == null', '.rows == 3', '.positive_receipts == 4', '.package_commands == 5',
+    '.input_echoes_checked == 108', '.typed_output_fields_checked == 180',
+    '.finite_total == 0', '.model_calls == 0', '.demo_checked == true',
+    '.cross_workspace_refused == true', '.cross_workspace_refusal_stage == "manifest"',
+    '.source_tool_unchanged == true',
+    '.processes_closed == true', '.owned_work_removed == true',
+    '([.comparisons[].changed_count] == [0,2,0])',
+    '([.comparisons[].status] == ["UNCHANGED","NEWLY_DENIED","UNCHANGED"])',
+    '.compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2"',
+    "' out/editable-api-policy/summary.json",
+)
+
 VERSIONED_GRANT_STEP = 'Verify versioned grant change composition'
 VERSIONED_GRANT_COMMAND = 'python3 -I -B examples/versioned-grant-change/verify.py --root "$PWD" --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --module-cache "$(go env GOMODCACHE)" --out "$PWD/out/versioned-grant-change"'
 VERSIONED_GRANT_COMMON_COMMAND = 'python3 -I -B examples/versioned-grant-change/verify_test.py'
@@ -274,6 +293,7 @@ COMMON = {
     "Check Gooo declarations",
 }
 HEAVY = {
+    EDITABLE_POLICY_STEP,
     VERSIONED_GRANT_STEP,
     IF_MATCH_STEP_NAME,
     HEADER_ADDITION_INPUT_STEP_NAME, HEADER_ADDITION_HOST_STEP_NAME,
@@ -311,7 +331,7 @@ UPLOADS = {"Upload offline policy experiment evidence", "Upload execution and di
 DOC_STEPS = {"Report documentation-only native scope", "Preserve documentation scope and compiler identity"}
 NATIVE_COMMAND = re.compile(
     r"(?:\.gooo\s+package\s+(?:execute|replay)|\./cmd/(?:verify|check-unicode|check-literal-text-report)\b|"
-    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py|tools/check-path-facts\.py|tools/check-redelivery-policy\.py|tools/check-ipv4\.py|tools/check-header-facts-inputs\.py|tools/check-header-addition-inputs\.py|tools/check-header-addition-host\.py|examples/versioned-grant-change/verify\.py)"
+    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py|tools/check-path-facts\.py|tools/check-redelivery-policy\.py|tools/check-ipv4\.py|tools/check-header-facts-inputs\.py|tools/check-header-addition-inputs\.py|tools/check-header-addition-host\.py|examples/versioned-grant-change/verify\.py|examples/editable-api-policy/run\.py)"
 )
 PUBLIC_CONSUMER_COMMAND = 'python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer"'
 PUBLIC_CONSUMER_CLAUSES = (
@@ -345,7 +365,7 @@ OBSERVER_HEADER_SHA = '46cb0e7392dd3f3fb9562bccea6b27e5194ffcf59e1a58bab4c07b99a
 NATIVE_HEADER_SHA = '584d7a22663deb57be052a69d58f2b19e6233a7eefb7d4ce6ad1d5b650d48e69'
 # Add JSON events without changing the full race-test scope or package budget;
 # all other required observer commands remain byte-identical and once.
-OBSERVER_STEP_SHA = '662ca07b267a0e60d64f910dd80a21d8887b7e0a67a9b015c77819b8d240818b'
+OBSERVER_STEP_SHA = 'b232ca49e839fedd1aaa97e4339815f7e2e6c2559d89233ec323805012ad524d'
 OBSERVER_UPLOAD_NAME = 'Preserve Go observer test timing'
 OBSERVER_UPLOADS = {OBSERVER_UPLOAD_NAME}
 OBSERVER_UPLOAD_SHA = 'd5f0816bb5edd218d4e71c5ee870c0adfad7cc8f292c37b1b2093331b1fc4d3f'
@@ -374,6 +394,7 @@ ETAG_PROJECT_CLAUSES = (
     "' out/etag-project-evidence/summary.json",
 )
 POLICY_HEAVY = {
+    EDITABLE_POLICY_STEP,
     VERSIONED_GRANT_STEP,
     'Verify the offline decision-policy experiment',
     'Verify the imported CEL API policy',
@@ -398,6 +419,7 @@ POLICY_DOC_ARTIFACT = 'Preserve documentation-only policy scope'
 POLICY_HEADER_SHA = '3d5466a5dfca722bf38d6d81f26ff8f425188d473f6a0b9ae46cdd528d209cfe'
 POLICY_SETUP_SHA = '5ccf03022b3caeab1cc1fd46bbb3fa8b54e4fc0addba08c7d39d17f449f51703'
 POLICY_STEP_SHAS = {
+    EDITABLE_POLICY_STEP: '0e9bd11462e0fdb09953eb9d2053852820c574acec946c4c269eb18694e711af',
     'Verify the isolated native IPv4 address facts sidecar': '6ce5d2f5e75f9ff9a7728718567ffb039c74232ef4e254ea244b7dc02fbc9ed8',
     'Verify the original automatic redelivery policy': '2ce6496cbee29d77c9334f1f32dc518c96a12c193e37ab569144bdc4fd1a864e',
     'Verify the isolated native path facts sidecar': 'b90f403ce804adea78dacebf554c45f3e21b1faf89b942e83f32aca2847f9df5',
@@ -410,7 +432,7 @@ POLICY_STEP_SHAS = {
     'Upload offline policy experiment evidence': 'e4adbb294f45d4dbe4af56338b800f0d637dda27ec83055f1d799d63dac60392',
     ETAG_PROJECT_STEP: 'f11ef3c03ed5cc096b30b3d44c8a20abeb73bc5e840b8033114d94208d64f4c7',
     VERSIONED_GRANT_STEP: '04e88171f2da9d7c19b58889ad27f71359456780fce7ef11dd03c3172cc7a860',
-    'Upload policy execution and diagnostic evidence': 'e0f602db9349722aa8c91faf5d5db9e4dcf1e301f0efc5cc800e206a154a5515',
+    'Upload policy execution and diagnostic evidence': '0b8ef8b9f179e3f0466dca31392e1d934beaabe261547cb8db78936df7c6aff2',
     'Report documentation-only policy scope': '472165f458bfda43733f2a1ea6bc2236c19b425b5887f3417bbe1a9d9bcab6dd',
     'Preserve documentation-only policy scope': '185d1afbfd001734dc649c227526a84d5dd993bfcd9c1243e4a1966f13db60f7',
 }
@@ -529,7 +551,7 @@ def policy_steps(chunk):
             'policy checkout/classifier/Go/public-consumer/compiler order changed')
     ordered = INDEPENDENT_STEPS[1:] + ('Verify the offline decision-policy experiment', 'Verify the imported CEL API policy',
                'Verify the sealed API policy revision comparison', 'Verify the Agent Mesh service-pattern adaptation',
-               ETAG_PROJECT_STEP, VERSIONED_GRANT_STEP, POLICY_PILOT_UPLOAD, POLICY_UPLOAD, POLICY_DOC_REPORT, POLICY_DOC_ARTIFACT)
+               ETAG_PROJECT_STEP, VERSIONED_GRANT_STEP, EDITABLE_POLICY_STEP, POLICY_PILOT_UPLOAD, POLICY_UPLOAD, POLICY_DOC_REPORT, POLICY_DOC_ARTIFACT)
     previous = chunk.index(identity)
     for name in ordered:
         require(chunk.index(named[name]) > previous, 'policy producer/evidence/report order changed: ' + name)
@@ -556,6 +578,16 @@ def policy_steps(chunk):
     require('set -euo pipefail' in versioned and '|| true' not in versioned,
             'versioned grant execution and summary must preserve the first failure')
 
+    editable = named[EDITABLE_POLICY_STEP]
+    require(field(editable, 'if') == FULL and field(editable, 'timeout-minutes') == '5',
+            'editable policy must stay full-only with a bounded timeout')
+    require(literal_commands(editable) == [EDITABLE_POLICY_COMMAND],
+            'editable policy must execute current source and its own replay')
+    for token in EDITABLE_POLICY_CLAUSES:
+        require(editable.count(token) == 1, 'editable policy gate missing: ' + token)
+    require('set -euo pipefail' in editable and '|| true' not in editable,
+            'editable policy must preserve the first failure')
+
     for name in (POLICY_PILOT_UPLOAD, POLICY_UPLOAD):
         require(field(named[name], 'if') == 'always() && ' + FULL,
                 'policy evidence must upload on failure but never on docs-only: ' + name)
@@ -563,7 +595,7 @@ def policy_steps(chunk):
             field(named[POLICY_DOC_ARTIFACT], 'if') == 'always() && ' + DOCS,
             'policy docs-only scope must be explicit and separate')
     require('name: gooo-go-ports-policy-evidence\n' in named[POLICY_UPLOAD] and
-            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n            out/etag-project/\n            out/etag-project-evidence/\n            out/api-policy-public-consumer/\n            out/path-facts/\n            out/redelivery-policy/\n            out/ipv4/\n            out/versioned-grant-change/\n' in named[POLICY_UPLOAD] and
+            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n            out/etag-project/\n            out/etag-project-evidence/\n            out/api-policy-public-consumer/\n            out/path-facts/\n            out/redelivery-policy/\n            out/ipv4/\n            out/versioned-grant-change/\n            out/editable-api-policy/\n' in named[POLICY_UPLOAD] and
             'if-no-files-found: warn\n' in named[POLICY_UPLOAD] and 'retention-days: 14\n' in named[POLICY_UPLOAD],
             'policy output artifacts must include current identity, original policy outputs and both exported ETag directories')
     require('name: gooo-go-ports-policy-documentation-scope\n' in named[POLICY_DOC_ARTIFACT] and
@@ -619,7 +651,7 @@ def validate(text):
             hashlib.sha256(deploy[len(prefix):].encode()).hexdigest() == DEPLOY_BODY_SHA,
             "deployment may change only its reviewed direct dependency/status prefix")
     named, unnamed = named_steps(text)
-    require(len(HEAVY) == 33, "full-scope native step count changed")
+    require(len(HEAVY) == 34, "full-scope native step count changed")
     require(set(named) == COMMON | HEAVY | PREFLIGHT | UPLOADS | DOC_STEPS | OBSERVER_UPLOADS,
             "step roster changed without guard review")
     require(len(unnamed) == 2 and all(field(c, "if") is None for c in unnamed), "checkout/Go setup became conditional")
@@ -877,6 +909,11 @@ def validate(text):
     for command in ("go run ./cmd/gen-unicode --check", "go run ./cmd/gen-simple-fold --check",
                     "go run ./cmd/gen-case-mapping --check", "python3 tools/gen-uuid-quote.py --check"):
         require(command in named["Check pinned Unicode table generation"], "generator check missing")
+    require(literal_commands(observer).count(EDITABLE_POLICY_COMMON) == 1,
+            'editable policy pure controls must run once unconditionally')
+    for source in EDITABLE_POLICY_DECLARATIONS:
+        require(literal_commands(named['Check Gooo declarations']).count('./.gooo check ' + source) == 1,
+                'editable policy declarations must be unconditional')
     require(literal_commands(observer).count(VERSIONED_GRANT_COMMON_COMMAND) == 1,
             'versioned grant pure controls must run once unconditionally as common checks')
     require(literal_commands(named['Check Gooo declarations']).count('./.gooo check ' + VERSIONED_GRANT_DECLARATION) == 1,
@@ -2012,6 +2049,30 @@ class WorkflowScopeTests(unittest.TestCase):
             with self.subTest(docs_artifact=before), self.assertRaises(ValueError):
                 validate(self.text.replace(artifact, artifact.replace(before, after, 1), 1))
 
+
+    def test_editable_policy_native_and_refusal_checks_cannot_be_skipped(self):
+        validate(self.text)
+        policy, _ = policy_steps(workflow_jobs(self.text)['policy-native-checks'])
+        step = policy[EDITABLE_POLICY_STEP]
+        self.assertTrue(NATIVE_COMMAND.search(EDITABLE_POLICY_COMMAND))
+        self.assertFalse(NATIVE_COMMAND.search(EDITABLE_POLICY_COMMON))
+        for token in (EDITABLE_POLICY_COMMAND,) + EDITABLE_POLICY_CLAUSES:
+            with self.subTest(missing=token), self.assertRaises(ValueError):
+                validate(self.text.replace(step, step.replace(token, '', 1), 1))
+        for replacement in ('', step + step, step.replace(FULL, DOCS, 1),
+                            step.replace('timeout-minutes: 5', 'timeout-minutes: 40', 1),
+                            step.replace('        run: |', '        continue-on-error: true\n        run: |', 1)):
+            with self.subTest(step=replacement[:80]), self.assertRaises(ValueError):
+                validate(self.text.replace(step, replacement, 1))
+        named, _ = named_steps(self.text)
+        for chunk, command in [(named['Check the Go observer'], EDITABLE_POLICY_COMMON)] + [
+                (named['Check Gooo declarations'], './.gooo check ' + source)
+                for source in EDITABLE_POLICY_DECLARATIONS]:
+            with self.subTest(common=command), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, chunk.replace(command, '', 1), 1))
+        upload = policy[POLICY_UPLOAD]
+        with self.assertRaises(ValueError):
+            validate(self.text.replace(upload, upload.replace('            out/editable-api-policy/\n', '', 1), 1))
 
     def test_versioned_grant_step_is_owned_full_only_and_after_export(self):
         validate(self.text)
