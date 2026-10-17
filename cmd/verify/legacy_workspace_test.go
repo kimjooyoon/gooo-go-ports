@@ -233,9 +233,10 @@ func TestLegacy445HistoricalSnapshotCatalogSourcesManifestsInputsCasesAndBatches
 		sourcePackage{Path: etagPortPackage, Sources: []string{etagPortSource}},
 		sourcePackage{Path: etagReportPackage, Sources: []string{etagReportSource}},
 		sourcePackage{Path: ifMatchPackage, Sources: []string{ifMatchSource}},
+		sourcePackage{Path: "gooo/autobot/ai-lines", Sources: []string{"ports/autobot/ai_lines.gooo"}},
 	)
-	if !reflect.DeepEqual(current.Catalog, expectedCatalog) || len(current.Sources) != len(fixture.Sources)+27 {
-		t.Fatal("catalog changed beyond the reviewed literal, Cut, CEL, AgentMesh, checked-domain, conditional-apply, decimal/payload, path Clean/alias, header, original header-addition, canonical-key/report and ETag/strong-validator-facts sources")
+	if !reflect.DeepEqual(current.Catalog, expectedCatalog) || len(current.Sources) != len(fixture.Sources)+28 {
+		t.Fatal("catalog changed beyond the reviewed literal, Cut, CEL, AgentMesh, checked-domain, conditional-apply, decimal/payload, path Clean/alias, header, original header-addition, canonical-key/report, ETag/strong-validator-facts and AutoBot resolver sources")
 	}
 	historical := legacy445HistoricalSnapshot(t, current, fixture)
 	sources := map[string]legacy445Source{}

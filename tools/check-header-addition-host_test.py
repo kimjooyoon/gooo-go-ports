@@ -39,9 +39,10 @@ class FreshHostTests(unittest.TestCase):
         self.assertTrue(set(CHECK.OWN_FILES).issubset(roster))
         self.assertIn('examples/diagnostic-header-addition/main.gooo',roster)
         self.assertIn('cmd/verify/header_addition_corpus.go',roster)
-        self.assertEqual(len(roster),264)
-        self.assertEqual(len(catalog['packages']),54)
-        self.assertEqual(sum(len(p['sources']) for p in catalog['packages']),64)
+        self.assertIn('ports/autobot/ai_lines.gooo',roster)
+        self.assertEqual(len(roster),265)
+        self.assertEqual(len(catalog['packages']),55)
+        self.assertEqual(sum(len(p['sources']) for p in catalog['packages']),65)
         for name in ('ports/net/textproto/canonical.gooo','examples/canonical-header-key/main.gooo','cmd/verify/canonical_header_contracts.go','cmd/verify/canonical_header_corpus_test.go','examples/canonical-header-key/manual20.json','third_party/go/net/textproto/reader.go.txt','cmd/verify/etag_contracts.go','cmd/verify/etag_native_test.go','ports/net/http/etag.gooo','examples/strong-validator-facts/main.gooo','examples/strong-validator-facts/manual247.json','third_party/go/net/http/fs.go.txt','etag-scan.workspace.json','etag-strong-match.workspace.json','strong-validator-facts.workspace.json'):
             self.assertIn(name,roster)
 
