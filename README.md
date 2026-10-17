@@ -17,7 +17,8 @@ With the supplied inputs, score `75` changes from `sensor: high` to
 `sensor: low`; its other three returned fields stay unchanged. The
 [first-program skill](.agents/skills/gooo-first-program/SKILL.md) and
 [setup guide](docs/ai-agents.md) use compiler `83928fa` and Go **1.27.2** on
-macOS or Linux. Reuse matching tools; initial setup may download and build them.
+macOS or Linux. Reuse matching tools or follow the [optional prebuilt setup](#run-and-edit-locally).
+Initial source setup may download and build them.
 A source edit needs native execution. Saving generated Go alone is not a run.
 
 If setup or execution fails, [report the first failed step and diagnostic](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml).
@@ -341,8 +342,42 @@ edit against Go using the pinned tools.
 ## Run and edit locally
 
 Start by running and editing the small [Gooo tutorial](examples/learn-gooo/README.md).
-With Git, a POSIX shell and a Go installation that supports toolchain selection,
-run these commands from this repository's root on macOS or Linux:
+Use Git, a POSIX shell and a Go installation that supports toolchain selection
+on macOS or Linux. Choose either the prebuilt or source-build setup below.
+
+Optional prebuilt setup: the [v0.6.32-dev release](https://github.com/kimjooyoon/meta-ontology-go/releases/tag/v0.6.32-dev)
+matches this checkout's compiler pin. Choose its macOS amd64/arm64 or Linux amd64
+archive. Host Go **1.27.2** is still required for native execution.
+Download the archive and [SHA256SUMS](https://github.com/kimjooyoon/meta-ontology-go/releases/download/v0.6.32-dev/SHA256SUMS)
+to a new empty directory. For macOS arm64, confirm this hash also appears in
+`SHA256SUMS`. In that directory, verify before extracting:
+
+```sh
+set -eu
+printf '%s  %s\n' '987b2910e4830ee2080d4f3a50b27bd068c63a3cfb9e60d1eba38deb7dc68c14' 'gooo-darwin-arm64.tar.gz' | shasum -a 256 -c -
+mkdir extracted
+tar -xzf gooo-darwin-arm64.tar.gz -C extracted
+```
+
+From the repository root, set these paths to the unpacked executable and a
+new identity file in that download directory. Stop if either check fails:
+
+```sh
+set -euC
+export GOTOOLCHAIN=go1.27.2 GOWORK=off
+compiler_executable=/absolute/path/to/unpacked/gooo
+identity_json=/absolute/path/to/new-download/build-identity.json
+"$compiler_executable" version --build --json > "$identity_json"
+go run ./tools/bootstrap-check.go "$identity_json"
+```
+
+The identity check requires the exact compiler revision and version in
+`upstream.json`, Go/native Go `go1.27.2`, `CLEAN_VCS` and `vcs_modified: "false"`.
+Keep existing `.gooo`, `.compiler` and receipts untouched. After validation, use
+`"$compiler_executable"` instead of `./.gooo` in the run/replay commands and skip
+bootstrap. A checksum or identity failure must be reported before continuing.
+
+To build the pinned compiler from source instead, run from the repository root:
 
 ```sh
 export GOTOOLCHAIN=go1.27.2

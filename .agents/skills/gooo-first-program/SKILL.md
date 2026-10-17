@@ -23,6 +23,16 @@ Obtain that repository snapshot in a new task directory. The snapshot uses
 compiler `83928fa4538245abe33b08549da47f8cbdc50ed2` and Go `1.27.2`.
 Its `tools/bootstrap.sh` downloads and builds the pinned compiler; Go toolchain
 selection may download Go too. Reuse a compatible installation where available.
+
+Alternatively, use the matching [v0.6.32-dev archive and SHA256SUMS](https://github.com/kimjooyoon/meta-ontology-go/releases/tag/v0.6.32-dev).
+Verify the matching archive checksum before extracting to a fresh directory.
+From the example checkout, run the unpacked executable's `version --build --json`
+into a new identity file, then `go run ./tools/bootstrap-check.go /absolute/path/to/identity.json`
+with Go **1.27.2** selected. Preserve existing `.gooo`, `.compiler` and receipts.
+Only after validation, use that executable's absolute path instead of `./.gooo`
+and skip bootstrap below; native execution still needs Go **1.27.2**. Do not use latest
+as a replacement for the exact compiler pin. The source-build route stays available.
+
 Do not change the user's global agent configuration to run this example.
 
 ## Execute and edit
