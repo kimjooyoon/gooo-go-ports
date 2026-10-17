@@ -669,6 +669,34 @@
       "api_mapping": "One pure MatchServicePattern adaptation, constrained to canonical ASCII strings of at most 128 bytes, case-sensitive type names with URI-scheme syntax, and dot-separated names. Empty request components match false. Unsupported URI forms are rejected by the native validator without a Go fallback. The original three-field impact is for one supplied request before and after a pattern change; it provides no token verification, roles, current authorization, global grant inclusion or effects. The 63 matcher tuples include 12 official cases; 16 original impact cases remain separate from the existing 42 APIs and 62 legacy suites."
     }
   ],
+  "bounded_autobot_adaptations": [
+    {
+      "id": "autobot-resolve-line/v1",
+      "repository": "mrveiss/AutoBot-AI",
+      "revision": "a9c47e296907f1e5f681c38c05146cc8d3c2e7a7",
+      "source_language": "Python",
+      "source": "autobot_shared/ai_lines.py",
+      "source_sha256": "359a2852ac3bfee256b83f93bc9f386e1af75ecaa3ab21818dbd48081a444c9c",
+      "source_bytes": 8371,
+      "source_copy": "examples/autobot-resolver/upstream/ai_lines.py.txt",
+      "source_symbols": [
+        "resolve_line",
+        "_unset",
+        "LineResolution.reason"
+      ],
+      "target": "ports/autobot/ai_lines.gooo",
+      "target_sha256": "9c576d8d032a7e47cdf2b908cfdacafd06d91c13ae680e2161a3669215a4efd6",
+      "package_path": "gooo/autobot/ai-lines",
+      "target_activity": "ResolveLine",
+      "workspace": "autobot-resolver.workspace.json",
+      "source_pin": "examples/autobot-resolver/source-pin.json",
+      "license": "examples/autobot-resolver/LICENSE-APACHE-2.0",
+      "license_sha256": "deb04126dcfbc5ff823935ac8b404fb86ea53dd4743e2d6620bffe83ec9ec0e8",
+      "notice": "examples/autobot-resolver/NOTICE.md",
+      "upstream_notice": "examples/autobot-resolver/upstream/NOTICE",
+      "api_mapping": "Only pure resolve_line, _unset and LineResolution.reason are adapted. Nine supplied scalar facts return one eight-field record, preserving the three exact AiLine enum spellings, Python None via presence flags, empty-but-present baseline, branch priority and exact reason text. This is a bounded Python-to-Gooo adaptation, not a Go library API. Raw Gooo assumes canonical enum/presence/Unicode/1024-byte Text preconditions. The separate CLI converter validates these before emitting existing inputs/v1; Go oracle code computes verification expectations only. The 204 input-only cases comprise192 state combinations and12 Text edges and are separate from the ordinary80 native suites. No tool/scope lookup, live store, approval lifecycle, historical artifact lookup, current authorization or effects are implemented. Fresh public source-bound verification is required; private prototype receipts do not establish this source identity."
+    }
+  ],
   "original_policy_compositions": [
     {
       "id": "automatic-redelivery/v1",

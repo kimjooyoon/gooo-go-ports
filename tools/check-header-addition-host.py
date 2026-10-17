@@ -225,8 +225,8 @@ def read_verification(root,verification_out,timing):
     need(summary['verification_catalog_sha256']==digest(catalog_raw) and header['catalog']==reference(catalog_raw),'current catalog bytes')
     need(equal(summary['source_sha256'],header['catalog_source_sha256']),'summary/header source map')
     roster=source_roster(root,catalog);sources=header['identity']['source_files']
-    need(len(roster)==264 and set(sources)==roster,'exact current264 full native timing source roster')
-    need(len(catalog['packages'])==54 and len(summary['source_sha256'])==64,'exact current54 packages/64 Gooo sources')
+    need(len(roster)==265 and set(sources)==roster,'exact current265 full native timing source roster')
+    need(len(catalog['packages'])==55 and len(summary['source_sha256'])==65,'exact current55 packages/65 Gooo sources')
     for name in sorted(roster):need(equal(reference(read(root/name)),sources[name]),'current timing source bytes: '+name)
     catalog_sources={name:sha(read(root/name)) for pkg in catalog['packages'] for name in pkg['sources']}
     need(equal(summary['source_sha256'],catalog_sources),'current catalog Gooo source bytes')

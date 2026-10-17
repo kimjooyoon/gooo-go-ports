@@ -1,0 +1,15 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "gooo/autobot/ai-lines",
+    "activity": "ResolveLine"
+  },
+  "packages": [
+    {
+      "path": "gooo/autobot/ai-lines",
+      "sources": [
+        "ports/autobot/ai_lines.gooo"
+      ]
+    }
+  ]
+}

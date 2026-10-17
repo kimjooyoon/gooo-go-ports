@@ -65,7 +65,7 @@ examples and their independent Go references.
 **Edit the ETag composition in your own directory:** [export an editable project](templates/etag-project/README.md) with three current Gooo sources and a separate Go reference checker. Exporting copies source only; run the exported checker to compare all247 original inputs in seven batches. The optional CRLF mutation demonstrates a typed result difference; these finite checks do not authorize API writes.
 
 This independent ecosystem project implements selected Go standard-library, x/net, x/image and Google UUID functions in Gooo,
-using independent Go references and saved replay. Its verification catalog contains 54 packages and 64 Gooo source files,
+using independent Go references and saved replay. Its verification catalog contains 55 packages and 65 Gooo source files,
 including selected HTTP, Unicode, signed-decimal, literal-text, slash-path, UUID,
 integer, color, duration, rectangle and fixed-point APIs and importing diagnostic programs.
 Separate IPv4 and other sidecar examples have their own checks and are not added to the catalog's execution totals.
@@ -604,6 +604,15 @@ complete bound source generation. A changed decision or another generation is
 rejected automatically. This checks historical consistency; current identity,
 current permissions and external effects still belong to the host. See the
 [save and replay walkthrough](examples/cel-api-policy/README.md).
+
+The separate [AutoBot action-line resolver](examples/autobot-resolver/README.md)
+ports one pinned **Python** rule into Gooo. Supply canonical stored/default,
+baseline, role and store/scope facts; retain all eight result fields and the exact
+reason. Its input converter checks the external JSON boundary without calculating
+a decision. The finite204-case check is separate from the ordinary80 suites and
+Go API counts. It does not access an AutoBot store, retain historical policy
+artifacts, implement approvals or authorize effects; read the raw-entry
+preconditions and [Apache-2.0 attribution](examples/autobot-resolver/NOTICE.md).
 
 For a fixed snapshot, choose an [experimental release](https://github.com/kimjooyoon/gooo-go-ports/releases).
 Each release page lists its included tools and separate source, execution/replay

@@ -1,0 +1,101 @@
+// Copyright 2025-2026 mrveiss. SPDX-License-Identifier: Apache-2.0.
+// Adapted from AutoBot-AI autobot_shared/ai_lines.py at
+// a9c47e296907f1e5f681c38c05146cc8d3c2e7a7; see
+// examples/autobot-resolver/NOTICE.md and examples/autobot-resolver/source-pin.json.
+// Changed: pure resolve_line and LineResolution.reason represented as nine
+// scalar facts and one eight-field record. No scope lookup, tool classification,
+// live policy store, approval lifecycle, authentication, dispatcher or effects.
+// Raw valid-domain entry: this source does not validate the host preconditions.
+// Use cmd/autobot-line-input for external JSON. A new source/entry identity needs
+// its own fresh native execution and saved replay; another generation is not evidence.
+// Host precondition: Boolean facts are strict; absent stored/baseline values are
+// canonical empty Text; present stored is exactly autonomous/draft_then_send/never.
+// Empty-but-present baseline remains different from absent baseline.
+package autobot_ai_lines
+namespace gooo_autobot_ai_lines
+entity Text id "gooo://std/text"
+entity Boolean id "gooo://std/boolean"
+entity LineDecision id "gooo://autobot/ai-lines/line-decision/v1" fields {
+ field key id "gooo://autobot/ai-lines/line-decision/key" type string required one
+ field line id "gooo://autobot/ai-lines/line-decision/line" type string required one
+ field source id "gooo://autobot/ai-lines/line-decision/source" type string required one
+ field stored_present id "gooo://autobot/ai-lines/line-decision/stored-present" type boolean required one
+ field stored_value id "gooo://autobot/ai-lines/line-decision/stored-value" type string required one
+ field floor_present id "gooo://autobot/ai-lines/line-decision/floor-present" type boolean required one
+ field floor_value id "gooo://autobot/ai-lines/line-decision/floor-value" type string required one
+ field reason id "gooo://autobot/ai-lines/line-decision/reason" type string required one
+}
+
+// input0 key; input1/2 stored presence/value; input3 mutating;
+// input4/5 baseline presence/value; input6 role_requires_approval;
+// input7 store_unavailable; input8 scope_missing. Supplied facts are not authority.
+activity ResolveLine(Text, Boolean, Text, Boolean, Boolean, Text, Boolean, Boolean, Boolean) -> LineDecision id "gooo://autobot/ai-lines/resolve-line/v1" computes `
+let line = "draft_then_send"
+let source = "default"
+let storedPresent = false
+let storedValue = ""
+let floorPresent = false
+let floorValue = ""
+let reason = ""
+if input8 && input3 {
+ line = "never"
+ source = "no_verified_company"
+ reason = "no verified company or user scopes this action, so it cannot be allowed"
+} else {
+ if input7 {
+  line = "never"
+  source = "store_unavailable"
+  reason = "the line store could not be read, so the action fails closed"
+ } else {
+  if input1 && input2 == "never" {
+   line = "never"
+   source = "stored"
+   storedPresent = true
+   storedValue = input2
+   reason = "line 3 is set for this action"
+  } else {
+   storedPresent = input1
+   if input1 {
+    line = input2
+    source = "stored"
+    storedValue = input2
+   } else {
+    if !input3 {
+     line = "autonomous"
+     source = "unmanaged"
+    }
+   }
+   if line == "autonomous" && input4 && input5 != "" {
+    line = "draft_then_send"
+    source = "baseline_floor"
+    floorPresent = true
+    floorValue = input5
+    reason = "approval baseline category '" + input5 + "' can never be autonomous"
+   } else {
+    if line == "autonomous" && input6 {
+     line = "draft_then_send"
+     source = "role_floor"
+     reason = "the agent role's policy requires approval for this risk"
+    } else {
+     floorPresent = input4
+     if input4 { floorValue = input5 }
+     if source == "default" {
+      reason = "no line is set for this action; an unset line counts as line 2"
+     } else {
+      if source == "unmanaged" {
+       reason = "no line is set and the action does not change anything"
+      } else {
+       if line == "autonomous" {
+        reason = "line 1 is set for this action"
+       } else {
+        reason = "line 2 is set for this action"
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+}
+return LineDecision{key: input0, line: line, source: source, stored_present: storedPresent, stored_value: storedValue, floor_present: floorPresent, floor_value: floorValue, reason: reason}
+`

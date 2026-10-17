@@ -334,6 +334,12 @@
       "sources": [
         "ports/net/http/precondition.gooo"
       ]
+    },
+    {
+      "path": "gooo/autobot/ai-lines",
+      "sources": [
+        "ports/autobot/ai_lines.gooo"
+      ]
     }
   ]
 }
