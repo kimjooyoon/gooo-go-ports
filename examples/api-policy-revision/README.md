@@ -61,6 +61,37 @@ group, principal and tenant facts; inspect them before sharing. Validation error
 produce a nonzero exit and no JSON result. Writing stdout or a redirected file
 is not an atomic file transaction.
 
+### Read failures from an AI agent or automation
+
+Pass `--diagnostics=json` before the other options to receive one versioned JSON
+refusal on stderr. Successful programs keep their existing stdout and exit zero;
+normal policy decisions such as `DENY` and `NEWLY_DENIED` are successful results.
+Failures still exit one. The default `--diagnostics=text` preserves the existing
+human-readable error message.
+
+```sh
+"$revision_run/compare" --diagnostics=json -mode replay \
+  -input "$revision_run/write.comparison.json" \
+  > "$revision_run/replayed.json" 2> "$revision_run/refusal.json"
+```
+
+The refusal schema is `gooo/api-policy-revision-diagnostic/v1`, with `command`,
+`mode`, `status: "REFUSED"`, and one `diagnostics` entry containing `severity`,
+`code`, `stage`, and `message`. Branch on the stable code and stage, not the
+message. Codes identify invalid arguments/input, input/output I/O, input limits,
+profile/generation/saved-decision mismatches, and a changed saved report.
+Unclassified evaluation failures retain their known operation boundary.
+
+Options follow Go's flag parsing rules: the last parsed diagnostics option wins.
+An unknown option or a positional argument stops parsing, so a diagnostics option
+after that point is not selected; an invalid format falls back to text. Nothing
+after `--` is interpreted as an option.
+
+Preserve the process exit, stdout, and stderr together. A failed output write
+can leave partial stdout; failed diagnostic delivery can leave partial stderr.
+Neither is a valid complete record. Diagnostics do not authorize a retry or an
+API effect. This CLI remains an offline computation with no dispatcher.
+
 ## Import the published policy from another Go project
 
 With Go 1.27.2 installed and selected, this separate project imports the public
@@ -149,7 +180,7 @@ Neither an allow nor a successful replay grants permission to execute now.
 The original profile has **28 unchanged sealed assets** and the original raw
 generation manifest digest
 `sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46`.
-The candidate and classifiers have their own **36-asset generation**, including
+The candidate and classifiers have their own **37-asset generation**, including
 the exact native projections and adapter. Both complete rosters are checked.
 The original `VerifyAPIProof` remains strict: it still rejects a candidate or
 unavailable older generation. Exactly the two named profiles are available;

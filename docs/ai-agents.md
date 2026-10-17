@@ -116,6 +116,12 @@ compiler issue before passing a minimal case to the language repository.
   displays fixed reason labels and changed-field names while preserving a
   requested failure. The Action cannot load arbitrary policies or authorize
   live API effects.
+- **Read a policy-comparison failure from an agent:** the repository's
+  [comparison CLI](../examples/api-policy-revision/README.md#read-failures-from-an-ai-agent-or-automation)
+  accepts `--diagnostics=json` before other options. Read its versioned error
+  code and stage from stderr, keeping the process exit and stdout together.
+  Normal policy denials remain successful domain results; diagnostic output
+  does not authorize a retry or a live API effect.
 - **Inspect an API ETag before a conditional write:** use the
   [strong-validator workflow below](#inspect-etag-and-header-facts). It preserves
   raw input and separates parsed-tag strength, trailing content and raw header

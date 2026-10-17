@@ -23,7 +23,7 @@ const (
 	apiPolicyRevisionModule     = "github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision"
 	apiPolicyOriginalVersion    = "v0.0.0-20261014100709-8cddcc4e65af"
 	apiPolicyOriginalGeneration = "79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
-	apiPolicyRevisionGeneration = "5ce3d883db76b9b2cca6f53602eff6b7b3dff1870b3e19a882281dcff91bdda6"
+	apiPolicyRevisionGeneration = "a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e"
 	apiPolicyCompilerRevision   = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 )
 
@@ -175,7 +175,7 @@ func apiPolicyCheckDocuments(documents map[string][]byte, lock lockfile) (apiPol
 	bad := func(message string) (apiPolicySource, error) {
 		return apiPolicySource{}, fmt.Errorf("API policy source refused: %s", message)
 	}
-	if lock.CompilerRevision != apiPolicyCompilerRevision || lock.CompilerVersion != "0.6.32-dev" || lock.GoVersion != "go1.27.2" || len(documents) != 78 {
+	if lock.CompilerRevision != apiPolicyCompilerRevision || lock.CompilerVersion != "0.6.32-dev" || lock.GoVersion != "go1.27.2" || len(documents) != 80 {
 		return bad("pinned toolchain or complete source roster changed")
 	}
 	files := map[string]apiPolicyFile{}
@@ -199,8 +199,8 @@ func apiPolicyCheckDocuments(documents map[string][]byte, lock lockfile) (apiPol
 	revisionRaw := documents[apiPolicyModule+"/generation.json"]
 	originalRoot := apiPolicyModule + "/profiles/original/"
 	originalRaw := documents[originalRoot+"generation.json"]
-	if apiPolicyDecode(revisionRaw, &revision) != nil || digest(revisionRaw) != apiPolicyRevisionGeneration || revision.Schema != "gooo/api-policy-revision-generation/v1" || revision.CompilerSourceSHA != apiPolicyCompilerRevision || len(revision.Assets) != 36 {
-		return bad("revision36/raw generation changed")
+	if apiPolicyDecode(revisionRaw, &revision) != nil || digest(revisionRaw) != apiPolicyRevisionGeneration || revision.Schema != "gooo/api-policy-revision-generation/v1" || revision.CompilerSourceSHA != apiPolicyCompilerRevision || len(revision.Assets) != 37 {
+		return bad("revision37/raw generation changed")
 	}
 	if apiPolicyDecode(originalRaw, &original) != nil || digest(originalRaw) != apiPolicyOriginalGeneration || original.Schema != "gooo/cel-public-generation/v1" || len(original.Assets) != 28 {
 		return bad("original28/raw generation changed")
@@ -488,7 +488,7 @@ func apiPolicyNativeFixtures(ctx context.Context, runner *apiPolicyRunner, work,
 	return append(raw, '\n'), processes, err
 }
 
-var apiPolicyPublishedRevision = []string{"readonly.gooo", "compare.gooo", "candidate.workspace.json", "differences.workspace.json", "summary.workspace.json", "profiles.json", "model.go", "compare.go", "input.go", "bindings.go", "adapter_generated.go", "go.mod", "generation.json", "compiler.json", "canonical/main.gooo", "canonical/scalar_access.gooo", "internal/candidate/generated.go", "internal/flags/generated.go", "internal/summary/generated.go", "cmd/compare/main.go"}
+var apiPolicyPublishedRevision = []string{"readonly.gooo", "compare.gooo", "candidate.workspace.json", "differences.workspace.json", "summary.workspace.json", "profiles.json", "model.go", "compare.go", "input.go", "bindings.go", "adapter_generated.go", "go.mod", "generation.json", "compiler.json", "canonical/main.gooo", "canonical/scalar_access.gooo", "internal/candidate/generated.go", "internal/flags/generated.go", "internal/summary/generated.go", "cmd/compare/main.go", "cmd/compare/diagnostics.go"}
 var apiPolicyPublishedOriginal = []string{"adapter_generated.go", "model.go", "bridge.go", "bindings.go", "input.go", "proof_input.go", "replay.go", "internal/api/generated.go", "internal/scalar/generated.go", "canonical/main.gooo", "canonical/scalar_access.gooo", "canonical/cel-api-policy.workspace.json", "canonical/cel-scalar.workspace.json", "canonical/source-pin.json", "compiler.json", "generation.json", "go.mod", "LICENSE-APACHE-2.0", "NOTICE.md", "oracle/upstream/LICENSE"}
 
 func apiPolicyExpectedInfo(source apiPolicySource) map[string]any {
@@ -551,7 +551,7 @@ func buildAPIRevisionDemo(ctx context.Context, site, dir string, lock lockfile) 
 		return err
 	}
 	trackedNames := strings.Split(strings.TrimSuffix(string(trackedRaw), "\x00"), "\x00")
-	if len(trackedNames) != 78 {
+	if len(trackedNames) != 80 {
 		return fmt.Errorf("API policy tracked source roster changed")
 	}
 	for _, name := range trackedNames {
@@ -802,7 +802,7 @@ func buildAPIRevisionDemo(ctx context.Context, site, dir string, lock lockfile) 
 	}
 	wasmFile := apiPolicyDescribe(wasm)
 	wasmFile.Path = "./program.wasm"
-	buildRecord := map[string]any{"schema": "gooo/browser-api-policy-build/v1", "status": "NATIVE_FIXTURES_AND_WASM_BUILD_PASS", "scope": "source_local_generated_Gooo_native_to_Wasm_build_not_browser_execution", "source": map[string]any{"head": checkout.Head, "tree": checkout.Tree, "dirty": checkout.Dirty, "native_sources": source.Files, "control_sources": controlFiles, "source_before_after_equal": true, "historical_git_objects_checked": false}, "go": goIdentity, "native_executable": nativeFile, "temporary_main_module_sha256": digest([]byte(module)), "explicit_local_replacements": 2, "temporary_sources_native_binary_module_cache_removed": true, "normal_build_cache_retained_not_copied": true, "wasm": wasmFile, "runtime": runtimeFile, "native_fixtures": fixtureFile, "native_fixture_receipt": receiptFile, "acceptance": acceptance, "published_source_subset": published, "verbose_process_logs_published": false, "limits": []string{"Build and fresh native literal controls only; actual Wasm/Worker/browser tests remain separate mandatory validation.", "Full original28/revision36 binding maps do not claim every sealed source was fetched by the browser.", "Current checkout head/tree/dirty observed; frozen33 verified from fixed byte contracts without historical Git objects."}}
+	buildRecord := map[string]any{"schema": "gooo/browser-api-policy-build/v1", "status": "NATIVE_FIXTURES_AND_WASM_BUILD_PASS", "scope": "source_local_generated_Gooo_native_to_Wasm_build_not_browser_execution", "source": map[string]any{"head": checkout.Head, "tree": checkout.Tree, "dirty": checkout.Dirty, "native_sources": source.Files, "control_sources": controlFiles, "source_before_after_equal": true, "historical_git_objects_checked": false}, "go": goIdentity, "native_executable": nativeFile, "temporary_main_module_sha256": digest([]byte(module)), "explicit_local_replacements": 2, "temporary_sources_native_binary_module_cache_removed": true, "normal_build_cache_retained_not_copied": true, "wasm": wasmFile, "runtime": runtimeFile, "native_fixtures": fixtureFile, "native_fixture_receipt": receiptFile, "acceptance": acceptance, "published_source_subset": published, "verbose_process_logs_published": false, "limits": []string{"Build and fresh native literal controls only; actual Wasm/Worker/browser tests remain separate mandatory validation.", "Full original28/revision37 binding maps do not claim every sealed source was fetched by the browser.", "Current checkout head/tree/dirty observed; frozen33 verified from fixed byte contracts without historical Git objects."}}
 	buildRaw, err := apiPolicyPutJSON(filepath.Join(asset, "build.json"), buildRecord, root)
 	if err != nil {
 		return err
@@ -813,7 +813,7 @@ func buildAPIRevisionDemo(ctx context.Context, site, dir string, lock lockfile) 
 	bridgeFile.Path = "./source/api-policy-browser-bridge.go.txt"
 	workerFile := uiFiles["api-policy-worker.js"]
 	workerFile.Path = "../api-policy-worker.js"
-	packageManifest := map[string]any{"schema": "gooo/browser-api-policy-revision/v1", "scope": "unsigned_historical_hypothetical_comparison", "source": map[string]any{"head": checkout.Head, "tree": checkout.Tree, "dirty": checkout.Dirty, "tracked_file_count": 78, "native_sources": source.Files, "ui_files": uiFiles, "native_fixtures": fixtureFile, "native_fixture_receipt": receiptFile, "published_sources": published, "historical_git_objects_checked": false}, "bridge": bridgeFile, "build_verification": buildFile, "files": map[string]apiPolicyFile{"worker.js": workerFile, "program.wasm": wasmFile, "wasm_exec.js": runtimeFile}, "expected_info": apiPolicyExpectedInfo(source), "limits": map[string]any{"request_deadline_ms": 120000, "manifest_bytes": 512 << 10, "worker_source_bytes": 128 << 10, "note": "Operational deadline only; cancellation/timeout gives no semantic result."}}
+	packageManifest := map[string]any{"schema": "gooo/browser-api-policy-revision/v1", "scope": "unsigned_historical_hypothetical_comparison", "source": map[string]any{"head": checkout.Head, "tree": checkout.Tree, "dirty": checkout.Dirty, "tracked_file_count": 80, "native_sources": source.Files, "ui_files": uiFiles, "native_fixtures": fixtureFile, "native_fixture_receipt": receiptFile, "published_sources": published, "historical_git_objects_checked": false}, "bridge": bridgeFile, "build_verification": buildFile, "files": map[string]apiPolicyFile{"worker.js": workerFile, "program.wasm": wasmFile, "wasm_exec.js": runtimeFile}, "expected_info": apiPolicyExpectedInfo(source), "limits": map[string]any{"request_deadline_ms": 120000, "manifest_bytes": 512 << 10, "worker_source_bytes": 128 << 10, "note": "Operational deadline only; cancellation/timeout gives no semantic result."}}
 	_, err = apiPolicyPutJSON(filepath.Join(asset, "manifest.json"), packageManifest, root)
 	return err
 }

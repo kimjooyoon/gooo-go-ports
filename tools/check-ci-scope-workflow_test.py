@@ -24,7 +24,7 @@ DOCS = "steps.change-scope.outputs.docs_only == 'true'"
 HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
 # The observer/browser producers and deployment body retain their reviewed bytes.
 # Native and the independent policy producer use the pinned Ubuntu 24.04 runner.
-BROWSER_JOB_SHA = "1aee9cc0cd8f75b2e4a438712aaf87bc8e1007a1318cb997ede369b6f6ce4e10"
+BROWSER_JOB_SHA = "cabf60447a83a47c6ffe96a58d427736e3014eaef7a5bb045bba049dd8cc8008"
 DEPLOY_BODY_SHA = "0fed0b124228b17bd80d8f95c7c7e69ac2ad854f719ca846c3e60a1359a480c8"
 PATH_STEP_SHA = 'b90f403ce804adea78dacebf554c45f3e21b1faf89b942e83f32aca2847f9df5'
 REDELIVERY_STEP_SHA = '2ce6496cbee29d77c9334f1f32dc518c96a12c193e37ab569144bdc4fd1a864e'
@@ -360,7 +360,7 @@ PUBLIC_CONSUMER_CLAUSES = (
     '.status == "PUBLIC_API_POLICY_CONSUMER_PASS"',
     '.acceptance.facts == 9', '.acceptance.positive_cases == 2',
     '.acceptance.decision_fields == 15', '.acceptance.difference_flags == 15',
-    '.acceptance.summary_fields == 2', '.acceptance.public_asset_count == 36',
+    '.acceptance.summary_fields == 2', '.acceptance.public_asset_count == 37',
     '.acceptance.public_assets_exact == true', '.acceptance.public_generation_exact == true',
     '.acceptance.original_assets_exact == true', '.acceptance.original_generation_unchanged == true',
     '.acceptance.substitution_refused == true', '.acceptance.runtime_empty_path == true',
@@ -446,7 +446,7 @@ POLICY_STEP_SHAS = {
     'Verify the isolated native IPv4 address facts sidecar': '6ce5d2f5e75f9ff9a7728718567ffb039c74232ef4e254ea244b7dc02fbc9ed8',
     'Verify the original automatic redelivery policy': '2ce6496cbee29d77c9334f1f32dc518c96a12c193e37ab569144bdc4fd1a864e',
     'Verify the isolated native path facts sidecar': 'b90f403ce804adea78dacebf554c45f3e21b1faf89b942e83f32aca2847f9df5',
-    'Verify the public API policy consumer': 'bf26832b9a105e0ac1652771f2fe4a0cd156f7c145c2b8ac58a2639e1750e80d',
+    'Verify the public API policy consumer': 'a17b7fa2307ad63bf8642bcbf4e08b28538acd970f9e3284011f18e6dee1a9ab',
     'Build and identify the pinned compiler from a clean checkout': 'c7273984211d14f1b50f66438f1d90f68a42e8ad58be1d0d1d2a0213b0b4d2ae',
     'Verify the offline decision-policy experiment': '2d8e714f7dfb2963a682ce702485e3bccfaa7439cbaa67f7da6741aff6ce7c48',
     'Verify the imported CEL API policy': '064873f6b6288062964bde88c2f1f436bdc7316e586ae6066a4b3623f057b708',
