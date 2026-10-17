@@ -10,6 +10,7 @@ import hashlib
 import json
 import re
 import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -342,9 +343,12 @@ LITERAL_COMMANDS = {
 # exact full-history checkout. These are source-integrity locks, not CI PASS.
 OBSERVER_HEADER_SHA = '46cb0e7392dd3f3fb9562bccea6b27e5194ffcf59e1a58bab4c07b99aba08bd9'
 NATIVE_HEADER_SHA = '584d7a22663deb57be052a69d58f2b19e6233a7eefb7d4ce6ad1d5b650d48e69'
-# Add the record adapter controls, corpus regeneration and host-reader controls;
-# every previously required observer command remains byte-identical and once.
-OBSERVER_STEP_SHA = '6c3176310f77ddd11065127a7954c20861074c260cdf49dd48fd43a63b1ecd47'
+# Add JSON events without changing the full race-test scope or package budget;
+# all other required observer commands remain byte-identical and once.
+OBSERVER_STEP_SHA = '662ca07b267a0e60d64f910dd80a21d8887b7e0a67a9b015c77819b8d240818b'
+OBSERVER_UPLOAD_NAME = 'Preserve Go observer test timing'
+OBSERVER_UPLOADS = {OBSERVER_UPLOAD_NAME}
+OBSERVER_UPLOAD_SHA = 'd5f0816bb5edd218d4e71c5ee870c0adfad7cc8f292c37b1b2093331b1fc4d3f'
 GENERATOR_STEP_SHA = '081263b551a4d28aa8b46dc025fe951c62d91d13e164cb7927b70d7270aaf399'
 CLASSIFIER_STEP_SHA = '1864b9e0f27cc73595dd863c71640050cf046b2ec67cfd02c6ba5a8ebd11a61a'
 CHECKOUT_STEP_SHA = 'b60ba5d7bf95691b8baec3a3e402aeba552fbcb4a353d7de8946023e73e79603'
@@ -475,14 +479,17 @@ def named_steps(text):
         classifier = named.get('Classify the exact checked PR tree', '')
         require(hashlib.sha256(classifier.encode()).hexdigest() == CLASSIFIER_STEP_SHA, "producer exact checkout classifier changed: " + job)
         require(chunk.index(unnamed[0]) < chunk.index(classifier) < chunk.index(unnamed[1]), "producer setup order changed: " + job)
-        expected = {'Classify the exact checked PR tree'} | MOVED if job == 'observer-checks' else (COMMON | HEAVY | PREFLIGHT | UPLOADS | DOC_STEPS) - MOVED - POLICY_HEAVY - INDEPENDENT_HEAVY - {POLICY_PILOT_UPLOAD}
+        expected = {'Classify the exact checked PR tree'} | MOVED | OBSERVER_UPLOADS if job == 'observer-checks' else (COMMON | HEAVY | PREFLIGHT | UPLOADS | DOC_STEPS) - MOVED - POLICY_HEAVY - INDEPENDENT_HEAVY - {POLICY_PILOT_UPLOAD}
         require(set(named) == expected, "producer step roster changed: " + job)
         if job == 'observer-checks':
             require(hashlib.sha256(named['Check the Go observer'].encode()).hexdigest() == OBSERVER_STEP_SHA and
                     hashlib.sha256(named['Check pinned Unicode table generation'].encode()).hexdigest() == GENERATOR_STEP_SHA,
-                    "common observer/generator commands must move unchanged once")
+                    "common observer/generator commands changed without guard review")
+            require(hashlib.sha256(named[OBSERVER_UPLOAD_NAME].encode()).hexdigest() == OBSERVER_UPLOAD_SHA,
+                    "observer timing artifact pin, paths or failure retention changed")
             require(chunk.index(unnamed[1]) < chunk.index(named['Check the Go observer']) <
-                    chunk.index(named['Check pinned Unicode table generation']), "observer check order changed")
+                    chunk.index(named['Check pinned Unicode table generation']) <
+                    chunk.index(named[OBSERVER_UPLOAD_NAME]), "observer check/artifact order changed")
         else:
             native_unnamed = unnamed
         for name, step in named.items():
@@ -613,7 +620,8 @@ def validate(text):
             "deployment may change only its reviewed direct dependency/status prefix")
     named, unnamed = named_steps(text)
     require(len(HEAVY) == 33, "full-scope native step count changed")
-    require(set(named) == COMMON | HEAVY | PREFLIGHT | UPLOADS | DOC_STEPS, "step roster changed without guard review")
+    require(set(named) == COMMON | HEAVY | PREFLIGHT | UPLOADS | DOC_STEPS | OBSERVER_UPLOADS,
+            "step roster changed without guard review")
     require(len(unnamed) == 2 and all(field(c, "if") is None for c in unnamed), "checkout/Go setup became conditional")
     require("fetch-depth: 0" in unnamed[0], "exact PR parents must be available")
     require("go-version: '1.27.2'" in unnamed[1], "Go toolchain pin changed")
@@ -637,6 +645,8 @@ def validate(text):
         require(field(named[name], "if") == FULL, "missing full-execution guard: " + name)
     for name in UPLOADS:
         require(field(named[name], "if") == "always() && " + FULL, "native artifact can upload on docs path: " + name)
+    require(field(named[OBSERVER_UPLOAD_NAME], "if") == "always()",
+            "observer test diagnostics must survive a failed common check")
     comparison = named["Compare the ports with Go and replay every batch"]
     require(literal_commands(comparison) == [NATIVE_COMPARISON_COMMAND]
             and ".native_suite_workers == 2 and" in comparison,
@@ -853,7 +863,7 @@ def validate(text):
                   '"$GITHUB_SHA"', '"$GITHUB_OUTPUT"', "--summary out/ci-scope.json"):
         require(token in classifier, "classifier identity/output input missing: " + token)
     observer = named["Check the Go observer"]
-    for command in ("gofmt -l", "go vet ./...", "go test -race -timeout=15m ./...",
+    for command in ("gofmt -l", "go vet ./...", "go test -race -timeout=15m -json ./...",
                     "python3 tools/bootstrap.test.py", "python3 tools/receipt_json_test.py",
                     "python3 tools/check-drag-crop-example_test.py",
                     "python3 tools/check-fixed-pixel-bounds_test.py",
@@ -1052,6 +1062,88 @@ class WorkflowScopeTests(unittest.TestCase):
 
     def test_real_workflow_policy(self):
         validate(self.text)
+
+    def test_observer_json_scope_and_failure_propagation_cannot_be_weakened(self):
+        observer = named_steps(self.text)[0]['Check the Go observer']
+        for before, after in (
+            ('-race -timeout=15m -json ./...', '-race -timeout=15m ./...'),
+            ('-race -timeout=15m -json ./...', '-timeout=15m -json ./...'),
+            ('-timeout=15m', '-timeout=10m'),
+            ('-json ./...', '-json ./cmd/verify'),
+            ('-json ./...', '-json -run TestShort ./...'),
+            ('tee out/observer-tests/events.jsonl', 'cat'),
+            ('exit "${observer_test_status[0]}"', 'exit 0'),
+            ('exit "${observer_test_status[1]}"', 'exit 0'),
+        ):
+            self.assertIn(before, observer)
+            with self.subTest(change=(before, after)), self.assertRaises(ValueError):
+                validate(self.text.replace(observer, observer.replace(before, after, 1), 1))
+
+    def test_observer_json_artifact_is_exact_and_failure_safe(self):
+        artifact = named_steps(self.text)[0][OBSERVER_UPLOAD_NAME]
+        for before, after in (
+            ('if: always()', 'if: success()'),
+            ('@cf430e030ddbb5b0abf93d22962f4752f3646cd9', '@main'),
+            ('out/observer-tests/events.jsonl', 'out/'),
+            ('            out/observer-tests/stderr.log\n', ''),
+            ('            out/observer-tests/exit-code.txt\n', ''),
+            ('retention-days: 7', 'retention-days: 1'),
+        ):
+            self.assertIn(before, artifact)
+            with self.subTest(change=(before, after)), self.assertRaises(ValueError):
+                validate(self.text.replace(artifact, artifact.replace(before, after, 1), 1))
+        for changed in (self.text.replace(artifact, '', 1),
+                        self.text.replace(artifact, artifact + artifact, 1)):
+            with self.assertRaises(ValueError):
+                validate(changed)
+
+    def test_observer_json_bash_preserves_go_and_diagnostic_failures(self):
+        # Run only the actual new Bash block with tiny Go/tee stubs, never Go.
+        observer = named_steps(self.text)[0]['Check the Go observer']
+        start = observer.index('          mkdir -p out/observer-tests\n')
+        end = observer.index('          go -C examples/automatic-redelivery/reference vet', start)
+        script = '\n'.join(line[10:] for line in observer[start:end].splitlines())
+        go_stub = ('#!/bin/bash\n'
+                   'printf "%s\\n" "$*" > go-argv.txt\n'
+                   'printf \'{"Action":"pass"}\\n\'\n'
+                   'printf "go diagnostic\\n" >&2\n'
+                   'exit "$TEST_GO_STATUS"\n')
+        tee_stub = ('#!/bin/bash\n/usr/bin/tee "$@" || exit $?\n'
+                    'exit "$TEST_TEE_STATUS"\n')
+        cases = [(go, tee, fault) for go in (0, 1, 66)
+                 for tee, fault in ((0, ''), (7, ''), (0, 'status-write'), (0, 'cat'))]
+        for go_status, tee_status, fault in cases:
+            with self.subTest(go=go_status, tee=tee_status, diagnostic=fault), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder)
+                for name, contents in (('go', go_stub), ('tee', tee_stub)):
+                    target = root / name
+                    target.write_text(contents)
+                    target.chmod(0o755)
+                prefix = ''
+                if fault == 'status-write':
+                    (root / 'out/observer-tests/exit-code.txt').mkdir(parents=True)
+                elif fault == 'cat':
+                    prefix = 'cat() { return 75; }\n'
+                environment = {'PATH': folder + ':/usr/bin:/bin',
+                               'TEST_GO_STATUS': str(go_status), 'TEST_TEE_STATUS': str(tee_status)}
+                result = subprocess.run(['/bin/bash', '--noprofile', '--norc', '-e', '-o', 'pipefail', '-c',
+                                         prefix + script + '\nbuiltin printf reached > after-test.txt\n'],
+                                        cwd=folder, env=environment, stdin=subprocess.DEVNULL,
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=5, check=False)
+                expected = go_status or (1 if fault else tee_status)
+                self.assertEqual(result.returncode, expected)
+                self.assertEqual(result.stdout, b'{"Action":"pass"}\n')
+                self.assertEqual((root / 'out/observer-tests/events.jsonl').read_bytes(), result.stdout)
+                self.assertEqual((root / 'out/observer-tests/stderr.log').read_bytes(), b'go diagnostic\n')
+                if fault == 'status-write':
+                    self.assertTrue((root / 'out/observer-tests/exit-code.txt').is_dir())
+                    self.assertIn(b'exit-code.txt', result.stderr)
+                    self.assertTrue(result.stderr.endswith(b'go diagnostic\n'))
+                else:
+                    self.assertEqual((root / 'out/observer-tests/exit-code.txt').read_text(), str(go_status) + '\n')
+                    self.assertEqual(result.stderr, b'' if fault == 'cat' else b'go diagnostic\n')
+                self.assertEqual((root / 'after-test.txt').exists(), expected == 0)
+                self.assertEqual((root / 'go-argv.txt').read_text(), 'test -race -timeout=15m -json ./...\n')
 
     def test_ipv4_layers_source_readback_and_limits_cannot_be_weakened(self):
         named, _ = named_steps(self.text)

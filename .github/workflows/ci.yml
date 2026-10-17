@@ -43,7 +43,26 @@ jobs:
           go vet ./...
           # Native correctness fixtures run under race checking in this package.
           # Keep a finite package budget above the observed600s default timeout.
-          go test -race -timeout=15m ./...
+          mkdir -p out/observer-tests
+          # Stream events while preserving both the Go and log-writer exits.
+          if go test -race -timeout=15m -json ./... \
+            2> out/observer-tests/stderr.log | tee out/observer-tests/events.jsonl; then
+            observer_test_status=("${PIPESTATUS[@]}")
+          else
+            observer_test_status=("${PIPESTATUS[@]}")
+          fi
+          if ! printf '%s\n' "${observer_test_status[0]}" > out/observer-tests/exit-code.txt; then
+            observer_test_status[1]=1
+          fi
+          if ! cat out/observer-tests/stderr.log >&2; then
+            observer_test_status[1]=1
+          fi
+          if [ "${observer_test_status[0]}" -ne 0 ]; then
+            exit "${observer_test_status[0]}"
+          fi
+          if [ "${observer_test_status[1]}" -ne 0 ]; then
+            exit "${observer_test_status[1]}"
+          fi
           go -C examples/automatic-redelivery/reference vet ./...
           go -C examples/automatic-redelivery/reference test -race -count=1 ./...
           python3 -I -B tools/check-redelivery-policy_test.py
@@ -76,6 +95,17 @@ jobs:
           go run ./cmd/gen-simple-fold --check
           go run ./cmd/gen-case-mapping --check
           python3 tools/gen-uuid-quote.py --check
+      - name: Preserve Go observer test timing
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: gooo-go-ports-observer-test-events
+          path: |
+            out/observer-tests/events.jsonl
+            out/observer-tests/stderr.log
+            out/observer-tests/exit-code.txt
+          if-no-files-found: warn
+          retention-days: 7
   native-execution:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
