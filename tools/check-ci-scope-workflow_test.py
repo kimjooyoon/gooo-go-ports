@@ -50,7 +50,7 @@ REDELIVERY_COMMON_COMMANDS = (
 )
 PATH_COMMAND = 'python3 -B tools/check-path-facts.py --repository . --out out/path-facts --go "$(go env GOROOT)/bin/go" --compiler ./.gooo --timeout 300'
 PATH_COMMON_UNIT_BLOCK = '          # Full scope runs these13 Python controls inside the bounded sidecar once.\n          # Documentation-only PRs still run them as common non-native checks.\n          if [ "${{ steps.change-scope.outputs.docs_only }}" = "true" ]; then\n            python3 -I -B tools/check-path-facts_test.py\n          fi\n'
-NATIVE_COMPARISON_COMMAND = "go run -mod=readonly ./cmd/verify --workers 2 --case-profile uuid-and-literal-report-compact-v1 --workspace-profile dependency-closure-v1 --out out/ci --timing-out out/ci/timing.jsonl"
+NATIVE_COMPARISON_COMMAND = "go run -mod=readonly ./cmd/verify --workers 3 --case-profile uuid-and-literal-report-compact-v1 --workspace-profile dependency-closure-v1 --out out/ci --timing-out out/ci/timing.jsonl"
 CASE_PROFILE_ASSERTION = '''            .case_profile == {
               schema: "gooo/native-case-profile/v1", name: "uuid-and-literal-report-compact-v1",
               compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.2",
@@ -76,7 +76,7 @@ TIMING_HEADER_ASSERTION = '''          head -n 1 out/ci/timing.jsonl | jq -e --s
             .case_profile == $summary[0].case_profile and
             .workspace_profile == $summary[0].workspace_profile and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
-            .configured_workers == 2 and .expected_suites == 80 and .expected_cases == 173866 and
+            .configured_workers == 3 and .expected_suites == 80 and .expected_cases == 173866 and
             .expected_boundaries_recomputed == false and
             .boundary_scope == "Actual contiguous ranges only. UUID3 retain uuid-compact-v1 wire/partitions; literal-text Report uses a new compact writer/partition identity. No prior profile PASS or full batch total is inherited. Index/Count and other existing non-UUID suites retain their indented writer; decimal/payload retain their source-bounded pretty JSON policy. Fresh native/saved replay and the full summary gate remain required; no timing or speedup claim." and
             (.identity.source_files | length) == 264 and
@@ -681,8 +681,8 @@ def validate(text):
             "observer test diagnostics must survive a failed common check")
     comparison = named["Compare the ports with Go and replay every batch"]
     require(literal_commands(comparison) == [NATIVE_COMPARISON_COMMAND]
-            and ".native_suite_workers == 2 and" in comparison,
-            "full native CI must bind two workers and source-bound timing")
+            and ".native_suite_workers == 3 and" in comparison,
+            "full native CI must bind three workers and source-bound timing")
     require(comparison.count(CASE_PROFILE_ASSERTION) == 1,
             "native CI must require the exact explicit UUID compact profile identity")
     require(comparison.count(WORKSPACE_PROFILE_ASSERTION) == 1,
@@ -1223,10 +1223,11 @@ class WorkflowScopeTests(unittest.TestCase):
             with self.subTest(source=source), self.assertRaises(ValueError):
                 validate(self.text.replace(line, "", 1))
 
-    def test_full_native_ci_binds_two_workers_and_timing(self):
-        for workers in (1, 3, 4, 5):
-            for before, after in (("--workers 2 --case-profile", f"--workers {workers} --case-profile"),
-                                  (".native_suite_workers == 2 and", f".native_suite_workers == {workers} and")):
+    def test_full_native_ci_binds_three_workers_and_timing(self):
+        for workers in (1, 2, 4, 5):
+            for before, after in (("--workers 3 --case-profile", f"--workers {workers} --case-profile"),
+                                  (".native_suite_workers == 3 and", f".native_suite_workers == {workers} and"),
+                                  (".configured_workers == 3 and", f".configured_workers == {workers} and")):
                 with self.subTest(workers=workers, before=before), self.assertRaises(ValueError):
                     validate(self.text.replace(before, after, 1))
 
