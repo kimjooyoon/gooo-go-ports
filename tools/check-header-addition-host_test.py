@@ -166,7 +166,7 @@ class FreshHostTests(unittest.TestCase):
         self.assertIn('examples/diagnostic-header-addition/main.gooo',roster)
         self.assertIn('cmd/verify/header_addition_corpus.go',roster)
         self.assertIn('ports/autobot/ai_lines.gooo',roster)
-        self.assertEqual(len(roster),282)
+        self.assertEqual(len(roster),283)
         self.assertEqual(len(catalog['packages']),56)
         self.assertEqual(sum(len(p['sources']) for p in catalog['packages']),67)
         for name in ('ports/net/textproto/canonical.gooo','examples/canonical-header-key/main.gooo','cmd/verify/canonical_header_contracts.go','cmd/verify/canonical_header_corpus_test.go','examples/canonical-header-key/manual20.json','third_party/go/net/textproto/reader.go.txt','cmd/verify/etag_contracts.go','cmd/verify/etag_native_test.go','ports/net/http/etag.gooo','examples/strong-validator-facts/main.gooo','examples/strong-validator-facts/manual247.json','third_party/go/net/http/fs.go.txt','etag-scan.workspace.json','etag-strong-match.workspace.json','strong-validator-facts.workspace.json'):
@@ -176,6 +176,37 @@ class FreshHostTests(unittest.TestCase):
                      'cmd/verify/last_index_corpus.go','cmd/verify/last_index_contracts.go',
                      'tools/check-last-index-inputs.py','tools/check-last-index-inputs_test.py'):
             self.assertIn(name,roster)
+
+    def test_policy_builder_roster_entry_is_mandatory(self):
+        catalog=CHECK.load((ROOT/'verification-catalog.json').read_bytes())
+        source=(ROOT/'cmd/verify/native_timing.go').read_text()
+        token='"cmd/build-demo/api_policy_build.go", '
+        self.assertEqual(source.count(token),1)
+        for replacement in ('','"cmd/build-demo/substituted.go", '):
+            mutant=source.replace(token,replacement,1)
+            self.assertNotEqual(mutant,source)
+            with tempfile.TemporaryDirectory() as directory:
+                root=pathlib.Path(directory);(root/'cmd/verify').mkdir(parents=True)
+                (root/'cmd/verify/native_timing.go').write_text(mutant)
+                with self.subTest(replacement=replacement),self.assertRaises(RuntimeError):
+                    CHECK.source_roster(root,catalog)
+
+    def test_policy_builder_source_omission_substitution_and_bytes_are_refused(self):
+        catalog=CHECK.load((ROOT/'verification-catalog.json').read_bytes())
+        roster=CHECK.source_roster(ROOT,catalog)
+        sources={name:CHECK.reference((ROOT/name).read_bytes()) for name in roster}
+        read=lambda path:path.read_bytes()
+        CHECK.validate_timing_sources(ROOT,catalog,sources,read)
+        name='cmd/build-demo/api_policy_build.go'
+        for mutation in ('missing','substituted','changed-digest'):
+            mutant=copy.deepcopy(sources)
+            if mutation=='changed-digest':mutant[name]['sha256']='0'*64
+            else:
+                reference=mutant.pop(name)
+                if mutation=='substituted':mutant['cmd/build-demo/substituted.go']=reference
+            self.assertNotEqual(mutant,sources)
+            with self.subTest(mutation=mutation),self.assertRaises(RuntimeError):
+                CHECK.validate_timing_sources(ROOT,catalog,mutant,read)
 
     def population(self):
         # Small synthetic metadata only, never a replacement native fixture/corpus.
@@ -414,12 +445,14 @@ class FreshHostTests(unittest.TestCase):
         # Enforce the shared reader boundary independently of the host execution wrapper.
         import ast
         tree=ast.parse((ROOT/'tools/check-header-addition-host.py').read_text())
-        reader=next(node for node in tree.body if isinstance(node,ast.FunctionDef) and node.name=='read_verification')
+        readers=[node for node in tree.body if isinstance(node,ast.FunctionDef) and node.name in ('read_verification','validate_timing_sources')]
+        self.assertEqual(len(readers),2)
         forbidden={'mkdir','write_bytes','write_text','Popen','run','check_output','save','render','call','unlink','rmtree'}
-        for node in ast.walk(reader):
-            if isinstance(node,ast.Call):
-                name=node.func.attr if isinstance(node.func,ast.Attribute) else node.func.id if isinstance(node.func,ast.Name) else ''
-                self.assertNotIn(name,forbidden)
+        for reader in readers:
+            for node in ast.walk(reader):
+                if isinstance(node,ast.Call):
+                    name=node.func.attr if isinstance(node.func,ast.Attribute) else node.func.id if isinstance(node.func,ast.Name) else ''
+                    self.assertNotIn(name,forbidden)
 
 
     def test_owned_regular_files_count_exact_logical_bytes(self):

@@ -29,7 +29,7 @@ ORIGINAL = "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
 ORIGINAL_COMMIT = "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"
 ORIGINAL_VERSION = "v0.0.0-20261014100709-8cddcc4e65af"
 ORIGINAL_GENERATION = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
-PARENT_GENERATION = "sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e"
+PARENT_GENERATION = "sha256:af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee"
 COMPILER = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 REPOSITORY = "https://github.com/kimjooyoon/gooo-go-ports"
 FIELDS = (
@@ -344,7 +344,7 @@ def check_observations(raw, parent_assets, original_assets):
                 and report["status"] == "COMPARED"
                 and report["scope"] == "same_saved_facts_two_sealed_profiles"
                 and report["before_profile"] == "cel-api-original-v1"
-                and report["candidate_profile"] == "cel-api-readonly-v1", "comparison identities differ")
+                and report["candidate_profile"] == "cel-api-readonly-principal-v1", "comparison identities differ")
         facts = {"group_present": True, "group_value": "admin", "principal_present": True,
                  "principal_value": "synthetic:user", "authenticated": True,
                  "caller_tenant": "tenant-a", "resource_tenant": "tenant-a",

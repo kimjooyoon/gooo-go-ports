@@ -11,7 +11,7 @@ import { Worker, isMainThread, parentPort, workerData } from 'node:worker_thread
 import { execFileSync } from 'node:child_process';
 
 const ORIGINAL = 'sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46';
-const REVISION = 'sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e';
+const REVISION = 'sha256:af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee';
 const COMPILER = '83928fa4538245abe33b08549da47f8cbdc50ed2';
 const FACTS = ['group_present', 'group_value', 'principal_present', 'principal_value', 'authenticated', 'caller_tenant', 'resource_tenant', 'requested_action', 'allowed_action'];
 const TEXTS = ['group_value', 'principal_value', 'caller_tenant', 'resource_tenant', 'requested_action', 'allowed_action'];
@@ -78,7 +78,7 @@ function validateReport(report) {
   assert.equal(report.status, 'COMPARED');
   assert.equal(report.scope, 'same_saved_facts_two_sealed_profiles');
   assert.equal(report.before_profile, 'cel-api-original-v1');
-  assert.equal(report.candidate_profile, 'cel-api-readonly-v1');
+  assert.equal(report.candidate_profile, 'cel-api-readonly-principal-v1');
   for (const side of ['before', 'after']) {
     keys(report[side], ['facts', 'decision', 'bindings']);
     keys(report[side].facts, FACTS);
@@ -132,7 +132,7 @@ async function workerSuite() {
     assert.equal(info.schema, 'gooo/api-policy-browser-bridge-info/v1');
     assert.equal(info.scope, 'unsigned_historical_hypothetical_comparison');
     assert.deepEqual(info.modes, ['baseline', 'compare', 'replay']);
-    assert.deepEqual(info.profiles, { original: 'cel-api-original-v1', candidate: 'cel-api-readonly-v1' });
+    assert.deepEqual(info.profiles, { original: 'cel-api-original-v1', candidate: 'cel-api-readonly-principal-v1' });
     assert.deepEqual(info.limits, LIMITS);
     assert.deepEqual(info.bindings, expected, 'all actual native source bindings');
     phase = 'cases';
@@ -308,7 +308,7 @@ async function workerSuite() {
     for (const field of ['schema', 'status', 'scope']) savedTamper('context:' + field,
       mutant => { mutant[field] += '!'; }, 'expected exact typed bounded API revision object',
       'fixed-context-decoder', 'scalar-shape-valid-fixed-identifier-invalid');
-    for (const [field, value] of [['before_profile', 'cel-api-readonly-v1'], ['candidate_profile', 'cel-api-original-v1']]) {
+    for (const [field, value] of [['before_profile', 'cel-api-readonly-principal-v1'], ['candidate_profile', 'cel-api-original-v1']]) {
       savedTamper('context:' + field, mutant => { mutant[field] = value; },
         'comparison requires the exact original and readonly profiles', 'fixed-profile-decoder',
         'scalar-shape-valid-known-profile-in-wrong-position');
@@ -472,8 +472,8 @@ function readPackage(options) {
   const source = manifest.source;
   keys(source, ['head', 'tree', 'dirty', 'tracked_file_count', 'native_sources', 'ui_files', 'native_fixtures', 'native_fixture_receipt', 'published_sources', 'historical_git_objects_checked']);
   assert.match(source.head, /^[0-9a-f]{40}$/u); assert.match(source.tree, /^[0-9a-f]{40}$/u); assert.equal(typeof source.dirty, 'boolean');
-  assert.equal(source.tracked_file_count, 80); assert.equal(source.historical_git_objects_checked, false);
-  assert.equal(Object.keys(source.native_sources).length, 80);
+  assert.equal(source.tracked_file_count, 82); assert.equal(source.historical_git_objects_checked, false);
+  assert.equal(Object.keys(source.native_sources).length, 82);
   for (const [name, record] of Object.entries(source.native_sources)) {
     keys(record, ['bytes', 'sha256', 'mode']); assert.ok(name.startsWith('examples/api-policy-revision/'));
     assert.ok(['100644', '100755'].includes(record.mode));
@@ -535,7 +535,7 @@ function readPackage(options) {
   keys(info, ['schema', 'scope', 'modes', 'profiles', 'limits', 'bindings']);
   assert.equal(info.schema, 'gooo/api-policy-browser-bridge-info/v1'); assert.equal(info.scope, 'unsigned_historical_hypothetical_comparison');
   assert.deepEqual(info.modes, ['baseline', 'compare', 'replay']);
-  assert.deepEqual(info.profiles, { original: 'cel-api-original-v1', candidate: 'cel-api-readonly-v1' });
+  assert.deepEqual(info.profiles, { original: 'cel-api-original-v1', candidate: 'cel-api-readonly-principal-v1' });
   assert.deepEqual(info.limits, LIMITS); assert.deepEqual(info.bindings, expected);
   const receipt = JSON.parse(decoder.decode(packageFile(packageRoot, 'native-fixtures-receipt.json', 1048576)));
   keys(receipt, ['schema', 'status', 'scope', 'source', 'go', 'fixture', 'processes', 'acceptance', 'limits']);
@@ -573,7 +573,7 @@ function readPackage(options) {
   assert.deepEqual({ head: build.source.head, tree: build.source.tree, dirty: build.source.dirty }, { head: source.head, tree: source.tree, dirty: source.dirty });
   assert.deepEqual(build.source.native_sources, source.native_sources); assert.equal(build.source.source_before_after_equal, true);
   assert.equal(build.source.historical_git_objects_checked, false);
-  const controlNames = ['upstream.json', 'cmd/build-demo/main.go', 'cmd/build-demo/api_policy.go', 'tools/api-policy-browser-bridge.go.txt',
+  const controlNames = ['upstream.json', 'cmd/build-demo/main.go', 'cmd/build-demo/api_policy.go', 'cmd/build-demo/api_policy_build.go', 'tools/api-policy-browser-bridge.go.txt',
     'site/api-policy.html', 'site/api-policy.js', 'site/api-policy.css', 'site/api-policy-worker.js', 'LICENSE', 'NOTICE', 'third_party/GO-LICENSE'];
   keys(build.source.control_sources, controlNames);
   for (const name of controlNames) checkDescriptor(packageFile(repoRoot, name, 4194304), build.source.control_sources[name]);

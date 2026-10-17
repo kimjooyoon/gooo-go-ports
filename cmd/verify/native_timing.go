@@ -147,7 +147,7 @@ var nativeTimingSourceNames = []string{
 	"tools/check-header-addition-inputs.py",
 	"tools/check-header-facts-inputs.py", "cmd/verify/legacy_workspace_test.go",
 	".github/workflows/ci.yml", "tools/check-ci-scope-workflow_test.py", "tools/classify-ci-scope.py",
-	"cmd/build-demo/main.go", "cmd/build-demo/api_policy.go", "cmd/build-demo/api_policy_test.go",
+	"cmd/build-demo/main.go", "cmd/build-demo/api_policy.go", "cmd/build-demo/api_policy_build.go", "cmd/build-demo/api_policy_test.go",
 	"tools/api-policy-browser-smoke.mjs", "tools/api-policy-browser-bridge.go.txt", "tools/api-policy-app.test.cjs",
 	"site/api-policy.html", "site/api-policy.js", "site/api-policy-worker.js", "site/api-policy.css",
 	"cmd/verify/native_correctness_cache_test.go", "cmd/verify/simple_fold_exhaustive_test.go",

@@ -91,7 +91,14 @@ def source_roster(root,catalog):
     for package in catalog['packages']:names.extend(package['sources'])
     names.extend(['upstream.json','verification-catalog.json']);names=set(map(safe_relative,names))
     need(set(OWN_FILES).issubset(names),'all host templates/checker must be in current timing source identity')
+    need('cmd/build-demo/api_policy_build.go' in names,'API policy builder continuation is a required timing input')
     return names
+
+def validate_timing_sources(root,catalog,sources,read):
+    roster=source_roster(root,catalog)
+    need(len(roster)==283 and set(sources)==roster,'exact current283 full native timing source roster')
+    for name in sorted(roster):
+        need(equal(reference(read(root/name)),sources[name]),'current timing source bytes: '+name)
 
 def validate_command_resources(header,batches):
     """Check optional wait accounting, independently of semantic verification.
@@ -274,10 +281,8 @@ def read_verification(root,verification_out,timing):
     need(summary['cases']==summary['passed']==175649 and len(summary['runs'])==82,'fresh complete82-suite original summary')
     need(summary['verification_catalog_sha256']==digest(catalog_raw) and header['catalog']==reference(catalog_raw),'current catalog bytes')
     need(equal(summary['source_sha256'],header['catalog_source_sha256']),'summary/header source map')
-    roster=source_roster(root,catalog);sources=header['identity']['source_files']
-    need(len(roster)==282 and set(sources)==roster,'exact current282 full native timing source roster')
+    validate_timing_sources(root,catalog,header['identity']['source_files'],read)
     need(len(catalog['packages'])==56 and len(summary['source_sha256'])==67,'exact current56 packages/67 Gooo sources')
-    for name in sorted(roster):need(equal(reference(read(root/name)),sources[name]),'current timing source bytes: '+name)
     catalog_sources={name:sha(read(root/name)) for pkg in catalog['packages'] for name in pkg['sources']}
     need(equal(summary['source_sha256'],catalog_sources),'current catalog Gooo source bytes')
     need(equal(header['upstream_pins'].get('compiler_revision'),REV) and equal(header['upstream_pins'].get('go_version'),'go1.27.2'),'header upstream compiler pins')
