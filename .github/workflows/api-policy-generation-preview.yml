@@ -1,0 +1,221 @@
+name: API policy generation preview
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/api-policy-generation-preview.yml'
+      - 'proposals/api-policy-revision.patch'
+
+permissions:
+  contents: read
+
+jobs:
+  generation-preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      GOTOOLCHAIN: local
+      GOWORK: 'off'
+      EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+      PREVIEW_BASE: b19b5517f8e9716affb0f75fd07045b8217cdaf1
+      PREVIEW_TREE: 097a39e64abc0f159c55cdc8dce1d12025af9b54
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version: '1.27.2'
+          cache: false
+      - name: Prepare a source-bound inactive proposal
+        run: |
+          set -euo pipefail
+          umask 077
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test "$(git rev-parse "$PREVIEW_BASE^{tree}")" = "$PREVIEW_TREE"
+          git merge-base --is-ancestor "$PREVIEW_BASE" "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain)"
+          preview_out="$RUNNER_TEMP/api-policy-generation-preview"
+          mkdir "$preview_out"
+          proposal="$PWD/proposals/api-policy-revision.patch"
+          test "$(wc -c < "$proposal")" -le 1048576
+          git apply --summary "$proposal" > "$preview_out/proposal-summary.txt"
+          test ! -s "$preview_out/proposal-summary.txt"
+          git apply --numstat "$proposal" > "$preview_out/proposal-numstat.txt"
+          awk '$1 == "-" || $2 == "-" { exit 1 }' "$preview_out/proposal-numstat.txt"
+          printf '%s\n' examples/api-policy-revision/{model.go,profiles.json,readonly.gooo} \
+            > "$preview_out/expected-paths.txt"
+          cut -f3 "$preview_out/proposal-numstat.txt" | LC_ALL=C sort > "$preview_out/actual-paths.txt"
+          cmp "$preview_out/expected-paths.txt" "$preview_out/actual-paths.txt"
+          test "$(grep -Ec '^index [0-9a-f]{40}\.\.[0-9a-f]{40} 100644$' "$proposal")" = 3
+          while IFS= read -r path; do
+            test "$(git ls-tree "$PREVIEW_BASE" -- "$path" | cut -d' ' -f1)" = 100644
+            git show "$PREVIEW_BASE:$path" > "$preview_out/$(basename "$path").base"
+          done < "$preview_out/expected-paths.txt"
+          mkdir -p "$preview_out/after" "$preview_out/before/examples"
+          git archive "$PREVIEW_BASE" | tar -x -C "$preview_out/after"
+          cp -a "$preview_out/after/examples/api-policy-revision" "$preview_out/before/examples/"
+          cp "$preview_out/before/examples/api-policy-revision/generation.json" "$preview_out/baseline-generation.json"
+          git -C "$preview_out/after" apply --check "$proposal"
+          git -C "$preview_out/after" apply "$proposal"
+          cat > "$preview_out/normalize.sh" <<'SH'
+          normalize_patch() {
+            awk '
+              /^diff --git / { header = 1 }
+              /^@@/ { header = 0 }
+              { if (header) {
+                  sub(/^diff --git before\//, "diff --git a/")
+                  sub(/ after\//, " b/")
+                  sub(/^--- before\//, "--- a/")
+                  sub(/^\+\+\+ after\//, "+++ b/")
+                }
+                print
+              }'
+          }
+          SH
+          source "$preview_out/normalize.sh"
+          cd "$preview_out"
+          if git diff --no-index --no-prefix --no-ext-diff --no-textconv --no-renames --full-index \
+              --binary before/examples/api-policy-revision after/examples/api-policy-revision > input.raw.patch; then
+            diff_exit=0
+          else
+            diff_exit=$?
+          fi
+          test "$diff_exit" = 1
+          normalize_patch < input.raw.patch > applied-source.patch
+          cmp "$proposal" applied-source.patch
+          old_profile="$(jq -er '.candidate.profile_id' profiles.json.base)"
+          new_profile="$(jq -er '.candidate.profile_id' after/examples/api-policy-revision/profiles.json)"
+          test "$old_profile" != "$new_profile"
+          if printf '%s\n' "$old_profile" "$new_profile" | grep -Eqv '^[a-z][a-z0-9-]{1,80}$'; then
+            exit 1
+          fi
+          sed "s/CandidateProfile = \"$new_profile\"/CandidateProfile = \"$old_profile\"/" \
+            after/examples/api-policy-revision/model.go > restored-model.go
+          cmp model.go.base restored-model.go
+          sed "s/\"profile_id\": \"$new_profile\"/\"profile_id\": \"$old_profile\"/" \
+            after/examples/api-policy-revision/profiles.json > restored-profiles.json
+          cmp profiles.json.base restored-profiles.json
+          for variant in before after; do
+            # This preview accepts the existing one-body raw-string form only.
+            # Compare both the prefix and suffix; ignore whole-line comments.
+            test "$(LC_ALL=C tr -cd '\140' < "$variant/examples/api-policy-revision/readonly.gooo" | wc -c)" = 2
+            awk '
+              /^[ \t]*\/\// && !body { next }
+              { count = split($0, part, "`")
+                if (count == 1) { if (!body) print; next }
+                if (count != 2) { invalid = 1; exit 1 }
+                if (!body) { print part[1] "`"; body = 1 }
+                else { print "`" part[2]; body = 0 }
+              }
+              END { if (body || invalid) exit 1 }' \
+              "$variant/examples/api-policy-revision/readonly.gooo" > "$variant-declarations.txt"
+          done
+          cmp before-declarations.txt after-declarations.txt
+          jq -n --arg head "$EXPECTED_HEAD" --arg base "$PREVIEW_BASE" --arg tree "$PREVIEW_TREE" \
+            --arg source_tree "$(git -C "$GITHUB_WORKSPACE" rev-parse HEAD^{tree})" \
+            --arg source_parent "$(git -C "$GITHUB_WORKSPACE" show -s --format=%P HEAD)" \
+            --arg patch_sha256 "$(sha256sum "$proposal" | cut -d' ' -f1)" \
+            --argjson run "$GITHUB_RUN_ID" --argjson attempt "$GITHUB_RUN_ATTEMPT" \
+            '{scope:"generation_preview_only", proposal_head:$head, proposal_tree:$source_tree,
+              proposal_parent:$source_parent, generation_base:$base, generation_base_tree:$tree,
+              patch_sha256:$patch_sha256, run:$run, attempt:$attempt, release_validation:false}' > origin.json
+      - name: Generate with the original base generator
+        run: |
+          set -euo pipefail
+          preview_out="$RUNNER_TEMP/api-policy-generation-preview"
+          cd "$preview_out/after"
+          sh tools/bootstrap.sh
+          ./.gooo version --build --json > "$preview_out/compiler-build.json"
+          go version > "$preview_out/go-version.txt"
+          date -u +%FT%TZ > "$preview_out/generator-started-at.txt"
+          if python3 -B examples/api-policy-revision/generate.py \
+              --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" \
+              > "$preview_out/generator.stdout.log" 2> "$preview_out/generator.stderr.log"; then
+            generator_exit=0
+          else
+            generator_exit=$?
+          fi
+          printf '%s\n' "$generator_exit" > "$preview_out/generator-exit-code.txt"
+          date -u +%FT%TZ > "$preview_out/generator-finished-at.txt"
+          exit "$generator_exit"
+      - name: Preserve the generated delta and original source state
+        if: always()
+        run: |
+          set -euo pipefail
+          preview_out="$RUNNER_TEMP/api-policy-generation-preview"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain)"
+          test -f "$preview_out/origin.json"
+          source "$preview_out/normalize.sh"
+          cd "$preview_out"
+          if git diff --no-index --no-prefix --no-ext-diff --no-textconv --no-renames --full-index \
+              --binary before/examples/api-policy-revision after/examples/api-policy-revision > generated.raw.patch; then
+            diff_exit=0
+          else
+            diff_exit=$?
+          fi
+          test "$diff_exit" -le 1
+          normalize_patch < generated.raw.patch > generated-preview.patch
+          sha256sum generated-preview.patch > generated-preview.sha256
+          cp after/examples/api-policy-revision/generation.json observed-generation.json
+          baseline_generation="$(sha256sum baseline-generation.json | cut -d' ' -f1)"
+          observed_generation="$(sha256sum observed-generation.json | cut -d' ' -f1)"
+          generator_exit=null
+          generator_state=NOT_STARTED
+          if [ -f generator-started-at.txt ]; then
+            generator_state=UNKNOWN
+          fi
+          if [ -f generator-exit-code.txt ]; then
+            generator_exit="$(cat generator-exit-code.txt)"
+            generator_state=FAILED
+            if [ "$generator_exit" = 0 ]; then
+              generator_state=SUCCEEDED
+            fi
+          fi
+          jq -n --arg baseline "$baseline_generation" --arg observed "$observed_generation" \
+            --argjson generator_exit "$generator_exit" --arg generator_state "$generator_state" \
+            '{scope:"generation_preview_only", release_validation:false,
+              generator_exit:$generator_exit, generator_state:$generator_state,
+              source_checkout_unchanged:true, fresh_generation:false, asset_bindings_verified:false,
+              baseline_generation_sha256:$baseline, observed_generation_sha256:$observed,
+              generation_changed:($baseline != $observed)}' > collection.json
+          if [ "$generator_state" = SUCCEEDED ]; then
+            test "$baseline_generation" != "$observed_generation"
+            jq -e '.schema == "gooo/api-policy-revision-generation/v1" and
+              .compiler_source_sha == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+              (.assets | length) == 37' observed-generation.json
+            jq -S '.assets | keys' baseline-generation.json > baseline-asset-paths.json
+            jq -S '.assets | keys' observed-generation.json > observed-asset-paths.json
+            cmp baseline-asset-paths.json observed-asset-paths.json
+            jq -r '.assets | to_entries[] | [.key, .value] | @tsv' observed-generation.json > observed-assets.tsv
+            while IFS=$'\t' read -r asset digest; do
+              test "$digest" = "sha256:$(sha256sum "after/examples/api-policy-revision/$asset" | cut -d' ' -f1)"
+            done < observed-assets.tsv
+            jq '.fresh_generation = true | .asset_bindings_verified = true' collection.json > collection.tmp
+            mv collection.tmp collection.json
+          fi
+      - name: Upload the bounded preview files
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: api-policy-generation-preview-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/api-policy-generation-preview/origin.json
+            ${{ runner.temp }}/api-policy-generation-preview/applied-source.patch
+            ${{ runner.temp }}/api-policy-generation-preview/generated-preview.patch
+            ${{ runner.temp }}/api-policy-generation-preview/generated-preview.sha256
+            ${{ runner.temp }}/api-policy-generation-preview/baseline-generation.json
+            ${{ runner.temp }}/api-policy-generation-preview/observed-generation.json
+            ${{ runner.temp }}/api-policy-generation-preview/collection.json
+            ${{ runner.temp }}/api-policy-generation-preview/compiler-build.json
+            ${{ runner.temp }}/api-policy-generation-preview/go-version.txt
+            ${{ runner.temp }}/api-policy-generation-preview/generator*.txt
+            ${{ runner.temp }}/api-policy-generation-preview/generator*.log
+          if-no-files-found: warn
+          retention-days: 2

@@ -253,3 +253,44 @@ The new readonly policy, classifiers and comparison transport are original Gooo
 ecosystem research, with AI-assisted development. This example implies no
 Google/CEL/AgentMesh endorsement and implements no live mesh session, token
 verification, tool-definition continuity or real API effect.
+
+
+---
+
+## 비활성 정책의 생성 미리보기
+
+`proposals/api-policy-revision.patch`는 아직 적용하지 않은 정책 제안입니다.
+이 제안은 현재 실행되는 정책이나 배포되는 패키지를 바꾸지 않습니다.
+미리보기는 고정된 원본에서 복사한 임시 디렉터리에만 적용합니다.
+원본 생성기를 실행하고 소스·생성 결과의 Git 패치와 실제 종료 상태를 남깁니다.
+제안을 담은 커밋과 생성 입력인 원본·패치, 컴파일러의 빌드 출처를 각각 기록합니다.
+
+현재 대상은 `examples/api-policy-revision`의 `readonly.gooo`, `model.go`,
+`profiles.json` 세 파일입니다. Gooo가 요청의 허용 조건을 소유합니다.
+Go 변경은 후보 프로필의 식별 상수 한 곳이며, 기존 원본 프로필을 보존합니다.
+Git의 full-index 패치가 세 파일의 원문 변경을 전달합니다.
+현재 파일의 raw 본문 한 개를 대상으로 하고, 본문 앞뒤의 선언을 보존합니다.
+
+생성 성공은 전체 정책 검증 성공과 별개입니다. 생성 결과는 일반 후속 PR로
+반영하고, 독립적인 기대값·기존 네 필수 작업·실제 main CI를 확인해야 합니다.
+생성 상태는 미실행·미확정·실패·성공으로 구분합니다. 기존 generation과 관측한
+generation을 따로 보존하고, 성공과 모든 파일의 연결을 확인한 뒤 새 생성물로 표시합니다.
+미리보기의 쓰기 범위는 임시 복사본과 결과 파일입니다.
+
+이번 제안은 명시적이고 비어 있지 않은 principal이 없는 read 요청을 거절합니다.
+기존 거절의 우선순위, 입력 아홉 개, 결과 필드 열다섯 개, 활동 ID를 유지합니다.
+입력이 제공한 principal 원문을 평가하며, 공백 문자열도 그대로 유지합니다.
+독립적인 일곱 사례의 전체 결과와 이전 프로필 연결 거절은 후속 PR의 검증 범위입니다.
+
+매개변수 위치는 유지하고 기존 `let`으로 본문에 역할 이름을 연결합니다.
+
+```gooo
+let principal_present = input2
+let principal = input3
+if allowed && (!principal_present || principal == "") { allowed = false
+ reason = "EXPLICIT_PRINCIPAL_REQUIRED" }
+```
+
+현재 추가 비용도 함께 셉니다. 조건 두 줄과 역할 연결 두 줄 외에 프로필 연결, 미리보기
+워크플로, 테스트와 문서가 필요합니다. Go 코드 비중이 낮다는 사실만으로
+확장 비용이 줄었다고 판단하지 않습니다. 시간과 성공률은 아직 측정하지 않았습니다.
