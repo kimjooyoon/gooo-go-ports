@@ -21,17 +21,60 @@ There is no API dispatcher, current authorization grant or per-call human
 approval step. Consistently fabricated unsigned facts and observations can be
 internally consistent; a report does not attest that an event occurred.
 
+## Install the command without cloning
+
+With **Go 1.27.2 already installed and selected**, install the checked immutable
+command into a private directory. No repository checkout or Gooo compiler is
+needed. Initial installation uses the public Go proxy and checksum service.
+
+```sh
+set -eu
+export GOTOOLCHAIN=local GOWORK=off GOENV=off
+export GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org
+export GOPRIVATE= GONOPROXY= GONOSUMDB=
+umask 077
+revision_run="$(mktemp -d)"
+mkdir "$revision_run/bin"
+GOBIN="$revision_run/bin" go install github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision/cmd/compare@v0.0.0-20261017215455-9cfe6513e11b
+cat > "$revision_run/write-facts.json" <<'JSON'
+{"group_present":true,"group_value":"admin","principal_present":true,"principal_value":"synthetic:user","authenticated":true,"caller_tenant":"tenant-a","resource_tenant":"tenant-a","requested_action":"write","allowed_action":"write"}
+JSON
+"$revision_run/bin/compare" --diagnostics=json -mode baseline \
+  -input "$revision_run/write-facts.json" > "$revision_run/write.request.json"
+"$revision_run/bin/compare" --diagnostics=json -mode compare \
+  -input "$revision_run/write.request.json" > "$revision_run/write.comparison.json"
+env PATH="" "$revision_run/bin/compare" --diagnostics=json -mode replay \
+  -input "$revision_run/write.comparison.json" > "$revision_run/write.replayed.json"
+```
+
+The two saved comparison files are byte-identical. For these nine synthetic
+facts the summary is `NEWLY_DENIED` with `changed_count: 2`. The original decision
+allows `write`; the candidate returns `ACTION_NOT_READ_ONLY`. The private bin
+directory avoids replacing another command named `compare` on your PATH.
+Keep the private directory for later replay; the reports contain the supplied facts.
+
+This immutable command was checked from an empty outside working directory and
+private module cache, including its embedded Go module versions/checksums,
+read/write baseline-comparison-replay and a tampered-report refusal. CI repeats
+the direct installation against the current proposal commit. This is a
+maintainer-run check, not an independent user's adoption or installation timing.
+
 ## Native quickstart
 
 Start in the repository root with **Go 1.27.2 already installed and selected**.
-The module uses the local frozen original module and standard-library-only
+The module requires the exact published original module and uses standard-library-only
 native code. Consuming the generated profiles requires no Gooo compiler or CEL
 evaluator. Toolchain installation and its initial cache setup are separate.
 
 Create a new private directory, build once, and run each mode in a fresh process:
 
 ```sh
-export GOTOOLCHAIN=local GOWORK=off GOENV=off GOPROXY=off GOSUMDB=off
+export GOTOOLCHAIN=local GOWORK=off GOENV=off
+GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org \
+  GOPRIVATE= GONOPROXY= GONOSUMDB= \
+  go -C examples/api-policy-revision mod download \
+  github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy@v0.0.0-20261014100709-8cddcc4e65af
+export GOPROXY=off GOSUMDB=off
 umask 077
 revision_run="$(mktemp -d)"
 go -C examples/api-policy-revision build -trimpath \
@@ -181,7 +224,7 @@ Neither an allow nor a successful replay grants permission to execute now.
 The original profile has **28 unchanged sealed assets** and the original raw
 generation manifest digest
 `sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46`.
-The candidate and classifiers have their own **37-asset generation**, including
+The candidate and classifiers have their own **38-asset generation**, including
 the exact native projections and adapter. Both complete rosters are checked.
 The original `VerifyAPIProof` remains strict: it still rejects a candidate or
 unavailable older generation. Exactly the two named profiles are available;
@@ -243,8 +286,9 @@ or external-effect calls.
 [`gooo-go-ports` commit `8cddcc4`](https://github.com/kimjooyoon/gooo-go-ports/tree/8cddcc4e65afb42431f8f42a86f29859ae2f4d69/examples/cel-api-policy).
 Its original module path, internal imports, 28 asset bytes and raw generation
 manifest are preserved under [`profiles/original`](profiles/original).
-Only this new parent module supplies a local `replace`. Original `go.mod` and
-license/notice packaging files are bound separately rather than retroactively
+The parent requires that exact published module, with both Go checksums sealed
+in its `go.sum`; it has no local `replace`. The archived original `go.mod` and
+license/notice packaging files remain separately bound rather than retroactively
 added to an old proof's asset roster.
 
 Google's bounded CEL codelab adaptation and the original Gooo API policy retain
@@ -335,13 +379,21 @@ Gooo 본문은 허용 조건과 거절 우선순위를 표현합니다. 기존 �
 | 컴파일러 소스 | `83928fa4538245abe33b08549da47f8cbdc50ed2` |
 | Go | `1.27.2` |
 | 생성 결과 Git 패치 SHA-256 | `3993fc7cc28336f97c223c62b35049febc4617fc6acd1a17dff399767752a266` |
-| 현재 generation.json SHA-256 | `af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee` |
+| 이 정책 제안 반영 당시 generation.json SHA-256 | `af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee` |
 
 `generation.json`의 37개 파일 연결과 원문 해시를 확인하고 그대로 가져왔습니다.
 활동 ID와 입력·결과의 형태는 유지하며, 구체적인 정책 본문이 다른 새 후보로 구별합니다.
 
 
 분리한 브라우저 빌더 파일도 기존 소스 관측 목록에 등록합니다. 이 목록은 기존
-282개 원문과 새 파일 1개를 합한 283개이며, API 모듈의 지원 파일 82개와는 다른
+282개 원문과 새 파일 1개를 합한 283개이며, 현재 API 모듈의 지원 파일 83개와는 다른
 범위입니다. 파일이 빠지거나 같은 개수의 다른 파일·해시로 바뀌는 경우를 거절합니다.
 기존 포팅의 사례와 분할은 이 목록 변경에서 그대로 보존합니다.
+
+The current packaging seals `go.sum` as the 38th asset and requires the original
+public module at its unchanged immutable version above. Its generation is
+`sha256:24f37267a7f4ad723b7228eeecd55fdc151c8534fa8a95bca19bb73d9b3973d0`.
+The earlier 37-asset generation recorded above remains historical; its saved
+reports are not migrated to this generation. The policy source and generated
+algorithms are unchanged. Dependency preparation uses the Go proxy and checksum
+service once; the generated command and saved-report replay run offline.

@@ -1196,7 +1196,7 @@ jobs:
           PUBLIC_API_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer"
-          jq -e '.schema == "gooo/api-policy-public-consumer/v1" and .status == "PUBLIC_API_POLICY_CONSUMER_PASS" and .acceptance.facts == 9 and .acceptance.positive_cases == 2 and .acceptance.decision_fields == 15 and .acceptance.difference_flags == 15 and .acceptance.summary_fields == 2 and .acceptance.public_asset_count == 37 and .acceptance.public_assets_exact == true and .acceptance.public_generation_exact == true and .acceptance.original_assets_exact == true and .acceptance.original_generation_unchanged == true and .acceptance.substitution_refused == true and .acceptance.runtime_empty_path == true and .acceptance.consumer_no_replace_or_workspace == true and .acceptance.substitution_stdout_bytes == 0 and .acceptance.original_version == "v0.0.0-20261014100709-8cddcc4e65af" and .acceptance.original_commit == "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"' out/api-policy-public-consumer/verification.json
+          jq -e '.schema == "gooo/api-policy-public-consumer/v1" and .status == "PUBLIC_API_POLICY_CONSUMER_PASS" and .acceptance.facts == 9 and .acceptance.positive_cases == 2 and .acceptance.decision_fields == 15 and .acceptance.difference_flags == 15 and .acceptance.summary_fields == 2 and .acceptance.public_asset_count == 38 and .acceptance.public_assets_exact == true and .acceptance.public_generation_exact == true and .acceptance.original_assets_exact == true and .acceptance.original_generation_unchanged == true and .acceptance.substitution_refused == true and .acceptance.runtime_empty_path == true and .acceptance.consumer_no_replace_or_workspace == true and .acceptance.direct_install == true and .acceptance.direct_install_cases == 2 and .acceptance.direct_install_tampered_report_refused == true and .acceptance.substitution_stdout_bytes == 0 and .acceptance.original_version == "v0.0.0-20261014100709-8cddcc4e65af" and .acceptance.original_commit == "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"' out/api-policy-public-consumer/verification.json
       - name: Build and identify the pinned compiler from a clean checkout
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
@@ -1433,6 +1433,31 @@ jobs:
       - name: Verify the sealed API policy revision comparison
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
+          timeout 120s env GOTOOLCHAIN=local GOWORK=off GOENV=off GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org GOPRIVATE= GONOPROXY= GONOSUMDB= \
+            go -C examples/api-policy-revision mod download -json github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy@v0.0.0-20261014100709-8cddcc4e65af > out/api-policy-original-download.json
+          python3 -B - <<'PY_ORIGINAL'
+          import hashlib, json
+          from pathlib import Path
+          download = json.loads(Path('out/api-policy-original-download.json').read_bytes())
+          assert download['Path'] == 'github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy'
+          assert download['Version'] == 'v0.0.0-20261014100709-8cddcc4e65af' and not download.get('Error')
+          assert download['Sum'] == 'h1:fvrka7xThFrx1JkbTEp+lZ7hjcUsK4csF/XbpmF4VuM='
+          assert download['GoModSum'] == 'h1:8bu+v2g7hKzRE72QrBMPJRCTJRVvlk4pqwTaA4DQrtc='
+          remote = Path(download['Dir'])
+          frozen = Path('examples/api-policy-revision/profiles/original')
+          generation = (remote / 'generation.json').read_bytes()
+          assert generation == (frozen / 'generation.json').read_bytes()
+          assert hashlib.sha256(generation).hexdigest() == '79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46'
+          assets = json.loads(generation)['assets']
+          assert len(assets) == 28
+          for name, sha in assets.items():
+              raw = (remote / name).read_bytes()
+              assert raw == (frozen / name).read_bytes()
+              assert 'sha256:' + hashlib.sha256(raw).hexdigest() == sha
+          for name in ('go.mod', 'LICENSE-APACHE-2.0', 'NOTICE.md'):
+              assert (remote / name).read_bytes() == (frozen / name).read_bytes()
+          print('PASS: exact original module checksums, generation and all28 sealed assets')
+          PY_ORIGINAL
           python3 -B examples/api-policy-revision/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/api-policy-revision"
           jq -e '.schema == "gooo/api-policy-revision-verification/v1" and .status == "FINITE_TWO_PROFILE_NATIVE_AND_SAVED_REPLAY_PASS" and .classifier_cases == 23 and .decision_fields == 15 and .fresh_process_pairs == 2 and .altered_report_refused == true and .original_generation_preserved == true' out/api-policy-revision/verification.json
       - name: Verify the Agent Mesh service-pattern adaptation
@@ -1605,6 +1630,7 @@ jobs:
             out/etag-project/
             out/etag-project-evidence/
             out/api-policy-public-consumer/
+            out/api-policy-original-download.json
             out/path-facts/
             out/redelivery-policy/
             out/ipv4/
@@ -1661,9 +1687,9 @@ jobs:
           jq -e '
             .schema == "gooo/api-policy-browser-smoke/v1"
             and .status == "FINITE_ACTUAL_API_POLICY_BROWSER_PACKAGE_PASS"
-            and .direct_actual_Wasm_steps == 426
-            and .saved_tamper_no_data_refusals == 283
-            and .explicit_no_data_refusals == 373
+            and .direct_actual_Wasm_steps == 430
+            and .saved_tamper_no_data_refusals == 287
+            and .explicit_no_data_refusals == 377
             and .caller_own_override_controls == 15
             and .genuine_write_byte_authority_controls == 3
             and .public_manifest_bound == true

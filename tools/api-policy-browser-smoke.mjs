@@ -11,7 +11,7 @@ import { Worker, isMainThread, parentPort, workerData } from 'node:worker_thread
 import { execFileSync } from 'node:child_process';
 
 const ORIGINAL = 'sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46';
-const REVISION = 'sha256:af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee';
+const REVISION = 'sha256:24f37267a7f4ad723b7228eeecd55fdc151c8534fa8a95bca19bb73d9b3973d0';
 const COMPILER = '83928fa4538245abe33b08549da47f8cbdc50ed2';
 const FACTS = ['group_present', 'group_value', 'principal_present', 'principal_value', 'authenticated', 'caller_tenant', 'resource_tenant', 'requested_action', 'allowed_action'];
 const TEXTS = ['group_value', 'principal_value', 'caller_tenant', 'resource_tenant', 'requested_action', 'allowed_action'];
@@ -92,7 +92,7 @@ function validateReport(report) {
   assert.equal(typeof report.summary.classification, 'string');
   assert.ok(Number.isSafeInteger(report.summary.changed_count));
   bindings(report.before.bindings, ORIGINAL, 28);
-  bindings(report.after.bindings, REVISION, 37);
+  bindings(report.after.bindings, REVISION, 38);
   assert.deepEqual(report.classifier_bindings, report.after.bindings);
 }
 
@@ -193,7 +193,7 @@ async function workerSuite() {
         assert.deepEqual(comparison.value.differences, fixture.cases[0].report.differences);
         assert.deepEqual(comparison.value.summary, { classification: 'UNCHANGED', changed_count: 0 });
         return { value: undefined, metrics: { facts: 9, decision_fields_per_side: 15, difference_flags: 15,
-          summary_fields: 2, full_binding_assets: 64,
+          summary_fields: 2, full_binding_assets: Object.keys(expected.original.assets).length + Object.keys(expected.revision.assets).length,
           expectation_origin: 'source-derived literal denial, not another independent native run' } };
       });
       const replay = accept(name + ':replay', 'replay', ownBytes(comparison.bytes), fixtureReport);
@@ -472,8 +472,8 @@ function readPackage(options) {
   const source = manifest.source;
   keys(source, ['head', 'tree', 'dirty', 'tracked_file_count', 'native_sources', 'ui_files', 'native_fixtures', 'native_fixture_receipt', 'published_sources', 'historical_git_objects_checked']);
   assert.match(source.head, /^[0-9a-f]{40}$/u); assert.match(source.tree, /^[0-9a-f]{40}$/u); assert.equal(typeof source.dirty, 'boolean');
-  assert.equal(source.tracked_file_count, 82); assert.equal(source.historical_git_objects_checked, false);
-  assert.equal(Object.keys(source.native_sources).length, 82);
+  assert.equal(source.tracked_file_count, 83); assert.equal(source.historical_git_objects_checked, false);
+  assert.equal(Object.keys(source.native_sources).length, 83);
   for (const [name, record] of Object.entries(source.native_sources)) {
     keys(record, ['bytes', 'sha256', 'mode']); assert.ok(name.startsWith('examples/api-policy-revision/'));
     assert.ok(['100644', '100755'].includes(record.mode));
@@ -498,7 +498,7 @@ function readPackage(options) {
   // omit a source file or replace a checkout source with another valid payload.
   const revisionPublished = ['readonly.gooo', 'compare.gooo', 'candidate.workspace.json', 'differences.workspace.json',
     'summary.workspace.json', 'profiles.json', 'model.go', 'compare.go', 'input.go', 'bindings.go', 'adapter_generated.go',
-    'go.mod', 'generation.json', 'compiler.json', 'canonical/main.gooo', 'canonical/scalar_access.gooo',
+    'go.mod', 'go.sum', 'generation.json', 'compiler.json', 'canonical/main.gooo', 'canonical/scalar_access.gooo',
     'internal/candidate/generated.go', 'internal/flags/generated.go', 'internal/summary/generated.go', 'cmd/compare/main.go', 'cmd/compare/diagnostics.go'];
   const originalPublished = ['adapter_generated.go', 'model.go', 'bridge.go', 'bindings.go', 'input.go', 'proof_input.go',
     'replay.go', 'internal/api/generated.go', 'internal/scalar/generated.go', 'canonical/main.gooo', 'canonical/scalar_access.gooo',
@@ -599,7 +599,7 @@ function readPackage(options) {
     ...uiNames.map(name => path.join(options.site, name)), ...controlNames.map(name => path.join(repoRoot, name)), ...Object.keys(source.native_sources).map(name => path.join(repoRoot, name)), ...Object.keys(source.published_sources).map(name => path.join(packageRoot, name))])];
   return { fixture, expected, fixture_sha256: hash(raw), fixture_bytes: raw.length, manifest, watch,
     checkout, repoRoot,
-    binding_scope: 'Complete65 local bound source bytes and declared public payloads checked by Node; UI only fetches Worker/runtime/Wasm and compares full metadata. Native executable identity is recorded in the builder receipt; this reader does not fetch or re-execute it.' };
+    binding_scope: `Complete${Object.keys(expected.original.assets).length + Object.keys(expected.revision.assets).length} local bound source bytes and declared public payloads checked by Node; UI only fetches Worker/runtime/Wasm and compares full metadata. Native executable identity is recorded in the builder receipt; this reader does not fetch or re-execute it.` };
 }
 async function shippedLoaderWorker() {
   const { options, manifest, fault, input, operation } = workerData;
@@ -809,7 +809,9 @@ async function main() {
     result.caller_own_override_controls = result.steps.filter(row => row.kind === 'caller-own-transport-regression' && row.status === 'PASS').length;
     result.genuine_write_byte_authority_controls = result.steps.filter(row => row.name.startsWith('caller-owned-byte-authority:') && row.status === 'PASS').length;
     if (result.status === 'DIRECT_FINITE_ACTUAL_WASM_PASS') {
-      assert.equal(result.completed_steps, 426); assert.equal(result.explicit_no_data_refusals, 373); assert.equal(result.saved_tamper_no_data_refusals, 283);
+      // The additional sealed go.sum has digest/removal controls in both
+      // after and classifier bindings: the original426 steps plus four.
+      assert.equal(result.completed_steps, 430); assert.equal(result.explicit_no_data_refusals, 377); assert.equal(result.saved_tamper_no_data_refusals, 287);
       assert.equal(result.caller_own_override_controls, 15); assert.equal(result.genuine_write_byte_authority_controls, 3);
       assert.ok(result.steps.every(row => row.status === 'PASS')); assert.deepEqual(result.actual_info, fixtures.manifest.expected_info);
       const bounded = () => {

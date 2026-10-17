@@ -6,6 +6,25 @@ source, and save a new execution/replay pair.
 The [Gooo language and compiler](https://github.com/kimjooyoon/meta-ontology-go)
 are developed separately; this repository supplies ports and runnable examples.
 
+## Compare fixed API policies without a compiler
+
+For a review of the supplied API policy profiles, start with the
+[immutable command quickstart](../examples/api-policy-revision/README.md#install-the-command-without-cloning).
+It installs into a private bin directory without cloning or installing Gooo.
+Go 1.27.2 is required; installation uses the public Go proxy and checksum service.
+After installation, the same command creates a baseline, compares the same nine
+supplied facts, and checks the complete saved report with `-mode replay`.
+
+An agent can use `--diagnostics=json` and inspect stdout, stderr and the exit
+code separately. `NEWLY_DENIED` is a successful policy comparison; a tampered
+saved report exits one, emits no result, and reports `REPORT_MISMATCH` at
+`verify_comparison` on stderr. Keep the first failure and exact installed version
+for a synthetic reproduction. Do not treat an error as a policy decision.
+
+This route evaluates two fixed Gooo profiles. To change Gooo source or build a
+new policy generation, use the compiler workflow below. A successful comparison
+or replay does not grant permission to execute an API action.
+
 ## Run the first-program skill
 
 The shared skill is

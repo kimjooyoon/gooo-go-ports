@@ -176,6 +176,20 @@ test('actual app verifies Worker bytes before creating a Worker', async () => {
   const h = app({ badWorkerHash: true }); await h.run(); assert.equal(h.workers.length, 0);
   assert.match(h.get('status').textContent, /Worker source hash mismatch/); assert.equal(h.get('save').disabled, true);
 });
+test('current sealed package is accepted but prior generation or missing checksum asset cannot start a Worker', async () => {
+  const current = app(), worker = await current.run();
+  assert.ok(worker); current.result(worker); assert.equal(current.get('save').disabled, false);
+  for (const mutate of [
+    revision => { revision.generation_sha256 = 'sha256:af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee'; },
+    revision => { revision.generation_sha256 = 'sha256:af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee'; delete revision.assets['go.sum']; },
+    revision => { delete revision.assets['go.sum']; },
+  ]) {
+    const h = app(); mutate(h.manifest.expected_info.bindings.revision); await h.run(); h.save();
+    assert.equal(h.workers.length, 0); assert.equal(h.downloads.length, 0);
+    assert.equal(h.get('save').disabled, true); assert.equal(h.get('result').hidden, true);
+    assert.match(h.get('status').textContent, /fixed native profiles, complete bindings or limits/);
+  }
+});
 test('saved report origin follows explicit replay and invalidation', async () => {
   const h = app(), raw = Buffer.from(JSON.stringify(report()));
   await h.load('report', raw);

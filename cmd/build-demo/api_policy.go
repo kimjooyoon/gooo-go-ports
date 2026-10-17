@@ -23,7 +23,7 @@ const (
 	apiPolicyRevisionModule     = "github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision"
 	apiPolicyOriginalVersion    = "v0.0.0-20261014100709-8cddcc4e65af"
 	apiPolicyOriginalGeneration = "79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
-	apiPolicyRevisionGeneration = "af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee"
+	apiPolicyRevisionGeneration = "24f37267a7f4ad723b7228eeecd55fdc151c8534fa8a95bca19bb73d9b3973d0"
 	apiPolicyCompilerRevision   = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 )
 
@@ -263,8 +263,8 @@ func apiPolicyCheckDocuments(documents map[string][]byte, lock lockfile) (apiPol
 	revisionRaw := documents[apiPolicyModule+"/generation.json"]
 	originalRoot := apiPolicyModule + "/profiles/original/"
 	originalRaw := documents[originalRoot+"generation.json"]
-	if apiPolicyDecode(revisionRaw, &revision) != nil || digest(revisionRaw) != apiPolicyRevisionGeneration || revision.Schema != "gooo/api-policy-revision-generation/v1" || revision.CompilerSourceSHA != apiPolicyCompilerRevision || len(revision.Assets) != 37 {
-		return bad("revision37/raw generation changed")
+	if apiPolicyDecode(revisionRaw, &revision) != nil || digest(revisionRaw) != apiPolicyRevisionGeneration || revision.Schema != "gooo/api-policy-revision-generation/v1" || revision.CompilerSourceSHA != apiPolicyCompilerRevision || len(revision.Assets) != 38 {
+		return bad("revision38/raw generation changed")
 	}
 	if apiPolicyDecode(originalRaw, &original) != nil || digest(originalRaw) != apiPolicyOriginalGeneration || original.Schema != "gooo/cel-public-generation/v1" || len(original.Assets) != 28 {
 		return bad("original28/raw generation changed")
@@ -514,7 +514,7 @@ func apiPolicyNativeFixtures(ctx context.Context, runner *apiPolicyRunner, work,
 	return append(raw, '\n'), processes, err
 }
 
-var apiPolicyPublishedRevision = []string{"readonly.gooo", "compare.gooo", "candidate.workspace.json", "differences.workspace.json", "summary.workspace.json", "profiles.json", "model.go", "compare.go", "input.go", "bindings.go", "adapter_generated.go", "go.mod", "generation.json", "compiler.json", "canonical/main.gooo", "canonical/scalar_access.gooo", "internal/candidate/generated.go", "internal/flags/generated.go", "internal/summary/generated.go", "cmd/compare/main.go", "cmd/compare/diagnostics.go"}
+var apiPolicyPublishedRevision = []string{"readonly.gooo", "compare.gooo", "candidate.workspace.json", "differences.workspace.json", "summary.workspace.json", "profiles.json", "model.go", "compare.go", "input.go", "bindings.go", "adapter_generated.go", "go.mod", "go.sum", "generation.json", "compiler.json", "canonical/main.gooo", "canonical/scalar_access.gooo", "internal/candidate/generated.go", "internal/flags/generated.go", "internal/summary/generated.go", "cmd/compare/main.go", "cmd/compare/diagnostics.go"}
 var apiPolicyPublishedOriginal = []string{"adapter_generated.go", "model.go", "bridge.go", "bindings.go", "input.go", "proof_input.go", "replay.go", "internal/api/generated.go", "internal/scalar/generated.go", "canonical/main.gooo", "canonical/scalar_access.gooo", "canonical/cel-api-policy.workspace.json", "canonical/cel-scalar.workspace.json", "canonical/source-pin.json", "compiler.json", "generation.json", "go.mod", "LICENSE-APACHE-2.0", "NOTICE.md", "oracle/upstream/LICENSE"}
 
 func apiPolicyExpectedInfo(source apiPolicySource) map[string]any {
