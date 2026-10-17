@@ -65,13 +65,46 @@ for low, high in ranges:
         merged.append((low, high))
 assert all(0 <= low <= high <= 1114111 for low, high in merged)
 
-def tree(rows, indent=''):
-    if len(rows) == 1:
-        low, high = rows[0]
-        return indent + f'return input >= {low} && input <= {high}\n'
-    mid = len(rows) // 2
-    return (indent + f'if input < {rows[mid][0]} {{\n' + tree(rows[:mid], indent + '    ')
-            + indent + '} else {\n' + tree(rows[mid:], indent + '    ') + indent + '}\n')
+def compact_printable_body(rows):
+    # The source-owned merged Go intervals remain the only table input.
+    # Nibble bit0 covers the first of each four consecutive codepoints.
+    assert len(rows) == 741
+    flags = bytearray(0x110000)
+    for low, high in rows:
+        flags[low:high + 1] = b'\1' * (high - low + 1)
+    unique, indices, page_ids = [], {}, []
+    for start in range(0, len(flags), 256):
+        page = flags[start:start + 256]
+        bitmap = ''.join('0123456789abcdef'[
+            sum(page[n + bit] * (1 << bit) for bit in range(4))
+        ] for n in range(0, 256, 4))
+        if bitmap not in indices:
+            indices[bitmap] = len(unique)
+            unique.append(bitmap)
+        page_ids.append(indices[bitmap])
+    assert len(page_ids) == 4352 and len(unique) == 142
+    assert max(page_ids) == 141 and max(page_ids) < 4096
+    # Two base64 digits are ASCII32..95: high then low, never a backtick.
+    # JSON quoted ASCII is also a valid Go interpreted literal; it escapes
+    # each quote/backslash in the page map, while hex data needs no escapes.
+    pages = ''.join(chr(32 + n // 64) + chr(32 + n % 64) for n in page_ids)
+    bitmaps = ''.join(unique)
+    assert len(pages) == 8704 and len(bitmaps) == 9088
+    quote = lambda value: json.dumps(value, ensure_ascii=False)
+    return '\n'.join([
+        'if input < 0 || input > 1114111 { return false }',
+        'if input < 256 { return (input >= 32 && input <= 126) || (input >= 161 && input != 173) }',
+        'let pages = ' + quote(pages),
+        'let bitmaps = ' + quote(bitmaps),
+        'let masks = "1248"',
+        'let pageOffset = (input / 256) * 2',
+        'let bitmapID = (int64(pages[pageOffset]) - 32) * 64 + int64(pages[pageOffset + 1]) - 32',
+        'let offset = bitmapID * 64 + (input % 256) / 4',
+        'let nibble = int64(bitmaps[offset])',
+        'if nibble >= 97 { nibble = nibble - 87 } else { nibble = nibble - 48 }',
+        'let mask = int64(masks[input % 4]) - 48',
+        'return (nibble / mask) % 2 == 1',
+    ])
 
 notice = '''// Copyright 2009 The Go Authors. All rights reserved.
 // Copyright 2013 The Go Authors. All rights reserved.
@@ -96,7 +129,7 @@ for record in records:
     notice = '// SHA256 ' + record['source'] + ' ' + record['sha256'] + '\n' + notice
 
 source = notice + 'activity IsPrintable(Integer) -> Boolean id "gooo://github.com/google/uuid/internal/quote/is-printable" computes `'
-source += 'if input < 0 || input > 1114111 { return false }\n' + '\n'.join(line.lstrip() for line in tree(merged).splitlines()) + '`\n\n'
+source += compact_printable_body(merged) + '`\n\n'
 source += '''activity HexDigit(Integer) -> Text id "gooo://github.com/google/uuid/internal/quote/hex-digit" computes `if input < 0 || input > 15 { return "" }
 let digits = "0123456789abcdef"
 return digits[input:input+1]`

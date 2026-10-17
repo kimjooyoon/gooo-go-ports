@@ -8,9 +8,11 @@ import (
 	"testing"
 )
 
-// This is a source/corpus check, not a new native execution. The first 62
-// factories and Gooo bytes are fixed independently of the appended suites.
-func TestLiteralCutPreservesOriginal62SourcesWorkspacesAndBatchBoundaries(t *testing.T) {
+// This source/corpus check keeps the original62 catalog, factories and cases.
+// Its legacy roster uses current sources, with only the exact reviewed UUID
+// quote rewrite below allowed. It does not claim those bytes or a native PASS
+// are the historical original62 source image.
+func TestLiteralCutPreservesOriginal62CasesWorkspacesAndBatchBoundaries(t *testing.T) {
 	var base struct {
 		Schema    string              `json:"schema"`
 		Catalog   verificationCatalog `json:"catalog"`
@@ -24,13 +26,23 @@ func TestLiteralCutPreservesOriginal62SourcesWorkspacesAndBatchBoundaries(t *tes
 	if err := json.Unmarshal(raw, &base); err != nil || base.Schema != "gooo/literal-cut-original62-source-freeze/v1" || len(base.Sources) != 49 || len(base.Factories) != 21 {
 		t.Fatal("original source freeze", err)
 	}
-	old := frozenVerificationCatalog{Catalog: base.Catalog, Sources: map[string][]byte{}, Hashes: map[string]string{}}
-	for name, want := range base.Sources {
-		actual, err := os.ReadFile("../../" + name)
-		if err != nil || contentDigest(actual) != "sha256:"+want {
-			t.Fatal("original Gooo source changed", name, err)
+	const quotePath = "ports/google/uuid/quote.gooo"
+	const historicalQuoteSHA = "b9b0a9d642a91e2baba25b7636e875f6e5de9713bb7c4913368cd564cf34e339"
+	const reviewedCurrentQuoteSHA = "3a14a762ceed11df29b698ab3eb298655a6737bbba76fe5dbb38dbc81baeb7de"
+	if base.Sources[quotePath] != historicalQuoteSHA {
+		t.Fatal("historical UUID quote source pin changed")
+	}
+	legacyRosterCurrentSources := frozenVerificationCatalog{Catalog: base.Catalog, Sources: map[string][]byte{}, Hashes: map[string]string{}}
+	for name, historicalSHA := range base.Sources {
+		wantCurrentSHA := historicalSHA
+		if name == quotePath {
+			wantCurrentSHA = reviewedCurrentQuoteSHA
 		}
-		old.Sources[name], old.Hashes[name] = actual, want
+		actual, err := os.ReadFile("../../" + name)
+		if err != nil || contentDigest(actual) != "sha256:"+wantCurrentSHA {
+			t.Fatal("legacy roster current Gooo source differs from reviewed pin", name, err)
+		}
+		legacyRosterCurrentSources.Sources[name], legacyRosterCurrentSources.Hashes[name] = actual, wantCurrentSHA
 	}
 	for name, want := range base.Factories {
 		actual, err := os.ReadFile("../../" + name)
@@ -48,13 +60,13 @@ func TestLiteralCutPreservesOriginal62SourcesWorkspacesAndBatchBoundaries(t *tes
 	}
 	cases, batches := 0, 0
 	for _, s := range before {
-		prior, err := old.workspaceForSuite(s)
+		legacySelected, err := legacyRosterCurrentSources.workspaceForSuite(s)
 		if err != nil {
 			t.Fatal(err)
 		}
 		current, err := frozen.workspaceForSuite(s)
-		if err != nil || !reflect.DeepEqual(prior, current) {
-			t.Fatal("Cut changed an original source roster/manifest", s.Package, s.Activity, err)
+		if err != nil || !reflect.DeepEqual(legacySelected, current) {
+			t.Fatal("current source roster/manifest differs from original62 catalog", s.Package, s.Activity, err)
 		}
 		cases += len(s.Cases)
 		for start := 0; start < len(s.Cases); {
