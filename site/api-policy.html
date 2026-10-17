@@ -16,7 +16,7 @@
       <section class="intro" aria-labelledby="title">
         <p class="eyebrow">API POLICY REVISION</p>
         <h1 id="title">See what a policy change would do.</h1>
-        <p class="lead">Try the same supplied facts against an original policy and a read-only candidate. Gooo-generated code computes both decisions, all 15 differences, and the change summary in your browser.</p>
+        <p class="lead">Try the same supplied facts against an original policy and a read-only candidate that requires a supplied, nonempty principal for an otherwise allowed read. Gooo-generated code computes both decisions, all 15 differences, and the change summary in your browser.</p>
         <p class="trust">This is an unsigned, historical comparison of two fixed profiles. Supplied facts are not authenticated. Results do not establish current authority or apply a policy. No input is sent to a server by this page.</p>
       </section>
       <noscript>This prototype needs JavaScript, WebAssembly, Workers and WebCrypto. It cannot compare policies without them.</noscript>
@@ -42,7 +42,7 @@
         <div class="section-heading"><div><p class="eyebrow">COMPLETED NATIVE RECALCULATION</p><h2 id="result-title">Comparison result</h2></div><button id="save" type="button" disabled>Save recalculated report</button></div>
         <p id="result-origin" class="help"></p>
         <div class="summary"><div><span>Classification</span><strong id="classification"></strong></div><div><span>Changed fields</span><strong id="changed-count"></strong></div></div>
-        <div class="table-scroll"><table><caption>All decision fields and native difference flags</caption><thead><tr><th scope="col">Field</th><th scope="col">Original</th><th scope="col">Read-only candidate</th><th scope="col">Native changed flag</th></tr></thead><tbody id="decision-rows"></tbody></table></div>
+        <div class="table-scroll"><table><caption>All decision fields and native difference flags</caption><thead><tr><th scope="col">Field</th><th scope="col">Original</th><th scope="col">Read + principal</th><th scope="col">Native changed flag</th></tr></thead><tbody id="decision-rows"></tbody></table></div>
         <details><summary>Supplied facts in the native report</summary><pre id="result-facts"></pre></details>
         <details><summary>Complete native report, including all source bindings</summary><pre id="raw-report"></pre></details>
       </section>

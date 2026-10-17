@@ -2,7 +2,7 @@
   "candidate": {
     "compiler_source_sha": "83928fa4538245abe33b08549da47f8cbdc50ed2",
     "generation_file": "generation.json",
-    "profile_id": "cel-api-readonly-v1",
+    "profile_id": "cel-api-readonly-principal-v1",
     "source_commit": "defined_by_this_generation"
   },
   "original": {

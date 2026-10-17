@@ -19,7 +19,7 @@ import (
 const (
 	expectedCompiler = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 	expectedOriginalGeneration = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
-	expectedRevisionGeneration = "sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e"
+	expectedRevisionGeneration = "sha256:af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee"
 )
 
 func main() {
