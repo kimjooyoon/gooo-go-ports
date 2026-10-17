@@ -190,24 +190,90 @@ func (p nativeCaseBatchPolicy) prepare(s suite, start int) (nativePreparedCaseBa
 		return nativePreparedCaseBatch{}, fmt.Errorf("invalid uuid-compact-v1 batch or lowering bound")
 	}
 	low, high, best := start+1, min(start+uuidCompactMaxRows, len(s.Cases)), start
-	var selected []byte
-	for low <= high {
-		end := low + (high-low)/2
+	// Only exact builtin JSON values may share lengths within this call.
+	// Named/custom marshalers retain every original full-document probe below.
+	pure := true
+	for _, row := range s.Cases[start:high] {
+		for _, input := range row.Inputs {
+			pure = pure && nativeBatchPureJSONValue(input, 0)
+		}
+		pure = pure && nativeBatchPureJSONValue(row.Expected, 0)
+	}
+	var measure func(int) (int, error)
+	if pure {
 		batch := s
-		batch.Cases = s.Cases[start:end]
-		raw, err := json.Marshal(caseDocument(batch))
+		batch.Cases = s.Cases[start:high]
+		document := caseDocument(batch).(map[string]any)
+		rows := document["cases"].([]any)
+		document["cases"] = []any{map[string]any{}}
+		envelope, err := json.Marshal(document)
 		if err != nil {
 			return nativePreparedCaseBatch{}, fmt.Errorf("serialize uuid-compact-v1: %w", err)
 		}
-		raw = append(raw, '\n')
-		if len(raw) <= uuidCompactMaxRawBytes && len(raw)-1 <= uuidCompactTranslatedBytes {
-			best, selected, low = end, raw, end+1
+		// Remove only the inert row's bytes. Commas and the final LF remain
+		// explicit; the selected file is still encoded by the full Go writer.
+		overhead := len(envelope) + 1 - len("{}")
+		prefix := []int{0}
+		measure = func(end int) (int, error) {
+			count := end - start
+			for len(prefix) <= count {
+				raw, err := json.Marshal(rows[len(prefix)-1])
+				if err != nil {
+					// Preserve the original full-document error context/path.
+					// This branch contains no custom marshalers to invoke twice.
+					batch := s
+					batch.Cases = s.Cases[start:end]
+					if _, fullErr := json.Marshal(caseDocument(batch)); fullErr != nil {
+						return 0, fullErr
+					}
+					return 0, err
+				}
+				prefix = append(prefix, prefix[len(prefix)-1]+len(raw))
+			}
+			return overhead + prefix[count] + count - 1, nil
+		}
+	}
+	var selected []byte
+	selectedSize := 0
+	for low <= high {
+		end := low + (high-low)/2
+		var raw []byte
+		var size int
+		var err error
+		if measure != nil {
+			size, err = measure(end)
+		} else {
+			batch := s
+			batch.Cases = s.Cases[start:end]
+			raw, err = json.Marshal(caseDocument(batch))
+		}
+		if err != nil {
+			return nativePreparedCaseBatch{}, fmt.Errorf("serialize uuid-compact-v1: %w", err)
+		}
+		if measure == nil {
+			raw = append(raw, '\n')
+			size = len(raw)
+		}
+		if size <= uuidCompactMaxRawBytes && size-1 <= uuidCompactTranslatedBytes {
+			best, selected, selectedSize, low = end, raw, size, end+1
 		} else {
 			high = end - 1
 		}
 	}
 	if best == start {
 		return nativePreparedCaseBatch{}, fmt.Errorf("one original UUID case exceeds uuid-compact-v1 wire budget")
+	}
+	if measure != nil {
+		batch := s
+		batch.Cases = s.Cases[start:best]
+		raw, err := json.Marshal(caseDocument(batch))
+		if err != nil {
+			return nativePreparedCaseBatch{}, fmt.Errorf("serialize uuid-compact-v1: %w", err)
+		}
+		selected = append(raw, '\n')
+		if len(selected) != selectedSize || len(selected) > uuidCompactMaxRawBytes || len(selected)-1 > uuidCompactTranslatedBytes {
+			return nativePreparedCaseBatch{}, fmt.Errorf("uuid-compact-v1 row lengths differ from the full Go writer")
+		}
 	}
 	return nativePreparedCaseBatch{End: best, Raw: selected}, nil
 }
