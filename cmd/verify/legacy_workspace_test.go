@@ -150,9 +150,49 @@ func inspectLegacy445Suite(s suite, w suiteWorkspace, want legacy445Suite, sourc
 	return nil
 }
 
-func TestLegacy445CatalogSourcesManifestsInputsCasesAndBatchesRemainIdentical(t *testing.T) {
+// Recheck the historical selector against its original source bytes. The
+// current snapshot must contain the one exact reviewed quote revision; only
+// the owned historical projection replaces it with the immutable fixture bytes.
+// This does not establish current-source native equivalence or rewrite history.
+func legacy445HistoricalSnapshot(t *testing.T, current frozenVerificationCatalog, fixture legacy445Fixture) frozenVerificationCatalog {
+	t.Helper()
+	const quote = "ports/google/uuid/quote.gooo"
+	const historicalQuote = "b9b0a9d642a91e2baba25b7636e875f6e5de9713bb7c4913368cd564cf34e339"
+	const reviewedCurrentQuote = "3a14a762ceed11df29b698ab3eb298655a6737bbba76fe5dbb38dbc81baeb7de"
+	if contentDigest(current.Sources[quote]) != "sha256:"+reviewedCurrentQuote || current.Hashes[quote] != reviewedCurrentQuote {
+		t.Fatal("current quote differs from the exact reviewed revision")
+	}
+	currentQuote := bytes.Clone(current.Sources[quote])
+	historical := current
+	historical.Sources = make(map[string][]byte, len(current.Sources))
+	historical.Hashes = make(map[string]string, len(current.Hashes))
+	for name, raw := range current.Sources {
+		historical.Sources[name] = bytes.Clone(raw)
+	}
+	for name, digest := range current.Hashes {
+		historical.Hashes[name] = digest
+	}
+	found := false
+	for _, original := range fixture.Sources {
+		if original.Name != quote {
+			continue
+		}
+		if found || original.SHA256 != "sha256:"+historicalQuote || contentDigest(original.Bytes) != original.SHA256 {
+			t.Fatal("immutable fixture quote differs from its original revision")
+		}
+		found = true
+		historical.Sources[quote] = bytes.Clone(original.Bytes)
+		historical.Hashes[quote] = historicalQuote
+	}
+	if !found || !bytes.Equal(current.Sources[quote], currentQuote) || current.Hashes[quote] != reviewedCurrentQuote {
+		t.Fatal("missing historical quote or projection mutated the current snapshot")
+	}
+	return historical
+}
+
+func TestLegacy445HistoricalSnapshotCatalogSourcesManifestsInputsCasesAndBatchesRemainIdentical(t *testing.T) {
 	fixture := loadLegacy445Fixture(t)
-	frozen, err := freezeVerificationCatalog("../../verification-catalog.json")
+	current, err := freezeVerificationCatalog("../../verification-catalog.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -194,12 +234,13 @@ func TestLegacy445CatalogSourcesManifestsInputsCasesAndBatchesRemainIdentical(t 
 		sourcePackage{Path: etagReportPackage, Sources: []string{etagReportSource}},
 		sourcePackage{Path: ifMatchPackage, Sources: []string{ifMatchSource}},
 	)
-	if !reflect.DeepEqual(frozen.Catalog, expectedCatalog) || len(frozen.Sources) != len(fixture.Sources)+27 {
+	if !reflect.DeepEqual(current.Catalog, expectedCatalog) || len(current.Sources) != len(fixture.Sources)+27 {
 		t.Fatal("catalog changed beyond the reviewed literal, Cut, CEL, AgentMesh, checked-domain, conditional-apply, decimal/payload, path Clean/alias, header, original header-addition, canonical-key/report and ETag/strong-validator-facts sources")
 	}
+	historical := legacy445HistoricalSnapshot(t, current, fixture)
 	sources := map[string]legacy445Source{}
 	for _, old := range fixture.Sources {
-		if !bytes.Equal(frozen.Sources[old.Name], old.Bytes) || contentDigest(frozen.Sources[old.Name]) != old.SHA256 {
+		if !bytes.Equal(historical.Sources[old.Name], old.Bytes) || contentDigest(historical.Sources[old.Name]) != old.SHA256 {
 			t.Fatal("original catalog source bytes changed", old.Name)
 		}
 		sources[old.Name] = old
@@ -211,7 +252,7 @@ func TestLegacy445CatalogSourcesManifestsInputsCasesAndBatchesRemainIdentical(t 
 	cases, batches := 0, 0
 	for i, s := range suites {
 		t.Run(s.Package+":"+s.Activity, func(t *testing.T) {
-			w, err := frozen.workspaceForSuite(s)
+			w, err := historical.workspaceForSuite(s)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -239,14 +280,15 @@ func TestLegacy445CatalogSourcesManifestsInputsCasesAndBatchesRemainIdentical(t 
 	}
 }
 
-func TestLegacy445RegressionEvidenceRejectsChanges(t *testing.T) {
+func TestLegacy445HistoricalSnapshotRegressionEvidenceRejectsChanges(t *testing.T) {
 	fixture := loadLegacy445Fixture(t)
-	frozen, err := freezeVerificationCatalog("../../verification-catalog.json")
+	current, err := freezeVerificationCatalog("../../verification-catalog.json")
 	if err != nil {
 		t.Fatal(err)
 	}
+	historical := legacy445HistoricalSnapshot(t, current, fixture)
 	s := original59NativeSuites(t)[0]
-	w, err := frozen.workspaceForSuite(s)
+	w, err := historical.workspaceForSuite(s)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -274,7 +316,7 @@ func TestLegacy445RegressionEvidenceRejectsChanges(t *testing.T) {
 			w.Identities[w.Names[0]] = old
 		},
 		"extra consumer": func(_ *suite, w *suiteWorkspace, _ *legacy445Suite) {
-			w.Sources["examples/literal-text-report/main.gooo"] = frozen.Sources["examples/literal-text-report/main.gooo"]
+			w.Sources["examples/literal-text-report/main.gooo"] = historical.Sources["examples/literal-text-report/main.gooo"]
 		},
 		"batch boundary":   func(_ *suite, _ *suiteWorkspace, want *legacy445Suite) { want.Batches[0].End++ },
 		"batch byte count": func(_ *suite, _ *suiteWorkspace, want *legacy445Suite) { want.Batches[0].Bytes++ },
@@ -285,7 +327,7 @@ func TestLegacy445RegressionEvidenceRejectsChanges(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			candidate := s
 			candidate.Cases = append([]testCase(nil), s.Cases...)
-			selected, err := frozen.workspaceForSuite(s)
+			selected, err := historical.workspaceForSuite(s)
 			if err != nil {
 				t.Fatal(err)
 			}
