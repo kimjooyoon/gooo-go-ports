@@ -22,7 +22,7 @@ CONFIGS = [
     ('flags', 'differences.workspace.json', 'gooo/api-policy-revision/classifier', 'DifferenceFlags', 'gooo://api-policy-revision/difference-flags', '(ApiDecision,ApiDecision)', 'ApiDifferenceFlags', 'compare.gooo'),
     ('summary', 'summary.workspace.json', 'gooo/api-policy-revision/classifier', 'ChangeSummary', 'gooo://api-policy-revision/change-summary', '(ApiDecision,ApiDecision)', 'ApiChangeSummary', 'compare.gooo'),
 ]
-FILES = ['readonly.gooo', 'compare.gooo', 'candidate.workspace.json', 'differences.workspace.json', 'summary.workspace.json', 'profiles.json', 'compiler.json', 'adapter_generated.go', 'model.go', 'compare.go', 'input.go', 'bindings.go', 'go.mod', 'cmd/compare/main.go', 'generate.py', 'canonical/main.gooo', 'canonical/scalar_access.gooo', 'testdata/classifier-expected.json']
+FILES = ['readonly.gooo', 'compare.gooo', 'candidate.workspace.json', 'differences.workspace.json', 'summary.workspace.json', 'profiles.json', 'compiler.json', 'adapter_generated.go', 'model.go', 'compare.go', 'input.go', 'bindings.go', 'go.mod', 'cmd/compare/main.go', 'cmd/compare/diagnostics.go', 'generate.py', 'canonical/main.gooo', 'canonical/scalar_access.gooo', 'testdata/classifier-expected.json']
 for prefix, *_ in CONFIGS:
     FILES += ['receipts/' + prefix + '-' + suffix for suffix in ['seed-inputs.json', 'execution.json', 'replay.json', 'lowered.gooo', 'body-codegen.json']]
     FILES += ['internal/' + prefix + '/generated.go']

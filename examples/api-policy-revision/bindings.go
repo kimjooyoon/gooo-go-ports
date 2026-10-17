@@ -25,11 +25,11 @@ const originalGeneration = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135
 // embed across its nested go.mod: generate.py checks the frozen distribution,
 // including its go.mod and licenses; this runtime performs no physical-file reads.
 //
-//go:embed canonical receipts internal readonly.gooo compare.gooo candidate.workspace.json differences.workspace.json summary.workspace.json profiles.json compiler.json adapter_generated.go model.go compare.go input.go bindings.go go.mod cmd/compare/main.go generate.py generation.json testdata/classifier-expected.json
+//go:embed canonical receipts internal readonly.gooo compare.gooo candidate.workspace.json differences.workspace.json summary.workspace.json profiles.json compiler.json adapter_generated.go model.go compare.go input.go bindings.go go.mod cmd/compare/main.go cmd/compare/diagnostics.go generate.py generation.json testdata/classifier-expected.json
 var revisionAssets embed.FS
 
 var revisionNames = []string{
-	"testdata/classifier-expected.json", "readonly.gooo", "compare.gooo", "candidate.workspace.json", "differences.workspace.json", "summary.workspace.json", "profiles.json", "compiler.json", "adapter_generated.go", "model.go", "compare.go", "input.go", "bindings.go", "go.mod", "cmd/compare/main.go", "generate.py",
+	"testdata/classifier-expected.json", "readonly.gooo", "compare.gooo", "candidate.workspace.json", "differences.workspace.json", "summary.workspace.json", "profiles.json", "compiler.json", "adapter_generated.go", "model.go", "compare.go", "input.go", "bindings.go", "go.mod", "cmd/compare/main.go", "cmd/compare/diagnostics.go", "generate.py",
 	"canonical/main.gooo", "canonical/scalar_access.gooo",
 	"receipts/candidate-seed-inputs.json", "receipts/candidate-execution.json", "receipts/candidate-replay.json", "receipts/candidate-lowered.gooo", "receipts/candidate-body-codegen.json", "internal/candidate/generated.go",
 	"receipts/flags-seed-inputs.json", "receipts/flags-execution.json", "receipts/flags-replay.json", "receipts/flags-lowered.gooo", "receipts/flags-body-codegen.json", "internal/flags/generated.go",

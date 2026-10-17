@@ -19,7 +19,7 @@ import (
 
 const (
 	apiPolicyTestCompiler = "83928fa4538245abe33b08549da47f8cbdc50ed2"
-	apiPolicyTestRevision = "sha256:5ce3d883db76b9b2cca6f53602eff6b7b3dff1870b3e19a882281dcff91bdda6"
+	apiPolicyTestRevision = "sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e"
 	apiPolicyTestOriginal = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
 )
 
@@ -133,7 +133,7 @@ func TestAPIPolicyBuildBindsCompleteFrozenProfiles(t *testing.T) {
 		count            int
 		bindings         apiPolicyBindings
 	}{
-		{"examples/api-policy-revision/", apiPolicyTestRevision, 36, bound.Revision},
+		{"examples/api-policy-revision/", apiPolicyTestRevision, 37, bound.Revision},
 		{"examples/api-policy-revision/profiles/original/", apiPolicyTestOriginal, 28, bound.Original},
 	} {
 		if profile.bindings.CompilerSourceSHA != apiPolicyTestCompiler || profile.bindings.GenerationSHA256 != profile.generation || len(profile.bindings.Assets) != profile.count {

@@ -106,7 +106,7 @@ def check_bindings():
     current_raw = (ROOT / 'generation.json').read_bytes()
     current = decode(current_raw)
     need(current['schema'] == 'gooo/api-policy-revision-generation/v1'
-         and current['compiler_source_sha'] == PIN and len(current['assets']) == 36,
+         and current['compiler_source_sha'] == PIN and len(current['assets']) == 37,
          'revision generation identity/roster differs')
     need(digest(current_raw) != OLD_GENERATION, 'candidate reused original generation')
     paths = {'generation.json': ROOT / 'generation.json',
@@ -335,7 +335,7 @@ def main():
         record['original_generation_sha256'] = OLD_GENERATION
         record['original_asset_count'] = 28
         record['revision_generation_sha256'] = new_bindings['generation_sha256']
-        record['revision_asset_count'] = 36
+        record['revision_asset_count'] = 37
         record['status'] = 'FINITE_TWO_PROFILE_NATIVE_AND_SAVED_REPLAY_PASS'
     except (VerificationError, OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as exc:
         record['failure'] = str(exc)

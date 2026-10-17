@@ -29,7 +29,7 @@ ORIGINAL = "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
 ORIGINAL_COMMIT = "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"
 ORIGINAL_VERSION = "v0.0.0-20261014100709-8cddcc4e65af"
 ORIGINAL_GENERATION = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
-PARENT_GENERATION = "sha256:5ce3d883db76b9b2cca6f53602eff6b7b3dff1870b3e19a882281dcff91bdda6"
+PARENT_GENERATION = "sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e"
 COMPILER = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 REPOSITORY = "https://github.com/kimjooyoon/gooo-go-ports"
 FIELDS = (
@@ -138,7 +138,7 @@ def sealed_source(root, count, expected_generation):
         raw = read_regular(root, name)
         require(digest == "sha256:" + sha(raw), "checked-out asset differs: " + name)
         result[name] = raw
-    if count == 36:
+    if count == 37:
         require(document.get("schema") == "gooo/api-policy-revision-generation/v1"
                 and document.get("compiler_source_sha") == COMPILER,
                 "unexpected parent generation schema/compiler identity")
@@ -396,7 +396,7 @@ def verify(args, out, report):
     require(go.is_file() and os.access(go, os.X_OK), "--go is not an installed executable")
     require(re.fullmatch(r"[0-9a-f]{40}", args.revision) is not None,
             "--revision must be a full lowercase commit SHA")
-    parent_files = sealed_source(source, 36, PARENT_GENERATION)
+    parent_files = sealed_source(source, 37, PARENT_GENERATION)
     original_files = sealed_source(source / "profiles/original", 28, ORIGINAL_GENERATION)
     parent_assets = decode(parent_files["generation.json"])["assets"]
     original_assets = decode(original_files["generation.json"])["assets"]
@@ -442,7 +442,7 @@ def verify(args, out, report):
         module_identity(original_query, ORIGINAL, ORIGINAL_COMMIT, ORIGINAL_VERSION)
         report["resolved"] = {"parent": parent_query, "original": original_query}
         for label, module, resolved, expected, count in (
-                ("parent", PARENT, parent_version, parent_files, 36),
+                ("parent", PARENT, parent_version, parent_files, 37),
                 ("original", ORIGINAL, ORIGINAL_VERSION, original_files, 28)):
             download = decode(recorder.success(label + "-download", [go, "mod", "download", "-json",
                                                                       module + "@" + resolved], work / "query", env))
@@ -522,7 +522,7 @@ def verify(args, out, report):
                                   "exit_code": code, "stdout_bytes": len(stdout), "stderr_bytes": len(stderr)}
         report["acceptance"] = {
             "facts": 9, "positive_cases": 2, "decision_fields": 15, "difference_flags": 15,
-            "summary_fields": 2, "public_asset_count": 36, "public_assets_exact": True,
+            "summary_fields": 2, "public_asset_count": 37, "public_assets_exact": True,
             "public_generation_exact": True, "original_assets_exact": True,
             "original_generation_unchanged": True, "substitution_refused": True,
             "runtime_empty_path": True, "consumer_no_replace_or_workspace": True,
