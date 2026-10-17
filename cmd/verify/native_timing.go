@@ -20,6 +20,8 @@ import (
 
 const nativeTimingSchema = "gooo/native-verification-timing/v1"
 const nativeTimingMaxBytes = 8 << 20
+const nativeCommandResourcesSchema = "gooo/native-command-resources/v1"
+const nativeCommandResourcesScope = "Optional accounting from the already-waited execute/replay CLI, including only descendants accounted for by the OS wait. CPU is accumulated user/system time, not elapsed time or a complete live process tree. MaxRSS is the OS wait high-water mark, not simultaneous memory, a sum across commands, or a memory limit. Linux raw MaxRSS is KiB; Darwin raw MaxRSS is bytes. Unavailable and unobserved values are null. Resources do not replace receipt, replay, source, summary or timing-completeness checks."
 
 type nativeTimingConfig struct {
 	Output, EvidenceRoot, RepositoryRoot, Compiler string
@@ -42,9 +44,15 @@ type nativeTimingSnapshot struct {
 	Binaries map[string]nativeTimingFile `json:"binaries"`
 }
 
-// This is the reviewed 23-file CI roster, followed by the two runtime additions.
+// Explicit observer/consumer inputs, supplemented by the frozen catalog below.
 // Hash current bytes; never import a private preparation file or an old receipt.
 var nativeTimingSourceNames = []string{
+	"cmd/verify/command_resources.go",
+	"cmd/verify/command_resources_unix.go",
+	"cmd/verify/command_resources_other.go",
+	"cmd/verify/command_resources_test.go",
+	"cmd/verify/command_resources_unix_test.go",
+	"cmd/verify/native_command_resources_test.go",
 	"cmd/verify/last_index_corpus.go",
 	"cmd/verify/last_index_corpus_test.go",
 	"cmd/verify/last_index_contracts.go",
@@ -264,6 +272,50 @@ type nativeBatchTiming struct {
 	identity              expectedIdentity
 	receipt               string
 	status                string
+	commandResources      nativeBatchCommandResources
+	commandObserved       [2]bool
+}
+
+type nativeBatchCommandResources struct {
+	Execute nativeCommandResources `json:"execute"`
+	Replay  nativeCommandResources `json:"replay"`
+}
+
+func unobservedNativeCommandResources() nativeCommandResources {
+	return nativeCommandResources{Status: "NOT_OBSERVED", Reason: "command has not reported wait accounting", GOOS: runtime.GOOS, Scope: "waited-command-accounting"}
+}
+
+// Each context belongs to one command in one batch. It retains the original
+// parent cancellation and never uses process-wide child accounting deltas.
+func (bt *nativeBatchTiming) commandContext(parent context.Context, phase string) context.Context {
+	if bt == nil {
+		return parent
+	}
+	return withNativeCommandResources(parent, func(resources nativeCommandResources) {
+		bt.recordCommandResources(phase, resources)
+	})
+}
+
+func (bt *nativeBatchTiming) recordCommandResources(phase string, resources nativeCommandResources) {
+	t := bt.owner
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	index := -1
+	if phase == "execute" {
+		index = 0
+	} else if phase == "replay" {
+		index = 1
+	}
+	if bt.done || index < 0 || bt.phases[bt.phaseIndex].Name != phase || bt.commandObserved[index] {
+		t.failLocked(fmt.Errorf("native command accounting is duplicate or outside its active batch phase"))
+		return
+	}
+	bt.commandObserved[index] = true
+	if index == 0 {
+		bt.commandResources.Execute = resources
+	} else {
+		bt.commandResources.Replay = resources
+	}
 }
 
 // Validation opens nothing. Require a direct child and reject every existing
@@ -431,9 +483,10 @@ func newNativeTimingWithSnapshot(cfg nativeTimingConfig, snapshot func(nativeTim
 		"compiler_revision": cfg.Lock.CompilerRevision, "compiler_version": cfg.Lock.CompilerVersion,
 		"catalog": nativeTimingBytes(t.cfg.Catalog.Raw), "catalog_source_sha256": t.cfg.Catalog.Hashes,
 		"planned_suites": planned, "expected_suites": len(t.suites), "expected_cases": total, "expected_boundaries_recomputed": false,
-		"boundary_scope":     "Actual contiguous batch ranges are compared with the original successful suite observation. Exact original boundaries require byte-exact legacy prefix sizing, immutable regression fixtures and the original full-summary gate.",
-		"source_set_scope":   "Each suite_end stores its checked source set once. Batch events bind that exact map by SHA-256; source inputs and the complete frozen catalog are hashed in the header and rechecked at close.",
-		"timing_scope":       "Suite and batch elapsed intervals include recorder lock/event overhead; enqueue, slot wait, dispatch, CPU time and resource contention are not measured. Batch selection happens before beginBatch and is unmeasured. Run duration includes identity observations and ends before footer finalization. UTC is for correlation; durations use Go monotonic time.",
+		"boundary_scope":           "Actual contiguous batch ranges are compared with the original successful suite observation. Exact original boundaries require byte-exact legacy prefix sizing, immutable regression fixtures and the original full-summary gate.",
+		"source_set_scope":         "Each suite_end stores its checked source set once. Batch events bind that exact map by SHA-256; source inputs and the complete frozen catalog are hashed in the header and rechecked at close.",
+		"timing_scope":             "Suite and batch elapsed intervals include recorder lock/event overhead; enqueue, slot wait, dispatch and resource contention are not measured. Batch selection happens before beginBatch and is unmeasured. Run duration includes identity observations and ends before footer finalization. UTC is for correlation; durations use Go monotonic time.",
+		"command_resources_schema": nativeCommandResourcesSchema, "command_resources_scope": nativeCommandResourcesScope,
 		"finalization_scope": "A footer is diagnostic evidence only; successful close return and the original native verification/summary gates are also required. No effect authorization or performance causality is asserted.",
 	}
 	for _, s := range cfg.Suites {
@@ -726,7 +779,8 @@ func (t *nativeTiming) beginBatch(s suite, batchIndex, start, end int) *nativeBa
 		return nil
 	}
 	now := time.Now()
-	bt := &nativeBatchTiming{owner: t, suite: st, index: batchIndex, start: start, end: end, started: now, phaseStarted: now}
+	bt := &nativeBatchTiming{owner: t, suite: st, index: batchIndex, start: start, end: end, started: now, phaseStarted: now,
+		commandResources: nativeBatchCommandResources{Execute: unobservedNativeCommandResources(), Replay: unobservedNativeCommandResources()}}
 	for i, name := range nativeTimingPhaseNames {
 		bt.phases[i].Name = name
 	}
@@ -839,6 +893,7 @@ func (bt *nativeBatchTiming) finish(returnedErr, contextErr error, verified bool
 		"started_at_utc": bt.started.UTC().Format(time.RFC3339Nano), "finished_at_utc": now.UTC().Format(time.RFC3339Nano), "duration_ns": now.Sub(bt.started).Nanoseconds(),
 		"status": bt.status, "verified": bt.verified, "returned_error": returnedErr != nil, "context_error": contextErr != nil,
 		"phases":            bt.phases,
+		"command_resources": bt.commandResources,
 		"compiler_revision": bt.identity.CompilerRevision, "go_version": bt.identity.GoVersion,
 		"manifest_digest": bt.identity.ManifestDigest, "cases_digest": bt.identity.CasesDigest,
 		"source_set_sha256": bt.suite.sourceSetSHA256, "original_receipt_sha256": bt.receipt})

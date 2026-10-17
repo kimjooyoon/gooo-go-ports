@@ -13,6 +13,132 @@ SPEC=importlib.util.spec_from_file_location('header_addition_host',ROOT/'tools/c
 CHECK=importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(CHECK)
 
+class CommandResourcesTests(unittest.TestCase):
+    def accounting(self,goos='linux',status='OBSERVED'):
+        value={'status':status,'goos':goos,'scope':'waited-command-accounting',
+               'user_cpu_ns':0,'system_cpu_ns':1,'maxrss_raw':2,
+               'maxrss_unit':'KiB' if goos=='linux' else 'bytes',
+               'maxrss_bytes':2048 if goos=='linux' else 2}
+        if status!='OBSERVED':
+            value['reason']='OS wait accounting is unavailable'
+            for key in ('user_cpu_ns','system_cpu_ns','maxrss_raw','maxrss_unit','maxrss_bytes'):value[key]=None
+        return value
+
+    def timing(self,goos='linux',status='OBSERVED'):
+        return ({'command_resources_schema':'gooo/native-command-resources/v1','goos':goos},
+                [{'command_resources':{phase:self.accounting(goos,status) for phase in ('execute','replay')}}])
+
+    def test_command_resources_observed_linux_and_darwin_exact_units(self):
+        for goos in ('linux','darwin'):
+            header,batches=self.timing(goos)
+            self.assertIsNone(CHECK.validate_command_resources(header,batches))
+            # Zero and large valid accounting have identical acceptance. There is
+            # no CPU/elapsed comparison, RSS budget or semantic PASS predicate.
+            for phase in ('execute','replay'):
+                value=batches[0]['command_resources'][phase]
+                for key in ('user_cpu_ns','system_cpu_ns'):value[key]=9223372036854775807
+                value['maxrss_raw']=9223372036854775807//1024 if goos=='linux' else 9223372036854775807
+                value['maxrss_bytes']=value['maxrss_raw']*(1024 if goos=='linux' else 1)
+            self.assertIsNone(CHECK.validate_command_resources(header,batches))
+            for phase in ('execute','replay'):
+                for key in ('user_cpu_ns','system_cpu_ns','maxrss_raw','maxrss_bytes'):batches[0]['command_resources'][phase][key]=0
+            self.assertIsNone(CHECK.validate_command_resources(header,batches))
+
+    def test_command_resources_unavailable_preserves_coverage_without_numbers(self):
+        for goos in ('linux','darwin','freebsd'):
+            header,batches=self.timing(goos,'NOT_AVAILABLE')
+            self.assertIsNone(CHECK.validate_command_resources(header,batches))
+        header,batches=self.timing()
+        batches[0]['command_resources']['replay']=self.accounting('linux','NOT_AVAILABLE')
+        self.assertIsNone(CHECK.validate_command_resources(header,batches))
+
+    def test_command_resources_current_reader_rejects_legacy_and_unknown_schema(self):
+        header,batches=self.timing()
+        for schema in (None,'gooo/native-command-resources/v0',1,True,{}):
+            h=copy.deepcopy(header)
+            if schema is None:h.pop('command_resources_schema')
+            else:h['command_resources_schema']=schema
+            with self.subTest(schema=schema),self.assertRaises(RuntimeError):CHECK.validate_command_resources(h,batches)
+        for goos in (None,'',' ',1,True):
+            h=copy.deepcopy(header);h['goos']=goos
+            with self.subTest(goos=goos),self.assertRaises(RuntimeError):CHECK.validate_command_resources(h,batches)
+
+    def test_command_resources_every_batch_requires_both_exact_cli_objects(self):
+        header,batches=self.timing()
+        for phase in ('execute','replay'):
+            for mutation in ('missing','null','list','extra'):
+                bs=copy.deepcopy(batches);resources=bs[0]['command_resources']
+                if mutation=='missing':resources.pop(phase)
+                elif mutation=='extra':resources['other']=copy.deepcopy(resources[phase])
+                else:resources[phase]=None if mutation=='null' else []
+                with self.subTest(phase=phase,mutation=mutation),self.assertRaises(RuntimeError):CHECK.validate_command_resources(header,bs)
+        for value in (None,[],{}):
+            with self.subTest(value=value),self.assertRaises(RuntimeError):CHECK.validate_command_resources(header,[{'command_resources':value}])
+        bs=copy.deepcopy(batches);bs.append({})
+        with self.assertRaises(RuntimeError):CHECK.validate_command_resources(header,bs)
+        with self.assertRaises(RuntimeError):CHECK.validate_command_resources(header,[None])
+
+    def test_command_resources_exact_fields_reject_omission_addition_and_reason_on_observed(self):
+        header,batches=self.timing()
+        for phase in ('execute','replay'):
+            for key in self.accounting():
+                bs=copy.deepcopy(batches);bs[0]['command_resources'][phase].pop(key)
+                with self.subTest(phase=phase,missing=key),self.assertRaises(RuntimeError):CHECK.validate_command_resources(header,bs)
+            for key,value in (('reason',''),('user_cpu_s',0),('verified',True),('authorization','PASS')):
+                bs=copy.deepcopy(batches);bs[0]['command_resources'][phase][key]=value
+                with self.subTest(phase=phase,extra=key),self.assertRaises(RuntimeError):CHECK.validate_command_resources(header,bs)
+
+    def test_command_resources_current_verified_batches_reject_unobserved_and_unknown_status(self):
+        header,batches=self.timing()
+        for phase in ('execute','replay'):
+            for status in ('NOT_OBSERVED','PASS','',None,True,{}):
+                bs=copy.deepcopy(batches);bs[0]['command_resources'][phase]=self.accounting('linux',status)
+                with self.subTest(phase=phase,status=status),self.assertRaises(RuntimeError):CHECK.validate_command_resources(header,bs)
+
+    def test_command_resources_all_observed_numbers_are_nonbool_int64(self):
+        header,batches=self.timing()
+        for phase in ('execute','replay'):
+            for key in ('user_cpu_ns','system_cpu_ns','maxrss_raw','maxrss_bytes'):
+                for value in (-1,9223372036854775808,True,False,1.0,'1',None):
+                    bs=copy.deepcopy(batches);bs[0]['command_resources'][phase][key]=value
+                    with self.subTest(phase=phase,key=key,value=value),self.assertRaises(RuntimeError):CHECK.validate_command_resources(header,bs)
+
+    def test_command_resources_os_scope_and_raw_rss_conversion_cannot_be_rebound(self):
+        for goos in ('linux','darwin'):
+            header,batches=self.timing(goos)
+            for phase in ('execute','replay'):
+                for key,value in (('goos','darwin' if goos=='linux' else 'linux'),
+                                  ('scope','process-tree'),('scope',''),
+                                  ('maxrss_unit','bytes' if goos=='linux' else 'KiB'),
+                                  ('maxrss_unit',None),('maxrss_bytes',2 if goos=='linux' else 2048),
+                                  ('maxrss_raw',3),('maxrss_raw',9223372036854775807)):
+                    bs=copy.deepcopy(batches);bs[0]['command_resources'][phase][key]=value
+                    with self.subTest(goos=goos,phase=phase,key=key,value=value),self.assertRaises(RuntimeError):CHECK.validate_command_resources(header,bs)
+        header,batches=self.timing('freebsd')
+        with self.assertRaises(RuntimeError):CHECK.validate_command_resources(header,batches)
+
+    def test_command_resources_unavailable_requires_nonempty_reason_and_all_null_values(self):
+        header,batches=self.timing(status='NOT_AVAILABLE')
+        for phase in ('execute','replay'):
+            for key,value in [('reason',None),('reason',''),('reason',' '),('reason',True),
+                              ('user_cpu_ns',0),('system_cpu_ns',0),('maxrss_raw',0),
+                              ('maxrss_bytes',0),('maxrss_unit','KiB')]:
+                bs=copy.deepcopy(batches);bs[0]['command_resources'][phase][key]=value
+                with self.subTest(phase=phase,key=key,value=value),self.assertRaises(RuntimeError):CHECK.validate_command_resources(header,bs)
+            bs=copy.deepcopy(batches);bs[0]['command_resources'][phase].pop('reason')
+            with self.subTest(missing_reason=phase),self.assertRaises(RuntimeError):CHECK.validate_command_resources(header,bs)
+
+    def test_command_resources_current_reader_calls_validation_unconditionally(self):
+        import ast
+        tree=ast.parse((ROOT/'tools/check-header-addition-host.py').read_text())
+        reader=next(node for node in tree.body if isinstance(node,ast.FunctionDef) and node.name=='read_verification')
+        calls=[node.value for node in reader.body if isinstance(node,ast.Expr)
+               and isinstance(node.value,ast.Call) and isinstance(node.value.func,ast.Name)
+               and node.value.func.id=='validate_command_resources']
+        self.assertEqual(len(calls),1)
+        self.assertEqual([node.id for node in calls[0].args],['header','batches'])
+        self.assertFalse(calls[0].keywords)
+
 class FreshHostTests(unittest.TestCase):
     def test_duplicate_decoded_keys_and_nonfinite_refuse(self):
         for raw in [b'{"name":1,"na\\u006de":2}',b'{"x":NaN}',b'{"x":Infinity}',b'{}{}']:
@@ -40,7 +166,7 @@ class FreshHostTests(unittest.TestCase):
         self.assertIn('examples/diagnostic-header-addition/main.gooo',roster)
         self.assertIn('cmd/verify/header_addition_corpus.go',roster)
         self.assertIn('ports/autobot/ai_lines.gooo',roster)
-        self.assertEqual(len(roster),276)
+        self.assertEqual(len(roster),282)
         self.assertEqual(len(catalog['packages']),56)
         self.assertEqual(sum(len(p['sources']) for p in catalog['packages']),67)
         for name in ('ports/net/textproto/canonical.gooo','examples/canonical-header-key/main.gooo','cmd/verify/canonical_header_contracts.go','cmd/verify/canonical_header_corpus_test.go','examples/canonical-header-key/manual20.json','third_party/go/net/textproto/reader.go.txt','cmd/verify/etag_contracts.go','cmd/verify/etag_native_test.go','ports/net/http/etag.gooo','examples/strong-validator-facts/main.gooo','examples/strong-validator-facts/manual247.json','third_party/go/net/http/fs.go.txt','etag-scan.workspace.json','etag-strong-match.workspace.json','strong-validator-facts.workspace.json'):

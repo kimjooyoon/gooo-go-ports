@@ -536,6 +536,7 @@ func execute(ctx context.Context, compiler, path string, args ...string) ([]byte
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	err := cmd.Run()
+	emitNativeCommandResources(ctx, cmd.ProcessState)
 	if e := os.WriteFile(path, stdout.Bytes(), 0644); e != nil {
 		return nil, e
 	}

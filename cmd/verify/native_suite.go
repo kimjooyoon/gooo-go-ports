@@ -97,7 +97,7 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 			executeArgs = append(executeArgs, "--go", etagGoToolPath())
 		}
 		executeArgs = append(executeArgs, workspace)
-		raw, err := v.execute(v.commands, v.compiler, receipt, executeArgs...)
+		raw, err := v.execute(pendingTiming.commandContext(v.commands, "execute"), v.compiler, receipt, executeArgs...)
 		if err != nil {
 			return result, err
 		}
@@ -113,7 +113,7 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 			replayArgs = append(replayArgs, "--go", etagGoToolPath())
 		}
 		replayArgs = append(replayArgs, workspace)
-		raw, err = v.execute(v.commands, v.compiler, replayPath, replayArgs...)
+		raw, err = v.execute(pendingTiming.commandContext(v.commands, "replay"), v.compiler, replayPath, replayArgs...)
 		if err != nil {
 			return result, err
 		}
