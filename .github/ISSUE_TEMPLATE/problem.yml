@@ -1,5 +1,5 @@
 name: Loading, setup, code generation, or function problem
-description: Report a failed first run or an unexpected result in the Gooo source editor, demos, text inspector, crop planner, or native ports.
+description: Report a failed first run, coding-agent trial, or unexpected result in a Gooo example or port.
 body:
   - type: markdown
     attributes:
@@ -16,10 +16,22 @@ body:
         - Unicode text inspector
         - Rectangle crop planner
         - Downloaded browser demo
+        - Coding-agent first-program skill
         - Native setup, verification, or replay
         - Another path
     validations:
       required: true
+  - type: dropdown
+    id: agent-stage
+    attributes:
+      label: For a coding-agent trial, where did you get to? (optional)
+      options:
+        - Skill installation or tool setup
+        - Skill discovery or activation
+        - Editing Gooo source
+        - Native execution of the changed source
+        - Saved-receipt replay
+        - Completed the edit, execution, and replay
   - type: textarea
     id: steps
     attributes:
@@ -37,15 +49,20 @@ body:
   - type: input
     id: environment
     attributes:
-      label: Browser and operating system, if known
-      description: For a native run, include your Go version if available.
+      label: Agent or browser, version, and operating system, if known
+      description: For a coding agent, name the client and version. For a native run, include your Go version if available. Missing tool versions do not prevent a report.
   - type: input
     id: version
     attributes:
       label: Release version or port revision, if known
       description: The archive name or the demo's Port revision can help. Leave this blank if loading failed.
   - type: textarea
+    id: intended-use
+    attributes:
+      label: What would you use Gooo for? (optional)
+      description: Describe one real task and the input, output, or automation you need. If this example does not help, explain what is missing.
+  - type: textarea
     id: supporting-details
     attributes:
       label: Shared input link, compiler response, inspection report, or additional details (optional)
-      description: The function demo offers Copy link to this input; include its actual result above. A completed text inspection offers Download inspection JSON with the exact original text and results. The source editor offers Raw compiler response with generated Go, selected Gooo code, and compiler diagnostics; it does not prove generated program execution. Review any code, paths, or files before sharing them publicly. Logs and build metadata are optional.
+      description: For an agent trial, include the first failed command and diagnostic, or the changed result and execution/replay paths if available. A first setup error is enough; a completed run is not required. The function demo offers Copy link to this input. Inspection JSON contains the exact original text. Raw compiler response contains generated Go, selected Gooo code, and diagnostics; it does not prove generated program execution. Review any code, paths, or files before sharing them publicly. Logs and build metadata are optional.

@@ -422,7 +422,7 @@ func newNativeTimingWithSnapshot(cfg nativeTimingConfig, snapshot func(nativeTim
 		"compiler_revision": cfg.Lock.CompilerRevision, "compiler_version": cfg.Lock.CompilerVersion,
 		"catalog": nativeTimingBytes(t.cfg.Catalog.Raw), "catalog_source_sha256": t.cfg.Catalog.Hashes,
 		"planned_suites": planned, "expected_suites": len(t.suites), "expected_cases": total, "expected_boundaries_recomputed": false,
-		"boundary_scope":     "Actual contiguous batch ranges are compared with the original successful suite observation. Exact original boundaries rely on unchanged nativeBatchEnd/loop source and the original full-summary gate.",
+		"boundary_scope":     "Actual contiguous batch ranges are compared with the original successful suite observation. Exact original boundaries require byte-exact legacy prefix sizing, immutable regression fixtures and the original full-summary gate.",
 		"source_set_scope":   "Each suite_end stores its checked source set once. Batch events bind that exact map by SHA-256; source inputs and the complete frozen catalog are hashed in the header and rechecked at close.",
 		"timing_scope":       "Suite and batch elapsed intervals include recorder lock/event overhead; enqueue, slot wait, dispatch, CPU time and resource contention are not measured. Batch selection happens before beginBatch and is unmeasured. Run duration includes identity observations and ends before footer finalization. UTC is for correlation; durations use Go monotonic time.",
 		"finalization_scope": "A footer is diagnostic evidence only; successful close return and the original native verification/summary gates are also required. No effect authorization or performance causality is asserted.",

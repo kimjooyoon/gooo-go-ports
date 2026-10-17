@@ -3,6 +3,8 @@
 This repository provides a small, source-based Gooo workflow for a local coding
 agent. Start with a concrete task: edit a Gooo program, execute the changed
 source, and save a new execution/replay pair.
+The [Gooo language and compiler](https://github.com/kimjooyoon/meta-ontology-go)
+are developed separately; this repository supplies ports and runnable examples.
 
 ## Run the first-program skill
 
@@ -36,6 +38,50 @@ runs a fixed compiled program; use the native workflow to verify a source edit.
 The skill explains the signed-int64 and 1,024-byte Text limits of this example.
 An input-only `OBSERVED` result is a finite execution observation, not a proof
 for all inputs. Preserve a first failure and its diagnostic.
+
+### Optional project-local skill installation
+
+To start outside a repository checkout, review the
+[pinned skill](https://github.com/kimjooyoon/gooo-go-ports/tree/c4d0c54ffc51cd2cc015d81a828bb1e96fbe1b79/.agents/skills/gooo-first-program)
+and use a fresh project directory with no existing copy of this skill. Prepare
+Node.js **22.20 or later**, npm and Git, then run from that directory:
+
+```sh
+DISABLE_TELEMETRY=1 npm exec --yes --ignore-scripts \
+  --package=skills@1.7.2 -- \
+  skills add https://github.com/kimjooyoon/gooo-go-ports/tree/c4d0c54ffc51cd2cc015d81a828bb1e96fbe1b79/.agents/skills/gooo-first-program \
+  --skill gooo-first-program --agent codex --copy --yes
+```
+
+This selects a project-local copy for Codex. It writes the skill under
+`.agents/skills/gooo-first-program` and records the source commit in
+`skills-lock.json`. Review those files, then use the explicit first-program task
+above. The skill guides a separate checkout, tool setup and actual Gooo run;
+installing its instructions does not install the compiler.
+
+One macOS sandbox installation used the SRI-verified `skills` **1.7.2** tarball
+with `npm exec` and the exact source URL and flags above. Both installed files
+matched the pinned public Git blobs. The command above obtains that CLI version
+from npm instead of the local tarball used in the test. Client activation and
+independent adoption remain unverified. See the
+[official CLI](https://github.com/vercel-labs/skills/tree/671e8c320810d36fed80fac5f1a2c1bf7e82d812)
+for installation scope and the
+[telemetry opt-out](https://www.skills.sh/docs/cli#telemetry).
+
+### Report a first attempt or a real task
+
+Use the [first-run feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml)
+and select **Coding-agent first-program skill**. A first setup error is enough;
+you do not need a completed run or all tool versions to report it. Name your
+agent, the step reached, the command or source edit, and the actual result or
+first diagnostic when available. Share public inputs and source only.
+
+For the supplied task, score `75` should change from `sensor: high` to
+`sensor: low` after the threshold edit, while its other three fields stay the
+same. Save a fresh execution and replay for the edited source. Tell us whether
+this helped with a real task, and what input, output or automation is missing.
+We use that report to separate setup and workflow problems from a reproducible
+compiler issue before passing a minimal case to the language repository.
 
 ## Choose a task that matches the current capability
 

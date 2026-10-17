@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"math"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -126,5 +127,123 @@ func TestStringByteAdditionKeepsLegacy62241CasesAnd833BatchBoundaries(t *testing
 	}
 	if ports != 37 || len(programs) != 15 || activities != 17 {
 		t.Fatal("derived port/program/activity roster differs", ports, len(programs), activities)
+	}
+}
+
+// These formatter-only records use the actual full Go encoder as the oracle;
+// they are not new native semantic cases or a second length formula.
+func TestStringByteRowLengthExactWireEdges(t *testing.T) {
+	makeRows := func(count int, text string, record bool) suite {
+		s := suite{Package: stringBytePackage, Activity: "IndexByte"}
+		for i := 0; i < count; i++ {
+			var expected any = int64(-1)
+			if record {
+				expected = map[string]any{"ok": true, "nested": map[string]any{"text": text, "items": []any{false, int64(-9223372036854775807), "<>&\u2028\u2029🙂"}}}
+			}
+			s.Cases = append(s.Cases, testCase{Inputs: []any{text, int64(i)}, Expected: expected})
+		}
+		return s
+	}
+	for _, row := range []struct {
+		name string
+		s    suite
+	}{
+		{"escaped1024", makeRows(8, strings.Repeat("\x00", 1024), false)},
+		{"HTMLUnicodeControls", makeRows(8, "<>&\x00\r\n\t\"\\\u2028\u2029🙂", false)},
+		{"nestedRecords", makeRows(8, strings.Repeat("a", 128), true)},
+		{"all128", makeRows(128, "x", false)},
+	} {
+		t.Run(row.name, func(t *testing.T) {
+			before, err := json.Marshal(row.s.Cases)
+			if err != nil {
+				t.Fatal(err)
+			}
+			want := 0
+			for end := 1; end <= len(row.s.Cases); end++ {
+				part := row.s
+				part.Cases = row.s.Cases[:end]
+				raw, err := json.MarshalIndent(caseDocument(part), "", "  ")
+				if err != nil {
+					t.Fatal(err)
+				}
+				if len(raw)+1 <= stringByteMaxBatchBytes {
+					want = end
+				}
+			}
+			got, err := nativeBatchEnd(row.s, 0, 128)
+			if err != nil || got != want || want < 1 {
+				t.Fatal("full Go wire largest-prefix mismatch", got, want, err)
+			}
+			after, err := json.Marshal(row.s.Cases)
+			if err != nil || !bytes.Equal(before, after) {
+				t.Fatal("sizing mutated original rows", err)
+			}
+		})
+	}
+}
+
+func TestStringByteRowLengthFinalLFAndMutationBetweenCalls(t *testing.T) {
+	s := suite{Package: stringBytePackage, Activity: "IndexByte", Cases: []testCase{{Inputs: []any{"x", int64(0)}, Expected: ""}}}
+	base, err := json.MarshalIndent(caseDocument(s), "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	padding := stringByteMaxBatchBytes - len(base)
+	if padding < 1 {
+		t.Fatal("fixture envelope unexpectedly oversized")
+	}
+	s.Cases[0].Expected = strings.Repeat("x", padding)
+	withoutLF, err := json.MarshalIndent(caseDocument(s), "", "  ")
+	if err != nil || len(withoutLF) != stringByteMaxBatchBytes {
+		t.Fatal("exact LF boundary fixture", err)
+	}
+	if _, err := nativeBatchEnd(s, 0, 128); err == nil {
+		t.Fatal("omitted final LF")
+	}
+	s.Cases[0].Expected = strings.Repeat("x", padding-1)
+	if end, err := nativeBatchEnd(s, 0, 128); err != nil || end != 1 {
+		t.Fatal("exact30000 including LF refused", end, err)
+	}
+	s.Cases[0].Expected = strings.Repeat("\x00", 6000)
+	if _, err := nativeBatchEnd(s, 0, 128); err == nil {
+		t.Fatal("reused stale previous-call length")
+	}
+	s.Cases[0].Expected = ""
+	if end, err := nativeBatchEnd(s, 0, 128); err != nil || end != 1 {
+		t.Fatal("restored row refused", end, err)
+	}
+	for _, b := range [][2]int{{-1, 128}, {1, 128}, {0, 0}, {0, 129}} {
+		if _, err := nativeBatchEnd(s, b[0], b[1]); err == nil {
+			t.Fatal("invalid bounds accepted", b)
+		}
+	}
+}
+
+func TestStringByteRowLengthLateJSONErrorKeepsProbeRefusal(t *testing.T) {
+	s := suite{Package: stringBytePackage, Activity: "IndexByte"}
+	for i := 0; i < 128; i++ {
+		s.Cases = append(s.Cases, testCase{Inputs: []any{strings.Repeat("x", 1024), int64(i)}, Expected: int64(-1)})
+	}
+	// The first64-row probe is oversized. A malformed row beyond it must not
+	// be eagerly serialized; a malformed row inside it must still refuse.
+	s.Cases[120].Expected = math.NaN()
+	end, err := nativeBatchEnd(s, 0, 128)
+	if err != nil || end < 1 || end >= 64 {
+		t.Fatal("unvisited late error changed admission", end, err)
+	}
+	part := s
+	part.Cases = s.Cases[:end]
+	raw, err := json.MarshalIndent(caseDocument(part), "", "  ")
+	if err != nil || len(raw)+1 > stringByteMaxBatchBytes {
+		t.Fatal("returned prefix exceeds actual wire", err)
+	}
+	part.Cases = s.Cases[:end+1]
+	next, err := json.MarshalIndent(caseDocument(part), "", "  ")
+	if err != nil || len(next)+1 <= stringByteMaxBatchBytes {
+		t.Fatal("not largest actual wire prefix", err)
+	}
+	s.Cases[2].Expected = math.NaN()
+	if _, err := nativeBatchEnd(s, 0, 128); err == nil {
+		t.Fatal("visited malformed row ignored")
 	}
 }
