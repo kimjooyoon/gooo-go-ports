@@ -1,0 +1,225 @@
+{
+  "schema": "gooo/autobot-resolver-source-pin/v1",
+  "kind": "bounded upstream Python rule adaptation; not a Go API or complete AutoBot integration",
+  "upstream_repository": "https://github.com/mrveiss/AutoBot-AI",
+  "upstream_revision": "a9c47e296907f1e5f681c38c05146cc8d3c2e7a7",
+  "upstream_source": "autobot_shared/ai_lines.py",
+  "upstream_source_url": "https://github.com/mrveiss/AutoBot-AI/blob/a9c47e296907f1e5f681c38c05146cc8d3c2e7a7/autobot_shared/ai_lines.py",
+  "source_symbols": [
+    "resolve_line",
+    "_unset",
+    "LineResolution.reason"
+  ],
+  "copyright": "Copyright 2025-2026 mrveiss",
+  "license": "Apache-2.0",
+  "upstream_files": [
+    {
+      "path": "examples/autobot-resolver/upstream/ai_lines.py.txt",
+      "bytes": 8371,
+      "sha256": "359a2852ac3bfee256b83f93bc9f386e1af75ecaa3ab21818dbd48081a444c9c",
+      "upstream_path": "autobot_shared/ai_lines.py"
+    },
+    {
+      "path": "examples/autobot-resolver/upstream/LICENSE",
+      "bytes": 11343,
+      "sha256": "deb04126dcfbc5ff823935ac8b404fb86ea53dd4743e2d6620bffe83ec9ec0e8",
+      "upstream_path": "LICENSE"
+    },
+    {
+      "path": "examples/autobot-resolver/upstream/NOTICE",
+      "bytes": 281,
+      "sha256": "6f76fa3e99640baf4a6fd1d0268eb2e44146d066e814e5827046dd294672508f",
+      "upstream_path": "NOTICE"
+    }
+  ],
+  "port": {
+    "path": "ports/autobot/ai_lines.gooo",
+    "bytes": 4308,
+    "sha256": "9c576d8d032a7e47cdf2b908cfdacafd06d91c13ae680e2161a3669215a4efd6"
+  },
+  "workspace": {
+    "path": "autobot-resolver.workspace.json",
+    "bytes": 283,
+    "sha256": "5868870a5373346fa735bd44f037f17c8c558ce21271b5f7f45add3a2e2223dc"
+  },
+  "entry": {
+    "package_path": "gooo/autobot/ai-lines",
+    "activity": "ResolveLine",
+    "qualified": "gooo/autobot/ai-lines:ResolveLine",
+    "id": "gooo://autobot/ai-lines/resolve-line/v1"
+  },
+  "inputs": [
+    {
+      "port": "input0",
+      "name": "key",
+      "entity_id": "gooo://std/text",
+      "type": "Text"
+    },
+    {
+      "port": "input1",
+      "name": "stored_present",
+      "entity_id": "gooo://std/boolean",
+      "type": "Boolean"
+    },
+    {
+      "port": "input2",
+      "name": "stored_value",
+      "entity_id": "gooo://std/text",
+      "type": "Text"
+    },
+    {
+      "port": "input3",
+      "name": "mutating",
+      "entity_id": "gooo://std/boolean",
+      "type": "Boolean"
+    },
+    {
+      "port": "input4",
+      "name": "baseline_present",
+      "entity_id": "gooo://std/boolean",
+      "type": "Boolean"
+    },
+    {
+      "port": "input5",
+      "name": "baseline_value",
+      "entity_id": "gooo://std/text",
+      "type": "Text"
+    },
+    {
+      "port": "input6",
+      "name": "role_requires_approval",
+      "entity_id": "gooo://std/boolean",
+      "type": "Boolean"
+    },
+    {
+      "port": "input7",
+      "name": "store_unavailable",
+      "entity_id": "gooo://std/boolean",
+      "type": "Boolean"
+    },
+    {
+      "port": "input8",
+      "name": "scope_missing",
+      "entity_id": "gooo://std/boolean",
+      "type": "Boolean"
+    }
+  ],
+  "output": {
+    "name": "LineDecision",
+    "id": "gooo://autobot/ai-lines/line-decision/v1",
+    "fields": [
+      {
+        "name": "key",
+        "id": "gooo://autobot/ai-lines/line-decision/key",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "line",
+        "id": "gooo://autobot/ai-lines/line-decision/line",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "source",
+        "id": "gooo://autobot/ai-lines/line-decision/source",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "stored_present",
+        "id": "gooo://autobot/ai-lines/line-decision/stored-present",
+        "type": "boolean",
+        "required": true
+      },
+      {
+        "name": "stored_value",
+        "id": "gooo://autobot/ai-lines/line-decision/stored-value",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "floor_present",
+        "id": "gooo://autobot/ai-lines/line-decision/floor-present",
+        "type": "boolean",
+        "required": true
+      },
+      {
+        "name": "floor_value",
+        "id": "gooo://autobot/ai-lines/line-decision/floor-value",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "reason",
+        "id": "gooo://autobot/ai-lines/line-decision/reason",
+        "type": "string",
+        "required": true
+      }
+    ]
+  },
+  "host_preconditions": {
+    "text": "unchanged Unicode-scalar valid UTF-8; each decoded Text <=1024 bytes",
+    "stored_present_false": "stored_value must be empty",
+    "stored_present_true": "stored_value must be exactly autonomous, draft_then_send or never",
+    "baseline_present_false": "baseline_value must be empty",
+    "baseline_present_true": "empty Text is allowed and distinct from absent; do not trim",
+    "enforced_by_raw_gooo_entry": false,
+    "external_input_converter": "cmd/autobot-line-input",
+    "converter_input_shape": "array of nine-scalar row arrays",
+    "converter_rows": {
+      "min": 1,
+      "max": 128
+    },
+    "converter_raw_request_max_bytes": 1048576,
+    "converter_output_schema": "gooo/body-composition-inputs/v1",
+    "converter_final_marshaled_bytes_including_LF_max": 32768,
+    "joint_translated_budget": "separate native profile check; converter acceptance does not guarantee native acceptance"
+  },
+  "verification_inputs": {
+    "corpus": {
+      "path": "examples/autobot-resolver/corpus.json",
+      "bytes": 46353,
+      "sha256": "bf622cf3171cd9bab4baf25561fe84f9a464f2e1c9a5c24c54021df850e4ed50"
+    },
+    "schema": "gooo/autobot-resolver-corpus/v1",
+    "cases": 204,
+    "branch_state_product": {
+      "stored_states": 4,
+      "mutating": 2,
+      "baseline_states": 3,
+      "role_requires_approval": 2,
+      "store_unavailable": 2,
+      "scope_missing": 2,
+      "rows": 192
+    },
+    "text_edges": 12,
+    "scope": "finite state combinations and selected Text edges, not exhaustive Text",
+    "group_rows": 8,
+    "groups": 26,
+    "oracle": {
+      "path": "examples/autobot-resolver/oracle.go",
+      "bytes": 7173,
+      "sha256": "ee13bf8d87ef0cf724c8025443df0bf36fcb719ad8afbc230ff3aa51c67f8864"
+    },
+    "oracle_role": "independently written Go verification reference only; no production fallback",
+    "oracle_wire": "stdin [case.inputs,...]; stdout ordered eight-field object array; no corpus envelope",
+    "oracle_separate_resource_limits": {
+      "raw_input_bytes": 1048576,
+      "rows": 4096,
+      "output_bytes": 4194304
+    }
+  },
+  "modification_notice": "Gooo represents only the pinned pure Python resolve_line/_unset/reason behavior over nine supplied scalar facts with explicit None flags. Public source/package/entity IDs differ from the private prototype. The computes body is preserved; a new public source identity requires fresh verification.",
+  "excluded": [
+    "action_key/tool catalogue",
+    "parse_line coercion",
+    "principal authentication and scope lookup",
+    "live policy/baseline store access",
+    "approval lifecycle",
+    "historical policy artifact storage/lookup",
+    "current authorization",
+    "dispatch and effects"
+  ],
+  "observation_scope": "Source bindings and input contracts are declarations. Completion/pass observations belong to a fresh verifier result, not this source pin. Saved replay is finite and unsigned; it does not prove supplied facts or archive authenticity."
+}

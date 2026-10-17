@@ -14,8 +14,11 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(frozen.Catalog.Packages) != 54 || len(frozen.Sources) != 64 {
+	if len(frozen.Catalog.Packages) != 55 || len(frozen.Sources) != 65 {
 		t.Fatal("complete reviewed catalog roster changed")
+	}
+	if !reflect.DeepEqual(frozen.Catalog.Packages[54], sourcePackage{Path: "gooo/autobot/ai-lines", Sources: []string{"ports/autobot/ai_lines.gooo"}}) {
+		t.Fatal("reviewed AutoBot adaptation must be exactly one separate package")
 	}
 	if !reflect.DeepEqual(frozen.Catalog.Packages[48], sourcePackage{Path: headerAdditionPackage, Sources: []string{headerAdditionSource}}) {
 		t.Fatal("reviewed composition must be exactly one appended app package")
@@ -37,6 +40,9 @@ func TestVerificationCatalogSelectsPortsAndOnlyTheEntryConsumer(t *testing.T) {
 		}
 		if _, exists := selected.Sources["examples/cel-api-policy/main.gooo"]; exists {
 			t.Fatal("bounded CEL consumer leaked into an unrelated legacy workspace")
+		}
+		if _, exists := selected.Sources["ports/autobot/ai_lines.gooo"]; exists {
+			t.Fatal("bounded Python adaptation leaked into a Go compatibility suite")
 		}
 		for _, name := range []string{"ports/agentmesh/service_pattern.gooo", "examples/agentmesh-service-policy/impact.gooo", "examples/agentmesh-service-policy/refinement.gooo", "examples/agentmesh-service-policy/domain.gooo", "examples/agentmesh-service-policy/checked_matcher.gooo", "examples/agentmesh-service-policy/checked_impact.gooo", "examples/agentmesh-service-policy/checked_refinement.gooo", "examples/agentmesh-service-policy/conditional_apply.gooo"} {
 			if _, exists := selected.Sources[name]; exists {

@@ -99,6 +99,12 @@ compiler issue before passing a minimal case to the language repository.
   execution. The initial three synthetic requests demonstrate a write rule
   that keeps access for a deploy bot. Report a setup failure or the real task
   this helps with through the feedback form above.
+- **Reproduce an AutoBot action-line decision:** use the
+  [bounded Python rule adaptation](../examples/autobot-resolver/README.md).
+  Validate supplied nine-scalar rows with the input converter, then execute and
+  replay the Gooo source. Inspect the eight fields, including stored/floor
+  presence and the exact reason. This does not query a live policy store or
+  approve/apply an action; the Go oracle is for verification only.
 - **Port a Go function:** use the [contribution contract](../CONTRIBUTING.md)
   and [porting instructions](../AGENTS.md). Preserve the original API contract,
   full input domain, upstream license and independent Go reference. Unsupported

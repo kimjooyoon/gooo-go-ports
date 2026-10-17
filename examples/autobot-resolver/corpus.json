@@ -1,0 +1,2861 @@
+{
+  "schema": "gooo/autobot-resolver-corpus/v1",
+  "cases": [
+    {
+      "id": "branch/s0-m0-b0-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b0-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        false,
+        "",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b0-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        false,
+        "",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b0-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        false,
+        "",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b0-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        false,
+        "",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b0-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        false,
+        "",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b0-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        false,
+        "",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b0-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        false,
+        "",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b1-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        true,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b1-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        true,
+        "",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b1-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        true,
+        "",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b1-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        true,
+        "",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b1-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        true,
+        "",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b1-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        true,
+        "",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b1-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        true,
+        "",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b1-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        true,
+        "",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b2-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        true,
+        "financial",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b2-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        true,
+        "financial",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b2-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        true,
+        "financial",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b2-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        true,
+        "financial",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b2-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        true,
+        "financial",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b2-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        true,
+        "financial",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b2-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        true,
+        "financial",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m0-b2-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        false,
+        true,
+        "financial",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b0-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b0-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        false,
+        "",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b0-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        false,
+        "",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b0-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        false,
+        "",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b0-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        false,
+        "",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b0-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        false,
+        "",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b0-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        false,
+        "",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b0-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        false,
+        "",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b1-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        true,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b1-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        true,
+        "",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b1-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        true,
+        "",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b1-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        true,
+        "",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b1-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        true,
+        "",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b1-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        true,
+        "",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b1-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        true,
+        "",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b1-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        true,
+        "",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b2-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        true,
+        "financial",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b2-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        true,
+        "financial",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b2-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        true,
+        "financial",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b2-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        true,
+        "financial",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b2-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        true,
+        "financial",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b2-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        true,
+        "financial",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b2-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        true,
+        "financial",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s0-m1-b2-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        false,
+        "",
+        true,
+        true,
+        "financial",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b0-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b0-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        false,
+        "",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b0-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        false,
+        "",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b0-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        false,
+        "",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b0-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        false,
+        "",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b0-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        false,
+        "",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b0-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        false,
+        "",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b0-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        false,
+        "",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b1-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b1-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        "",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b1-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        "",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b1-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        "",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b1-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        "",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b1-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        "",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b1-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        "",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b1-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        "",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b2-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        "financial",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b2-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        "financial",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b2-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        "financial",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b2-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        "financial",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b2-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        "financial",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b2-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        "financial",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b2-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        "financial",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m0-b2-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        "financial",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b0-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b0-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b0-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b0-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b0-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b0-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b0-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b0-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b1-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b1-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b1-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b1-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b1-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b1-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b1-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b1-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b2-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "financial",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b2-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "financial",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b2-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "financial",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b2-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "financial",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b2-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "financial",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b2-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "financial",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b2-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "financial",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s1-m1-b2-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "financial",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b0-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b0-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        false,
+        "",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b0-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        false,
+        "",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b0-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        false,
+        "",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b0-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        false,
+        "",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b0-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        false,
+        "",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b0-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        false,
+        "",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b0-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        false,
+        "",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b1-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        true,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b1-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        true,
+        "",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b1-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        true,
+        "",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b1-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        true,
+        "",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b1-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        true,
+        "",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b1-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        true,
+        "",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b1-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        true,
+        "",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b1-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        true,
+        "",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b2-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        true,
+        "financial",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b2-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        true,
+        "financial",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b2-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        true,
+        "financial",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b2-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        true,
+        "financial",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b2-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        true,
+        "financial",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b2-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        true,
+        "financial",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b2-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        true,
+        "financial",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m0-b2-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        false,
+        true,
+        "financial",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b0-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b0-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        false,
+        "",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b0-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        false,
+        "",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b0-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        false,
+        "",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b0-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        false,
+        "",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b0-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        false,
+        "",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b0-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        false,
+        "",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b0-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        false,
+        "",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b1-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        true,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b1-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        true,
+        "",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b1-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        true,
+        "",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b1-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        true,
+        "",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b1-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        true,
+        "",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b1-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        true,
+        "",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b1-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        true,
+        "",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b1-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        true,
+        "",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b2-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        true,
+        "financial",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b2-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        true,
+        "financial",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b2-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        true,
+        "financial",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b2-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        true,
+        "financial",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b2-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        true,
+        "financial",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b2-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        true,
+        "financial",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b2-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        true,
+        "financial",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s2-m1-b2-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "draft_then_send",
+        true,
+        true,
+        "financial",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b0-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b0-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        false,
+        "",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b0-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        false,
+        "",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b0-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        false,
+        "",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b0-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        false,
+        "",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b0-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        false,
+        "",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b0-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        false,
+        "",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b0-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        false,
+        "",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b1-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        true,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b1-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        true,
+        "",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b1-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        true,
+        "",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b1-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        true,
+        "",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b1-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        true,
+        "",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b1-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        true,
+        "",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b1-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        true,
+        "",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b1-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        true,
+        "",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b2-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        true,
+        "financial",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b2-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        true,
+        "financial",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b2-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        true,
+        "financial",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b2-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        true,
+        "financial",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b2-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        true,
+        "financial",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b2-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        true,
+        "financial",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b2-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        true,
+        "financial",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m0-b2-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        false,
+        true,
+        "financial",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b0-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b0-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        false,
+        "",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b0-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        false,
+        "",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b0-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        false,
+        "",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b0-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        false,
+        "",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b0-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        false,
+        "",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b0-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        false,
+        "",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b0-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        false,
+        "",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b1-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        true,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b1-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        true,
+        "",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b1-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        true,
+        "",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b1-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        true,
+        "",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b1-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        true,
+        "",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b1-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        true,
+        "",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b1-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        true,
+        "",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b1-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        true,
+        "",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b2-r0-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        true,
+        "financial",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b2-r0-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        true,
+        "financial",
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b2-r0-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        true,
+        "financial",
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b2-r0-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        true,
+        "financial",
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b2-r1-u0-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        true,
+        "financial",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b2-r1-u0-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        true,
+        "financial",
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b2-r1-u1-q0",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        true,
+        "financial",
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "branch/s3-m1-b2-r1-u1-q1",
+      "inputs": [
+        "tool:action",
+        true,
+        "never",
+        true,
+        true,
+        "financial",
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "id": "text/empty-key",
+      "inputs": [
+        "",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "text/nul-key",
+      "inputs": [
+        "tool\u0000action",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "text/quote-key",
+      "inputs": [
+        "tool:\"action\"",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "text/backslash-key",
+      "inputs": [
+        "tool\\action",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "text/korean-key",
+      "inputs": [
+        "도구:실행",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "text/emoji-key",
+      "inputs": [
+        "tool:🛠️",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "text/combining-key",
+      "inputs": [
+        "tool:é",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "text/line-separator-key",
+      "inputs": [
+        "tool: action",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "text/paragraph-separator-key",
+      "inputs": [
+        "tool: action",
+        true,
+        "autonomous",
+        true,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "text/whitespace-baseline",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        false,
+        true,
+        " \t\n ",
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "text/key-1024-bytes",
+      "inputs": [
+        "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
+        false,
+        "",
+        false,
+        false,
+        "",
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "id": "text/quoted-baseline",
+      "inputs": [
+        "tool:action",
+        true,
+        "autonomous",
+        true,
+        true,
+        "owner's \"분류\"\\path\n",
+        true,
+        false,
+        false
+      ]
+    }
+  ]
+}
