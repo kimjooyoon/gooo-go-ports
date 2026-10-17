@@ -504,10 +504,10 @@ func run() error {
 	return timingErr
 }
 func caseDocument(s suite) any {
-	rows := []any{}
+	rows := make([]any, 0, len(s.Cases))
 	key := s.Package + ":" + s.Activity
 	for _, c := range s.Cases {
-		inputs := map[string]any{}
+		inputs := make(map[string]any, len(c.Inputs))
 		for i, v := range c.Inputs {
 			k := key
 			if len(c.Inputs) > 1 {
