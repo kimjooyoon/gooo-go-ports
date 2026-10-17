@@ -32,13 +32,28 @@ func nativeTimingTestConfig(t *testing.T, evidenceRoot string, suites []suite) n
 		t.Fatal(err)
 	}
 	repo := nativeTimingTestRoot(t)
+	expected, err := nativeExpectedVerificationContract()
+	if err != nil {
+		t.Fatal(err)
+	}
+	modes := nativeVerificationSourceModes(expected)
 	write := func(name string, raw []byte) {
 		t.Helper()
 		path := filepath.Join(repo, name)
 		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 			t.Fatal(err)
 		}
-		if err := os.WriteFile(path, raw, 0644); err != nil {
+		if name == nativeVerificationContractPath {
+			raw = nativeVerificationContractJSON
+		}
+		mode := os.FileMode(0644)
+		if modes[name] == "100755" {
+			mode = 0755
+		}
+		if err := os.WriteFile(path, raw, mode); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Chmod(path, mode); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -108,6 +123,55 @@ func nativeTimingTestSnapshot(cfg nativeTimingConfig) (nativeTimingSnapshot, err
 		value.Binaries[name] = file
 	}
 	return value, nil
+}
+
+func TestNativeTimingLedgerRetainsSyntheticCatalogAndRejectsDiskImageDrift(t *testing.T) {
+	cfg := nativeTimingTestConfig(t, nativeTimingTestRoot(t), []suite{nativeTimingTestSuite("Check", 1)})
+	observed, err := nativeTimingSourceIdentity(cfg)
+	if err != nil {
+		t.Fatal("synthetic dynamic catalog was blocked", err)
+	}
+	if _, ok := observed.Sources["ports/timing.gooo"]; !ok {
+		t.Fatal("dynamic catalog source was dropped")
+	}
+	path := filepath.Join(cfg.RepositoryRoot, nativeVerificationContractPath)
+	if err := os.WriteFile(path, append(append([]byte{}, nativeVerificationContractJSON...), '\n'), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := nativeTimingSourceIdentity(cfg); err == nil {
+		t.Fatal("changed on-disk ledger accepted")
+	}
+}
+
+func TestNativeTimingRejectsKnownExecutableModeDrift(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Git executable mode requires caller Git check on Windows")
+	}
+	cfg := nativeTimingTestConfig(t, nativeTimingTestRoot(t), []suite{nativeTimingTestSuite("Check", 1)})
+	if _, err := nativeTimingSourceIdentity(cfg); err != nil {
+		t.Fatal(err)
+	}
+	expected, err := nativeExpectedVerificationContract()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, source := range expected.Sources {
+		if source.Mode != "100755" {
+			continue
+		}
+		path := filepath.Join(cfg.RepositoryRoot, source.Path)
+		if _, err := os.Lstat(path); err != nil {
+			continue
+		}
+		if err := os.Chmod(path, 0644); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := nativeTimingSourceIdentity(cfg); err == nil {
+			t.Fatal("known executable source bitflip accepted")
+		}
+		return
+	}
+	t.Fatal("executable fixture source missing")
 }
 
 // Shared with the separately owned production integration tests.

@@ -46,173 +46,7 @@ type nativeTimingSnapshot struct {
 
 // Explicit observer/consumer inputs, supplemented by the frozen catalog below.
 // Hash current bytes; never import a private preparation file or an old receipt.
-var nativeTimingSourceNames = []string{
-	"cmd/verify/command_resources.go",
-	"cmd/verify/command_resources_unix.go",
-	"cmd/verify/command_resources_other.go",
-	"cmd/verify/command_resources_test.go",
-	"cmd/verify/command_resources_unix_test.go",
-	"cmd/verify/native_command_resources_test.go",
-	"cmd/verify/last_index_corpus.go",
-	"cmd/verify/last_index_corpus_test.go",
-	"cmd/verify/last_index_contracts.go",
-	"cmd/verify/last_index_contracts_test.go",
-	"literal-final-marker-report.workspace.json",
-	"examples/literal-final-marker-report/inputs.json",
-	"examples/literal-final-marker-report/README.md",
-	"tools/check-last-index-inputs.py",
-	"tools/check-last-index-inputs_test.py",
-	"if-match.workspace.json",
-	"cmd/if-match-input/main.go",
-	"cmd/if-match-input/main_test.go",
-	"cmd/verify/if_match_contracts.go",
-	"cmd/verify/if_match_corpus.go",
-	"cmd/verify/if_match_reference.go",
-	"cmd/verify/if_match_test.go",
-	"ports/net/http/if-match-corpus.json",
-	"ports/net/http/if-match-provenance.json",
-	"ports/net/http/if-match-request.json",
-	"tools/check-if-match-inputs.py",
-	"tools/check-if-match-inputs_test.py",
-
-	"etag-scan.workspace.json",
-	"etag-strong-match.workspace.json",
-	"strong-validator-facts.workspace.json",
-	"cmd/verify/etag_batches.go",
-	"cmd/verify/etag_batches_test.go",
-	"cmd/verify/etag_contracts.go",
-	"cmd/verify/etag_contracts_test.go",
-	"cmd/verify/etag_corpus.go",
-	"cmd/verify/etag_corpus_test.go",
-	"cmd/verify/etag_reference.go",
-	"cmd/verify/etag_native_test.go",
-	"ports/net/http/README.md",
-	"ports/net/http/provenance.json",
-	"examples/strong-validator-facts/README.md",
-	"examples/strong-validator-facts/contract.json",
-	"examples/strong-validator-facts/corpus.json",
-	"examples/strong-validator-facts/manual247.json",
-	"examples/strong-validator-facts/inputs.json",
-	"third_party/go/net/http/fs.go.txt",
-	"third_party/go/net/http/fs_test.go.txt",
-	"third_party/go/net/textproto/textproto.go.txt",
-	"canonical-header-key-report.workspace.json",
-	"canonical-header-key.workspace.json",
-	"cmd/verify/canonical_header_batches.go",
-	"cmd/verify/canonical_header_batches_test.go",
-	"cmd/verify/canonical_header_contracts.go",
-	"cmd/verify/canonical_header_contracts_test.go",
-	"cmd/verify/canonical_header_corpus.go",
-	"cmd/verify/canonical_header_corpus_test.go",
-	"examples/canonical-header-key/README.md",
-	"examples/canonical-header-key/contract.json",
-	"examples/canonical-header-key/corpus-accounting.json",
-	"examples/canonical-header-key/corpus.json",
-	"examples/canonical-header-key/inputs.json",
-	"examples/canonical-header-key/manual20.json",
-	"examples/canonical-header-key/port-inputs.json",
-	"ports/net/textproto/README.md",
-	"ports/net/textproto/provenance.json",
-	"third_party/GO-LICENSE",
-	"third_party/go/net/textproto/reader.go.txt",
-	"cmd/header-addition-input/main.go",
-	"cmd/header-addition-input/main_test.go",
-	"cmd/verify/header_addition_batches.go",
-	"cmd/verify/header_addition_batches_test.go",
-	"cmd/verify/header_addition_contracts.go",
-	"cmd/verify/header_addition_contracts_test.go",
-	"cmd/verify/header_addition_corpus.go",
-	"cmd/verify/header_addition_corpus_test.go",
-	"diagnostic-header-addition.workspace.json",
-	"examples/diagnostic-header-addition/README.md",
-	"examples/diagnostic-header-addition/contract.json",
-	"examples/diagnostic-header-addition/corpus.json",
-	"examples/diagnostic-header-addition/inputs.json",
-	"examples/diagnostic-header-addition/main.gooo",
-	"examples/diagnostic-header-addition/request.json",
-	"examples/header-addition-host/LICENSE",
-	"examples/header-addition-host/NOTICE",
-	"examples/header-addition-host/README.md",
-	"examples/header-addition-host/bindings.go.txt",
-	"examples/header-addition-host/bindings_test.go.txt",
-	"examples/header-addition-host/go.mod.txt",
-	"examples/header-addition-host/host.go.txt",
-	"examples/header-addition-host/host_test.go.txt",
-	"examples/header-addition-host/main.go.txt",
-	"examples/header-addition-host/provenance.json",
-	"internal/headeradditioninput/preflight.go",
-	"internal/headeradditioninput/preflight_test.go",
-	"tools/check-header-addition-host.py",
-	"tools/check-header-addition-host_test.py",
-	"tools/check-header-addition-inputs.py",
-	"tools/check-header-facts-inputs.py", "cmd/verify/legacy_workspace_test.go",
-	".github/workflows/ci.yml", "tools/check-ci-scope-workflow_test.py", "tools/classify-ci-scope.py",
-	"cmd/build-demo/main.go", "cmd/build-demo/api_policy.go", "cmd/build-demo/api_policy_build.go", "cmd/build-demo/api_policy_test.go",
-	"tools/api-policy-browser-smoke.mjs", "tools/api-policy-browser-bridge.go.txt", "tools/api-policy-app.test.cjs",
-	"site/api-policy.html", "site/api-policy.js", "site/api-policy-worker.js", "site/api-policy.css",
-	"cmd/verify/native_correctness_cache_test.go", "cmd/verify/simple_fold_exhaustive_test.go",
-	"cmd/verify/ycbcr_exhaustive_test.go", "cmd/verify/case_exhaustive_test.go", "README.md",
-	"cmd/verify/main.go", "cmd/verify/suite_workers.go", "cmd/verify/suite_workers_test.go",
-	"cmd/verify/native_build_cache.go", "cmd/verify/native_build_cache_test.go",
-	"cmd/verify/native_suite.go", "cmd/verify/native_timing.go",
-	"cmd/verify/literal_cut_corpus.go", "cmd/verify/literal_cut_contracts.go",
-	"cmd/verify/contracts.go", "cmd/verify/whitespace_contracts.go", "cmd/verify/inspect.go",
-	"cmd/verify/string_byte_batches.go", "cmd/verify/workspace_catalog.go",
-	"cmd/verify/literal_cut_corpus_test.go", "cmd/verify/literal_cut_integration_test.go",
-	"cmd/verify/testdata/literal-cut-original62.json", "cmd/verify/contracts_test.go", "cmd/verify/workspace_catalog_test.go",
-	"tools/check-literal-text-inputs.py", "tools/check-literal-text-inputs_test.py",
-	"literal-cut-report.workspace.json", "examples/literal-cut-report/inputs.json",
-	"examples/literal-cut-report/manual-contract.json", "examples/literal-cut-report/README.md", "CONTRIBUTING.md",
-	"cmd/verify/case_profile.go", "cmd/verify/case_profile_test.go", "cmd/verify/case_profile_integration_test.go",
-	"cmd/verify/literal_report_case_profile_test.go",
-	"cmd/verify/workspace_profile.go", "cmd/verify/workspace_profile_test.go",
-	"cmd/verify/decimal_payload_corpus.go", "cmd/verify/decimal_payload_corpus_test.go",
-	"cmd/verify/decimal_payload_batches.go", "cmd/verify/decimal_payload_batches_test.go",
-	"cmd/verify/decimal_payload_contracts_test.go",
-	"ports/strconv/corpus-256.json", "ports/strconv/provenance.json", "ports/strconv/README.md", "ports/strconv/inputs.json",
-	"examples/payload-admission/corpus.json", "examples/payload-admission/manual17.json", "examples/payload-admission/contract.json",
-	"examples/payload-admission/inputs.json", "examples/payload-admission/README.md",
-	"decimal-int64.workspace.json", "payload-admission.workspace.json", "tools/generate-payload-corpus.py",
-	"cmd/verify/path_alias_corpus.go", "cmd/verify/path_alias_corpus_test.go",
-	"cmd/verify/path_alias_contracts.go", "cmd/verify/path_alias_contracts_test.go",
-	"cmd/verify/path_alias_batches.go", "cmd/verify/path_alias_batches_test.go",
-	"ports/path/README.md", "ports/path/provenance.json", "ports/path/clean-corpus-9841.json",
-	"path-clean.workspace.json", "path-alias-facts.workspace.json",
-	"examples/path-alias-facts/contract.json", "examples/path-alias-facts/corpus-120.json",
-	"examples/path-alias-facts/anchor-pairs-24.json", "examples/path-alias-facts/clean-inputs.json",
-	"examples/path-alias-facts/inputs.json", "examples/path-alias-facts/README.md",
-	"NOTICE",
-	"cmd/header-facts-input/main.go",
-	"cmd/header-facts-input/main_test.go",
-	"cmd/verify/external_oracles.go",
-	"cmd/verify/external_oracles_test.go",
-	"cmd/verify/header_contracts.go",
-	"cmd/verify/header_contracts_test.go",
-	"cmd/verify/header_corpus.go",
-	"cmd/verify/header_corpus_test.go",
-	"examples/header-field-facts/README.md",
-	"examples/header-field-facts/contract.json",
-	"examples/header-field-facts/corpus.json",
-	"examples/header-field-facts/inputs.json",
-	"examples/header-field-facts/name-inputs.json",
-	"examples/header-field-facts/request.json",
-	"examples/header-field-facts/unicode-request.json",
-	"examples/header-field-facts/valid-request.json",
-	"examples/header-field-facts/value-inputs.json",
-	"go.mod",
-	"go.sum",
-	"header-field-facts.workspace.json",
-	"header-field-name.workspace.json",
-	"header-field-value.workspace.json",
-	"internal/headerinput/preflight.go",
-	"internal/headerinput/preflight_test.go",
-	"ports/net/httpguts/README.md",
-	"ports/net/httpguts/provenance.json",
-	"third_party/x-net/LICENSE",
-	"third_party/x-net/http/httpguts/guts.go.txt",
-	"third_party/x-net/http/httpguts/httplex.go.txt",
-	"third_party/x-net/http/httpguts/httplex_test.go.txt",
-}
+var nativeTimingSourceNames = mustNativeVerificationTimingSourceNames()
 
 var nativeTimingPhaseNames = [...]string{
 	"prepare", "execute", "inspect_execution", "replay", "inspect_replay", "receipt_binding", "exhaustive",
@@ -585,7 +419,12 @@ func nativeTimingSourcePath(root, name string) (string, error) {
 
 func nativeTimingSourceIdentity(cfg nativeTimingConfig) (nativeTimingSnapshot, error) {
 	snapshot := nativeTimingSnapshot{Sources: map[string]nativeTimingFile{}, Binaries: map[string]nativeTimingFile{}}
-	names := append([]string(nil), nativeTimingSourceNames...)
+	contract, err := nativeExpectedVerificationContract()
+	if err != nil {
+		return snapshot, err
+	}
+	modes := nativeVerificationSourceModes(contract)
+	names := nativeVerificationTimingSourceNames(contract)
 	names = append(names, "upstream.json", "verification-catalog.json")
 	for name := range cfg.Catalog.Hashes {
 		names = append(names, name)
@@ -595,9 +434,26 @@ func nativeTimingSourceIdentity(cfg nativeTimingConfig) (nativeTimingSnapshot, e
 		if err != nil {
 			return snapshot, err
 		}
+		if mode, known := modes[name]; known {
+			if err := nativeVerificationCheckSourceMode(path, mode); err != nil {
+				return snapshot, fmt.Errorf("native timing source %s: %w", name, err)
+			}
+		}
 		observed, err := nativeTimingHashFile(path)
 		if err != nil {
 			return snapshot, err
+		}
+		if name == nativeVerificationContractPath {
+			raw, err := os.ReadFile(path)
+			if err != nil {
+				return snapshot, err
+			}
+			if err := nativeVerificationCheckDiskLedger(raw); err != nil {
+				return snapshot, err
+			}
+			if observed != nativeTimingBytes(raw) {
+				return snapshot, fmt.Errorf("native expected ledger changed while hashing")
+			}
 		}
 		snapshot.Sources[name] = observed
 	}

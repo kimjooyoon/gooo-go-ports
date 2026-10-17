@@ -124,8 +124,20 @@ func TestContractsMatchReviewedSourcesAndUnchangedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 	suites := allNativeSuites(t)
-	if len(contracts) != 82 || len(suites) != 66 {
+	expected, err := nativeExpectedVerificationContract()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(contracts) != len(expected.Suites) || len(suites) != 66 {
 		t.Fatal("contract/suite roster changed")
+	}
+	// The registry is a map: visit the ledger's ordered entries and require its
+	// exact key set, rather than treating equal counts as sufficient coverage.
+	for _, entry := range expected.Suites {
+		key := entry.Package + ":" + entry.Activity
+		if _, exists := contracts[key]; !exists {
+			t.Fatal("expected native entry missing from contract registry", key)
+		}
 	}
 	seen := map[string]bool{}
 	total := 0

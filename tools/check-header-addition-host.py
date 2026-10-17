@@ -4,7 +4,13 @@
 read_verification is intentionally side-effect-free and is shared by the input
 route checker. Expected ABI values come from fresh independent Go case documents.
 """
-import argparse, hashlib, json, os, pathlib, re, shutil, signal, stat, subprocess, sys, tempfile, time
+import argparse, hashlib, importlib.util, json, os, pathlib, re, shutil, signal, stat, subprocess, sys, tempfile, time
+
+# Explicit sibling loading works under Python -I without cwd/sys.path imports.
+_CONTRACT_SPEC=importlib.util.spec_from_file_location("gooo_native_verification_contract",pathlib.Path(__file__).with_name("native_verification_contract.py"))
+CONTRACT=importlib.util.module_from_spec(_CONTRACT_SPEC)
+sys.modules[_CONTRACT_SPEC.name]=CONTRACT
+_CONTRACT_SPEC.loader.exec_module(CONTRACT)
 
 REV='83928fa4538245abe33b08549da47f8cbdc50ed2'
 ROOT='app/diagnostic-header-addition'
@@ -15,6 +21,22 @@ EXAMPLE='examples/header-addition-host'
 TEMPLATES=['bindings.go.txt','bindings_test.go.txt','go.mod.txt','host.go.txt','host_test.go.txt','main.go.txt']
 OWN_FILES=[EXAMPLE+'/'+x for x in ['LICENSE','NOTICE','README.md','provenance.json',*TEMPLATES]]+['tools/check-header-addition-host.py','tools/check-header-addition-host_test.py']
 PACKAGES=[('go/golang.org/x/net/http/httpguts','ports/net/httpguts/headers.gooo'),('app/header-field-facts','examples/header-field-facts/main.gooo'),('go/strconv','ports/strconv/decimal.gooo'),('app/payload-admission','examples/payload-admission/main.gooo'),(ROOT,'examples/diagnostic-header-addition/main.gooo')]
+
+# Preserve the independently stated owners from the original suites74..81
+# binding checks. A coordinated catalog/event relabel must not redefine them.
+APPENDED_SOURCE_OWNERS = {
+    'ports/net/httpguts/headers.gooo': 'go/golang.org/x/net/http/httpguts',
+    'examples/header-field-facts/main.gooo': 'app/header-field-facts',
+    'ports/net/textproto/canonical.gooo': 'go/net/textproto',
+    'examples/canonical-header-key/main.gooo': 'app/canonical-header-key',
+    'ports/net/http/etag.gooo': 'go/net/http/etag',
+    'examples/strong-validator-facts/main.gooo': 'app/strong-validator-facts',
+    'ports/net/http/precondition.gooo': 'go/net/http/precondition',
+    'ports/strings/search.gooo': 'go/strings',
+    'ports/strings/last_index.gooo': 'go/strings',
+    'ports/strings/literal.gooo': 'go/strings',
+    'examples/literal-final-marker-report/main.gooo': 'app/literal-final-marker-report',
+}
 
 CANONICAL_SUMMARY = {
     "canonical_header_reference_cases": 1059,
@@ -84,19 +106,29 @@ def frozen_read(path,pins):
 def unchanged(pins):
     for name,ref in pins.items():
         p=canonical(name);need(p.is_file() and equal(reference(p.read_bytes()),ref),'frozen source/tool drift: '+name)
-def source_roster(root,catalog):
-    text=(root/'cmd/verify/native_timing.go').read_text(encoding='utf-8')
-    m=re.search(r'var nativeTimingSourceNames = \[\]string\s*\{(.*?)\n\}',text,re.S);need(m is not None,'native timing source roster declaration')
-    names=re.findall(r'"([^"\n]+)"',m[1]);need(names and len(set(names))==len(names),'unique timing source roster')
-    for package in catalog['packages']:names.extend(package['sources'])
-    names.extend(['upstream.json','verification-catalog.json']);names=set(map(safe_relative,names))
+def reviewed_contract(root,read_bytes=None):
+    try:return CONTRACT.load_reviewed_contract(root,read_bytes=read_bytes)
+    except (OSError,CONTRACT.ContractError) as error:raise RuntimeError('reviewed native contract: '+str(error)) from error
+
+def source_roster(root,catalog,expected=None):
+    expected=reviewed_contract(root) if expected is None else expected
+    names={row['path'] for row in expected.document['sources']}
+    qualified={row['path'] for row in expected.document['sources'] if 'catalog-source' in row['roles']}
+    need(type(catalog) is dict and type(catalog.get('packages')) is list,'current catalog packages')
+    current=[]
+    for package in catalog['packages']:
+        need(type(package) is dict and type(package.get('path')) is str and type(package.get('sources')) is list,'current catalog package/source ownership')
+        current.extend(safe_relative(name) for name in package['sources'])
+    need(len(current)==len(set(current)) and set(current)==qualified,'exact reviewed catalog-source membership/ownership')
     need(set(OWN_FILES).issubset(names),'all host templates/checker must be in current timing source identity')
+    need(set(CONTRACT.CONTRACT_FILES).issubset(names),'all five contract inputs must be in current timing source identity')
     need('cmd/build-demo/api_policy_build.go' in names,'API policy builder continuation is a required timing input')
     return names
 
-def validate_timing_sources(root,catalog,sources,read):
-    roster=source_roster(root,catalog)
-    need(len(roster)==283 and set(sources)==roster,'exact current283 full native timing source roster')
+def validate_timing_sources(root,catalog,sources,read,expected=None):
+    expected=reviewed_contract(root,read) if expected is None else expected
+    roster=source_roster(root,catalog,expected)
+    need(type(sources) is dict and len(roster)==expected.source_count and set(sources)==roster,'exact reviewed full native timing source roster')
     for name in sorted(roster):
         need(equal(reference(read(root/name)),sources[name]),'current timing source bytes: '+name)
 
@@ -217,47 +249,58 @@ def receipt(raw,rows,cases,manifest,images,go_version,go_sha,definitions,records
 
 
 
-def current_population(summary,planned,ends):
-    """Require exact82 entries while retaining old80/79/76/74 prefix gates."""
-    runs=summary['runs']
-    need(len(runs)==len(planned)==len(ends)==82 and equal(summary['cases'],175649) and equal(summary['passed'],175649),'fresh complete82 population')
-    need(sum(r['cases'] for r in runs[:80])==173866 and sum(r['batches'] for r in runs[:80])==2252,'unchanged complete80 prefix population')
+def current_population(summary,planned,ends,expected=None):
+    """Compare every current suite to reviewed definitions, never actual totals.
+
+    suite_end.source_set is a map, so this checks exact closure membership, not
+    an observed manifest order. The reviewed row preserves that ordered source
+    closure; the workspace/profile verifier independently checks actual order.
+    """
+    expected=reviewed_contract(pathlib.Path(__file__).resolve().parents[1]) if expected is None else expected
+    runs=summary['runs'];rows=expected.document['suites'];count=expected.suite_count
+    need(type(runs) is list and type(planned) is list and type(ends) is list,'current population lists')
+    need(len(runs)==len(planned)==len(ends)==count and equal(summary['cases'],expected.total_cases) and equal(summary['passed'],expected.total_cases),'fresh complete reviewed population')
+    prefix=rows[:expected.document['prefix']['count']]
+    need(sum(r['cases'] for r in runs[:len(prefix)])==sum(r['cases'] for r in prefix) and sum(r['batches'] for r in runs[:len(prefix)])==sum(r['batches'] for r in prefix),'unchanged complete80 prefix population')
+    # Independent historical anchors remain in addition to the reviewed row
+    # equality. They cannot turn a partial old population into current evidence.
     need(sum(r['cases'] for r in runs[:79])==173582 and sum(r['batches'] for r in runs[:79])==2247,'unchanged complete79 prefix population')
     need(sum(r['cases'] for r in runs[:76])==173335 and sum(r['batches'] for r in runs[:76])==2240,'unchanged complete76 prefix population')
     need(sum(r['cases'] for r in runs[:74])==171217 and sum(r['batches'] for r in runs[:74])==2181,'unchanged complete74 prefix population')
-    for key,value in CANONICAL_SUMMARY.items():need(equal(summary.get(key),value),'canonical summary field/count/scope: '+key)
-    for key,value in ETAG_SUMMARY.items():need(equal(summary.get(key),value),'ETag summary field/count/scope: '+key)
-    for key,value in IF_MATCH_SUMMARY.items():need(equal(summary.get(key),value),'IfMatch summary field/count/scope: '+key)
-    for key,value in LAST_INDEX_SUMMARY.items():need(equal(summary.get(key),value),'LastIndex summary field/count/scope: '+key)
-    for i,pkg,activity,count,source_names in [
-        (74,'go/net/textproto','CanonicalMIMEHeaderKey',22,['ports/net/httpguts/headers.gooo','ports/net/textproto/canonical.gooo']),
-        (75,'app/canonical-header-key','Report',37,['examples/canonical-header-key/main.gooo','examples/header-field-facts/main.gooo','ports/net/httpguts/headers.gooo','ports/net/textproto/canonical.gooo'])]:
-        r=runs[i];need(equal({key:r[key] for key in ['package','activity','cases','passed','batches','replay_equal']},{'package':pkg,'activity':activity,'cases':1059,'passed':1059,'batches':count,'replay_equal':True}),'exact canonical original suite '+str(i))
-        need(equal(planned[i],{'index':i,'package':pkg,'activity':activity,'cases':1059}),'exact canonical planned entry '+str(i))
-        selected=[e for e in ends if equal(e['suite_index'],i)]
-        need(len(selected)==1 and sorted(selected[0]['source_set'])==source_names,'exact canonical source closure '+str(i))
-    for i,pkg,activity,cases,count,source_names in [
-        (76,'go/net/http/etag','ScanETag',192,3,['ports/net/http/etag.gooo']),
-        (77,'go/net/http/etag','ETagStrongMatch',31,2,['ports/net/http/etag.gooo']),
-        (78,'app/strong-validator-facts','Report',24,2,['examples/strong-validator-facts/main.gooo','ports/net/http/etag.gooo','ports/net/httpguts/headers.gooo'])]:
-        r=runs[i];need(equal({key:r[key] for key in ['package','activity','cases','passed','batches','replay_equal']},{'package':pkg,'activity':activity,'cases':cases,'passed':cases,'batches':count,'replay_equal':True}),'exact ETag original suite '+str(i))
-        need(equal(planned[i],{'index':i,'package':pkg,'activity':activity,'cases':cases}),'exact ETag planned entry '+str(i))
-        selected=[e for e in ends if equal(e['suite_index'],i)]
-        need(len(selected)==1 and sorted(selected[0]['source_set'])==source_names,'exact ETag source closure '+str(i))
+    for contract in (CANONICAL_SUMMARY,ETAG_SUMMARY,IF_MATCH_SUMMARY,LAST_INDEX_SUMMARY):
+        for key,value in contract.items():need(equal(summary.get(key),value),'preserved summary field/count/scope: '+key)
+    indices=[]
+    for end in ends:
+        need(type(end) is dict and type(end.get('suite_index')) is int,'exact suite end index type')
+        indices.append(end['suite_index'])
+    need(len(set(indices))==count and set(indices)==set(range(count)),'every reviewed suite ends exactly once')
+    by_index={end['suite_index']:end for end in ends}
+    for row in rows:
+        i=row['index'];r=runs[i]
+        need(type(r) is dict,'suite observation object')
+        need(equal({key:r.get(key) for key in ('package','activity','cases','passed','batches','replay_equal')},
+             {'package':row['package'],'activity':row['activity'],'cases':row['cases'],'passed':row['cases'],'batches':row['batches'],'replay_equal':True}),'exact reviewed original suite '+str(i))
+        need(equal(planned[i],{key:row[key] for key in ('index','package','activity','cases')}),'exact reviewed planned suite '+str(i))
+        actual=by_index[i].get('source_set')
+        need(type(actual) is dict and set(actual)==set(row['source_paths']),'exact reviewed source closure membership '+str(i))
 
-    i=79;pkg='go/net/http/precondition';activity='IfMatchCondition'
-    r=runs[i];need(equal({key:r[key] for key in ['package','activity','cases','passed','batches','replay_equal']},{'package':pkg,'activity':activity,'cases':284,'passed':284,'batches':5,'replay_equal':True}),'exact appended IfMatch suite79')
-    need(equal(planned[i],{'index':i,'package':pkg,'activity':activity,'cases':284}),'exact IfMatch planned entry79')
-    selected=[e for e in ends if equal(e['suite_index'],i)]
-    need(len(selected)==1 and sorted(selected[0]['source_set'])==['ports/net/http/precondition.gooo'],'exact IfMatch one-source closure79')
+def validate_suite_sources(root,catalog,ends,read,expected):
+    """Check every selected map against current catalog ownership and bytes.
 
-    for i,pkg,activity,cases,count,source_names in [
-        (80,'go/strings','LastIndex',1694,50,['ports/strings/last_index.gooo','ports/strings/search.gooo']),
-        (81,'app/literal-final-marker-report','Report',89,3,['examples/literal-final-marker-report/main.gooo','ports/strings/last_index.gooo','ports/strings/literal.gooo','ports/strings/search.gooo'])]:
-        r=runs[i];need(equal({key:r[key] for key in ['package','activity','cases','passed','batches','replay_equal']},{'package':pkg,'activity':activity,'cases':cases,'passed':cases,'batches':count,'replay_equal':True}),'exact appended LastIndex original suite '+str(i))
-        need(equal(planned[i],{'index':i,'package':pkg,'activity':activity,'cases':cases}),'exact LastIndex planned entry '+str(i))
-        selected=[e for e in ends if equal(e['suite_index'],i)]
-        need(len(selected)==1 and sorted(selected[0]['source_set'])==source_names,'exact LastIndex source closure '+str(i))
+    Maps do not observe manifest source order. That separate workspace/profile
+    check is retained by the native verifier; reviewed source_paths keep order.
+    """
+    catalog_owners={name:pkg['path'] for pkg in catalog['packages'] for name in pkg['sources']}
+    for row in expected.document['suites']:
+        for name in row['source_paths']:
+            if name in APPENDED_SOURCE_OWNERS:
+                need(catalog_owners.get(name)==APPENDED_SOURCE_OWNERS[name],
+                     'independent appended source owner: '+name)
+        # Source-set maps have sorted wire keys; do not call that manifest order.
+        texts=[(catalog_owners[name],name,read(root/name).decode('utf-8')) for name in row['source_paths']]
+        selected={name:{'Package':pkg,'Digest':digest(go_json(text))} for pkg,name,text in sorted(texts,key=lambda x:x[1])}
+        event=next(e for e in ends if equal(e['suite_index'],row['index']))
+        need(equal(event['source_set'],selected) and event['source_set_sha256']==digest(json.dumps(selected,ensure_ascii=False,separators=(',',':')).encode()),'reviewed actual current source-map/digest '+str(row['index']))
 
 def read_verification(root,verification_out,timing):
     """Read-only complete public run binding. No compiler, Go, subprocess or writes.
@@ -268,20 +311,21 @@ def read_verification(root,verification_out,timing):
     root,verification_out,timing=map(canonical,(root,verification_out,timing));pins={}
     need(root.is_dir() and verification_out.is_dir() and timing.parent==verification_out,'current run paths')
     read=lambda p:frozen_read(p,pins)
+    contract_expected=reviewed_contract(root,read)
     events=[load(line) for line in read(timing).splitlines()]
     need(len(events)>2 and all(equal(e.get('seq'),i) and e.get('schema')=='gooo/native-verification-timing/v1' for i,e in enumerate(events)),'complete ordered timing event stream')
     header,footer=events[0],events[-1]
     need(header['kind']=='header' and footer['kind']=='run_end','timing header/footer')
     need(header['compiler_revision']==REV and header['go_version']=='go1.27.2','timing compiler/Go pins')
-    need(header['workspace_profile']['name']=='dependency-closure-v1' and header['case_profile']['name']=='uuid-and-literal-report-compact-v1','current workspace/case profiles')
+    need(header['workspace_profile']['name']==contract_expected.document['profiles']['workspace'] and header['case_profile']['name']==contract_expected.document['profiles']['case'],'current workspace/case profiles')
     summary=load(read(verification_out/'summary.json'));catalog_raw=read(root/'verification-catalog.json');catalog=load(catalog_raw)
     lock=load(read(root/'upstream.json'))
     need(lock['compiler_revision']==REV and lock['go_version']=='go1.27.2','current upstream pins')
     need(summary['schema']=='gooo/go-ports-differential/v1' and summary['compiler_revision']==REV and summary['go_version']=='go1.27.2','native summary producer')
-    need(summary['cases']==summary['passed']==175649 and len(summary['runs'])==82,'fresh complete82-suite original summary')
+    need(equal(summary['cases'],contract_expected.total_cases) and equal(summary['passed'],contract_expected.total_cases) and len(summary['runs'])==contract_expected.suite_count,'fresh complete reviewed-suite original summary')
     need(summary['verification_catalog_sha256']==digest(catalog_raw) and header['catalog']==reference(catalog_raw),'current catalog bytes')
     need(equal(summary['source_sha256'],header['catalog_source_sha256']),'summary/header source map')
-    validate_timing_sources(root,catalog,header['identity']['source_files'],read)
+    validate_timing_sources(root,catalog,header['identity']['source_files'],read,contract_expected)
     need(len(catalog['packages'])==56 and len(summary['source_sha256'])==67,'exact current56 packages/67 Gooo sources')
     catalog_sources={name:sha(read(root/name)) for pkg in catalog['packages'] for name in pkg['sources']}
     need(equal(summary['source_sha256'],catalog_sources),'current catalog Gooo source bytes')
@@ -291,14 +335,14 @@ def read_verification(root,verification_out,timing):
     for ref in header['identity']['binaries'].values():need(type(ref['bytes']) is int and ref['bytes']>0 and re.fullmatch('[0-9a-f]{64}',ref['sha256']) is not None,'tool identity shape')
     need(footer['status']=='COMPLETE' and footer['complete'] is True and footer['aborted'] is False and footer['source_bindings_unchanged'] is True and footer['successful_close_return_required'] is True,'successful complete timing close')
     need(equal(footer['identity_after'],header['identity']) and equal(footer['event_count'],len(events)),'whole run source identity unchanged')
-    need(len(events)==2471 and equal(footer['seq'],2470),'exact current82 timing row/footer count')
+    need(len(events)==contract_expected.timing_events and equal(footer['seq'],contract_expected.timing_events-1),'exact reviewed timing row/footer count')
     for key in ['failed_suites','canceled_suites','not_started_suites','missing_suite_finishes','failed_batches','incomplete_batches','logger_errors']:need(equal(footer[key],0),'timing close zero '+key)
-    need(equal(footer['not_started_suite_indices'],[]) and footer['expected_suites']==footer['successful_suites']==header['expected_suites']==82 and header['expected_cases']==footer['verified_cases']==175649,'complete suite/case counts')
-    planned=header['planned_suites'];need(len(planned)==82 and all(equal(p['index'],i) for i,p in enumerate(planned)),'planned82 suite order')
+    need(equal(footer['not_started_suite_indices'],[]) and all(equal(value,contract_expected.suite_count) for value in (footer['expected_suites'],footer['successful_suites'],header['expected_suites'])) and all(equal(value,contract_expected.total_cases) for value in (header['expected_cases'],footer['verified_cases'])),'complete suite/case counts')
+    planned=header['planned_suites'];need(type(planned) is list and len(planned)==contract_expected.suite_count and all(equal(p['index'],i) for i,p in enumerate(planned)),'reviewed planned suite order')
     beginnings=[e for e in events if e['kind']=='suite_begin'];ends=[e for e in events if e['kind']=='suite_end'];batches=[e for e in events if e['kind']=='batch_end']
     validate_command_resources(header,batches)
-    need(len(beginnings)==len(ends)==82 and len(batches)==footer['observed_batches']==footer['verified_batches']==2305,'all successful suite/batch events')
-    need(set(e['suite_index'] for e in beginnings)==set(range(82)) and set(e['suite_index'] for e in ends)==set(range(82)),'every suite begins/ends once')
+    need(len(beginnings)==len(ends)==contract_expected.suite_count and len(batches)==contract_expected.total_batches and all(equal(value,contract_expected.total_batches) for value in (footer['observed_batches'],footer['verified_batches'])),'all successful suite/batch events')
+    need(set(e['suite_index'] for e in beginnings)==set(range(contract_expected.suite_count)) and set(e['suite_index'] for e in ends)==set(range(contract_expected.suite_count)),'every suite begins/ends once')
     need(set(e['kind'] for e in events)=={'header','suite_begin','batch_end','suite_end','run_end'},'only recognized complete timing events')
     for end in ends:
         i=end['suite_index'];p=planned[i];s=summary['runs'][i]
@@ -310,20 +354,8 @@ def read_verification(root,verification_out,timing):
             need(equal(b['batch_index'],j) and equal(b['start'],at) and type(b['end']) is int and b['end']>at and b['cases']==b['end']-at and b['status']=='VERIFIED' and b['verified'] is True and b['returned_error'] is False and b['context_error'] is False,'successful contiguous actual batches')
             need(b['package']==p['package'] and b['activity']==p['activity'] and b['compiler_revision']==REV and b['go_version']=='go1.27.2' and b['source_set_sha256']==end['source_set_sha256'],'batch source/producer binding');at=b['end']
         need(at==p['cases'],'suite actual complete coverage')
-    current_population(summary,planned,ends)
-    for index,packages in [
-        (74,[PACKAGES[0],('go/net/textproto','ports/net/textproto/canonical.gooo')]),
-        (75,[PACKAGES[0],PACKAGES[1],('go/net/textproto','ports/net/textproto/canonical.gooo'),('app/canonical-header-key','examples/canonical-header-key/main.gooo')]),
-        (76,[('go/net/http/etag','ports/net/http/etag.gooo')]),
-        (77,[('go/net/http/etag','ports/net/http/etag.gooo')]),
-        (78,[('go/net/http/etag','ports/net/http/etag.gooo'),PACKAGES[0],('app/strong-validator-facts','examples/strong-validator-facts/main.gooo')]),
-        (79,[('go/net/http/precondition','ports/net/http/precondition.gooo')]),
-        (80,[('go/strings','ports/strings/search.gooo'),('go/strings','ports/strings/last_index.gooo')]),
-        (81,[('go/strings','ports/strings/search.gooo'),('go/strings','ports/strings/literal.gooo'),('go/strings','ports/strings/last_index.gooo'),('app/literal-final-marker-report','examples/literal-final-marker-report/main.gooo')])]:
-        texts=[(pkg,name,read(root/name).decode('utf-8')) for pkg,name in packages]
-        selected={name:{'Package':pkg,'Digest':digest(go_json(text))} for pkg,name,text in sorted(texts,key=lambda x:x[1])}
-        event=next(e for e in ends if e['suite_index']==index)
-        need(equal(event['source_set'],selected) and event['source_set_sha256']==digest(json.dumps(selected,ensure_ascii=False,separators=(',',':')).encode()),'appended actual current source-map/digest '+str(index))
+    current_population(summary,planned,ends,contract_expected)
+    validate_suite_sources(root,catalog,ends,read,contract_expected)
     need(planned[73]=={'index':73,'package':ROOT,'activity':'AssessAddition','cases':50},'preserved addition suite is exact50-case entry at73')
     addition=next(e for e in ends if e['suite_index']==73);addition_batches=sorted((e for e in batches if e['suite_index']==73),key=lambda e:e['batch_index'])
     need(len(addition_batches)==7,'seven bounded addition batches')
@@ -365,7 +397,7 @@ def read_verification(root,verification_out,timing):
             evidence.append({'batch':index,'operation':operation,'receipt':str(batchdir/('execution.json' if operation=='execute' else 'replay.json')),'receipt_sha256':sha(raw),'cases_digest':batch['cases_digest'],'original_receipt_sha256':batch['original_receipt_sha256']})
         rows.extend(cases['cases'])
     need(len(rows)==50 and source is not None,'exact50 fresh case rows and generated source');unchanged(pins)
-    return {'rows':rows,'source':source,'pins':pins,'case_names':[c['label'] for c in corpus['cases']],'source_set':source_set,'typed_plan':plan,'records':records,'entry':ENTRY,'evidence':evidence,'go_binary':header['identity']['binaries']['go'],'go_version':go_version,'tool_selections':sorted(selections),'fresh_native_suites':82,'fresh_addition_batches':7,'fresh_addition_cases':50}
+    return {'rows':rows,'source':source,'pins':pins,'case_names':[c['label'] for c in corpus['cases']],'source_set':source_set,'typed_plan':plan,'records':records,'entry':ENTRY,'evidence':evidence,'go_binary':header['identity']['binaries']['go'],'go_version':go_version,'tool_selections':sorted(selections),'fresh_native_suites':contract_expected.suite_count,'fresh_addition_batches':7,'fresh_addition_cases':50}
 
 def render(root,verification,rendered):
     """Only bridge IDs and fresh hashes are substituted. Policy source stays exact."""
@@ -512,6 +544,6 @@ def main():
             except BaseException as failure:error=error or 'owned cleanup failure: '+str(failure)
         for number,handler in original_handlers.items():signal.signal(number,handler)
     status='FRESH82_BOUND_ABI50_AND_ATOMIC_HOST_PASS' if error is None else 'FIRST_FAILURE_PRESERVED'
-    summary={'schema':'gooo/header-addition-host-CI/v1','status':status,'failure':error,'fresh_native_suites':82 if verification else None,'fresh_addition_cases':50 if verification else None,'fresh_addition_batches':7 if verification else None,'ABI_generated_calls':50 if error is None else None,'ABI_typed_fields':800 if error is None else None,'ABI_count_scope':'Focused abi50 command only. Race repeats these50 and host scenarios call the generated assessor again; this is not the total generated-call count.','host_test_functions':18 if error is None else None,'demo_status':'APPLIED' if error is None else None,'processes_closed':runner.closed if runner else True,'source_bindings_unchanged':error is None,'owned_work_removed':cleanup,'elapsed_s':time.monotonic()-started,'commands':runner.observations if runner else [],'scope':'Fresh public native receipt source,50 independent-Go ABI expectations and local in-memory atomic host tests. No network effects, real authentication, durability, distributed transaction or production-safety claim. Independent inner typed canonical prior_result_sha256 remains NOT_CHECKED.'}
+    summary={'schema':'gooo/header-addition-host-CI/v1','status':status,'failure':error,'fresh_native_suites':verification['fresh_native_suites'] if verification else None,'fresh_addition_cases':50 if verification else None,'fresh_addition_batches':7 if verification else None,'ABI_generated_calls':50 if error is None else None,'ABI_typed_fields':800 if error is None else None,'ABI_count_scope':'Focused abi50 command only. Race repeats these50 and host scenarios call the generated assessor again; this is not the total generated-call count.','host_test_functions':18 if error is None else None,'demo_status':'APPLIED' if error is None else None,'processes_closed':runner.closed if runner else True,'source_bindings_unchanged':error is None,'owned_work_removed':cleanup,'elapsed_s':time.monotonic()-started,'commands':runner.observations if runner else [],'scope':'Fresh public native receipt source,50 independent-Go ABI expectations and local in-memory atomic host tests. No network effects, real authentication, durability, distributed transaction or production-safety claim. Independent inner typed canonical prior_result_sha256 remains NOT_CHECKED.'}
     save(out/'summary.json',summary);print(json.dumps(summary));return 0 if error is None else 1
 if __name__=='__main__':sys.exit(main())
