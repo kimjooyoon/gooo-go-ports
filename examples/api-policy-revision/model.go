@@ -6,7 +6,7 @@ import original "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
 
 const (
 	OriginalProfile  = "cel-api-original-v1"
-	CandidateProfile = "cel-api-readonly-v1"
+	CandidateProfile = "cel-api-readonly-principal-v1"
 	ComparisonSchema = "gooo/api-policy-revision-comparison/v1"
 	ComparisonStatus = "COMPARED"
 	ComparisonScope  = "same_saved_facts_two_sealed_profiles"

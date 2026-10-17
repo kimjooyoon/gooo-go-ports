@@ -5,9 +5,10 @@ same nine facts with a candidate policy. This example compares two explicit
 profiles:
 
 - `cel-api-original-v1`: the existing CEL-derived API policy, frozen unchanged.
-- `cel-api-readonly-v1`: original Gooo composition that preserves every base
+- `cel-api-readonly-principal-v1`: Gooo composition that preserves every base
   denial, then denies an otherwise allowed action other than `read` with
-  `ACTION_NOT_READ_ONLY`.
+  `ACTION_NOT_READ_ONLY`. An otherwise allowed `read` also requires an explicitly
+  present, nonempty raw principal; otherwise it returns `EXPLICIT_PRINCIPAL_REQUIRED`.
 
 For the supplied synthetic `write` facts, the original allows and the candidate
 denies. Exactly `allowed` and `reason` differ: `NEWLY_DENIED`, changed count `2`.
@@ -253,3 +254,94 @@ The new readonly policy, classifiers and comparison transport are original Gooo
 ecosystem research, with AI-assisted development. This example implies no
 Google/CEL/AgentMesh endorsement and implements no live mesh session, token
 verification, tool-definition continuity or real API effect.
+
+
+---
+
+## 정책 변경의 생성 미리보기와 실제 반영
+
+현재 후보 `cel-api-readonly-principal-v1`은 아래 principal 규칙을 포함합니다.
+이전 `cel-api-readonly-v1`로 저장한 요청이나 비교 결과는 해당 버전의 모듈에서
+다시 확인해야 합니다. 새 후보의 이름으로 바꾸어 연결할 수 없습니다.
+
+`proposals/api-policy-revision.patch`는 이 변경을 고정 원본에 전달하는 입력입니다.
+미리보기는 원본에서 복사한 임시 디렉터리에만 적용하며 현재 checkout을 덮어쓰지 않습니다.
+원본 생성기를 실행하고 소스·생성 결과의 Git 패치와 실제 종료 상태를 남깁니다.
+제안을 담은 커밋과 생성 입력인 원본·패치, 컴파일러의 빌드 출처를 각각 기록합니다.
+
+현재 대상은 `examples/api-policy-revision`의 `readonly.gooo`, `model.go`,
+`profiles.json` 세 파일입니다. Gooo가 요청의 허용 조건을 소유합니다.
+Go 변경은 후보 프로필의 식별 상수 한 곳이며, 기존 원본 프로필을 보존합니다.
+Git의 full-index 패치가 세 파일의 원문 변경을 전달합니다.
+현재 파일의 raw 본문 한 개를 대상으로 하고, 본문 앞뒤의 선언을 보존합니다.
+
+생성 성공은 전체 정책 검증 성공과 별개입니다. 생성 결과는 일반 후속 PR로
+반영하고, 독립적인 기대값·기존 네 필수 작업·실제 main CI를 확인해야 합니다.
+생성 상태는 미실행·미확정·실패·성공으로 구분합니다. 기존 generation과 관측한
+generation을 따로 보존하고, 성공과 모든 파일의 연결을 확인한 뒤 새 생성물로 표시합니다.
+미리보기의 쓰기 범위는 임시 복사본과 결과 파일입니다.
+
+이번 제안은 명시적이고 비어 있지 않은 principal이 없는 read 요청을 거절합니다.
+기존 거절의 우선순위, 입력 아홉 개, 결과 필드 열다섯 개, 활동 ID를 유지합니다.
+입력이 제공한 principal 원문을 평가하며, 공백 문자열도 그대로 유지합니다.
+독립적인 일곱 사례에서 원본·후보의 전체 결과 14개와 차이·요약을 비교합니다.
+이전 프로필의 요청과 저장된 결과를 새 후보에 연결하는 경우도 별도로 거절해야 합니다.
+
+매개변수 위치는 유지하고 기존 `let`으로 본문에 역할 이름을 연결합니다.
+
+```gooo
+let principal_present = input2
+let principal = input3
+if allowed && (!principal_present || principal == "") { allowed = false
+ reason = "EXPLICIT_PRINCIPAL_REQUIRED" }
+```
+
+현재 추가 비용도 함께 셉니다. 조건 두 줄과 역할 연결 두 줄 외에 프로필 연결, 미리보기
+워크플로, 테스트와 문서가 필요합니다. Go 코드 비중이 낮다는 사실만으로
+확장 비용이 줄었다고 판단하지 않습니다. 미리보기 생성의 원본 실행과 파일 해시를
+확인했으며, 전체 기능·배포 수용은 각 소스와 실제 main의 필수 CI를 따로 확인합니다.
+일곱 사례의 성공도 모든 입력에 대한 완전성을 뜻하지 않습니다.
+
+준비가 중단되면 그 단계와 종료 상태를 보존하고, 생성 시도 여부를 따로 기록합니다.
+본문 추출은 실제 원본과 후보에 적용하며 빈 줄·추가 선언·import·활동 ID 경계를 검사합니다.
+
+
+### 이 변경에서 맡기는 일
+
+Gooo 본문은 허용 조건과 거절 우선순위를 표현합니다. 기존 입력 위치를 유지하고
+`let` 두 개로 principal의 역할 이름을 붙였습니다. Go는 생성된 함수를 호출하고,
+저장한 입력·출처 연결·전체 결과를 다룹니다. 정책 조건을 Go에 한 번 더 구현하지 않습니다.
+
+현재 배포 연결부에는 프로필과 generation의 고정값을 확인하는 여러 소비자가 있습니다.
+같은 checkout의 프로필 상수와 파일 수는 한 곳에서 관리하고, 긴 브라우저 빌더는
+준비·실행·원문 보존 확인·게시 단계로 나눴습니다. 독립적인 테스트 기대값과 브라우저의
+바이트 확인은 각 검사의 역할로 유지합니다. 예전 모듈에 고정된 CI Action도 기원을 유지합니다.
+
+공백 principal은 비어 있지 않은 원문으로 취급합니다. 이 예제는 입력에 담긴 값을
+비교하므로 실제 사용자의 신원이나 현재 접근 권한을 확인해 주지는 않습니다.
+
+
+### 생성물의 기원
+
+이번 생성물은 [원본 미리보기 실행](https://github.com/kimjooyoon/gooo-go-ports/actions/runs/39059588536)에서
+만들어졌습니다. 이 실행의 성공을 새 소스의 기능 검증 결과로 사용하지 않습니다.
+새 소스 CI는 생성 확인, 독립적인 전체 결과와 저장 결과 재검사를 다시 수행합니다.
+
+| 구분 | 고정값 |
+| --- | --- |
+| 제안을 담은 커밋 | `8818f85dfa620c30a298b976f60c6af0c2a05070` |
+| 생성 입력의 원본 | `b19b5517f8e9716affb0f75fd07045b8217cdaf1` |
+| 입력 Git 패치 SHA-256 | `3afdc031b5fa32bb63d9768a8a67d2a76c86c85ad894c7583f2ba2f30ee2ae0f` |
+| 컴파일러 소스 | `83928fa4538245abe33b08549da47f8cbdc50ed2` |
+| Go | `1.27.2` |
+| 생성 결과 Git 패치 SHA-256 | `3993fc7cc28336f97c223c62b35049febc4617fc6acd1a17dff399767752a266` |
+| 현재 generation.json SHA-256 | `af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee` |
+
+`generation.json`의 37개 파일 연결과 원문 해시를 확인하고 그대로 가져왔습니다.
+활동 ID와 입력·결과의 형태는 유지하며, 구체적인 정책 본문이 다른 새 후보로 구별합니다.
+
+
+분리한 브라우저 빌더 파일도 기존 소스 관측 목록에 등록합니다. 이 목록은 기존
+282개 원문과 새 파일 1개를 합한 283개이며, API 모듈의 지원 파일 82개와는 다른
+범위입니다. 파일이 빠지거나 같은 개수의 다른 파일·해시로 바뀌는 경우를 거절합니다.
+기존 포팅의 사례와 분할은 이 목록 변경에서 그대로 보존합니다.

@@ -26,7 +26,11 @@ activity ReadOnlyAPI(Boolean, Text, Boolean, Text, Boolean, Text, Text, Text, Te
 let base = original.APIAccess(input0, input1, input2, input3, input4, input5, input6, input7, input8)
 let allowed = base.allowed
 let reason = base.reason
+let principal_present = input2
+let principal = input3
 if allowed && input7 != "read" { allowed = false
  reason = "ACTION_NOT_READ_ONLY" }
+if allowed && (!principal_present || principal == "") { allowed = false
+ reason = "EXPLICIT_PRINCIPAL_REQUIRED" }
 return ApiDecision{allowed: allowed, reason: reason, authenticated: base.authenticated, tenant_present: base.tenant_present, tenant_matched: base.tenant_matched, action_present: base.action_present, action_matched: base.action_matched, access_allowed: base.access_allowed, access_error: base.access_error, access_result: base.access_result, group_matched: base.group_matched, principal_matched: base.principal_matched, group_missing: base.group_missing, principal_defaulted: base.principal_defaulted, effective_principal: base.effective_principal}
 `

@@ -29,7 +29,7 @@ ORIGINAL = "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
 ORIGINAL_COMMIT = "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"
 ORIGINAL_VERSION = "v0.0.0-20261014100709-8cddcc4e65af"
 ORIGINAL_GENERATION = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
-PARENT_GENERATION = "sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e"
+PARENT_GENERATION = "sha256:af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee"
 COMPILER = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 REPOSITORY = "https://github.com/kimjooyoon/gooo-go-ports"
 FIELDS = (
@@ -325,6 +325,23 @@ def json_stream(raw):
     return result
 
 
+def verify_fixture_identities(raw):
+    """Read the three plain identity declarations in this owned Go fixture.
+
+    This is a bounded source preflight. The compiled external consumer still
+    independently checks actual public-module bindings and complete results.
+    """
+    text = raw.decode("utf-8", errors="strict")
+    expected = {"expectedCompiler": COMPILER,
+                "expectedOriginalGeneration": ORIGINAL_GENERATION,
+                "expectedRevisionGeneration": PARENT_GENERATION}
+    for name, value in expected.items():
+        pattern = r'(?m)^\s*' + re.escape(name) + r'\s*=\s*"([^"\\\n]*)"\s*$'
+        observed = re.findall(pattern, text)
+        require(observed == [value],
+                "consumer fixture identity declaration differs: " + name)
+
+
 def check_observations(raw, parent_assets, original_assets):
     observed = decode(raw)
     require(set(observed) == {"schema", "scope", "cases"}
@@ -344,7 +361,7 @@ def check_observations(raw, parent_assets, original_assets):
                 and report["status"] == "COMPARED"
                 and report["scope"] == "same_saved_facts_two_sealed_profiles"
                 and report["before_profile"] == "cel-api-original-v1"
-                and report["candidate_profile"] == "cel-api-readonly-v1", "comparison identities differ")
+                and report["candidate_profile"] == "cel-api-readonly-principal-v1", "comparison identities differ")
         facts = {"group_present": True, "group_value": "admin", "principal_present": True,
                  "principal_value": "synthetic:user", "authenticated": True,
                  "caller_tenant": "tenant-a", "resource_tenant": "tenant-a",
@@ -407,6 +424,8 @@ def verify(args, out, report):
     report["source"] = {"helper": file_ref(Path(__file__).resolve()), "consumer_fixture": file_ref(fixture),
                         "current_parent_generation": PARENT_GENERATION,
                         "current_original_generation": ORIGINAL_GENERATION}
+    verify_fixture_identities(fixture_raw)
+    report["consumer_fixture_identities_verified"] = True
     recorder = Recorder(out)
     work = Path(tempfile.mkdtemp(prefix="gooo-public-consumer-"))
     work.chmod(0o700)

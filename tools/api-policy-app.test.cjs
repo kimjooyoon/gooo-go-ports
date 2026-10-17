@@ -26,7 +26,7 @@ function binding(root) {
 function metadata() {
   const module = path.join(ROOT, 'examples/api-policy-revision');
   return { schema: 'gooo/api-policy-browser-bridge-info/v1', scope: 'unsigned_historical_hypothetical_comparison', modes: ['baseline', 'compare', 'replay'],
-    profiles: { original: 'cel-api-original-v1', candidate: 'cel-api-readonly-v1' }, limits: { text_utf8_bytes: 65536, baseline_input_bytes: 4194304,
+    profiles: { original: 'cel-api-original-v1', candidate: 'cel-api-readonly-principal-v1' }, limits: { text_utf8_bytes: 65536, baseline_input_bytes: 4194304,
       compare_input_bytes: 4194304, replay_input_bytes: 16777216, original_proof_bytes: 4194304, native_facts_raw_bytes: 3539232, output_bytes: 67108864 },
     bindings: { original: binding(path.join(module, 'profiles/original')), revision: binding(module) } };
 }

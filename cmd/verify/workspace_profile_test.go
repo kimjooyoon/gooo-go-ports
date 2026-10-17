@@ -587,6 +587,19 @@ func workspaceProfileRecorder(t *testing.T, root string, s suite, profile native
 	return recorder, cfg.Output
 }
 
+func workspaceProfileAssertTimingInputs(t *testing.T, header map[string]any) {
+	t.Helper()
+	inputs := header["identity"].(map[string]any)["source_files"].(map[string]any)
+	if len(inputs) != 283 {
+		t.Fatal("timing provenance source count changed", len(inputs))
+	}
+	for _, name := range []string{"cmd/verify/workspace_profile.go", "cmd/verify/workspace_profile_test.go", lastIndexSource, lastIndexConsumerSource, "tools/check-last-index-inputs.py", "cmd/build-demo/api_policy_build.go"} {
+		if inputs[name] == nil {
+			t.Fatal("timing provenance omitted a required profile or builder source", name)
+		}
+	}
+}
+
 func TestWorkspaceProfileSyntheticNativeReplayAndExactTimingMap(t *testing.T) {
 	for _, profile := range []nativeWorkspaceProfile{"", dependencyClosureWorkspaceProfile} {
 		name := string(profile)
@@ -634,10 +647,7 @@ func TestWorkspaceProfileSyntheticNativeReplayAndExactTimingMap(t *testing.T) {
 			} else if !equalValue(mustJSON(t, header["workspace_profile"]), profile.identity()) {
 				t.Fatal("explicit timing identity missing")
 			}
-			inputs := header["identity"].(map[string]any)["source_files"].(map[string]any)
-			if len(inputs) != 282 || inputs["cmd/verify/workspace_profile.go"] == nil || inputs["cmd/verify/workspace_profile_test.go"] == nil || inputs[lastIndexSource] == nil || inputs[lastIndexConsumerSource] == nil || inputs["tools/check-last-index-inputs.py"] == nil {
-				t.Fatal("timing provenance shrank to selected workspace or omitted profile sources", len(inputs))
-			}
+			workspaceProfileAssertTimingInputs(t, header)
 			mapSHA := contentDigest(mustJSON(t, selected.Identities))
 			for _, row := range rows {
 				if row["kind"] == "suite_end" && (!equalValue(mustJSON(t, row["source_set"]), selected.Identities) || row["source_set_sha256"] != mapSHA) {

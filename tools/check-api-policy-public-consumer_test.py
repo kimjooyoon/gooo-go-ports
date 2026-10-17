@@ -117,5 +117,62 @@ class PublicConsumerDiagnosticsTests(unittest.TestCase):
             run.assert_called_once()
 
 
+class PublicConsumerIdentityTests(unittest.TestCase):
+    def source(self):
+        root = Path(__file__).resolve().parents[1]
+        return (root / "testdata/api-policy-consumer/main.go.txt").read_bytes()
+
+    def test_current_declared_consumer_identities_match_before_process_work(self):
+        with mock.patch.object(HELPER.subprocess, "run", side_effect=AssertionError("no process")):
+            self.assertIsNone(HELPER.verify_fixture_identities(self.source()))
+
+    def test_prior_readonly_generation_is_refused(self):
+        raw = self.source()
+        old = b"sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e"
+        mutant = raw.replace(HELPER.PARENT_GENERATION.encode(), old, 1)
+        self.assertNotEqual(mutant, raw)
+        with self.assertRaisesRegex(HELPER.Refused, "expectedRevisionGeneration"):
+            HELPER.verify_fixture_identities(mutant)
+
+    def test_missing_duplicate_or_changed_identity_declarations_are_refused(self):
+        raw = self.source()
+        for name in ("expectedCompiler", "expectedOriginalGeneration", "expectedRevisionGeneration"):
+            line = next(line for line in raw.splitlines(keepends=True)
+                        if line.lstrip().startswith(name.encode() + b" "))
+            for mutation in ("missing", "duplicate", "changed"):
+                replacement = b"" if mutation == "missing" else line + line
+                if mutation == "changed":
+                    replacement = line[:line.index(b'"') + 1] + b"changed\"\n"
+                mutant = raw.replace(line, replacement, 1)
+                self.assertNotEqual(mutant, raw)
+                with self.subTest(name=name, mutation=mutation), self.assertRaises(HELPER.Refused):
+                    HELPER.verify_fixture_identities(mutant)
+
+    def test_commented_identity_does_not_replace_declaration(self):
+        raw = self.source()
+        line = next(line for line in raw.splitlines(keepends=True)
+                    if line.lstrip().startswith(b"expectedRevisionGeneration "))
+        mutant = raw.replace(line, b"// " + line, 1)
+        self.assertNotEqual(mutant, raw)
+        with self.assertRaises(HELPER.Refused):
+            HELPER.verify_fixture_identities(mutant)
+
+    def test_fixture_preflight_is_unconditional_before_recorder_or_module_queries(self):
+        import ast
+        source = Path(HELPER.__file__).read_text()
+        tree = ast.parse(source)
+        verify = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "verify")
+        calls = [node.value for node in verify.body if isinstance(node, ast.Expr)
+                 and isinstance(node.value, ast.Call) and isinstance(node.value.func, ast.Name)
+                 and node.value.func.id == "verify_fixture_identities"]
+        self.assertEqual(len(calls), 1)
+        self.assertEqual([node.id for node in calls[0].args], ["fixture_raw"])
+        self.assertFalse(calls[0].keywords)
+        recorder = next(node for node in verify.body if isinstance(node, ast.Assign)
+                        and isinstance(node.value, ast.Call) and isinstance(node.value.func, ast.Name)
+                        and node.value.func.id == "Recorder")
+        self.assertLess(calls[0].lineno, recorder.lineno)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -20,7 +20,7 @@
   const FACT_FIELDS = ['group_present', 'group_value', 'principal_present', 'principal_value', 'authenticated',
     'caller_tenant', 'resource_tenant', 'requested_action', 'allowed_action'];
   const FACT_BOOLEANS = new Set(['group_present', 'principal_present', 'authenticated']);
-  const PROFILES = { original: 'cel-api-original-v1', candidate: 'cel-api-readonly-v1' };
+  const PROFILES = { original: 'cel-api-original-v1', candidate: 'cel-api-readonly-principal-v1' };
   const SAMPLE = action => '{\n  "group_present": true,\n  "group_value": "admin",\n  "principal_present": true,\n  "principal_value": "synthetic:user",\n  "authenticated": true,\n  "caller_tenant": "tenant-a",\n  "resource_tenant": "tenant-a",\n  "requested_action": "' + action + '",\n  "allowed_action": "' + action + '"\n}';
 
   let epoch = 0, nextID = 0, active = null;
@@ -182,7 +182,7 @@
         !sameJSON(info.modes, ['baseline', 'compare', 'replay']) || !sameJSON(info.profiles, PROFILES) || !sameJSON(info.limits, limits) ||
         !exactObject(info.bindings, ['original', 'revision']) ||
         !binding(info.bindings.original, 28, 'sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46') ||
-        !binding(info.bindings.revision, 37, 'sha256:a820e1c4cc249086472e792d31d12a9628bdfb56899bfc705efeca960893b64e')) throw new Error('The UI manifest changes the fixed native profiles, complete bindings or limits.');
+        !binding(info.bindings.revision, 37, 'sha256:af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee')) throw new Error('The UI manifest changes the fixed native profiles, complete bindings or limits.');
     return manifest;
   }
 
