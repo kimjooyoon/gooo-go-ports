@@ -50,6 +50,14 @@ REDELIVERY_COMMON_COMMANDS = (
 )
 PATH_COMMAND = 'python3 -B tools/check-path-facts.py --repository . --out out/path-facts --go "$(go env GOROOT)/bin/go" --compiler ./.gooo --timeout 300'
 PATH_COMMON_UNIT_BLOCK = '          # Full scope runs these13 Python controls inside the bounded sidecar once.\n          # Documentation-only PRs still run them as common non-native checks.\n          if [ "${{ steps.change-scope.outputs.docs_only }}" = "true" ]; then\n            python3 -I -B tools/check-path-facts_test.py\n          fi\n'
+# The exporter reads only reviewed source expectations. Actual native evidence is
+# compared later; it is never an input to the expected-data command.
+NATIVE_EXPECTED_COMMAND = 'python3 -I -B tools/native_verification_contract.py --root "$PWD" > out/native-contract-expected.json'
+NATIVE_EXPECTED_UNIT = 'python3 -I -B tools/native_verification_contract_test.py -v'
+NATIVE_EXPECTED_SLURP = '--slurpfile expected out/native-contract-expected.json'
+NATIVE_EXPECTED_BINDING = "$expected[0] as $e |"
+NATIVE_SOURCE_PATHS_ASSERTION = "(.identity.source_files | keys) == $e.source_paths"
+NATIVE_ALL_POPULATION_ASSERTION = '            (. as $actual | all(range(0;$e.totals.suites); . as $i | $actual.runs[$i] as $r | $e.suites[$i] as $wanted |\n              $r.package == $wanted.package and $r.activity == $wanted.activity and\n              $r.cases == $wanted.cases and $r.passed == $wanted.cases and\n              $r.batches == $wanted.batches and $r.replay_equal == true)) and\n'
 NATIVE_COMPARISON_COMMAND = "go run -mod=readonly ./cmd/verify --workers 3 --case-profile uuid-and-literal-report-compact-v1 --workspace-profile dependency-closure-v1 --out out/ci --timing-out out/ci/timing.jsonl"
 CASE_PROFILE_ASSERTION = '''            .case_profile == {
               schema: "gooo/native-case-profile/v1", name: "uuid-and-literal-report-compact-v1",
@@ -70,35 +78,20 @@ WORKSPACE_PROFILE_ASSERTION = '''            .workspace_profile == {
               compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.2"
             } and
 '''
-TIMING_HEADER_ASSERTION = '''          head -n 1 out/ci/timing.jsonl | jq -e --slurpfile summary out/ci/summary.json '
-            . as $header |
-            .schema == "gooo/native-verification-timing/v1" and .kind == "header" and .seq == 0 and
-            .case_profile == $summary[0].case_profile and
-            .workspace_profile == $summary[0].workspace_profile and
-            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
-            .configured_workers == 3 and .expected_suites == 82 and .expected_cases == 175649 and
-            .command_resources_schema == "gooo/native-command-resources/v1" and
-            .expected_boundaries_recomputed == false and
-            .boundary_scope == "Actual contiguous ranges only. UUID3 retain uuid-compact-v1 wire/partitions; literal-text Report uses a new compact writer/partition identity. No prior profile PASS or full batch total is inherited. Index/Count and other existing non-UUID suites retain their indented writer; decimal/payload retain their source-bounded pretty JSON policy. Fresh native/saved replay and the full summary gate remain required; no timing or speedup claim." and
-            (.identity.source_files | length) == 283 and
-            (.identity.source_files | keys) == [".github/workflows/ci.yml", "CONTRIBUTING.md", "NOTICE", "README.md", "canonical-header-key-report.workspace.json", "canonical-header-key.workspace.json", "cmd/build-demo/api_policy.go", "cmd/build-demo/api_policy_build.go", "cmd/build-demo/api_policy_test.go", "cmd/build-demo/main.go", "cmd/header-addition-input/main.go", "cmd/header-addition-input/main_test.go", "cmd/header-facts-input/main.go", "cmd/header-facts-input/main_test.go", "cmd/if-match-input/main.go", "cmd/if-match-input/main_test.go", "cmd/verify/canonical_header_batches.go", "cmd/verify/canonical_header_batches_test.go", "cmd/verify/canonical_header_contracts.go", "cmd/verify/canonical_header_contracts_test.go", "cmd/verify/canonical_header_corpus.go", "cmd/verify/canonical_header_corpus_test.go", "cmd/verify/case_exhaustive_test.go", "cmd/verify/case_profile.go", "cmd/verify/case_profile_integration_test.go", "cmd/verify/case_profile_test.go", "cmd/verify/command_resources.go", "cmd/verify/command_resources_other.go", "cmd/verify/command_resources_test.go", "cmd/verify/command_resources_unix.go", "cmd/verify/command_resources_unix_test.go", "cmd/verify/contracts.go", "cmd/verify/contracts_test.go", "cmd/verify/decimal_payload_batches.go", "cmd/verify/decimal_payload_batches_test.go", "cmd/verify/decimal_payload_contracts_test.go", "cmd/verify/decimal_payload_corpus.go", "cmd/verify/decimal_payload_corpus_test.go", "cmd/verify/etag_batches.go", "cmd/verify/etag_batches_test.go", "cmd/verify/etag_contracts.go", "cmd/verify/etag_contracts_test.go", "cmd/verify/etag_corpus.go", "cmd/verify/etag_corpus_test.go", "cmd/verify/etag_native_test.go", "cmd/verify/etag_reference.go", "cmd/verify/external_oracles.go", "cmd/verify/external_oracles_test.go", "cmd/verify/header_addition_batches.go", "cmd/verify/header_addition_batches_test.go", "cmd/verify/header_addition_contracts.go", "cmd/verify/header_addition_contracts_test.go", "cmd/verify/header_addition_corpus.go", "cmd/verify/header_addition_corpus_test.go", "cmd/verify/header_contracts.go", "cmd/verify/header_contracts_test.go", "cmd/verify/header_corpus.go", "cmd/verify/header_corpus_test.go", "cmd/verify/if_match_contracts.go", "cmd/verify/if_match_corpus.go", "cmd/verify/if_match_reference.go", "cmd/verify/if_match_test.go", "cmd/verify/inspect.go", "cmd/verify/last_index_contracts.go", "cmd/verify/last_index_contracts_test.go", "cmd/verify/last_index_corpus.go", "cmd/verify/last_index_corpus_test.go", "cmd/verify/legacy_workspace_test.go", "cmd/verify/literal_cut_contracts.go", "cmd/verify/literal_cut_corpus.go", "cmd/verify/literal_cut_corpus_test.go", "cmd/verify/literal_cut_integration_test.go", "cmd/verify/literal_report_case_profile_test.go", "cmd/verify/main.go", "cmd/verify/native_build_cache.go", "cmd/verify/native_build_cache_test.go", "cmd/verify/native_command_resources_test.go", "cmd/verify/native_correctness_cache_test.go", "cmd/verify/native_suite.go", "cmd/verify/native_timing.go", "cmd/verify/path_alias_batches.go", "cmd/verify/path_alias_batches_test.go", "cmd/verify/path_alias_contracts.go", "cmd/verify/path_alias_contracts_test.go", "cmd/verify/path_alias_corpus.go", "cmd/verify/path_alias_corpus_test.go", "cmd/verify/simple_fold_exhaustive_test.go", "cmd/verify/string_byte_batches.go", "cmd/verify/suite_workers.go", "cmd/verify/suite_workers_test.go", "cmd/verify/testdata/literal-cut-original62.json", "cmd/verify/whitespace_contracts.go", "cmd/verify/workspace_catalog.go", "cmd/verify/workspace_catalog_test.go", "cmd/verify/workspace_profile.go", "cmd/verify/workspace_profile_test.go", "cmd/verify/ycbcr_exhaustive_test.go", "decimal-int64.workspace.json", "diagnostic-header-addition.workspace.json", "etag-scan.workspace.json", "etag-strong-match.workspace.json", "examples/agentmesh-service-policy/checked_impact.gooo", "examples/agentmesh-service-policy/checked_matcher.gooo", "examples/agentmesh-service-policy/checked_refinement.gooo", "examples/agentmesh-service-policy/conditional_apply.gooo", "examples/agentmesh-service-policy/domain.gooo", "examples/agentmesh-service-policy/impact.gooo", "examples/agentmesh-service-policy/refinement.gooo", "examples/alpha-matte/main.gooo", "examples/byte-rotation/main.gooo", "examples/byte-summary/main.gooo", "examples/canonical-header-key/README.md", "examples/canonical-header-key/contract.json", "examples/canonical-header-key/corpus-accounting.json", "examples/canonical-header-key/corpus.json", "examples/canonical-header-key/inputs.json", "examples/canonical-header-key/main.gooo", "examples/canonical-header-key/manual20.json", "examples/canonical-header-key/port-inputs.json", "examples/case-inspector/main.gooo", "examples/cel-api-policy/main.gooo", "examples/color-inspector/main.gooo", "examples/crop-planner/crop_planner.gooo", "examples/crop-planner/drag_crop.gooo", "examples/diagnostic-header-addition/README.md", "examples/diagnostic-header-addition/contract.json", "examples/diagnostic-header-addition/corpus.json", "examples/diagnostic-header-addition/inputs.json", "examples/diagnostic-header-addition/main.gooo", "examples/diagnostic-header-addition/request.json", "examples/duration-quantizer/main.gooo", "examples/fits-crop/main.gooo", "examples/fixed-pixel-bounds/main.gooo", "examples/header-addition-host/LICENSE", "examples/header-addition-host/NOTICE", "examples/header-addition-host/README.md", "examples/header-addition-host/bindings.go.txt", "examples/header-addition-host/bindings_test.go.txt", "examples/header-addition-host/go.mod.txt", "examples/header-addition-host/host.go.txt", "examples/header-addition-host/host_test.go.txt", "examples/header-addition-host/main.go.txt", "examples/header-addition-host/provenance.json", "examples/header-field-facts/README.md", "examples/header-field-facts/contract.json", "examples/header-field-facts/corpus.json", "examples/header-field-facts/inputs.json", "examples/header-field-facts/main.gooo", "examples/header-field-facts/name-inputs.json", "examples/header-field-facts/request.json", "examples/header-field-facts/unicode-request.json", "examples/header-field-facts/valid-request.json", "examples/header-field-facts/value-inputs.json", "examples/identifier-rune/main.gooo", "examples/literal-cut-report/README.md", "examples/literal-cut-report/inputs.json", "examples/literal-cut-report/main.gooo", "examples/literal-cut-report/manual-contract.json", "examples/literal-final-marker-report/README.md", "examples/literal-final-marker-report/inputs.json", "examples/literal-final-marker-report/main.gooo", "examples/literal-text-report/main.gooo", "examples/path-alias-facts/README.md", "examples/path-alias-facts/anchor-pairs-24.json", "examples/path-alias-facts/clean-inputs.json", "examples/path-alias-facts/contract.json", "examples/path-alias-facts/corpus-120.json", "examples/path-alias-facts/inputs.json", "examples/path-alias-facts/main.gooo", "examples/payload-admission/README.md", "examples/payload-admission/contract.json", "examples/payload-admission/corpus.json", "examples/payload-admission/inputs.json", "examples/payload-admission/main.gooo", "examples/payload-admission/manual17.json", "examples/response.gooo", "examples/simple-fold/main.gooo", "examples/string-byte-search/main.gooo", "examples/strong-validator-facts/README.md", "examples/strong-validator-facts/contract.json", "examples/strong-validator-facts/corpus.json", "examples/strong-validator-facts/inputs.json", "examples/strong-validator-facts/main.gooo", "examples/strong-validator-facts/manual247.json", "examples/unicode-inspector/main.gooo", "examples/uuid-format-inspector/main.gooo", "examples/whitespace-inspector/main.gooo", "examples/ycbcr-inspector/main.gooo", "go.mod", "go.sum", "header-field-facts.workspace.json", "header-field-name.workspace.json", "header-field-value.workspace.json", "if-match.workspace.json", "internal/headeradditioninput/preflight.go", "internal/headeradditioninput/preflight_test.go", "internal/headerinput/preflight.go", "internal/headerinput/preflight_test.go", "literal-cut-report.workspace.json", "literal-final-marker-report.workspace.json", "path-alias-facts.workspace.json", "path-clean.workspace.json", "payload-admission.workspace.json", "ports/agentmesh/service_pattern.gooo", "ports/autobot/ai_lines.gooo", "ports/cel/scalar_access.gooo", "ports/google/uuid/quote.gooo", "ports/google/uuid/text/parse_canonical.gooo", "ports/google/uuid/validate.gooo", "ports/image/canon.gooo", "ports/image/color.gooo", "ports/image/fixed.gooo", "ports/image/geometry.gooo", "ports/image/nrgba.gooo", "ports/image/ycbcr.gooo", "ports/math/bits.gooo", "ports/net/http.gooo", "ports/net/http/README.md", "ports/net/http/etag.gooo", "ports/net/http/if-match-corpus.json", "ports/net/http/if-match-provenance.json", "ports/net/http/if-match-request.json", "ports/net/http/precondition.gooo", "ports/net/http/provenance.json", "ports/net/httpguts/README.md", "ports/net/httpguts/headers.gooo", "ports/net/httpguts/provenance.json", "ports/net/textproto/README.md", "ports/net/textproto/canonical.gooo", "ports/net/textproto/provenance.json", "ports/path/README.md", "ports/path/clean-corpus-9841.json", "ports/path/clean.gooo", "ports/path/path.gooo", "ports/path/provenance.json", "ports/strconv/README.md", "ports/strconv/corpus-256.json", "ports/strconv/decimal.gooo", "ports/strconv/inputs.json", "ports/strconv/provenance.json", "ports/strings/cut.gooo", "ports/strings/last_index.gooo", "ports/strings/literal.gooo", "ports/strings/search.gooo", "ports/time/duration.gooo", "ports/unicode/case_mapping.gooo", "ports/unicode/classification.gooo", "ports/unicode/simple_fold.gooo", "ports/unicode/space.gooo", "ports/unicode/utf16.gooo", "ports/unicode/utf8.gooo", "site/api-policy-worker.js", "site/api-policy.css", "site/api-policy.html", "site/api-policy.js", "strong-validator-facts.workspace.json", "third_party/GO-LICENSE", "third_party/go/net/http/fs.go.txt", "third_party/go/net/http/fs_test.go.txt", "third_party/go/net/textproto/reader.go.txt", "third_party/go/net/textproto/textproto.go.txt", "third_party/x-net/LICENSE", "third_party/x-net/http/httpguts/guts.go.txt", "third_party/x-net/http/httpguts/httplex.go.txt", "third_party/x-net/http/httpguts/httplex_test.go.txt", "tools/api-policy-app.test.cjs", "tools/api-policy-browser-bridge.go.txt", "tools/api-policy-browser-smoke.mjs", "tools/check-ci-scope-workflow_test.py", "tools/check-header-addition-host.py", "tools/check-header-addition-host_test.py", "tools/check-header-addition-inputs.py", "tools/check-header-facts-inputs.py", "tools/check-if-match-inputs.py", "tools/check-if-match-inputs_test.py", "tools/check-last-index-inputs.py", "tools/check-last-index-inputs_test.py", "tools/check-literal-text-inputs.py", "tools/check-literal-text-inputs_test.py", "tools/classify-ci-scope.py", "tools/generate-payload-corpus.py", "upstream.json", "verification-catalog.json"] and
-            all($header.identity.source_files[];
-              (.bytes | type) == "number" and .bytes > 0 and
-              (.sha256 | test("^[0-9a-f]{64}$")))
-          '
-'''
+TIMING_HEADER_ASSERTION = '          head -n 1 out/ci/timing.jsonl | jq -e --slurpfile summary out/ci/summary.json --slurpfile expected out/native-contract-expected.json \'\n            $expected[0] as $e |\n            . as $header |\n            .schema == "gooo/native-verification-timing/v1" and .kind == "header" and .seq == 0 and\n            .case_profile == $summary[0].case_profile and\n            .workspace_profile == $summary[0].workspace_profile and\n            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and\n            .configured_workers == 3 and .expected_suites == $e.totals.suites and .expected_cases == $e.totals.cases and\n            .command_resources_schema == "gooo/native-command-resources/v1" and\n            .expected_boundaries_recomputed == false and\n            .boundary_scope == "Actual contiguous ranges only. UUID3 retain uuid-compact-v1 wire/partitions; literal-text Report uses a new compact writer/partition identity. No prior profile PASS or full batch total is inherited. Index/Count and other existing non-UUID suites retain their indented writer; decimal/payload retain their source-bounded pretty JSON policy. Fresh native/saved replay and the full summary gate remain required; no timing or speedup claim." and\n            (.identity.source_files | length) == $e.totals.source_paths and\n            (.identity.source_files | keys) == $e.source_paths and\n            all($header.identity.source_files[];\n              (.bytes | type) == "number" and .bytes > 0 and\n              (.sha256 | test("^[0-9a-f]{64}$")))\n          \'\n'
 TIMING_CLAUSES = (
     '.schema == "gooo/native-verification-timing/v1"', '.kind == "run_end"',
     '.status == "COMPLETE"',
     '.complete == true and .aborted == false and .successful_close_return_required == true',
-    '.seq == 2470', '.expected_suites == 82', '.successful_suites == 82',
-    '.observed_batches == 2305', '.verified_batches == 2305', '.verified_cases == 175649',
-    '.event_count == 2471', '.failed_suites == 0', '.canceled_suites == 0',
+    '.seq == ($e.totals.timing_records - 1)', '.expected_suites == $e.totals.suites', '.successful_suites == $e.totals.suites',
+    '.observed_batches == $e.totals.batches', '.verified_batches == $e.totals.batches', '.verified_cases == $e.totals.cases',
+    '.event_count == $e.totals.timing_records', '.failed_suites == 0', '.canceled_suites == 0',
     '.not_started_suites == 0', '.missing_suite_finishes == 0',
     '.failed_batches == 0', '.incomplete_batches == 0', '.logger_errors == 0',
     '.source_bindings_unchanged == true',
 )
-TIMING_ASSERTION = ("          tail -n 1 out/ci/timing.jsonl | jq -e '\n"
+TIMING_ASSERTION = ("          tail -n 1 out/ci/timing.jsonl | jq -e --slurpfile expected out/native-contract-expected.json '\n"
+                    + "            $expected[0] as $e |\n"
                     + "\n".join("            " + clause + (" and" if index < len(TIMING_CLAUSES) - 1 else "")
                                 for index, clause in enumerate(TIMING_CLAUSES))
                     + "\n          '\n")
@@ -117,7 +110,7 @@ HEADER_WIRE_STEP_NAME = 'Verify strict header input reaches the actual native CL
 HEADER_WIRE_COMMAND = 'python3 -I -B tools/check-header-facts-inputs.py --root "$PWD" --compiler "$PWD/.gooo" --input-command "$PWD/out/header-facts-input" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/header-facts-input-route"'
 HEADER_WIRE_STEP_SHA = '04e719ee2669cf0cdde795740db470eba1a661bc98c7f02d3e1d6b98dfbb8d19'
 HEADER_MODULE_PREFLIGHT = "          go mod download golang.org/x/net golang.org/x/text\n          go mod verify\n"
-HEADER_SOURCE_SET_ASSERTION = '          jq -e -s --slurpfile summary out/ci/summary.json \'\n            . as $rows | $rows[0] as $header |\n            ([$rows[] | select(.kind == "suite_end")] | sort_by(.suite_index)) as $suites |\n            [$rows[] | select(.kind == "batch_end")] as $batches |\n            ($suites | length) == 82 and ($batches | length) == 2305 and\n            [$suites[].suite_index] == [range(0;82)] and\n            all(range(0;82); . as $i | $suites[$i] as $s | $summary[0].runs[$i] as $r |\n              $s.package == $r.package and $s.activity == $r.activity and\n              $s.status == "VERIFIED" and $s.covered_cases == $r.cases and\n              $s.observed_batches == $r.batches and\n              ($s.source_set | type) == "object" and ($s.source_set | length) > 0 and\n              ($s.source_set_sha256 | test("^sha256:[0-9a-f]{64}$")) and\n              all($s.source_set | to_entries[]; .key as $path |\n                (.value.Package | type) == "string" and (.value.Package | length) > 0 and\n                (.value.Digest | test("^sha256:[0-9a-f]{64}$")) and\n                $header.identity.source_files[$path].sha256 == $header.catalog_source_sha256[$path] and\n                $header.catalog_source_sha256[$path] == $summary[0].source_sha256[$path])) and\n            all($batches[]; . as $b | $b.suite_index >= 0 and $b.suite_index < 82 and\n              $b.source_set_sha256 == $suites[$b.suite_index].source_set_sha256) and\n            ($suites[70].source_set | keys) == ["ports/net/httpguts/headers.gooo"] and\n            ($suites[71].source_set | keys) == ["ports/net/httpguts/headers.gooo"] and\n            ($suites[72].source_set | keys) == ["examples/header-field-facts/main.gooo", "ports/net/httpguts/headers.gooo"] and\n            ($suites[73].source_set | keys) == ["examples/diagnostic-header-addition/main.gooo", "examples/header-field-facts/main.gooo", "examples/payload-admission/main.gooo", "ports/net/httpguts/headers.gooo", "ports/strconv/decimal.gooo"] and\n            ($suites[74].source_set | keys) == ["ports/net/httpguts/headers.gooo", "ports/net/textproto/canonical.gooo"] and\n            ($suites[75].source_set | keys) == ["examples/canonical-header-key/main.gooo", "examples/header-field-facts/main.gooo", "ports/net/httpguts/headers.gooo", "ports/net/textproto/canonical.gooo"] and\n            ($suites[76].source_set | keys) == ["ports/net/http/etag.gooo"] and\n            ($suites[77].source_set | keys) == ["ports/net/http/etag.gooo"] and\n            ($suites[78].source_set | keys) == ["examples/strong-validator-facts/main.gooo", "ports/net/http/etag.gooo", "ports/net/httpguts/headers.gooo"] and\n            ($suites[79].source_set | keys) == ["ports/net/http/precondition.gooo"] and\n            ($suites[80].source_set | keys) == ["ports/strings/last_index.gooo", "ports/strings/search.gooo"] and\n            ($suites[81].source_set | keys) == ["examples/literal-final-marker-report/main.gooo", "ports/strings/last_index.gooo", "ports/strings/literal.gooo", "ports/strings/search.gooo"]\n          \' out/ci/timing.jsonl\n'
+HEADER_SOURCE_SET_ASSERTION = '          jq -e -s --slurpfile summary out/ci/summary.json --slurpfile expected out/native-contract-expected.json \'\n            $expected[0] as $e |\n            . as $rows | $rows[0] as $header |\n            ([$rows[] | select(.kind == "suite_end")] | sort_by(.suite_index)) as $suites |\n            [$rows[] | select(.kind == "batch_end")] as $batches |\n            ($suites | length) == $e.totals.suites and ($batches | length) == $e.totals.batches and\n            [$suites[].suite_index] == [range(0;$e.totals.suites)] and\n            all(range(0;$e.totals.suites); . as $i | $suites[$i] as $s | $summary[0].runs[$i] as $r |\n              $s.package == $r.package and $s.activity == $r.activity and\n              $s.status == "VERIFIED" and $s.covered_cases == $r.cases and\n              $s.observed_batches == $r.batches and\n              ($s.source_set | keys) == ($e.suites[$i].source_paths | sort) and\n              ($s.source_set | type) == "object" and ($s.source_set | length) > 0 and\n              ($s.source_set_sha256 | test("^sha256:[0-9a-f]{64}$")) and\n              all($s.source_set | to_entries[]; .key as $path |\n                (.value.Package | type) == "string" and (.value.Package | length) > 0 and\n                (.value.Digest | test("^sha256:[0-9a-f]{64}$")) and\n                $header.identity.source_files[$path].sha256 == $header.catalog_source_sha256[$path] and\n                $header.catalog_source_sha256[$path] == $summary[0].source_sha256[$path])) and\n            all($batches[]; . as $b | $b.suite_index >= 0 and $b.suite_index < $e.totals.suites and\n              $b.source_set_sha256 == $suites[$b.suite_index].source_set_sha256) and\n            ($suites[70].source_set | keys) == ["ports/net/httpguts/headers.gooo"] and\n            ($suites[71].source_set | keys) == ["ports/net/httpguts/headers.gooo"] and\n            ($suites[72].source_set | keys) == ["examples/header-field-facts/main.gooo", "ports/net/httpguts/headers.gooo"] and\n            ($suites[73].source_set | keys) == ["examples/diagnostic-header-addition/main.gooo", "examples/header-field-facts/main.gooo", "examples/payload-admission/main.gooo", "ports/net/httpguts/headers.gooo", "ports/strconv/decimal.gooo"] and\n            ($suites[74].source_set | keys) == ["ports/net/httpguts/headers.gooo", "ports/net/textproto/canonical.gooo"] and\n            ($suites[75].source_set | keys) == ["examples/canonical-header-key/main.gooo", "examples/header-field-facts/main.gooo", "ports/net/httpguts/headers.gooo", "ports/net/textproto/canonical.gooo"] and\n            ($suites[76].source_set | keys) == ["ports/net/http/etag.gooo"] and\n            ($suites[77].source_set | keys) == ["ports/net/http/etag.gooo"] and\n            ($suites[78].source_set | keys) == ["examples/strong-validator-facts/main.gooo", "ports/net/http/etag.gooo", "ports/net/httpguts/headers.gooo"] and\n            ($suites[79].source_set | keys) == ["ports/net/http/precondition.gooo"] and\n            ($suites[80].source_set | keys) == ["ports/strings/last_index.gooo", "ports/strings/search.gooo"] and\n            ($suites[81].source_set | keys) == ["examples/literal-final-marker-report/main.gooo", "ports/strings/last_index.gooo", "ports/strings/literal.gooo", "ports/strings/search.gooo"]\n          \' out/ci/timing.jsonl\n'
 HEADER_DECLARATIONS = ("ports/net/httpguts/headers.gooo", "examples/header-field-facts/main.gooo")
 HEADER_CLAUSES = ('([.runs[:70][].cases] | add) == 170227 and ([.runs[:70][].batches] | add) == 2153 and', '.header_name_reference_cases == 232 and .header_value_reference_cases == 232 and .header_facts_reference_cases == 476 and', '.runs[70].package == "go/golang.org/x/net/http/httpguts" and .runs[70].activity == "ValidHeaderFieldName" and', '.runs[70].cases == 232 and .runs[70].passed == 232 and .runs[70].batches == 3 and', '.runs[71].package == "go/golang.org/x/net/http/httpguts" and .runs[71].activity == "ValidHeaderFieldValue" and', '.runs[71].cases == 232 and .runs[71].passed == 232 and .runs[71].batches == 3 and', '.runs[72].package == "app/header-field-facts" and .runs[72].activity == "Report" and', '.runs[72].cases == 476 and .runs[72].passed == 476 and .runs[72].batches == 15 and', '.source_sha256["ports/net/httpguts/headers.gooo"] == "a033b96ab0adb394a9d79137715d7a4170e22061e4ae9aa282f8ab3671da9f76" and', '.source_sha256["examples/header-field-facts/main.gooo"] == "4aa66012d230252bc120fdacaac555172e3a1d6c5654181aa07c7347257a805e" and', '.header_scope == "Bounded decoded validUTF8 Text<=1024 per field. Actual x/net/httpguts0.59 supplies predicate and prefix/single-byte witness references; original12-field diagnostics retain inputs. Fresh source/typed ABI/value/type/producer/raw outer saved-parent checks; independent inner typed canonical parent digest NOT_CHECKED. No arbitrary-length Go-string,HTTP2,authorization or production safety claim." and', '.header_provenance_scope == "Fresh Gooo execution and saved replay bind original Texts, exact typed12 fields, source images and generated ABI/calls, producers and raw outer receipt parents. Independent inner typed canonical prior_result_sha256 remains NOT_CHECKED; private pilot results are not fresh public acceptance." and')
 CANONICAL_DECLARATIONS = ("ports/net/textproto/canonical.gooo", "examples/canonical-header-key/main.gooo")
@@ -415,7 +408,7 @@ OBSERVER_HEADER_SHA = '46cb0e7392dd3f3fb9562bccea6b27e5194ffcf59e1a58bab4c07b99a
 NATIVE_HEADER_SHA = '584d7a22663deb57be052a69d58f2b19e6233a7eefb7d4ce6ad1d5b650d48e69'
 # Add JSON events without changing the full race-test scope or package budget;
 # all other required observer commands remain byte-identical and once.
-OBSERVER_STEP_SHA = '39fc896ebd4eec31a5183df59ec51e5a3a358b131eafd36694ae027358039d89'
+OBSERVER_STEP_SHA = '749f25adef5a99e2408b2f7f3bfa9511c90290acbaa0617f0c4a9aa79358718e'
 OBSERVER_UPLOAD_NAME = 'Preserve Go observer test timing'
 OBSERVER_UPLOADS = {OBSERVER_UPLOAD_NAME}
 OBSERVER_UPLOAD_SHA = 'd5f0816bb5edd218d4e71c5ee870c0adfad7cc8f292c37b1b2093331b1fc4d3f'
@@ -491,6 +484,13 @@ POLICY_STEP_SHAS = {
 JOB_ORDER = ('observer-checks', 'native-execution', 'policy-native-checks', 'browser-demo', 'deploy-browser-demo')
 DEPLOY_IF = "${{ always() && !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.observer-checks.result == 'success' && needs.native-execution.result == 'success' && needs.policy-native-checks.result == 'success' && needs.browser-demo.result == 'success' }}"
 DEPLOY_NEEDS = '    needs: [observer-checks, native-execution, policy-native-checks, browser-demo]'
+
+
+def excluded_source_projection(name):
+    """A filter on the frozen expected set must never replace exact membership."""
+    return TIMING_HEADER_ASSERTION.replace(
+        NATIVE_SOURCE_PATHS_ASSERTION,
+        "(.identity.source_files | keys) == ($e.source_paths - [" + json.dumps(name) + "])", 1)
 
 
 def literal_commands(chunk):
@@ -743,9 +743,28 @@ def validate(text):
     require(field(named[OBSERVER_UPLOAD_NAME], "if") == "always()",
             "observer test diagnostics must survive a failed common check")
     comparison = named["Compare the ports with Go and replay every batch"]
-    require(literal_commands(comparison) == [NATIVE_COMPARISON_COMMAND]
+    require(literal_commands(comparison) == [NATIVE_EXPECTED_COMMAND, NATIVE_COMPARISON_COMMAND]
             and ".native_suite_workers == 3 and" in comparison,
             "full native CI must bind three workers and source-bound timing")
+    require(text.count(NATIVE_EXPECTED_COMMAND) == comparison.count(NATIVE_EXPECTED_COMMAND) == 1
+            and comparison.startswith("      - name: Compare the ports with Go and replay every batch\n"
+                                      "        if: " + FULL + "\n        run: |\n          "
+                                      + NATIVE_EXPECTED_COMMAND + "\n"),
+            "native expected source export must run exactly once first, with root-only input and fixed stdout")
+    require(comparison.index(NATIVE_EXPECTED_COMMAND) < comparison.index(HEADER_MODULE_PREFLIGHT)
+            < comparison.index(NATIVE_COMPARISON_COMMAND),
+            "source expectations must precede module queries and the native verifier")
+    require(comparison.count(NATIVE_EXPECTED_SLURP) == 4
+            and comparison.count(NATIVE_EXPECTED_BINDING) == 4
+            and comparison.count("          jq -e " + NATIVE_EXPECTED_SLURP + " '\n"
+                                 "            " + NATIVE_EXPECTED_BINDING + "\n") == 1,
+            "all four native gates must import the same source-only expected file")
+    require(comparison.count(NATIVE_ALL_POPULATION_ASSERTION) == 1,
+            "every native suite identity/case/batch/replay must match its ordered expected row")
+    observer = named["Check the Go observer"]
+    require(literal_commands(observer).count(NATIVE_EXPECTED_UNIT) == 1
+            and text.count(NATIVE_EXPECTED_UNIT) == 1,
+            "native expected-reader controls must run once as an unconditional common check")
     require(comparison.count(CASE_PROFILE_ASSERTION) == 1,
             "native CI must require the exact explicit UUID compact profile identity")
     require(comparison.count(WORKSPACE_PROFILE_ASSERTION) == 1,
@@ -760,9 +779,9 @@ def validate(text):
     require("continue-on-error:" not in comparison and "|| true" not in comparison,
             "native comparison or timing failure became optional")
     for token in (".ported_functions == 54 and .consumer_programs == 26 and .consumer_activities == 28 and",
-                  "(.runs | length) == 82 and",
-                  ".cases == 175649 and .passed == 175649 and",
-                  "([.runs[].cases] | add) == 175649 and ([.runs[].batches] | add) == 2305 and",
+                  "(.runs | length) == $e.totals.suites and",
+                  ".cases == $e.totals.cases and .passed == $e.totals.cases and",
+                  "([.runs[].cases] | add) == $e.totals.cases and ([.runs[].batches] | add) == $e.totals.batches and",
                   "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2058 and",
                   "([.runs[:59][].cases] | add) == 131842 and ([.runs[:59][].batches] | add) == 1549 and",
                   "([.runs[:57][].cases] | add) == 130702 and ([.runs[:57][].batches] | add) == 1513 and",
@@ -1063,6 +1082,71 @@ def validate(text):
 
 
 class WorkflowScopeTests(unittest.TestCase):
+    def test_native_expected_export_is_exact_root_only_once_and_before_any_native_query(self):
+        named, _ = named_steps(self.text)
+        comparison = named["Compare the ports with Go and replay every batch"]
+        line = "          " + NATIVE_EXPECTED_COMMAND + "\n"
+        self.assertEqual(comparison.count(line), 1)
+        self.assertEqual(literal_commands(comparison), [NATIVE_EXPECTED_COMMAND, NATIVE_COMPARISON_COMMAND])
+        mutations = [comparison.replace(line, "", 1), comparison.replace(line, line + line, 1)]
+        for replacement in (NATIVE_EXPECTED_COMMAND + " || true", "true # " + NATIVE_EXPECTED_COMMAND,
+                            NATIVE_EXPECTED_COMMAND.replace(' --root "$PWD"', ''),
+                            NATIVE_EXPECTED_COMMAND.replace(' --root "$PWD"', ' --root "$PWD" --actual out/ci/summary.json'),
+                            NATIVE_EXPECTED_COMMAND.replace(' --root "$PWD"', ' --root out/ci'),
+                            NATIVE_EXPECTED_COMMAND.replace('out/native-contract-expected.json', 'out/ci/summary.json'),
+                            NATIVE_EXPECTED_COMMAND.replace('out/native-contract-expected.json', 'out/other-expected.json')):
+            mutations.append(comparison.replace(NATIVE_EXPECTED_COMMAND, replacement, 1))
+        for anchor in (HEADER_MODULE_PREFLIGHT, "          " + NATIVE_COMPARISON_COMMAND + "\n"):
+            without = comparison.replace(line, "", 1)
+            mutations.append(without.replace(anchor, anchor + line, 1))
+        mutations.append(comparison.replace(line, "          if false; then\n" + line + "          fi\n", 1))
+        for altered in mutations:
+            self.assertNotEqual(altered, comparison)
+            with self.subTest(export=altered[:1000]), self.assertRaises(ValueError):
+                validate(self.text.replace(comparison, altered, 1))
+
+    def test_native_expected_four_imports_and_ordered_all_row_gate_are_mandatory(self):
+        named, _ = named_steps(self.text)
+        comparison = named["Compare the ports with Go and replay every batch"]
+        self.assertEqual(comparison.count(NATIVE_EXPECTED_SLURP), 4)
+        self.assertEqual(comparison.count(NATIVE_EXPECTED_BINDING), 4)
+        self.assertEqual(comparison.count(NATIVE_ALL_POPULATION_ASSERTION), 1)
+        for before in (NATIVE_EXPECTED_SLURP, NATIVE_EXPECTED_BINDING):
+            starts = [m.start() for m in re.finditer(re.escape(before), comparison)]
+            self.assertEqual(len(starts), 4)
+            for at in starts:
+                for after in ("", before.replace("out/native-contract-expected.json", "out/ci/summary.json")
+                              if before == NATIVE_EXPECTED_SLURP else ". as $e |"):
+                    altered = comparison[:at] + after + comparison[at + len(before):]
+                    with self.subTest(import_at=at, replacement=after), self.assertRaises(ValueError):
+                        validate(self.text.replace(comparison, altered, 1))
+        for after in ("", "            true and\n", NATIVE_ALL_POPULATION_ASSERTION.replace("$r.batches == $wanted.batches", "true"),
+                      NATIVE_ALL_POPULATION_ASSERTION.replace("$r.package == $wanted.package", "true"),
+                      NATIVE_ALL_POPULATION_ASSERTION.replace("$r.replay_equal == true", "true"),
+                      NATIVE_ALL_POPULATION_ASSERTION.replace("$actual.runs[$i]", ".runs[$i]")):
+            altered = comparison.replace(NATIVE_ALL_POPULATION_ASSERTION, after, 1)
+            self.assertNotEqual(altered, comparison)
+            with self.subTest(population=after), self.assertRaises(ValueError):
+                validate(self.text.replace(comparison, altered, 1))
+
+    def test_native_expected_source_membership_and_common_reader_unit_cannot_be_optional(self):
+        named, _ = named_steps(self.text)
+        comparison = named["Compare the ports with Go and replay every batch"]
+        membership = '              ($s.source_set | keys) == ($e.suites[$i].source_paths | sort) and\n'
+        self.assertEqual(comparison.count(membership), 1)
+        for after in ("", '              true and\n', membership.replace("$e.suites[$i]", "$e.suites[0]"),
+                      membership.replace("==", ">=", 1)):
+            altered = comparison.replace(membership, after, 1)
+            with self.subTest(membership=after), self.assertRaises(ValueError):
+                validate(self.text.replace(comparison, altered, 1))
+        observer = named["Check the Go observer"]
+        line = "          " + NATIVE_EXPECTED_UNIT + "\n"
+        self.assertEqual(observer.count(line), 1)
+        for after in ("", line + line, line.rstrip("\n") + " || true\n",
+                      '          if false; then\n' + line + '          fi\n'):
+            with self.subTest(reader_unit=after), self.assertRaises(ValueError):
+                validate(self.text.replace(observer, observer.replace(line, after, 1), 1))
+
     def setUp(self):
         self.text = WORKFLOW.read_text()
 
@@ -1330,7 +1414,7 @@ class WorkflowScopeTests(unittest.TestCase):
             chunk.replace(".literal_report_compact_scope == " + json.dumps(LITERAL_REPORT_COMPACT_SCOPE) + " and", "true and", 1),
             chunk.replace("maximum_rows: 128", "maximum_rows: 129", 1),
             chunk.replace("raw_bytes_including_LF: 30000", "raw_bytes_including_LF: 32768", 1),
-            chunk.replace("(.identity.source_files | length) == 283", "(.identity.source_files | length) >= 97", 1),
+            chunk.replace("(.identity.source_files | length) == $e.totals.source_paths", "(.identity.source_files | length) >= 97", 1),
             chunk.replace("--slurpfile summary out/ci/summary.json", "--slurpfile summary out/old/summary.json", 1),
             chunk.replace(".case_profile == $summary[0].case_profile", ".case_profile == null", 1),
         ))
@@ -1359,8 +1443,8 @@ class WorkflowScopeTests(unittest.TestCase):
                 (".workspace_profile == $summary[0].workspace_profile and", "true and"),
                 (".workspace_profile == $summary[0].workspace_profile", ".workspace_profile == null"),
                 (".workspace_profile == $summary[0].workspace_profile", ".workspace_profile == $summary[0].case_profile"),
-                ("(.identity.source_files | length) == 283", "(.identity.source_files | length) == 140"),
-                ("(.identity.source_files | length) == 283", "(.identity.source_files | length) >= 140"),
+                ("(.identity.source_files | length) == $e.totals.source_paths", "(.identity.source_files | length) == 140"),
+                ("(.identity.source_files | length) == $e.totals.source_paths", "(.identity.source_files | length) >= 140"),
                 ("(.identity.source_files | keys) ==", "(.identity.source_files | values) =="),
                 ("all($header.identity.source_files[];", "all($header.identity.source_files | del(.\"cmd/verify/workspace_profile.go\") | .[];"),
                 ("(.bytes | type) == \"number\" and .bytes > 0", "(.bytes | type) == \"number\"")):
@@ -1369,10 +1453,9 @@ class WorkflowScopeTests(unittest.TestCase):
         # Guard every old input as well as each new selector/test input. A count
         # alone would permit substituting a different source at the same length.
         for name in ("cmd/verify/workspace_profile.go", "cmd/verify/workspace_profile_test.go", "cmd/verify/main.go"):
-            token = json.dumps(name) + ", "
-            self.assertIn(token, TIMING_HEADER_ASSERTION)
-            mutations.append(chunk.replace(TIMING_HEADER_ASSERTION,
-                                           TIMING_HEADER_ASSERTION.replace(token, "", 1), 1))
+            altered_header = excluded_source_projection(name)
+            self.assertNotEqual(altered_header, TIMING_HEADER_ASSERTION)
+            mutations.append(chunk.replace(TIMING_HEADER_ASSERTION, altered_header, 1))
         summary = re.search(r"^          jq -c -s '\n.*?^          ' out/ci/timing.jsonl\n", chunk, re.M | re.S)[0]
         for field in ("source_set", "source_set_sha256"):
             token = ", " + field
@@ -1400,13 +1483,16 @@ class WorkflowScopeTests(unittest.TestCase):
 
 
     def test_policy_builder_source_identity_is_mandatory(self):
-        token='"cmd/build-demo/api_policy_build.go", '
-        self.assertEqual(TIMING_HEADER_ASSERTION.count(token),1)
-        for replacement in ('','"cmd/build-demo/substituted.go", '):
-            altered=TIMING_HEADER_ASSERTION.replace(token,replacement,1)
-            self.assertNotEqual(altered,TIMING_HEADER_ASSERTION)
-            with self.subTest(replacement=replacement),self.assertRaises(ValueError):
-                validate(self.text.replace(TIMING_HEADER_ASSERTION,altered,1))
+        name = "cmd/build-demo/api_policy_build.go"
+        omissions = excluded_source_projection(name)
+        substituted = TIMING_HEADER_ASSERTION.replace(
+            NATIVE_SOURCE_PATHS_ASSERTION,
+            '(.identity.source_files | keys) == ($e.source_paths | map(if . == '
+            + json.dumps(name) + ' then "cmd/build-demo/substituted.go" else . end))', 1)
+        for altered in (omissions, substituted):
+            self.assertNotEqual(altered, TIMING_HEADER_ASSERTION)
+            with self.subTest(replacement=altered), self.assertRaises(ValueError):
+                validate(self.text.replace(TIMING_HEADER_ASSERTION, altered, 1))
 
     def test_last_index82_exact_finite_roster_and_unchanged_old80_prefix_are_required(self):
         named, _ = named_steps(self.text)
@@ -1419,31 +1505,30 @@ class WorkflowScopeTests(unittest.TestCase):
                     validate(self.text.replace(comparison, comparison.replace(clause, replacement, 1), 1))
         # A previous80-suite pass cannot accept either new source-bound entry.
         for before, after in (
-                ('(.runs | length) == 82', '(.runs | length) == 80'),
+                ('(.runs | length) == $e.totals.suites', '(.runs | length) == 80'),
                 ('.ported_functions == 54 and .consumer_programs == 26 and .consumer_activities == 28 and',
                  '.ported_functions == 53 and .consumer_programs == 25 and .consumer_activities == 27 and'),
-                ('.cases == 175649 and .passed == 175649', '.cases == 173866 and .passed == 173866'),
-                ('([.runs[].cases] | add) == 175649', '([.runs[].cases] | add) == 173866'),
-                ('([.runs[].batches] | add) == 2305', '([.runs[].batches] | add) == 2252'),
-                ('.expected_suites == 82', '.expected_suites == 80'),
-                ('.successful_suites == 82', '.successful_suites == 80'),
-                ('.expected_cases == 175649', '.expected_cases == 173866'),
-                ('.verified_cases == 175649', '.verified_cases == 173866'),
-                ('.observed_batches == 2305', '.observed_batches == 2252'),
-                ('.verified_batches == 2305', '.verified_batches == 2252'),
-                ('.event_count == 2471', '.event_count == 2414'),
-                ('.seq == 2470', '.seq == 2413'),
-                ('(.identity.source_files | length) == 283', '(.identity.source_files | length) == 265'),
+                ('.cases == $e.totals.cases and .passed == $e.totals.cases', '.cases == 173866 and .passed == 173866'),
+                ('([.runs[].cases] | add) == $e.totals.cases', '([.runs[].cases] | add) == 173866'),
+                ('([.runs[].batches] | add) == $e.totals.batches', '([.runs[].batches] | add) == 2252'),
+                ('.expected_suites == $e.totals.suites', '.expected_suites == 80'),
+                ('.successful_suites == $e.totals.suites', '.successful_suites == 80'),
+                ('.expected_cases == $e.totals.cases', '.expected_cases == 173866'),
+                ('.verified_cases == $e.totals.cases', '.verified_cases == 173866'),
+                ('.observed_batches == $e.totals.batches', '.observed_batches == 2252'),
+                ('.verified_batches == $e.totals.batches', '.verified_batches == 2252'),
+                ('.event_count == $e.totals.timing_records', '.event_count == 2414'),
+                ('.seq == ($e.totals.timing_records - 1)', '.seq == 2413'),
+                ('(.identity.source_files | length) == $e.totals.source_paths', '(.identity.source_files | length) == 265'),
                 ('(.source_sha256 | length) == 67', '(.source_sha256 | length) == 65')):
             self.assertIn(before, comparison)
             with self.subTest(rollback=before), self.assertRaises(ValueError):
                 validate(self.text.replace(comparison, comparison.replace(before, after, 1), 1))
         for name in LAST_INDEX_NEW_SOURCE_PATHS:
-            token = json.dumps(name) + ", "
-            self.assertIn(token, TIMING_HEADER_ASSERTION)
+            altered_header = excluded_source_projection(name)
+            self.assertNotEqual(altered_header, TIMING_HEADER_ASSERTION)
             with self.subTest(source=name), self.assertRaises(ValueError):
-                validate(self.text.replace(TIMING_HEADER_ASSERTION,
-                                           TIMING_HEADER_ASSERTION.replace(token, "", 1), 1))
+                validate(self.text.replace(TIMING_HEADER_ASSERTION, altered_header, 1))
 
     def test_if_match80_exact_population_sources_and_old79_prefix_are_required(self):
         named, _ = named_steps(self.text)
@@ -1456,28 +1541,27 @@ class WorkflowScopeTests(unittest.TestCase):
                 with self.subTest(clause=clause, replacement=replacement), self.assertRaises(ValueError):
                     validate(self.text.replace(comparison, comparison.replace(clause, replacement, 1), 1))
         for before, after in (
-                ('(.runs | length) == 82', '(.runs | length) == 79'),
-                ('.cases == 175649 and .passed == 175649', '.cases == 173582 and .passed == 173582'),
-                ('([.runs[].batches] | add) == 2305', '([.runs[].batches] | add) == 2247'),
-                ('.expected_suites == 82', '.expected_suites == 79'),
-                ('.successful_suites == 82', '.successful_suites == 79'),
-                ('.expected_cases == 175649', '.expected_cases == 173582'),
-                ('.verified_cases == 175649', '.verified_cases == 173582'),
-                ('.observed_batches == 2305', '.observed_batches == 2247'),
-                ('.verified_batches == 2305', '.verified_batches == 2247'),
-                ('.event_count == 2471', '.event_count == 2407'),
-                ('.seq == 2470', '.seq == 2406'),
-                ('(.identity.source_files | length) == 283', '(.identity.source_files | length) == 251'),
+                ('(.runs | length) == $e.totals.suites', '(.runs | length) == 79'),
+                ('.cases == $e.totals.cases and .passed == $e.totals.cases', '.cases == 173582 and .passed == 173582'),
+                ('([.runs[].batches] | add) == $e.totals.batches', '([.runs[].batches] | add) == 2247'),
+                ('.expected_suites == $e.totals.suites', '.expected_suites == 79'),
+                ('.successful_suites == $e.totals.suites', '.successful_suites == 79'),
+                ('.expected_cases == $e.totals.cases', '.expected_cases == 173582'),
+                ('.verified_cases == $e.totals.cases', '.verified_cases == 173582'),
+                ('.observed_batches == $e.totals.batches', '.observed_batches == 2247'),
+                ('.verified_batches == $e.totals.batches', '.verified_batches == 2247'),
+                ('.event_count == $e.totals.timing_records', '.event_count == 2407'),
+                ('.seq == ($e.totals.timing_records - 1)', '.seq == 2406'),
+                ('(.identity.source_files | length) == $e.totals.source_paths', '(.identity.source_files | length) == 251'),
                 ('(.source_sha256 | length) == 67', '(.source_sha256 | length) == 63')):
             self.assertIn(before, comparison)
             with self.subTest(rollback=before), self.assertRaises(ValueError):
                 validate(self.text.replace(comparison, comparison.replace(before, after, 1), 1))
         for name in IF_MATCH_NEW_SOURCE_PATHS:
-            token = json.dumps(name) + ", "
-            self.assertIn(token, TIMING_HEADER_ASSERTION)
+            altered_header = excluded_source_projection(name)
+            self.assertNotEqual(altered_header, TIMING_HEADER_ASSERTION)
             with self.subTest(source=name), self.assertRaises(ValueError):
-                validate(self.text.replace(TIMING_HEADER_ASSERTION,
-                                           TIMING_HEADER_ASSERTION.replace(token, "", 1), 1))
+                validate(self.text.replace(TIMING_HEADER_ASSERTION, altered_header, 1))
         for source in IF_MATCH_DECLARATIONS:
             line = "          ./.gooo check " + source + "\n"
             self.assertEqual(self.text.count(line), 1)
@@ -1521,26 +1605,25 @@ class WorkflowScopeTests(unittest.TestCase):
                     validate(self.text.replace(comparison, comparison.replace(clause, replacement, 1), 1))
         # Old76 acceptance counts cannot replace the current80 requirements.
         for before, after in (
-                ('(.runs | length) == 82', '(.runs | length) == 76'),
-                ('.cases == 175649 and .passed == 175649', '.cases == 173335 and .passed == 173335'),
-                ('([.runs[].batches] | add) == 2305', '([.runs[].batches] | add) == 2240'),
-                ('.expected_suites == 82', '.expected_suites == 76'),
-                ('.successful_suites == 82', '.successful_suites == 76'),
-                ('.expected_cases == 175649', '.expected_cases == 173335'),
-                ('.verified_cases == 175649', '.verified_cases == 173335'),
-                ('.observed_batches == 2305', '.observed_batches == 2240'),
-                ('.verified_batches == 2305', '.verified_batches == 2240'),
-                ('.event_count == 2471', '.event_count == 2394'),
-                ('.seq == 2470', '.seq == 2393'),
-                ('(.identity.source_files | length) == 283', '(.identity.source_files | length) == 228'),
+                ('(.runs | length) == $e.totals.suites', '(.runs | length) == 76'),
+                ('.cases == $e.totals.cases and .passed == $e.totals.cases', '.cases == 173335 and .passed == 173335'),
+                ('([.runs[].batches] | add) == $e.totals.batches', '([.runs[].batches] | add) == 2240'),
+                ('.expected_suites == $e.totals.suites', '.expected_suites == 76'),
+                ('.successful_suites == $e.totals.suites', '.successful_suites == 76'),
+                ('.expected_cases == $e.totals.cases', '.expected_cases == 173335'),
+                ('.verified_cases == $e.totals.cases', '.verified_cases == 173335'),
+                ('.observed_batches == $e.totals.batches', '.observed_batches == 2240'),
+                ('.verified_batches == $e.totals.batches', '.verified_batches == 2240'),
+                ('.event_count == $e.totals.timing_records', '.event_count == 2394'),
+                ('.seq == ($e.totals.timing_records - 1)', '.seq == 2393'),
+                ('(.identity.source_files | length) == $e.totals.source_paths', '(.identity.source_files | length) == 228'),
                 ('(.source_sha256 | length) == 67', '(.source_sha256 | length) == 61')):
             self.assertIn(before, comparison)
             with self.subTest(rollback=before), self.assertRaises(ValueError):
                 validate(self.text.replace(comparison, comparison.replace(before, after, 1), 1))
         for name in ETAG_NEW_SOURCE_PATHS:
-            token = json.dumps(name) + ", "
-            self.assertIn(token, TIMING_HEADER_ASSERTION)
-            weakened = TIMING_HEADER_ASSERTION.replace(token, "", 1)
+            weakened = excluded_source_projection(name)
+            self.assertNotEqual(weakened, TIMING_HEADER_ASSERTION)
             with self.subTest(source=name), self.assertRaises(ValueError):
                 validate(self.text.replace(TIMING_HEADER_ASSERTION, weakened, 1))
         for source in ETAG_DECLARATIONS:
@@ -1570,26 +1653,25 @@ class WorkflowScopeTests(unittest.TestCase):
         # The old74 prefix stays mandatory while the whole current population grows.
         # Each rollback target below remains an intentional negative, not a new PASS.
         for before, after in (
-                ('(.runs | length) == 82', '(.runs | length) == 74'),
-                ('.cases == 175649 and .passed == 175649', '.cases == 171217 and .passed == 171217'),
-                ('([.runs[].batches] | add) == 2305', '([.runs[].batches] | add) == 2181'),
-                ('.expected_suites == 82', '.expected_suites == 74'),
-                ('.successful_suites == 82', '.successful_suites == 74'),
-                ('.expected_cases == 175649', '.expected_cases == 171217'),
-                ('.verified_cases == 175649', '.verified_cases == 171217'),
-                ('.observed_batches == 2305', '.observed_batches == 2181'),
-                ('.verified_batches == 2305', '.verified_batches == 2181'),
-                ('.event_count == 2471', '.event_count == 2331'),
-                ('.seq == 2470', '.seq == 2330'),
-                ('(.identity.source_files | length) == 283', '(.identity.source_files | length) == 207'),
+                ('(.runs | length) == $e.totals.suites', '(.runs | length) == 74'),
+                ('.cases == $e.totals.cases and .passed == $e.totals.cases', '.cases == 171217 and .passed == 171217'),
+                ('([.runs[].batches] | add) == $e.totals.batches', '([.runs[].batches] | add) == 2181'),
+                ('.expected_suites == $e.totals.suites', '.expected_suites == 74'),
+                ('.successful_suites == $e.totals.suites', '.successful_suites == 74'),
+                ('.expected_cases == $e.totals.cases', '.expected_cases == 171217'),
+                ('.verified_cases == $e.totals.cases', '.verified_cases == 171217'),
+                ('.observed_batches == $e.totals.batches', '.observed_batches == 2181'),
+                ('.verified_batches == $e.totals.batches', '.verified_batches == 2181'),
+                ('.event_count == $e.totals.timing_records', '.event_count == 2331'),
+                ('.seq == ($e.totals.timing_records - 1)', '.seq == 2330'),
+                ('(.identity.source_files | length) == $e.totals.source_paths', '(.identity.source_files | length) == 207'),
                 ('(.source_sha256 | length) == 67', '(.source_sha256 | length) == 59')):
             self.assertIn(before, comparison)
             with self.subTest(before=before), self.assertRaises(ValueError):
                 validate(self.text.replace(comparison, comparison.replace(before, after, 1), 1))
         for name in CANONICAL_NEW_SOURCE_PATHS:
-            token = json.dumps(name) + ", "
-            self.assertIn(token, TIMING_HEADER_ASSERTION)
-            weakened = TIMING_HEADER_ASSERTION.replace(token, "", 1)
+            weakened = excluded_source_projection(name)
+            self.assertNotEqual(weakened, TIMING_HEADER_ASSERTION)
             with self.subTest(source=name), self.assertRaises(ValueError):
                 validate(self.text.replace(TIMING_HEADER_ASSERTION, weakened, 1))
         for source in CANONICAL_DECLARATIONS:
@@ -1616,24 +1698,23 @@ class WorkflowScopeTests(unittest.TestCase):
                 with self.subTest(clause=clause), self.assertRaises(ValueError):
                     validate(self.text.replace(comparison, comparison.replace(clause, replacement, 1), 1))
         for before, after in (
-                ('(.runs | length) == 82', '(.runs | length) == 73'),
-                ('.cases == 175649 and .passed == 175649', '.cases == 171167 and .passed == 171167'),
-                ('([.runs[].batches] | add) == 2305', '([.runs[].batches] | add) == 2174'),
-                ('.expected_suites == 82', '.expected_suites == 73'),
-                ('.successful_suites == 82', '.successful_suites == 73'),
-                ('.verified_cases == 175649', '.verified_cases == 171167'),
-                ('.observed_batches == 2305', '.observed_batches == 2174'),
-                ('.verified_batches == 2305', '.verified_batches == 2174'),
-                ('.event_count == 2471', '.event_count == 2322'),
-                ('.seq == 2470', '.seq == 2321'),
-                ('(.identity.source_files | length) == 283', '(.identity.source_files | length) == 177')):
+                ('(.runs | length) == $e.totals.suites', '(.runs | length) == 73'),
+                ('.cases == $e.totals.cases and .passed == $e.totals.cases', '.cases == 171167 and .passed == 171167'),
+                ('([.runs[].batches] | add) == $e.totals.batches', '([.runs[].batches] | add) == 2174'),
+                ('.expected_suites == $e.totals.suites', '.expected_suites == 73'),
+                ('.successful_suites == $e.totals.suites', '.successful_suites == 73'),
+                ('.verified_cases == $e.totals.cases', '.verified_cases == 171167'),
+                ('.observed_batches == $e.totals.batches', '.observed_batches == 2174'),
+                ('.verified_batches == $e.totals.batches', '.verified_batches == 2174'),
+                ('.event_count == $e.totals.timing_records', '.event_count == 2322'),
+                ('.seq == ($e.totals.timing_records - 1)', '.seq == 2321'),
+                ('(.identity.source_files | length) == $e.totals.source_paths', '(.identity.source_files | length) == 177')):
             self.assertIn(before, comparison)
             with self.subTest(before=before), self.assertRaises(ValueError):
                 validate(self.text.replace(comparison, comparison.replace(before, after, 1), 1))
         for name in HEADER_ADDITION_NEW_SOURCE_PATHS:
-            token = json.dumps(name) + ", "
-            self.assertIn(token, TIMING_HEADER_ASSERTION)
-            weakened = TIMING_HEADER_ASSERTION.replace(token, "", 1)
+            weakened = excluded_source_projection(name)
+            self.assertNotEqual(weakened, TIMING_HEADER_ASSERTION)
             with self.subTest(source=name), self.assertRaises(ValueError):
                 validate(self.text.replace(TIMING_HEADER_ASSERTION, weakened, 1))
         line = "          ./.gooo check examples/diagnostic-header-addition/main.gooo\n"
@@ -1729,18 +1810,18 @@ class WorkflowScopeTests(unittest.TestCase):
         for before, after in (
                 ('.ported_functions == 54 and .consumer_programs == 26 and .consumer_activities == 28 and',
                  '.ported_functions == 47 and .consumer_programs == 21 and .consumer_activities == 23 and'),
-                ('(.runs | length) == 82 and', '(.runs | length) == 70 and'),
-                ('.cases == 175649 and .passed == 175649 and', '.cases == 170227 and .passed == 170227 and'),
-                ('.expected_suites == 82', '.expected_suites == 70'),
-                ('.successful_suites == 82', '.successful_suites == 70'),
-                ('.expected_cases == 175649', '.expected_cases == 170227'),
-                ('.verified_cases == 175649', '.verified_cases == 170227'),
-                ('.observed_batches == 2305', '.observed_batches == 2153'),
-                ('.verified_batches == 2305', '.verified_batches == 2153'),
-                ('.event_count == 2471', '.event_count == 2295'),
-                ('.seq == 2470', '.seq == 2294'),
+                ('(.runs | length) == $e.totals.suites and', '(.runs | length) == 70 and'),
+                ('.cases == $e.totals.cases and .passed == $e.totals.cases and', '.cases == 170227 and .passed == 170227 and'),
+                ('.expected_suites == $e.totals.suites', '.expected_suites == 70'),
+                ('.successful_suites == $e.totals.suites', '.successful_suites == 70'),
+                ('.expected_cases == $e.totals.cases', '.expected_cases == 170227'),
+                ('.verified_cases == $e.totals.cases', '.verified_cases == 170227'),
+                ('.observed_batches == $e.totals.batches', '.observed_batches == 2153'),
+                ('.verified_batches == $e.totals.batches', '.verified_batches == 2153'),
+                ('.event_count == $e.totals.timing_records', '.event_count == 2295'),
+                ('.seq == ($e.totals.timing_records - 1)', '.seq == 2294'),
                 ('(.source_sha256 | length) == 67', '(.source_sha256 | length) == 56'),
-                ('(.identity.source_files | length) == 283', '(.identity.source_files | length) == 142'),
+                ('(.identity.source_files | length) == $e.totals.source_paths', '(.identity.source_files | length) == 142'),
                 ('original12-field diagnostics', 'original11-field diagnostics'),
                 ('exact typed12 fields', 'exact typed11 fields'),
                 ('independent inner typed canonical parent digest NOT_CHECKED', 'independent inner typed canonical parent digest CHECKED')):
@@ -1756,9 +1837,8 @@ class WorkflowScopeTests(unittest.TestCase):
                      "examples/header-field-facts/contract.json", "examples/header-field-facts/corpus.json",
                      "ports/net/httpguts/headers.gooo", "ports/net/httpguts/provenance.json",
                      "tools/check-header-facts-inputs.py"):
-            token = json.dumps(name) + ", "
-            self.assertIn(token, TIMING_HEADER_ASSERTION)
-            weakened = TIMING_HEADER_ASSERTION.replace(token, "", 1)
+            weakened = excluded_source_projection(name)
+            self.assertNotEqual(weakened, TIMING_HEADER_ASSERTION)
             with self.subTest(source=name), self.assertRaises(ValueError):
                 validate(self.text.replace(TIMING_HEADER_ASSERTION, weakened, 1))
         self.assertEqual(comparison.count(HEADER_SOURCE_SET_ASSERTION), 1)
@@ -1802,13 +1882,13 @@ class WorkflowScopeTests(unittest.TestCase):
         for before, after in (
                 ('.runs[68].batches == 77', '.runs[68].batches == 76'),
                 ('.runs[69].batches == 4', '.runs[69].batches == 1'),
-                ('.expected_suites == 82', '.expected_suites == 68'),
-                ('.successful_suites == 82', '.successful_suites == 68'),
-                ('.verified_cases == 175649', '.verified_cases == 160266'),
-                ('.observed_batches == 2305', '.observed_batches == 2072'),
-                ('.verified_batches == 2305', '.verified_batches == 2072'),
-                ('.event_count == 2471', '.event_count == 2210'),
-                ('.seq == 2470', '.seq == 2209')):
+                ('.expected_suites == $e.totals.suites', '.expected_suites == 68'),
+                ('.successful_suites == $e.totals.suites', '.successful_suites == 68'),
+                ('.verified_cases == $e.totals.cases', '.verified_cases == 160266'),
+                ('.observed_batches == $e.totals.batches', '.observed_batches == 2072'),
+                ('.verified_batches == $e.totals.batches', '.verified_batches == 2072'),
+                ('.event_count == $e.totals.timing_records', '.event_count == 2210'),
+                ('.seq == ($e.totals.timing_records - 1)', '.seq == 2209')):
             self.assertIn(before, comparison)
             with self.subTest(before=before), self.assertRaises(ValueError):
                 validate(self.text.replace(comparison, comparison.replace(before, after, 1), 1))
@@ -1826,10 +1906,10 @@ class WorkflowScopeTests(unittest.TestCase):
             (".runs[61].batches == 235", ".runs[61].batches == 281"),
             ("([.runs[:62][].batches] | add) == 2058", "([.runs[:62][].batches] | add) == 2104"),
             ("([.runs[:66][].batches] | add) == 2063", "([.runs[:66][].batches] | add) == 2109"),
-            ("([.runs[].batches] | add) == 2305", "([.runs[].batches] | add) == 2072"),
-            (".event_count == 2471", ".event_count == 2210"),
-            (".seq == 2470", ".seq == 2209"),
-            ("(.identity.source_files | length) == 283", "(.identity.source_files | length) == 120"),
+            ("([.runs[].batches] | add) == $e.totals.batches", "([.runs[].batches] | add) == 2072"),
+            (".event_count == $e.totals.timing_records", ".event_count == 2210"),
+            (".seq == ($e.totals.timing_records - 1)", ".seq == 2209"),
+            ("(.identity.source_files | length) == $e.totals.source_paths", "(.identity.source_files | length) == 120"),
         )
         for before, after in changes:
             self.assertIn(before, comparison)
@@ -1894,8 +1974,8 @@ class WorkflowScopeTests(unittest.TestCase):
         comparison = named["Compare the ports with Go and replay every batch"]
         clauses = (
             ".ported_functions == 54 and .consumer_programs == 26 and .consumer_activities == 28 and",
-            "(.runs | length) == 82 and", ".cases == 175649 and .passed == 175649 and",
-            "([.runs[].cases] | add) == 175649 and ([.runs[].batches] | add) == 2305 and",
+            "(.runs | length) == $e.totals.suites and", ".cases == $e.totals.cases and .passed == $e.totals.cases and",
+            "([.runs[].cases] | add) == $e.totals.cases and ([.runs[].batches] | add) == $e.totals.batches and",
             "([.runs[:62][].cases] | add) == 159781 and ([.runs[:62][].batches] | add) == 2058 and",
             ".literal_cut_reference_cases == 32", ".literal_cut_prefix_reference_cases == 32",
             ".literal_cut_suffix_reference_cases == 32", ".literal_cut_report_reference_cases == 32",

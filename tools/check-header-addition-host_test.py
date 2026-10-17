@@ -166,7 +166,7 @@ class FreshHostTests(unittest.TestCase):
         self.assertIn('examples/diagnostic-header-addition/main.gooo',roster)
         self.assertIn('cmd/verify/header_addition_corpus.go',roster)
         self.assertIn('ports/autobot/ai_lines.gooo',roster)
-        self.assertEqual(len(roster),283)
+        self.assertEqual(len(roster),288)
         self.assertEqual(len(catalog['packages']),56)
         self.assertEqual(sum(len(p['sources']) for p in catalog['packages']),67)
         for name in ('ports/net/textproto/canonical.gooo','examples/canonical-header-key/main.gooo','cmd/verify/canonical_header_contracts.go','cmd/verify/canonical_header_corpus_test.go','examples/canonical-header-key/manual20.json','third_party/go/net/textproto/reader.go.txt','cmd/verify/etag_contracts.go','cmd/verify/etag_native_test.go','ports/net/http/etag.gooo','examples/strong-validator-facts/main.gooo','examples/strong-validator-facts/manual247.json','third_party/go/net/http/fs.go.txt','etag-scan.workspace.json','etag-strong-match.workspace.json','strong-validator-facts.workspace.json'):
@@ -178,17 +178,18 @@ class FreshHostTests(unittest.TestCase):
             self.assertIn(name,roster)
 
     def test_policy_builder_roster_entry_is_mandatory(self):
-        catalog=CHECK.load((ROOT/'verification-catalog.json').read_bytes())
-        source=(ROOT/'cmd/verify/native_timing.go').read_text()
-        token='"cmd/build-demo/api_policy_build.go", '
-        self.assertEqual(source.count(token),1)
-        for replacement in ('','"cmd/build-demo/substituted.go", '):
-            mutant=source.replace(token,replacement,1)
-            self.assertNotEqual(mutant,source)
+        # The full reviewed data, not a Go source regex, owns the flat roster.
+        expected=CHECK.reviewed_contract(ROOT)
+        catalog={'packages':[{'path':'synthetic/catalog-membership-only','sources':[
+            row['path'] for row in expected.document['sources'] if 'catalog-source' in row['roles']]}]}
+        source=(ROOT/CHECK.CONTRACT.REVIEWED_PATH).read_bytes()
+        self.assertIn(b'"cmd/build-demo/api_policy_build.go"',source)
+        for replacement in (b'cmd/build-demo/substituted.go',b'cmd/build-demo/api_policy_build.gx'):
+            mutant=source.replace(b'cmd/build-demo/api_policy_build.go',replacement,1)
             with tempfile.TemporaryDirectory() as directory:
-                root=pathlib.Path(directory);(root/'cmd/verify').mkdir(parents=True)
-                (root/'cmd/verify/native_timing.go').write_text(mutant)
-                with self.subTest(replacement=replacement),self.assertRaises(RuntimeError):
+                root=pathlib.Path(directory);path=root/CHECK.CONTRACT.REVIEWED_PATH
+                path.parent.mkdir(parents=True);path.write_bytes(mutant)
+                with self.subTest(replacement=replacement),self.assertRaisesRegex(RuntimeError,'raw digest'):
                     CHECK.source_roster(root,catalog)
 
     def test_policy_builder_source_omission_substitution_and_bytes_are_refused(self):
@@ -210,17 +211,11 @@ class FreshHostTests(unittest.TestCase):
 
     def population(self):
         # Small synthetic metadata only, never a replacement native fixture/corpus.
-        runs=[{'package':'legacy/'+str(i),'activity':'Old','cases':1,'passed':1,'batches':1,'replay_equal':True} for i in range(74)]
-        runs[0].update(cases=171144,passed=171144,batches=2108)
-        runs.extend([
-            {'package':'go/net/textproto','activity':'CanonicalMIMEHeaderKey','cases':1059,'passed':1059,'batches':22,'replay_equal':True},
-            {'package':'app/canonical-header-key','activity':'Report','cases':1059,'passed':1059,'batches':37,'replay_equal':True},
-            {'package':'go/net/http/etag','activity':'ScanETag','cases':192,'passed':192,'batches':3,'replay_equal':True},
-            {'package':'go/net/http/etag','activity':'ETagStrongMatch','cases':31,'passed':31,'batches':2,'replay_equal':True},
-            {'package':'app/strong-validator-facts','activity':'Report','cases':24,'passed':24,'batches':2,'replay_equal':True},
-            {'package':'go/net/http/precondition','activity':'IfMatchCondition','cases':284,'passed':284,'batches':5,'replay_equal':True},
-            {'package':'go/strings','activity':'LastIndex','cases':1694,'passed':1694,'batches':50,'replay_equal':True},
-            {'package':'app/literal-final-marker-report','activity':'Report','cases':89,'passed':89,'batches':3,'replay_equal':True}])
+        # Observations are synthetic shape fixtures copied from source-defined
+        # metadata, not evidence of native execution or independently run cases.
+        definition=CHECK.reviewed_contract(ROOT).document
+        runs=[{key:row[key] for key in ('package','activity','cases','batches')} |
+              {'passed':row['cases'],'replay_equal':True} for row in definition['suites']]
         summary={'runs':runs,'cases':175649,'passed':175649,
             'canonical_header_reference_cases':1059,'canonical_header_report_reference_cases':1059,
             'canonical_header_raw_input_occurrences':1059,'canonical_header_unique_keys':1054,
@@ -232,15 +227,107 @@ class FreshHostTests(unittest.TestCase):
         summary.update(CHECK.IF_MATCH_SUMMARY)
         summary.update(CHECK.LAST_INDEX_SUMMARY)
         planned=[{'index':i,'package':r['package'],'activity':r['activity'],'cases':r['cases']} for i,r in enumerate(runs)]
-        ends=[{'suite_index':i,'source_set':{}} for i in range(82)]
-        ends[74]['source_set']={name:None for name in ['ports/net/httpguts/headers.gooo','ports/net/textproto/canonical.gooo']}
-        ends[75]['source_set']={name:None for name in ['examples/canonical-header-key/main.gooo','examples/header-field-facts/main.gooo','ports/net/httpguts/headers.gooo','ports/net/textproto/canonical.gooo']}
-        for i in (76,77):ends[i]['source_set']={'ports/net/http/etag.gooo':None}
-        ends[78]['source_set']={name:None for name in ['examples/strong-validator-facts/main.gooo','ports/net/http/etag.gooo','ports/net/httpguts/headers.gooo']}
-        ends[79]['source_set']={'ports/net/http/precondition.gooo':None}
-        ends[80]['source_set']={name:None for name in ['ports/strings/search.gooo','ports/strings/last_index.gooo']}
-        ends[81]['source_set']={name:None for name in ['ports/strings/search.gooo','ports/strings/literal.gooo','ports/strings/last_index.gooo','examples/literal-final-marker-report/main.gooo']}
+        ends=[{'suite_index':row['index'],'source_set':{name:None for name in row['source_paths']}}
+              for row in definition['suites']]
         return summary,planned,ends
+
+    def test_reviewed_catalog_membership_and_all_contract_inputs_are_required(self):
+        expected=CHECK.reviewed_contract(ROOT)
+        qualified=[row['path'] for row in expected.document['sources'] if 'catalog-source' in row['roles']]
+        catalog={'packages':[{'path':'synthetic/membership-only','sources':qualified}]}
+        roster=CHECK.source_roster(ROOT,catalog)
+        self.assertEqual(len(roster),288)
+        self.assertTrue(set(CHECK.OWN_FILES).issubset(roster))
+        self.assertTrue(set(CHECK.CONTRACT.CONTRACT_FILES).issubset(roster))
+        self.assertEqual(sum('catalog-source' in row['roles'] for row in expected.document['sources']),67)
+        for mutation in ('missing','substitute','duplicate'):
+            changed=copy.deepcopy(catalog)
+            if mutation=='missing':changed['packages'][0]['sources'].pop()
+            elif mutation=='substitute':changed['packages'][0]['sources'][0]='ports/substituted.gooo'
+            else:changed['packages'][0]['sources'].append(qualified[0])
+            with self.subTest(mutation=mutation),self.assertRaises(RuntimeError):CHECK.source_roster(ROOT,changed)
+
+    def test_partial_case_expected_statement_keeps_case_dict_separate_from_ledger(self):
+        # Exercise the actual deep-reader statement without pretending to have
+        # the absent full native receipt/source fixture in this selected stage.
+        import ast
+        tree=ast.parse((ROOT/'tools/check-header-addition-host.py').read_text())
+        reader=next(node for node in tree.body if isinstance(node,ast.FunctionDef) and node.name=='read_verification')
+        statement=next(node for node in ast.walk(reader) if isinstance(node,ast.Expr)
+                       and isinstance(node.value,ast.Call) and isinstance(node.value.func,ast.Name)
+                       and node.value.func.id=='need' and len(node.value.args)==2
+                       and isinstance(node.value.args[1],ast.Constant)
+                       and node.value.args[1].value=='fresh full Go expected agrees with partial source specification')
+        code=compile(ast.fix_missing_locations(ast.Module(body=[copy.deepcopy(statement)],type_ignores=[])),
+                     '<actual partial source expectation statement>','exec')
+        for value in (3,True,4):
+            context={'need':CHECK.need,'equal':CHECK.equal,'expected':{'count':value},
+                     'spec':{'expected':{'count':3}},'contract_expected':object()}
+            if type(value) is int and value==3:exec(code,context)
+            else:
+                with self.subTest(value=value),self.assertRaises(RuntimeError):exec(code,context)
+
+    def test_appended_owner_cannot_be_redefined_by_catalog_and_event_together(self):
+        from types import SimpleNamespace
+        root=pathlib.Path('/synthetic-read-only-root')
+        self.assertEqual(len(CHECK.APPENDED_SOURCE_OWNERS),11)
+        for name,owner in CHECK.APPENDED_SOURCE_OWNERS.items():
+            raw=b'// synthetic source bytes only\n'
+            catalog={'packages':[{'path':owner,'sources':[name]}]}
+            definition=SimpleNamespace(document={'suites':[{'index':0,'source_paths':[name]}]})
+            selected={name:{'Package':owner,'Digest':CHECK.digest(CHECK.go_json(raw.decode()))}}
+            def event(mapping):return [{'suite_index':0,'source_set':mapping,
+                'source_set_sha256':CHECK.digest(json.dumps(mapping,ensure_ascii=False,separators=(',',':')).encode())}]
+            CHECK.validate_suite_sources(root,catalog,event(selected),lambda _:raw,definition)
+            # Keep paths, bytes, map digest, and catalog/event agreement valid,
+            # while changing both labels. The independent owner must refuse it.
+            changed=copy.deepcopy(catalog);changed['packages'][0]['path']='go/forged-owner'
+            selected[name]['Package']='go/forged-owner'
+            with self.subTest(source=name),self.assertRaisesRegex(RuntimeError,'independent appended source owner'):
+                CHECK.validate_suite_sources(root,changed,event(selected),lambda _:raw,definition)
+
+    def test_every_suite_current_source_identity_and_owner_are_checked(self):
+        # Two-row source-map fixture only: no receipt, compiler, or native run.
+        from types import SimpleNamespace
+        root=pathlib.Path('/synthetic-read-only-root')
+        texts={'ports/a.gooo':'package a\n','ports/b.gooo':'package b\n'}
+        catalog={'packages':[{'path':'go/a','sources':['ports/a.gooo']},
+                             {'path':'go/b','sources':['ports/b.gooo']}]}
+        rows=[{'index':0,'source_paths':['ports/a.gooo']},
+              {'index':1,'source_paths':['ports/b.gooo','ports/a.gooo']}]
+        definition=SimpleNamespace(document={'suites':rows})
+        owner={name:pkg['path'] for pkg in catalog['packages'] for name in pkg['sources']}
+        ends=[]
+        for row in rows:
+            selected={name:{'Package':owner[name],'Digest':CHECK.digest(CHECK.go_json(texts[name]))}
+                      for name in sorted(row['source_paths'])}
+            ends.append({'suite_index':row['index'],'source_set':selected,
+                         'source_set_sha256':CHECK.digest(json.dumps(selected,ensure_ascii=False,separators=(',',':')).encode())})
+        read=lambda path:texts[str(path.relative_to(root))].encode()
+        CHECK.validate_suite_sources(root,catalog,ends,read,definition)
+        for index in (0,1):
+            for change in ('owner','digest','map-digest','missing','source-bytes'):
+                observed=copy.deepcopy(ends);values=dict(texts)
+                first=next(iter(observed[index]['source_set']))
+                if change=='owner':observed[index]['source_set'][first]['Package']='go/substituted'
+                elif change=='digest':observed[index]['source_set'][first]['Digest']='sha256:'+'0'*64
+                elif change=='map-digest':observed[index]['source_set_sha256']='sha256:'+'0'*64
+                elif change=='missing':observed[index]['source_set'].pop(first)
+                else:values[first]+='// changed\n'
+                changed_read=lambda path:values[str(path.relative_to(root))].encode()
+                with self.subTest(index=index,change=change),self.assertRaises(RuntimeError):
+                    CHECK.validate_suite_sources(root,catalog,observed,changed_read,definition)
+
+    def test_every_legacy_suite_identity_count_and_closure_are_now_checked(self):
+        summary,planned,ends=self.population()
+        for index in (0,8,24,58,69,70,71,72,73):
+            for mutation in ('activity','same-total-count','source'):
+                s,p,e=copy.deepcopy((summary,planned,ends))
+                if mutation=='activity':s['runs'][index]['activity']='Substitute'
+                elif mutation=='same-total-count':
+                    s['runs'][index]['cases']+=1;s['runs'][(index+1)%74]['cases']-=1
+                else:e[index]['source_set']['ports/substituted.gooo']=None
+                with self.subTest(index=index,mutation=mutation),self.assertRaises(RuntimeError):CHECK.current_population(s,p,e)
 
     def test_current79_metadata_keeps_old76_and_three_exact_appended_entries(self):
         summary,planned,ends=self.population()

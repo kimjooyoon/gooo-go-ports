@@ -1,0 +1,3559 @@
+{
+  "schema": "gooo/native-verification-contract/v1",
+  "profiles": {
+    "case": "uuid-and-literal-report-compact-v1",
+    "workspace": "dependency-closure-v1"
+  },
+  "prefix": {
+    "commit": "b19b5517f8e9716affb0f75fd07045b8217cdaf1",
+    "count": 80,
+    "sha256": "sha256:9020c39f7746e766ef38b6d5854d97c14fcd386638d038937cf8f178aec52478"
+  },
+  "suites": [
+    {
+      "index": 0,
+      "package": "go/net/http",
+      "activity": "StatusText",
+      "cases": 625,
+      "batches": 5,
+      "source_paths": [
+        "ports/net/http.gooo"
+      ]
+    },
+    {
+      "index": 1,
+      "package": "go/unicode/utf8",
+      "activity": "ValidRune",
+      "cases": 162,
+      "batches": 2,
+      "source_paths": [
+        "ports/unicode/utf8.gooo"
+      ]
+    },
+    {
+      "index": 2,
+      "package": "go/unicode/utf8",
+      "activity": "RuneLen",
+      "cases": 162,
+      "batches": 2,
+      "source_paths": [
+        "ports/unicode/utf8.gooo"
+      ]
+    },
+    {
+      "index": 3,
+      "package": "go/unicode/utf8",
+      "activity": "RuneStart",
+      "cases": 256,
+      "batches": 2,
+      "source_paths": [
+        "ports/unicode/utf8.gooo"
+      ]
+    },
+    {
+      "index": 4,
+      "package": "go/unicode/utf16",
+      "activity": "IsSurrogate",
+      "cases": 162,
+      "batches": 2,
+      "source_paths": [
+        "ports/unicode/utf16.gooo"
+      ]
+    },
+    {
+      "index": 5,
+      "package": "go/unicode/utf16",
+      "activity": "RuneLen",
+      "cases": 162,
+      "batches": 2,
+      "source_paths": [
+        "ports/unicode/utf16.gooo"
+      ]
+    },
+    {
+      "index": 6,
+      "package": "go/unicode/utf16",
+      "activity": "EncodeRune",
+      "cases": 162,
+      "batches": 2,
+      "source_paths": [
+        "ports/unicode/utf16.gooo"
+      ]
+    },
+    {
+      "index": 7,
+      "package": "go/unicode/utf16",
+      "activity": "DecodeRune",
+      "cases": 164,
+      "batches": 2,
+      "source_paths": [
+        "ports/unicode/utf16.gooo"
+      ]
+    },
+    {
+      "index": 8,
+      "package": "app/response",
+      "activity": "Describe",
+      "cases": 6,
+      "batches": 1,
+      "source_paths": [
+        "ports/net/http.gooo",
+        "examples/response.gooo"
+      ]
+    },
+    {
+      "index": 9,
+      "package": "go/math/bits",
+      "activity": "Len8",
+      "cases": 256,
+      "batches": 2,
+      "source_paths": [
+        "ports/math/bits.gooo"
+      ]
+    },
+    {
+      "index": 10,
+      "package": "go/math/bits",
+      "activity": "LeadingZeros8",
+      "cases": 256,
+      "batches": 2,
+      "source_paths": [
+        "ports/math/bits.gooo"
+      ]
+    },
+    {
+      "index": 11,
+      "package": "go/math/bits",
+      "activity": "TrailingZeros8",
+      "cases": 256,
+      "batches": 2,
+      "source_paths": [
+        "ports/math/bits.gooo"
+      ]
+    },
+    {
+      "index": 12,
+      "package": "go/math/bits",
+      "activity": "OnesCount8",
+      "cases": 256,
+      "batches": 2,
+      "source_paths": [
+        "ports/math/bits.gooo"
+      ]
+    },
+    {
+      "index": 13,
+      "package": "go/math/bits",
+      "activity": "Reverse8",
+      "cases": 256,
+      "batches": 2,
+      "source_paths": [
+        "ports/math/bits.gooo"
+      ]
+    },
+    {
+      "index": 14,
+      "package": "app/byte-summary",
+      "activity": "ByteSummary",
+      "cases": 6,
+      "batches": 1,
+      "source_paths": [
+        "ports/math/bits.gooo",
+        "examples/byte-summary/main.gooo"
+      ]
+    },
+    {
+      "index": 15,
+      "package": "app/unicode-inspector",
+      "activity": "InspectScalar",
+      "cases": 168,
+      "batches": 3,
+      "source_paths": [
+        "ports/unicode/utf8.gooo",
+        "ports/unicode/utf16.gooo",
+        "examples/unicode-inspector/main.gooo"
+      ]
+    },
+    {
+      "index": 16,
+      "package": "app/unicode-inspector",
+      "activity": "InspectPair",
+      "cases": 178,
+      "batches": 3,
+      "source_paths": [
+        "ports/unicode/utf8.gooo",
+        "ports/unicode/utf16.gooo",
+        "examples/unicode-inspector/main.gooo"
+      ]
+    },
+    {
+      "index": 17,
+      "package": "go/image/color",
+      "activity": "RGBToCMYK",
+      "cases": 661,
+      "batches": 11,
+      "source_paths": [
+        "ports/image/color.gooo",
+        "ports/image/ycbcr.gooo",
+        "ports/image/nrgba.gooo"
+      ]
+    },
+    {
+      "index": 18,
+      "package": "go/image/color",
+      "activity": "CMYKToRGB",
+      "cases": 695,
+      "batches": 11,
+      "source_paths": [
+        "ports/image/color.gooo",
+        "ports/image/ycbcr.gooo",
+        "ports/image/nrgba.gooo"
+      ]
+    },
+    {
+      "index": 19,
+      "package": "app/color-inspector",
+      "activity": "InspectRGB",
+      "cases": 661,
+      "batches": 21,
+      "source_paths": [
+        "ports/image/color.gooo",
+        "ports/image/ycbcr.gooo",
+        "ports/image/nrgba.gooo",
+        "examples/color-inspector/main.gooo"
+      ]
+    },
+    {
+      "index": 20,
+      "package": "go/math/bits",
+      "activity": "RotateLeft8",
+      "cases": 2508,
+      "batches": 20,
+      "source_paths": [
+        "ports/math/bits.gooo"
+      ]
+    },
+    {
+      "index": 21,
+      "package": "app/byte-rotation",
+      "activity": "Inspect",
+      "cases": 708,
+      "batches": 12,
+      "source_paths": [
+        "ports/math/bits.gooo",
+        "examples/byte-rotation/main.gooo"
+      ]
+    },
+    {
+      "index": 22,
+      "package": "go/time",
+      "activity": "DurationRound",
+      "cases": 1789,
+      "batches": 14,
+      "source_paths": [
+        "ports/time/duration.gooo"
+      ]
+    },
+    {
+      "index": 23,
+      "package": "go/time",
+      "activity": "DurationTruncate",
+      "cases": 1789,
+      "batches": 14,
+      "source_paths": [
+        "ports/time/duration.gooo"
+      ]
+    },
+    {
+      "index": 24,
+      "package": "app/duration-quantizer",
+      "activity": "Inspect",
+      "cases": 1789,
+      "batches": 28,
+      "source_paths": [
+        "ports/time/duration.gooo",
+        "examples/duration-quantizer/main.gooo"
+      ]
+    },
+    {
+      "index": 25,
+      "package": "go/unicode",
+      "activity": "IsSpace",
+      "cases": 514,
+      "batches": 5,
+      "source_paths": [
+        "ports/unicode/space.gooo",
+        "ports/unicode/classification.gooo",
+        "ports/unicode/simple_fold.gooo",
+        "ports/unicode/case_mapping.gooo"
+      ]
+    },
+    {
+      "index": 26,
+      "package": "app/whitespace-inspector",
+      "activity": "Inspect",
+      "cases": 514,
+      "batches": 9,
+      "source_paths": [
+        "ports/unicode/utf8.gooo",
+        "ports/unicode/utf16.gooo",
+        "ports/unicode/space.gooo",
+        "ports/unicode/classification.gooo",
+        "ports/unicode/simple_fold.gooo",
+        "ports/unicode/case_mapping.gooo",
+        "examples/whitespace-inspector/main.gooo"
+      ]
+    },
+    {
+      "index": 27,
+      "package": "go/unicode",
+      "activity": "IsLetter",
+      "cases": 4140,
+      "batches": 33,
+      "source_paths": [
+        "ports/unicode/space.gooo",
+        "ports/unicode/classification.gooo",
+        "ports/unicode/simple_fold.gooo",
+        "ports/unicode/case_mapping.gooo"
+      ]
+    },
+    {
+      "index": 28,
+      "package": "go/unicode",
+      "activity": "IsDigit",
+      "cases": 927,
+      "batches": 8,
+      "source_paths": [
+        "ports/unicode/space.gooo",
+        "ports/unicode/classification.gooo",
+        "ports/unicode/simple_fold.gooo",
+        "ports/unicode/case_mapping.gooo"
+      ]
+    },
+    {
+      "index": 29,
+      "package": "app/identifier-rune",
+      "activity": "Classify",
+      "cases": 4582,
+      "batches": 72,
+      "source_paths": [
+        "ports/unicode/space.gooo",
+        "ports/unicode/classification.gooo",
+        "ports/unicode/simple_fold.gooo",
+        "ports/unicode/case_mapping.gooo",
+        "examples/identifier-rune/main.gooo"
+      ]
+    },
+    {
+      "index": 30,
+      "package": "go/image",
+      "activity": "RectangleEmpty",
+      "cases": 253,
+      "batches": 4,
+      "source_paths": [
+        "ports/image/geometry.gooo",
+        "ports/image/canon.gooo"
+      ]
+    },
+    {
+      "index": 31,
+      "package": "go/image",
+      "activity": "RectangleOverlaps",
+      "cases": 486,
+      "batches": 16,
+      "source_paths": [
+        "ports/image/geometry.gooo",
+        "ports/image/canon.gooo"
+      ]
+    },
+    {
+      "index": 32,
+      "package": "go/image",
+      "activity": "RectangleIntersect",
+      "cases": 486,
+      "batches": 16,
+      "source_paths": [
+        "ports/image/geometry.gooo",
+        "ports/image/canon.gooo"
+      ]
+    },
+    {
+      "index": 33,
+      "package": "go/image",
+      "activity": "RectangleUnion",
+      "cases": 486,
+      "batches": 16,
+      "source_paths": [
+        "ports/image/geometry.gooo",
+        "ports/image/canon.gooo"
+      ]
+    },
+    {
+      "index": 34,
+      "package": "example/crop-planner",
+      "activity": "CropPlan",
+      "cases": 486,
+      "batches": 16,
+      "source_paths": [
+        "ports/image/geometry.gooo",
+        "ports/image/canon.gooo",
+        "examples/crop-planner/crop_planner.gooo",
+        "examples/crop-planner/drag_crop.gooo"
+      ]
+    },
+    {
+      "index": 35,
+      "package": "go/unicode",
+      "activity": "SimpleFold",
+      "cases": 3516,
+      "batches": 28,
+      "source_paths": [
+        "ports/unicode/space.gooo",
+        "ports/unicode/classification.gooo",
+        "ports/unicode/simple_fold.gooo",
+        "ports/unicode/case_mapping.gooo"
+      ]
+    },
+    {
+      "index": 36,
+      "package": "app/simple-fold",
+      "activity": "Compare",
+      "cases": 531,
+      "batches": 9,
+      "source_paths": [
+        "ports/unicode/space.gooo",
+        "ports/unicode/classification.gooo",
+        "ports/unicode/simple_fold.gooo",
+        "ports/unicode/case_mapping.gooo",
+        "examples/simple-fold/main.gooo"
+      ]
+    },
+    {
+      "index": 37,
+      "package": "go/image/color",
+      "activity": "RGBToYCbCr",
+      "cases": 948,
+      "batches": 15,
+      "source_paths": [
+        "ports/image/color.gooo",
+        "ports/image/ycbcr.gooo",
+        "ports/image/nrgba.gooo"
+      ]
+    },
+    {
+      "index": 38,
+      "package": "go/image/color",
+      "activity": "YCbCrToRGB",
+      "cases": 1260,
+      "batches": 20,
+      "source_paths": [
+        "ports/image/color.gooo",
+        "ports/image/ycbcr.gooo",
+        "ports/image/nrgba.gooo"
+      ]
+    },
+    {
+      "index": 39,
+      "package": "app/ycbcr-inspector",
+      "activity": "InspectRGB",
+      "cases": 948,
+      "batches": 30,
+      "source_paths": [
+        "ports/image/color.gooo",
+        "ports/image/ycbcr.gooo",
+        "ports/image/nrgba.gooo",
+        "examples/ycbcr-inspector/main.gooo"
+      ]
+    },
+    {
+      "index": 40,
+      "package": "go/image",
+      "activity": "RectangleCanon",
+      "cases": 371,
+      "batches": 6,
+      "source_paths": [
+        "ports/image/geometry.gooo",
+        "ports/image/canon.gooo"
+      ]
+    },
+    {
+      "index": 41,
+      "package": "example/crop-planner",
+      "activity": "DragCropPlan",
+      "cases": 501,
+      "batches": 16,
+      "source_paths": [
+        "ports/image/geometry.gooo",
+        "ports/image/canon.gooo",
+        "examples/crop-planner/crop_planner.gooo",
+        "examples/crop-planner/drag_crop.gooo"
+      ]
+    },
+    {
+      "index": 42,
+      "package": "go/golang.org/x/image/math/fixed",
+      "activity": "Int26_6Floor",
+      "cases": 840,
+      "batches": 14,
+      "source_paths": [
+        "ports/image/fixed.gooo"
+      ]
+    },
+    {
+      "index": 43,
+      "package": "go/golang.org/x/image/math/fixed",
+      "activity": "Int26_6Ceil",
+      "cases": 840,
+      "batches": 14,
+      "source_paths": [
+        "ports/image/fixed.gooo"
+      ]
+    },
+    {
+      "index": 44,
+      "package": "example/fixed-pixel-bounds",
+      "activity": "PixelBounds",
+      "cases": 510,
+      "batches": 16,
+      "source_paths": [
+        "ports/image/geometry.gooo",
+        "ports/image/canon.gooo",
+        "ports/image/fixed.gooo",
+        "examples/fixed-pixel-bounds/main.gooo"
+      ]
+    },
+    {
+      "index": 45,
+      "package": "go/unicode",
+      "activity": "To",
+      "cases": 8335,
+      "batches": 66,
+      "source_paths": [
+        "ports/unicode/space.gooo",
+        "ports/unicode/classification.gooo",
+        "ports/unicode/simple_fold.gooo",
+        "ports/unicode/case_mapping.gooo"
+      ]
+    },
+    {
+      "index": 46,
+      "package": "go/unicode",
+      "activity": "ToUpper",
+      "cases": 2702,
+      "batches": 22,
+      "source_paths": [
+        "ports/unicode/space.gooo",
+        "ports/unicode/classification.gooo",
+        "ports/unicode/simple_fold.gooo",
+        "ports/unicode/case_mapping.gooo"
+      ]
+    },
+    {
+      "index": 47,
+      "package": "go/unicode",
+      "activity": "ToLower",
+      "cases": 2702,
+      "batches": 22,
+      "source_paths": [
+        "ports/unicode/space.gooo",
+        "ports/unicode/classification.gooo",
+        "ports/unicode/simple_fold.gooo",
+        "ports/unicode/case_mapping.gooo"
+      ]
+    },
+    {
+      "index": 48,
+      "package": "go/unicode",
+      "activity": "ToTitle",
+      "cases": 2667,
+      "batches": 21,
+      "source_paths": [
+        "ports/unicode/space.gooo",
+        "ports/unicode/classification.gooo",
+        "ports/unicode/simple_fold.gooo",
+        "ports/unicode/case_mapping.gooo"
+      ]
+    },
+    {
+      "index": 49,
+      "package": "app/case-inspector",
+      "activity": "Describe",
+      "cases": 3613,
+      "batches": 57,
+      "source_paths": [
+        "ports/unicode/utf8.gooo",
+        "ports/unicode/space.gooo",
+        "ports/unicode/classification.gooo",
+        "ports/unicode/simple_fold.gooo",
+        "ports/unicode/case_mapping.gooo",
+        "examples/case-inspector/main.gooo"
+      ]
+    },
+    {
+      "index": 50,
+      "package": "go/image/color",
+      "activity": "NRGBAToRGBA",
+      "cases": 2728,
+      "batches": 43,
+      "source_paths": [
+        "ports/image/color.gooo",
+        "ports/image/ycbcr.gooo",
+        "ports/image/nrgba.gooo"
+      ]
+    },
+    {
+      "index": 51,
+      "package": "app/alpha-matte",
+      "activity": "MattePixel",
+      "cases": 2262,
+      "batches": 71,
+      "source_paths": [
+        "ports/image/color.gooo",
+        "ports/image/ycbcr.gooo",
+        "ports/image/nrgba.gooo",
+        "examples/alpha-matte/main.gooo"
+      ]
+    },
+    {
+      "index": 52,
+      "package": "go/strings",
+      "activity": "IndexByte",
+      "cases": 1552,
+      "batches": 21,
+      "source_paths": [
+        "ports/strings/search.gooo"
+      ]
+    },
+    {
+      "index": 53,
+      "package": "app/string-byte-search",
+      "activity": "Search",
+      "cases": 1552,
+      "batches": 28,
+      "source_paths": [
+        "ports/strings/search.gooo",
+        "examples/string-byte-search/main.gooo"
+      ]
+    },
+    {
+      "index": 54,
+      "package": "go/github.com/google/uuid",
+      "activity": "Validate",
+      "cases": 21745,
+      "batches": 195,
+      "source_paths": [
+        "ports/google/uuid/quote.gooo",
+        "ports/google/uuid/validate.gooo"
+      ]
+    },
+    {
+      "index": 55,
+      "package": "app/uuid-format-inspector",
+      "activity": "Inspect",
+      "cases": 21745,
+      "batches": 197,
+      "source_paths": [
+        "ports/google/uuid/quote.gooo",
+        "ports/google/uuid/validate.gooo",
+        "examples/uuid-format-inspector/main.gooo"
+      ]
+    },
+    {
+      "index": 56,
+      "package": "go/github.com/google/uuid/text",
+      "activity": "ParseCanonical",
+      "cases": 21867,
+      "batches": 239,
+      "source_paths": [
+        "ports/google/uuid/quote.gooo",
+        "ports/google/uuid/validate.gooo",
+        "ports/google/uuid/text/parse_canonical.gooo"
+      ]
+    },
+    {
+      "index": 57,
+      "package": "go/image",
+      "activity": "RectangleIn",
+      "cases": 570,
+      "batches": 18,
+      "source_paths": [
+        "ports/image/geometry.gooo",
+        "ports/image/canon.gooo"
+      ]
+    },
+    {
+      "index": 58,
+      "package": "example/fits-crop",
+      "activity": "FitsCrop",
+      "cases": 570,
+      "batches": 18,
+      "source_paths": [
+        "ports/image/geometry.gooo",
+        "ports/image/canon.gooo",
+        "examples/fits-crop/main.gooo"
+      ]
+    },
+    {
+      "index": 59,
+      "package": "go/strings",
+      "activity": "Index",
+      "cases": 9313,
+      "batches": 137,
+      "source_paths": [
+        "ports/strings/search.gooo",
+        "ports/strings/literal.gooo"
+      ]
+    },
+    {
+      "index": 60,
+      "package": "go/strings",
+      "activity": "Count",
+      "cases": 9313,
+      "batches": 137,
+      "source_paths": [
+        "ports/strings/search.gooo",
+        "ports/strings/literal.gooo"
+      ]
+    },
+    {
+      "index": 61,
+      "package": "app/literal-text-report",
+      "activity": "Report",
+      "cases": 9313,
+      "batches": 235,
+      "source_paths": [
+        "ports/strings/search.gooo",
+        "ports/strings/literal.gooo",
+        "examples/literal-text-report/main.gooo"
+      ]
+    },
+    {
+      "index": 62,
+      "package": "go/strings",
+      "activity": "Cut",
+      "cases": 32,
+      "batches": 1,
+      "source_paths": [
+        "ports/strings/search.gooo",
+        "ports/strings/literal.gooo",
+        "ports/strings/cut.gooo"
+      ]
+    },
+    {
+      "index": 63,
+      "package": "go/strings",
+      "activity": "CutPrefix",
+      "cases": 32,
+      "batches": 1,
+      "source_paths": [
+        "ports/strings/search.gooo",
+        "ports/strings/literal.gooo",
+        "ports/strings/cut.gooo"
+      ]
+    },
+    {
+      "index": 64,
+      "package": "go/strings",
+      "activity": "CutSuffix",
+      "cases": 32,
+      "batches": 1,
+      "source_paths": [
+        "ports/strings/search.gooo",
+        "ports/strings/literal.gooo",
+        "ports/strings/cut.gooo"
+      ]
+    },
+    {
+      "index": 65,
+      "package": "app/literal-cut-report",
+      "activity": "Report",
+      "cases": 32,
+      "batches": 2,
+      "source_paths": [
+        "ports/strings/search.gooo",
+        "ports/strings/literal.gooo",
+        "ports/strings/cut.gooo",
+        "examples/literal-cut-report/main.gooo"
+      ]
+    },
+    {
+      "index": 66,
+      "package": "go/strconv",
+      "activity": "ParseIntDecimal64",
+      "cases": 256,
+      "batches": 5,
+      "source_paths": [
+        "ports/strconv/decimal.gooo"
+      ]
+    },
+    {
+      "index": 67,
+      "package": "app/payload-admission",
+      "activity": "Report",
+      "cases": 101,
+      "batches": 4,
+      "source_paths": [
+        "ports/strconv/decimal.gooo",
+        "examples/payload-admission/main.gooo"
+      ]
+    },
+    {
+      "index": 68,
+      "package": "go/path",
+      "activity": "Clean",
+      "cases": 9841,
+      "batches": 77,
+      "source_paths": [
+        "ports/path/path.gooo",
+        "ports/path/clean.gooo"
+      ]
+    },
+    {
+      "index": 69,
+      "package": "app/path-alias-facts",
+      "activity": "Report",
+      "cases": 120,
+      "batches": 4,
+      "source_paths": [
+        "ports/path/path.gooo",
+        "ports/path/clean.gooo",
+        "examples/path-alias-facts/main.gooo"
+      ]
+    },
+    {
+      "index": 70,
+      "package": "go/golang.org/x/net/http/httpguts",
+      "activity": "ValidHeaderFieldName",
+      "cases": 232,
+      "batches": 3,
+      "source_paths": [
+        "ports/net/httpguts/headers.gooo"
+      ]
+    },
+    {
+      "index": 71,
+      "package": "go/golang.org/x/net/http/httpguts",
+      "activity": "ValidHeaderFieldValue",
+      "cases": 232,
+      "batches": 3,
+      "source_paths": [
+        "ports/net/httpguts/headers.gooo"
+      ]
+    },
+    {
+      "index": 72,
+      "package": "app/header-field-facts",
+      "activity": "Report",
+      "cases": 476,
+      "batches": 15,
+      "source_paths": [
+        "ports/net/httpguts/headers.gooo",
+        "examples/header-field-facts/main.gooo"
+      ]
+    },
+    {
+      "index": 73,
+      "package": "app/diagnostic-header-addition",
+      "activity": "AssessAddition",
+      "cases": 50,
+      "batches": 7,
+      "source_paths": [
+        "ports/net/httpguts/headers.gooo",
+        "examples/header-field-facts/main.gooo",
+        "ports/strconv/decimal.gooo",
+        "examples/payload-admission/main.gooo",
+        "examples/diagnostic-header-addition/main.gooo"
+      ]
+    },
+    {
+      "index": 74,
+      "package": "go/net/textproto",
+      "activity": "CanonicalMIMEHeaderKey",
+      "cases": 1059,
+      "batches": 22,
+      "source_paths": [
+        "ports/net/httpguts/headers.gooo",
+        "ports/net/textproto/canonical.gooo"
+      ]
+    },
+    {
+      "index": 75,
+      "package": "app/canonical-header-key",
+      "activity": "Report",
+      "cases": 1059,
+      "batches": 37,
+      "source_paths": [
+        "ports/net/httpguts/headers.gooo",
+        "examples/header-field-facts/main.gooo",
+        "ports/net/textproto/canonical.gooo",
+        "examples/canonical-header-key/main.gooo"
+      ]
+    },
+    {
+      "index": 76,
+      "package": "go/net/http/etag",
+      "activity": "ScanETag",
+      "cases": 192,
+      "batches": 3,
+      "source_paths": [
+        "ports/net/http/etag.gooo"
+      ]
+    },
+    {
+      "index": 77,
+      "package": "go/net/http/etag",
+      "activity": "ETagStrongMatch",
+      "cases": 31,
+      "batches": 2,
+      "source_paths": [
+        "ports/net/http/etag.gooo"
+      ]
+    },
+    {
+      "index": 78,
+      "package": "app/strong-validator-facts",
+      "activity": "Report",
+      "cases": 24,
+      "batches": 2,
+      "source_paths": [
+        "ports/net/http/etag.gooo",
+        "ports/net/httpguts/headers.gooo",
+        "examples/strong-validator-facts/main.gooo"
+      ]
+    },
+    {
+      "index": 79,
+      "package": "go/net/http/precondition",
+      "activity": "IfMatchCondition",
+      "cases": 284,
+      "batches": 5,
+      "source_paths": [
+        "ports/net/http/precondition.gooo"
+      ]
+    },
+    {
+      "index": 80,
+      "package": "go/strings",
+      "activity": "LastIndex",
+      "cases": 1694,
+      "batches": 50,
+      "source_paths": [
+        "ports/strings/search.gooo",
+        "ports/strings/last_index.gooo"
+      ]
+    },
+    {
+      "index": 81,
+      "package": "app/literal-final-marker-report",
+      "activity": "Report",
+      "cases": 89,
+      "batches": 3,
+      "source_paths": [
+        "ports/strings/search.gooo",
+        "ports/strings/literal.gooo",
+        "ports/strings/last_index.gooo",
+        "examples/literal-final-marker-report/main.gooo"
+      ]
+    }
+  ],
+  "source_baseline": {
+    "commit": "057bc6d8d328a6ab2e7a3b37845a7450a6b19d0b",
+    "count": 283,
+    "sha256": "sha256:2b7247008db8ee9d7d92374bb3d01a317e3e35c2df009cfe943ac153037f2184"
+  },
+  "sources": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "NOTICE",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "canonical-header-key-report.workspace.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "canonical-header-key.workspace.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/build-demo/api_policy.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/build-demo/api_policy_build.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/build-demo/api_policy_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/build-demo/main.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/header-addition-input/main.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/header-addition-input/main_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/header-facts-input/main.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/header-facts-input/main_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/if-match-input/main.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/if-match-input/main_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/canonical_header_batches.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/canonical_header_batches_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/canonical_header_contracts.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/canonical_header_contracts_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/canonical_header_corpus.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/canonical_header_corpus_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/case_exhaustive_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/case_profile.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/case_profile_integration_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/case_profile_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/command_resources.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/command_resources_other.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/command_resources_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/command_resources_unix.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/command_resources_unix_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/contracts.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/contracts_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/decimal_payload_batches.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/decimal_payload_batches_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/decimal_payload_contracts_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/decimal_payload_corpus.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/decimal_payload_corpus_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/etag_batches.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/etag_batches_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/etag_contracts.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/etag_contracts_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/etag_corpus.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/etag_corpus_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/etag_native_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/etag_reference.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/external_oracles.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/external_oracles_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/header_addition_batches.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/header_addition_batches_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/header_addition_contracts.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/header_addition_contracts_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/header_addition_corpus.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/header_addition_corpus_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/header_contracts.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/header_contracts_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/header_corpus.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/header_corpus_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/if_match_contracts.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/if_match_corpus.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/if_match_reference.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/if_match_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/inspect.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/last_index_contracts.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/last_index_contracts_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/last_index_corpus.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/last_index_corpus_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/legacy_workspace_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/literal_cut_contracts.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/literal_cut_corpus.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/literal_cut_corpus_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/literal_cut_integration_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/literal_report_case_profile_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/main.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/native_build_cache.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/native_build_cache_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/native_command_resources_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/native_correctness_cache_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/native_suite.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/native_timing.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/native_verification_contract.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "contract-reader"
+      ],
+      "baseline": false
+    },
+    {
+      "path": "cmd/verify/native_verification_contract_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "contract-reader"
+      ],
+      "baseline": false
+    },
+    {
+      "path": "cmd/verify/path_alias_batches.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/path_alias_batches_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/path_alias_contracts.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/path_alias_contracts_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/path_alias_corpus.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/path_alias_corpus_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/simple_fold_exhaustive_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/string_byte_batches.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/suite_workers.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/suite_workers_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/testdata/literal-cut-original62.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/testdata/native-verification-contract-v1.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "contract-reader"
+      ],
+      "baseline": false
+    },
+    {
+      "path": "cmd/verify/whitespace_contracts.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/workspace_catalog.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/workspace_catalog_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/workspace_profile.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/workspace_profile_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "cmd/verify/ycbcr_exhaustive_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "decimal-int64.workspace.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "diagnostic-header-addition.workspace.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "etag-scan.workspace.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "etag-strong-match.workspace.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/agentmesh-service-policy/checked_impact.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/agentmesh-service-policy/checked_matcher.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/agentmesh-service-policy/checked_refinement.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/agentmesh-service-policy/conditional_apply.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/agentmesh-service-policy/domain.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/agentmesh-service-policy/impact.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/agentmesh-service-policy/refinement.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/alpha-matte/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/byte-rotation/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/byte-summary/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/canonical-header-key/README.md",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/canonical-header-key/contract.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/canonical-header-key/corpus-accounting.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/canonical-header-key/corpus.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/canonical-header-key/inputs.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/canonical-header-key/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/canonical-header-key/manual20.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/canonical-header-key/port-inputs.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/case-inspector/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/cel-api-policy/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/color-inspector/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/crop-planner/crop_planner.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/crop-planner/drag_crop.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/diagnostic-header-addition/README.md",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/diagnostic-header-addition/contract.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/diagnostic-header-addition/corpus.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/diagnostic-header-addition/inputs.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/diagnostic-header-addition/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source",
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/diagnostic-header-addition/request.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/duration-quantizer/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/fits-crop/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/fixed-pixel-bounds/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-addition-host/LICENSE",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-addition-host/NOTICE",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-addition-host/README.md",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-addition-host/bindings.go.txt",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-addition-host/bindings_test.go.txt",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-addition-host/go.mod.txt",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-addition-host/host.go.txt",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-addition-host/host_test.go.txt",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-addition-host/main.go.txt",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-addition-host/provenance.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-field-facts/README.md",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-field-facts/contract.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-field-facts/corpus.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-field-facts/inputs.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-field-facts/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-field-facts/name-inputs.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-field-facts/request.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-field-facts/unicode-request.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-field-facts/valid-request.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/header-field-facts/value-inputs.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/identifier-rune/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/literal-cut-report/README.md",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/literal-cut-report/inputs.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/literal-cut-report/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/literal-cut-report/manual-contract.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/literal-final-marker-report/README.md",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/literal-final-marker-report/inputs.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/literal-final-marker-report/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/literal-text-report/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/path-alias-facts/README.md",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/path-alias-facts/anchor-pairs-24.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/path-alias-facts/clean-inputs.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/path-alias-facts/contract.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/path-alias-facts/corpus-120.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/path-alias-facts/inputs.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/path-alias-facts/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/payload-admission/README.md",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/payload-admission/contract.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/payload-admission/corpus.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/payload-admission/inputs.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/payload-admission/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/payload-admission/manual17.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/response.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/simple-fold/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/string-byte-search/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/strong-validator-facts/README.md",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/strong-validator-facts/contract.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/strong-validator-facts/corpus.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/strong-validator-facts/inputs.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/strong-validator-facts/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/strong-validator-facts/manual247.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/unicode-inspector/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/uuid-format-inspector/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/whitespace-inspector/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "examples/ycbcr-inspector/main.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "go.mod",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "go.sum",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "header-field-facts.workspace.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "header-field-name.workspace.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "header-field-value.workspace.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "if-match.workspace.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "internal/headeradditioninput/preflight.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "internal/headeradditioninput/preflight_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "internal/headerinput/preflight.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "internal/headerinput/preflight_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "literal-cut-report.workspace.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "literal-final-marker-report.workspace.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "path-alias-facts.workspace.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "path-clean.workspace.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "payload-admission.workspace.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/agentmesh/service_pattern.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/autobot/ai_lines.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/cel/scalar_access.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/google/uuid/quote.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/google/uuid/text/parse_canonical.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/google/uuid/validate.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/image/canon.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/image/color.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/image/fixed.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/image/geometry.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/image/nrgba.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/image/ycbcr.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/math/bits.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/net/http.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/net/http/README.md",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/net/http/etag.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/net/http/if-match-corpus.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/net/http/if-match-provenance.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/net/http/if-match-request.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/net/http/precondition.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/net/http/provenance.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/net/httpguts/README.md",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/net/httpguts/headers.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/net/httpguts/provenance.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/net/textproto/README.md",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/net/textproto/canonical.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/net/textproto/provenance.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/path/README.md",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/path/clean-corpus-9841.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/path/clean.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/path/path.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/path/provenance.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/strconv/README.md",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/strconv/corpus-256.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/strconv/decimal.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/strconv/inputs.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/strconv/provenance.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/strings/cut.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/strings/last_index.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/strings/literal.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/strings/search.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/time/duration.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/unicode/case_mapping.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/unicode/classification.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/unicode/simple_fold.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/unicode/space.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/unicode/utf16.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "ports/unicode/utf8.gooo",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-source"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "site/api-policy-worker.js",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "site/api-policy.css",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "site/api-policy.html",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "site/api-policy.js",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "strong-validator-facts.workspace.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "third_party/GO-LICENSE",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "third_party/go/net/http/fs.go.txt",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "third_party/go/net/http/fs_test.go.txt",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "third_party/go/net/textproto/reader.go.txt",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "third_party/go/net/textproto/textproto.go.txt",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "third_party/x-net/LICENSE",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "third_party/x-net/http/httpguts/guts.go.txt",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "third_party/x-net/http/httpguts/httplex.go.txt",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "third_party/x-net/http/httpguts/httplex_test.go.txt",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/api-policy-app.test.cjs",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/api-policy-browser-bridge.go.txt",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/api-policy-browser-smoke.mjs",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/check-ci-scope-workflow_test.py",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/check-header-addition-host.py",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/check-header-addition-host_test.py",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/check-header-addition-inputs.py",
+      "mode": "100755",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/check-header-facts-inputs.py",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/check-if-match-inputs.py",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/check-if-match-inputs_test.py",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/check-last-index-inputs.py",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/check-last-index-inputs_test.py",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/check-literal-text-inputs.py",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/check-literal-text-inputs_test.py",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/classify-ci-scope.py",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/generate-payload-corpus.py",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "tools/native_verification_contract.py",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "contract-reader"
+      ],
+      "baseline": false
+    },
+    {
+      "path": "tools/native_verification_contract_test.py",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "contract-reader"
+      ],
+      "baseline": false
+    },
+    {
+      "path": "upstream.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "upstream-pins"
+      ],
+      "baseline": true
+    },
+    {
+      "path": "verification-catalog.json",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "catalog-definition"
+      ],
+      "baseline": true
+    }
+  ]
+}

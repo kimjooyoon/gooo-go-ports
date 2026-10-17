@@ -590,7 +590,11 @@ func workspaceProfileRecorder(t *testing.T, root string, s suite, profile native
 func workspaceProfileAssertTimingInputs(t *testing.T, header map[string]any) {
 	t.Helper()
 	inputs := header["identity"].(map[string]any)["source_files"].(map[string]any)
-	if len(inputs) != 283 {
+	expected, err := nativeExpectedVerificationContract()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(inputs) != len(expected.Sources) {
 		t.Fatal("timing provenance source count changed", len(inputs))
 	}
 	for _, name := range []string{"cmd/verify/workspace_profile.go", "cmd/verify/workspace_profile_test.go", lastIndexSource, lastIndexConsumerSource, "tools/check-last-index-inputs.py", "cmd/build-demo/api_policy_build.go"} {
