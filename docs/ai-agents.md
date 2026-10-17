@@ -14,6 +14,12 @@ existing [two-file tutorial](../examples/learn-gooo/README.md), its four supplie
 inputs, and the repository's pinned compiler and Go toolchain. Setup needs Git,
 a POSIX shell and Go toolchain selection on macOS or Linux.
 
+To avoid building the pinned compiler, use the [pinned 0.6.32 release](https://github.com/kimjooyoon/meta-ontology-go/releases/tag/v0.6.32-dev)
+archive and its SHA256SUMS: verify first, extract into a fresh directory, then
+check `version --build --json` with the checkout's `tools/bootstrap-check.go`.
+Keep existing compiler files untouched and use the checked executable by absolute
+path, skipping bootstrap only after validation. Host Go **1.27.2** is still required.
+
 After opening a checkout in your agent, ask:
 
 > Follow `.agents/skills/gooo-first-program/SKILL.md`. Run the Gooo example,
