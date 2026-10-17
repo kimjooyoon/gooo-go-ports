@@ -324,7 +324,7 @@ func TestCaseProfileTimingIsDiagnosticAndLegacyProfileFieldsRemainAbsent(t *test
 						if _, exists := header["case_profile"]; exists {
 							t.Fatal("legacy timing header gained a profile field")
 						}
-						if header["boundary_scope"] != "Actual contiguous batch ranges are compared with the original successful suite observation. Exact original boundaries rely on unchanged nativeBatchEnd/loop source and the original full-summary gate." {
+						if header["boundary_scope"] != "Actual contiguous batch ranges are compared with the original successful suite observation. Exact original boundaries require byte-exact legacy prefix sizing, immutable regression fixtures and the original full-summary gate." {
 							t.Fatal("legacy timing boundary description changed")
 						}
 					} else if !equalValue(mustJSON(t, header["case_profile"]), profile.identity()) || !strings.Contains(fmt.Sprint(header["boundary_scope"]), "no original UUID batch boundaries") {
