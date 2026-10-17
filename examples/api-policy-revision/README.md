@@ -21,6 +21,44 @@ There is no API dispatcher, current authorization grant or per-call human
 approval step. Consistently fabricated unsigned facts and observations can be
 internally consistent; a report does not attest that an event occurred.
 
+## Install the command without cloning
+
+With **Go 1.27.2 already installed and selected**, install the checked immutable
+command into a private directory. No repository checkout or Gooo compiler is
+needed. Initial installation uses the public Go proxy and checksum service.
+
+```sh
+set -eu
+export GOTOOLCHAIN=local GOWORK=off GOENV=off
+export GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org
+export GOPRIVATE= GONOPROXY= GONOSUMDB=
+umask 077
+revision_run="$(mktemp -d)"
+mkdir "$revision_run/bin"
+GOBIN="$revision_run/bin" go install github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision/cmd/compare@v0.0.0-20261017215455-9cfe6513e11b
+cat > "$revision_run/write-facts.json" <<'JSON'
+{"group_present":true,"group_value":"admin","principal_present":true,"principal_value":"synthetic:user","authenticated":true,"caller_tenant":"tenant-a","resource_tenant":"tenant-a","requested_action":"write","allowed_action":"write"}
+JSON
+"$revision_run/bin/compare" --diagnostics=json -mode baseline \
+  -input "$revision_run/write-facts.json" > "$revision_run/write.request.json"
+"$revision_run/bin/compare" --diagnostics=json -mode compare \
+  -input "$revision_run/write.request.json" > "$revision_run/write.comparison.json"
+env PATH="" "$revision_run/bin/compare" --diagnostics=json -mode replay \
+  -input "$revision_run/write.comparison.json" > "$revision_run/write.replayed.json"
+```
+
+The two saved comparison files are byte-identical. For these nine synthetic
+facts the summary is `NEWLY_DENIED` with `changed_count: 2`. The original decision
+allows `write`; the candidate returns `ACTION_NOT_READ_ONLY`. The private bin
+directory avoids replacing another command named `compare` on your PATH.
+Keep the private directory for later replay; the reports contain the supplied facts.
+
+This immutable command was checked from an empty outside working directory and
+private module cache, including its embedded Go module versions/checksums,
+read/write baseline-comparison-replay and a tampered-report refusal. CI repeats
+the direct installation against the current proposal commit. This is a
+maintainer-run check, not an independent user's adoption or installation timing.
+
 ## Native quickstart
 
 Start in the repository root with **Go 1.27.2 already installed and selected**.
