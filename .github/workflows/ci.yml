@@ -1570,7 +1570,7 @@ jobs:
           ' out/versioned-grant-change/summary.json
       - name: Verify editable API policy source comparison
         if: steps.change-scope.outputs.docs_only != 'true'
-        timeout-minutes: 5
+        timeout-minutes: 12
         run: |
           set -euo pipefail
           python3 -I -B examples/editable-api-policy/run.py --root "$PWD" --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/editable-api-policy" --check-demo
@@ -1587,6 +1587,23 @@ jobs:
             ([.comparisons[].status] == ["UNCHANGED","NEWLY_DENIED","UNCHANGED"]) and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2"
           ' out/editable-api-policy/summary.json
+          # The default pinned839 check above remains independent of this opt-in compiler.
+          test ! -e out/source-inspection036
+          mkdir out/source-inspection036
+          curl --fail --location --silent --show-error --connect-timeout 15 --max-time 120 --output out/source-inspection036/gooo-linux-amd64.tar.gz https://github.com/kimjooyoon/meta-ontology-go/releases/download/v0.6.36-dev/gooo-linux-amd64.tar.gz
+          printf '%s  %s\n' '9dbd1c08b855a3c27ae43a8050531afaba724d90b24d4f72041db3a8a4a285b0' 'out/source-inspection036/gooo-linux-amd64.tar.gz' | sha256sum --check --strict
+          test "$(tar -tzf out/source-inspection036/gooo-linux-amd64.tar.gz)" = gooo
+          tar --no-same-owner --no-same-permissions -xzf out/source-inspection036/gooo-linux-amd64.tar.gz -C out/source-inspection036 gooo
+          python3 -I -B tools/check-editable-policy-helpers.py --root "$PWD" --compiler "$PWD/out/source-inspection036/gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/editable-api-policy-helpers"
+          jq -e '
+            .schema == "gooo/editable-api-policy-helpers-CI/v1" and
+            .status == "HELPER_EXTRACTION_AND_OFFICIAL_REPLAY_PASS" and
+            .failure == null and .variant_runs == 2 and .rows == 3 and .typed_fields_compared == 90 and
+            .default_helper_refused == true and .default_package_commands == 0 and
+            .prepared_inspections == 4 and .positive_receipts == 8 and
+            .source_tool_unchanged == true and .processes_closed == true and .owned_work_removed == true and
+            .model_calls == 0 and .compiler_revision == "31497af3beaef210b5a075867b0de76cf55ee3ca"
+          ' out/editable-api-policy-helpers/summary.json
       - name: Verify original AutoBot resolver adaptation
         if: steps.change-scope.outputs.docs_only != 'true'
         timeout-minutes: 6
@@ -1637,6 +1654,7 @@ jobs:
             out/ipv4/
             out/versioned-grant-change/
             out/editable-api-policy/
+            out/editable-api-policy-helpers/
             out/autobot-resolver/
           if-no-files-found: warn
           retention-days: 14

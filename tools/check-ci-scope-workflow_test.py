@@ -285,6 +285,25 @@ AUTOBOT_CLAUSES = (
 
 EDITABLE_POLICY_STEP = 'Verify editable API policy source comparison'
 EDITABLE_POLICY_COMMAND = 'python3 -I -B examples/editable-api-policy/run.py --root "$PWD" --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/editable-api-policy" --check-demo'
+EDITABLE_POLICY_HELPER_COMMAND = 'python3 -I -B tools/check-editable-policy-helpers.py --root "$PWD" --compiler "$PWD/out/source-inspection036/gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/editable-api-policy-helpers"'
+EDITABLE_POLICY_SOURCE_SETUP = """          # The default pinned839 check above remains independent of this opt-in compiler.
+          test ! -e out/source-inspection036
+          mkdir out/source-inspection036
+          curl --fail --location --silent --show-error --connect-timeout 15 --max-time 120 --output out/source-inspection036/gooo-linux-amd64.tar.gz https://github.com/kimjooyoon/meta-ontology-go/releases/download/v0.6.36-dev/gooo-linux-amd64.tar.gz
+          printf '%s  %s\\n' '9dbd1c08b855a3c27ae43a8050531afaba724d90b24d4f72041db3a8a4a285b0' 'out/source-inspection036/gooo-linux-amd64.tar.gz' | sha256sum --check --strict
+          test "$(tar -tzf out/source-inspection036/gooo-linux-amd64.tar.gz)" = gooo
+          tar --no-same-owner --no-same-permissions -xzf out/source-inspection036/gooo-linux-amd64.tar.gz -C out/source-inspection036 gooo
+"""
+EDITABLE_POLICY_HELPER_CLAUSES = (
+    '.schema == "gooo/editable-api-policy-helpers-CI/v1"',
+    '.status == "HELPER_EXTRACTION_AND_OFFICIAL_REPLAY_PASS"',
+    '.failure == null', '.variant_runs == 2', '.rows == 3', '.typed_fields_compared == 90',
+    '.default_helper_refused == true', '.default_package_commands == 0',
+    '.prepared_inspections == 4', '.positive_receipts == 8',
+    '.source_tool_unchanged == true', '.processes_closed == true', '.owned_work_removed == true',
+    '.model_calls == 0', '.compiler_revision == "31497af3beaef210b5a075867b0de76cf55ee3ca"',
+    "' out/editable-api-policy-helpers/summary.json",
+)
 EDITABLE_POLICY_COMMON = 'python3 -I -B examples/editable-api-policy/run_test.py'
 EDITABLE_POLICY_DECLARATIONS = ('examples/editable-api-policy/before.gooo', 'examples/editable-api-policy/after.gooo')
 EDITABLE_POLICY_CLAUSES = (
@@ -373,7 +392,7 @@ UPLOADS = {"Upload offline policy experiment evidence", "Upload execution and di
 DOC_STEPS = {"Report documentation-only native scope", "Preserve documentation scope and compiler identity"}
 NATIVE_COMMAND = re.compile(
     r"(?:\.gooo\s+package\s+(?:execute|replay)|\./cmd/(?:verify|check-unicode|check-literal-text-report)\b|"
-    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text|last-index)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py|tools/check-path-facts\.py|tools/check-redelivery-policy\.py|tools/check-ipv4\.py|tools/check-header-facts-inputs\.py|tools/check-header-addition-inputs\.py|tools/check-header-addition-host\.py|examples/versioned-grant-change/verify\.py|examples/editable-api-policy/run\.py|examples/autobot-resolver/verify\.py)"
+    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text|last-index)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py|tools/check-path-facts\.py|tools/check-redelivery-policy\.py|tools/check-ipv4\.py|tools/check-header-facts-inputs\.py|tools/check-header-addition-inputs\.py|tools/check-header-addition-host\.py|examples/versioned-grant-change/verify\.py|examples/editable-api-policy/run\.py|tools/check-editable-policy-helpers\.py|examples/autobot-resolver/verify\.py)"
 )
 PUBLIC_CONSUMER_COMMAND = 'python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer" --bundle-cli'
 PUBLIC_CONSUMER_CLAUSES = (
@@ -473,7 +492,7 @@ POLICY_HEADER_SHA = '3d5466a5dfca722bf38d6d81f26ff8f425188d473f6a0b9ae46cdd528d2
 POLICY_SETUP_SHA = '5ccf03022b3caeab1cc1fd46bbb3fa8b54e4fc0addba08c7d39d17f449f51703'
 POLICY_STEP_SHAS = {
     AUTOBOT_STEP: '7bb749f5983a2e35fdcde9067fc1646833bf2034b036e28b7e5f60f0a4fb7006',
-    EDITABLE_POLICY_STEP: '0e9bd11462e0fdb09953eb9d2053852820c574acec946c4c269eb18694e711af',
+    EDITABLE_POLICY_STEP: '91ecaa02b36b1a4f39fdeb3b932282373fa1e6137038e4b2e52a70290350a8cc',
     'Verify the isolated native IPv4 address facts sidecar': '6ce5d2f5e75f9ff9a7728718567ffb039c74232ef4e254ea244b7dc02fbc9ed8',
     'Verify the original automatic redelivery policy': '2ce6496cbee29d77c9334f1f32dc518c96a12c193e37ab569144bdc4fd1a864e',
     'Verify the isolated native path facts sidecar': 'b90f403ce804adea78dacebf554c45f3e21b1faf89b942e83f32aca2847f9df5',
@@ -486,7 +505,7 @@ POLICY_STEP_SHAS = {
     'Upload offline policy experiment evidence': 'e4adbb294f45d4dbe4af56338b800f0d637dda27ec83055f1d799d63dac60392',
     ETAG_PROJECT_STEP: 'f11ef3c03ed5cc096b30b3d44c8a20abeb73bc5e840b8033114d94208d64f4c7',
     VERSIONED_GRANT_STEP: '04e88171f2da9d7c19b58889ad27f71359456780fce7ef11dd03c3172cc7a860',
-    'Upload policy execution and diagnostic evidence': 'b6a551bee8e2e2e6ac82174aaffabb7816325abb8083354051d5be1e70132fe7',
+    'Upload policy execution and diagnostic evidence': '797517ddd218879f190d48c8348a7e29a882ef51d6e6c4e6118b22cfb0f5881a',
     'Report documentation-only policy scope': '472165f458bfda43733f2a1ea6bc2236c19b425b5887f3417bbe1a9d9bcab6dd',
     'Preserve documentation-only policy scope': '185d1afbfd001734dc649c227526a84d5dd993bfcd9c1243e4a1966f13db60f7',
 }
@@ -640,12 +659,17 @@ def policy_steps(chunk):
             'versioned grant execution and summary must preserve the first failure')
 
     editable = named[EDITABLE_POLICY_STEP]
-    require(field(editable, 'if') == FULL and field(editable, 'timeout-minutes') == '5',
+    require(field(editable, 'if') == FULL and field(editable, 'timeout-minutes') == '12',
             'editable policy must stay full-only with a bounded timeout')
-    require(literal_commands(editable) == [EDITABLE_POLICY_COMMAND],
-            'editable policy must execute current source and its own replay')
+    require(literal_commands(editable) == [EDITABLE_POLICY_COMMAND, EDITABLE_POLICY_HELPER_COMMAND],
+            'editable policy must retain default839 then separately inspect036 and replay current sources')
+    require(editable.count(EDITABLE_POLICY_SOURCE_SETUP) == 1,
+            'source-inspection036 must use the exact official archive, SHA, sole member and separate tools path')
+    default_editable, helper_editable = editable.split(EDITABLE_POLICY_SOURCE_SETUP)
     for token in EDITABLE_POLICY_CLAUSES:
-        require(editable.count(token) == 1, 'editable policy gate missing: ' + token)
+        require(default_editable.count(token) == 1, 'default editable policy gate missing: ' + token)
+    for token in EDITABLE_POLICY_HELPER_CLAUSES:
+        require(helper_editable.count(token) == 1, 'helper editable policy gate missing: ' + token)
     require('set -euo pipefail' in editable and '|| true' not in editable,
             'editable policy must preserve the first failure')
 
@@ -667,7 +691,7 @@ def policy_steps(chunk):
             field(named[POLICY_DOC_ARTIFACT], 'if') == 'always() && ' + DOCS,
             'policy docs-only scope must be explicit and separate')
     require('name: gooo-go-ports-policy-evidence\n' in named[POLICY_UPLOAD] and
-            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n            out/etag-project/\n            out/etag-project-evidence/\n            out/api-policy-public-consumer/\n            out/api-policy-original-download.json\n            out/path-facts/\n            out/redelivery-policy/\n            out/ipv4/\n            out/versioned-grant-change/\n            out/editable-api-policy/\n            out/autobot-resolver/\n' in named[POLICY_UPLOAD] and
+            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n            out/etag-project/\n            out/etag-project-evidence/\n            out/api-policy-public-consumer/\n            out/api-policy-original-download.json\n            out/path-facts/\n            out/redelivery-policy/\n            out/ipv4/\n            out/versioned-grant-change/\n            out/editable-api-policy/\n            out/editable-api-policy-helpers/\n            out/autobot-resolver/\n' in named[POLICY_UPLOAD] and
             'if-no-files-found: warn\n' in named[POLICY_UPLOAD] and 'retention-days: 14\n' in named[POLICY_UPLOAD],
             'policy output artifacts must include current identity, original policy outputs and both exported ETag directories')
     require('name: gooo-go-ports-policy-documentation-scope\n' in named[POLICY_DOC_ARTIFACT] and
@@ -2411,7 +2435,7 @@ class WorkflowScopeTests(unittest.TestCase):
             with self.subTest(missing=token), self.assertRaises(ValueError):
                 validate(self.text.replace(step, step.replace(token, '', 1), 1))
         for replacement in ('', step + step, step.replace(FULL, DOCS, 1),
-                            step.replace('timeout-minutes: 5', 'timeout-minutes: 40', 1),
+                            step.replace('timeout-minutes: 12', 'timeout-minutes: 40', 1),
                             step.replace('        run: |', '        continue-on-error: true\n        run: |', 1)):
             with self.subTest(step=replacement[:80]), self.assertRaises(ValueError):
                 validate(self.text.replace(step, replacement, 1))
@@ -2424,6 +2448,35 @@ class WorkflowScopeTests(unittest.TestCase):
         upload = policy[POLICY_UPLOAD]
         with self.assertRaises(ValueError):
             validate(self.text.replace(upload, upload.replace('            out/editable-api-policy/\n', '', 1), 1))
+
+    def test_editable_helper_official_archive_and_each_observation_gate_are_required(self):
+        policy, _ = policy_steps(workflow_jobs(self.text)['policy-native-checks'])
+        step = policy[EDITABLE_POLICY_STEP]
+        self.assertEqual(literal_commands(step), [EDITABLE_POLICY_COMMAND, EDITABLE_POLICY_HELPER_COMMAND])
+        self.assertTrue(NATIVE_COMMAND.search(EDITABLE_POLICY_HELPER_COMMAND))
+        self.assertEqual(step.count(EDITABLE_POLICY_SOURCE_SETUP), 1)
+        for token in (EDITABLE_POLICY_HELPER_COMMAND, EDITABLE_POLICY_SOURCE_SETUP) + EDITABLE_POLICY_HELPER_CLAUSES:
+            with self.subTest(missing_helper_gate=token), self.assertRaises(ValueError):
+                validate(self.text.replace(step, step.replace(token, '', 1), 1))
+        for old, new in (('9dbd1c08b855a3c27ae43a8050531afaba724d90b24d4f72041db3a8a4a285b0', '0' * 64),
+                         ('https://github.com/kimjooyoon/meta-ontology-go/releases/download/v0.6.36-dev/gooo-linux-amd64.tar.gz', 'https://example.invalid/unpinned.tar.gz'),
+                         ('sha256sum --check --strict', 'true'),
+                         ('--compiler "$PWD/out/source-inspection036/gooo"', '--compiler "$PWD/.gooo"'),
+                         ('.default_package_commands == 0', '.default_package_commands == 1'),
+                         ('.prepared_inspections == 4', '.prepared_inspections == 0'),
+                         ('.typed_fields_compared == 90', '.typed_fields_compared == 45')):
+            self.assertIn(old, step)
+            with self.subTest(weakened_helper=old), self.assertRaises(ValueError):
+                validate(self.text.replace(step, step.replace(old, new, 1), 1))
+
+    def test_editable_helper_artifacts_are_retained_on_failure_but_not_docs_only(self):
+        policy, _ = policy_steps(workflow_jobs(self.text)['policy-native-checks'])
+        upload = policy[POLICY_UPLOAD]
+        token = '            out/editable-api-policy-helpers/\n'
+        self.assertEqual(upload.count(token), 1)
+        self.assertNotIn(token, policy[POLICY_DOC_ARTIFACT])
+        with self.assertRaises(ValueError):
+            validate(self.text.replace(upload, upload.replace(token, '', 1), 1))
 
     def test_versioned_grant_step_is_owned_full_only_and_after_export(self):
         validate(self.text)

@@ -175,6 +175,12 @@ compiler issue before passing a minimal case to the language repository.
 - **Write a Gooo program:** use the first-program skill, then the existing
   [local edit-and-replay guide](../examples/learn-gooo/README.md#make-one-visible-change).
 - **Edit an API policy rule:** use the [editable source comparison](../examples/editable-api-policy/README.md).
+  To extract a same-file helper, follow its explicit `source-inspection036`
+  compiler profile. Keep the default839 path for the original demo. The selected
+  compiler prepares each current call plan before execution; every native
+  execution and saved replay must contain that same full program. This checks
+  source/result binding for the supplied facts, not live authorization or full
+  field provenance. Omit `--check-demo` only when deliberately changing behavior.
   Keep the supplied inputs fixed, edit `after.gooo`, and run the comparison into
   a new output directory. Inspect changed fields and replay each source's own
   execution. The initial three synthetic requests demonstrate a write rule
