@@ -11,7 +11,7 @@ import { Worker, isMainThread, parentPort, workerData } from 'node:worker_thread
 import { execFileSync } from 'node:child_process';
 
 const ORIGINAL = 'sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46';
-const REVISION = 'sha256:1bbfaad1219950009acc4460490913eecf230e38338d734a771e171c59c9c760';
+const REVISION = 'sha256:a78b95c6f563450e0aacb2356594b270f9a6c42910f3995cec2577076139956e';
 const COMPILER = '83928fa4538245abe33b08549da47f8cbdc50ed2';
 const FACTS = ['group_present', 'group_value', 'principal_present', 'principal_value', 'authenticated', 'caller_tenant', 'resource_tenant', 'requested_action', 'allowed_action'];
 const TEXTS = ['group_value', 'principal_value', 'caller_tenant', 'resource_tenant', 'requested_action', 'allowed_action'];
@@ -472,8 +472,8 @@ function readPackage(options) {
   const source = manifest.source;
   keys(source, ['head', 'tree', 'dirty', 'tracked_file_count', 'native_sources', 'ui_files', 'native_fixtures', 'native_fixture_receipt', 'published_sources', 'historical_git_objects_checked']);
   assert.match(source.head, /^[0-9a-f]{40}$/u); assert.match(source.tree, /^[0-9a-f]{40}$/u); assert.equal(typeof source.dirty, 'boolean');
-  assert.equal(source.tracked_file_count, 84); assert.equal(source.historical_git_objects_checked, false);
-  assert.equal(Object.keys(source.native_sources).length, 84);
+  assert.equal(source.tracked_file_count, 85); assert.equal(source.historical_git_objects_checked, false);
+  assert.equal(Object.keys(source.native_sources).length, 85);
   for (const [name, record] of Object.entries(source.native_sources)) {
     keys(record, ['bytes', 'sha256', 'mode']); assert.ok(name.startsWith('examples/api-policy-revision/'));
     assert.ok(['100644', '100755'].includes(record.mode));

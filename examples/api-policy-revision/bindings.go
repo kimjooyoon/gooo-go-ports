@@ -44,6 +44,34 @@ var revisionConfigs = []revisionConfig{
 	{"summary", "summary.workspace.json", "gooo/api-policy-revision/classifier", "ChangeSummary", "gooo://api-policy-revision/change-summary", "compare.gooo", "(ApiDecision,ApiDecision)", "ApiChangeSummary"},
 }
 
+// EmbeddedDescription describes checked-in profiles inside this executable.
+// It is not a new execution, an installed compiler check, or producer attestation.
+type EmbeddedDescription struct {
+	OriginalProfile  string            `json:"original_profile"`
+	CandidateProfile string            `json:"candidate_profile"`
+	Original         original.Bindings `json:"original"`
+	Revision         original.Bindings `json:"revision"`
+	Compiler         json.RawMessage   `json:"generation_compiler"`
+}
+
+// DescribeBindings reuses the complete embedded binding checks without evaluating
+// a policy or reading a physical source, bundle, compiler, or input file.
+func DescribeBindings() (EmbeddedDescription, error) {
+	bindings, err := RevisionBindings()
+	if err != nil {
+		return EmbeddedDescription{}, err
+	}
+	frozen, err := original.SourceBindings()
+	if err != nil {
+		return EmbeddedDescription{}, err
+	}
+	compiler, err := revisionAssets.ReadFile("compiler.json")
+	if err != nil {
+		return EmbeddedDescription{}, err
+	}
+	return EmbeddedDescription{OriginalProfile, CandidateProfile, frozen, bindings, compiler}, nil
+}
+
 // RevisionBindings validates the full embedded roster before native consumption.
 func RevisionBindings() (original.Bindings, error) {
 	files := map[string][]byte{}

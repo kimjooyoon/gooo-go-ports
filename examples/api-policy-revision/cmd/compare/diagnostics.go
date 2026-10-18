@@ -58,7 +58,7 @@ func writeRefusal(stderr io.Writer, cause error) error {
 		Status      string       `json:"status"`
 		Diagnostics []diagnostic `json:"diagnostics"`
 	}{
-		Schema: "gooo/api-policy-revision-diagnostic/v1", Command: "compare",
+		Schema: diagnosticSchema, Command: commandName,
 		Mode: refusal.mode, Status: "REFUSED",
 		Diagnostics: []diagnostic{{Severity: "error", Code: refusal.code, Stage: refusal.stage, Message: cause.Error(), ItemIndex: refusal.itemIndex}},
 	}
