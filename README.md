@@ -23,6 +23,9 @@ A source edit needs native execution. Saving generated Go alone is not a run.
 For an existing Tessl setup, use the [project-local source installation](docs/ai-agents.md#install-the-skill-with-tessl)
 to give the same first-program task to your coding agent.
 
+Gemini CLI users can load the same instructions through the optional
+[context extension](docs/ai-agents.md#use-the-instructions-with-gemini-cli).
+
 If setup or execution fails, [report the first failed step and diagnostic](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml).
 An incomplete attempt is useful feedback. Share public source and inputs only.
 
