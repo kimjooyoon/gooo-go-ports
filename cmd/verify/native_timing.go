@@ -32,6 +32,8 @@ type nativeTimingConfig struct {
 	CompilerIdentity                               []byte
 	CaseProfile                                    nativeCaseProfile
 	WorkspaceProfile                               nativeWorkspaceProfile
+	SuiteOrder                                     nativeSuiteOrder
+	DispatchOrder                                  []int
 }
 
 type nativeTimingFile struct {
@@ -218,6 +220,18 @@ func newNativeTimingWithSnapshot(cfg nativeTimingConfig, snapshot func(nativeTim
 	if snapshot == nil || len(cfg.Suites) == 0 {
 		return nil, fmt.Errorf("native timing requires an identity observer and nonempty suite roster")
 	}
+	order, err := parseNativeSuiteOrder(string(cfg.SuiteOrder))
+	if err != nil {
+		return nil, err
+	}
+	dispatch, err := nativeSuiteDispatchOrder(cfg.Suites, order)
+	if err != nil {
+		return nil, err
+	}
+	if cfg.DispatchOrder != nil && !reflect.DeepEqual(cfg.DispatchOrder, dispatch) {
+		return nil, fmt.Errorf("native timing dispatch plan differs from selected suite order")
+	}
+	cfg.SuiteOrder, cfg.DispatchOrder = order, dispatch
 	if err := nativeTimingCompilerIdentity(cfg); err != nil {
 		return nil, err
 	}
@@ -311,6 +325,8 @@ func newNativeTimingWithSnapshot(cfg nativeTimingConfig, snapshot func(nativeTim
 	header := map[string]any{
 		"kind": "header", "started_at_utc": t.started.UTC().Format(time.RFC3339Nano),
 		"configured_workers": cfg.Workers, "reported_num_cpu": runtime.NumCPU(), "gomaxprocs": runtime.GOMAXPROCS(0),
+		"suite_order": cfg.SuiteOrder, "planned_dispatch_indices": t.cfg.DispatchOrder,
+		"dispatch_scope":     "Planned original suite indices only. Concurrent goroutine start and completion order may differ; suite and result indices retain catalog order. No case or batch is reordered within a suite.",
 		"memory_limit_bytes": nil, "cpu_quota": nil, "go_version": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH,
 		"max_output_bytes": nativeTimingMaxBytes,
 		"identity":         t.before, "upstream_pins": t.cfg.Lock, "compiler_identity": nativeTimingBytes(t.cfg.CompilerIdentity),

@@ -45,6 +45,7 @@ func run() error {
 	out := flag.String("out", "", "new evidence directory (must not exist)")
 	browser := flag.String("browser-fixtures", "", "write independent browser oracle fixtures to a new JSON file")
 	workers := flag.Int("workers", 1, "native suites to verify concurrently (1..4; default serial)")
+	suiteOrderFlag := flag.String("suite-order", "catalog", "native suite dispatch order: catalog or largest-corpus-first")
 	timingOut := flag.String("timing-out", "", "optional new timing JSONL directly under --out (observation only)")
 	caseProfileFlag := flag.String("case-profile", "", "optional case wire profile: legacy, uuid-compact-v1 or uuid-and-literal-report-compact-v1")
 	workspaceProfileFlag := flag.String("workspace-profile", "", "optional workspace source profile: legacy or dependency-closure-v1")
@@ -59,6 +60,13 @@ func run() error {
 	}
 	if err := validateNativeSuiteWorkers(*workers); err != nil {
 		return err
+	}
+	suiteOrder, err := parseNativeSuiteOrder(*suiteOrderFlag)
+	if err != nil {
+		return err
+	}
+	if suiteOrder != nativeSuiteOrderCatalog && (*out == "" || *browser != "") {
+		return fmt.Errorf("--suite-order largest-corpus-first requires --out and cannot be used with --browser-fixtures")
 	}
 	if *timingOut != "" && (*out == "" || *browser != "") {
 		return fmt.Errorf("--timing-out requires --out and cannot be used with --browser-fixtures")
@@ -243,6 +251,10 @@ func run() error {
 		return err
 	}
 	suites = append(suites, lastIndex.Suites...)
+	dispatchOrder, err := nativeSuiteDispatchOrder(suites, suiteOrder)
+	if err != nil {
+		return err
+	}
 	if *out == "" {
 		return fmt.Errorf("provide --out for a new evidence directory")
 	}
@@ -313,6 +325,7 @@ func run() error {
 			Output: *timingOut, EvidenceRoot: root, RepositoryRoot: ".",
 			Compiler: *compiler, Workers: *workers, Suites: suites,
 			Lock: lock, Catalog: catalog, CompilerIdentity: raw, CaseProfile: caseProfile, WorkspaceProfile: workspaceProfile,
+			SuiteOrder: suiteOrder, DispatchOrder: dispatchOrder,
 		})
 		if err != nil {
 			return err
@@ -335,7 +348,7 @@ func run() error {
 	verifier := newNativeSuiteVerifier(ctx, *compiler, root, lock, cache)
 	verifier.timing = timing
 	verifier.caseProfile = caseProfile
-	results, err := runNativeSuites(ctx, suites, *workers, func(ctx context.Context, index int, s suite) (nativeSuiteResult, error) {
+	results, err := runNativeSuitesOrdered(ctx, suites, *workers, dispatchOrder, func(ctx context.Context, index int, s suite) (nativeSuiteResult, error) {
 		suiteTiming := timing.beginSuite(index, s)
 		result, err := verifier.verify(ctx, s, workspaces[index])
 		suiteTiming.finish(result, err, ctx.Err())
@@ -381,7 +394,8 @@ func run() error {
 	summaryDocument := map[string]any{
 		"schema": "gooo/go-ports-differential/v1", "go_version": runtime.Version(), "goos": runtime.GOOS, "goarch": runtime.GOARCH,
 		"native_suite_workers": *workers,
-		"compiler_revision":    lock.CompilerRevision, "source_sha256": catalog.Hashes,
+		"suite_order":          suiteOrder, "planned_dispatch_indices": dispatchOrder,
+		"compiler_revision": lock.CompilerRevision, "source_sha256": catalog.Hashes,
 		"verification_catalog_sha256": contentDigest(catalog.Raw),
 		"ported_functions":            portedFunctions, "consumer_programs": len(consumerPrograms), "consumer_activities": consumerActivities,
 		"if_match_reference_cases":                     len(ifMatches[0].Cases),

@@ -58,7 +58,10 @@ NATIVE_EXPECTED_SLURP = '--slurpfile expected out/native-contract-expected.json'
 NATIVE_EXPECTED_BINDING = "$expected[0] as $e |"
 NATIVE_SOURCE_PATHS_ASSERTION = "(.identity.source_files | keys) == $e.source_paths"
 NATIVE_ALL_POPULATION_ASSERTION = '            (. as $actual | all(range(0;$e.totals.suites); . as $i | $actual.runs[$i] as $r | $e.suites[$i] as $wanted |\n              $r.package == $wanted.package and $r.activity == $wanted.activity and\n              $r.cases == $wanted.cases and $r.passed == $wanted.cases and\n              $r.batches == $wanted.batches and $r.replay_equal == true)) and\n'
-NATIVE_COMPARISON_COMMAND = "go run -mod=readonly ./cmd/verify --workers 3 --case-profile uuid-and-literal-report-compact-v1 --workspace-profile dependency-closure-v1 --out out/ci --timing-out out/ci/timing.jsonl"
+NATIVE_COMPARISON_COMMAND = "go run -mod=readonly ./cmd/verify --workers 3 --case-profile uuid-and-literal-report-compact-v1 --workspace-profile dependency-closure-v1 --suite-order largest-corpus-first --out out/ci --timing-out out/ci/timing.jsonl"
+SUITE_ORDER_SUMMARY_ASSERTION = '''            .suite_order == "largest-corpus-first" and
+            .planned_dispatch_indices == (.runs | to_entries | sort_by([-.value.cases, .key]) | map(.key)) and
+'''
 CASE_PROFILE_ASSERTION = '''            .case_profile == {
               schema: "gooo/native-case-profile/v1", name: "uuid-and-literal-report-compact-v1",
               compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.2",
@@ -78,7 +81,7 @@ WORKSPACE_PROFILE_ASSERTION = '''            .workspace_profile == {
               compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.2"
             } and
 '''
-TIMING_HEADER_ASSERTION = '          head -n 1 out/ci/timing.jsonl | jq -e --slurpfile summary out/ci/summary.json --slurpfile expected out/native-contract-expected.json \'\n            $expected[0] as $e |\n            . as $header |\n            .schema == "gooo/native-verification-timing/v1" and .kind == "header" and .seq == 0 and\n            .case_profile == $summary[0].case_profile and\n            .workspace_profile == $summary[0].workspace_profile and\n            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and\n            .configured_workers == 3 and .expected_suites == $e.totals.suites and .expected_cases == $e.totals.cases and\n            .command_resources_schema == "gooo/native-command-resources/v1" and\n            .expected_boundaries_recomputed == false and\n            .boundary_scope == "Actual contiguous ranges only. UUID3 retain uuid-compact-v1 wire/partitions; literal-text Report uses a new compact writer/partition identity. No prior profile PASS or full batch total is inherited. Index/Count and other existing non-UUID suites retain their indented writer; decimal/payload retain their source-bounded pretty JSON policy. Fresh native/saved replay and the full summary gate remain required; no timing or speedup claim." and\n            (.identity.source_files | length) == $e.totals.source_paths and\n            (.identity.source_files | keys) == $e.source_paths and\n            all($header.identity.source_files[];\n              (.bytes | type) == "number" and .bytes > 0 and\n              (.sha256 | test("^[0-9a-f]{64}$")))\n          \'\n'
+TIMING_HEADER_ASSERTION = '          head -n 1 out/ci/timing.jsonl | jq -e --slurpfile summary out/ci/summary.json --slurpfile expected out/native-contract-expected.json \'\n            $expected[0] as $e |\n            . as $header |\n            .schema == "gooo/native-verification-timing/v1" and .kind == "header" and .seq == 0 and\n            .case_profile == $summary[0].case_profile and\n            .workspace_profile == $summary[0].workspace_profile and\n            .suite_order == "largest-corpus-first" and .suite_order == $summary[0].suite_order and\n            .planned_dispatch_indices == $summary[0].planned_dispatch_indices and\n            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and\n            .configured_workers == 3 and .expected_suites == $e.totals.suites and .expected_cases == $e.totals.cases and\n            .command_resources_schema == "gooo/native-command-resources/v1" and\n            .expected_boundaries_recomputed == false and\n            .boundary_scope == "Actual contiguous ranges only. UUID3 retain uuid-compact-v1 wire/partitions; literal-text Report uses a new compact writer/partition identity. No prior profile PASS or full batch total is inherited. Index/Count and other existing non-UUID suites retain their indented writer; decimal/payload retain their source-bounded pretty JSON policy. Fresh native/saved replay and the full summary gate remain required; no timing or speedup claim." and\n            (.identity.source_files | length) == $e.totals.source_paths and\n            (.identity.source_files | keys) == $e.source_paths and\n            all($header.identity.source_files[];\n              (.bytes | type) == "number" and .bytes > 0 and\n              (.sha256 | test("^[0-9a-f]{64}$")))\n          \'\n'
 TIMING_CLAUSES = (
     '.schema == "gooo/native-verification-timing/v1"', '.kind == "run_end"',
     '.status == "COMPLETE"',
@@ -802,6 +805,8 @@ def validate(text):
             "native CI must require the exact explicit UUID compact profile identity")
     require(comparison.count(WORKSPACE_PROFILE_ASSERTION) == 1,
             "native CI must require the exact explicit dependency closure workspace profile identity")
+    require(comparison.count(SUITE_ORDER_SUMMARY_ASSERTION) == 1,
+            "native CI must bind descending case-count dispatch with original-index ties and catalog results")
     require(comparison.count(TIMING_HEADER_ASSERTION) == 1,
             "native timing must bind the same profile and complete source identity")
     require(comparison.count(TIMING_ASSERTION) == 1,
@@ -1482,6 +1487,42 @@ class WorkflowScopeTests(unittest.TestCase):
                                   (".configured_workers == 3 and", f".configured_workers == {workers} and")):
                 with self.subTest(workers=workers, before=before), self.assertRaises(ValueError):
                     validate(self.text.replace(before, after, 1))
+
+    def test_suite_order_is_explicit_unique_and_cannot_be_changed_or_optional(self):
+        named, _ = named_steps(self.text)
+        chunk = named["Compare the ports with Go and replay every batch"]
+        flag = " --suite-order largest-corpus-first"
+        self.assertEqual(chunk.count(flag), 1)
+        for replacement in ("", " --suite-order catalog", " --suite-order unknown",
+                            " --suite-order smallest-corpus-first", flag + " --suite-order catalog"):
+            altered = chunk.replace(flag, replacement, 1)
+            self.assertNotEqual(altered, chunk)
+            with self.subTest(flag=replacement), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, altered, 1))
+        for replacement in (NATIVE_COMPARISON_COMMAND + " || true",
+                            "true # " + NATIVE_COMPARISON_COMMAND):
+            altered = chunk.replace(NATIVE_COMPARISON_COMMAND, replacement, 1)
+            with self.subTest(command=replacement), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, altered, 1))
+
+    def test_suite_order_summary_and_timing_must_bind_the_same_exact_plan(self):
+        named, _ = named_steps(self.text)
+        chunk = named["Compare the ports with Go and replay every batch"]
+        self.assertEqual(chunk.count(SUITE_ORDER_SUMMARY_ASSERTION), 1)
+        mutations = [chunk.replace(SUITE_ORDER_SUMMARY_ASSERTION, "", 1)]
+        for before, after in (('.suite_order == "largest-corpus-first"', '.suite_order == "catalog"'),
+                              ('sort_by([-.value.cases, .key])', 'sort_by([.value.cases, .key])'),
+                              ('sort_by([-.value.cases, .key])', 'sort_by([-.value.cases, -.key])'),
+                              ('.planned_dispatch_indices == (.runs', '.planned_dispatch_indices != (.runs'),
+                              ('.suite_order == $summary[0].suite_order', '.suite_order == "catalog"'),
+                              ('.planned_dispatch_indices == $summary[0].planned_dispatch_indices',
+                               '.planned_dispatch_indices == null')):
+            self.assertIn(before, chunk)
+            mutations.append(chunk.replace(before, after, 1))
+        for altered in mutations:
+            self.assertNotEqual(chunk, altered)
+            with self.subTest(altered=altered[:700]), self.assertRaises(ValueError):
+                validate(self.text.replace(chunk, altered, 1))
 
     def test_compact_profile_cannot_be_missing_unknown_legacy_or_rebound(self):
         named, _ = named_steps(self.text)

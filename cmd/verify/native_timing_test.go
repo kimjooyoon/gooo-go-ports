@@ -269,6 +269,9 @@ func TestNativeTimingPreservesIndicesAndCountsWithoutRecomputingBoundaries(t *te
 	if header["kind"] != "header" || header["expected_boundaries_recomputed"] != false || header["configured_workers"] != float64(2) {
 		t.Fatal("incorrect header contract", header)
 	}
+	if header["suite_order"] != "catalog" || !reflect.DeepEqual(header["planned_dispatch_indices"], []any{float64(0), float64(1)}) {
+		t.Fatal("default dispatch plan differs from original catalog indices", header)
+	}
 	encoded, _ := json.Marshal(header)
 	if bytes.Contains(encoded, []byte(recorder.cfg.RepositoryRoot)) || bytes.Contains(encoded, []byte(recorder.cfg.EvidenceRoot)) {
 		t.Fatal("private absolute paths leaked into the public header")
@@ -309,6 +312,40 @@ func TestNativeTimingPreservesIndicesAndCountsWithoutRecomputingBoundaries(t *te
 	}
 	if err := recorder.close(nil, nil); err != nil || len(nativeTimingTestEvents(t, path)) != len(events) {
 		t.Fatal("closing twice rewrote the finite observation", err)
+	}
+}
+
+func TestNativeTimingFreezesDispatchPlanAndRejectsMismatchBeforeOutput(t *testing.T) {
+	suites := []suite{nativeTimingTestSuite("Small", 1), nativeTimingTestSuite("Large", 3), nativeTimingTestSuite("Tied", 3)}
+	cfg := nativeTimingTestConfig(t, nativeTimingTestRoot(t), suites)
+	cfg.SuiteOrder = nativeSuiteOrderLargestCorpusFirst
+	cfg.DispatchOrder = []int{1, 2, 0}
+	recorder, err := newNativeTimingWithSnapshot(cfg, nativeTimingTestSnapshot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = recorder.close(errors.New("test cleanup before explicit completion"), nil) })
+	cfg.DispatchOrder[0] = 0
+	cfg.Suites[0], cfg.Suites[1] = cfg.Suites[1], cfg.Suites[0]
+	if !reflect.DeepEqual(recorder.cfg.DispatchOrder, []int{1, 2, 0}) {
+		t.Fatal("caller mutation changed frozen dispatch plan", recorder.cfg.DispatchOrder)
+	}
+	if err := recorder.close(errors.New("fixture deliberately not executed"), nil); err == nil {
+		t.Fatal("unexecuted dispatch fixture became a success")
+	}
+	header := nativeTimingTestEvents(t, cfg.Output)[0]
+	if header["suite_order"] != "largest-corpus-first" || !reflect.DeepEqual(header["planned_dispatch_indices"], []any{float64(1), float64(2), float64(0)}) {
+		t.Fatal("timing header did not retain selected plan", header)
+	}
+	for _, plan := range [][]int{{0, 1, 2}, {1, 1, 0}, {1, 2}, {1, 2, 3}} {
+		broken := nativeTimingTestConfig(t, nativeTimingTestRoot(t), []suite{nativeTimingTestSuite("Small", 1), nativeTimingTestSuite("Large", 3), nativeTimingTestSuite("Tied", 3)})
+		broken.SuiteOrder, broken.DispatchOrder = nativeSuiteOrderLargestCorpusFirst, plan
+		if value, err := newNativeTimingWithSnapshot(broken, nativeTimingTestSnapshot); err == nil || value != nil || !strings.Contains(err.Error(), "dispatch plan differs") {
+			t.Fatal("mismatched dispatch plan accepted", plan, err)
+		}
+		if _, err := os.Stat(broken.Output); !os.IsNotExist(err) {
+			t.Fatal("refused dispatch plan created timing output", err)
+		}
 	}
 }
 

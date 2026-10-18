@@ -68,6 +68,35 @@ func TestNativeCaseProfileParserAndUnknownBeforeAnyOutput(t *testing.T) {
 	}
 }
 
+func TestNativeSuiteOrderCLIRefusesBeforeUpstreamOrOutput(t *testing.T) {
+	root := t.TempDir()
+	t.Chdir(root)
+	target := filepath.Join(root, "uncreated-parent", "evidence")
+	priorFlags, priorArgs := flag.CommandLine, os.Args
+	t.Cleanup(func() { flag.CommandLine, os.Args = priorFlags, priorArgs })
+	for _, test := range []struct {
+		args []string
+		want string
+	}{
+		{[]string{"--out", target, "--suite-order", "unknown"}, "unknown native suite order"},
+		{[]string{"--suite-order", "largest-corpus-first"}, "requires --out"},
+		{[]string{"--out", target, "--browser-fixtures", "browser.json", "--suite-order", "largest-corpus-first"}, "cannot be used with --browser-fixtures"},
+	} {
+		flag.CommandLine = flag.NewFlagSet("verify-suite-order-test", flag.ContinueOnError)
+		flag.CommandLine.SetOutput(&bytes.Buffer{})
+		os.Args = append([]string{"verify"}, test.args...)
+		if err := run(); err == nil || !strings.Contains(err.Error(), test.want) {
+			t.Fatal("suite order was not refused before upstream/output work", test.args, err)
+		}
+		if _, err := os.Stat(filepath.Dir(target)); !os.IsNotExist(err) {
+			t.Fatal("refused suite order created output parent", err)
+		}
+		if _, err := os.Stat("browser.json"); !os.IsNotExist(err) {
+			t.Fatal("refused suite order created browser output", err)
+		}
+	}
+}
+
 func TestNativeCaseProfileLegacyWriterBytesAndMetadataAbsence(t *testing.T) {
 	s := caseProfileTestSuite("<>&", "\x00\r\n", "가🙂")
 	policy, err := nativeCaseProfile("").policy(s, suiteWorkspace{}, upstream{})

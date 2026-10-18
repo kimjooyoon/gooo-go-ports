@@ -347,11 +347,13 @@ jobs:
           python3 -I -B tools/native_verification_contract.py --root "$PWD" > out/native-contract-expected.json
           go mod download golang.org/x/net golang.org/x/text
           go mod verify
-          go run -mod=readonly ./cmd/verify --workers 3 --case-profile uuid-and-literal-report-compact-v1 --workspace-profile dependency-closure-v1 --out out/ci --timing-out out/ci/timing.jsonl
+          go run -mod=readonly ./cmd/verify --workers 3 --case-profile uuid-and-literal-report-compact-v1 --workspace-profile dependency-closure-v1 --suite-order largest-corpus-first --out out/ci --timing-out out/ci/timing.jsonl
           jq -e --slurpfile expected out/native-contract-expected.json '
             $expected[0] as $e |
             .schema == "gooo/go-ports-differential/v1" and
             .native_suite_workers == 3 and
+            .suite_order == "largest-corpus-first" and
+            .planned_dispatch_indices == (.runs | to_entries | sort_by([-.value.cases, .key]) | map(.key)) and
             .go_version == "go1.27.2" and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
             .case_profile == {
@@ -563,6 +565,8 @@ jobs:
             .schema == "gooo/native-verification-timing/v1" and .kind == "header" and .seq == 0 and
             .case_profile == $summary[0].case_profile and
             .workspace_profile == $summary[0].workspace_profile and
+            .suite_order == "largest-corpus-first" and .suite_order == $summary[0].suite_order and
+            .planned_dispatch_indices == $summary[0].planned_dispatch_indices and
             .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
             .configured_workers == 3 and .expected_suites == $e.totals.suites and .expected_cases == $e.totals.cases and
             .command_resources_schema == "gooo/native-command-resources/v1" and
