@@ -10,6 +10,7 @@ substitution refusal; it does not model an adversary controlling executable code
 import argparse
 import datetime
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path, PurePosixPath
@@ -709,6 +710,18 @@ def verify(args, out, report):
             "original_commit": ORIGINAL_COMMIT,
         }
         report["status"] = "PUBLIC_API_POLICY_CONSUMER_PASS"
+        if getattr(args, "bundle_cli", False):
+            # Retain only the exact installed executable already checked above.
+            # Packaging occurs in main only after private-work cleanup succeeds.
+            retained = out / ".validated-cli"
+            with installed_binary.open("rb") as source_file, retained.open("xb") as target_file:
+                shutil.copyfileobj(source_file, target_file)
+            retained.chmod(0o700)
+            copied = file_ref(retained)
+            require(all(copied[key] == report["direct_install"]["binary"][key]
+                        for key in ("bytes", "sha256")), "retained CLI differs from the tested executable")
+            report["bundle_facts"] = {case["action"]: case["report"]["before"]["facts"]
+                                      for case in observed["cases"]}
     finally:
         shutil.rmtree(work, onerror=cleanup_error)
         report["temporary_sources_binaries_build_cache_removed"] = not work.exists()
@@ -781,6 +794,8 @@ def main():
     parser.add_argument("--revision", required=True, help="exact public parent full commit SHA")
     parser.add_argument("--out", required=True, help="new directory for stable evidence")
     parser.add_argument("--module-cache", help="existing absolute cache to reuse and retain")
+    parser.add_argument("--bundle-cli", action="store_true",
+                        help="package the already tested native CLI after successful private-work cleanup")
     args = parser.parse_args()
     out = Path(args.out).absolute()
     require(not out.exists() and not out.is_symlink(), "--out must be a new directory")
@@ -795,6 +810,13 @@ def main():
         verify(args, out, report)
         require(report.get("temporary_sources_binaries_build_cache_removed") is True,
                 "temporary cleanup incomplete")
+        if args.bundle_cli:
+            helper_path = Path(__file__).with_name("api_policy_cli_bundle.py")
+            spec = importlib.util.spec_from_file_location("api_policy_cli_bundle", helper_path)
+            helper = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(helper)
+            report["cli_bundle"] = helper.make_bundle(out / ".validated-cli", out, report,
+                                                       Path(args.go).resolve(), helper_path.parents[1])
         code = 0
     except (Exception, KeyboardInterrupt) as error:
         report["status"] = "FAIL"
@@ -804,6 +826,16 @@ def main():
         if diagnostic is not None:
             report["last_step"] = diagnostic
     finally:
+        try:
+            (out / ".validated-cli").unlink(missing_ok=True)
+        except OSError as error:
+            code = 1
+            report["status"] = "FAIL"
+            report.pop("acceptance", None)
+            report["retained_cli_cleanup_error"] = type(error).__name__ + ": " + str(error)
+            report.setdefault("error", report["retained_cli_cleanup_error"])
+            if "cli_bundle" in report:
+                report["unaccepted_cli_bundle"] = report.pop("cli_bundle")
         report["completed_at_utc"] = utc()
         save_json(out / "verification.json", report)
         print(console_summary(report, out / "verification.json"))

@@ -375,7 +375,7 @@ NATIVE_COMMAND = re.compile(
     r"(?:\.gooo\s+package\s+(?:execute|replay)|\./cmd/(?:verify|check-unicode|check-literal-text-report)\b|"
     r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text|last-index)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py|tools/check-path-facts\.py|tools/check-redelivery-policy\.py|tools/check-ipv4\.py|tools/check-header-facts-inputs\.py|tools/check-header-addition-inputs\.py|tools/check-header-addition-host\.py|examples/versioned-grant-change/verify\.py|examples/editable-api-policy/run\.py|examples/autobot-resolver/verify\.py)"
 )
-PUBLIC_CONSUMER_COMMAND = 'python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer"'
+PUBLIC_CONSUMER_COMMAND = 'python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer" --bundle-cli'
 PUBLIC_CONSUMER_CLAUSES = (
     '.schema == "gooo/api-policy-public-consumer/v1"',
     '.status == "PUBLIC_API_POLICY_CONSUMER_PASS"',
@@ -389,6 +389,11 @@ PUBLIC_CONSUMER_CLAUSES = (
     '.acceptance.direct_install_tampered_report_refused == true', '.acceptance.substitution_stdout_bytes == 0',
     '.acceptance.original_version == "v0.0.0-20261014100709-8cddcc4e65af"',
     '.acceptance.original_commit == "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"',
+    '.cli_bundle.status == "VALIDATED_NATIVE_CLI_BUNDLE"',
+    '.cli_bundle.platform == "linux/amd64"',
+    '.cli_bundle.archive_readback_verified == true',
+    '(.cli_bundle.members | length) == 10',
+    '(.cli_bundle.archive.bytes > 0 and .cli_bundle.archive.bytes <= 33554432)',
 )
 LITERAL_COMMANDS = {
     "Execute and replay the literal text report": {
@@ -409,7 +414,7 @@ OBSERVER_HEADER_SHA = '46cb0e7392dd3f3fb9562bccea6b27e5194ffcf59e1a58bab4c07b99a
 NATIVE_HEADER_SHA = '584d7a22663deb57be052a69d58f2b19e6233a7eefb7d4ce6ad1d5b650d48e69'
 # Add JSON events without changing the full race-test scope or package budget;
 # all other required observer commands remain byte-identical and once.
-OBSERVER_STEP_SHA = '749f25adef5a99e2408b2f7f3bfa9511c90290acbaa0617f0c4a9aa79358718e'
+OBSERVER_STEP_SHA = '95a801fa3b7e40b3eb3c229d90a9f9e378ffab67557c3c6bfb563c175810b186'
 OBSERVER_UPLOAD_NAME = 'Preserve Go observer test timing'
 OBSERVER_UPLOADS = {OBSERVER_UPLOAD_NAME}
 OBSERVER_UPLOAD_SHA = 'd5f0816bb5edd218d4e71c5ee870c0adfad7cc8f292c37b1b2093331b1fc4d3f'
@@ -469,7 +474,7 @@ POLICY_STEP_SHAS = {
     'Verify the isolated native IPv4 address facts sidecar': '6ce5d2f5e75f9ff9a7728718567ffb039c74232ef4e254ea244b7dc02fbc9ed8',
     'Verify the original automatic redelivery policy': '2ce6496cbee29d77c9334f1f32dc518c96a12c193e37ab569144bdc4fd1a864e',
     'Verify the isolated native path facts sidecar': 'b90f403ce804adea78dacebf554c45f3e21b1faf89b942e83f32aca2847f9df5',
-    'Verify the public API policy consumer': 'addc0ac90e9cb5110153387eff283dc5cd11c34fc53d5d86a6c97cef70b6d44a',
+    'Verify the public API policy consumer': '52de41c3cc3ebe1f8ac1848fad22752f9b01e4fda7aa7cad3201ca629284d64b',
     'Build and identify the pinned compiler from a clean checkout': 'c7273984211d14f1b50f66438f1d90f68a42e8ad58be1d0d1d2a0213b0b4d2ae',
     'Verify the offline decision-policy experiment': '2d8e714f7dfb2963a682ce702485e3bccfaa7439cbaa67f7da6741aff6ce7c48',
     'Verify the imported CEL API policy': '064873f6b6288062964bde88c2f1f436bdc7316e586ae6066a4b3623f057b708',
