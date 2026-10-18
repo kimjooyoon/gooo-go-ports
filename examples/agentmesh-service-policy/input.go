@@ -125,3 +125,16 @@ func DecodeRefinement(raw []byte) (RefinementFacts, error) {
 	}
 	return f, ValidateRefinement(f)
 }
+
+// DecodeGrantUpdate checks the transport only. Represented domain refusals are
+// returned as GrantUpdateDecision values by the generated Gooo activity.
+func DecodeGrantUpdate(raw []byte) (GrantUpdateFacts, error) {
+	if err := decodeFacts(raw, []string{"before", "after", "required_type", "required_name"}); err != nil {
+		return GrantUpdateFacts{}, err
+	}
+	var f GrantUpdateFacts
+	if err := json.Unmarshal(raw, &f); err != nil {
+		return GrantUpdateFacts{}, err
+	}
+	return f, nil
+}

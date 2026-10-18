@@ -78,6 +78,29 @@ go build -trimpath -o ./out/evaluate ./cmd/evaluate
 ./out/evaluate -mode refinement < refinement-demo.json
 ```
 
+To assess a grant change from supplied facts, use `grant-update`:
+
+```sh
+printf '%s\n' '[{"before":"*","after":"mcp://*","required_type":"mcp","required_name":"weather"}]' \
+  | ./out/evaluate -mode grant-update > ./out/grant-update.json
+```
+
+Each result preserves the four facts, all seven `GrantUpdateDecision` fields and
+complete source bindings. This example returns `ELIGIBLE` with reason
+`SUBSET_AND_REQUIRED_REQUEST_PRESERVED` and subset rule `OLD_GLOBAL`: the candidate
+is a recognized subset and still permits the required request. A widening
+candidate returns `REFUSED`; a candidate that removes the required request also
+returns `REFUSED`. Neither result changes a grant or calls a service. See the
+[application host](conditional-apply.md) for current-state and atomic-write checks.
+
+`DecodeGrantUpdate` accepts exactly `before`, `after`, `required_type` and
+`required_name` as strings. It validates only the JSON transport. The generated
+Gooo activity evaluates the service-pattern domain, including empty required
+components, Unicode, slash-containing names and the 128-byte limit. These inputs
+produce an `INVALID_INPUT` decision, with false observation sentinels and the
+first invalid field. `ELIGIBLE`, `REFUSED` and `INVALID_INPUT` all exit successfully
+with a proof array; malformed JSON structure exits nonzero with no stdout.
+
 The module is
 `github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy`. An ordinary
 Go host can import it and call `EvaluateMatcher(MatcherFacts)` or
@@ -97,7 +120,7 @@ For a typed refusal, call `EvaluateMatcherChecked`, `EvaluateImpactChecked` or
 `EvaluateRefinementChecked`. Each returns `Facts`, a checked `Decision`, and
 `Bindings`. A represented malformed string produces `INVALID_INPUT`; malformed
 UTF-8, source-binding or record-shape failures return an error. The existing
-`Evaluate*`, `Validate*`, `Decode*` and CLI keep invalid-input errors and their
+matcher/impact/refinement `Evaluate*`, `Validate*`, `Decode*` and CLI modes keep invalid-input errors and their
 normal-input proof shapes while using generated Gooo checks. No production Go
 regex duplicates the grammar.
 
@@ -106,9 +129,12 @@ The CLI accepts a JSON array of 1..1024 exact string-only fact objects, at most
 `null`, wrong types, trailing JSON, malformed UTF-8 and unpaired surrogate
 escapes are refused by structural decoding. Valid Unicode, paired surrogate
 escapes, escaped controls and oversized components reach the Gooo grammar check
-and are refused there. Each fact object is limited to 4,096 serialized bytes.
-Every member is decoded and evaluated
-before output; a bad later member emits no partial result. Facts may identify
+and are refused there. In `grant-update` mode that refusal is an `INVALID_INPUT`
+proof; the other three CLI modes return an error. Each fact object is limited to
+4,096 serialized bytes.
+Every member is decoded and evaluated before the first output write. A structural
+or evaluation error in a later member emits no result; in `grant-update` mode a
+represented invalid-domain input remains a normal proof-array member. Facts may identify
 private services: keep saved output in a caller-owned private location and review
 it before sharing.
 

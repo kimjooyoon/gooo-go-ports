@@ -113,3 +113,71 @@ func TestUnsupportedDomainRefusalsAndBoundaries(t *testing.T) {
 		}
 	}
 }
+
+func TestDecodeGrantUpdateExactTextTransport(t *testing.T) {
+	good := `{"before":"*","after":"mcp://weather","required_type":"mcp","required_name":"weather"}`
+	var obj map[string]json.RawMessage
+	if err := json.Unmarshal([]byte(good), &obj); err != nil {
+		t.Fatal(err)
+	}
+	for field := range obj {
+		for _, kind := range []string{"missing", "null", "bool", "number", "array", "object", "high_surrogate", "low_surrogate", "duplicate", "escaped_duplicate"} {
+			t.Run(field+"/"+kind, func(t *testing.T) {
+				copy := map[string]json.RawMessage{}
+				for k, v := range obj {
+					copy[k] = v
+				}
+				switch kind {
+				case "missing":
+					delete(copy, field)
+				case "null", "bool", "number", "array", "object":
+					copy[field] = []byte(map[string]string{"null": "null", "bool": "true", "number": "7", "array": "[]", "object": "{}"}[kind])
+				case "high_surrogate":
+					copy[field] = []byte(`"\ud800"`)
+				case "low_surrogate":
+					copy[field] = []byte(`"\udc00"`)
+				}
+				raw, _ := json.Marshal(copy)
+				if kind == "duplicate" || kind == "escaped_duplicate" {
+					key, _ := json.Marshal(field)
+					if kind == "escaped_duplicate" {
+						key = []byte(fmt.Sprintf(`"\u%04x%s"`, []rune(field)[0], field[1:]))
+					}
+					raw = []byte(strings.TrimSuffix(good, "}") + "," + string(key) + ":" + string(obj[field]) + "}")
+				}
+				if _, err := DecodeGrantUpdate(raw); err == nil {
+					t.Fatal("inexact transport accepted")
+				}
+			})
+		}
+	}
+	for _, raw := range [][]byte{[]byte("null"), []byte("[]"), []byte("{}"), []byte(good + " {}"), append([]byte(good), 0xff), []byte(strings.TrimSuffix(good, "}") + `,"decision":"ELIGIBLE"}`)} {
+		if _, err := DecodeGrantUpdate(raw); err == nil {
+			t.Fatal("malformed envelope accepted")
+		}
+	}
+	padded := strings.TrimSuffix(good, "}") + strings.Repeat(" ", 4096-len(good)) + "}"
+	if len(padded) != 4096 {
+		t.Fatal("bad boundary fixture")
+	}
+	if _, err := DecodeGrantUpdate([]byte(padded)); err != nil {
+		t.Fatal("exact 4096-byte object refused", err)
+	}
+	if _, err := DecodeGrantUpdate([]byte(strings.TrimSuffix(padded, "}") + " }")); err == nil {
+		t.Fatal("otherwise valid 4097-byte object accepted")
+	}
+	// Preserve exact strings for the Gooo domain check, including values that
+	// are structurally valid JSON Text but outside the service-pattern domain.
+	for _, value := range []string{"", strings.Repeat("x", 129), "é", "a/path", "a\x00b", "😀"} {
+		f := GrantUpdateFacts{Before: "*", After: "*", RequiredType: "mcp", RequiredName: value}
+		raw, _ := json.Marshal(f)
+		got, err := DecodeGrantUpdate(raw)
+		if err != nil || got != f {
+			t.Fatalf("domain input changed or refused by transport: %+v %v", got, err)
+		}
+	}
+	paired := []byte(`{"before":"*","after":"*","required_type":"mcp","required_name":"\ud83d\ude00"}`)
+	if got, err := DecodeGrantUpdate(paired); err != nil || got.RequiredName != "😀" {
+		t.Fatal("valid surrogate pair lost", got, err)
+	}
+}
