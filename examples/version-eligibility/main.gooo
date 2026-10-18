@@ -64,3 +64,38 @@ if !current_valid { reason = "invalid_current" } else {
  }
 }
 return UpdateFacts{current: input0, candidate: input1, minimum: input2, current_valid: current_valid, candidate_valid: candidate_valid, minimum_valid: minimum_valid, candidate_vs_current: candidate_vs_current, candidate_vs_minimum: candidate_vs_minimum, precedence_newer: precedence_newer, meets_minimum: meets_minimum, eligible: eligible, reason: reason, raw_changed: input1 != input0}`
+
+// A candidate filter only: same major and no prerelease do not prove compatibility.
+entity StableSameMajorUpdateFacts id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result" fields {
+ field current id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result/current" type string required one
+ field candidate id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result/candidate" type string required one
+ field minimum id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result/minimum" type string required one
+ field current_valid id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result/current_valid" type boolean required one
+ field candidate_valid id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result/candidate_valid" type boolean required one
+ field minimum_valid id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result/minimum_valid" type boolean required one
+ field candidate_vs_current id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result/candidate_vs_current" type integer required one
+ field candidate_vs_minimum id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result/candidate_vs_minimum" type integer required one
+ field precedence_newer id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result/precedence_newer" type boolean required one
+ field meets_minimum id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result/meets_minimum" type boolean required one
+ field eligible id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result/eligible" type boolean required one
+ field reason id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result/reason" type string required one
+ field same_major id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result/same_major" type boolean required one
+ field candidate_stable id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result/candidate_stable" type boolean required one
+ field policy_eligible id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result/policy_eligible" type boolean required one
+ field policy_reason id "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result/policy_reason" type string required one
+}
+activity AssessStableSameMajorUpdate(Text, Text, Text) -> StableSameMajorUpdateFacts id "gooo://go-ports/examples/version-eligibility/v1/assess-stable-same-major-update"
+computes `let base = AssessUpdate(input0, input1, input2)
+let current_major = semver.Major(input0)
+let candidate_major = semver.Major(input1)
+let candidate_prerelease = semver.Prerelease(input1)
+let same_major = base.current_valid && base.candidate_valid && current_major == candidate_major
+let candidate_stable = base.candidate_valid && candidate_prerelease == ""
+let policy_eligible = base.eligible && same_major && candidate_stable
+let policy_reason = base.reason
+if base.eligible {
+ if !same_major { policy_reason = "different_major" } else {
+  if !candidate_stable { policy_reason = "prerelease" }
+ }
+}
+return StableSameMajorUpdateFacts{current: base.current, candidate: base.candidate, minimum: base.minimum, current_valid: base.current_valid, candidate_valid: base.candidate_valid, minimum_valid: base.minimum_valid, candidate_vs_current: base.candidate_vs_current, candidate_vs_minimum: base.candidate_vs_minimum, precedence_newer: base.precedence_newer, meets_minimum: base.meets_minimum, eligible: base.eligible, reason: base.reason, same_major: same_major, candidate_stable: candidate_stable, policy_eligible: policy_eligible, policy_reason: policy_reason}`

@@ -10,7 +10,9 @@
   "go_mod_h1": "h1:NyhrlYXJ2H4eJiRy/WDBO6HMqZQ6q9nk4JzS3NuCK+w=",
   "apis": [
     "IsValid",
-    "Compare"
+    "Compare",
+    "Major",
+    "Prerelease"
   ],
   "domain": "Each argument decoded validUTF8 Text0..1024bytes; no trimming/repair. Invalidstrings compare below valid and equal each other, matching pinnedGo semantics.",
   "non_goals": [
@@ -20,7 +22,7 @@
     "Deploy/apply authority"
   ],
   "compiler_pin": "83928fa4538245abe33b08549da47f8cbdc50ed2",
-  "adapted_source_sha256": "ed533615759e52f74cacbbf394a4022d3d09f079c84b7d1781385a40e6ad6e6c",
+  "adapted_source_sha256": "635fa096e14b7828fd4df3c703a60135aeb4f8267d507d3206309e8f5c5ef915",
   "helpers": "Internal bounded parser/record activities are not additional upstream APIs.",
   "native_evidence": "examples/version-eligibility/verify.py builds the independent original Go oracle and checks finite Gooo execution plus saved replay. Completed public runs retain separate gooo-semver-example-evidence CI artifacts.",
   "prerelease_identifier_loop": {
@@ -28,7 +30,7 @@
     "text_max_bytes": 1024,
     "valid_full_version_max_identifiers": 509,
     "reason": "Compare validates before Parts; a prerelease with n nonempty ASCII identifiers needs at least 2*n bytes including its leading hyphen and separators. Text <=1024 bytes therefore permits at most 512; a valid full version also needs the 6-byte minimum core v0.0.0. Build metadata only consumes more bytes.",
-    "scope": "Public IsValid/Compare and consumers calling them. This is not validation of arbitrary direct malformed helper arguments.",
+    "scope": "Public IsValid/Compare/Major/Prerelease and consumers calling them. This is not validation of arbitrary direct malformed helper arguments.",
     "character_scan_bounds": 1024
   }
 }

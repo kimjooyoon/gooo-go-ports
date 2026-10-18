@@ -2,7 +2,7 @@
 """Offline, finite checks of imported Gooo version policies and comparison edges.
 
 Prepare the authenticated x/mod v0.29.0 module cache separately. This runner
-never downloads, applies a release, or treats eight observations as full API
+never downloads, applies a release, or treats finite observations as full API
 compatibility. It builds an independent Go oracle before constructing cases.
 """
 import argparse
@@ -51,6 +51,25 @@ def policy(name):
                 "entry": "go/golang.org/x/mod/semver:Compare", "aid": "gooo://golang.org/x/mod/semver/Compare",
                 "manifest": "version-semver-compare.workspace.json", "scalar": True,
                 "inputs": None, "reference": "boundary-reference-inputs.json"}
+    if name in ("major", "prerelease"):
+        activity = {"major": "Major", "prerelease": "Prerelease"}[name]
+        return {"count": 9, "sources": SOURCES[:1], "parameters": ("version",),
+                "entry": "go/golang.org/x/mod/semver:" + activity,
+                "aid": "gooo://golang.org/x/mod/semver/" + activity,
+                "manifest": "version-semver-" + name + ".workspace.json",
+                "scalar": True, "scalar_type": str, "inputs": None,
+                "reference": "projection-reference-inputs.json"}
+    if name == "stable":
+        selected = policy("minimum")
+        selected.update(count=12,
+                        fields=selected["fields"][:-1] + ("same_major", "candidate_stable", "policy_eligible", "policy_reason"),
+                        types=selected["types"][:-1] + (bool, bool, bool, str),
+                        entry="app/version-eligibility:AssessStableSameMajorUpdate",
+                        aid=AID.replace("upgrade", "stable-same-major-update"),
+                        rid=RID.replace("/result", "/stable-same-major-result"),
+                        manifest="version-stable-same-major.workspace.json",
+                        inputs="stable-inputs.json", reference="stable-reference-inputs.json")
+        return selected
     need(name == "minimum", "unknown policy")
     return {"count": 8, "sources": SOURCES, "parameters": ("current", "candidate", "minimum"),
             "fields": ("current", "candidate", "minimum", "current_valid", "candidate_valid", "minimum_valid",
@@ -112,6 +131,11 @@ def same(a, b):
     return a == b
 
 
+def input_key(selected, position):
+    # Gooo unary roots use the activity name; only multi-input roots have suffixes.
+    return selected["entry"] + ("" if len(selected["parameters"]) == 1 else ".input" + str(position))
+
+
 def synchronized(reference, inputs, selected=None):
     selected = selected or policy("upgrade")
     need(type(reference) is list and len(reference) == selected["count"], "exact finite reference anchors required")
@@ -127,7 +151,7 @@ def synchronized(reference, inputs, selected=None):
         for key in selected["parameters"]:
             need(type(row[key]) is str and len(row[key].encode("utf-8")) <= 1024,
                  "decoded UTF-8 Text 0..1024 bytes required")
-        wanted.append({selected["entry"] + ".input" + str(i): row[key]
+        wanted.append({input_key(selected, i): row[key]
                        for i, key in enumerate(selected["parameters"])})
     if selected["inputs"] is not None:
         need(same(inputs["inputs"], wanted), "Gooo and reference input values/order differ")
@@ -286,14 +310,17 @@ def receipt(raw, expected, rows, source_ids, manifest, cases, go_identity, versi
         need(type(trace["case_index"]) is int and trace["case_index"] == i and len(trace["deliveries"]) == 1,
              "ordered finite trace cases")
         d = trace["deliveries"][0]
-        actual_inputs = [{"port": "input" + str(j), "entity_id": "gooo://std/text",
-                          "value": rows[i][selected["entry"] + ".input" + str(j)]}
+        actual_inputs = [{"port": "input" if len(selected["parameters"]) == 1 else "input" + str(j),
+                          "entity_id": "gooo://std/text", "value": rows[i][input_key(selected, j)]}
                          for j in range(len(selected["parameters"]))]
+        inputs_match = ("input" in d and same(d["input"], actual_inputs[0]["value"]) and not d.get("inputs")
+                        if len(selected["parameters"]) == 1 else same(d.get("inputs"), actual_inputs))
         need(d["activity_id"] == selected["aid"] and d["passed"] is True and same(d["actual"], expected[i]) and
-             same(d["expected"], expected[i]) and same(d["inputs"], actual_inputs),
+             same(d["expected"], expected[i]) and inputs_match,
              "actual/expected/input facts differ from independent oracle")
         if scalar:
-            need(type(d["actual"]) is int and not d.get("actual_fields"), "integer scalar output without record fields")
+            need(type(d["actual"]) is selected.get("scalar_type", int) and not d.get("actual_fields"),
+                 "typed scalar output without record fields")
             continue
         need([f["name"] for f in d["actual_fields"]] == list(fields), "ordered actual fields")
         for name, kind, field in zip(fields, types, d["actual_fields"]):
@@ -305,7 +332,7 @@ def receipt(raw, expected, rows, source_ids, manifest, cases, go_identity, versi
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", required=True, type=Path)
-    parser.add_argument("--policy", choices=("upgrade", "minimum", "compare-boundary"), default="upgrade")
+    parser.add_argument("--policy", choices=("upgrade", "minimum", "compare-boundary", "stable", "major", "prerelease"), default="upgrade")
     parser.add_argument("--compiler", type=Path, default=ROOT / ".gooo")
     parser.add_argument("--go", type=Path)
     parser.add_argument("--module-cache", type=Path, required=True, help="already authenticated Go module cache")
@@ -359,19 +386,23 @@ def main():
         runner.run("oracle-build", [go, "build", "-buildvcs=false", "-trimpath", "-o", binary, "."], oracle)
         build_info(load(runner.run("oracle-buildinfo", [go, "version", "-m", "-json", binary], work)))
         scalar, count = selected.get("scalar", False), selected["count"]
-        expected = load(runner.run("oracle", [binary, "--policy", "upgrade" if scalar else args.policy], work, reference_path))
-        fields, types = (FIELDS, TYPES) if scalar else (selected["fields"], selected["types"])
-        need(len(expected) == count and all(set(row) == set(fields) and all(type(row[n]) is t for n, t in zip(fields, types))
-                                      for row in expected), "independently typed finite oracle rows")
-        if scalar:
-            expected = [row["candidate_vs_current"] for row in expected]
+        expected = load(runner.run("oracle", [binary, "--policy", "upgrade" if args.policy == "compare-boundary" else args.policy], work, reference_path))
+        if selected.get("scalar_type") is str:
+            need(len(expected) == count and all(type(row) is str for row in expected),
+                 "independently typed finite Text oracle rows")
+        else:
+            fields, types = (FIELDS, TYPES) if scalar else (selected["fields"], selected["types"])
+            need(len(expected) == count and all(set(row) == set(fields) and all(type(row[n]) is t for n, t in zip(fields, types))
+                                          for row in expected), "independently typed finite oracle rows")
+            if scalar:
+                expected = [row["candidate_vs_current"] for row in expected]
         cases = out / "cases.json"
         write(cases, {"schema": "gooo/body-composition-cases/v1", "cases": [
             {"inputs": row, "expected": {selected["entry"]: want}} for row, want in zip(rows, expected)]})
         if scalar:
             # A source-offset suffix cannot have more digits than source bytes.
             # This bounds the compiler's rewritten activity key without expansion.
-            lower = "GoooPackage" + str(originals[SOURCES[0]]["bytes"]) + "ActivityCompare"
+            lower = "GoooPackage" + str(originals[SOURCES[0]]["bytes"]) + "Activity" + selected["entry"].split(":")[1]
             need(len(lower) <= len(selected["entry"]) and cases.stat().st_size <= 30000 and
                  cases.stat().st_size <= 32768, "boundary case raw/translated byte caps")
         source_ids = {name: sha(json.dumps(read(ROOT / name).decode(), ensure_ascii=False).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026").encode()) for name in selected["sources"]}
@@ -386,7 +417,7 @@ def main():
              all(original["result"]["runtime"][k] == replay["result"]["runtime"][k]
                  for k in ("generated_sha256", "driver_sha256", "typed_plan_sha256")) and
              same(original["result"]["runtime"]["traces"], replay["result"]["runtime"]["traces"]), "fresh saved replay parent/program/typed traces")
-        status = "FINITE_9_BOUNDARY_CASES_AND_FRESH_REPLAY_CHECKED" if scalar else "FINITE_8_CASES_AND_FRESH_REPLAY_CHECKED"
+        status = "FINITE_9_BOUNDARY_CASES_AND_FRESH_REPLAY_CHECKED" if args.policy == "compare-boundary" else f"FINITE_{count}_CASES_AND_FRESH_REPLAY_CHECKED"
         report.update(status=status, compiler_build=build, source_inputs=originals, tools=tools,
                       cases=identity(cases), checked=count, policy=args.policy,
                       limits="Finite cases, not full SemVer compatibility, signed execution or deployment authority.")

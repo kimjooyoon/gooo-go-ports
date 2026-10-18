@@ -80,5 +80,38 @@ class RequestInputs(unittest.TestCase):
         self.assertIn("unreadable input", errors.getvalue())
 
 
+    def test_policy_selection_only_changes_entry_and_preserves_invalid_version_text(self):
+        raw = self.encoded(current=" bad ", candidate="v2.0.0-rc.1", minimum="")
+        default = self.call(raw)
+        self.assertEqual(self.call(raw, ("--policy", "minimum")), default)
+        code, output, error = self.call(raw, ("--policy", "stable"))
+        self.assertEqual((code, error), (0, ""))
+        document = json.loads(output)
+        self.assertEqual(set(document), {"schema", "inputs"})
+        self.assertEqual(document, {"schema": "gooo/body-composition-inputs/v1", "inputs": [{
+            request.ENTRIES["stable"] + ".input0": " bad ",
+            request.ENTRIES["stable"] + ".input1": "v2.0.0-rc.1",
+            request.ENTRIES["stable"] + ".input2": ""}]})
+        for invalid in (self.encoded(candidate="é" * 513), b"{}",
+                        b'{"current":"a","current":"b","candidate":"c","minimum":"d"}'):
+            with self.subTest(invalid=invalid):
+                code, output, error = self.call(invalid, ("--policy", "stable"))
+                self.assertEqual((code, output), (1, b""))
+                self.assertTrue(error.startswith("version request refused: "))
+
+    def test_policy_usage_refuses_before_reading_input_or_emitting_output(self):
+        class Unreadable:
+            def read(self, _size):
+                raise AssertionError("invalid policy must not read input")
+        for args in (("--policy",), ("--policy", "upgrade"), ("--policy", "Stable"),
+                     ("--policy=stable",), ("--policy", "stable", "extra"),
+                     ("--policy", "stable", "--policy", "minimum")):
+            with self.subTest(args=args):
+                output, errors = io.BytesIO(), io.StringIO()
+                self.assertEqual(request.run(args, Unreadable(), output, errors), 2)
+                self.assertEqual(output.getvalue(), b"")
+                self.assertIn("usage:", errors.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()

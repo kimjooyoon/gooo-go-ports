@@ -1,0 +1,74 @@
+[
+  {
+    "name": "stable-patch",
+    "current": "v1.2.3",
+    "candidate": "v1.2.4",
+    "minimum": "v1.2.0"
+  },
+  {
+    "name": "higher-major",
+    "current": "v1.9.0",
+    "candidate": "v2.0.0",
+    "minimum": "v1.0.0"
+  },
+  {
+    "name": "prerelease",
+    "current": "v1.0.0",
+    "candidate": "v1.1.0-rc.1",
+    "minimum": "v1.0.0"
+  },
+  {
+    "name": "higher-major-and-prerelease",
+    "current": "v1.9.0",
+    "candidate": "v2.0.0-rc.1",
+    "minimum": "v1.0.0"
+  },
+  {
+    "name": "v0-minor-same-major",
+    "current": "v0.1.0",
+    "candidate": "v0.2.0",
+    "minimum": "v0.0.1"
+  },
+  {
+    "name": "shorthand",
+    "current": "v1",
+    "candidate": "v1.1",
+    "minimum": "v1.0.0"
+  },
+  {
+    "name": "build-metadata-equal",
+    "current": "v1.2.3+001",
+    "candidate": "v1.2.3+002",
+    "minimum": "v1.0.0"
+  },
+  {
+    "name": "invalid-current-before-prerelease",
+    "current": "bad",
+    "candidate": "v1.1.0-rc.1",
+    "minimum": "v1.0.0"
+  },
+  {
+    "name": "invalid-candidate",
+    "current": "v1.0.0",
+    "candidate": "bad",
+    "minimum": "v1.0.0"
+  },
+  {
+    "name": "invalid-minimum-before-filters",
+    "current": "v1.9.0",
+    "candidate": "v2.0.0-rc.1",
+    "minimum": "bad"
+  },
+  {
+    "name": "below-minimum-before-filters",
+    "current": "v1.9.0",
+    "candidate": "v2.0.0-rc.1",
+    "minimum": "v3.0.0"
+  },
+  {
+    "name": "major-200-digits",
+    "current": "v99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.0.0",
+    "candidate": "v99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.0.1",
+    "minimum": "v99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.0.0"
+  }
+]

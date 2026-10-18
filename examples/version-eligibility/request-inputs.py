@@ -7,6 +7,7 @@ MAX_RAW_BYTES = 32 << 10
 MAX_TEXT_BYTES = 1024
 FIELDS = ("current", "candidate", "minimum")
 ENTRY = "app/version-eligibility:AssessUpdate"
+ENTRIES = {"minimum": ENTRY, "stable": "app/version-eligibility:AssessStableSameMajorUpdate"}
 
 
 def unique_pairs(items):
@@ -23,7 +24,9 @@ def nonfinite(_value):
     raise ValueError("nonfinite JSON value")
 
 
-def prepare(raw):
+def prepare(raw, policy="minimum"):
+    if policy not in ENTRIES:
+        raise ValueError("unsupported version policy")
     if len(raw) > MAX_RAW_BYTES:
         raise ValueError("request exceeds 32 KiB")
     request = json.loads(raw.decode("utf-8"), object_pairs_hook=unique_pairs,
@@ -42,16 +45,17 @@ def prepare(raw):
             raise ValueError(name + " exceeds 1024 UTF-8 bytes")
     # Preserve invalid version strings too: Gooo owns validity and eligibility.
     document = {"schema": "gooo/body-composition-inputs/v1", "inputs": [
-        {ENTRY + ".input" + str(i): request[name] for i, name in enumerate(FIELDS)}]}
+        {ENTRIES[policy] + ".input" + str(i): request[name] for i, name in enumerate(FIELDS)}]}
     return (json.dumps(document, ensure_ascii=True, separators=(",", ":")) + "\n").encode()
 
 
 def run(args, reader, writer, errors):
-    if args:
-        print("usage: request-inputs.py < request.json > inputs.json", file=errors)
+    if args and (len(args) != 2 or args[0] != "--policy" or args[1] not in ENTRIES):
+        print("usage: request-inputs.py [--policy minimum|stable] < request.json > inputs.json", file=errors)
         return 2
+    policy = args[1] if args else "minimum"
     try:
-        output = prepare(reader.read(MAX_RAW_BYTES + 1))
+        output = prepare(reader.read(MAX_RAW_BYTES + 1), policy)
         if writer.write(output) != len(output):
             raise OSError("short output write")
     except (ValueError, UnicodeError, OSError, RecursionError) as error:
