@@ -13,6 +13,7 @@ import (
 // quote rewrite below allowed. It does not claim those bytes or a native PASS
 // are the historical original62 source image.
 func TestLiteralCutPreservesOriginal62CasesWorkspacesAndBatchBoundaries(t *testing.T) {
+	parallelFullCorpusTest(t)
 	var base struct {
 		Schema    string              `json:"schema"`
 		Catalog   verificationCatalog `json:"catalog"`
