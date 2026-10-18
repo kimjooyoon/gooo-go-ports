@@ -495,10 +495,12 @@ Gooo 본문은 허용 조건과 거절 우선순위를 표현합니다. 기존 �
 범위입니다. 파일이 빠지거나 같은 개수의 다른 파일·해시로 바뀌는 경우를 거절합니다.
 기존 포팅의 사례와 분할은 이 목록 변경에서 그대로 보존합니다.
 
-The current packaging seals `go.sum` as the 38th asset and requires the original
-public module at its unchanged immutable version above. Its generation is
+The earlier packaging change sealed `go.sum` as the 38th asset and required the
+original public module at its unchanged immutable version above. Its generation was
 `sha256:24f37267a7f4ad723b7228eeecd55fdc151c8534fa8a95bca19bb73d9b3973d0`.
-The earlier 37-asset generation recorded above remains historical; its saved
-reports are not migrated to this generation. The policy source and generated
-algorithms are unchanged. Dependency preparation uses the Go proxy and checksum
-service once; the generated command and saved-report replay run offline.
+That identity and the earlier 37-asset generation remain historical; saved reports
+must retain their matching source version. The current 38-asset identity is listed
+in the batch section above and returned by `--describe`. The packaging change left
+the policy source and generated algorithms unchanged. Dependency preparation uses
+the Go proxy and checksum service once; the generated command and saved-report
+replay run offline.
