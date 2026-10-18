@@ -49,7 +49,33 @@ func run() error {
 	timingOut := flag.String("timing-out", "", "optional new timing JSONL directly under --out (observation only)")
 	caseProfileFlag := flag.String("case-profile", "", "optional case wire profile: legacy, uuid-compact-v1 or uuid-and-literal-report-compact-v1")
 	workspaceProfileFlag := flag.String("workspace-profile", "", "optional workspace source profile: legacy or dependency-closure-v1")
-	flag.Parse()
+	var shard ciShardOptions
+	flag.StringVar(&shard.PlanOut, "ci-shard-plan-out", "", "write an optional CI shard metadata plan; no native execution")
+	flag.StringVar(&shard.SelectOut, "ci-shard-select-out", "", "write one CI shard metadata selection; no native execution")
+	flag.StringVar(&shard.ReduceOut, "ci-shard-reduce-out", "", "reduce all CI shard metadata contracts; never native acceptance")
+	flag.StringVar(&shard.Plan, "ci-shard-plan", "", "current-source CI shard metadata plan")
+	flag.StringVar(&shard.Context, "ci-shard-context", "", "independently trusted CI run identity JSON")
+	flag.IntVar(&shard.Count, "ci-shard-count", 0, "number of metadata shards,1..16")
+	flag.IntVar(&shard.Index, "ci-shard-index", -1, "metadata shard selection index")
+	flag.Var(&shard.Partials, "ci-shard-partial", "one partial contract file; repeat for every shard")
+	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
+		return err
+	}
+	flag.Visit(func(f *flag.Flag) {
+		if strings.HasPrefix(f.Name, "ci-shard-") {
+			shard.Requested = true
+		}
+	})
+	if shard.enabled() {
+		if flag.NArg() != 0 {
+			return fmt.Errorf("CI shard metadata mode does not accept positional arguments")
+		}
+		conflicts := *compiler != "./.gooo" || *out != "" || *browser != "" || *workers != 1 || *suiteOrderFlag != "catalog" || *timingOut != "" || *caseProfileFlag != "" || *workspaceProfileFlag != ""
+		if err := shard.validate(conflicts); err != nil {
+			return err
+		}
+		return runCIShardMetadata(shard, ".")
+	}
 	caseProfile, err := parseNativeCaseProfile(*caseProfileFlag, *browser != "")
 	if err != nil {
 		return err
