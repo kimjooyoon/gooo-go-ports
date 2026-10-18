@@ -134,7 +134,7 @@ def parse_args(argv=None):
     elif not args.verification_out or not args.timing:parser.error('--verification-out and --timing require nonempty paths together')
     return args
 
-def main():
+def _main(scan_state):
     global PLAN,RAW,DEFS,RECORDS,MANIFEST,GO,TOOLS
     a=parse_args();root,compiler,helper,go,out=[canonical(x) for x in [a.root,a.compiler,a.input_command,a.go,a.out]]
     shard_index=canonical(a.shard_native_index) if a.shard_native_index is not None else None
@@ -142,13 +142,17 @@ def main():
     timing=canonical(a.timing) if a.timing is not None else None
     need(root.is_dir() and not out.exists(),'root must exist and output must be fresh')
     out.mkdir();(out/'tmp').mkdir();started=time.monotonic();observations=[];refusals=[];native_count=0
-    def interrupted(signum,_frame):raise RuntimeError('received signal '+str(signum))
+    def interrupted(signum,_frame):
+        failure=RuntimeError('received signal '+str(signum));observer=scan_state.get('observer')
+        if observer is not None and observer.cancellation is None:observer.cancellation=failure
+        raise failure
     for number in [signal.SIGTERM,signal.SIGINT]:signal.signal(number,interrupted)
     checker=root/'tools/check-header-addition-host.py'
     module_spec=importlib.util.spec_from_file_location('gooo_header_addition_host',checker)
     host=importlib.util.module_from_spec(module_spec);sys.modules[module_spec.name]=host;module_spec.loader.exec_module(host)
+    pin_scans=host.PinScanObservations();pin_scans.output=out;scan_state['observer']=pin_scans
     try:
-        verification=host.read_shard_verification(root,shard_index) if shard_index is not None else host.read_verification(root,verification_out,timing)
+        verification=pin_scans.observe('initial-verification','parent',lambda:host.read_shard_verification(root,shard_index) if shard_index is not None else host.read_verification(root,verification_out,timing))
     except BaseException as failure:
         summary={'schema':'gooo/header-addition-input-route/v1','status':'FIRST_FAILURE_PRESERVED','failure':str(failure),'positive_requests':None,'prelaunch_refusals':0,'actual_Gooo_commands':0,'typed_fields_checked':0,'observations':[],'elapsed_s':time.monotonic()-started,'scope':('Experimental shard reference, producer unauthenticated; no native acceptance or authenticated GitHub-run claim.' if shard_index is not None else 'Legacy full-verifier evidence was refused before native input commands.')}
         save(out/'summary.json',summary);print(json.dumps(summary));return 1
@@ -162,7 +166,7 @@ def main():
             raw=canonical(p).read_bytes();need(len(raw)==ref['bytes'] and sha(raw)==ref['sha256'],'frozen evidence/source/tool drift: '+p)
     def call(label,args,seconds,data=None):
         nonlocal native_count
-        unchanged(); d = out/label; d.mkdir(); (d/'stdin').write_bytes(data or b''); begin = time.monotonic(); why = None; known = {}; child = None
+        pin_scans.observe(label,'pre',unchanged,pins); d = out/label; d.mkdir(); (d/'stdin').write_bytes(data or b''); begin = time.monotonic(); why = None; known = {}; child = None
         def live():
             rows = processes(); owned = {pid for pid,r in rows.items() if pid in known and r['birth'] == known[pid]['birth']}
             if child is not None and child.poll() is None and child.pid in rows: owned.add(child.pid)
@@ -210,10 +214,10 @@ def main():
                 save(d/'process.json',{'exit_code':None if child is None else child.returncode,'failure':why,'wall_seconds':time.monotonic()-begin,'observed_owned_processes_remaining':[{k:r[k] for k in ['pid','pgid','birth']} for r in remaining],'process_observation_complete':observation_complete,'scope':'Polling ancestry and unique tmp command paths; not a kernel fork trace.'})
         need(child is not None and why is None and not remaining and observation_complete,'command failure: '+label+' '+str(why))
         need((d/'stdout').stat().st_size <= 8<<20 and (d/'stderr').stat().st_size <= 2<<20,'final output cap')
-        unchanged(); return child.returncode,(d/'stdout').read_bytes()
+        pin_scans.observe(label,'post',unchanged,pins); return child.returncode,(d/'stdout').read_bytes()
     env=os.environ.copy();env.update(GOTOOLCHAIN='local',GOWORK='off',GOENV='off',GOPROXY='off',GOSUMDB='off',GOOO_LAYA_URL='',GOOO_LAYA_API_KEY='',TMPDIR=str(out/'tmp'))
     try:
-        unchanged();need(equal(pins[str(compiler)],pins[str(root/'.gooo')]) and equal(pins[str(go)],verification['go_binary']),'input route must use exact current evidence compiler/Go binaries');save(out/'source-tool-pins.json',pins)
+        pin_scans.observe('initial','initial',unchanged,pins);need(equal(pins[str(compiler)],pins[str(root/'.gooo')]) and equal(pins[str(go)],verification['go_binary']),'input route must use exact current evidence compiler/Go binaries');save(out/'source-tool-pins.json',pins)
         lock=load((root/'upstream.json').read_bytes());need(lock['compiler_revision']==REV and lock['go_version']=='go1.27.2','current upstream compiler/Go pins')
         MANIFEST=root/'diagnostic-header-addition.workspace.json';GO=go;TOOLS=pins
         PLAN={'sources':[{'package':package,'path':str(root/name),'target':name} for package,name in SOURCES]}
@@ -258,8 +262,15 @@ def main():
         for i,(label,request) in enumerate(negatives):
             before=native_count;rc,trusted=call('negative-'+str(i),[str(helper)],10,request)
             need(rc!=0 and trusted==b'' and native_count==before,'malformed request must return before trusted output/native branch');refusals.append(label)
-        need(native_count==len(observations)==8 and len(refusals)==16,'complete actual native/refusal roster');unchanged();status,error='FOUR_INPUT_ROUTES_AND16_PRELAUNCH_REFUSALS_PASS',None
+        need(native_count==len(observations)==8 and len(refusals)==16,'complete actual native/refusal roster');pin_scans.observe('final','final',unchanged,pins);status,error='FOUR_INPUT_ROUTES_AND16_PRELAUNCH_REFUSALS_PASS',None
     except BaseException as failure:status,error='FIRST_FAILURE_PRESERVED',str(failure)
     summary={'schema':'gooo/header-addition-input-route/v1','status':status,'failure':error,'positive_requests':4 if error is None else None,'prelaunch_refusals':len(refusals),'refusal_labels':refusals,'actual_Gooo_commands':native_count,'typed_fields_checked':sum(x['typed_fields'] for x in observations),'typed_input_record_fields':sum(x['typed_input_record_fields'] for x in observations),'observations':observations,'elapsed_s':time.monotonic()-started,'scope':'Current helper output reaches actual pinned input-only execute/saved replay; all16 typed results use current independently computed Go case rows anchored to '+('experimental unauthenticated shard reference/case/raw receipts; no native acceptance or authenticated GitHub-run claim. ' if shard_index is not None else 'full-verifier timing/case/raw receipts. ')+'Raw replay parent checked. Inner typed canonical parent, direct CLI bypass, observation authenticity, network effects and durable/distributed safety remain NOT_CHECKED.'}
     save(out/'summary.json',summary);print(json.dumps(summary));return 0 if error is None else 1
+def main():
+    scan_state={};failed=True
+    try:
+        result=_main(scan_state);failed=result!=0;return result
+    finally:
+        if 'observer' in scan_state:scan_state['observer'].write_once(preserve_failure=failed)
+
 if __name__=='__main__':sys.exit(main())

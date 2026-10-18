@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Source/expectation/provenance rejection tests. No Go or native invocation."""
 import importlib.util
+import ast
 import contextlib
 import io
 import copy
@@ -802,6 +803,104 @@ class AdditionEvidenceBoundaryTests(unittest.TestCase):
         with self.assertRaises(KeyError) as failure:
             CHECK.receipt(raw,[],b'{}',b'{}',[],'go version go1.27.2 linux/amd64','a'*64,{CHECK.ENTRY:{}},{},'/producer/gooo.workspace.json')
         self.assertEqual(failure.exception.args,('result',))
+
+
+class PinScanCancellationTests(unittest.TestCase):
+    def test_clock_cancellation_propagates_before_or_after_validation(self):
+        for kind in (KeyboardInterrupt,SystemExit,RuntimeError):
+            for after in (False,True):
+                observer=CHECK.PinScanObservations();failure=kind('cancel')
+                if kind is RuntimeError:observer.cancellation=failure
+                operation=mock.Mock(return_value='validated')
+                clock=[1,failure] if after else [failure]
+                with self.subTest(kind=kind,after=after),mock.patch.object(CHECK.time,'monotonic_ns',side_effect=clock),self.assertRaises(kind) as caught:
+                    observer.observe('scan','pre',operation)
+                self.assertIs(caught.exception,failure);self.assertEqual(operation.call_count,int(after))
+
+    def test_metadata_collection_does_not_swallow_marked_signal(self):
+        observer=CHECK.PinScanObservations();failure=RuntimeError('received signal 15');observer.cancellation=failure
+        pins=mock.MagicMock();pins.__len__.side_effect=failure;operation=mock.Mock()
+        with self.assertRaises(RuntimeError) as caught:observer.observe('scan','pre',operation,pins)
+        self.assertIs(caught.exception,failure);operation.assert_not_called()
+
+    def test_ordinary_clock_failure_is_optional_and_first_scan_error_wins(self):
+        for secondary in (OSError('clock'),RuntimeError('ordinary clock'),KeyboardInterrupt('later cancel'),SystemExit(9)):
+            observer=CHECK.PinScanObservations();primary=RuntimeError('original source drift')
+            with self.subTest(secondary=secondary),mock.patch.object(CHECK.time,'monotonic_ns',side_effect=[1,secondary]),self.assertRaises(RuntimeError) as caught:
+                observer.observe('scan','post',mock.Mock(side_effect=primary))
+            self.assertIs(caught.exception,primary)
+        observer=CHECK.PinScanObservations()
+        with mock.patch.object(CHECK.time,'monotonic_ns',side_effect=[RuntimeError('clock'),OSError('clock')]):
+            self.assertEqual(observer.observe('scan','pre',lambda:'validated'),'validated')
+
+    def test_successful_main_propagates_logger_cancellation(self):
+        for kind in (KeyboardInterrupt,SystemExit,RuntimeError):
+            failure=kind('cancel');seen={}
+            def completed(observer):observer.output=pathlib.Path('/unused');seen['observer']=observer;return 0
+            def writer(*_):
+                if kind is RuntimeError:seen['observer'].cancellation=failure
+                raise failure
+            with self.subTest(kind=kind),mock.patch.object(CHECK,'_main',side_effect=completed),mock.patch.object(CHECK,'save',side_effect=writer),self.assertRaises(kind) as caught:CHECK.main()
+            self.assertIs(caught.exception,failure)
+
+    def test_prior_main_exception_or_failed_exit_precedes_logger_error(self):
+        for secondary in (OSError('write'),KeyboardInterrupt('later cancel'),SystemExit(9)):
+            primary=RuntimeError('original validation');seen={}
+            def refused(observer):observer.output=pathlib.Path('/unused');seen['observer']=observer;raise primary
+            with self.subTest(secondary=secondary),mock.patch.object(CHECK,'_main',side_effect=refused),mock.patch.object(CHECK,'save',side_effect=secondary),self.assertRaises(RuntimeError) as caught:CHECK.main()
+            self.assertIs(caught.exception,primary)
+            def failed(observer):observer.output=pathlib.Path('/unused');return 1
+            with mock.patch.object(CHECK,'_main',side_effect=failed),mock.patch.object(CHECK,'save',side_effect=secondary):self.assertEqual(CHECK.main(),1)
+
+    def test_installed_signal_handler_marks_clock_cancellation(self):
+        for number in (CHECK.signal.SIGTERM,CHECK.signal.SIGINT):
+            for after in (False,True):
+                with self.subTest(number=number,after=after),tempfile.TemporaryDirectory() as directory:
+                    root=pathlib.Path(directory).resolve();args=mock.Mock(root=str(root),go=str(root/'go'),out='out',shard_native_index='index',verification_out=None,timing=None);calls=[]
+                    def clock():
+                        calls.append('clock')
+                        if len(calls)==(2 if after else 1):CHECK.signal.getsignal(number)(number,None)
+                        return 1
+                    with mock.patch.object(CHECK,'parse_args',return_value=args),mock.patch.object(CHECK,'read_shard_verification',return_value={'pins':{}}),mock.patch.object(CHECK.time,'monotonic_ns',side_effect=clock),contextlib.redirect_stdout(io.StringIO()):
+                        self.assertEqual(CHECK.main(),1)
+                    summary=json.loads((root/'out/summary.json').read_text())
+                    self.assertEqual(summary['status'],'FIRST_FAILURE_PRESERVED');self.assertEqual(summary['failure'],'received signal '+str(number))
+        for filename in ('check-header-addition-host.py','check-header-addition-inputs.py'):
+            tree=ast.parse((ROOT/'tools'/filename).read_text());main=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='_main')
+            handler=next(n for n in main.body if isinstance(n,ast.FunctionDef) and n.name=='interrupted')
+            for number in (CHECK.signal.SIGTERM,CHECK.signal.SIGINT):
+                for after in (False,True):
+                    observer=CHECK.PinScanObservations();scope={'pin_scans':observer,'scan_state':{'observer':observer}}
+                    exec(compile(ast.Module(body=[handler],type_ignores=[]),'<actual signal handler>','exec'),scope)
+                    ticks=[];operation=mock.Mock(return_value='validated')
+                    def clock():
+                        ticks.append(1)
+                        if len(ticks)==(2 if after else 1):scope['interrupted'](number,None)
+                        return 1
+                    with self.subTest(handler=filename,number=number,after=after),mock.patch.object(CHECK.time,'monotonic_ns',side_effect=clock),self.assertRaises(RuntimeError) as caught:
+                        observer.observe('scan','pre',operation)
+                    self.assertIs(caught.exception,observer.cancellation);self.assertEqual(operation.call_count,int(after))
+            if filename.endswith('inputs.py'):
+                scope={'scan_state':{}};exec(compile(ast.Module(body=[handler],type_ignores=[]),'<input handler before observer>','exec'),scope)
+                with self.assertRaisesRegex(RuntimeError,'received signal 15'):scope['interrupted'](int(CHECK.signal.SIGTERM),None)
+                self.assertEqual(scope['scan_state'],{})
+
+    def test_inputs_wrapper_preserves_prior_failure_and_propagates_new_cancel(self):
+        spec=importlib.util.spec_from_file_location('header_inputs_cancel',ROOT/'tools/check-header-addition-inputs.py');inputs=importlib.util.module_from_spec(spec);spec.loader.exec_module(inputs)
+        for outcome in (0,1,RuntimeError('original input failure')):
+            primary=outcome if isinstance(outcome,BaseException) else None;cancel=KeyboardInterrupt('logger cancel')
+            def run(state):
+                observer=CHECK.PinScanObservations();observer.output=pathlib.Path('/unused');state['observer']=observer
+                if primary is not None:raise primary
+                return outcome
+            with self.subTest(outcome=outcome),mock.patch.object(inputs,'_main',side_effect=run),mock.patch.object(CHECK,'save',side_effect=cancel):
+                if outcome==0:
+                    with self.assertRaises(KeyboardInterrupt) as caught:inputs.main()
+                    self.assertIs(caught.exception,cancel)
+                elif primary is not None:
+                    with self.assertRaises(RuntimeError) as caught:inputs.main()
+                    self.assertIs(caught.exception,primary)
+                else:self.assertEqual(inputs.main(),1)
 
 
 if __name__=='__main__':unittest.main()
