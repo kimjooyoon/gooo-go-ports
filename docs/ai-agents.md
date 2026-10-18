@@ -172,13 +172,17 @@ compiler issue before passing a minimal case to the language repository.
   replay the Gooo source. Inspect the eight fields, including stored/floor
   presence and the exact reason. This does not query a live policy store or
   approve/apply an action; the Go oracle is for verification only.
-- **Check a release candidate:** use the
-  [version eligibility example](../examples/version-eligibility/README.md).
-  Supply current, candidate and minimum versions to `AssessUpdate`, inspect
-  `eligible` and `reason`, and retain the original strings and both comparisons.
-  For example, a candidate newer than current can still return `below_minimum`.
-  Run the separate Go reference check after changing the supplied inputs.
-  This rule calculates eligibility automatically; it does not deploy a release.
+- **Review a proposed dependency update:** follow the
+  [single-request version guide](../examples/version-eligibility/README.md#try-your-own-current-candidate-and-minimum).
+  `minimum` requires valid versions, a candidate newer than current and at least
+  the minimum; read `eligible` with `reason`. `stable` additionally requires the
+  same major and no prerelease; read `policy_eligible` with `policy_reason`.
+  For current `v1.9.0`, candidate `v2.0.0-rc.1` and minimum `v1.0.0`, the baseline
+  returns `eligible=true`, while `stable` returns `policy_eligible=false` with
+  `policy_reason="different_major"`. These decisions do not apply an update.
+  Tell us whether a successful run helps your real task, or share the first
+  failure, through the [existing feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml).
+  Select **Native setup, verification, or replay** and use public synthetic inputs.
 - **Port a Go function:** use the [contribution contract](../CONTRIBUTING.md)
   and [porting instructions](../AGENTS.md). Preserve the original API contract,
   full input domain, upstream license and independent Go reference. Unsupported

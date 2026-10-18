@@ -106,6 +106,51 @@ class BundleTests(unittest.TestCase):
                     BUNDLE.make_bundle(*args)
                 self.assertEqual({path.name for path in args[1].iterdir()}, {"build-info.json"})
 
+    def batch_report(self, report):
+        report["acceptance"].update(direct_install_batch_rows=3, direct_install_batch_tampered_report_refused=True)
+        report["direct_install"]["batch"] = {
+            "rows": 3, "order": ["write", "read", "write"], "complete_records_exact": True,
+            "replay_bytes_exact": True, "comparison_sha256": "d" * 64,
+            "late_tampered_report": {"exit_code": 1, "stdout_bytes": 0, "diagnostic": {
+                "schema": "gooo/api-policy-revision-diagnostic/v1", "command": "compare", "mode": "replay",
+                "status": "REFUSED", "diagnostics": [{"severity": "error", "code": "REPORT_MISMATCH",
+                    "stage": "verify_comparison", "message": "synthetic changed report", "item_index": 2}]}}}
+
+    def test_batch_guide_and_manifest_require_observed_batch_checks(self):
+        for batch in (False, True):
+            with self.subTest(batch=batch), tempfile.TemporaryDirectory() as directory:
+                args = self.fixture(directory)
+                if batch:
+                    self.batch_report(args[2])
+                result = BUNDLE.make_bundle(*args)
+                with tarfile.open(result["archive"]["path"], "r:gz") as archive:
+                    guide = archive.extractfile("START-HERE.txt").read()
+                    manifest = json.load(archive.extractfile("BUNDLE.json"))
+                self.assertEqual(b"--batch" in guide, batch)
+                self.assertEqual("batch" in manifest["finite_checks"], batch)
+                if batch:
+                    self.assertEqual(manifest["finite_checks"]["batch"], args[2]["direct_install"]["batch"])
+                    self.assertIn(b"cat read-facts.json", guide)
+                    self.assertIn(b"cat write-facts.json", guide)
+                    self.assertIn(b"item_index is zero-based", guide)
+
+    def test_partial_or_failed_batch_proof_cannot_advertise_batch(self):
+        for kind in ("missing-proof", "missing-acceptance", "order", "replay", "tamper-exit", "partial-output", "item-index"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:
+                args = self.fixture(directory)
+                self.batch_report(args[2])
+                direct = args[2]["direct_install"]
+                if kind == "missing-proof": del direct["batch"]
+                elif kind == "missing-acceptance": del args[2]["acceptance"]["direct_install_batch_rows"]
+                elif kind == "order": direct["batch"]["order"] = ["read", "write", "read"]
+                elif kind == "replay": direct["batch"]["replay_bytes_exact"] = False
+                elif kind == "tamper-exit": direct["batch"]["late_tampered_report"]["exit_code"] = 0
+                elif kind == "partial-output": direct["batch"]["late_tampered_report"]["stdout_bytes"] = 1
+                else: direct["batch"]["late_tampered_report"]["diagnostic"]["diagnostics"][0]["item_index"] = 0
+                with self.assertRaises(ValueError):
+                    BUNDLE.make_bundle(*args)
+                self.assertEqual({path.name for path in args[1].iterdir()}, {"build-info.json"})
+
     def test_binary_identity_size_and_symlink_are_refused(self):
         for kind in ("bytes", "oversize", "symlink"):
             with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:

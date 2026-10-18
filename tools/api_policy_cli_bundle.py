@@ -69,6 +69,37 @@ def facts(value, action):
     return raw
 
 
+def checked_batch(direct, accepted):
+    """Advertise batch use only when the producer actually checked that mode."""
+    keys = {"direct_install_batch_rows", "direct_install_batch_tampered_report_refused"}
+    if "batch" not in direct and not keys.intersection(accepted):
+        return None
+    batch = direct.get("batch")
+    need(isinstance(batch, dict) and accepted.get("direct_install_batch_rows") == 3
+         and accepted.get("direct_install_batch_tampered_report_refused") is True,
+         "complete batch acceptance required")
+    need(batch.get("rows") == 3 and batch.get("order") == ["write", "read", "write"]
+         and batch.get("complete_records_exact") is True and batch.get("replay_bytes_exact") is True
+         and re.fullmatch(r"[0-9a-f]{64}", batch.get("comparison_sha256", "")),
+         "ordered complete batch replay not checked")
+    tamper = batch.get("late_tampered_report", {})
+    need(type(tamper.get("exit_code")) is int and tamper["exit_code"] == 1
+         and type(tamper.get("stdout_bytes")) is int and tamper["stdout_bytes"] == 0,
+         "late batch tamper was not refused without output")
+    diagnostic = tamper.get("diagnostic", {})
+    items = diagnostic.get("diagnostics", [])
+    need(diagnostic.get("schema") == "gooo/api-policy-revision-diagnostic/v1"
+         and diagnostic.get("command") == "compare" and diagnostic.get("mode") == "replay"
+         and diagnostic.get("status") == "REFUSED" and len(items) == 1,
+         "batch refusal envelope differs")
+    item = items[0]
+    need(item.get("severity") == "error" and item.get("code") == "REPORT_MISMATCH"
+         and item.get("stage") == "verify_comparison" and type(item.get("item_index")) is int
+         and item["item_index"] == 2 and isinstance(item.get("message"), str) and item["message"],
+         "late batch refusal location differs")
+    return batch
+
+
 def verify_archive(path, expected):
     """Read all gzip bytes (including CRC), then verify the exact flat tar roster."""
     raw = read(path, MAX_ARCHIVE)
@@ -149,6 +180,7 @@ def make_bundle(binary: Path, out: Path, report: dict, go: Path, root: Path) -> 
     need(diagnostic["status"] == "REFUSED" and len(diagnostic["diagnostics"]) == 1
          and diagnostic["diagnostics"][0]["code"] == "REPORT_MISMATCH"
          and diagnostic["diagnostics"][0]["stage"] == "verify_comparison", "tamper refusal differs")
+    batch = checked_batch(direct, accepted)
     text = ("Gooo API policy comparison — " + platform + "\n"
             "Gooo language: https://github.com/kimjooyoon/meta-ontology-go\n"
             "Source guide: https://github.com/kimjooyoon/gooo-go-ports/blob/" + revision + "/examples/api-policy-revision/README.md\n"
@@ -164,6 +196,24 @@ def make_bundle(binary: Path, out: Path, report: dict, go: Path, root: Path) -> 
             "Preserve exit, stdout and stderr; failed writes can leave partial output.\n"
             "Inputs and observations are unsigned supplied facts; replay checks consistency.\n"
             "This command authenticates no live identity and performs no API effect.\n")
+    if batch is not None:
+        text += ("\nCompare a batch with this same command; no rebuild or language runtime is needed.\n"
+                 "Use a fresh private directory for the supplied read/write pair:\n"
+                 "set -eu\n"
+                 "umask 077\n"
+                 "batch_run=\"$(mktemp -d)\"\n"
+                 "printf 'Saved batch files: %s\\n' \"$batch_run\"\n"
+                 "{ printf '[\\n'; cat read-facts.json; printf ',\\n'; cat write-facts.json; printf ']\\n'; } > \"$batch_run/facts.json\"\n"
+                 "./gooo-policy-compare --diagnostics=json --batch --mode baseline --input \"$batch_run/facts.json\" > \"$batch_run/requests.json\" 2> \"$batch_run/baseline.stderr.json\"\n"
+                 "./gooo-policy-compare --diagnostics=json --batch --mode compare --input \"$batch_run/requests.json\" > \"$batch_run/comparisons.json\" 2> \"$batch_run/compare.stderr.json\"\n"
+                 "./gooo-policy-compare --diagnostics=json --batch --mode replay --input \"$batch_run/comparisons.json\" > \"$batch_run/replayed.json\" 2> \"$batch_run/replay.stderr.json\"\n"
+                 "The ordered summaries are UNCHANGED (read) and NEWLY_DENIED (write); both commands succeed.\n"
+                 "comparisons.json and replayed.json are byte-identical. Edit copies of the supplied facts to try your own synthetic cases.\n"
+                 "Use 1..128 complete facts per array. Whole inputs: 4 MiB baseline/compare, 16 MiB replay.\n"
+                 "Outputs including newline: 4 MiB baseline, 16 MiB compare/replay. Byte limits still apply below 128 items.\n"
+                 "Input or saved-report validation failure emits no result and stops this shell sequence.\n"
+                 "Inspect the corresponding stderr file and exit status; item_index is zero-based when the failure belongs to an item.\n"
+                 "Shell output redirection is not an atomic file transaction.\n")
     files = {"gooo-policy-compare": (command, 0o755), "START-HERE.txt": (text.encode(), 0o644),
              "LICENSE": (read(root / "LICENSE", 1 << 20), 0o644),
              "NOTICE-original.md": (read(root / "examples/api-policy-revision/profiles/original/NOTICE.md", 1 << 20), 0o644),
@@ -180,6 +230,8 @@ def make_bundle(binary: Path, out: Path, report: dict, go: Path, root: Path) -> 
                 "policy_identities": identities, "finite_checks": {"cases": cases, "tampered_report_refused": True},
                 "members": {name: {"bytes": len(raw), "sha256": sha(raw), "mode": mode}
                             for name, (raw, mode) in sorted(files.items())}}
+    if batch is not None:
+        manifest["finite_checks"]["batch"] = batch
     files["BUNDLE.json"] = (encoded(manifest), 0o644)
     archive = out / ("gooo-policy-compare-" + platform.replace("/", "-") + ".tar.gz")
     checksums = out / "SHA256SUMS"

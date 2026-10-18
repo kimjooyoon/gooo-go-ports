@@ -182,7 +182,7 @@
         !sameJSON(info.modes, ['baseline', 'compare', 'replay']) || !sameJSON(info.profiles, PROFILES) || !sameJSON(info.limits, limits) ||
         !exactObject(info.bindings, ['original', 'revision']) ||
         !binding(info.bindings.original, 28, 'sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46') ||
-        !binding(info.bindings.revision, 38, 'sha256:24f37267a7f4ad723b7228eeecd55fdc151c8534fa8a95bca19bb73d9b3973d0')) throw new Error('The UI manifest changes the fixed native profiles, complete bindings or limits.');
+        !binding(info.bindings.revision, 38, 'sha256:1bbfaad1219950009acc4460490913eecf230e38338d734a771e171c59c9c760')) throw new Error('The UI manifest changes the fixed native profiles, complete bindings or limits.');
     return manifest;
   }
 
