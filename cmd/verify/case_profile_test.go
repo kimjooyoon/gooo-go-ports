@@ -298,6 +298,8 @@ func TestNativeCaseProfileCompactLFInclusiveBudgetAnd128RowCeiling(t *testing.T)
 }
 
 func TestNativeCaseProfileUUIDCompactFull66PartitionObservation(t *testing.T) {
+	// This test owns its corpus and catalog; fixture files are only read.
+	t.Parallel()
 	suites := allNativeSuites(t)
 	catalog, err := freezeVerificationCatalog("../../verification-catalog.json")
 	if err != nil || len(suites) != 66 {
