@@ -202,9 +202,9 @@ func (p nativeCaseBatchPolicy) prepare(s suite, start int) (nativePreparedCaseBa
 	var measure func(int) (int, error)
 	if pure {
 		batch := s
-		batch.Cases = s.Cases[start:high]
+		batch.Cases = s.Cases[start:start]
 		document := caseDocument(batch).(map[string]any)
-		rows := document["cases"].([]any)
+		key := s.Package + ":" + s.Activity
 		document["cases"] = []any{map[string]any{}}
 		envelope, err := json.Marshal(document)
 		if err != nil {
@@ -217,7 +217,7 @@ func (p nativeCaseBatchPolicy) prepare(s suite, start int) (nativePreparedCaseBa
 		measure = func(end int) (int, error) {
 			count := end - start
 			for len(prefix) <= count {
-				raw, err := json.Marshal(rows[len(prefix)-1])
+				raw, err := json.Marshal(caseDocumentRow(key, s.Cases[start+len(prefix)-1]))
 				if err != nil {
 					// Preserve the original full-document error context/path.
 					// This branch contains no custom marshalers to invoke twice.

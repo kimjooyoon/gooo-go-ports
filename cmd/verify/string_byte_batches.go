@@ -40,9 +40,9 @@ func nativeBatchEnd(s suite, start, rowLimit int) (int, error) {
 	}
 	if pure {
 		batch := s
-		batch.Cases = s.Cases[start:end]
+		batch.Cases = s.Cases[start:start]
 		document := caseDocument(batch).(map[string]any)
-		rows := document["cases"].([]any)
+		key := s.Package + ":" + s.Activity
 		const indent = "  "
 		rowPrefix := indent + indent // top-level cases array contains row objects.
 		// Measure the real schema/shape with one inert object. Remove only its
@@ -62,7 +62,7 @@ func nativeBatchEnd(s suite, start, rowLimit int) (int, error) {
 		measure = func(candidate int) (int, error) {
 			count := candidate - start // always >=1 under the original probes.
 			for len(prefix) <= count {
-				row, err := json.MarshalIndent(rows[len(prefix)-1], rowPrefix, indent)
+				row, err := json.MarshalIndent(caseDocumentRow(key, s.Cases[start+len(prefix)-1]), rowPrefix, indent)
 				if err != nil {
 					return 0, err
 				}
