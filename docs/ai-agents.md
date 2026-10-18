@@ -87,6 +87,38 @@ summary. Run it after saving all three records. It checks the tutorial's bounded
 record profile; it does not execute an agent or authorize effects. The older
 immutable installation snapshots below retain their original manual workflow.
 
+### Install the skill with Tessl
+
+If Tessl is already installed and available on your `PATH`, start in a fresh
+project directory and install only the first-program skill for Codex:
+
+```sh
+tessl install \
+  https://github.com/kimjooyoon/gooo-go-ports/tree/main/.agents/skills/gooo-first-program \
+  --skill gooo-first-program --agent codex --yes
+```
+
+This is a direct GitHub-source installation; a Tessl registry listing or login
+is not required. Review the source before installation. Tessl can initialize the
+new project, create `AGENTS.md` and `.codex/config.toml`, and add its project-local
+skill links and `.tessl` files. Use an empty directory to keep existing agent
+configuration untouched. Inspect `tessl.json` for the resolved source commit;
+the `main` URL follows the current branch rather than pinning a future update.
+
+Then ask your agent to follow the installed
+`.agents/skills/tessl__gooo-first-program/SKILL.md` and perform the first-program
+task above. Installation supplies instructions; the skill still guides separate
+example/toolchain setup and actual Gooo execution.
+
+A macOS trial with Tessl **0.116.0** used the same branch/folder URL format,
+resolved [source commit `495f6a4`](https://github.com/kimjooyoon/gooo-go-ports/commit/495f6a4942243168688e3ea8d57698b003c3dd4e),
+and installed the skill, UI metadata and BSD license byte-for-byte. Its two
+Codex skill links stayed inside the fresh project. Client activation and
+independent use were not tested. Public registry searches by skill name and
+repository URL did not return this skill in that trial; use the direct source
+route. See the official [installation command](https://docs.tessl.io/reference/cli-commands#tessl-install)
+and [registry MCP tools](https://docs.tessl.io/reference/mcp-tools).
+
 ### Install the skill with GitHub CLI
 
 GitHub CLI's preview `skill` commands can fetch this skill directly. This route
