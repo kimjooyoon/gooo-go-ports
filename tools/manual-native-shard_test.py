@@ -49,6 +49,19 @@ def artifact(suffix="control", index=30):
                              "repository_id": 99, "head_repository_id": 99}}
 
 
+def fake_go(root):
+    installation = root.resolve() / "selected-go"
+    (installation / "bin").mkdir(parents=True)
+    (installation / "pkg/tool").mkdir(parents=True)
+    for name in ("src/math/bits/make_tables.go", "src/image/draw/draw.go"):
+        target = installation / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(b"synthetic standard library source")
+    executable = installation / "bin/go"
+    executable.write_bytes(b"synthetic Go binary; never executed")
+    return executable
+
+
 class Metadata(unittest.TestCase):
     def test_artifact_payload_does_not_consume_metadata_response_cap(self):
         class Response(io.BytesIO):
@@ -79,6 +92,57 @@ class Metadata(unittest.TestCase):
         value_run["head_repository"]["id"] = 100
         with self.assertRaises(M.Refused):
             M.validate_run(value_run, context())
+
+    def test_run_status_conclusion_pairs_are_closed(self):
+        for status, conclusion in (("queued", None), ("in_progress", None), ("completed", "success")):
+            value = run()
+            value.update(status=status, conclusion=conclusion)
+            M.validate_run(value, context())
+        for status in ("queued", "in_progress", "completed", "waiting", "requested", "failure", "cancelled", None):
+            for conclusion in (None, "success", "failure", "cancelled", "skipped", "timed_out", "unknown"):
+                if (status, conclusion) in (("queued", None), ("in_progress", None), ("completed", "success")):
+                    continue
+                value = run()
+                value.update(status=status, conclusion=conclusion)
+                with self.subTest(status=status, conclusion=conclusion), self.assertRaises(M.Refused):
+                    M.validate_run(value, context())
+        value = run()
+        del value["conclusion"]
+        with self.assertRaises(M.Refused):
+            M.validate_run(value, context())
+
+    def test_queued_run_requires_current_running_job_and_exact_identity(self):
+        queued = run()
+        queued["status"] = "queued"
+        own = "native-shard-0"
+        live = job(own, 11, finished=False)
+        jobs = {"total_count": 2, "jobs": [job(M.PLAN_JOB), live]}
+        with tempfile.TemporaryDirectory() as temporary, patch.dict(M.os.environ, {"GH_TOKEN": "synthetic"}):
+            api = M.API(context(), Path(temporary))
+            def check(run_value, jobs_value):
+                with patch.object(api, "get", side_effect=[run_value, jobs_value]):
+                    return api.run_jobs([M.PLAN_JOB, own], {M.PLAN_JOB})
+            self.assertEqual(check(queued, jobs)[1][own], live)
+            for status, conclusion in (("queued", None), ("completed", "success"),
+                                       ("completed", "failure"), ("completed", "cancelled"),
+                                       ("in_progress", "failure"), ("in_progress", "cancelled")):
+                bad = copy.deepcopy(jobs)
+                bad["jobs"][1].update(status=status, conclusion=conclusion)
+                with self.subTest(status=status, conclusion=conclusion), self.assertRaises(M.Refused):
+                    check(queued, bad)
+            for key, value in (("run_id", 18), ("run_attempt", 1), ("head_sha", "d" * 40)):
+                bad = copy.deepcopy(jobs)
+                bad["jobs"][1][key] = value
+                with self.subTest(job_key=key), self.assertRaises(M.Refused):
+                    check(queued, bad)
+            with self.assertRaises(M.Refused):
+                check(queued, {"total_count": 1, "jobs": [job(M.PLAN_JOB)]})
+            for key, value in (("id", 18), ("run_attempt", 1), ("head_sha", "d" * 40),
+                               ("event", "pull_request"), ("path", ".github/workflows/ci.yml")):
+                foreign = copy.deepcopy(queued)
+                foreign[key] = value
+                with self.subTest(run_key=key), self.assertRaises(M.Refused):
+                    check(foreign, jobs)
 
     def test_complete_unique_successful_workers_required(self):
         names = [M.PLAN_JOB] + ["native-shard-" + str(i) for i in range(3)]
@@ -279,11 +343,84 @@ class Files(unittest.TestCase):
         self.assertFalse(M.exact({"workers": True}, {"workers": 1}))
 
     def test_child_environment_has_no_workflow_credentials(self):
-        with patch.dict(M.os.environ, {"GH_TOKEN": "synthetic", "GITHUB_TOKEN": "synthetic",
-                                      "ACTIONS_RUNTIME_TOKEN": "synthetic", "GOOO_LAYA_API_KEY": "synthetic"}):
-            child = M.child_environment()
+        with tempfile.TemporaryDirectory() as temporary:
+            go = fake_go(Path(temporary))
+            with patch.dict(M.os.environ, {"GH_TOKEN": "synthetic", "GITHUB_TOKEN": "synthetic",
+                                          "ACTIONS_RUNTIME_TOKEN": "synthetic", "GOOO_LAYA_API_KEY": "synthetic",
+                                          "GOROOT": "/wrong/ambient/root", "PATH": "/ambient/bin"}):
+                child = M.child_environment(go)
         self.assertTrue(all(k not in child for k in ("GH_TOKEN", "GITHUB_TOKEN", "ACTIONS_RUNTIME_TOKEN", "GOOO_LAYA_API_KEY")))
         self.assertEqual(child["GOMAXPROCS"], "2")
+        self.assertEqual(child["GOROOT"], str(go.parent.parent))
+        self.assertEqual(child["PATH"].split(M.os.pathsep)[0], str(go.parent))
+
+    def test_selected_go_layout_rejects_missing_or_foreign_root(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            go = fake_go(root)
+            self.assertEqual(M.go_installation_root(go), go.parent.parent)
+            with self.assertRaises(M.Refused):
+                M.go_installation_root(Path("relative/bin/go"))
+            link = root / "linked-go"
+            link.symlink_to(go)
+            with self.assertRaises(M.Refused):
+                M.go_installation_root(link)
+            (go.parent.parent / "src/math/bits/make_tables.go").unlink()
+            with self.assertRaises(M.Refused):
+                M.go_installation_root(go)
+
+    def test_owned_child_uses_selected_root_without_ambient_credentials(self):
+        class Child:
+            returncode = 0
+            def wait(self, timeout=None):
+                return 0
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            go = fake_go(root)
+            with patch.dict(M.os.environ, {"GOROOT": "/wrong/ambient/root", "GH_TOKEN": "synthetic"}):
+                runner = M.Commands(root, root, go)
+                with patch.object(M.subprocess, "Popen", return_value=Child()) as start:
+                    runner.run("environment", ["synthetic-never-executed"], 10)
+            environment = start.call_args.kwargs["env"]
+            self.assertEqual(environment["GOROOT"], str(go.parent.parent))
+            self.assertNotIn("GH_TOKEN", environment)
+            self.assertEqual(runner.records[0]["goroot"], str(go.parent.parent))
+            self.assertTrue(runner.records[0]["direct_child_waited"])
+
+    def test_bad_sdk_main_path_preserves_first_failure_and_observations(self):
+        for missing in ("src/math/bits/make_tables.go", "pkg/tool"):
+            with self.subTest(missing=missing), tempfile.TemporaryDirectory() as temporary:
+                base = Path(temporary).resolve()
+                checkout = base / "checkout"
+                checkout.mkdir()
+                out = base / "new-output"
+                go = fake_go(base)
+                path = go.parent.parent / missing
+                path.rmdir() if path.is_dir() else path.unlink()
+                argv = ["manual-native-shard.py", "plan", "--root", str(checkout),
+                        "--out", str(out), "--go", str(go)]
+                before_handlers = {n: M.signal.getsignal(n) for n in (M.signal.SIGTERM, M.signal.SIGINT)}
+                with patch("sys.argv", argv), patch.dict(M.os.environ, {"RUNNER_TEMP": str(base)}), \
+                     patch.object(M, "current_context", return_value=context()), \
+                     patch.object(M, "DEADLINE", None), patch.object(M, "API") as api, \
+                     patch.object(M.subprocess, "Popen") as producer:
+                    with self.assertRaises(M.Refused):
+                        M.main()
+                api.assert_not_called()
+                producer.assert_not_called()
+                failure = M.read_json(out / "first-failure.json")
+                observed = M.read_json(out / "observations.json")
+                self.assertEqual(failure["type"], "Refused")
+                self.assertEqual(failure["context"], context())
+                self.assertFalse(failure["native_acceptance"])
+                self.assertEqual(observed["commands"], [])
+                self.assertEqual(observed["transfers"], [])
+                self.assertEqual(observed["selected_go"], str(go))
+                self.assertIsNone(observed["selected_goroot"])
+                self.assertFalse(observed["selected_goroot_validated"])
+                self.assertEqual(observed["sampled_owned_byte_limit"], 3 << 30)
+                self.assertFalse(observed["native_acceptance"])
+                self.assertEqual(before_handlers, {n: M.signal.getsignal(n) for n in before_handlers})
 
     def test_signal_interrupt_waits_for_owned_group_and_retains_command(self):
         class Child:
@@ -302,7 +439,7 @@ class Files(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             child = Child()
-            runner = M.Commands(root, root)
+            runner = M.Commands(root, root, fake_go(root))
             with patch.object(M.subprocess, "Popen", return_value=child), patch.object(M.os, "killpg") as kill:
                 with self.assertRaises(InterruptedError):
                     runner.run("cancelled", ["synthetic-never-executed"], 10)
