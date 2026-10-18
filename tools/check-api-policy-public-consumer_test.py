@@ -117,6 +117,83 @@ class PublicConsumerDiagnosticsTests(unittest.TestCase):
             run.assert_called_once()
 
 
+    def test_exact_public_proxy_timeout_retries_once_and_keeps_first_failure(self):
+        for module, name in ((HELPER.PARENT, "parent-query"),
+                             (HELPER.ORIGINAL, "original-query")):
+            revision = "a" * 40
+            transient = (f"go: {module}@{revision}: invalid version: reading "
+                         f"https://proxy.golang.org/{module}/@v/{revision}.info: 404 Not Found\n"
+                         "\tserver response: not found: fetch timed out\n").encode()
+            for recovered in (True, False):
+                with self.subTest(module=module, recovered=recovered), tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    recorder = HELPER.Recorder(root)
+                    outcomes = [(1, b"", transient),
+                                (0, b'{"Version":"fixed"}\n', b"") if recovered else (1, b"", transient)]
+                    def spawn(argv, **kwargs):
+                        code, stdout, stderr = outcomes.pop(0)
+                        kwargs["stdout"].write(stdout)
+                        kwargs["stderr"].write(stderr)
+                        process = mock.Mock()
+                        process.poll.return_value = process.wait.return_value = code
+                        return process
+                    env = {"GOPROXY": "https://proxy.golang.org", "GOSUMDB": "sum.golang.org"}
+                    with mock.patch.object(HELPER.subprocess, "Popen", side_effect=spawn) as popen, \
+                         mock.patch.object(HELPER.time, "sleep") as sleep:
+                        if recovered:
+                            self.assertEqual(recorder.public_module_query(name, "/go", module, revision, root, env),
+                                             b'{"Version":"fixed"}\n')
+                        else:
+                            with self.assertRaises(HELPER.Refused):
+                                recorder.public_module_query(name, "/go", module, revision, root, env)
+                    self.assertEqual(popen.call_count, 2)
+                    self.assertEqual(popen.call_args_list[0].args, popen.call_args_list[1].args)
+                    self.assertEqual(popen.call_args_list[0].kwargs["env"], env)
+                    self.assertEqual(popen.call_args_list[1].kwargs["env"], env)
+                    self.assertEqual(popen.call_args_list[0].kwargs["cwd"], root)
+                    self.assertEqual(popen.call_args_list[1].kwargs["cwd"], root)
+                    sleep.assert_called_once_with(5)
+                    steps = json.loads((root / "steps.json").read_text())
+                    self.assertEqual([step["name"] for step in steps], [name, name + "-retry-1"])
+                    self.assertEqual([step["exit_code"] for step in steps], [1, 0 if recovered else 1])
+                    self.assertEqual((root / ("01-" + name + ".stderr")).read_bytes(), transient)
+                    self.assertEqual((root / ("02-" + name + "-retry-1.stderr")).read_bytes(),
+                                     b"" if recovered else transient)
+                    self.assertEqual(outcomes, [])
+
+            with tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                recorder = HELPER.Recorder(root)
+                recorder.deadline = HELPER.time.monotonic() + 1
+                env = {"GOPROXY": "https://proxy.golang.org", "GOSUMDB": "sum.golang.org"}
+                with mock.patch.object(recorder, "run", return_value=(1, b"", transient)) as run, \
+                     mock.patch.object(HELPER.time, "sleep") as sleep:
+                    with self.assertRaisesRegex(HELPER.Refused, "backoff"):
+                        recorder.public_module_query(name, "/go", module, revision, root, env)
+                run.assert_called_once()
+                sleep.assert_not_called()
+
+    def test_public_query_permanent_mixed_or_wrong_revision_errors_are_not_retried(self):
+        revision = "a" * 40
+        transient = (f"go: {HELPER.PARENT}@{revision}: invalid version: reading "
+                     f"https://proxy.golang.org/{HELPER.PARENT}/@v/{revision}.info: 404 Not Found\n"
+                     "\tserver response: not found: fetch timed out\n").encode()
+        permanent = (transient.replace(b"fetch timed out", b"unknown revision"),
+                     b"404 Not Found\n", b"401 Unauthorized\n", b"SECURITY ERROR checksum mismatch\n",
+                     transient + b"checksum mismatch\n", transient.replace(revision.encode(), b"b" * 40))
+        for stdout, stderr in [(b"", error) for error in permanent] + [(b"partial", transient)]:
+            with self.subTest(stdout=stdout, stderr=stderr), tempfile.TemporaryDirectory() as directory:
+                recorder = HELPER.Recorder(Path(directory))
+                with mock.patch.object(recorder, "run", return_value=(1, stdout, stderr)) as run, \
+                     mock.patch.object(HELPER.time, "sleep") as sleep:
+                    with self.assertRaises(HELPER.Refused):
+                        recorder.public_module_query("parent-query", "/go", HELPER.PARENT, revision,
+                                                     Path(directory), {"GOPROXY": "https://proxy.golang.org",
+                                                                       "GOSUMDB": "sum.golang.org"})
+                run.assert_called_once()
+                sleep.assert_not_called()
+
+
 class PublicConsumerIdentityTests(unittest.TestCase):
     def root(self):
         return Path(__file__).resolve().parents[1]

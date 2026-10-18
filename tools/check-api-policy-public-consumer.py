@@ -246,6 +246,29 @@ class Recorder:
         require(code == 0, name + " returned nonzero; inspect saved step logs")
         return stdout
 
+    def public_module_query(self, name, go, module, revision, cwd, env):
+        require((name, module) in (("parent-query", PARENT), ("original-query", ORIGINAL))
+                and re.fullmatch(r"[0-9a-f]{40}", revision) is not None,
+                "public query must retain a known module and exact source SHA")
+        require(env.get("GOPROXY") == "https://proxy.golang.org"
+                and env.get("GOSUMDB") == "sum.golang.org",
+                "public query must retain the authenticated proxy environment")
+        argv = [go, "list", "-m", "-json", module + "@" + revision]
+        code, stdout, stderr = self.run(name, argv, cwd, env)
+        transient = (f"go: {module}@{revision}: invalid version: reading "
+                     f"https://proxy.golang.org/{module}/@v/{revision}.info: 404 Not Found\n"
+                     "\tserver response: not found: fetch timed out\n").encode()
+        if code == 1 and not stdout and stderr == transient:
+            # Keep the first numbered streams/step; retry only this exact remote
+            # lookup, using the same SHA, arguments, proxy and checksum policy.
+            require(time.monotonic() + 5 < self.deadline,
+                    "overall deadline leaves no room for public query backoff")
+            time.sleep(5)
+            name += "-retry-1"
+            code, stdout, _ = self.run(name, argv, cwd, env)
+        require(code == 0, name + " returned nonzero; inspect saved step logs")
+        return stdout
+
 
 def module_identity(value, path, revision, version=None):
     require(isinstance(value, dict) and value.get("Path") == path,
@@ -584,11 +607,11 @@ def verify(args, out, report):
         require(re.fullmatch(rb"go version go1\.27\.2 [a-z0-9]+/[a-z0-9]+\n", version) is not None,
                 "installed Go is not exactly 1.27.2")
         report["go_toolchain"] = {"executable": file_ref(go), "version": version.decode().strip()}
-        parent_query = decode(recorder.success("parent-query", [go, "list", "-m", "-json",
-                                                               PARENT + "@" + args.revision], work / "query", env))
+        parent_query = decode(recorder.public_module_query("parent-query", go, PARENT,
+                                                          args.revision, work / "query", env))
         parent_version = module_identity(parent_query, PARENT, args.revision)
-        original_query = decode(recorder.success("original-query", [go, "list", "-m", "-json",
-                                                                   ORIGINAL + "@" + ORIGINAL_COMMIT], work / "query", env))
+        original_query = decode(recorder.public_module_query("original-query", go, ORIGINAL,
+                                                            ORIGINAL_COMMIT, work / "query", env))
         module_identity(original_query, ORIGINAL, ORIGINAL_COMMIT, ORIGINAL_VERSION)
         report["resolved"] = {"parent": parent_query, "original": original_query}
         public_sources = {}
