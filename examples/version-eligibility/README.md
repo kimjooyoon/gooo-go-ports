@@ -12,7 +12,7 @@ Evaluation is automatic; no per-evaluation human approval step is added.
 ## Run the minimum-version rule
 
 Use the repository's [pinned compiler and Go 1.27.2 setup](../../docs/ai-agents.md).
-From the repository root, run the supplied eight inputs and save a replay:
+From the repository root, run the supplied nine inputs and save a replay:
 
 ```sh
 ./.gooo package execute --json --inputs examples/version-eligibility/minimum-inputs.json version-minimum.workspace.json > minimum-eligibility.json
@@ -45,7 +45,7 @@ data; this example does not fetch, authorize or perform a deployment.
 
 ## Try your own current, candidate and minimum
 
-Create one `request.json`; the eight-case fixtures and Go reference inputs do not
+Create one `request.json`; the nine-case fixtures and Go reference inputs do not
 need editing:
 
 ```json
@@ -156,7 +156,7 @@ done
 | Profile | Entry | Cases | Output |
 | --- | --- | --- | --- |
 | `upgrade` (default) | `AssessUpgrade` | 8 current/candidate pairs | 9 facts |
-| `minimum` | `AssessUpdate` | 8 current/candidate/minimum triples | 13 facts |
+| `minimum` | `AssessUpdate` | 9 current/candidate/minimum triples | 13 facts |
 | `compare-boundary` | port `Compare` | 9 long version pairs | Integer order |
 | `stable` | `AssessStableSameMajorUpdate` | 12 current/candidate/minimum triples | 16 facts |
 | `major` | port `Major` | 9 version strings | Text major |
@@ -176,14 +176,20 @@ identifiers, 1,024-byte equality and build metadata, with unequal pairs checked
 in both directions. It protects the port's justified 512-identifier loop bound;
 the byte scans still allow 1,024 bytes. See the [port contract](../../ports/xmod/README.md).
 
+The minimum profile includes `v1.0.0-beta.2` to `v1.0.0-beta.11`, with
+`v1.0.0-beta.1` as its minimum. Numeric prerelease identifiers compare as
+numbers, so `beta.11` is newer than `beta.2`; lexical string order would reverse
+this candidate decision. The [preserved Go tests](../../third_party/x-mod/semver/semver_test.go.txt)
+contain this ordered pair.
+
 The extraction profiles share nine inputs, including invalid syntax, shorthand,
 Unicode, and 1,024-byte major, prerelease and build metadata. Unary Gooo roots
 use the entry name as their input key; multi-input policies use `.input0`,
 `.input1` and `.input2`. The checker constructs these keys.
 
-These are 55 function/policy cases across six profiles; replay does not add
-distinct cases. Local native execution and replay matched the original Go reference for
-the supplied cases. This is finite evidence, not full-package or full-domain
+These are 56 function/policy cases across six profiles; replay does not add
+distinct cases. Local native execution and fresh replay matched the original
+Go reference for the supplied cases. This is finite evidence, not full-package or full-domain
 compatibility. Source identities are in
 `result.program.workspace_image.packages[].sources[].source_digest`, and
 `replayed_from_sha256` identifies the original receipt bytes.
