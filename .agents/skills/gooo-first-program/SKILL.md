@@ -18,7 +18,7 @@ directory and `learn-gooo.workspace.json` before editing. Follow that checkout's
 toolchain pins. Keep the user's existing changes and branch.
 
 For a new workspace, the documented starting point is the immutable
-[example guide](https://github.com/kimjooyoon/gooo-go-ports/blob/a1f18c62101c915bd1aff5262f783077c5fd195f/examples/learn-gooo/README.md).
+[example guide](https://github.com/kimjooyoon/gooo-go-ports/blob/e1e279a25094f55a2ebd926a5e8393448eae418c/examples/learn-gooo/README.md).
 Obtain that repository snapshot in a new task directory. The snapshot uses
 compiler `83928fa4538245abe33b08549da47f8cbdc50ed2` and Go `1.27.2`.
 Its `tools/bootstrap.sh` downloads and builds the pinned compiler; Go toolchain
@@ -77,6 +77,16 @@ identity actually used and the paths of the new execution/replay records.
 Input-only runs report `OBSERVED`: they are finite execution observations, not
 independent expected-output verification or proof for all inputs. State which
 commands actually ran and preserve failures as failures.
+
+For the supplied threshold-60 to threshold-80 edit, a checkout containing
+`cmd/check-tutorial-change` can use the guide's **Compare the saved change**
+command. Give it the original execution, edited execution, edited replay and
+a separate `version --build --json` file. It checks the exact four supplied
+inputs and summarizes their typed fields, source digests and replay links.
+Keep the full records: an unsigned consistency summary does not authenticate
+execution. It does not capture the repository Git revision or support other
+edits; inspect those edits' actual records directly rather than forcing this
+fixed comparison profile.
 
 The example uses signed 64-bit integers. This pinned native profile limits Text
 inputs and each returned Text field to 1,024 UTF-8 bytes. The output label adds a
