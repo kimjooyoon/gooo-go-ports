@@ -1,6 +1,7 @@
 ---
 name: gooo-first-program
 description: Write, run and replay a small Gooo program when a user wants to learn or try Gooo. Use the existing two-file example to make an observable source change; general Go development does not need this skill.
+license: BSD-3-Clause; see LICENSE.
 ---
 
 # Gooo first program

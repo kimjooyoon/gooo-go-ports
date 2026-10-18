@@ -1,6 +1,7 @@
 ---
 name: gooo-etag-project
 description: Export, edit and independently check Gooo HTTP ETag scanner, strong comparison or strong-validator facts against Go. Use when the user requests this Gooo porting workflow; general Go development does not need it.
+license: BSD-3-Clause; see LICENSE.
 ---
 
 # Gooo ETag project
