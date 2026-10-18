@@ -269,6 +269,15 @@ The 36 strict wire and 18 receipt-tamper refusals are also separate from the
 existing port, path-sidecar and Node/Wasm counters. These finite checks do not
 establish production delivery safety or a speedup.
 
+The original [Retry-After facts prototype](examples/retry-after-facts/README.md)
+composes the existing decimal parser with six supplied observations to return
+fourteen typed cooldown facts. Its portable headless verifier compares113 inputs
+with a fresh independent Go reference, replays saved receipts and checks eleven
+receipt mutations. The starter's60-second delay and59 elapsed seconds produce
+`WAIT` with one remaining second. `READY_TO_REASSESS` requires current facts and
+a fresh policy assessment; it never grants dispatch authority. This separate
+full-only CI sidecar leaves the82-suite port catalog unchanged.
+
 The separate [Agent Mesh service-pattern example](examples/agentmesh-service-policy/README.md)
 adds a bounded adaptation of `MatchServicePattern` and an original three-field
 comparison for one supplied request before and after a pattern change. Its
@@ -323,6 +332,7 @@ unchanged. See the [domain, strict input route and reference mapping](ports/net/
 | Diagnose a header automatically | [Header facts](examples/header-field-facts/README.md) | Strictly preprocess external JSON, preserve both decoded strings, and inspect the first invalid byte and twelve returned fields |
 | Plan and apply one diagnostic header locally | [Original header-addition policy](examples/diagnostic-header-addition/README.md) and [generated host](examples/header-addition-host/README.md) | Combine header/payload diagnostics with exact request facts, inspect the first refusal, and atomically recheck a local revision before applying |
 | Assess an uncertain API operation automatically | [Automatic redelivery policy](examples/automatic-redelivery/README.md) | Supply nine bound facts, inspect all fifteen returned fields and save a replay; eligibility requires a later host-owned atomic claim |
+| Inspect a selected Retry-After delay | [Original cooldown facts](examples/retry-after-facts/README.md) | Preserve six supplied observations, distinguish WAIT/UNKNOWN/DOMAIN_REFUSED/READY_TO_REASSESS, and verify113 inputs headlessly; no timer or retry sender |
 | Choose an encoding for an API component | [URL context facts](examples/url-context-facts/README.md) | Preserve one original Text, compare path-segment and query-value encodings with byte lengths and change facts, and replay the ten-field Gooo result |
 | Classify four IPv4 octets in Gooo | [IPv4 address facts](examples/ipv4-address-facts/README.md) | Preserve all four supplied integers, distinguish invalid input from valid addresses, and inspect six overlapping classification flags |
 | Compare two IPv4 rule scopes | [IPv4 rule-pair facts](examples/ipv4-rule-pair/README.md) | Preserve typed inputs, distinguish invalid/non-comparable rules and inspect a conflict witness |

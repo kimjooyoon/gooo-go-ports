@@ -67,6 +67,36 @@ URL_COMPONENT_CLAUSES = (
     '.processes_closed == true', '.owned_work_removed == true',
     "' out/url-components/summary.json",
 )
+RETRY_AFTER_STEP = 'Verify the original native Retry-After facts sidecar'
+RETRY_AFTER_COMMAND = 'python3 -I -B examples/retry-after-facts/verify.py --root "$PWD" --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/retry-after-facts"'
+RETRY_AFTER_COMMON = 'python3 -I -B examples/retry-after-facts/request_inputs_test.py -v'
+RETRY_AFTER_COMMON_COMMANDS = (
+    RETRY_AFTER_COMMON,
+    'python3 -I -B examples/retry-after-facts/receipts_test.py -v',
+    'python3 -I -B examples/retry-after-facts/verify_test.py -v',
+)
+RETRY_AFTER_COMMON_BLOCK = ''.join('          ' + command + '\n'
+                                 for command in RETRY_AFTER_COMMON_COMMANDS)
+# Removing only this integration must recover the complete reviewed72-step
+# workflow. This is a source-integrity lock, not evidence of hosted execution.
+RETRY_AFTER_PRIOR_WORKFLOW_SHA = 'd996f6bd1487b125c03510fd797978d2bbb5995717084267be64dffe82bcafb8'
+RETRY_AFTER_ARTIFACT_LINE = '            out/retry-after-facts/\n'
+RETRY_AFTER_CLAUSES = (
+    '.schema == "gooo/retry-after-facts-verification/v1"',
+    '.status == "NATIVE_ORACLE_AND_SAVED_REPLAY_MATCH"',
+    '.cases == 113', '.batches == 2',
+    '.typed_fields_per_phase == 1582', '.input_scalar_checks_per_phase == 678',
+    '.native_runs_per_phase == 4',
+    '(.negative_controls | length) == 11',
+    '([.negative_controls[].name] | unique | length) == 11',
+    'all(.negative_controls[]; .status == "REFUSED_AT_EXPECTED_BOUNDARY")',
+    '.starter_gate_bound == true', '.starter_case_index == 4',
+    '.processes_closed == true', '.owned_work_removed == true',
+    '.model_calls == 0', '.finite_total == 0',
+    '.native_acceptance == false', '.catalog_extended == false',
+    '.producer_authenticated == false',
+    "' out/retry-after-facts/summary.json",
+)
 # The exporter reads only reviewed source expectations. Actual native evidence is
 # compared later; it is never an input to the expected-data command.
 NATIVE_EXPECTED_COMMAND = 'python3 -I -B tools/native_verification_contract.py --root "$PWD" > out/native-contract-expected.json'
@@ -373,6 +403,7 @@ LAST_INDEX_INPUT_COMMAND = 'python3 -I -B tools/check-last-index-inputs.py --roo
 LAST_INDEX_INPUT_UNIT = "python3 -I -B tools/check-last-index-inputs_test.py -v"
 LAST_INDEX_INPUT_STEP_SHA = "f04c072dbdb48ea1a4ddddfae92d2c427685bc250dca2209ff02357c3c883082"
 HEAVY = {
+    RETRY_AFTER_STEP,
     URL_COMPONENT_STEP,
     LAST_INDEX_INPUT_STEP_NAME,
     AUTOBOT_STEP,
@@ -414,7 +445,7 @@ UPLOADS = {"Upload offline policy experiment evidence", "Upload execution and di
 DOC_STEPS = {"Report documentation-only native scope", "Preserve documentation scope and compiler identity"}
 NATIVE_COMMAND = re.compile(
     r"(?:\.gooo\s+package\s+(?:execute|replay)|\./cmd/(?:verify|check-unicode|check-literal-text-report)\b|"
-    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text|last-index)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py|tools/check-path-facts\.py|tools/check-url-components\.py|tools/check-redelivery-policy\.py|tools/check-ipv4\.py|tools/check-header-facts-inputs\.py|tools/check-header-addition-inputs\.py|tools/check-header-addition-host\.py|examples/versioned-grant-change/verify\.py|examples/editable-api-policy/run\.py|tools/check-editable-policy-helpers\.py|examples/autobot-resolver/verify\.py)"
+    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text|last-index)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py|tools/check-path-facts\.py|tools/check-url-components\.py|tools/check-redelivery-policy\.py|tools/check-ipv4\.py|tools/check-header-facts-inputs\.py|tools/check-header-addition-inputs\.py|tools/check-header-addition-host\.py|examples/versioned-grant-change/verify\.py|examples/editable-api-policy/run\.py|tools/check-editable-policy-helpers\.py|examples/autobot-resolver/verify\.py|examples/retry-after-facts/verify\.py)"
 )
 PUBLIC_CONSUMER_COMMAND = 'python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer" --bundle-cli'
 PUBLIC_CONSUMER_CLAUSES = (
@@ -489,6 +520,7 @@ ETAG_PROJECT_CLAUSES = (
     "' out/etag-project-evidence/summary.json",
 )
 POLICY_HEAVY = {
+    RETRY_AFTER_STEP,
     URL_COMPONENT_STEP,
     AUTOBOT_STEP,
     EDITABLE_POLICY_STEP,
@@ -517,6 +549,7 @@ POLICY_DOC_ARTIFACT = 'Preserve documentation-only policy scope'
 POLICY_HEADER_SHA = '3d5466a5dfca722bf38d6d81f26ff8f425188d473f6a0b9ae46cdd528d209cfe'
 POLICY_SETUP_SHA = '5ccf03022b3caeab1cc1fd46bbb3fa8b54e4fc0addba08c7d39d17f449f51703'
 POLICY_STEP_SHAS = {
+    RETRY_AFTER_STEP: 'dc085e1f10c92c7bdeee62e8f217a86e34e17dc631e7680932edd426b409e471',
     URL_COMPONENT_STEP: '55e04dd80bd317c698ae9326310b5830aebd07069b281b29ecd297cb5d4f5d6e',
     AUTOBOT_STEP: '7bb749f5983a2e35fdcde9067fc1646833bf2034b036e28b7e5f60f0a4fb7006',
     EDITABLE_POLICY_STEP: '91ecaa02b36b1a4f39fdeb3b932282373fa1e6137038e4b2e52a70290350a8cc',
@@ -592,6 +625,14 @@ def job_steps(chunk):
     return header, named, unnamed
 
 
+def without_retry_integration(text):
+    """Project away the sidecar, contiguous pure-control group and artifact."""
+    _, policy, _ = job_steps(workflow_jobs(text)['policy-native-checks'])
+    return text.replace(policy[RETRY_AFTER_STEP], '', 1).replace(
+        RETRY_AFTER_COMMON_BLOCK, '', 1).replace(
+        RETRY_AFTER_ARTIFACT_LINE, '', 1)
+
+
 def named_steps(text):
     jobs = workflow_jobs(text)
     all_named, native_unnamed = {}, []
@@ -611,15 +652,18 @@ def named_steps(text):
         expected = {'Classify the exact checked PR tree'} | MOVED | OBSERVER_UPLOADS if job == 'observer-checks' else (COMMON | HEAVY | PREFLIGHT | UPLOADS | DOC_STEPS) - MOVED - POLICY_HEAVY - INDEPENDENT_HEAVY - {POLICY_PILOT_UPLOAD}
         require(set(named) == expected, "producer step roster changed: " + job)
         if job == 'observer-checks':
-            require(hashlib.sha256(named['Check the Go observer'].encode()).hexdigest() == OBSERVER_STEP_SHA and
+            observer = named['Check the Go observer']
+            require(observer.count(RETRY_AFTER_COMMON_BLOCK) == 1,
+                    'Retry-After controls must add exactly one contiguous unconditional common group')
+            prior_retry_observer = observer.replace(RETRY_AFTER_COMMON_BLOCK, '', 1)
+            require(hashlib.sha256(prior_retry_observer.encode()).hexdigest() == OBSERVER_STEP_SHA and
                     hashlib.sha256(named['Check pinned Unicode table generation'].encode()).hexdigest() == GENERATOR_STEP_SHA,
                     "common observer/generator commands changed without guard review")
-            observer = named['Check the Go observer']
             shard_unit_line = '          ' + NATIVE_SHARD_REFERENCE_UNIT + '\n'
-            require(observer.count(shard_unit_line) == 1 and
-                    hashlib.sha256(observer.replace(shard_unit_line, '', 1).encode()).hexdigest() == OBSERVER_WITH_URL_STEP_SHA,
+            require(prior_retry_observer.count(shard_unit_line) == 1 and
+                    hashlib.sha256(prior_retry_observer.replace(shard_unit_line, '', 1).encode()).hexdigest() == OBSERVER_WITH_URL_STEP_SHA,
                     'shard reference controls may only add one unconditional line to the prior observer bytes')
-            prior_observer = observer.replace(shard_unit_line, '', 1)
+            prior_observer = prior_retry_observer.replace(shard_unit_line, '', 1)
             url_unit_line = '          ' + URL_COMPONENT_COMMON + '\n'
             require(prior_observer.count(url_unit_line) == 1 and
                     hashlib.sha256(prior_observer.replace(url_unit_line, '', 1).encode()).hexdigest() == OBSERVER_PRIOR_STEP_SHA,
@@ -661,12 +705,14 @@ def policy_steps(chunk):
     require(set(POLICY_STEP_SHAS) == expected - {'Classify the exact checked PR tree'},
             'policy exact reviewed step digest roster changed')
     for name, sha in POLICY_STEP_SHAS.items():
-        require(hashlib.sha256(named[name].encode()).hexdigest() == sha,
+        reviewed = (named[name].replace(RETRY_AFTER_ARTIFACT_LINE, '', 1)
+                    if name == POLICY_UPLOAD else named[name])
+        require(hashlib.sha256(reviewed.encode()).hexdigest() == sha,
                 'policy step must retain its exact source/commands/gates: ' + name)
     public = named[INDEPENDENT_STEPS[0]]
     require(chunk.index(unnamed[0]) < chunk.index(classifier) < chunk.index(unnamed[1]) < chunk.index(public) < chunk.index(identity),
             'policy checkout/classifier/Go/public-consumer/compiler order changed')
-    ordered = (URL_COMPONENT_STEP,) + INDEPENDENT_STEPS[1:] + ('Verify the offline decision-policy experiment', 'Verify the imported CEL API policy',
+    ordered = (URL_COMPONENT_STEP, RETRY_AFTER_STEP) + INDEPENDENT_STEPS[1:] + ('Verify the offline decision-policy experiment', 'Verify the imported CEL API policy',
                'Verify the sealed API policy revision comparison', 'Verify the Agent Mesh service-pattern adaptation',
                ETAG_PROJECT_STEP, VERSIONED_GRANT_STEP, EDITABLE_POLICY_STEP, AUTOBOT_STEP, POLICY_PILOT_UPLOAD, POLICY_UPLOAD, POLICY_DOC_REPORT, POLICY_DOC_ARTIFACT)
     previous = chunk.index(identity)
@@ -678,8 +724,9 @@ def policy_steps(chunk):
     for name in POLICY_HEAVY | INDEPENDENT_HEAVY:
         require(field(named[name], 'if') == FULL, 'policy native producer must stay full-only: ' + name)
     url_components = named[URL_COMPONENT_STEP]
-    require(identity + url_components + named[INDEPENDENT_STEPS[1]] in chunk,
-            'URL sidecar must immediately follow the pinned compiler and precede the unchanged path sidecar')
+    retry = named[RETRY_AFTER_STEP]
+    require(identity + url_components + retry + named[INDEPENDENT_STEPS[1]] in chunk,
+            'compiler, URL, Retry-After and unchanged path sidecars must remain adjacent in reviewed order')
     require(field(url_components, 'timeout-minutes') == '5' and
             literal_commands(url_components) == [URL_COMPONENT_COMMAND],
             'URL sidecar must retain its finite timeout and current root/compiler/Go/fresh output command')
@@ -687,6 +734,13 @@ def policy_steps(chunk):
         require(url_components.count(token) == 1, 'URL component summary gate missing: ' + token)
     require('set -euo pipefail' in url_components and '|| true' not in url_components,
             'URL component execution and summary must preserve the first failure')
+    require(field(retry, 'timeout-minutes') == '8' and
+            literal_commands(retry) == [RETRY_AFTER_COMMAND],
+            'Retry-After sidecar must retain its finite timeout and current root/compiler/Go/fresh output command')
+    for token in RETRY_AFTER_CLAUSES:
+        require(retry.count(token) == 1, 'Retry-After native/replay summary gate missing: ' + token)
+    require('set -euo pipefail' in retry and '|| true' not in retry,
+            'Retry-After execution and summary must preserve the first failure')
     exported = named[ETAG_PROJECT_STEP]
     require(field(exported, 'if') == FULL and field(exported, 'timeout-minutes') == '8',
             'exported ETag check must keep the fail-closed full-only scope and finite timeout')
@@ -738,12 +792,15 @@ def policy_steps(chunk):
             field(named[POLICY_DOC_ARTIFACT], 'if') == 'always() && ' + DOCS,
             'policy docs-only scope must be explicit and separate')
     require('name: gooo-go-ports-policy-evidence\n' in named[POLICY_UPLOAD] and
-            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n            out/etag-project/\n            out/etag-project-evidence/\n            out/api-policy-public-consumer/\n            out/api-policy-original-download.json\n            out/url-components/\n            out/path-facts/\n            out/redelivery-policy/\n            out/ipv4/\n            out/versioned-grant-change/\n            out/editable-api-policy/\n            out/editable-api-policy-helpers/\n            out/autobot-resolver/\n' in named[POLICY_UPLOAD] and
+            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n            out/etag-project/\n            out/etag-project-evidence/\n            out/api-policy-public-consumer/\n            out/api-policy-original-download.json\n            out/url-components/\n            out/retry-after-facts/\n            out/path-facts/\n            out/redelivery-policy/\n            out/ipv4/\n            out/versioned-grant-change/\n            out/editable-api-policy/\n            out/editable-api-policy-helpers/\n            out/autobot-resolver/\n' in named[POLICY_UPLOAD] and
             'if-no-files-found: warn\n' in named[POLICY_UPLOAD] and 'retention-days: 14\n' in named[POLICY_UPLOAD],
             'policy output artifacts must include current identity, original policy outputs and both exported ETag directories')
     url_artifact_line = '            out/url-components/\n'
-    require(named[POLICY_UPLOAD].count(url_artifact_line) == 1 and
-            hashlib.sha256(named[POLICY_UPLOAD].replace(url_artifact_line, '', 1).encode()).hexdigest() == POLICY_PRIOR_UPLOAD_SHA,
+    require(named[POLICY_UPLOAD].count(RETRY_AFTER_ARTIFACT_LINE) == 1,
+            'Retry-After artifacts must add exactly one complete failure-safe output directory')
+    prior_retry_upload = named[POLICY_UPLOAD].replace(RETRY_AFTER_ARTIFACT_LINE, '', 1)
+    require(prior_retry_upload.count(url_artifact_line) == 1 and
+            hashlib.sha256(prior_retry_upload.replace(url_artifact_line, '', 1).encode()).hexdigest() == POLICY_PRIOR_UPLOAD_SHA,
             'URL artifact may only add one path to the complete prior failure-safe policy upload')
     require('name: gooo-go-ports-policy-documentation-scope\n' in named[POLICY_DOC_ARTIFACT] and
             'path: out/ci-scope.json\n' in named[POLICY_DOC_ARTIFACT] and
@@ -798,9 +855,9 @@ def validate(text):
             hashlib.sha256(deploy[len(prefix):].encode()).hexdigest() == DEPLOY_BODY_SHA,
             "deployment may change only its reviewed direct dependency/status prefix")
     named, unnamed = named_steps(text)
-    require(len(HEAVY) == 37, "full-scope native step count changed")
-    # These72 are declarations in the source, not proof of hosted job outcomes.
-    require(len(re.findall(r'^      - (?:name|uses):', text, re.M)) == 72,
+    require(len(HEAVY) == 38, "full-scope native step count changed")
+    # These73 are declarations in the source, not proof of hosted job outcomes.
+    require(len(re.findall(r'^      - (?:name|uses):', text, re.M)) == 73,
             'reviewed workflow source step count changed')
     require(set(named) == COMMON | HEAVY | PREFLIGHT | UPLOADS | DOC_STEPS | OBSERVER_UPLOADS,
             "step roster changed without guard review")
@@ -811,7 +868,10 @@ def validate(text):
     native_job = workflow_jobs(text)['native-execution']
     policy_job = workflow_jobs(text)['policy-native-checks']
     policy_named, policy_unnamed = policy_steps(policy_job)
-    prior_workflow = text.replace(policy_named[URL_COMPONENT_STEP], '', 1).replace(
+    prior_retry_workflow = without_retry_integration(text)
+    require(hashlib.sha256(prior_retry_workflow.encode()).hexdigest() == RETRY_AFTER_PRIOR_WORKFLOW_SHA,
+            'Retry-After may add only its sidecar, common pure-control group and complete artifact path')
+    prior_workflow = prior_retry_workflow.replace(policy_named[URL_COMPONENT_STEP], '', 1).replace(
         '          ' + URL_COMPONENT_COMMON + '\n', '', 1).replace(
         '          ' + NATIVE_SHARD_REFERENCE_UNIT + '\n', '', 1).replace(
         '            out/url-components/\n', '', 1)
@@ -857,6 +917,9 @@ def validate(text):
     require(comparison.count(NATIVE_ALL_POPULATION_ASSERTION) == 1,
             "every native suite identity/case/batch/replay must match its ordered expected row")
     observer = named["Check the Go observer"]
+    for command in RETRY_AFTER_COMMON_COMMANDS:
+        require(literal_commands(observer).count(command) == 1 and text.count(command) == 1,
+                'each Retry-After pure control suite must run once unconditionally as common checks: ' + command)
     require(literal_commands(observer).count(URL_COMPONENT_COMMON) == 1 and
             text.count(URL_COMPONENT_COMMON) == 1,
             'URL component pure controls must run once unconditionally as common checks')
@@ -1195,6 +1258,111 @@ def validate(text):
 
 
 class WorkflowScopeTests(unittest.TestCase):
+    def test_retry_after_additions_preserve_the_entire_prior_workflow_and_required_order(self):
+        validate(self.text)
+        jobs = workflow_jobs(self.text)
+        policy, _ = policy_steps(jobs['policy-native-checks'])
+        step = policy[RETRY_AFTER_STEP]
+        prior = without_retry_integration(self.text)
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), RETRY_AFTER_PRIOR_WORKFLOW_SHA)
+        self.assertEqual(len(re.findall(r'^      - (?:name|uses):', prior, re.M)), 72)
+        self.assertIn(policy[URL_COMPONENT_STEP] + step + policy[INDEPENDENT_STEPS[1]],
+                      jobs['policy-native-checks'])
+        for replacement in ('', step + step,
+                            step.replace(FULL, DOCS, 1),
+                            step.replace(FULL, "steps.change-scope.outputs.docs_only == 'false'", 1),
+                            step.replace('        if: ' + FULL + '\n', '', 1),
+                            step.replace('timeout-minutes: 8', 'timeout-minutes: 40', 1),
+                            step.replace('        run: |', '        continue-on-error: true\n        run: |', 1)):
+            with self.subTest(scope_or_step=replacement[:100]), self.assertRaises(ValueError):
+                validate(self.text.replace(step, replacement, 1))
+        without = self.text.replace(step, '', 1)
+        _, native, _ = job_steps(jobs['native-execution'])
+        for anchor in (policy[URL_COMPONENT_STEP], policy['Verify the original automatic redelivery policy'],
+                       native['Compare the ports with Go and replay every batch']):
+            with self.subTest(wrong_order_or_owner=anchor[:80]), self.assertRaises(ValueError):
+                validate(without.replace(anchor, step + anchor, 1))
+
+    def test_retry_after_current_command_and_all_native_summary_boundaries_are_required(self):
+        policy, _ = policy_steps(workflow_jobs(self.text)['policy-native-checks'])
+        step = policy[RETRY_AFTER_STEP]
+        self.assertTrue(NATIVE_COMMAND.search(RETRY_AFTER_COMMAND))
+        self.assertEqual(literal_commands(step), [RETRY_AFTER_COMMAND])
+        for token in (RETRY_AFTER_COMMAND,) + RETRY_AFTER_CLAUSES:
+            self.assertEqual(step.count(token), 1)
+            with self.subTest(missing_command_or_gate=token), self.assertRaises(ValueError):
+                validate(self.text.replace(step, step.replace(token, '', 1), 1))
+        mutations = (
+            ('--root "$PWD"', '--root out/old-snapshot'),
+            ('--compiler "$PWD/.gooo"', '--compiler /tmp/unbound'),
+            ('--go "$(go env GOROOT)/bin/go"', '--go go'),
+            ('--out "$PWD/out/retry-after-facts"', '--out out/old-receipts'),
+            ('.cases == 113', '.cases == 1'), ('.batches == 2', '.batches >= 1'),
+            ('.typed_fields_per_phase == 1582', '.typed_fields_per_phase == 14'),
+            ('.input_scalar_checks_per_phase == 678', '.input_scalar_checks_per_phase == 6'),
+            ('.native_runs_per_phase == 4', '.native_runs_per_phase == 1'),
+            ('(.negative_controls | length) == 11', '(.negative_controls | length) > 0'),
+            ('([.negative_controls[].name] | unique | length) == 11',
+             '([.negative_controls[].name] | unique | length) == 1'),
+            ('all(.negative_controls[]; .status == "REFUSED_AT_EXPECTED_BOUNDARY")',
+             'any(.negative_controls[]; .status == "REFUSED_AT_EXPECTED_BOUNDARY")'),
+            ('.starter_gate_bound == true', '.starter_gate_bound == false'),
+            ('.starter_case_index == 4', '.starter_case_index == 0'),
+            ('.processes_closed == true', '.processes_closed == false'),
+            ('.owned_work_removed == true', '.owned_work_removed == false'),
+            ('.model_calls == 0', '.model_calls >= 0'),
+            ('.finite_total == 0', '.finite_total > 0'),
+            ('.native_acceptance == false', '.native_acceptance == true'),
+            ('.catalog_extended == false', '.catalog_extended == true'),
+            ('.producer_authenticated == false', '.producer_authenticated == true'),
+            ('set -euo pipefail', 'set +e'),
+            (RETRY_AFTER_COMMAND, RETRY_AFTER_COMMAND + ' || true'),
+        )
+        for before, after in mutations:
+            self.assertIn(before, step)
+            with self.subTest(weakened_gate=before), self.assertRaises(ValueError):
+                validate(self.text.replace(step, step.replace(before, after, 1), 1))
+
+    def test_retry_after_all_pure_control_suites_remain_unconditional_common_checks(self):
+        observer = named_steps(self.text)[0]['Check the Go observer']
+        self.assertEqual(observer.count(RETRY_AFTER_COMMON_BLOCK), 1)
+        self.assertEqual(hashlib.sha256(observer.replace(RETRY_AFTER_COMMON_BLOCK, '', 1).encode()).hexdigest(),
+                         OBSERVER_STEP_SHA)
+        for command in RETRY_AFTER_COMMON_COMMANDS:
+            line = '          ' + command + '\n'
+            self.assertFalse(NATIVE_COMMAND.search(command))
+            self.assertEqual(observer.count(line), 1)
+            for replacement in ('', line + line,
+                                '          if false; then\n  ' + line + '          fi\n',
+                                '          ' + RETRY_AFTER_COMMAND + '\n'):
+                with self.subTest(command=command, common_control=replacement[:100]), self.assertRaises(ValueError):
+                    validate(self.text.replace(observer, observer.replace(line, replacement, 1), 1))
+        changed = observer.replace(RETRY_AFTER_COMMON_BLOCK,
+                                   ''.join('          ' + command + '\n'
+                                           for command in reversed(RETRY_AFTER_COMMON_COMMANDS)), 1)
+        with self.assertRaises(ValueError):
+            validate(self.text.replace(observer, changed, 1))
+
+    def test_retry_after_artifacts_are_complete_on_failure_and_never_docs_only(self):
+        policy, _ = policy_steps(workflow_jobs(self.text)['policy-native-checks'])
+        upload, docs = policy[POLICY_UPLOAD], policy[POLICY_DOC_ARTIFACT]
+        self.assertEqual(upload.count(RETRY_AFTER_ARTIFACT_LINE), 1)
+        self.assertEqual(hashlib.sha256(upload.replace(RETRY_AFTER_ARTIFACT_LINE, '', 1).encode()).hexdigest(),
+                         POLICY_STEP_SHAS[POLICY_UPLOAD])
+        self.assertEqual(field(upload, 'if'), 'always() && ' + FULL)
+        for replacement in ('', RETRY_AFTER_ARTIFACT_LINE + RETRY_AFTER_ARTIFACT_LINE,
+                            '            out/retry-after-facts/summary.json\n'):
+            with self.subTest(incomplete_artifact=replacement), self.assertRaises(ValueError):
+                validate(self.text.replace(upload, upload.replace(RETRY_AFTER_ARTIFACT_LINE, replacement, 1), 1))
+        with self.assertRaises(ValueError):
+            validate(self.text.replace(docs, docs.replace('path: out/ci-scope.json',
+                                                        'path: out/retry-after-facts/', 1), 1))
+        for condition in ('', FULL, DOCS, 'always()'):
+            replacement = upload.replace('        if: always() && ' + FULL + '\n',
+                                         '        if: ' + condition + '\n' if condition else '', 1)
+            with self.subTest(artifact_scope=condition), self.assertRaises(ValueError):
+                validate(self.text.replace(upload, replacement, 1))
+
     def test_url_component_source_scope_order_and_original_workflow_bytes_are_exact(self):
         validate(self.text)
         jobs = workflow_jobs(self.text)
@@ -1202,11 +1370,12 @@ class WorkflowScopeTests(unittest.TestCase):
         step = policy[URL_COMPONENT_STEP]
         identity = policy['Build and identify the pinned compiler from a clean checkout']
         path = policy['Verify the isolated native path facts sidecar']
-        self.assertIn(identity + step + path, jobs['policy-native-checks'])
-        # A source roster is not a claim that GitHub has executed these72 steps.
-        self.assertEqual(len(re.findall(r'^      - (?:name|uses):', self.text, re.M)), 72)
-        self.assertEqual(len(HEAVY), 37)
-        prior = self.text.replace(step, '', 1).replace(
+        retry = policy[RETRY_AFTER_STEP]
+        self.assertIn(identity + step + retry + path, jobs['policy-native-checks'])
+        # A source roster is not a claim that GitHub has executed these73 steps.
+        self.assertEqual(len(re.findall(r'^      - (?:name|uses):', self.text, re.M)), 73)
+        self.assertEqual(len(HEAVY), 38)
+        prior = without_retry_integration(self.text).replace(step, '', 1).replace(
             '          ' + URL_COMPONENT_COMMON + '\n', '', 1).replace(
             '          ' + NATIVE_SHARD_REFERENCE_UNIT + '\n', '', 1).replace(
             '            out/url-components/\n', '', 1)
@@ -1263,7 +1432,8 @@ class WorkflowScopeTests(unittest.TestCase):
         self.assertFalse(NATIVE_COMMAND.search(URL_COMPONENT_COMMON))
         line = '          ' + URL_COMPONENT_COMMON + '\n'
         self.assertEqual(observer.count(line), 1)
-        prior_observer = observer.replace('          ' + NATIVE_SHARD_REFERENCE_UNIT + '\n', '', 1)
+        prior_observer = observer.replace(RETRY_AFTER_COMMON_BLOCK, '', 1).replace(
+            '          ' + NATIVE_SHARD_REFERENCE_UNIT + '\n', '', 1)
         self.assertEqual(hashlib.sha256(prior_observer.replace(line, '', 1).encode()).hexdigest(),
                          OBSERVER_PRIOR_STEP_SHA)
         for replacement in ('', line + line,
@@ -1277,7 +1447,8 @@ class WorkflowScopeTests(unittest.TestCase):
         upload, docs = policy[POLICY_UPLOAD], policy[POLICY_DOC_ARTIFACT]
         line = '            out/url-components/\n'
         self.assertEqual(upload.count(line), 1)
-        self.assertEqual(hashlib.sha256(upload.replace(line, '', 1).encode()).hexdigest(),
+        prior_retry_upload = upload.replace(RETRY_AFTER_ARTIFACT_LINE, '', 1)
+        self.assertEqual(hashlib.sha256(prior_retry_upload.replace(line, '', 1).encode()).hexdigest(),
                          POLICY_PRIOR_UPLOAD_SHA)
         for replacement in ('', line + line):
             with self.subTest(artifact_path=replacement), self.assertRaises(ValueError):

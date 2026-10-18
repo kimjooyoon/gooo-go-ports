@@ -70,6 +70,9 @@ jobs:
           python3 -I -B tools/check-ipv4_test.py
           python3 -I -B tools/prefix_rule_pair_receipts_test.py
           python3 -I -B tools/check-url-components_test.py
+          python3 -I -B examples/retry-after-facts/request_inputs_test.py -v
+          python3 -I -B examples/retry-after-facts/receipts_test.py -v
+          python3 -I -B examples/retry-after-facts/verify_test.py -v
           python3 -I -B tools/generate-rule-pair-corpus.py --check
           python3 -I -B tools/generate-payload-corpus.py --check
           python3 tools/bootstrap.test.py
@@ -1233,6 +1236,25 @@ jobs:
             (.negative_controls | length) == 27 and (.negative_controls | unique | length) == 27 and
             .processes_closed == true and .owned_work_removed == true
           ' out/url-components/summary.json
+      - name: Verify the original native Retry-After facts sidecar
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 8
+        run: |
+          set -euo pipefail
+          python3 -I -B examples/retry-after-facts/verify.py --root "$PWD" --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/retry-after-facts"
+          jq -e '
+            .schema == "gooo/retry-after-facts-verification/v1" and
+            .status == "NATIVE_ORACLE_AND_SAVED_REPLAY_MATCH" and
+            .cases == 113 and .batches == 2 and
+            .typed_fields_per_phase == 1582 and .input_scalar_checks_per_phase == 678 and
+            .native_runs_per_phase == 4 and
+            (.negative_controls | length) == 11 and ([.negative_controls[].name] | unique | length) == 11 and
+            all(.negative_controls[]; .status == "REFUSED_AT_EXPECTED_BOUNDARY") and
+            .starter_gate_bound == true and .starter_case_index == 4 and
+            .processes_closed == true and .owned_work_removed == true and
+            .model_calls == 0 and .finite_total == 0 and
+            .native_acceptance == false and .catalog_extended == false and .producer_authenticated == false
+          ' out/retry-after-facts/summary.json
       - name: Verify the isolated native path facts sidecar
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
@@ -1673,6 +1695,7 @@ jobs:
             out/api-policy-public-consumer/
             out/api-policy-original-download.json
             out/url-components/
+            out/retry-after-facts/
             out/path-facts/
             out/redelivery-policy/
             out/ipv4/
