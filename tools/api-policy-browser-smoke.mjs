@@ -472,8 +472,8 @@ function readPackage(options) {
   const source = manifest.source;
   keys(source, ['head', 'tree', 'dirty', 'tracked_file_count', 'native_sources', 'ui_files', 'native_fixtures', 'native_fixture_receipt', 'published_sources', 'historical_git_objects_checked']);
   assert.match(source.head, /^[0-9a-f]{40}$/u); assert.match(source.tree, /^[0-9a-f]{40}$/u); assert.equal(typeof source.dirty, 'boolean');
-  assert.equal(source.tracked_file_count, 84); assert.equal(source.historical_git_objects_checked, false);
-  assert.equal(Object.keys(source.native_sources).length, 84);
+  assert.equal(source.tracked_file_count, 85); assert.equal(source.historical_git_objects_checked, false);
+  assert.equal(Object.keys(source.native_sources).length, 85);
   for (const [name, record] of Object.entries(source.native_sources)) {
     keys(record, ['bytes', 'sha256', 'mode']); assert.ok(name.startsWith('examples/api-policy-revision/'));
     assert.ok(['100644', '100755'].includes(record.mode));

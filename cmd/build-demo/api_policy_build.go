@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-const apiPolicyCurrentSourceFiles = 84
+const apiPolicyCurrentSourceFiles = 85
 
 type apiPolicyBuild struct {
 	site, dir, root     string
