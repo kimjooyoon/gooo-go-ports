@@ -151,6 +151,76 @@ class SelectedPackageEntityTests(unittest.TestCase):
                          {'source':'ports/unicode/simple_fold.gooo','id':'gooo://go/unicode/SimpleFold',
                           'inputs':['gooo://std/integer'],'output':'gooo://std/integer'})
 
+    def test_all_current82_entry_projections_and_five_imported_type_entries(self):
+        expected=H.reviewed_contract(ROOT)
+        catalog=R.load((ROOT/'verification-catalog.json').read_bytes())
+        owners={name:package['path'] for package in catalog['packages'] for name in package['sources']}
+        sources={name:(ROOT/name).read_bytes() for name in owners}
+        entries={}
+        for suite in expected.document['suites']:
+            with self.subTest(index=suite['index'],activity=suite['activity']):
+                entries[suite['index']]=R.entry_contract(suite,owners,sources)
+        self.assertEqual(len(entries),82)
+        rectangle='gooo://go/image/rectangle'
+        for index,activity,inputs,output in [
+            (34,'CropPlan',[rectangle,rectangle],'gooo://example/crop-planner/result'),
+            (41,'DragCropPlan',[rectangle,rectangle],'gooo://example/crop-planner/result'),
+            (44,'PixelBounds',[rectangle,rectangle],'gooo://example/fixed-pixel-bounds/result'),
+            (51,'MattePixel',['gooo://go/image/color/nrgba','gooo://go/image/color/rgb'],'gooo://go-ports/examples/alpha-matte/result'),
+            (58,'FitsCrop',[rectangle,rectangle],'gooo://std/boolean')]:
+            self.assertEqual(expected.document['suites'][index]['activity'],activity)
+            self.assertEqual(entries[index]['inputs'],inputs);self.assertEqual(entries[index]['output'],output)
+        self.assertEqual(entries[35]['id'],'gooo://go/unicode/SimpleFold')
+
+    def test_explicit_package_import_union_resolves_selected_dependency_entity(self):
+        suite={'package':'go/example','activity':'Entry','source_paths':['entry.gooo','imports.gooo','dependency.gooo','foreign.gooo']}
+        owners={'entry.gooo':'go/example','imports.gooo':'go/example','dependency.gooo':'go/dependency','foreign.gooo':'go/foreign'}
+        sources={'entry.gooo':b'activity Entry(Integer) -> Integer id "gooo://example/Entry" computes `return input`\n',
+                 'imports.gooo':b'import dependency "go/dependency"\n',
+                 'dependency.gooo':b'entity Integer id "gooo://dependency/integer"\n',
+                 'foreign.gooo':b'entity Integer id "gooo://foreign/integer"\n'}
+        expected={'source':'entry.gooo','id':'gooo://example/Entry','inputs':['gooo://dependency/integer'],'output':'gooo://dependency/integer'}
+        self.assertEqual(R.entry_contract(suite,owners,sources),expected)
+        sources['imports.gooo']=b'import "go/dependency"\n'
+        suite['source_paths'].reverse()
+        self.assertEqual(R.entry_contract(suite,owners,sources),expected)
+
+    def imported_fixture(self):
+        suite={'package':'go/example','activity':'Entry','source_paths':['entry.gooo','a.gooo','b.gooo']}
+        owners={'entry.gooo':'go/example','a.gooo':'go/a','b.gooo':'go/b'}
+        sources={'entry.gooo':b'import a "go/a"\nimport b "go/b"\nactivity Entry(Integer) -> Integer id "gooo://example/Entry" computes `return input`\n',
+                 'a.gooo':b'entity Integer id "gooo://shared/integer"\n',
+                 'b.gooo':b'entity Integer id "gooo://shared/integer"\n'}
+        return suite,owners,sources
+
+    def test_imported_same_identity_deduplicates_and_local_type_has_priority(self):
+        suite,owners,sources=self.imported_fixture()
+        self.assertEqual(R.entry_contract(suite,owners,sources)['inputs'],['gooo://shared/integer'])
+        sources['b.gooo']=b'entity Integer id "gooo://different/integer"\n'
+        sources['entry.gooo']=b'entity Integer id "gooo://local/integer"\n'+sources['entry.gooo']
+        entry=R.entry_contract(suite,owners,sources)
+        self.assertEqual(entry['inputs'],['gooo://local/integer']);self.assertEqual(entry['output'],'gooo://local/integer')
+
+    def test_distinct_imported_identities_are_ambiguous(self):
+        suite,owners,sources=self.imported_fixture()
+        sources['b.gooo']=b'entity Integer id "gooo://different/integer"\n'
+        with self.assertRaisesRegex(RuntimeError,'ambiguous imported entity type'):
+            R.entry_contract(suite,owners,sources)
+
+    def test_missing_or_unselected_import_and_transitive_entity_refuse(self):
+        suite,owners,sources=self.imported_fixture()
+        for imported in ('go/missing','go/not-selected'):
+            with self.subTest(imported=imported):
+                changed=dict(sources);changed['entry.gooo']=('import dep "'+imported+'"\nactivity Entry(Integer) -> Integer id "gooo://example/Entry" computes `return input`\n').encode()
+                if imported == 'go/not-selected':
+                    changed['not-selected.gooo']=b'entity Integer id "gooo://unselected/integer"\n';owners['not-selected.gooo']=imported
+                with self.assertRaisesRegex(RuntimeError,'imported package must be selected'):
+                    R.entry_contract(suite,owners,changed)
+        sources['entry.gooo']=b'import a "go/a"\nactivity Entry(Integer) -> Integer id "gooo://example/Entry" computes `return input`\n'
+        sources['a.gooo']=b'import b "go/b"\n'
+        with self.assertRaisesRegex(RuntimeError,'explicit in selected package or declared imports'):
+            R.entry_contract(suite,owners,sources)
+
     def test_same_package_crossfile_entities_and_identical_repetition(self):
         suite={'package':'go/example','activity':'Entry','source_paths':['entry.gooo','shared.gooo','foreign.gooo']}
         owners={'entry.gooo':'go/example','shared.gooo':'go/example','foreign.gooo':'go/foreign'}

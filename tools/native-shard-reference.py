@@ -240,23 +240,45 @@ def assignments(suites,count):
 
 
 def entry_contract(suite,owners,source_bytes):
-    # A selected package can declare shared entities in another selected source
-    # file. Merge that package's entire selected closure before resolving the
-    # entry; declarations from dependencies must never supply missing types.
-    texts=[(name,source_bytes[name].decode('utf-8',errors='strict'))
-           for name in suite['source_paths'] if owners[name] == suite['package']]
-    entities={}
-    for name,raw in texts:
-        for entity,ident in re.findall(r'(?m)^entity\s+(\w+)\s+id\s+"([^"\n]+)"',raw):
-            need(entity not in entities or entities[entity] == ident,
-                 'conflicting entity IDs in selected package: '+entity)
-            entities[entity]=ident
+    # Pinned compiler839 resolves unqualified names from the local package first,
+    # then from entity exports of spec.Imports. Omitted manifest imports are the
+    # union of imports in every selected source of that package, not just the
+    # source containing the entry. Imported entities are not transitively reexported.
+    packages={}
+    for name in suite['source_paths']:
+        packages.setdefault(owners[name],[]).append((name,source_bytes[name].decode('utf-8',errors='strict')))
+    need(suite['package'] in packages,'entry package must be selected')
+    texts=packages[suite['package']]
+    imports=set()
+    for _,raw in texts:
+        for imported in re.findall(r'(?m)^[ \t]*import[ \t]+(?:[A-Za-z_]\w*[ \t]+)?"([^"\n]+)"',raw):
+            relative(imported)
+            need(imported in packages,'explicit imported package must be selected: '+imported)
+            imports.add(imported)
+    def declared_entities(package):
+        entities={}
+        for _,raw in packages[package]:
+            for entity,ident in re.findall(r'(?m)^entity\s+(\w+)\s+id\s+"([^"\n]*)"',raw):
+                need(ident,'source entity requires stable ID: '+entity)
+                need(entity not in entities or entities[entity] == ident,
+                     'conflicting entity IDs in selected package: '+entity)
+                entities[entity]=ident
+        return entities
+    local=declared_entities(suite['package'])
+    dependencies=[declared_entities(package) for package in sorted(imports)]
+    def resolve(name):
+        if name in local:
+            return local[name]
+        identities={entities[name] for entities in dependencies if name in entities}
+        need(identities,'source entry entities must be explicit in selected package or declared imports: '+name)
+        need(len(identities) == 1,'ambiguous imported entity type: '+name)
+        return next(iter(identities))
     selected=[]
     for name,raw in texts:
         for match in re.finditer(r'(?m)^activity\s+'+re.escape(suite['activity'])+r'\s*\(([^)]*)\)\s*->\s*(\w+)\s+id\s+"([^"\n]+)"',raw):
             types=[v.strip() for v in match[1].split(',')]
-            need(types and all(t in entities for t in types) and match[2] in entities,'source entry entities must be explicit in selected package')
-            selected.append({'source':name,'id':match[3],'inputs':[entities[t] for t in types],'output':entities[match[2]]})
+            need(types and all(types),'source entry input types required')
+            selected.append({'source':name,'id':match[3],'inputs':[resolve(t) for t in types],'output':resolve(match[2])})
     need(len(selected) == 1, 'one current source-declared entry required')
     return selected[0]
 
