@@ -1,0 +1,55 @@
+{
+  "schema": "gooo/service-grant-mcp-native-reference/v1",
+  "runtime_module": "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy",
+  "runtime_version": "v0.0.0-20261018191951-2aa0f96805f1",
+  "runtime_sum": "h1:up4zblnjEjgePzF/8OZb3qd0tgSJ33J/WvMZY3IHl8A=",
+  "compiler_source_sha": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+  "generation_sha256": "sha256:40ae704abbf2cae1974d2eec51cec2564c8d72dd44536b31c9c4f55f71fc0f85",
+  "origin": "Retained actual macOS arm64 native CLI input/output bytes; Linux amd64 results independently matched on the same immutable module.",
+  "linux_original_run": 39172753776,
+  "packaging_pull_request": 174,
+  "finite_controls": 4,
+  "references": [
+    {
+      "path": "control-1.input",
+      "bytes": 83,
+      "sha256": "eaa120445bed9038ab6d9a4e71949344f6d92c44bad73fc7d713b8fc17c0dcb4"
+    },
+    {
+      "path": "control-1.stdout",
+      "bytes": 9695,
+      "sha256": "0617f412a5a00e9ad3e76c9c1ecca6acbef76b366f5f838a607dbdb9ed0944f9"
+    },
+    {
+      "path": "control-2.input",
+      "bytes": 84,
+      "sha256": "947f10f40652f17eb97c9f7d7a372a493a9eca5e24976ab7dbbe9c1863bac34e"
+    },
+    {
+      "path": "control-2.stdout",
+      "bytes": 9683,
+      "sha256": "15060c44af10f8e8e02078557240332d7198ceb4faad9550d1d21439209231c0"
+    },
+    {
+      "path": "control-3.input",
+      "bytes": 92,
+      "sha256": "a9f4c61b9e64f46c6c81b94610ed3d5181b735d3532eb10417b6e52da01c2bbc"
+    },
+    {
+      "path": "control-3.stdout",
+      "bytes": 9701,
+      "sha256": "8a3832df10d53c674d2f15c51d5b275876307396fb451283cd8cf6499a98b4f3"
+    },
+    {
+      "path": "control-4.input",
+      "bytes": 96,
+      "sha256": "d744fc59eceac73a8cc68430047424c5b065137f4807daea9a411318a220cc0a"
+    },
+    {
+      "path": "control-4.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "full_library_or_producer_authentication": false
+}
