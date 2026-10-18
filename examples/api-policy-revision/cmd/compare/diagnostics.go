@@ -14,6 +14,7 @@ import (
 type refusalError struct {
 	code, stage, mode, format string
 	cause                     error
+	itemIndex                 *int
 }
 
 func (err *refusalError) Error() string { return err.cause.Error() }
@@ -35,10 +36,11 @@ func policyCause(code, stage string, cause error) (string, string) {
 }
 
 type diagnostic struct {
-	Severity string `json:"severity"`
-	Code     string `json:"code"`
-	Stage    string `json:"stage"`
-	Message  string `json:"message"`
+	Severity  string `json:"severity"`
+	Code      string `json:"code"`
+	Stage     string `json:"stage"`
+	Message   string `json:"message"`
+	ItemIndex *int   `json:"item_index,omitempty"`
 }
 
 // A diagnostic is optional output. Its failure cannot replace the refusal or
@@ -58,7 +60,7 @@ func writeRefusal(stderr io.Writer, cause error) error {
 	}{
 		Schema: "gooo/api-policy-revision-diagnostic/v1", Command: "compare",
 		Mode: refusal.mode, Status: "REFUSED",
-		Diagnostics: []diagnostic{{Severity: "error", Code: refusal.code, Stage: refusal.stage, Message: cause.Error()}},
+		Diagnostics: []diagnostic{{Severity: "error", Code: refusal.code, Stage: refusal.stage, Message: cause.Error(), ItemIndex: refusal.itemIndex}},
 	}
 	raw, err := json.Marshal(envelope)
 	if err != nil {

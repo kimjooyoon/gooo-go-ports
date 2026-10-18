@@ -30,7 +30,7 @@ ORIGINAL = "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
 ORIGINAL_COMMIT = "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"
 ORIGINAL_VERSION = "v0.0.0-20261014100709-8cddcc4e65af"
 ORIGINAL_GENERATION = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
-PARENT_GENERATION = "sha256:24f37267a7f4ad723b7228eeecd55fdc151c8534fa8a95bca19bb73d9b3973d0"
+PARENT_GENERATION = "sha256:1bbfaad1219950009acc4460490913eecf230e38338d734a771e171c59c9c760"
 COMPILER = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 REPOSITORY = "https://github.com/kimjooyoon/gooo-go-ports"
 # Exact owned fixture bytes and their independently reviewed source identities.
@@ -50,6 +50,11 @@ KNOWN_CONSUMER_FIXTURES = {
         "compiler_source_sha": "83928fa4538245abe33b08549da47f8cbdc50ed2",
         "original_generation_sha256": "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46",
         "revision_generation_sha256": "sha256:24f37267a7f4ad723b7228eeecd55fdc151c8534fa8a95bca19bb73d9b3973d0",
+    },
+    "a352120b8c419a1c56bfabcd937ce7e8c671b7356f02bd47c05595579a3dcabd": {
+        "compiler_source_sha": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+        "original_generation_sha256": "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46",
+        "revision_generation_sha256": "sha256:1bbfaad1219950009acc4460490913eecf230e38338d734a771e171c59c9c760",
     },
 }
 
@@ -391,8 +396,60 @@ def check_installed_cli(recorder, binary, observed, work, env):
             and isinstance(details[0]["message"], str) and bool(details[0]["message"]),
             "installed tamper refusal code/stage differs")
     return {"cases": cases, "runtime_empty_path": env["PATH"] == "",
+            "batch": check_installed_batch(recorder, binary, observed, work, env),
             "tampered_report": {"field": "differences.reason", "exit_code": code,
                                 "stdout_bytes": len(stdout), "diagnostic": diagnostic}}
+
+
+def check_installed_batch(recorder, binary, observed, work, env):
+    # Compare each complete result with the independently executed Go caller,
+    # including an intentional duplicate to check order/multiplicity retention.
+    by_action = {case["action"]: case["report"] for case in observed["cases"]}
+    expected = [by_action[action] for action in ("write", "read", "write")]
+    input_path = work / "batch-facts.json"
+    save_json(input_path, [report["before"]["facts"] for report in expected])
+    expected_baseline = [{"before_profile": report["before_profile"],
+                          "candidate_profile": report["candidate_profile"], "before": report["before"]}
+                         for report in expected]
+    compared = None
+    for mode in ("baseline", "compare", "replay"):
+        code, stdout, stderr = recorder.run("batch-" + mode,
+            [binary, "--diagnostics=json", "--batch", "--mode", mode, "--input", input_path],
+            work / "fresh-cwd", env, 30)
+        require(code == 0 and not stderr and same_typed_json(decode(stdout),
+                expected_baseline if mode == "baseline" else expected), "installed batch " + mode + " differs")
+        if mode == "replay":
+            require(stdout == compared, "installed batch replay bytes differ")
+        if mode == "compare":
+            compared = stdout
+        input_path = work / ("batch-" + mode + ".json")
+        input_path.write_bytes(stdout)
+        input_path.chmod(0o600)
+    tampered = decode(compared)
+    tampered[2]["differences"]["reason"] = not tampered[2]["differences"]["reason"]
+    tampered_path = work / "batch-tampered.json"
+    save_json(tampered_path, tampered)
+    code, stdout, stderr = recorder.run("batch-late-tampered-replay",
+        [binary, "--diagnostics=json", "--batch", "--mode", "replay", "--input", tampered_path],
+        work / "fresh-cwd", env, 30)
+    require(code == 1 and not stdout, "installed batch emitted partial results after a late refusal")
+    diagnostic = decode(stderr)
+    details = diagnostic.get("diagnostics")
+    require(type(diagnostic) is dict
+            and set(diagnostic) == {"schema", "command", "mode", "status", "diagnostics"}
+            and diagnostic.get("schema") == "gooo/api-policy-revision-diagnostic/v1"
+            and diagnostic.get("command") == "compare" and diagnostic.get("mode") == "replay"
+            and diagnostic.get("status") == "REFUSED" and type(details) is list and len(details) == 1,
+            "installed batch refusal context differs")
+    detail = details[0]
+    require(type(detail) is dict and set(detail) == {"severity", "code", "stage", "message", "item_index"}
+            and detail.get("severity") == "error" and type(detail.get("message")) is str and bool(detail["message"])
+            and detail.get("code") == "REPORT_MISMATCH" and detail.get("stage") == "verify_comparison"
+            and type(detail.get("item_index")) is int and detail["item_index"] == 2,
+            "installed batch first failing index/code differs")
+    return {"rows": 3, "order": ["write", "read", "write"], "complete_records_exact": True,
+            "replay_bytes_exact": True, "comparison_sha256": sha(compared),
+            "late_tampered_report": {"exit_code": code, "stdout_bytes": len(stdout), "diagnostic": diagnostic}}
 
 
 def cached_file(value, cache):
@@ -706,6 +763,7 @@ def verify(args, out, report):
             "runtime_empty_path": True, "consumer_no_replace_or_workspace": True,
             "direct_install": True, "direct_install_cases": 2,
             "direct_install_tampered_report_refused": True,
+            "direct_install_batch_rows": 3, "direct_install_batch_tampered_report_refused": True,
             "substitution_stdout_bytes": 0, "original_version": ORIGINAL_VERSION,
             "original_commit": ORIGINAL_COMMIT,
         }

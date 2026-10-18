@@ -31,6 +31,7 @@ func run(args []string, stdin io.Reader, stdout io.Writer) error {
 	flags.SetOutput(io.Discard)
 	mode := flags.String("mode", "compare", "baseline, compare, or replay")
 	inputPath := flags.String("input", "", "read one JSON object from this path; otherwise stdin")
+	batch := flags.Bool("batch", false, "read an ordered JSON array of 1..128 existing mode inputs")
 	diagnostics := flags.String("diagnostics", "text", "stderr format: text or json")
 	refuse := func(code, stage string, cause error) error {
 		return &refusalError{code: code, stage: stage, mode: *mode, format: *diagnostics, cause: cause}
@@ -71,41 +72,89 @@ func run(args []string, stdin io.Reader, stdout io.Writer) error {
 	if len(raw) > maxBytes {
 		return refuse("INPUT_LIMIT_EXCEEDED", "read_input", fmt.Errorf("input exceeds %d MiB", maxBytes>>20))
 	}
-	var result any
-	switch *mode {
-	case "baseline":
-		facts, err := original.DecodeAPI(raw)
-		if err != nil {
-			return refuse("INPUT_INVALID", "decode_facts", err)
-		}
-		result, err = revision.Baseline(facts)
-		if err != nil {
-			return policyRefusal("EVALUATION_FAILED", "evaluate_baseline", err)
-		}
-	case "compare":
-		request, err := revision.DecodeCompareRequest(raw)
-		if err != nil {
-			return policyRefusal("INPUT_INVALID", "decode_request", err)
-		}
-		result, err = revision.Compare(request)
-		if err != nil {
-			return policyRefusal("COMPARISON_FAILED", "compare", err)
-		}
-	case "replay":
-		report, err := revision.DecodeComparisonReport(raw)
-		if err != nil {
-			return policyRefusal("INPUT_INVALID", "decode_report", err)
-		}
-		result, err = revision.VerifyComparison(report)
-		if err != nil {
-			return policyRefusal("REPLAY_FAILED", "verify_comparison", err)
+	evaluate := func(raw []byte) (any, error) {
+		switch *mode {
+		case "baseline":
+			facts, err := original.DecodeAPI(raw)
+			if err != nil {
+				return nil, refuse("INPUT_INVALID", "decode_facts", err)
+			}
+			result, err := revision.Baseline(facts)
+			if err != nil {
+				return nil, policyRefusal("EVALUATION_FAILED", "evaluate_baseline", err)
+			}
+			return result, nil
+		case "compare":
+			request, err := revision.DecodeCompareRequest(raw)
+			if err != nil {
+				return nil, policyRefusal("INPUT_INVALID", "decode_request", err)
+			}
+			result, err := revision.Compare(request)
+			if err != nil {
+				return nil, policyRefusal("COMPARISON_FAILED", "compare", err)
+			}
+			return result, nil
+		default: // The mode was validated before reading input.
+			report, err := revision.DecodeComparisonReport(raw)
+			if err != nil {
+				return nil, policyRefusal("INPUT_INVALID", "decode_report", err)
+			}
+			result, err := revision.VerifyComparison(report)
+			if err != nil {
+				return nil, policyRefusal("REPLAY_FAILED", "verify_comparison", err)
+			}
+			return result, nil
 		}
 	}
-	output, err := json.Marshal(result)
-	if err != nil {
-		return refuse("OUTPUT_ENCODING_FAILED", "marshal_output", err)
+	var output []byte
+	if *batch {
+		var rows []json.RawMessage
+		if err := json.Unmarshal(raw, &rows); err != nil || len(rows) == 0 || len(rows) > 128 {
+			return refuse("INPUT_INVALID", "decode_batch", errors.New("batch requires one JSON array of 1..128 mode inputs"))
+		}
+		limit := revision.MaxReportBytes
+		if *mode == "baseline" {
+			limit = revision.MaxInputBytes
+		}
+		output = []byte{'['}
+		for i, row := range rows {
+			result, err := evaluate(row)
+			if err != nil {
+				var refusal *refusalError
+				if errors.As(err, &refusal) {
+					refusal.itemIndex = &i
+				}
+				return err
+			}
+			encoded, err := json.Marshal(result)
+			if err != nil {
+				return &refusalError{code: "OUTPUT_ENCODING_FAILED", stage: "marshal_output", mode: *mode, format: *diagnostics, cause: err, itemIndex: &i}
+			}
+			comma := 0
+			if i != 0 {
+				comma = 1
+			}
+			// Include the closing bracket and LF before appending any item.
+			if len(output)+comma+len(encoded)+2 > limit {
+				return &refusalError{code: "OUTPUT_LIMIT_EXCEEDED", stage: "check_output_limit", mode: *mode, format: *diagnostics, cause: fmt.Errorf("batch output exceeds %d MiB", limit>>20), itemIndex: &i}
+			}
+			if comma != 0 {
+				output = append(output, ',')
+			}
+			output = append(output, encoded...)
+		}
+		output = append(output, ']', '\n')
+	} else {
+		result, err := evaluate(raw)
+		if err != nil {
+			return err
+		}
+		output, err = json.Marshal(result)
+		if err != nil {
+			return refuse("OUTPUT_ENCODING_FAILED", "marshal_output", err)
+		}
+		output = append(output, '\n')
 	}
-	output = append(output, '\n')
 	written, err := stdout.Write(output)
 	if err != nil {
 		return refuse("OUTPUT_IO", "write_stdout", err)

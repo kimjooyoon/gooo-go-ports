@@ -254,22 +254,23 @@ class PublicConsumerIdentityTests(unittest.TestCase):
                 "original_generation_sha256": "sha256:" + HELPER.sha(original),
                 "revision_generation_sha256": "sha256:" + HELPER.sha(current)}
 
-    def prior_source(self, generation):
+    def prior_source(self, generation, asset_count=37):
         raw = self.source()
         current = self.wanted()["revision_generation_sha256"].encode()
         self.assertEqual(raw.count(current), 1)
         old = raw.replace(current, generation.encode(), 1)
-        # Both historical callers bound the original 37-asset packaging.
+        # Historical callers retain their own original asset roster.
         current_count = b"\t\tlen(report.After.Bindings.Assets) != 38 ||\n"
         self.assertEqual(old.count(current_count), 1)
         return old.replace(current_count,
-                           b"\t\tlen(report.After.Bindings.Assets) != 37 ||\n", 1)
+                           f"\t\tlen(report.After.Bindings.Assets) != {asset_count} ||\n".encode(), 1)
 
     def test_current_known_fixture_matches_independent_source_manifests(self):
         self.assertEqual(set(HELPER.KNOWN_CONSUMER_FIXTURES), {
             "8c9f27b3993d0810431cf33817ad6cb1ed726738eb90a68dfc52c4876c99713f",
             "ed24455944545110d0aae02209845086b5a8aafc9ea408a07240ee576cd59617",
-            "ca4fc8ab3a120898ae43dd5f46bf1d4273502a77563211871ccaaa5b71662bd2"})
+            "ca4fc8ab3a120898ae43dd5f46bf1d4273502a77563211871ccaaa5b71662bd2",
+            "a352120b8c419a1c56bfabcd937ce7e8c671b7356f02bd47c05595579a3dcabd"})
         with mock.patch.object(HELPER.subprocess, "run", side_effect=AssertionError("no process")):
             self.assertIsNone(HELPER.verify_fixture_identities(self.source(), self.wanted()))
 
@@ -279,10 +280,12 @@ class PublicConsumerIdentityTests(unittest.TestCase):
                 "8c9f27b3993d0810431cf33817ad6cb1ed726738eb90a68dfc52c4876c99713f",
             "sha256:af9452cce284a6b944adf50c62f6b9f5c1a0647d6f1794d3549dd5dae7ff43ee":
                 "ed24455944545110d0aae02209845086b5a8aafc9ea408a07240ee576cd59617",
+            "sha256:24f37267a7f4ad723b7228eeecd55fdc151c8534fa8a95bca19bb73d9b3973d0":
+                "ca4fc8ab3a120898ae43dd5f46bf1d4273502a77563211871ccaaa5b71662bd2",
         }
         for generation, source_hash in historical.items():
             with self.subTest(generation=generation):
-                old = self.prior_source(generation)
+                old = self.prior_source(generation, 38 if generation == "sha256:24f37267a7f4ad723b7228eeecd55fdc151c8534fa8a95bca19bb73d9b3973d0" else 37)
                 self.assertNotEqual(old, self.source())
                 self.assertEqual(HELPER.sha(old), source_hash)
                 with self.assertRaisesRegex(HELPER.Refused, "identity tuple"):
