@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -236,5 +238,339 @@ func TestSuiteEvidenceDirectoryCollisionIsRejected(t *testing.T) {
 	suites := []suite{{Package: "go/a-b", Activity: "Check"}, {Package: "go/a/b", Activity: "Check"}}
 	if err := validateSuiteEvidenceDirectories(t.TempDir(), suites); err == nil {
 		t.Fatal("accepted distinct suites with colliding output paths")
+	}
+}
+
+func TestNativeSuiteDispatchOrderUsesCaseLengthsAndOriginalIndexTies(t *testing.T) {
+	suites := workerTestSuites(5)
+	for index, count := range []int{2, 5, 0, 5, 2} {
+		suites[index].Cases = make([]testCase, count)
+	}
+	for _, test := range []struct {
+		value string
+		order nativeSuiteOrder
+		want  []int
+	}{
+		{"", nativeSuiteOrderCatalog, []int{0, 1, 2, 3, 4}},
+		{"catalog", nativeSuiteOrderCatalog, []int{0, 1, 2, 3, 4}},
+		{"largest-corpus-first", nativeSuiteOrderLargestCorpusFirst, []int{1, 3, 0, 4, 2}},
+	} {
+		t.Run(test.value, func(t *testing.T) {
+			order, err := parseNativeSuiteOrder(test.value)
+			if err != nil || order != test.order {
+				t.Fatal("parse order", order, err)
+			}
+			got, err := nativeSuiteDispatchOrder(suites, order)
+			if err != nil || !reflect.DeepEqual(got, test.want) {
+				t.Fatal("dispatch order", got, err)
+			}
+		})
+	}
+	for _, value := range []string{"largest", " catalog", "catalog ", "LARGEST-CORPUS-FIRST"} {
+		if _, err := parseNativeSuiteOrder(value); err == nil {
+			t.Fatal("unknown order accepted", value)
+		}
+		if _, err := nativeSuiteDispatchOrder(suites, nativeSuiteOrder(value)); err == nil {
+			t.Fatal("unknown typed order accepted", value)
+		}
+	}
+	for index, count := range []int{2, 5, 0, 5, 2} {
+		if suites[index].Activity != fmt.Sprintf("Suite%02d", index) || len(suites[index].Cases) != count {
+			t.Fatal("dispatch planning mutated the original suites", index)
+		}
+	}
+}
+
+func TestNativeSuiteWorkersDefaultCatalogAndExplicitOrderPreserveOriginalResults(t *testing.T) {
+	for _, order := range [][]int{nil, {4, 2, 5, 0, 3, 1}} {
+		ctx := workerTestContext(t)
+		suites := workerTestSuites(6)
+		called := []int{}
+		verify := func(_ context.Context, index int, s suite) (nativeSuiteResult, error) {
+			called = append(called, index)
+			return nativeSuiteResult{Observation: observation{Activity: s.Activity, Cases: index + 1}}, nil
+		}
+		var results []nativeSuiteResult
+		var err error
+		want := order
+		if order == nil {
+			want = []int{0, 1, 2, 3, 4, 5}
+			results, err = runNativeSuites(ctx, suites, 1, verify)
+		} else {
+			results, err = runNativeSuitesOrdered(ctx, suites, 1, order, verify)
+		}
+		if err != nil || !reflect.DeepEqual(called, want) || len(results) != len(suites) {
+			t.Fatal("dispatch changed or coverage missing", called, err)
+		}
+		for index, result := range results {
+			if result.Observation.Activity != suites[index].Activity || result.Observation.Cases != index+1 {
+				t.Fatal("result no longer matches original suite index", index)
+			}
+		}
+	}
+}
+
+func TestNativeSuiteWorkersRejectInvalidPermutationBeforeAnyCallback(t *testing.T) {
+	for _, order := range [][]int{nil, {0, 1}, {0, 1, 2, 3}, {-1, 1, 2}, {0, 1, 3}, {0, 1, 1}} {
+		calls := 0
+		result, err := runNativeSuitesOrdered(context.Background(), workerTestSuites(3), 2, order,
+			func(context.Context, int, suite) (nativeSuiteResult, error) {
+				calls++
+				return nativeSuiteResult{}, nil
+			})
+		if result != nil || err == nil || calls != 0 {
+			t.Fatal("invalid permutation started work", order, calls, err)
+		}
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	calls := 0
+	_, err := runNativeSuitesOrdered(ctx, workerTestSuites(3), 2, []int{2, 1, 0},
+		func(context.Context, int, suite) (nativeSuiteResult, error) {
+			calls++
+			return nativeSuiteResult{}, nil
+		})
+	if !errors.Is(err, context.Canceled) || calls != 0 {
+		t.Fatal("already canceled parent started work", calls, err)
+	}
+}
+
+func TestNativeSuiteWorkersFreezePermutationBeforeCallbacks(t *testing.T) {
+	order := []int{2, 1, 0}
+	called := []int{}
+	_, err := runNativeSuitesOrdered(workerTestContext(t), workerTestSuites(3), 1, order,
+		func(_ context.Context, index int, _ suite) (nativeSuiteResult, error) {
+			called = append(called, index)
+			if index == 2 {
+				order[1] = 2
+			}
+			return nativeSuiteResult{}, nil
+		})
+	if err != nil || !reflect.DeepEqual(called, []int{2, 1, 0}) {
+		t.Fatal("caller order mutation changed already validated dispatch", called, err)
+	}
+}
+
+func TestNativeSuiteWorkersOrderedBoundCoverageAndOriginalIndices(t *testing.T) {
+	ctx := workerTestContext(t)
+	suites := workerTestSuites(6)
+	order := []int{4, 2, 5, 0, 3, 1}
+	calls := make([]atomic.Int32, len(suites))
+	var active, peak atomic.Int32
+	started := make(chan int, len(suites))
+	release := make(chan struct{})
+	finished := make(chan struct{})
+	var results []nativeSuiteResult
+	var err error
+	go func() {
+		results, err = runNativeSuitesOrdered(ctx, suites, 3, order,
+			func(ctx context.Context, index int, s suite) (nativeSuiteResult, error) {
+				calls[index].Add(1)
+				now := active.Add(1)
+				defer active.Add(-1)
+				for old := peak.Load(); now > old && !peak.CompareAndSwap(old, now); old = peak.Load() {
+				}
+				started <- index
+				select {
+				case <-release:
+				case <-ctx.Done():
+					return nativeSuiteResult{}, ctx.Err()
+				}
+				return nativeSuiteResult{Observation: observation{Activity: s.Activity, Cases: index + 1}}, nil
+			})
+		close(finished)
+	}()
+	initial := map[int]bool{}
+	for range 3 {
+		select {
+		case index := <-started:
+			initial[index] = true
+		case <-ctx.Done():
+			t.Fatal("ordered workers did not start", ctx.Err())
+		}
+	}
+	if !reflect.DeepEqual(initial, map[int]bool{4: true, 2: true, 5: true}) {
+		t.Fatal("initial priority indices changed", initial)
+	}
+	select {
+	case index := <-started:
+		t.Fatal("worker bound exceeded", index)
+	default:
+	}
+	close(release)
+	select {
+	case <-finished:
+	case <-ctx.Done():
+		t.Fatal("ordered workers did not join", ctx.Err())
+	}
+	if err != nil || active.Load() != 0 || peak.Load() != 3 || len(results) != len(suites) {
+		t.Fatal("ordered coverage/bound/join", err, active.Load(), peak.Load())
+	}
+	for index, result := range results {
+		if calls[index].Load() != 1 || result.Observation.Activity != suites[index].Activity || result.Observation.Cases != index+1 {
+			t.Fatal("original index lost, repeated or skipped", index)
+		}
+	}
+}
+
+func TestNativeSuiteWorkersOrderedFailureRunsUnstartedLowerIndicesAndJoinsHigher(t *testing.T) {
+	ctx := workerTestContext(t)
+	suites := workerTestSuites(7)
+	order := []int{4, 6, 5, 3, 2, 1, 0}
+	highError, middleError, lowError := errors.New("index4 failed first"), errors.New("index2 failed later"), errors.New("index1 failed last")
+	calls := make([]atomic.Int32, len(suites))
+	var active atomic.Int32
+	started := make(chan int, len(suites))
+	releaseHigh := make(chan struct{})
+	higherCanceled := make(chan struct{})
+	releaseCanceled := make(chan struct{})
+	lowerPrefixFinished := make(chan struct{})
+	finished := make(chan struct{})
+	var results []nativeSuiteResult
+	var err error
+	go func() {
+		results, err = runNativeSuitesOrdered(ctx, suites, 2, order,
+			func(suiteCtx context.Context, index int, s suite) (nativeSuiteResult, error) {
+				calls[index].Add(1)
+				active.Add(1)
+				defer active.Add(-1)
+				started <- index
+				switch index {
+				case 4:
+					select {
+					case <-releaseHigh:
+						return nativeSuiteResult{}, highError
+					case <-suiteCtx.Done():
+						return nativeSuiteResult{}, suiteCtx.Err()
+					}
+				case 6:
+					<-suiteCtx.Done()
+					close(higherCanceled)
+					select {
+					case <-releaseCanceled:
+					case <-ctx.Done():
+					}
+					return nativeSuiteResult{}, suiteCtx.Err()
+				case 2:
+					return nativeSuiteResult{}, middleError
+				case 1:
+					return nativeSuiteResult{}, lowError
+				case 0:
+					close(lowerPrefixFinished)
+				}
+				return nativeSuiteResult{Observation: observation{Activity: s.Activity}}, nil
+			})
+		close(finished)
+	}()
+	initial := map[int]bool{}
+	for range 2 {
+		select {
+		case index := <-started:
+			initial[index] = true
+		case <-ctx.Done():
+			t.Fatal("initial priority workers did not start", ctx.Err())
+		}
+	}
+	if !reflect.DeepEqual(initial, map[int]bool{4: true, 6: true}) {
+		t.Fatal("unexpected initial workers", initial)
+	}
+	close(releaseHigh)
+	for _, signal := range []<-chan struct{}{higherCanceled, lowerPrefixFinished} {
+		select {
+		case <-signal:
+		case <-ctx.Done():
+			t.Fatal("lower original indices did not complete after higher failure", ctx.Err())
+		}
+	}
+	select {
+	case <-finished:
+		t.Fatal("returned before the canceled higher callback joined")
+	default:
+	}
+	close(releaseCanceled)
+	select {
+	case <-finished:
+	case <-ctx.Done():
+		t.Fatal("canceled higher callback did not join", ctx.Err())
+	}
+	if results != nil || !errors.Is(err, lowError) || !strings.Contains(err.Error(), "suite 1 example/worker:Suite01:") || active.Load() != 0 {
+		t.Fatal("original serial-earliest failure or join lost", err, active.Load())
+	}
+	for index := range suites {
+		want := int32(1)
+		if index == 5 {
+			want = 0
+		}
+		if calls[index].Load() != want {
+			t.Fatal("lower index skipped or higher pending work started", index, calls[index].Load())
+		}
+	}
+}
+
+func TestNativeSuiteWorkersOrderedParentCancellationSkipsPendingLowerAndJoins(t *testing.T) {
+	guard := workerTestContext(t)
+	ctx, cancel := context.WithCancel(guard)
+	defer cancel()
+	calls := make([]atomic.Int32, 5)
+	var active atomic.Int32
+	started := make(chan int, 5)
+	canceled := make(chan struct{}, 2)
+	releaseCanceled := make(chan struct{})
+	finished := make(chan error, 1)
+	go func() {
+		_, err := runNativeSuitesOrdered(ctx, workerTestSuites(5), 2, []int{4, 3, 2, 1, 0},
+			func(suiteCtx context.Context, index int, _ suite) (nativeSuiteResult, error) {
+				calls[index].Add(1)
+				active.Add(1)
+				defer active.Add(-1)
+				started <- index
+				<-suiteCtx.Done()
+				canceled <- struct{}{}
+				select {
+				case <-releaseCanceled:
+				case <-guard.Done():
+				}
+				return nativeSuiteResult{}, suiteCtx.Err()
+			})
+		finished <- err
+	}()
+	initial := map[int]bool{}
+	for range 2 {
+		select {
+		case index := <-started:
+			initial[index] = true
+		case <-guard.Done():
+			t.Fatal("initial ordered callbacks did not start", guard.Err())
+		}
+	}
+	if !reflect.DeepEqual(initial, map[int]bool{4: true, 3: true}) {
+		t.Fatal("unexpected priority callbacks", initial)
+	}
+	cancel()
+	for range 2 {
+		select {
+		case <-canceled:
+		case <-guard.Done():
+			t.Fatal("parent cancellation did not reach both callbacks", guard.Err())
+		}
+	}
+	select {
+	case err := <-finished:
+		t.Fatal("parent cancellation returned before joining callbacks", err)
+	default:
+	}
+	close(releaseCanceled)
+	select {
+	case err := <-finished:
+		if !errors.Is(err, context.Canceled) || active.Load() != 0 {
+			t.Fatal("parent context error/join changed", err, active.Load())
+		}
+	case <-guard.Done():
+		t.Fatal("canceled callbacks did not join", guard.Err())
+	}
+	for index := 0; index < 3; index++ {
+		if calls[index].Load() != 0 {
+			t.Fatal("parent cancellation started pending lower index", index)
+		}
 	}
 }

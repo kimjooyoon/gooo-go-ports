@@ -841,9 +841,10 @@ native 실행 영수증이나 보안 인증이 아닙니다. 이 화면의 유�
 
 This checks the port corpus and saved replay; it is separate from the small tutorial above.
 
-The current full CI roster is 74 suites and 171,217 cases, with 2,181 batches
+The current full CI roster is 82 suites and 175,649 cases, with 2,305 batches
 under `--case-profile uuid-and-literal-report-compact-v1`. CI also selects
-`--workspace-profile dependency-closure-v1`. The default local command below
+`--workspace-profile dependency-closure-v1` and `--suite-order largest-corpus-first`.
+The default local command below
 uses the legacy profiles and has different batch boundaries. The 66- and
 68-suite counts below describe historical prefixes, not the current full roster.
 
@@ -866,10 +867,18 @@ suites concurrently; the accepted range is 1–4. With the default `legacy` case
 profile, each suite keeps its original batch boundaries. All profiles retain
 execution, inspection, saved replay, and receipt-binding
 checks. The summary keeps corpus order and records the configured worker limit
-as `native_suite_workers`. A failing suite stops later suites between complete
-batches, and every started worker finishes before the private build cache is
-removed. Full native CI uses three workers and retains every corpus and
-exhaustive check.
+as `native_suite_workers`. `--suite-order largest-corpus-first` dispatches suites
+by descending case count, breaking ties by their original catalog index;
+the default is `catalog`. After a suite failure, pending work above the lowest
+failed catalog index is skipped and active higher-index work receives
+cancellation. Pending lower indices still run so the
+reported failure remains the earliest catalog failure, rather than whichever
+worker fails first; cancellation of the whole run still takes precedence.
+Every started worker is joined before return and private build cache cleanup.
+Full native CI uses three workers and retains every corpus and
+exhaustive check. See [CI timing and suite order](docs/ci-performance.md) for the
+measured baseline, fixed-duration model and validation limits; this order is not
+a measured speedup claim.
 
 `--case-profile uuid-compact-v1` selects compact JSON case files for UUID
 `Validate`, the importing format `Inspect`, and `ParseCanonical` only. It keeps
