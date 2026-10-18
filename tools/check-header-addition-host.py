@@ -106,6 +106,60 @@ def frozen_read(path,pins):
 def unchanged(pins):
     for name,ref in pins.items():
         p=canonical(name);need(p.is_file() and equal(reference(p.read_bytes()),ref),'frozen source/tool drift: '+name)
+
+class PinScanObservations:
+    """Coarse diagnostics only; the existing validation callbacks stay intact."""
+    def __init__(self):
+        self.output=None;self.observations=[];self.write_error=None;self._write_attempted=False;self.cancellation=None
+
+    def is_cancellation(self,failure):
+        return not isinstance(failure,Exception) or failure is self.cancellation
+
+    def observe(self,label,boundary,operation,pins=None):
+        count,total=None,None
+        if pins is not None:
+            try:
+                count=len(pins)
+                sizes=[ref['bytes'] for ref in pins.values()]
+                if all(type(size) is int and size>=0 for size in sizes):total=sum(sizes)
+            except Exception as failure:
+                if self.is_cancellation(failure):raise
+                # Metadata collection must not replace the validation's refusal.
+                count,total=None,None
+        row={'label':label,'boundary':boundary,'declared_pin_count':count,
+             'declared_logical_bytes':total,'state':'STARTED','elapsed_ns':None,
+             'timing_available':False}
+        self.observations.append(row)
+        try:started=time.monotonic_ns()
+        except BaseException as failure:
+            if self.is_cancellation(failure):raise
+            started=None
+        refused=False
+        try:
+            result=operation()
+        except BaseException:
+            refused=True;row['state']='REFUSED';raise
+        else:
+            row['state']='COMPLETED';return result
+        finally:
+            try:ended=time.monotonic_ns()
+            except BaseException as failure:
+                if not refused and self.is_cancellation(failure):raise
+                ended=None
+            if type(started) is int and type(ended) is int and ended>=started:
+                row['elapsed_ns']=ended-started;row['timing_available']=True
+
+    def write_once(self,preserve_failure=False):
+        if self.output is None or self._write_attempted:return
+        self._write_attempted=True
+        document={'schema':'gooo/pin-scan-observations/v1','diagnostic_only':True,
+                  'observations':self.observations,
+                  'scope':'Coarse callback wall intervals. Initial-verification is a parent span containing shared verification. Declared pin counts and logical bytes are not actual read bytes on refusal or physical I/O; durations do not isolate path, read or SHA work.'}
+        try:save(self.output/'pin-scans.json',document)
+        except BaseException as failure:
+            if not preserve_failure and self.is_cancellation(failure):raise
+            # A prior validation failure takes precedence over secondary diagnostics.
+            self.write_error={'type':type(failure).__name__,'message':str(failure)}
 def reviewed_contract(root,read_bytes=None):
     try:return CONTRACT.load_reviewed_contract(root,read_bytes=read_bytes)
     except (OSError,CONTRACT.ContractError) as error:raise RuntimeError('reviewed native contract: '+str(error)) from error
@@ -492,11 +546,12 @@ def owned_bytes(work):
 
 class OwnedCommands:
     """Bounded polling guard for this unique owned work path, not global cleanup."""
-    def __init__(self,out,work,cwd,pins,env):
+    def __init__(self,out,work,cwd,pins,env,pin_scans=None):
         self.out,self.work,self.cwd,self.pins,self.env=out,work,cwd,pins,env
+        self.pin_scans=pin_scans if pin_scans is not None else PinScanObservations()
         self.started=time.monotonic();self.observations=[];self.closed=True
     def call(self,label,args,seconds,extra_env=None,stdin_path=None,allowed_exit=(0,)):
-        unchanged(self.pins);directory=self.out/label;directory.mkdir();begin=time.monotonic();why=None;known={};child=None;remaining=[]
+        self.pin_scans.observe(label,'pre',lambda:unchanged(self.pins),self.pins);directory=self.out/label;directory.mkdir();begin=time.monotonic();why=None;known={};child=None;remaining=[]
         env=dict(self.env);env.update(extra_env or {})
         def live():
             rows=processes();owned={pid for pid,row in rows.items() if pid in known and row['birth']==known[pid]['birth']}
@@ -547,7 +602,7 @@ class OwnedCommands:
                 save(directory/'process.json',observation);self.observations.append(observation)
         need(child is not None and child.returncode in allowed_exit and why is None and not remaining,'command failure: '+label+' '+str(why))
         need((directory/'stdout').stat().st_size<=8<<20 and (directory/'stderr').stat().st_size<=2<<20,'final output cap')
-        unchanged(self.pins);return (directory/'stdout').read_bytes()
+        self.pin_scans.observe(label,'post',lambda:unchanged(self.pins),self.pins);return (directory/'stdout').read_bytes()
 
 def parse_args(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
@@ -562,26 +617,29 @@ def parse_args(argv=None):
     elif not args.verification_out or not args.timing:parser.error('--verification-out and --timing require nonempty paths together')
     return args
 
-def main():
+def _main(pin_scans):
     args=parse_args();root=canonical(pathlib.Path(args.root).absolute());go=canonical(pathlib.Path(args.go).absolute());out=canonical((root/args.out).absolute())
     shard_index=canonical((root/args.shard_native_index).absolute()) if args.shard_native_index is not None else None
     verification_out=canonical((root/args.verification_out).absolute()) if args.verification_out is not None else None
     timing=canonical((root/args.timing).absolute()) if args.timing is not None else None
-    need(root.is_dir() and not out.exists(),'root exists and output is fresh');out.mkdir();started=time.monotonic();runner=None;work=None;error=None;verification=None;rendered=None;pins={};cleanup=False
-    def interrupted(signum,_frame):raise RuntimeError('received signal '+str(signum))
+    need(root.is_dir() and not out.exists(),'root exists and output is fresh');out.mkdir();pin_scans.output=out;started=time.monotonic();runner=None;work=None;error=None;verification=None;rendered=None;pins={};cleanup=False
+    def interrupted(signum,_frame):
+        failure=RuntimeError('received signal '+str(signum))
+        if pin_scans.cancellation is None:pin_scans.cancellation=failure
+        raise failure
     original_handlers={number:signal.signal(number,interrupted) for number in [signal.SIGTERM,signal.SIGINT]}
     try:
-        verification=read_shard_verification(root,shard_index) if shard_index is not None else read_verification(root,verification_out,timing);pins=dict(verification['pins']);go_raw=frozen_read(go,pins)
+        verification=pin_scans.observe('initial-verification','parent',lambda:read_shard_verification(root,shard_index) if shard_index is not None else read_verification(root,verification_out,timing));pins=dict(verification['pins']);go_raw=frozen_read(go,pins)
         need(equal(reference(go_raw),verification['go_binary']),'explicit host Go binary matches fresh differential Go identity')
         rendered=out/'rendered';transformation=render(root,verification,rendered);pins.update(transformation['rendered_pins'])
         save(out/'rendered-provenance.json',{'schema':'gooo/fresh-header-addition-host-provenance/v1','entry':ENTRY,'evidence':verification['evidence'],'input_pins':verification['pins'],**transformation})
-        save(out/'frozen-inputs.json',pins);unchanged(pins)
+        save(out/'frozen-inputs.json',pins);pin_scans.observe('initial','initial',lambda:unchanged(pins),pins)
         need(shutil.disk_usage(out).free>=1<<30,'at least1GiB free for bounded owned check')
         work=pathlib.Path(tempfile.mkdtemp(prefix='.header-addition-host-owned-',dir=out));(work/'tmp').mkdir();(work/'cache').mkdir();(work/'modules').mkdir();(work/'bin').mkdir()
         env={key:os.environ[key] for key in ['PATH','HOME','SYSTEMROOT'] if key in os.environ}
         env.update(GOTOOLCHAIN='local',GOWORK='off',GOENV='off',GOPROXY='off',GOSUMDB='off',GOFLAGS='-mod=readonly',CGO_ENABLED='0',GOMAXPROCS='2',GOCACHE=str(work/'cache'),GOMODCACHE=str(work/'modules'),TMPDIR=str(work/'tmp'))
         save(out/'owned-work.json',{'work':str(work),'whole_timeout_s':300,'owned_byte_cap':1<<30,'retained':'rendered source and fixture, input/evidence refs, logs and summaries','cleanup':'Only this exact owned work directory after all observed owned processes close.','environment':env})
-        runner=OwnedCommands(out,work,rendered,pins,env);runner.started=started
+        runner=OwnedCommands(out,work,rendered,pins,env,pin_scans);runner.started=started
         version=runner.call('go-version',[go,'version'],20).decode().strip();need(version==verification['go_version'],'host exact Go version/platform')
         runner.call('abi50',[go,'test','-count=1','-run','^TestFreshGeneratedABI50$','-v','.'],60)
         runner.call('vet',[go,'vet','./...'],45)
@@ -591,7 +649,7 @@ def main():
         runner.call('race',[go,'test','-race','-count=1','-v','./...'],120,{'CGO_ENABLED':'1','CC':str(compiler)})
         runner.call('build',[go,'build','-trimpath','-o',work/'bin/demo','.'],60)
         demo=load(runner.call('demo',[work/'bin/demo'],5));need(demo['Status']=='APPLIED' and demo['HasDecision'] is True and equal([demo['BeforeRevision'],demo['AfterRevision'],demo['PolicyRevision']],[1,2,1]) and demo['Decision']['eligible'] is True and demo['Decision']['candidate_name']=='x-request-id' and demo['Decision']['candidate_value']=='req-123','actual exact demo one application')
-        unchanged(pins);need(runner.closed,'all observed processes closed');save(out/'final-source-tool-pins.json',pins)
+        pin_scans.observe('final','final',lambda:unchanged(pins),pins);need(runner.closed,'all observed processes closed');save(out/'final-source-tool-pins.json',pins)
     except BaseException as failure:error=str(failure)
     finally:
         if work is not None and (runner is None or runner.closed):
@@ -601,4 +659,10 @@ def main():
     status=('EXPERIMENTAL_SHARD_REFERENCE_ABI50_AND_ATOMIC_HOST_PASS' if shard_index is not None else 'FRESH82_BOUND_ABI50_AND_ATOMIC_HOST_PASS') if error is None else 'FIRST_FAILURE_PRESERVED'
     summary={'schema':'gooo/header-addition-host-CI/v1','status':status,'failure':error,'fresh_native_suites':verification['fresh_native_suites'] if verification else None,'fresh_addition_cases':50 if verification else None,'fresh_addition_batches':7 if verification else None,'ABI_generated_calls':50 if error is None else None,'ABI_typed_fields':800 if error is None else None,'ABI_count_scope':'Focused abi50 command only. Race repeats these50 and host scenarios call the generated assessor again; this is not the total generated-call count.','host_test_functions':18 if error is None else None,'demo_status':'APPLIED' if error is None else None,'processes_closed':runner.closed if runner else True,'source_bindings_unchanged':error is None,'owned_work_removed':cleanup,'elapsed_s':time.monotonic()-started,'commands':runner.observations if runner else [],'scope':('Experimental shard reference with unauthenticated producer identity; no native acceptance or authenticated GitHub-run claim. ' if shard_index is not None else '')+'Fresh public native receipt source,50 independent-Go ABI expectations and local in-memory atomic host tests. No network effects, real authentication, durability, distributed transaction or production-safety claim. Independent inner typed canonical prior_result_sha256 remains NOT_CHECKED.'}
     save(out/'summary.json',summary);print(json.dumps(summary));return 0 if error is None else 1
+def main():
+    pin_scans=PinScanObservations();failed=True
+    try:
+        result=_main(pin_scans);failed=result!=0;return result
+    finally:pin_scans.write_once(preserve_failure=failed)
+
 if __name__=='__main__':sys.exit(main())

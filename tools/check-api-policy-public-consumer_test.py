@@ -162,19 +162,20 @@ class PublicConsumerDiagnosticsTests(unittest.TestCase):
             run.assert_called_once()
 
 
-    def test_exact_public_proxy_timeout_retries_once_and_keeps_first_failure(self):
+    def test_exact_public_proxy_timeout_retries_twice_and_keeps_all_failures(self):
         for module, name in ((HELPER.PARENT, "parent-query"),
                              (HELPER.ORIGINAL, "original-query")):
             revision = "a" * 40
             transient = (f"go: {module}@{revision}: invalid version: reading "
                          f"https://proxy.golang.org/{module}/@v/{revision}.info: 404 Not Found\n"
                          "\tserver response: not found: fetch timed out\n").encode()
-            for recovered in (True, False):
-                with self.subTest(module=module, recovered=recovered), tempfile.TemporaryDirectory() as directory:
+            for failures, recovered in ((1, True), (2, True), (3, False)):
+                with self.subTest(module=module, failures=failures), tempfile.TemporaryDirectory() as directory:
                     root = Path(directory)
                     recorder = HELPER.Recorder(root)
-                    outcomes = [(1, b"", transient),
-                                (0, b'{"Version":"fixed"}\n', b"") if recovered else (1, b"", transient)]
+                    outcomes = [(1, b"", transient)] * failures
+                    if recovered:
+                        outcomes.append((0, b'{"Version":"fixed"}\n', b""))
                     def spawn(argv, **kwargs):
                         code, stdout, stderr = outcomes.pop(0)
                         kwargs["stdout"].write(stdout)
@@ -189,21 +190,27 @@ class PublicConsumerDiagnosticsTests(unittest.TestCase):
                             self.assertEqual(recorder.public_module_query(name, "/go", module, revision, root, env),
                                              b'{"Version":"fixed"}\n')
                         else:
-                            with self.assertRaises(HELPER.Refused):
+                            with self.assertRaisesRegex(HELPER.Refused, name + "-retry-2 returned nonzero"):
                                 recorder.public_module_query(name, "/go", module, revision, root, env)
-                    self.assertEqual(popen.call_count, 2)
-                    self.assertEqual(popen.call_args_list[0].args, popen.call_args_list[1].args)
-                    self.assertEqual(popen.call_args_list[0].kwargs["env"], env)
-                    self.assertEqual(popen.call_args_list[1].kwargs["env"], env)
-                    self.assertEqual(popen.call_args_list[0].kwargs["cwd"], root)
-                    self.assertEqual(popen.call_args_list[1].kwargs["cwd"], root)
-                    sleep.assert_called_once_with(5)
+                    attempts = failures + int(recovered)
+                    self.assertEqual(popen.call_count, attempts)
+                    for call in popen.call_args_list:
+                        self.assertEqual(call.args, (["/go", "list", "-m", "-json", module + "@" + revision],))
+                        self.assertEqual(call.kwargs["env"], env)
+                        self.assertEqual(call.kwargs["cwd"], root)
+                        self.assertIs(call.kwargs["stdin"], HELPER.subprocess.DEVNULL)
+                        self.assertTrue(call.kwargs["start_new_session"])
+                    self.assertEqual(sleep.call_args_list, [mock.call(delay) for delay in (5, 20)[:attempts - 1]])
                     steps = json.loads((root / "steps.json").read_text())
-                    self.assertEqual([step["name"] for step in steps], [name, name + "-retry-1"])
-                    self.assertEqual([step["exit_code"] for step in steps], [1, 0 if recovered else 1])
-                    self.assertEqual((root / ("01-" + name + ".stderr")).read_bytes(), transient)
-                    self.assertEqual((root / ("02-" + name + "-retry-1.stderr")).read_bytes(),
-                                     b"" if recovered else transient)
+                    labels = [name] + [name + "-retry-" + str(i) for i in range(1, attempts)]
+                    self.assertEqual([step["name"] for step in steps], labels)
+                    self.assertEqual([step["exit_code"] for step in steps], [1] * failures + ([0] if recovered else []))
+                    for number, label in enumerate(labels, 1):
+                        prefix = f"{number:02d}-" + label
+                        failed = number <= failures
+                        self.assertEqual((root / (prefix + ".stderr")).read_bytes(), transient if failed else b"")
+                        self.assertEqual((root / (prefix + ".stdout")).read_bytes(),
+                                         b"" if failed else b'{"Version":"fixed"}\n')
                     self.assertEqual(outcomes, [])
 
             with tempfile.TemporaryDirectory() as directory:
@@ -217,6 +224,71 @@ class PublicConsumerDiagnosticsTests(unittest.TestCase):
                         recorder.public_module_query(name, "/go", module, revision, root, env)
                 run.assert_called_once()
                 sleep.assert_not_called()
+
+            with tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                recorder = HELPER.Recorder(root)
+                recorder.deadline = 100
+                with mock.patch.object(recorder, "run", return_value=(1, b"", transient)) as run, \
+                     mock.patch.object(HELPER.time, "monotonic", side_effect=[0, 80]), \
+                     mock.patch.object(HELPER.time, "sleep") as sleep:
+                    with self.assertRaisesRegex(HELPER.Refused, "backoff"):
+                        recorder.public_module_query(name, "/go", module, revision, root, env)
+                self.assertEqual([call.args[0] for call in run.call_args_list], [name, name + "-retry-1"])
+                sleep.assert_called_once_with(5)
+
+    def test_second_public_query_response_is_reclassified_before_retrying(self):
+        revision = "a" * 40
+        module = HELPER.PARENT
+        transient = (f"go: {module}@{revision}: invalid version: reading "
+                     f"https://proxy.golang.org/{module}/@v/{revision}.info: 404 Not Found\n"
+                     "\tserver response: not found: fetch timed out\n").encode()
+        second_responses = ((1, b"", transient.replace(b"fetch timed out", b"unknown revision")),
+                            (1, b"partial", transient), (2, b"", transient),
+                            (1, b"", transient + b"checksum mismatch\n"), (0, b"success", b""))
+        for response in second_responses:
+            with self.subTest(response=response), tempfile.TemporaryDirectory() as directory:
+                recorder = HELPER.Recorder(Path(directory))
+                with mock.patch.object(recorder, "run", side_effect=[(1, b"", transient), response]) as run, \
+                     mock.patch.object(HELPER.time, "sleep") as sleep:
+                    if response[0] == 0:
+                        self.assertEqual(recorder.public_module_query(
+                            "parent-query", "/go", module, revision, Path(directory),
+                            {"GOPROXY": "https://proxy.golang.org", "GOSUMDB": "sum.golang.org"}), b"success")
+                    else:
+                        with self.assertRaisesRegex(HELPER.Refused, "parent-query-retry-1 returned nonzero"):
+                            recorder.public_module_query("parent-query", "/go", module, revision, Path(directory),
+                                                         {"GOPROXY": "https://proxy.golang.org",
+                                                          "GOSUMDB": "sum.golang.org"})
+                self.assertEqual(run.call_count, 2)
+                sleep.assert_called_once_with(5)
+
+    def test_public_query_success_or_cancellation_never_adds_a_lookup(self):
+        revision = "a" * 40
+        env = {"GOPROXY": "https://proxy.golang.org", "GOSUMDB": "sum.golang.org"}
+        with tempfile.TemporaryDirectory() as directory:
+            recorder = HELPER.Recorder(Path(directory))
+            with mock.patch.object(recorder, "run", return_value=(0, b"success", b"")) as run, \
+                 mock.patch.object(HELPER.time, "sleep") as sleep:
+                self.assertEqual(recorder.public_module_query("parent-query", "/go", HELPER.PARENT,
+                                                             revision, Path(directory), env), b"success")
+            run.assert_called_once()
+            sleep.assert_not_called()
+            transient = (f"go: {HELPER.PARENT}@{revision}: invalid version: reading "
+                         f"https://proxy.golang.org/{HELPER.PARENT}/@v/{revision}.info: 404 Not Found\n"
+                         "\tserver response: not found: fetch timed out\n").encode()
+            for failure in (KeyboardInterrupt(), SystemExit(7), RuntimeError("interrupted")):
+                for during_sleep in (False, True):
+                    with self.subTest(failure=type(failure).__name__, during_sleep=during_sleep):
+                        with mock.patch.object(recorder, "run", side_effect=(None if during_sleep else failure),
+                                               return_value=(1, b"", transient)) as run, \
+                             mock.patch.object(HELPER.time, "sleep", side_effect=(failure if during_sleep else None)) as sleep:
+                            with self.assertRaises(type(failure)) as raised:
+                                recorder.public_module_query("parent-query", "/go", HELPER.PARENT,
+                                                             revision, Path(directory), env)
+                        self.assertIs(raised.exception, failure)
+                        run.assert_called_once()
+                        self.assertEqual(sleep.call_count, int(during_sleep))
 
     def test_public_query_permanent_mixed_or_wrong_revision_errors_are_not_retried(self):
         revision = "a" * 40

@@ -269,15 +269,18 @@ class Recorder:
         transient = (f"go: {module}@{revision}: invalid version: reading "
                      f"https://proxy.golang.org/{module}/@v/{revision}.info: 404 Not Found\n"
                      "\tserver response: not found: fetch timed out\n").encode()
-        if code == 1 and not stdout and stderr == transient:
+        query_name = name
+        for retry, delay in enumerate((5, 20), 1):
+            if code != 1 or stdout or stderr != transient:
+                break
             # Keep the first numbered streams/step; retry only this exact remote
             # lookup, using the same SHA, arguments, proxy and checksum policy.
-            require(time.monotonic() + 5 < self.deadline,
+            require(time.monotonic() + delay < self.deadline,
                     "overall deadline leaves no room for public query backoff")
-            time.sleep(5)
-            name += "-retry-1"
-            code, stdout, _ = self.run(name, argv, cwd, env)
-        require(code == 0, name + " returned nonzero; inspect saved step logs")
+            time.sleep(delay)
+            query_name = name + "-retry-" + str(retry)
+            code, stdout, stderr = self.run(query_name, argv, cwd, env)
+        require(code == 0, query_name + " returned nonzero; inspect saved step logs")
         return stdout
 
 
