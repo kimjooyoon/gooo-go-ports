@@ -1,0 +1,204 @@
+// Copyright 2018 The Go Authors. All rights reserved.
+// BSD-3-Clause notice: ../../third_party/x-mod/LICENSE.
+// Source contract: golang.org/x/mod v0.29.0, commit
+// bba3e065a67271df90253c78c98f2cea7f572948, semver/semver.go.
+// Source SHA256 23305fff81d9a4a2bcf643f65087287349dfd03c97aea8b7f947b1da1cd1b6a2.
+// Bounded Gooo adaptation: the parser and comparison execute in Gooo.
+// Domain: decoded valid UTF8 Text <=1024 bytes. No truncation/repair or whole API claim.
+package semver
+namespace x_mod_semver
+entity Text id "gooo://std/text"
+entity Boolean id "gooo://std/boolean"
+entity Integer id "gooo://std/integer"
+activity IsValid(Text) -> Boolean id "gooo://golang.org/x/mod/semver/IsValid"
+computes `let size = int64(len(input))
+if size < 2 { return false }
+if size > 1024 { return false }
+if int64(input[0]) != 118 { return false }
+let phase = 0
+let count = 0
+let zero = false
+let numeric = true
+let offset = 0
+for offset = 0; offset < 1024; offset = offset + 1 {
+    if offset > 0 && offset < size {
+        let octet = int64(input[offset])
+        if phase < 3 {
+            if octet >= 48 && octet <= 57 {
+                if count > 0 && zero { return false }
+                if count == 0 { zero = octet == 48 }
+                count = count + 1
+            } else {
+                if count == 0 { return false }
+                if octet == 46 && phase < 2 {
+                    phase = phase + 1
+                    count = 0
+                    zero = false
+                } else {
+                    if phase == 2 && (octet == 45 || octet == 43) {
+                        phase = 3
+                        if octet == 43 { phase = 4 }
+                        count = 0
+                        zero = false
+                        numeric = true
+                    } else { return false }
+                }
+            }
+        } else {
+            if octet == 46 || (octet == 43 && phase == 3) {
+                if count == 0 { return false }
+                if phase == 3 && numeric && zero && count > 1 { return false }
+                if octet == 43 { phase = 4 }
+                count = 0
+                zero = false
+                numeric = true
+            } else {
+                if !((octet >= 48 && octet <= 57) || (octet >= 65 && octet <= 90) || (octet >= 97 && octet <= 122) || octet == 45) { return false }
+                if count == 0 { zero = octet == 48 }
+                if octet < 48 || octet > 57 { numeric = false }
+                count = count + 1
+            }
+        }
+    }
+}
+if count == 0 { return false }
+if phase == 3 && numeric && zero && count > 1 { return false }
+return true`
+
+// Internal parser/comparison helpers. Compare validates before Parts/NextIdentifier.
+entity PartsRecord id "gooo://go-ports/internal/x-mod/semver/v1/parts:v1" fields {
+ field major id "gooo://go-ports/internal/x-mod/semver/v1/parts:v1/major" type string required one
+ field minor id "gooo://go-ports/internal/x-mod/semver/v1/parts:v1/minor" type string required one
+ field patch id "gooo://go-ports/internal/x-mod/semver/v1/parts:v1/patch" type string required one
+ field prerelease id "gooo://go-ports/internal/x-mod/semver/v1/parts:v1/prerelease" type string required one
+}
+entity IdentifierRecord id "gooo://go-ports/internal/x-mod/semver/v1/identifier:v1" fields {
+ field text id "gooo://go-ports/internal/x-mod/semver/v1/identifier:v1/text" type string required one
+ field next id "gooo://go-ports/internal/x-mod/semver/v1/identifier:v1/next" type integer required one
+ field numeric id "gooo://go-ports/internal/x-mod/semver/v1/identifier:v1/numeric" type boolean required one
+}
+activity Parts(Text) -> PartsRecord id "gooo://go-ports/internal/x-mod/semver/v1/Parts:v1"
+computes `let size = int64(len(input))
+let major = ""
+let minor = "0"
+let patch = "0"
+let phase = 0
+let start = 1
+let done = false
+let pre_start = -1
+let build_start = size
+let offset = 0
+for offset = 0; offset < 1024; offset = offset + 1 {
+    if offset > 0 && offset < size {
+        let octet = int64(input[offset])
+        if !done {
+            if octet == 46 {
+                if phase == 0 { major = input[start:offset] }
+                if phase == 1 { minor = input[start:offset] }
+                phase = phase + 1
+                start = offset + 1
+            } else {
+                if octet == 45 || octet == 43 {
+                    patch = input[start:offset]
+                    done = true
+                    if octet == 45 { pre_start = offset }
+                    if octet == 43 { build_start = offset }
+                }
+            }
+        } else {
+            if octet == 43 && build_start == size { build_start = offset }
+        }
+    }
+}
+if !done {
+    if phase == 0 { major = input[start:size] }
+    if phase == 1 { minor = input[start:size] }
+    if phase == 2 { patch = input[start:size] }
+}
+let prerelease = ""
+if pre_start >= 0 { prerelease = input[pre_start:build_start] }
+return PartsRecord{major: major, minor: minor, patch: patch, prerelease: prerelease}`
+
+activity ByteLex(Text, Text) -> Integer id "gooo://go-ports/internal/x-mod/semver/v1/ByteLex:v1"
+computes `if input0 == input1 { return 0 }
+let left_size = int64(len(input0))
+let right_size = int64(len(input1))
+let offset = 0
+for offset = 0; offset < 1024; offset = offset + 1 {
+    if offset >= left_size { return -1 }
+    if offset >= right_size { return 1 }
+    let left = int64(input0[offset])
+    let right = int64(input1[offset])
+    if left < right { return -1 }
+    if left > right { return 1 }
+}
+return 0`
+
+activity CompareNumeric(Text, Text) -> Integer id "gooo://go-ports/internal/x-mod/semver/v1/CompareNumeric:v1"
+computes `if len(input0) < len(input1) { return -1 }
+if len(input0) > len(input1) { return 1 }
+return ByteLex(input0, input1)`
+
+activity NextIdentifier(Text, Integer) -> IdentifierRecord id "gooo://go-ports/internal/x-mod/semver/v1/NextIdentifier:v1"
+computes `let size = int64(len(input0))
+if input1 < 0 || input1 > size { return IdentifierRecord{text: "", next: size, numeric: false} }
+let numeric = true
+let offset = 0
+for offset = 0; offset < 1024; offset = offset + 1 {
+    let position = input1 + offset
+    if position >= size { return IdentifierRecord{text: input0[input1:size], next: size, numeric: numeric} }
+    let octet = int64(input0[position])
+    if octet == 46 { return IdentifierRecord{text: input0[input1:position], next: position + 1, numeric: numeric} }
+    if octet < 48 || octet > 57 { numeric = false }
+}
+return IdentifierRecord{text: input0[input1:size], next: size, numeric: numeric}`
+
+// Public Compare validates before passing Parts.prerelease to this helper.
+// A valid prerelease with n nonempty identifiers occupies at least 2*n bytes
+// including its leading hyphen and separators. Text <=1024 bytes permits at
+// most 512 identifiers (at most 509 after the six-byte minimum version core).
+// Character scans stay at 1024; this bound does not extend helper input validity.
+activity ComparePrerelease(Text, Text) -> Integer id "gooo://go-ports/internal/x-mod/semver/v1/ComparePrerelease:v1"
+computes `if input0 == input1 { return 0 }
+if input0 == "" { return 1 }
+if input1 == "" { return -1 }
+let left_size = int64(len(input0))
+let right_size = int64(len(input1))
+let left_cursor = 1
+let right_cursor = 1
+let ordinal = 0
+for ordinal = 0; ordinal < 512; ordinal = ordinal + 1 {
+    if left_cursor >= left_size && right_cursor >= right_size { return 0 }
+    if left_cursor >= left_size { return -1 }
+    if right_cursor >= right_size { return 1 }
+    let left = NextIdentifier(input0, left_cursor)
+    let right = NextIdentifier(input1, right_cursor)
+    if left.text != right.text {
+        if left.numeric && !right.numeric { return -1 }
+        if !left.numeric && right.numeric { return 1 }
+        if left.numeric {
+            if len(left.text) < len(right.text) { return -1 }
+            if len(left.text) > len(right.text) { return 1 }
+        }
+        return ByteLex(left.text, right.text)
+    }
+    left_cursor = left.next
+    right_cursor = right.next
+}
+return 0`
+
+activity Compare(Text, Text) -> Integer id "gooo://golang.org/x/mod/semver/Compare"
+computes `let left_valid = IsValid(input0)
+let right_valid = IsValid(input1)
+if !left_valid && !right_valid { return 0 }
+if !left_valid { return -1 }
+if !right_valid { return 1 }
+let left = Parts(input0)
+let right = Parts(input1)
+let major = CompareNumeric(left.major, right.major)
+if major != 0 { return major }
+let minor = CompareNumeric(left.minor, right.minor)
+if minor != 0 { return minor }
+let patch = CompareNumeric(left.patch, right.patch)
+if patch != 0 { return patch }
+return ComparePrerelease(left.prerelease, right.prerelease)`

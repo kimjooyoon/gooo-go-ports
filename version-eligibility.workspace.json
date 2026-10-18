@@ -1,0 +1,21 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "app/version-eligibility",
+    "activity": "AssessUpgrade"
+  },
+  "packages": [
+    {
+      "path": "go/golang.org/x/mod/semver",
+      "sources": [
+        "ports/xmod/semver.gooo"
+      ]
+    },
+    {
+      "path": "app/version-eligibility",
+      "sources": [
+        "examples/version-eligibility/main.gooo"
+      ]
+    }
+  ]
+}

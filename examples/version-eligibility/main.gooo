@@ -1,0 +1,66 @@
+// Original deterministic candidate facts. No deployment effect is performed.
+package versioneligibility
+namespace version_eligibility
+import semver "go/golang.org/x/mod/semver"
+entity Text id "gooo://std/text"
+entity UpgradeFacts id "gooo://go-ports/examples/version-eligibility/v1/result" fields {
+ field current id "gooo://go-ports/examples/version-eligibility/v1/result/current" type string required one
+ field candidate id "gooo://go-ports/examples/version-eligibility/v1/result/candidate" type string required one
+ field current_valid id "gooo://go-ports/examples/version-eligibility/v1/result/current_valid" type boolean required one
+ field candidate_valid id "gooo://go-ports/examples/version-eligibility/v1/result/candidate_valid" type boolean required one
+ field candidate_vs_current id "gooo://go-ports/examples/version-eligibility/v1/result/candidate_vs_current" type integer required one
+ field precedence_newer id "gooo://go-ports/examples/version-eligibility/v1/result/precedence_newer" type boolean required one
+ field eligible id "gooo://go-ports/examples/version-eligibility/v1/result/eligible" type boolean required one
+ field reason id "gooo://go-ports/examples/version-eligibility/v1/result/reason" type string required one
+ field raw_changed id "gooo://go-ports/examples/version-eligibility/v1/result/raw_changed" type boolean required one
+}
+activity AssessUpgrade(Text, Text) -> UpgradeFacts id "gooo://go-ports/examples/version-eligibility/v1/assess-upgrade"
+computes `let current_valid = semver.IsValid(input0)
+let candidate_valid = semver.IsValid(input1)
+let candidate_vs_current = semver.Compare(input1, input0)
+let precedence_newer = candidate_vs_current > 0
+let eligible = current_valid && candidate_valid && precedence_newer
+let reason = "eligible"
+if !current_valid { reason = "invalid_current" } else {
+ if !candidate_valid { reason = "invalid_candidate" } else {
+  if !precedence_newer { reason = "not_newer" }
+ }
+}
+return UpgradeFacts{current: input0, candidate: input1, current_valid: current_valid, candidate_valid: candidate_valid, candidate_vs_current: candidate_vs_current, precedence_newer: precedence_newer, eligible: eligible, reason: reason, raw_changed: input1 != input0}`
+
+// A supplied minimum is compared as data; it is not authenticated policy.
+entity UpdateFacts id "gooo://go-ports/examples/version-eligibility/v1/update-result" fields {
+ field current id "gooo://go-ports/examples/version-eligibility/v1/update-result/current" type string required one
+ field candidate id "gooo://go-ports/examples/version-eligibility/v1/update-result/candidate" type string required one
+ field minimum id "gooo://go-ports/examples/version-eligibility/v1/update-result/minimum" type string required one
+ field current_valid id "gooo://go-ports/examples/version-eligibility/v1/update-result/current_valid" type boolean required one
+ field candidate_valid id "gooo://go-ports/examples/version-eligibility/v1/update-result/candidate_valid" type boolean required one
+ field minimum_valid id "gooo://go-ports/examples/version-eligibility/v1/update-result/minimum_valid" type boolean required one
+ field candidate_vs_current id "gooo://go-ports/examples/version-eligibility/v1/update-result/candidate_vs_current" type integer required one
+ field candidate_vs_minimum id "gooo://go-ports/examples/version-eligibility/v1/update-result/candidate_vs_minimum" type integer required one
+ field precedence_newer id "gooo://go-ports/examples/version-eligibility/v1/update-result/precedence_newer" type boolean required one
+ field meets_minimum id "gooo://go-ports/examples/version-eligibility/v1/update-result/meets_minimum" type boolean required one
+ field eligible id "gooo://go-ports/examples/version-eligibility/v1/update-result/eligible" type boolean required one
+ field reason id "gooo://go-ports/examples/version-eligibility/v1/update-result/reason" type string required one
+ field raw_changed id "gooo://go-ports/examples/version-eligibility/v1/update-result/raw_changed" type boolean required one
+}
+activity AssessUpdate(Text, Text, Text) -> UpdateFacts id "gooo://go-ports/examples/version-eligibility/v1/assess-update"
+computes `let current_valid = semver.IsValid(input0)
+let candidate_valid = semver.IsValid(input1)
+let minimum_valid = semver.IsValid(input2)
+let candidate_vs_current = semver.Compare(input1, input0)
+let candidate_vs_minimum = semver.Compare(input1, input2)
+let precedence_newer = candidate_vs_current > 0
+let meets_minimum = candidate_vs_minimum >= 0
+let eligible = current_valid && candidate_valid && minimum_valid && precedence_newer && meets_minimum
+let reason = "eligible"
+if !current_valid { reason = "invalid_current" } else {
+ if !candidate_valid { reason = "invalid_candidate" } else {
+  if !minimum_valid { reason = "invalid_minimum" } else {
+   if !precedence_newer { reason = "not_newer" } else {
+    if !meets_minimum { reason = "below_minimum" }
+   }
+  }
+ }
+}
+return UpdateFacts{current: input0, candidate: input1, minimum: input2, current_valid: current_valid, candidate_valid: candidate_valid, minimum_valid: minimum_valid, candidate_vs_current: candidate_vs_current, candidate_vs_minimum: candidate_vs_minimum, precedence_newer: precedence_newer, meets_minimum: meets_minimum, eligible: eligible, reason: reason, raw_changed: input1 != input0}`

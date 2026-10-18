@@ -94,3 +94,11 @@ changes only the signature and two header lookups, as recorded in
 ports/net/http/if-match-provenance.json. Original Gooo adaptation and transport
 integration are additionally covered by the repository LICENSE. This is not an
 official Go subpackage or a full HTTP/current-resource/authorization adapter.
+
+The bounded IsValid/Compare port in ports/xmod/semver.gooo adapts
+golang.org/x/mod/semver v0.29.0 at immutable revision
+bba3e065a67271df90253c78c98f2cea7f572948. Copyright 2018 The Go Authors.
+BSD terms and byte-exact upstream source and tests are retained in
+third_party/x-mod; source hashes and module checksums are recorded in
+ports/xmod/provenance.json. The importing version eligibility compositions
+and verification tooling are original repository code under LICENSE.

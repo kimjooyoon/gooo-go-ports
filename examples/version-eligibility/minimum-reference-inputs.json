@@ -1,0 +1,50 @@
+[
+  {
+    "name": "eligible",
+    "current": "v1.9.0",
+    "candidate": "v1.10.0",
+    "minimum": "v1.0.0"
+  },
+  {
+    "name": "invalid-current",
+    "current": "bad",
+    "candidate": "v1.0.0",
+    "minimum": "v0.0.0"
+  },
+  {
+    "name": "invalid-candidate",
+    "current": "v1.0.0",
+    "candidate": "bad",
+    "minimum": "v0.0.0"
+  },
+  {
+    "name": "invalid-minimum",
+    "current": "v1.0.0",
+    "candidate": "v2.0.0",
+    "minimum": "bad"
+  },
+  {
+    "name": "not-newer",
+    "current": "v2.0.0",
+    "candidate": "v1.0.0",
+    "minimum": "v0.0.0"
+  },
+  {
+    "name": "below-minimum",
+    "current": "v1.0.0",
+    "candidate": "v2.0.0",
+    "minimum": "v3.0.0"
+  },
+  {
+    "name": "build-only-equality",
+    "current": "v1.0.0+001",
+    "candidate": "v1.0.0+002",
+    "minimum": "v1.0.0"
+  },
+  {
+    "name": "higher-major-prerelease",
+    "current": "v1.9.0",
+    "candidate": "v2.0.0-rc.1",
+    "minimum": "v2.0.0-rc.0"
+  }
+]

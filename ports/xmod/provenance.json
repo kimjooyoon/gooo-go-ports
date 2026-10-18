@@ -1,0 +1,34 @@
+{
+  "upstream_module": "golang.org/x/mod",
+  "version": "v0.29.0",
+  "commit": "bba3e065a67271df90253c78c98f2cea7f572948",
+  "source_url": "https://github.com/golang/mod/blob/bba3e065a67271df90253c78c98f2cea7f572948/semver/semver.go",
+  "original_source_sha256": "23305fff81d9a4a2bcf643f65087287349dfd03c97aea8b7f947b1da1cd1b6a2",
+  "original_test_sha256": "8658224aa5ba6932ac4a9ce1af990ad4e8a2c2192ad0f2aae8fd21f7b02913ab",
+  "license_sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+  "module_h1": "h1:HV8lRxZC4l2cr3Zq1LvtOsi/ThTgWnUk/y64QSs8GwA=",
+  "go_mod_h1": "h1:NyhrlYXJ2H4eJiRy/WDBO6HMqZQ6q9nk4JzS3NuCK+w=",
+  "apis": [
+    "IsValid",
+    "Compare"
+  ],
+  "domain": "Each argument decoded validUTF8 Text0..1024bytes; no trimming/repair. Invalidstrings compare below valid and equal each other, matching pinnedGo semantics.",
+  "non_goals": [
+    "Whole x/mod/semver API",
+    "Module resolution/range solver",
+    "Signature/vulnerability/trust check",
+    "Deploy/apply authority"
+  ],
+  "compiler_pin": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+  "adapted_source_sha256": "ed533615759e52f74cacbbf394a4022d3d09f079c84b7d1781385a40e6ad6e6c",
+  "helpers": "Internal bounded parser/record activities are not additional upstream APIs.",
+  "native_evidence": "examples/version-eligibility/verify.py builds the independent original Go oracle and checks finite Gooo execution plus saved replay. Completed public runs retain separate gooo-semver-example-evidence CI artifacts.",
+  "prerelease_identifier_loop": {
+    "bound": 512,
+    "text_max_bytes": 1024,
+    "valid_full_version_max_identifiers": 509,
+    "reason": "Compare validates before Parts; a prerelease with n nonempty ASCII identifiers needs at least 2*n bytes including its leading hyphen and separators. Text <=1024 bytes therefore permits at most 512; a valid full version also needs the 6-byte minimum core v0.0.0. Build metadata only consumes more bytes.",
+    "scope": "Public IsValid/Compare and consumers calling them. This is not validation of arbitrary direct malformed helper arguments.",
+    "character_scan_bounds": 1024
+  }
+}

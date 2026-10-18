@@ -172,6 +172,13 @@ compiler issue before passing a minimal case to the language repository.
   replay the Gooo source. Inspect the eight fields, including stored/floor
   presence and the exact reason. This does not query a live policy store or
   approve/apply an action; the Go oracle is for verification only.
+- **Check a release candidate:** use the
+  [version eligibility example](../examples/version-eligibility/README.md).
+  Supply current, candidate and minimum versions to `AssessUpdate`, inspect
+  `eligible` and `reason`, and retain the original strings and both comparisons.
+  For example, a candidate newer than current can still return `below_minimum`.
+  Run the separate Go reference check after changing the supplied inputs.
+  This rule calculates eligibility automatically; it does not deploy a release.
 - **Port a Go function:** use the [contribution contract](../CONTRIBUTING.md)
   and [porting instructions](../AGENTS.md). Preserve the original API contract,
   full input domain, upstream license and independent Go reference. Unsupported

@@ -1744,6 +1744,58 @@ jobs:
           path: out/tutorial-change/
           if-no-files-found: warn
           retention-days: 14
+      - name: Verify finite SemVer upgrade, minimum and comparison policies
+        timeout-minutes: 6
+        shell: bash --noprofile --norc -e -o pipefail {0}
+        run: |
+          set -euo pipefail
+          export GOTOOLCHAIN=local GOWORK=off GOENV=off GOFLAGS= GOVCS='*:off'
+          NATIVE_GO="$(go env GOROOT)/bin/go"
+          SEMVER_MODULE_CACHE="$(mktemp -d "$RUNNER_TEMP/gooo-semver-module-cache-XXXXXX")"
+          mkdir -p out/semver-example
+          ./.gooo check ports/xmod/semver.gooo
+          ./.gooo check examples/version-eligibility/main.gooo
+          timeout -k 10s 20s python3 -I -B examples/version-eligibility/verify_test.py -v
+          timeout -k 10s 60s env GOMODCACHE="$SEMVER_MODULE_CACHE" \
+            GOPRIVATE= GONOPROXY= GONOSUMDB= GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org \
+            "$NATIVE_GO" -C examples/version-eligibility/oracle mod download -json golang.org/x/mod@v0.29.0 \
+            > out/semver-example/module-download.json
+          jq -e '
+            .Path == "golang.org/x/mod" and .Version == "v0.29.0" and
+            .Sum == "h1:HV8lRxZC4l2cr3Zq1LvtOsi/ThTgWnUk/y64QSs8GwA=" and
+            .GoModSum == "h1:NyhrlYXJ2H4eJiRy/WDBO6HMqZQ6q9nk4JzS3NuCK+w=" and
+            (.Error // "") == ""
+          ' out/semver-example/module-download.json
+          export GOMODCACHE="$SEMVER_MODULE_CACHE" GOPROXY=off GOSUMDB=off GOPRIVATE= GONOPROXY= GONOSUMDB=
+          timeout -k 10s 30s "$NATIVE_GO" -C examples/version-eligibility/oracle vet -mod=readonly ./...
+          for policy in upgrade minimum compare-boundary; do
+            timeout -k 15s 120s python3 -I -B examples/version-eligibility/verify.py \
+              --policy "$policy" --compiler "$PWD/.gooo" --go "$NATIVE_GO" \
+              --module-cache "$SEMVER_MODULE_CACHE" --out "out/semver-example/$policy"
+            jq -e --arg policy "$policy" '
+              .schema == "gooo/version-eligibility-check/v1" and
+              .policy == $policy and
+              (if $policy == "compare-boundary" then
+                .status == "FINITE_9_BOUNDARY_CASES_AND_FRESH_REPLAY_CHECKED" and .checked == 9
+              else
+                .status == "FINITE_8_CASES_AND_FRESH_REPLAY_CHECKED" and .checked == 8
+              end) and
+              .compiler_build.compiler_source_sha == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+              .compiler_build.vcs_modified == "false" and .compiler_build.go_version == "go1.27.2" and
+              .sources_unchanged == true and .tools_unchanged == true and
+              .all_processes_waited == true and .owned_work_removed == true and
+              [.commands[].label] == ["go-version", "compiler-build", "oracle-build", "oracle-buildinfo", "oracle", "execute", "replay"] and
+              all(.commands[]; .exit == 0 and .waited == true)
+            ' "out/semver-example/$policy/summary.json"
+          done
+      - name: Preserve finite SemVer example evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: gooo-semver-example-evidence
+          path: out/semver-example/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Preserve the tested site and provenance
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
