@@ -1780,7 +1780,7 @@ jobs:
                 .status == "FINITE_9_BOUNDARY_CASES_AND_FRESH_REPLAY_CHECKED" and .checked == 9
               elif $policy == "stable" then
                 .status == "FINITE_12_CASES_AND_FRESH_REPLAY_CHECKED" and .checked == 12
-              elif $policy == "major" or $policy == "prerelease" then
+              elif $policy == "minimum" or $policy == "major" or $policy == "prerelease" then
                 .status == "FINITE_9_CASES_AND_FRESH_REPLAY_CHECKED" and .checked == 9
               else
                 .status == "FINITE_8_CASES_AND_FRESH_REPLAY_CHECKED" and .checked == 8

@@ -46,5 +46,11 @@
     "current": "v1.9.0",
     "candidate": "v2.0.0-rc.1",
     "minimum": "v2.0.0-rc.0"
+  },
+  {
+    "name": "numeric-prerelease-order",
+    "current": "v1.0.0-beta.2",
+    "candidate": "v1.0.0-beta.11",
+    "minimum": "v1.0.0-beta.1"
   }
 ]

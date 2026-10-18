@@ -71,7 +71,7 @@ def policy(name):
                         inputs="stable-inputs.json", reference="stable-reference-inputs.json")
         return selected
     need(name == "minimum", "unknown policy")
-    return {"count": 8, "sources": SOURCES, "parameters": ("current", "candidate", "minimum"),
+    return {"count": 9, "sources": SOURCES, "parameters": ("current", "candidate", "minimum"),
             "fields": ("current", "candidate", "minimum", "current_valid", "candidate_valid", "minimum_valid",
                        "candidate_vs_current", "candidate_vs_minimum", "precedence_newer", "meets_minimum",
                        "eligible", "reason", "raw_changed"),

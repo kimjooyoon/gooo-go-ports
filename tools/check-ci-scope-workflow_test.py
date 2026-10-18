@@ -24,7 +24,7 @@ DOCS = "steps.change-scope.outputs.docs_only == 'true'"
 HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
 # The observer/browser producers and deployment body retain their reviewed bytes.
 # Native and the independent policy producer use the pinned Ubuntu 24.04 runner.
-BROWSER_JOB_SHA = "4f68acba85a436dcf5bc2423422eb09afb3c70d01174b7f829afe43552ce43fd"
+BROWSER_JOB_SHA = "45fc28d79fe032ed66dd0dcba493926d3e6d2d03db068e96e51a4edf20607e06"
 DEPLOY_BODY_SHA = "0fed0b124228b17bd80d8f95c7c7e69ac2ad854f719ca846c3e60a1359a480c8"
 PATH_STEP_SHA = 'b90f403ce804adea78dacebf554c45f3e21b1faf89b942e83f32aca2847f9df5'
 REDELIVERY_STEP_SHA = '2ce6496cbee29d77c9334f1f32dc518c96a12c193e37ab569144bdc4fd1a864e'
