@@ -1,0 +1,15 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "go/golang.org/x/mod/semver",
+    "activity": "Compare"
+  },
+  "packages": [
+    {
+      "path": "go/golang.org/x/mod/semver",
+      "sources": [
+        "ports/xmod/semver.gooo"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "name": "stable-upgrade",
+    "current": "v1.9.0",
+    "candidate": "v1.10.0"
+  },
+  {
+    "name": "stable-downgrade",
+    "current": "v2.0.0",
+    "candidate": "v1.9.0"
+  },
+  {
+    "name": "build-only-equal",
+    "current": "v1.0.0+001",
+    "candidate": "v1.0.0+002"
+  },
+  {
+    "name": "prerelease-to-stable",
+    "current": "v1.0.0-rc.1",
+    "candidate": "v1.0.0"
+  },
+  {
+    "name": "stable-to-prerelease",
+    "current": "v1.0.0",
+    "candidate": "v1.0.0-rc.1"
+  },
+  {
+    "name": "invalid-current",
+    "current": "bad",
+    "candidate": "v1.0.0"
+  },
+  {
+    "name": "invalid-candidate",
+    "current": "v1.0.0",
+    "candidate": "bad"
+  },
+  {
+    "name": "shorthand",
+    "current": "v1",
+    "candidate": "v1.1"
+  }
+]
