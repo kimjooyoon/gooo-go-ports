@@ -1,0 +1,6 @@
+{
+  "name": "gooo-first-program",
+  "version": "0.1.0",
+  "description": "Gooo source-edit, native execution and saved replay instructions",
+  "contextFileName": ".agents/skills/gooo-first-program/SKILL.md"
+}

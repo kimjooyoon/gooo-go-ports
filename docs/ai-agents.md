@@ -65,6 +65,7 @@ After opening a checkout in your agent, ask:
 | Cursor | Supports repository `.agents/skills`; use its skill selector or the task above. |
 | GitHub Copilot CLI | Documents repository `.agents/skills` support; use the explicit task above. Copilot activation has not been tested here. |
 | Claude Code | Use the explicit file-based task above. For native skill discovery, copy this skill directory into a new `.claude/skills/gooo-first-program` directory without replacing an existing skill. |
+| Gemini CLI | The optional extension below loads the same first-program file as extension context. |
 
 These are local repository or user-installed workflows. A public skill file does
 not install itself into unrelated sessions. Follow the client's scope and trust
@@ -86,6 +87,37 @@ every changed and unchanged field, and the edited replay parent in one JSON
 summary. Run it after saving all three records. It checks the tutorial's bounded
 record profile; it does not execute an agent or authorize effects. The older
 immutable installation snapshots below retain their original manual workflow.
+
+### Use the instructions with Gemini CLI
+
+The root [extension manifest](../gemini-extension.json) points directly to the
+existing first-program file. It supplies extension context, rather than a lazily
+activated Gemini Agent Skill. There is one maintained copy of the instructions.
+
+Gemini CLI installs extensions in its user profile and enables them globally by
+default. Review this repository and the installation scope, then use its
+[extension installation flow](https://geminicli.com/docs/extensions/):
+
+```sh
+gemini extensions install https://github.com/kimjooyoon/gooo-go-ports \
+  --ref ab76fcdab771d65099ae19c68854438f20dc7c06
+gemini extensions list
+```
+
+Check that `gooo-first-program` is listed, then start Gemini CLI in your Gooo
+task checkout and use the first-program task above. The command pins the extension
+to the tested commit; its instructions retain their own immutable tutorial
+snapshot, compiler revision and Go version. Use the documented native setup to
+run or edit Gooo source and preserve existing project files.
+
+The manifest adds no MCP server or hooks. Gemini CLI **0.64.0** validated this
+manifest and linked the local extension in a fresh Gemini CLI profile on macOS.
+Its JSON list reported one active extension with the existing first-program
+context path and no registered Agent Skills. A separate remote installation at
+the pinned commit matched the manifest and canonical context byte-for-byte and
+reported that same active context path. Model context injection and a
+Gemini-completed Gooo task remain unverified. A gallery listing alone does not
+establish that an agent completed the task.
 
 ### Install the skill with Tessl
 
