@@ -53,6 +53,19 @@ and creation-time reconciliation are a separate evidence layer. The underlying
 reader continues to return `NATIVE_RECEIPTS_CHECKED_PRODUCER_UNAUTHENTICATED`,
 `producer_authenticated: false` and `native_acceptance: false`.
 
+The first hosted attempt (`39133306424`, source `64b95b67`) failed before
+completing the full comparison. One worker received `queued`/null run metadata;
+that pair is now accepted only alongside the exact current job's separate
+`in_progress`/null check. Failed, cancelled, unknown and foreign records still
+refuse. Two other workers reported missing relative standard-library paths from
+the shared `-trimpath` verifier. Every planner/worker/join child now receives an
+explicit `GOROOT` from the selected canonical Go installation and its `bin`
+first on `PATH`, replacing ambient `GOROOT`. The path is observed per job;
+existing Go binary/version and source hashes remain the cross-runner identity.
+A bounded local Go1.27.2 probe reproduced the empty root and verified both source
+reads with the same binary and explicit root. This does not establish a successful
+hosted full82 run or a speed improvement; both remain unverified after this fix.
+
 Artifacts expire after one day. Downloads are capped at 512MiB per ZIP; each
 extracted artifact is capped at 2GiB, 100,000 entries and 64MiB per file. These
 finite experimental limits have not been measured against a hosted full shard

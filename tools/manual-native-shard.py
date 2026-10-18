@@ -132,8 +132,11 @@ def validate_run(run, context):
     need(run["repository"]["full_name"] == run["head_repository"]["full_name"] == REPOSITORY
          and integer(run["repository"]["id"]) == integer(run["head_repository"]["id"]),
          "foreign official repository")
-    need(run["status"] in ("in_progress", "completed") and
-         run.get("conclusion") in (None, "success"), "failed or cancelled run")
+    # A current run can still be queued while the official own-job record is running.
+    # API.run_jobs separately requires that exact current job to be in progress.
+    need("conclusion" in run and (run["status"], run["conclusion"]) in
+         (("queued", None), ("in_progress", None), ("completed", "success")),
+         "failed, cancelled or unknown run state")
 
 
 def validate_jobs(document, context, names, completed):
@@ -356,12 +359,27 @@ class API:
                            "sha256": h.hexdigest(), "download_elapsed_ns": time.monotonic_ns() - started})
 
 
-def child_environment():
-    # Compiler/native/Go children do not receive workflow API/runtime credentials.
-    allowed = ("PATH", "HOME", "GOROOT", "GOCACHE", "GOMODCACHE", "TMPDIR")
+def go_installation_root(go):
+    need(go.is_absolute() and go.resolve() == go and go.is_file() and
+         not go.is_symlink() and go.name == "go" and go.parent.name == "bin",
+         "canonical selected Go installation executable required")
+    root = go.parent.parent
+    need((root / "bin/go").samefile(go) and (root / "src").is_dir() and
+         (root / "pkg/tool").is_dir(), "selected Go installation layout required")
+    for relative in ("src/math/bits/make_tables.go", "src/image/draw/draw.go"):
+        source = root / relative
+        need(source.is_file() and not source.is_symlink(), "selected Go standard library source required")
+    return root
+
+
+def child_environment(go):
+    # Never inherit an unrelated GOROOT or pass workflow API/runtime credentials.
+    root = go_installation_root(go)
+    allowed = ("PATH", "HOME", "GOCACHE", "GOMODCACHE", "TMPDIR")
     env = {k: os.environ[k] for k in allowed if k in os.environ}
-    env.update(GOTOOLCHAIN="local", GOWORK="off", GOENV="off", CGO_ENABLED="0",
+    env.update(GOROOT=str(root), GOTOOLCHAIN="local", GOWORK="off", GOENV="off", CGO_ENABLED="0",
                GOMAXPROCS="2", GOFLAGS="-mod=readonly -p=1")
+    env["PATH"] = str(go.parent) + (os.pathsep + env["PATH"] if env.get("PATH") else "")
     return env
 
 
@@ -383,16 +401,18 @@ def owned_size(root):
 
 
 class Commands:
-    def __init__(self, root, out, owned_limit=3 << 30):
+    def __init__(self, root, out, go, owned_limit=3 << 30):
         self.root, self.out, self.records = root, out, []
+        self.go, self.go_root = go, go_installation_root(go)
         self.owned_limit = owned_limit
 
     def run(self, label, args, seconds):
         started = time.monotonic_ns()
-        record = {"label": label, "argv": [str(a) for a in args], "state": "STARTED"}
+        record = {"label": label, "argv": [str(a) for a in args], "state": "STARTED",
+                  "goroot": str(self.go_root)}
         self.records.append(record)
         with (self.out / (label + ".stdout")).open("xb") as stdout, (self.out / (label + ".stderr")).open("xb") as stderr:
-            process = subprocess.Popen(args, cwd=self.root, env=child_environment(),
+            process = subprocess.Popen(args, cwd=self.root, env=child_environment(self.go),
                                        stdout=stdout, stderr=stderr, start_new_session=True)
             try:
                 stop = time.monotonic() + available(seconds)
@@ -631,12 +651,14 @@ def main():
     need((args.phase == "worker" and type(args.index) is int and 0 <= args.index < 3) or
          (args.phase != "worker" and args.index is None), "exact worker index only")
     work.mkdir(mode=0o700)
-    context, api, commands = None, None, Commands(root, work, (8 << 30) if args.phase == "join" else (3 << 30))
+    owned_limit = (8 << 30) if args.phase == "join" else (3 << 30)
+    context, api, commands = None, None, None
     started = time.monotonic_ns()
     DEADLINE = time.monotonic() + {"plan": 540, "worker": 2280, "join": 2520}[args.phase]
     handlers = {number: signal.signal(number, interrupted) for number in (signal.SIGTERM, signal.SIGINT)}
     try:
         context = current_context(root)
+        commands = Commands(root, work, go, owned_limit)
         api = API(context, work)
         if args.phase == "plan":
             plan_phase(root, work, context, api, commands, go)
@@ -654,9 +676,12 @@ def main():
         try:
             write_json(work / "observations.json", {"schema": "gooo/manual-native-shard-observations/v1",
                    "phase": args.phase, "elapsed_ns": time.monotonic_ns() - started,
-                   "commands": commands.records, "transfers": api.calls if api else [],
+                   "commands": commands.records if commands else [], "transfers": api.calls if api else [],
                    "producer_authenticated": False, "native_acceptance": False,
-                   "sampled_owned_byte_limit": commands.owned_limit,
+                   "selected_go": str(go),
+                   "selected_goroot": str(commands.go_root) if commands else None,
+                   "selected_goroot_validated": commands is not None,
+                   "sampled_owned_byte_limit": owned_limit,
                    "phase_budget_seconds": {"plan": 540, "worker": 2280, "join": 2520}[args.phase],
                    "scope": "Observed command/download intervals and bytes include monitoring overhead. Logs are sampled every250ms and owned work every2s, not kernel quotas. Independent runner clocks are not combined into a legacy timing footer or a speed comparison. Hard runner kill cannot guarantee diagnostic upload."})
         finally:
