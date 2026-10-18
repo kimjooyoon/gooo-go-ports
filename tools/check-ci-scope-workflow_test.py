@@ -24,7 +24,7 @@ DOCS = "steps.change-scope.outputs.docs_only == 'true'"
 HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
 # The observer/browser producers and deployment body retain their reviewed bytes.
 # Native and the independent policy producer use the pinned Ubuntu 24.04 runner.
-BROWSER_JOB_SHA = "5113fe819d192dd218d1c575ea8e6d69af3521074c438560cd89988c00b763a4"
+BROWSER_JOB_SHA = "474ea57e828f3fd7b7c12d9e87811da1ffc0435d8768dd87e1cb5b0bafc1bfe4"
 DEPLOY_BODY_SHA = "0fed0b124228b17bd80d8f95c7c7e69ac2ad854f719ca846c3e60a1359a480c8"
 PATH_STEP_SHA = 'b90f403ce804adea78dacebf554c45f3e21b1faf89b942e83f32aca2847f9df5'
 REDELIVERY_STEP_SHA = '2ce6496cbee29d77c9334f1f32dc518c96a12c193e37ab569144bdc4fd1a864e'
@@ -1083,6 +1083,61 @@ def validate(text):
 
 
 class WorkflowScopeTests(unittest.TestCase):
+    def test_tutorial_change_requires_same_job_original_and_exact_saved_replay_summary(self):
+        browser = workflow_jobs(self.text)["browser-demo"]
+        _, named, _ = job_steps(browser)
+        comparison = named["Verify the edited tutorial and saved replay summary"]
+        artifact = named["Preserve tutorial edit comparison evidence"]
+        command = "python3 tools/verify-tutorial-change.py --out out/tutorial-change"
+        original = "--before out/browser/site/tutorial/execution.json"
+        self.assertEqual(comparison.count(command), 1)
+        self.assertEqual(comparison.count(original), 1)
+        self.assertLess(browser.index(named["Build the actual Gooo composition for the browser"]),
+                        browser.index(comparison))
+        self.assertLess(browser.index(comparison), browser.index(artifact))
+        self.assertEqual(field(artifact, "if"), "always()")
+        clauses = (
+            '.schema == "gooo/tutorial-change-run/v1"',
+            '.status == "TUTORIAL_CHANGE_AND_REPLAY_CHECKED"',
+            '.new_Gooo_commands == 2 and .model_calls == 0',
+            '.reused_before != null and (.commands | length) == 6',
+            '.go_binary_unchanged == true and .all_owned_process_groups_closed == true',
+            '.all_owned_processes_waited == true and .owned_work_removed == true',
+            '.finalization_errors == []',
+            '.exit == 0 and .process_group_closed == true',
+            '.output_complete == true and .stderr.bytes == 0',
+            '.schema == "gooo/tutorial-change-summary/v1"',
+            '.status == "CHECKED_FINITE_OBSERVATIONS"',
+            '.receipt_compiler.source_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2"',
+            '.repository_revision == null and .repository_revision_status == "NOT_CAPTURED"',
+            '.replay_raw_parent_sha256 == .raw_records.after.sha256',
+            '(.sources | length) == 2 and .sources[0].changed == false and .sources[1].changed == true',
+            '(.cases | length) == 4 and all(.cases[]; (.fields | length) == 4)',
+            '([.cases[].fields[] | select(.changed)] | length) == 1',
+            '.cases[2].fields[3].name == "label"',
+            '.cases[2].fields[3].before == "sensor: high"',
+            '.cases[2].fields[3].after == "sensor: low"',
+            '.cases[2].fields[3].replay == "sensor: low"',
+        )
+        mutations = [
+            self.text.replace(comparison, "", 1),
+            self.text.replace(artifact, "", 1),
+            self.text.replace(comparison, comparison.replace(command, "true # " + command, 1), 1),
+            self.text.replace(comparison, comparison.replace(original, "", 1), 1),
+        ]
+        for wrong in ("out/previous-run/execution.json", "out/browser/site/tutorial/replay.json",
+                      "out/browser/site/tutorial/boundary-execution.json"):
+            mutations.append(self.text.replace(comparison,
+                comparison.replace(original, "--before " + wrong, 1), 1))
+        for clause in clauses:
+            self.assertEqual(comparison.count(clause), 1)
+            mutations.append(self.text.replace(comparison,
+                comparison.replace(clause, "true", 1), 1))
+        for altered in mutations:
+            self.assertNotEqual(altered, self.text)
+            with self.subTest(tutorial_change=altered[altered.index("  browser-demo:"):][:400]), self.assertRaises(ValueError):
+                validate(altered)
+
     def test_native_expected_export_is_exact_root_only_once_and_before_any_native_query(self):
         named, _ = named_steps(self.text)
         comparison = named["Compare the ports with Go and replay every batch"]
