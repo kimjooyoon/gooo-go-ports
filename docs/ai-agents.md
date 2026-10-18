@@ -291,6 +291,35 @@ compiler issue before passing a minimal case to the language repository.
   controls. Preserve the original six observations and all fourteen result
   fields. `READY_TO_REASSESS` does not grant a retry or refresh supplied facts;
   current request binding, guidance and a host-owned atomic claim remain separate.
+
+  For one public-input trial, give your agent this task:
+
+  > Reuse a `kimjooyoon/gooo-go-ports` checkout matching
+  > `2b2d972f40057b1c9339c89afcb8b3be161a60c9`, or use a separate task directory
+  > at that revision, with its pinned compiler `83928fa` and Go **1.27.2**.
+  > Copy `examples/retry-after-facts/request.json` into a fresh output directory
+  > and change only `elapsed_seconds` from `59` to `60`. Keep the repository
+  > source and 113-input corpus unchanged. Follow the README's one-request strict
+  > gate, native execution and saved replay, using fresh paths and the same input.
+  > Expected at this boundary: `state="READY_TO_REASSESS"`,
+  > `reason="COOLDOWN_ELAPSED"`, `remaining_seconds=0`. Report what actually ran.
+  > Return the six public input values and all fourteen actual fields at
+  > `result.runtime.traces[0].deliveries[0].actual`, or the first failed command,
+  > exit status and diagnostic. Include the actual checkout revision,
+  > compiler/Go identity and agent/OS when available, plus one real API or
+  > automation task this helps with—or say that it does not help.
+  > A setup failure or missing version detail is still useful feedback.
+
+  If you want to share feedback, put that short report in the
+  [existing feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml),
+  choosing **Native setup, verification, or replay**. Use the supplied synthetic
+  input; keep raw receipts and local paths private. Review any diagnostic before
+  sharing, and upload or attach nothing automatically. These facts do not send
+  a request, start a timer or authorize a retry.
+
+  If you use the Tessl skill published from `146e07c`, it directs new workspaces
+  to the older `e1e279a` tutorial snapshot. This checkout task uses the separate
+  revision above; that skill version alone does not supply this Retry-After example.
 - **Evaluate a selected If-Match condition:** use the [bounded compatibility core](../ports/net/http/README.md#selected-if-match-compatibility-core), `if-match.workspace.json` and its strict `cmd/if-match-input` handoff. Preserve both original Texts; `condition`0/1/2 means none/true/false. Header selection, authenticated current facts and applying a write are separate.
 - **Edit and regression-check an isolated ETag project:** [export the current
   three-source project](../templates/etag-project/README.md), edit its Gooo

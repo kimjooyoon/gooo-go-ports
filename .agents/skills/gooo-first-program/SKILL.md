@@ -100,3 +100,8 @@ For a request outside this example, use the checkout's language and porting
 documentation to assess support before promising an implementation. The fixed
 API-policy Action compares two sealed profiles; it does not load this edited
 tutorial or arbitrary policies. This example does not authorize live API effects.
+
+For an API-automation follow-on after the tutorial, see the
+[cooldown-facts trial](https://github.com/kimjooyoon/gooo-go-ports/blob/f8eae4204ef0aef6b8c3801cf6a1cf46da7a4f5a/docs/ai-agents.md#choose-a-task-that-matches-the-current-capability).
+It uses a separate pinned checkout and optional feedback route. Keep this
+tutorial and its receipts; the supplied cooldown facts do not authorize retries.
