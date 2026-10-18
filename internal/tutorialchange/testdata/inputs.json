@@ -1,0 +1,13 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {"app/report:Describe.input0": -5,
+     "app/report:Describe.input1": "sensor"},
+    {"app/report:Describe.input0": 42,
+     "app/report:Describe.input1": "sensor"},
+    {"app/report:Describe.input0": 75,
+     "app/report:Describe.input1": "sensor"},
+    {"app/report:Describe.input0": 105,
+     "app/report:Describe.input1": "sensor"}
+  ]
+}

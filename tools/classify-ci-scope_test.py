@@ -55,7 +55,8 @@ class GitScopeTests(unittest.TestCase):
         self.base = self.commit("base")
 
     def git(self, *args):
-        return subprocess.check_output(["git", "-C", str(self.repo), *args], env=self.env).decode().strip()
+        return subprocess.check_output(["git", "-c", "maintenance.auto=false", "-c", "gc.auto=0",
+                                        "-C", str(self.repo), *args], env=self.env).decode().strip()
 
     def commit(self, message):
         self.git("commit", "-q", "-m", message)

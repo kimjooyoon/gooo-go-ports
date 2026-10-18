@@ -1,0 +1,23 @@
+package report
+namespace learn_gooo_report
+import limits "example/limits"
+
+entity Integer id "urn:gooo:type:integer"
+entity Text id "urn:gooo:type:string"
+
+// Field names are used in source and JSON; each field also has its own ID.
+// Field types use the lowercase keywords integer, boolean and string.
+entity Summary id "urn:learn-gooo:summary" fields {
+    field score id "urn:learn-gooo:score" type integer required one
+    field remaining id "urn:learn-gooo:remaining" type integer required one
+    field in_range id "urn:learn-gooo:in-range-field" type boolean required one
+    field label id "urn:learn-gooo:label" type string required one
+}
+
+// Multiple inputs are called input0, input1, ... in declaration order.
+activity Describe(Integer, Text) -> Summary id "urn:learn-gooo:describe"
+computes `let score = limits.Clamp(input0)
+let label = input1 + ": low"
+if score >= 60 { label = input1 + ": high" }
+return Summary{score: score, remaining: 100 - score,
+    in_range: limits.InRange(input0), label: label}`

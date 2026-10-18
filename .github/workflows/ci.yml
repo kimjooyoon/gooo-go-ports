@@ -1705,6 +1705,45 @@ jobs:
           node tools/source-view-smoke.cjs out/browser/site | tee out/browser/source-view-smoke.json
           node tools/browser-codegen-smoke.cjs out/browser/site/codegen out/browser/codegen-evidence | tee out/browser/codegen-smoke.json
         shell: bash --noprofile --norc -e -o pipefail {0}
+      - name: Verify the edited tutorial and saved replay summary
+        run: |
+          python3 tools/verify-tutorial-change.py --out out/tutorial-change \
+            --before out/browser/site/tutorial/execution.json
+          jq -e '
+            .schema == "gooo/tutorial-change-run/v1" and
+            .status == "TUTORIAL_CHANGE_AND_REPLAY_CHECKED" and
+            .compiler_pin == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+            .new_Gooo_commands == 2 and .model_calls == 0 and
+            .reused_before != null and (.commands | length) == 6 and
+            .repository_sources_unchanged == true and .compiler_binary_unchanged == true and
+            .go_binary_unchanged == true and .all_owned_process_groups_closed == true and
+            .all_owned_processes_waited == true and .owned_work_removed == true and
+            .finalization_errors == [] and
+            all(.commands[]; .exit == 0 and .process_group_closed == true and
+              .output_complete == true and .stderr.bytes == 0)
+          ' out/tutorial-change/run.json
+          jq -e '
+            .schema == "gooo/tutorial-change-summary/v1" and
+            .status == "CHECKED_FINITE_OBSERVATIONS" and
+            .receipt_compiler.source_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+            .repository_revision == null and .repository_revision_status == "NOT_CAPTURED" and
+            .replay_raw_parent_sha256 == .raw_records.after.sha256 and
+            (.sources | length) == 2 and .sources[0].changed == false and .sources[1].changed == true and
+            (.cases | length) == 4 and all(.cases[]; (.fields | length) == 4) and
+            ([.cases[].fields[] | select(.changed)] | length) == 1 and
+            .cases[2].fields[3].name == "label" and
+            .cases[2].fields[3].before == "sensor: high" and
+            .cases[2].fields[3].after == "sensor: low" and
+            .cases[2].fields[3].replay == "sensor: low"
+          ' out/tutorial-change/summary.json
+      - name: Preserve tutorial edit comparison evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: gooo-tutorial-change-evidence
+          path: out/tutorial-change/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Preserve the tested site and provenance
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:

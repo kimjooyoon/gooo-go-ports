@@ -66,6 +66,13 @@ The skill explains the signed-int64 and 1,024-byte Text limits of this example.
 An input-only `OBSERVED` result is a finite execution observation, not a proof
 for all inputs. Preserve a first failure and its diagnostic.
 
+Newer checkouts also provide a [saved-change comparison command](../examples/learn-gooo/README.md#compare-the-saved-change).
+For the supplied threshold edit, it joins both source identities, the compiler,
+every changed and unchanged field, and the edited replay parent in one JSON
+summary. Run it after saving all three records. It checks the tutorial's bounded
+record profile; it does not execute an agent or authorize effects. The older
+immutable installation snapshots below retain their original manual workflow.
+
 ### Install the skill with GitHub CLI
 
 GitHub CLI's preview `skill` commands can fetch this skill directly. This route

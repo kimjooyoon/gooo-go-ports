@@ -112,6 +112,42 @@ instead, with new `threshold-80-execution.json` and `threshold-80-replay.json`
 filenames. Replay the newly created record; the original receipt retains the
 original program. To return to the original example, change `80` back to `60`.
 
+## Compare the saved change
+
+From a repository checkout containing `cmd/check-tutorial-change`, capture the
+compiler's build information separately and compare the three saved records:
+
+```sh
+./.gooo version --build --json > out/learn-gooo/compiler-build.json
+go run ./cmd/check-tutorial-change \
+  --before out/learn-gooo/execution.json \
+  --after out/learn-gooo/threshold-80-execution.json \
+  --replay out/learn-gooo/threshold-80-replay.json \
+  --compiler-build out/learn-gooo/compiler-build.json
+```
+
+The JSON summary joins the source digests, compiler identity, all four fields for
+all four supplied inputs, and the link from replay to the edited record. It
+checks this exact threshold-60 to threshold-80 example. A changed input, another
+edit or an unsupported record format is refused with nonzero exit and no result
+on stdout. Keep that diagnostic and the original records.
+
+A source digest identifies the source represented in a record; it is separate
+from a raw file checksum or repository Git commit. A local source edit can leave
+Git HEAD unchanged. The full compiler build information is also separate from
+the generated program's runtime build timings. These are unsigned, finite local
+observations and consistency checks, not proof of execution authenticity,
+correctness for every input or permission to perform an API action.
+
+For an automated fresh run without editing repository sources, use
+`python3 tools/verify-tutorial-change.py --out out/tutorial-change-new` from the
+repository root after setup. This optional runner also needs Python 3, keeps the
+three records and summary, and removes its own temporary workspace and Go cache.
+Select an installed Go 1.27.2 executable on `PATH` or with `--go /path/to/go`;
+the runner disables toolchain switching and module downloads. Choose a new
+output directory each time. CI reuses the already checked original
+tutorial record from the same job, then executes and replays the copied edit.
+
 ## Inputs and transport
 
 Scores accept the full signed 64-bit range. The browser sends and displays them
