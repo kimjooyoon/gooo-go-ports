@@ -80,6 +80,63 @@ class Boundaries(unittest.TestCase):
         with self.assertRaises(ValueError):
             verify.synchronized(reference[:-1], None, selected)
 
+    def test_stable_sync_preserves_minimum_and_upgrade_profiles(self):
+        base = Path(__file__).parent
+        reference = json.loads((base / "stable-reference-inputs.json").read_text())
+        inputs = json.loads((base / "stable-inputs.json").read_text())
+        minimum = copy.deepcopy(verify.policy("minimum"))
+        upgrade = copy.deepcopy(verify.policy("upgrade"))
+        selected = verify.policy("stable")
+        self.assertEqual(selected["parameters"], ("current", "candidate", "minimum"))
+        self.assertEqual(selected["entry"], "app/version-eligibility:AssessStableSameMajorUpdate")
+        self.assertEqual(selected["rid"], "gooo://go-ports/examples/version-eligibility/v1/stable-same-major-result")
+        self.assertEqual(len(selected["fields"]), 16)
+        self.assertEqual(selected["fields"], minimum["fields"][:-1] +
+                         ("same_major", "candidate_stable", "policy_eligible", "policy_reason"))
+        self.assertEqual(selected["types"], minimum["types"][:-1] + (bool, bool, bool, str))
+        rows = verify.synchronized(reference, inputs, selected)
+        self.assertEqual(len(rows), 12)
+        for row, original in zip(rows, reference):
+            self.assertEqual(row, {selected["entry"] + ".input" + str(i): original[key]
+                                   for i, key in enumerate(("current", "candidate", "minimum"))})
+        for mutate in (lambda x: x["inputs"][0].pop(selected["entry"] + ".input2"),
+                       lambda x: x["inputs"][0].update({selected["entry"] + ".input2": True}),
+                       lambda x: x["inputs"].reverse()):
+            changed = copy.deepcopy(inputs)
+            mutate(changed)
+            with self.assertRaises(ValueError):
+                verify.synchronized(reference, changed, selected)
+        self.assertEqual(verify.policy("minimum"), minimum)
+        self.assertEqual(verify.policy("upgrade"), upgrade)
+        self.assertEqual(len(minimum["fields"]), 13)
+        self.assertEqual(minimum["fields"][-1], "raw_changed")
+        self.assertEqual(upgrade["fields"], verify.FIELDS)
+
+    def test_major_and_prerelease_share_single_text_anchors(self):
+        reference = json.loads((Path(__file__).parent / "projection-reference-inputs.json").read_text())
+        versions = [row["version"] for row in reference]
+        for name, activity in (("major", "Major"), ("prerelease", "Prerelease")):
+            with self.subTest(policy=name):
+                selected = verify.policy(name)
+                self.assertEqual(selected["reference"], "projection-reference-inputs.json")
+                self.assertEqual(selected["parameters"], ("version",))
+                self.assertEqual(selected["sources"], verify.SOURCES[:1])
+                self.assertEqual(selected["entry"], "go/golang.org/x/mod/semver:" + activity)
+                self.assertEqual(selected["aid"], "gooo://golang.org/x/mod/semver/" + activity)
+                self.assertTrue(selected["scalar"])
+                self.assertIs(selected["scalar_type"], str)
+                self.assertIsNone(selected["inputs"])
+                rows = verify.synchronized(reference, None, selected)
+                self.assertEqual(len(rows), 9)
+                self.assertEqual(rows, [{selected["entry"]: value} for value in versions])
+                for mutate in (lambda x: x[0].update(version=True),
+                               lambda x: x[0].update(candidate="v1.0.0"),
+                               lambda x: x.pop()):
+                    changed = copy.deepcopy(reference)
+                    mutate(changed)
+                    with self.assertRaises(ValueError):
+                        verify.synchronized(changed, None, selected)
+
     def test_buildinfo_replacement_and_wrong_checksum_refused(self):
         good = {"GoVersion": "go1.27.2", "Path": verify.ORACLE,
                 "Main": {"Path": verify.ORACLE},

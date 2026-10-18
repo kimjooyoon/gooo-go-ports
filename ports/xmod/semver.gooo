@@ -202,3 +202,15 @@ if minor != 0 { return minor }
 let patch = CompareNumeric(left.patch, right.patch)
 if patch != 0 { return patch }
 return ComparePrerelease(left.prerelease, right.prerelease)`
+
+// Public bounded adaptations of the pinned Go Major and Prerelease APIs.
+// Parts is reused only after the complete version has passed IsValid.
+activity Major(Text) -> Text id "gooo://golang.org/x/mod/semver/Major"
+computes `if !IsValid(input) { return "" }
+let parsed = Parts(input)
+return "v" + parsed.major`
+
+activity Prerelease(Text) -> Text id "gooo://golang.org/x/mod/semver/Prerelease"
+computes `if !IsValid(input) { return "" }
+let parsed = Parts(input)
+return parsed.prerelease`

@@ -1,0 +1,65 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "app/version-eligibility:AssessStableSameMajorUpdate.input0": "v1.2.3",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input1": "v1.2.4",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input2": "v1.2.0"
+    },
+    {
+      "app/version-eligibility:AssessStableSameMajorUpdate.input0": "v1.9.0",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input1": "v2.0.0",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input2": "v1.0.0"
+    },
+    {
+      "app/version-eligibility:AssessStableSameMajorUpdate.input0": "v1.0.0",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input1": "v1.1.0-rc.1",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input2": "v1.0.0"
+    },
+    {
+      "app/version-eligibility:AssessStableSameMajorUpdate.input0": "v1.9.0",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input1": "v2.0.0-rc.1",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input2": "v1.0.0"
+    },
+    {
+      "app/version-eligibility:AssessStableSameMajorUpdate.input0": "v0.1.0",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input1": "v0.2.0",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input2": "v0.0.1"
+    },
+    {
+      "app/version-eligibility:AssessStableSameMajorUpdate.input0": "v1",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input1": "v1.1",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input2": "v1.0.0"
+    },
+    {
+      "app/version-eligibility:AssessStableSameMajorUpdate.input0": "v1.2.3+001",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input1": "v1.2.3+002",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input2": "v1.0.0"
+    },
+    {
+      "app/version-eligibility:AssessStableSameMajorUpdate.input0": "bad",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input1": "v1.1.0-rc.1",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input2": "v1.0.0"
+    },
+    {
+      "app/version-eligibility:AssessStableSameMajorUpdate.input0": "v1.0.0",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input1": "bad",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input2": "v1.0.0"
+    },
+    {
+      "app/version-eligibility:AssessStableSameMajorUpdate.input0": "v1.9.0",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input1": "v2.0.0-rc.1",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input2": "bad"
+    },
+    {
+      "app/version-eligibility:AssessStableSameMajorUpdate.input0": "v1.9.0",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input1": "v2.0.0-rc.1",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input2": "v3.0.0"
+    },
+    {
+      "app/version-eligibility:AssessStableSameMajorUpdate.input0": "v99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.0.0",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input1": "v99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.0.1",
+      "app/version-eligibility:AssessStableSameMajorUpdate.input2": "v99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.0.0"
+    }
+  ]
+}

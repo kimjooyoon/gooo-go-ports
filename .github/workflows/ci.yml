@@ -1756,6 +1756,7 @@ jobs:
           ./.gooo check ports/xmod/semver.gooo
           ./.gooo check examples/version-eligibility/main.gooo
           timeout -k 10s 20s python3 -I -B examples/version-eligibility/verify_test.py -v
+          timeout -k 10s 20s python3 -I -B examples/version-eligibility/request-inputs_test.py -v
           timeout -k 10s 60s env GOMODCACHE="$SEMVER_MODULE_CACHE" \
             GOPRIVATE= GONOPROXY= GONOSUMDB= GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org \
             "$NATIVE_GO" -C examples/version-eligibility/oracle mod download -json golang.org/x/mod@v0.29.0 \
@@ -1768,7 +1769,7 @@ jobs:
           ' out/semver-example/module-download.json
           export GOMODCACHE="$SEMVER_MODULE_CACHE" GOPROXY=off GOSUMDB=off GOPRIVATE= GONOPROXY= GONOSUMDB=
           timeout -k 10s 30s "$NATIVE_GO" -C examples/version-eligibility/oracle vet -mod=readonly ./...
-          for policy in upgrade minimum compare-boundary; do
+          for policy in upgrade minimum compare-boundary stable major prerelease; do
             timeout -k 15s 120s python3 -I -B examples/version-eligibility/verify.py \
               --policy "$policy" --compiler "$PWD/.gooo" --go "$NATIVE_GO" \
               --module-cache "$SEMVER_MODULE_CACHE" --out "out/semver-example/$policy"
@@ -1777,6 +1778,10 @@ jobs:
               .policy == $policy and
               (if $policy == "compare-boundary" then
                 .status == "FINITE_9_BOUNDARY_CASES_AND_FRESH_REPLAY_CHECKED" and .checked == 9
+              elif $policy == "stable" then
+                .status == "FINITE_12_CASES_AND_FRESH_REPLAY_CHECKED" and .checked == 12
+              elif $policy == "major" or $policy == "prerelease" then
+                .status == "FINITE_9_CASES_AND_FRESH_REPLAY_CHECKED" and .checked == 9
               else
                 .status == "FINITE_8_CASES_AND_FRESH_REPLAY_CHECKED" and .checked == 8
               end) and
