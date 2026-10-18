@@ -1756,6 +1756,7 @@ jobs:
           ./.gooo check ports/xmod/semver.gooo
           ./.gooo check examples/version-eligibility/main.gooo
           timeout -k 10s 20s python3 -I -B examples/version-eligibility/verify_test.py -v
+          timeout -k 10s 20s python3 -I -B examples/version-eligibility/request-inputs_test.py -v
           timeout -k 10s 60s env GOMODCACHE="$SEMVER_MODULE_CACHE" \
             GOPRIVATE= GONOPROXY= GONOSUMDB= GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org \
             "$NATIVE_GO" -C examples/version-eligibility/oracle mod download -json golang.org/x/mod@v0.29.0 \

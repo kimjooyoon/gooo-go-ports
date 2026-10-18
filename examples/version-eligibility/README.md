@@ -31,8 +31,9 @@ wins: `invalid_current`, `invalid_candidate`, `invalid_minimum`, `not_newer`,
 `below_minimum`, then `eligible`. Consume `eligible` with `reason`: an invalid
 minimum sorts below a valid candidate, so `meets_minimum` alone is insufficient.
 
-Edit matching values in `minimum-inputs.json` and
-`minimum-reference-inputs.json` to try another case and check it independently.
+Use the single-request workflow below to try your own versions. To extend the
+independent fixture checks, edit matching values in `minimum-inputs.json` and
+`minimum-reference-inputs.json`.
 Each input is decoded valid UTF-8 Text of at most 1,024 bytes, without trimming.
 Shorthand `v1` and `v1.1` follows the pinned Go reference.
 
@@ -41,6 +42,43 @@ Build metadata does not change precedence: `v1.0.0+001` to `v1.0.0+002` has
 `v1.9.0` to `v2.0.0-rc.1` meets `v2.0.0-rc.0`. This rule does not enforce a
 stable release channel or major-version compatibility. The supplied minimum is
 data; this example does not fetch, authorize or perform a deployment.
+
+## Try your own current, candidate and minimum
+
+Create one `request.json`; the eight-case fixtures and Go reference inputs do not
+need editing:
+
+```json
+{"current":"v1.0.0","candidate":"v2.0.0","minimum":"v3.0.0"}
+```
+
+From the repository root, convert that request, execute Gooo, save a fresh replay
+and display its thirteen facts. The new temporary directory preserves existing
+files; `set -e` stops before execution if conversion fails.
+
+```sh
+set -e
+version_request_dir="$(mktemp -d)"
+python3 examples/version-eligibility/request-inputs.py < request.json > "$version_request_dir/inputs.json"
+./.gooo package execute --json --inputs "$version_request_dir/inputs.json" version-minimum.workspace.json > "$version_request_dir/execution.json"
+./.gooo package replay --json --receipt "$version_request_dir/execution.json" --inputs "$version_request_dir/inputs.json" version-minimum.workspace.json > "$version_request_dir/replay.json"
+jq -ce '.result.runtime.traces[0].deliveries[0].actual' "$version_request_dir/replay.json"
+```
+
+This request produces `eligible=false` with `reason="below_minimum"`: the candidate
+is newer than current, but below the supplied minimum. `jq` displays the result
+object and exits successfully even when its `eligible` field is false. It does
+not validate the receipt or grant authority. Input-only Gooo receipts remain
+`OBSERVED`; the three finite oracle test profiles are separate.
+
+The converter accepts exactly three strings, each at most 1024 UTF-8 bytes, in a
+JSON document of at most 32 KiB. It rejects duplicate decoded keys, missing or
+unknown keys, non-string values, malformed/trailing JSON, invalid UTF-8 and
+unpaired surrogate escapes. An input validation failure prints a diagnostic to
+stderr, returns exit 1 and emits no inputs. Incorrect command arguments return exit 2.
+Invalid version syntax, empty strings and surrounding whitespace are preserved
+as Text so Gooo can return its own validity and reason fields. The converter
+does not call Gooo, import the Go oracle, compute eligibility or apply an upgrade.
 
 ## Compare without a minimum
 

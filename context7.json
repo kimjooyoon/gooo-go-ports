@@ -1,10 +1,11 @@
 {
   "$schema": "https://context7.com/schema/context7.json",
   "projectTitle": "Gooo Go Ports",
-  "description": "Selected Go APIs implemented in the experimental Gooo language, with runnable importing examples, independent Go references and saved replay. Includes bounded ETag/header diagnostics and comparison of two supplied API policy profiles. The language engine is kimjooyoon/meta-ontology-go.",
+  "description": "Selected Go APIs implemented in the experimental Gooo language, with runnable importing examples, independent Go references and saved replay. Includes version-upgrade eligibility with minimum-version rules, bounded ETag/header diagnostics and comparison of two supplied API policy profiles. The language engine is kimjooyoon/meta-ontology-go.",
   "folders": [
     "examples/learn-gooo",
     "docs",
+    "examples/version-eligibility",
     "examples/api-policy-revision",
     "examples/api-policy-ci",
     "examples/versioned-grant-change",
@@ -19,7 +20,8 @@
     "ports/net/http",
     "ports/net/textproto",
     "ports/strconv",
-    "ports/path"
+    "ports/path",
+    "ports/xmod"
   ],
   "excludeFolders": [
     "**/evidence",
@@ -68,6 +70,7 @@
     "The current checkout compares cel-api-original-v1 with cel-api-readonly-principal-v1, preserving nine supplied facts and requiring a present, nonempty principal for an otherwise allowed read. The API CI Action example pins an earlier module with cel-api-readonly-v1; use each selected module and saved generation with its own profile names. The integrating host supplies current identity and effect authority.",
     "Gooo owns port and policy calculations. Preserve original values, upstream attribution and API differences; unsupported Gooo behavior must not silently fall back to handwritten Go semantics.",
     "Pure diagnostic and comparison calculations need no per-request human approval. Enforcing an effect belongs to a trusted integrating host that supplies current facts and applies its documented authority and atomicity contract.",
-    "For ETag tasks, use examples/strong-validator-facts and ports/net/http. Each operand must already be decoded Unicode-scalar valid UTF-8 Text of 0–1,024 bytes; callers own transport validity and this bound. The original thirteen-field Report separates raw header validity, parsed-tag strength and trailing content. Raw ETagStrongMatch does not validate grammar. These facts do not implement full If-Match, current-resource matching, authorization or atomic writes."
+    "For ETag tasks, use examples/strong-validator-facts and ports/net/http. Each operand must already be decoded Unicode-scalar valid UTF-8 Text of 0–1,024 bytes; callers own transport validity and this bound. The original thirteen-field Report separates raw header validity, parsed-tag strength and trailing content. Raw ETagStrongMatch does not validate grammar. These facts do not implement full If-Match, current-resource matching, authorization or atomic writes.",
+    "For version-update tasks, use examples/version-eligibility and ports/xmod. A plain JSON current/candidate/minimum request is converted to existing Gooo inputs without computing eligibility. AssessUpdate returns validity, precedence, eligibility and a reason; all three versions must be valid, the candidate newer than current and at least minimum. Each Text is at most 1,024 UTF-8 bytes without trimming. These rules do not enforce stable channels, major-version compatibility or deployment authority. The 25 finite Go-reference cases are separate from a custom input-only OBSERVED execution and saved replay."
   ]
 }
