@@ -1,0 +1,16 @@
+{
+  "schema": "gooo/url-component-source/v1",
+  "project": "https://go.dev",
+  "revision": "022c8636110ebac86a9b88724cda168ed713c21f",
+  "version": "go1.27.2",
+  "license": "BSD-3-Clause",
+  "license_file": "third_party/GO-LICENSE",
+  "source_sha256": {
+    "src/net/url/url.go": "44c33f88526abf3b5955d6c97297be5c9d228e741b33e52c940dcac5a496e091",
+    "src/net/url/encoding_table.go": "274e5ad203d6c38c41fe435eb9e5fc65ae1a38e98b44daa9b6355ba0d3fdac09",
+    "src/net/url/gen_encoding_table.go": "cd0f5020e4a5aa9741411afb4ab1bf73b9e9f40cd950e2bb9b369a773fdd9033"
+  },
+  "domain": "Unicode scalar UTF-8 Text, 0..341 encoded bytes; component escaping only",
+  "native_catalog": false,
+  "verification": "Separate input-only Report execution and saved replay; not part of the 82-suite native catalog"
+}

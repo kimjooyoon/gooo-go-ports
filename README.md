@@ -77,6 +77,12 @@ using independent Go references and saved replay. Its verification catalog conta
 including selected HTTP, Unicode, signed-decimal, literal-text, slash-path, UUID,
 integer, color, duration, rectangle and fixed-point APIs and importing diagnostic programs.
 Separate IPv4 and other sidecar examples have their own checks and are not added to the catalog's execution totals.
+The [URL component facts sidecar](examples/url-context-facts/README.md) implements
+bounded `net/url.PathEscape` and `QueryEscape` in Gooo and combines both in an
+original ten-field report. Preserve the input, compare path-segment and query-value
+encodings, and replay the result. Its strict adapter refuses malformed external
+JSON or more than 341 decoded UTF-8 bytes. The independent Go comparison and
+native receipts remain separate from the catalog totals.
 The RectangleIn/FitsCrop suites have completed finite native execution and saved
 replay with an independent raw-receipt audit; see the [verification evidence](evidence/rectangle-in-fits-crop-20261012.json).
 The literal-text workflow includes a reviewed 24-input native pilot and repaired
@@ -317,6 +323,7 @@ unchanged. See the [domain, strict input route and reference mapping](ports/net/
 | Diagnose a header automatically | [Header facts](examples/header-field-facts/README.md) | Strictly preprocess external JSON, preserve both decoded strings, and inspect the first invalid byte and twelve returned fields |
 | Plan and apply one diagnostic header locally | [Original header-addition policy](examples/diagnostic-header-addition/README.md) and [generated host](examples/header-addition-host/README.md) | Combine header/payload diagnostics with exact request facts, inspect the first refusal, and atomically recheck a local revision before applying |
 | Assess an uncertain API operation automatically | [Automatic redelivery policy](examples/automatic-redelivery/README.md) | Supply nine bound facts, inspect all fifteen returned fields and save a replay; eligibility requires a later host-owned atomic claim |
+| Choose an encoding for an API component | [URL context facts](examples/url-context-facts/README.md) | Preserve one original Text, compare path-segment and query-value encodings with byte lengths and change facts, and replay the ten-field Gooo result |
 | Classify four IPv4 octets in Gooo | [IPv4 address facts](examples/ipv4-address-facts/README.md) | Preserve all four supplied integers, distinguish invalid input from valid addresses, and inspect six overlapping classification flags |
 | Compare two IPv4 rule scopes | [IPv4 rule-pair facts](examples/ipv4-rule-pair/README.md) | Preserve typed inputs, distinguish invalid/non-comparable rules and inspect a conflict witness |
 | Detect different spellings with the same cleaned slash path | [Path alias quickstart](examples/path-alias-facts/README.md#run-and-inspect-three-pairs) | Inspect three original pairs, change a copied input and save a new execution/replay; no filesystem or authorization action |
@@ -647,7 +654,7 @@ with the page URL or command and what happened. A working demo or shared input l
 is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
-현재 Go 표준 라이브러리, x/image와 Google UUID의 HTTP·Unicode·IPv4 분류·prefix 질의·십진수 파싱·문자열 검색·분할·슬래시 경로·UUID 형식 검사·파싱·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 API 56개를 소스로 표현합니다.
+현재 Go 표준 라이브러리, x/image와 Google UUID의 HTTP·Unicode·IPv4 분류·prefix 질의·십진수 파싱·문자열 검색·분할·슬래시 경로·UUID 형식 검사·파싱·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 API 56개와, 별도 URL 구성 요소 인코딩 API 2개를 소스로 표현합니다.
 Go 소스를 분석해 타입·경계값·실패 동작을 명시하고, 계산은 `ports/**/*.gooo`에 구현합니다.
 Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행 기록 저장을 맡습니다.
 
@@ -664,6 +671,7 @@ Go 검증 도구는 원본 함수 호출, 입력 전달, 결과 비교와 실행
 | `go/net/http/precondition` | `IfMatchCondition` | Two selected UTF-8 Texts 0–1,024 bytes each; original Go enum in one integer record. [Input route and scope](ports/net/http/README.md#selected-if-match-compatibility-core) |
 | `go/golang.org/x/net/http/httpguts` | `ValidHeaderFieldName`, `ValidHeaderFieldValue` | decoded valid UTF-8 Text 각각 최대 1,024바이트. 이름은 비어 있지 않은 ASCII token, 값은 HTAB 외 C0와 DEL을 거부. [원본 차이와 도메인](ports/net/httpguts/README.md), [자동 판단용 12필드 구성](examples/header-field-facts/README.md) |
 | `go/net/textproto` | `CanonicalMIMEHeaderKey` | Decoded valid UTF-8 Text 0–1,024 bytes; valid-token ASCII casing, invalid/empty input identity. [Domain and source](ports/net/textproto/README.md), [original eight-field validity/witness composition](examples/canonical-header-key/README.md) |
+| `go/net/url` | `PathEscape`, `QueryEscape` | Unicode-scalar UTF-8 Text 0–341 bytes; component escaping only, at most 1,023 output bytes. Strict external adapter and original ten-field [URL context facts](examples/url-context-facts/README.md); separate native sidecar, without URL parsing or authorization |
 | `go/strconv` | `ParseIntDecimal64` | decoded valid UTF-8 Text 최대1,024바이트에서 ParseInt(s,10,64)의 원래 입력·정확한 int64·구문/범위 오류 구별을4필드로 보존. unsigned overflow와 뒤따른 잘못된 문자 우선순위도 유지. [도메인과 차이](ports/strconv/README.md) |
 | `go/path` | `Ext`, `IsAbs` | 명시적 valid UTF-8 Text 최대 1,024바이트. 마지막 slash 이후 확장자와 선행 slash 여부를 Gooo로 계산. 역슬래시는 일반 문자이며 정규화·파일 접근·권한 판정 없음. 기존 catalog와 별도 native sidecar |
 | `go/path` | `Clean` | Decoded valid UTF-8 Text up to 1,024 bytes; slash-only lexical cleaning, with empty input becoming `.`. No URL decoding, filesystem access or permission check. [Domain and provenance](ports/path/README.md), [original alias-facts composition](examples/path-alias-facts/README.md) |

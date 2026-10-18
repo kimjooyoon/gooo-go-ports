@@ -1,0 +1,31 @@
+// Original Gooo composition. Preserve the input and expose both URL component
+// encodings so a caller can choose the encoding appropriate to its API field.
+// Domain: 0..341 UTF-8 bytes. No parsing, decoding, authorization or effects.
+package url_context_facts
+namespace gooo_url_context_facts
+import url "go/net/url"
+entity Text id "gooo://std/text"
+entity URLContextFacts id "gooo://url-context-facts/report-result/v1" fields {
+ field original id "gooo://url-context-facts/report-result/v1/original" type string required one
+ field path_segment id "gooo://url-context-facts/report-result/v1/path-segment" type string required one
+ field query_value id "gooo://url-context-facts/report-result/v1/query-value" type string required one
+ field input_bytes id "gooo://url-context-facts/report-result/v1/input-bytes" type integer required one
+ field path_bytes id "gooo://url-context-facts/report-result/v1/path-bytes" type integer required one
+ field query_bytes id "gooo://url-context-facts/report-result/v1/query-bytes" type integer required one
+ field path_changed id "gooo://url-context-facts/report-result/v1/path-changed" type boolean required one
+ field query_changed id "gooo://url-context-facts/report-result/v1/query-changed" type boolean required one
+ field contexts_differ id "gooo://url-context-facts/report-result/v1/contexts-differ" type boolean required one
+ field original_percent_offset id "gooo://url-context-facts/report-result/v1/original-percent-offset" type integer required one
+}
+
+activity Report(Text) -> URLContextFacts id "gooo://url-context-facts/report/v1" computes `let path = url.PathEscape(input)
+let query = url.QueryEscape(input)
+let size = int64(len(input))
+let percent = -1
+let offset = 0
+for offset = 0; offset < 341; offset = offset + 1 {
+    if offset < size && percent < 0 {
+        if int64(input[offset]) == 37 { percent = offset }
+    }
+}
+return URLContextFacts{original: input, path_segment: path, query_value: query, input_bytes: size, path_bytes: int64(len(path)), query_bytes: int64(len(query)), path_changed: path != input, query_changed: query != input, contexts_differ: path != query, original_percent_offset: percent}`

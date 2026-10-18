@@ -1,0 +1,389 @@
+{
+  "schema": "gooo/body-composition-inputs/v1",
+  "inputs": [
+    {
+      "app/url-context-facts:Report": ""
+    },
+    {
+      "app/url-context-facts:Report": "abc-_.~"
+    },
+    {
+      "app/url-context-facts:Report": "a b"
+    },
+    {
+      "app/url-context-facts:Report": "a+b"
+    },
+    {
+      "app/url-context-facts:Report": "a/b"
+    },
+    {
+      "app/url-context-facts:Report": "a;b,c?d"
+    },
+    {
+      "app/url-context-facts:Report": "$&+:=@"
+    },
+    {
+      "app/url-context-facts:Report": "%20"
+    },
+    {
+      "app/url-context-facts:Report": "é/한글"
+    },
+    {
+      "app/url-context-facts:Report": "\u0000\n"
+    },
+    {
+      "app/url-context-facts:Report": "é"
+    },
+    {
+      "app/url-context-facts:Report": "🚀"
+    },
+    {
+      "app/url-context-facts:Report": "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+    },
+    {
+      "app/url-context-facts:Report": "/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
+    },
+    {
+      "app/url-context-facts:Report": "                                                                                                                                                                                                                                                                                                                                                     "
+    },
+    {
+      "app/url-context-facts:Report": "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+    },
+    {
+      "app/url-context-facts:Report": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "app/url-context-facts:Report": "한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한ab"
+    },
+    {
+      "app/url-context-facts:Report": " "
+    },
+    {
+      "app/url-context-facts:Report": "!"
+    },
+    {
+      "app/url-context-facts:Report": "\""
+    },
+    {
+      "app/url-context-facts:Report": "#"
+    },
+    {
+      "app/url-context-facts:Report": "$"
+    },
+    {
+      "app/url-context-facts:Report": "%"
+    },
+    {
+      "app/url-context-facts:Report": "&"
+    },
+    {
+      "app/url-context-facts:Report": "'"
+    },
+    {
+      "app/url-context-facts:Report": "("
+    },
+    {
+      "app/url-context-facts:Report": ")"
+    },
+    {
+      "app/url-context-facts:Report": "*"
+    },
+    {
+      "app/url-context-facts:Report": "+"
+    },
+    {
+      "app/url-context-facts:Report": ","
+    },
+    {
+      "app/url-context-facts:Report": "-"
+    },
+    {
+      "app/url-context-facts:Report": "."
+    },
+    {
+      "app/url-context-facts:Report": "/"
+    },
+    {
+      "app/url-context-facts:Report": "0"
+    },
+    {
+      "app/url-context-facts:Report": "1"
+    },
+    {
+      "app/url-context-facts:Report": "2"
+    },
+    {
+      "app/url-context-facts:Report": "3"
+    },
+    {
+      "app/url-context-facts:Report": "4"
+    },
+    {
+      "app/url-context-facts:Report": "5"
+    },
+    {
+      "app/url-context-facts:Report": "6"
+    },
+    {
+      "app/url-context-facts:Report": "7"
+    },
+    {
+      "app/url-context-facts:Report": "8"
+    },
+    {
+      "app/url-context-facts:Report": "9"
+    },
+    {
+      "app/url-context-facts:Report": ":"
+    },
+    {
+      "app/url-context-facts:Report": ";"
+    },
+    {
+      "app/url-context-facts:Report": "<"
+    },
+    {
+      "app/url-context-facts:Report": "="
+    },
+    {
+      "app/url-context-facts:Report": ">"
+    },
+    {
+      "app/url-context-facts:Report": "?"
+    },
+    {
+      "app/url-context-facts:Report": "@"
+    },
+    {
+      "app/url-context-facts:Report": "A"
+    },
+    {
+      "app/url-context-facts:Report": "B"
+    },
+    {
+      "app/url-context-facts:Report": "C"
+    },
+    {
+      "app/url-context-facts:Report": "D"
+    },
+    {
+      "app/url-context-facts:Report": "E"
+    },
+    {
+      "app/url-context-facts:Report": "F"
+    },
+    {
+      "app/url-context-facts:Report": "G"
+    },
+    {
+      "app/url-context-facts:Report": "H"
+    },
+    {
+      "app/url-context-facts:Report": "I"
+    },
+    {
+      "app/url-context-facts:Report": "J"
+    },
+    {
+      "app/url-context-facts:Report": "K"
+    },
+    {
+      "app/url-context-facts:Report": "L"
+    },
+    {
+      "app/url-context-facts:Report": "M"
+    },
+    {
+      "app/url-context-facts:Report": "N"
+    },
+    {
+      "app/url-context-facts:Report": "O"
+    },
+    {
+      "app/url-context-facts:Report": "P"
+    },
+    {
+      "app/url-context-facts:Report": "Q"
+    },
+    {
+      "app/url-context-facts:Report": "R"
+    },
+    {
+      "app/url-context-facts:Report": "S"
+    },
+    {
+      "app/url-context-facts:Report": "T"
+    },
+    {
+      "app/url-context-facts:Report": "U"
+    },
+    {
+      "app/url-context-facts:Report": "V"
+    },
+    {
+      "app/url-context-facts:Report": "W"
+    },
+    {
+      "app/url-context-facts:Report": "X"
+    },
+    {
+      "app/url-context-facts:Report": "Y"
+    },
+    {
+      "app/url-context-facts:Report": "Z"
+    },
+    {
+      "app/url-context-facts:Report": "["
+    },
+    {
+      "app/url-context-facts:Report": "\\"
+    },
+    {
+      "app/url-context-facts:Report": "]"
+    },
+    {
+      "app/url-context-facts:Report": "^"
+    },
+    {
+      "app/url-context-facts:Report": "_"
+    },
+    {
+      "app/url-context-facts:Report": "`"
+    },
+    {
+      "app/url-context-facts:Report": "a"
+    },
+    {
+      "app/url-context-facts:Report": "b"
+    },
+    {
+      "app/url-context-facts:Report": "c"
+    },
+    {
+      "app/url-context-facts:Report": "d"
+    },
+    {
+      "app/url-context-facts:Report": "e"
+    },
+    {
+      "app/url-context-facts:Report": "f"
+    },
+    {
+      "app/url-context-facts:Report": "g"
+    },
+    {
+      "app/url-context-facts:Report": "h"
+    },
+    {
+      "app/url-context-facts:Report": "i"
+    },
+    {
+      "app/url-context-facts:Report": "j"
+    },
+    {
+      "app/url-context-facts:Report": "k"
+    },
+    {
+      "app/url-context-facts:Report": "l"
+    },
+    {
+      "app/url-context-facts:Report": "m"
+    },
+    {
+      "app/url-context-facts:Report": "n"
+    },
+    {
+      "app/url-context-facts:Report": "o"
+    },
+    {
+      "app/url-context-facts:Report": "p"
+    },
+    {
+      "app/url-context-facts:Report": "q"
+    },
+    {
+      "app/url-context-facts:Report": "r"
+    },
+    {
+      "app/url-context-facts:Report": "s"
+    },
+    {
+      "app/url-context-facts:Report": "t"
+    },
+    {
+      "app/url-context-facts:Report": "u"
+    },
+    {
+      "app/url-context-facts:Report": "v"
+    },
+    {
+      "app/url-context-facts:Report": "w"
+    },
+    {
+      "app/url-context-facts:Report": "x"
+    },
+    {
+      "app/url-context-facts:Report": "y"
+    },
+    {
+      "app/url-context-facts:Report": "z"
+    },
+    {
+      "app/url-context-facts:Report": "{"
+    },
+    {
+      "app/url-context-facts:Report": "|"
+    },
+    {
+      "app/url-context-facts:Report": "}"
+    },
+    {
+      "app/url-context-facts:Report": "~"
+    },
+    {
+      "app/url-context-facts:Report": ""
+    },
+    {
+      "app/url-context-facts:Report": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f"
+    },
+    {
+      "app/url-context-facts:Report": ""
+    },
+    {
+      "app/url-context-facts:Report": "߿"
+    },
+    {
+      "app/url-context-facts:Report": "ࠀ"
+    },
+    {
+      "app/url-context-facts:Report": "퟿"
+    },
+    {
+      "app/url-context-facts:Report": ""
+    },
+    {
+      "app/url-context-facts:Report": "�"
+    },
+    {
+      "app/url-context-facts:Report": "￿"
+    },
+    {
+      "app/url-context-facts:Report": "𐀀"
+    },
+    {
+      "app/url-context-facts:Report": "􏿿"
+    },
+    {
+      "app/url-context-facts:Report": "ééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééa"
+    },
+    {
+      "app/url-context-facts:Report": "  <>&"
+    },
+    {
+      "app/url-context-facts:Report": "x%2F/y"
+    },
+    {
+      "app/url-context-facts:Report": "x?z#q"
+    }
+  ]
+}

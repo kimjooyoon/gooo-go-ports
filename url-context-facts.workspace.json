@@ -1,0 +1,8 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {"package_path": "app/url-context-facts", "activity": "Report"},
+  "packages": [
+    {"path": "go/net/url", "sources": ["ports/net/url/escape.gooo"]},
+    {"path": "app/url-context-facts", "sources": ["examples/url-context-facts/main.gooo"]}
+  ]
+}

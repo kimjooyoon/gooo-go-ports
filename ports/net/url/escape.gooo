@@ -1,0 +1,41 @@
+// Copyright 2009 The Go Authors. All rights reserved.
+// Copyright 2025 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license in
+// third_party/GO-LICENSE. Immutable upstream sources: provenance.json.
+// Bounded adaptation of Go 1.27.2 net/url component escaping.
+// Domain: Unicode scalar UTF-8 Text of 0..341 bytes; output <=1023 bytes.
+// The input adapter must refuse unsupported input before binding. Direct Gooo
+// callers have the same precondition; this loop is not a truncation API.
+package url
+namespace gooo_net_url
+entity Text id "gooo://std/text"
+entity Boolean id "gooo://std/boolean"
+
+activity EscapeComponent(Text, Boolean) -> Text id "gooo://go/net/url/escape-component/v1" computes `let text = input0
+let query = input1
+let size = int64(len(text))
+let output = ""
+let digits = "0123456789ABCDEF"
+let offset = 0
+for offset = 0; offset < 341; offset = offset + 1 {
+    if offset < size {
+        let octet = int64(text[offset])
+        let allowed = (octet >= 65 && octet <= 90) || (octet >= 97 && octet <= 122) || (octet >= 48 && octet <= 57) || octet == 45 || octet == 95 || octet == 46 || octet == 126
+        if !query && (octet == 36 || octet == 38 || octet == 43 || octet == 58 || octet == 61 || octet == 64) { allowed = true }
+        if query && octet == 32 {
+            output = output + "+"
+        } else {
+            if allowed {
+                output = output + text[offset:offset + 1]
+            } else {
+                let high = octet / 16
+                let low = octet % 16
+                output = output + "%" + digits[high:high + 1] + digits[low:low + 1]
+            }
+        }
+    }
+}
+return output`
+
+activity PathEscape(Text) -> Text id "gooo://go/net/url/PathEscape" computes `return EscapeComponent(input, false)`
+activity QueryEscape(Text) -> Text id "gooo://go/net/url/QueryEscape" computes `return EscapeComponent(input, true)`

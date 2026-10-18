@@ -22,7 +22,7 @@ PREFLIGHT_STEP_SHA = '6e31886b6e7f6f6edcb6681b651bf985c5388c35141dc1b01d4310f298
 PREFLIGHT = {PREFLIGHT_STEP_NAME}
 DOCS = "steps.change-scope.outputs.docs_only == 'true'"
 HEADER_SHA = "5cd59615e4403c288bd003ae603c7e55a813f42af0bbbb4715effebf8d093e9b"
-# The observer/browser producers and deployment body retain their reviewed bytes.
+# The browser producer and deployment body retain their reviewed bytes.
 # Native and the independent policy producer use the pinned Ubuntu 24.04 runner.
 BROWSER_JOB_SHA = "45fc28d79fe032ed66dd0dcba493926d3e6d2d03db068e96e51a4edf20607e06"
 DEPLOY_BODY_SHA = "0fed0b124228b17bd80d8f95c7c7e69ac2ad854f719ca846c3e60a1359a480c8"
@@ -50,6 +50,23 @@ REDELIVERY_COMMON_COMMANDS = (
 )
 PATH_COMMAND = 'python3 -B tools/check-path-facts.py --repository . --out out/path-facts --go "$(go env GOROOT)/bin/go" --compiler ./.gooo --timeout 300'
 PATH_COMMON_UNIT_BLOCK = '          # Full scope runs these13 Python controls inside the bounded sidecar once.\n          # Documentation-only PRs still run them as common non-native checks.\n          if [ "${{ steps.change-scope.outputs.docs_only }}" = "true" ]; then\n            python3 -I -B tools/check-path-facts_test.py\n          fi\n'
+URL_COMPONENT_STEP = 'Verify the isolated native URL component facts sidecar'
+URL_COMPONENT_PRIOR_WORKFLOW_SHA = '4a71b0a2b33b7ddc3b951f93f32f0662f80658f54e82afe88c8b24a5aebce77d'
+URL_COMPONENT_COMMAND = 'python3 -I -B tools/check-url-components.py --root "$PWD" --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/url-components"'
+URL_COMPONENT_COMMON = 'python3 -I -B tools/check-url-components_test.py'
+URL_COMPONENT_DECLARATIONS = ('ports/net/url/escape.gooo', 'examples/url-context-facts/main.gooo')
+URL_COMPONENT_PRIOR_DECLARATIONS_SHA = '1b6519f1807a7835281717384ad00afef2c17b7f3816713229fb84fceba03c4e'
+URL_COMPONENT_DECLARATIONS_SHA = 'e8fc134018ea36713b23fc87fe86a2aacd27d2f96edddb0abc08c7a516b1b5dc'
+URL_COMPONENT_CLAUSES = (
+    '.schema == "gooo/url-component-verification/v1"',
+    '.status == "NATIVE_ORACLE_AND_SAVED_REPLAY_MATCH"',
+    '.input_rows == 128', '.unique_inputs == 128',
+    '.typed_fields_per_layer == 1280', '.native_runs_per_layer == 2',
+    '.finite_total == 0', '.model_calls == 0', '.catalog_extended == false',
+    '(.negative_controls | length) == 27', '(.negative_controls | unique | length) == 27',
+    '.processes_closed == true', '.owned_work_removed == true',
+    "' out/url-components/summary.json",
+)
 # The exporter reads only reviewed source expectations. Actual native evidence is
 # compared later; it is never an input to the expected-data command.
 NATIVE_EXPECTED_COMMAND = 'python3 -I -B tools/native_verification_contract.py --root "$PWD" > out/native-contract-expected.json'
@@ -355,6 +372,7 @@ LAST_INDEX_INPUT_COMMAND = 'python3 -I -B tools/check-last-index-inputs.py --roo
 LAST_INDEX_INPUT_UNIT = "python3 -I -B tools/check-last-index-inputs_test.py -v"
 LAST_INDEX_INPUT_STEP_SHA = "f04c072dbdb48ea1a4ddddfae92d2c427685bc250dca2209ff02357c3c883082"
 HEAVY = {
+    URL_COMPONENT_STEP,
     LAST_INDEX_INPUT_STEP_NAME,
     AUTOBOT_STEP,
     EDITABLE_POLICY_STEP,
@@ -395,7 +413,7 @@ UPLOADS = {"Upload offline policy experiment evidence", "Upload execution and di
 DOC_STEPS = {"Report documentation-only native scope", "Preserve documentation scope and compiler identity"}
 NATIVE_COMMAND = re.compile(
     r"(?:\.gooo\s+package\s+(?:execute|replay)|\./cmd/(?:verify|check-unicode|check-literal-text-report)\b|"
-    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text|last-index)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py|tools/check-path-facts\.py|tools/check-redelivery-policy\.py|tools/check-ipv4\.py|tools/check-header-facts-inputs\.py|tools/check-header-addition-inputs\.py|tools/check-header-addition-host\.py|examples/versioned-grant-change/verify\.py|examples/editable-api-policy/run\.py|tools/check-editable-policy-helpers\.py|examples/autobot-resolver/verify\.py)"
+    r"tools/probe\.sh|tools/check-(?:fits-crop|literal-text|last-index)-inputs\.py|decision-policy-pilot/run\.sh|cel-api-policy/verify\.py|agentmesh-service-policy/verify\.py|api-policy-revision/verify\.py|tools/check-api-policy-public-consumer\.py|tools/check-path-facts\.py|tools/check-url-components\.py|tools/check-redelivery-policy\.py|tools/check-ipv4\.py|tools/check-header-facts-inputs\.py|tools/check-header-addition-inputs\.py|tools/check-header-addition-host\.py|examples/versioned-grant-change/verify\.py|examples/editable-api-policy/run\.py|tools/check-editable-policy-helpers\.py|examples/autobot-resolver/verify\.py)"
 )
 PUBLIC_CONSUMER_COMMAND = 'python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer" --bundle-cli'
 PUBLIC_CONSUMER_CLAUSES = (
@@ -437,9 +455,10 @@ LITERAL_COMMANDS = {
 # exact full-history checkout. These are source-integrity locks, not CI PASS.
 OBSERVER_HEADER_SHA = '46cb0e7392dd3f3fb9562bccea6b27e5194ffcf59e1a58bab4c07b99aba08bd9'
 NATIVE_HEADER_SHA = '584d7a22663deb57be052a69d58f2b19e6233a7eefb7d4ce6ad1d5b650d48e69'
-# Add JSON events without changing the full race-test scope or package budget;
-# all other required observer commands remain byte-identical and once.
-OBSERVER_STEP_SHA = '95a801fa3b7e40b3eb3c229d90a9f9e378ffab67557c3c6bfb563c175810b186'
+# Add the URL sidecar's pure controls once. Removing that exact new line must
+# recover all previously reviewed observer bytes, including its full race scope.
+OBSERVER_PRIOR_STEP_SHA = '95a801fa3b7e40b3eb3c229d90a9f9e378ffab67557c3c6bfb563c175810b186'
+OBSERVER_STEP_SHA = 'c7c6e45c3f63a12d119cd151a3d40e95efe734bd0247add839bbe2832f76f1c3'
 OBSERVER_UPLOAD_NAME = 'Preserve Go observer test timing'
 OBSERVER_UPLOADS = {OBSERVER_UPLOAD_NAME}
 OBSERVER_UPLOAD_SHA = 'd5f0816bb5edd218d4e71c5ee870c0adfad7cc8f292c37b1b2093331b1fc4d3f'
@@ -468,6 +487,7 @@ ETAG_PROJECT_CLAUSES = (
     "' out/etag-project-evidence/summary.json",
 )
 POLICY_HEAVY = {
+    URL_COMPONENT_STEP,
     AUTOBOT_STEP,
     EDITABLE_POLICY_STEP,
     VERSIONED_GRANT_STEP,
@@ -489,11 +509,13 @@ INDEPENDENT_ARTIFACT_PATHS = ('out/api-policy-public-consumer/', 'out/path-facts
                               'out/redelivery-policy/', 'out/ipv4/')
 POLICY_PILOT_UPLOAD = 'Upload offline policy experiment evidence'
 POLICY_UPLOAD = 'Upload policy execution and diagnostic evidence'
+POLICY_PRIOR_UPLOAD_SHA = '797517ddd218879f190d48c8348a7e29a882ef51d6e6c4e6118b22cfb0f5881a'
 POLICY_DOC_REPORT = 'Report documentation-only policy scope'
 POLICY_DOC_ARTIFACT = 'Preserve documentation-only policy scope'
 POLICY_HEADER_SHA = '3d5466a5dfca722bf38d6d81f26ff8f425188d473f6a0b9ae46cdd528d209cfe'
 POLICY_SETUP_SHA = '5ccf03022b3caeab1cc1fd46bbb3fa8b54e4fc0addba08c7d39d17f449f51703'
 POLICY_STEP_SHAS = {
+    URL_COMPONENT_STEP: '55e04dd80bd317c698ae9326310b5830aebd07069b281b29ecd297cb5d4f5d6e',
     AUTOBOT_STEP: '7bb749f5983a2e35fdcde9067fc1646833bf2034b036e28b7e5f60f0a4fb7006',
     EDITABLE_POLICY_STEP: '91ecaa02b36b1a4f39fdeb3b932282373fa1e6137038e4b2e52a70290350a8cc',
     'Verify the isolated native IPv4 address facts sidecar': '6ce5d2f5e75f9ff9a7728718567ffb039c74232ef4e254ea244b7dc02fbc9ed8',
@@ -508,7 +530,7 @@ POLICY_STEP_SHAS = {
     'Upload offline policy experiment evidence': 'e4adbb294f45d4dbe4af56338b800f0d637dda27ec83055f1d799d63dac60392',
     ETAG_PROJECT_STEP: 'f11ef3c03ed5cc096b30b3d44c8a20abeb73bc5e840b8033114d94208d64f4c7',
     VERSIONED_GRANT_STEP: '04e88171f2da9d7c19b58889ad27f71359456780fce7ef11dd03c3172cc7a860',
-    'Upload policy execution and diagnostic evidence': '797517ddd218879f190d48c8348a7e29a882ef51d6e6c4e6118b22cfb0f5881a',
+    'Upload policy execution and diagnostic evidence': 'bce999d657bbc2506d6863b5ba131e64630b6151d7635bc325d4b79865d98334',
     'Report documentation-only policy scope': '472165f458bfda43733f2a1ea6bc2236c19b425b5887f3417bbe1a9d9bcab6dd',
     'Preserve documentation-only policy scope': '185d1afbfd001734dc649c227526a84d5dd993bfcd9c1243e4a1966f13db60f7',
 }
@@ -590,6 +612,11 @@ def named_steps(text):
             require(hashlib.sha256(named['Check the Go observer'].encode()).hexdigest() == OBSERVER_STEP_SHA and
                     hashlib.sha256(named['Check pinned Unicode table generation'].encode()).hexdigest() == GENERATOR_STEP_SHA,
                     "common observer/generator commands changed without guard review")
+            observer = named['Check the Go observer']
+            url_unit_line = '          ' + URL_COMPONENT_COMMON + '\n'
+            require(observer.count(url_unit_line) == 1 and
+                    hashlib.sha256(observer.replace(url_unit_line, '', 1).encode()).hexdigest() == OBSERVER_PRIOR_STEP_SHA,
+                    'URL pure controls may only add one unconditional line to the prior observer bytes')
             require(hashlib.sha256(named[OBSERVER_UPLOAD_NAME].encode()).hexdigest() == OBSERVER_UPLOAD_SHA,
                     "observer timing artifact pin, paths or failure retention changed")
             require(chunk.index(unnamed[1]) < chunk.index(named['Check the Go observer']) <
@@ -632,7 +659,7 @@ def policy_steps(chunk):
     public = named[INDEPENDENT_STEPS[0]]
     require(chunk.index(unnamed[0]) < chunk.index(classifier) < chunk.index(unnamed[1]) < chunk.index(public) < chunk.index(identity),
             'policy checkout/classifier/Go/public-consumer/compiler order changed')
-    ordered = INDEPENDENT_STEPS[1:] + ('Verify the offline decision-policy experiment', 'Verify the imported CEL API policy',
+    ordered = (URL_COMPONENT_STEP,) + INDEPENDENT_STEPS[1:] + ('Verify the offline decision-policy experiment', 'Verify the imported CEL API policy',
                'Verify the sealed API policy revision comparison', 'Verify the Agent Mesh service-pattern adaptation',
                ETAG_PROJECT_STEP, VERSIONED_GRANT_STEP, EDITABLE_POLICY_STEP, AUTOBOT_STEP, POLICY_PILOT_UPLOAD, POLICY_UPLOAD, POLICY_DOC_REPORT, POLICY_DOC_ARTIFACT)
     previous = chunk.index(identity)
@@ -643,6 +670,16 @@ def policy_steps(chunk):
             'policy Go setup and compiler build must stay full-only')
     for name in POLICY_HEAVY | INDEPENDENT_HEAVY:
         require(field(named[name], 'if') == FULL, 'policy native producer must stay full-only: ' + name)
+    url_components = named[URL_COMPONENT_STEP]
+    require(identity + url_components + named[INDEPENDENT_STEPS[1]] in chunk,
+            'URL sidecar must immediately follow the pinned compiler and precede the unchanged path sidecar')
+    require(field(url_components, 'timeout-minutes') == '5' and
+            literal_commands(url_components) == [URL_COMPONENT_COMMAND],
+            'URL sidecar must retain its finite timeout and current root/compiler/Go/fresh output command')
+    for token in URL_COMPONENT_CLAUSES:
+        require(url_components.count(token) == 1, 'URL component summary gate missing: ' + token)
+    require('set -euo pipefail' in url_components and '|| true' not in url_components,
+            'URL component execution and summary must preserve the first failure')
     exported = named[ETAG_PROJECT_STEP]
     require(field(exported, 'if') == FULL and field(exported, 'timeout-minutes') == '8',
             'exported ETag check must keep the fail-closed full-only scope and finite timeout')
@@ -694,9 +731,13 @@ def policy_steps(chunk):
             field(named[POLICY_DOC_ARTIFACT], 'if') == 'always() && ' + DOCS,
             'policy docs-only scope must be explicit and separate')
     require('name: gooo-go-ports-policy-evidence\n' in named[POLICY_UPLOAD] and
-            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n            out/etag-project/\n            out/etag-project-evidence/\n            out/api-policy-public-consumer/\n            out/api-policy-original-download.json\n            out/path-facts/\n            out/redelivery-policy/\n            out/ipv4/\n            out/versioned-grant-change/\n            out/editable-api-policy/\n            out/editable-api-policy-helpers/\n            out/autobot-resolver/\n' in named[POLICY_UPLOAD] and
+            'path: |\n            out/ci-scope.json\n            out/compiler-build.json\n            out/cel-api-policy/\n            out/api-policy-revision/\n            out/agentmesh-service-policy/\n            out/etag-project/\n            out/etag-project-evidence/\n            out/api-policy-public-consumer/\n            out/api-policy-original-download.json\n            out/url-components/\n            out/path-facts/\n            out/redelivery-policy/\n            out/ipv4/\n            out/versioned-grant-change/\n            out/editable-api-policy/\n            out/editable-api-policy-helpers/\n            out/autobot-resolver/\n' in named[POLICY_UPLOAD] and
             'if-no-files-found: warn\n' in named[POLICY_UPLOAD] and 'retention-days: 14\n' in named[POLICY_UPLOAD],
             'policy output artifacts must include current identity, original policy outputs and both exported ETag directories')
+    url_artifact_line = '            out/url-components/\n'
+    require(named[POLICY_UPLOAD].count(url_artifact_line) == 1 and
+            hashlib.sha256(named[POLICY_UPLOAD].replace(url_artifact_line, '', 1).encode()).hexdigest() == POLICY_PRIOR_UPLOAD_SHA,
+            'URL artifact may only add one path to the complete prior failure-safe policy upload')
     require('name: gooo-go-ports-policy-documentation-scope\n' in named[POLICY_DOC_ARTIFACT] and
             'path: out/ci-scope.json\n' in named[POLICY_DOC_ARTIFACT] and
             'if-no-files-found: error\n' in named[POLICY_DOC_ARTIFACT] and 'retention-days: 14\n' in named[POLICY_DOC_ARTIFACT],
@@ -750,7 +791,10 @@ def validate(text):
             hashlib.sha256(deploy[len(prefix):].encode()).hexdigest() == DEPLOY_BODY_SHA,
             "deployment may change only its reviewed direct dependency/status prefix")
     named, unnamed = named_steps(text)
-    require(len(HEAVY) == 36, "full-scope native step count changed")
+    require(len(HEAVY) == 37, "full-scope native step count changed")
+    # These72 are declarations in the source, not proof of hosted job outcomes.
+    require(len(re.findall(r'^      - (?:name|uses):', text, re.M)) == 72,
+            'reviewed workflow source step count changed')
     require(set(named) == COMMON | HEAVY | PREFLIGHT | UPLOADS | DOC_STEPS | OBSERVER_UPLOADS,
             "step roster changed without guard review")
     require(len(unnamed) == 2 and all(field(c, "if") is None for c in unnamed), "checkout/Go setup became conditional")
@@ -760,6 +804,13 @@ def validate(text):
     native_job = workflow_jobs(text)['native-execution']
     policy_job = workflow_jobs(text)['policy-native-checks']
     policy_named, policy_unnamed = policy_steps(policy_job)
+    prior_workflow = text.replace(policy_named[URL_COMPONENT_STEP], '', 1).replace(
+        '          ' + URL_COMPONENT_COMMON + '\n', '', 1).replace(
+        '            out/url-components/\n', '', 1)
+    for source in URL_COMPONENT_DECLARATIONS:
+        prior_workflow = prior_workflow.replace('          ./.gooo check ' + source + '\n', '', 1)
+    require(hashlib.sha256(prior_workflow.encode()).hexdigest() == URL_COMPONENT_PRIOR_WORKFLOW_SHA,
+            'URL integration may only add its native step, common unit line, two declarations and artifact path to the prior workflow bytes')
     preflight = named[PREFLIGHT_STEP_NAME]
     require(hashlib.sha256(preflight.encode()).hexdigest() == PREFLIGHT_STEP_SHA,
             "lightweight summary controls, source buffers, limits or first-failure evidence changed")
@@ -798,6 +849,9 @@ def validate(text):
     require(comparison.count(NATIVE_ALL_POPULATION_ASSERTION) == 1,
             "every native suite identity/case/batch/replay must match its ordered expected row")
     observer = named["Check the Go observer"]
+    require(literal_commands(observer).count(URL_COMPONENT_COMMON) == 1 and
+            text.count(URL_COMPONENT_COMMON) == 1,
+            'URL component pure controls must run once unconditionally as common checks')
     require(literal_commands(observer).count(NATIVE_EXPECTED_UNIT) == 1
             and text.count(NATIVE_EXPECTED_UNIT) == 1,
             "native expected-reader controls must run once as an unconditional common check")
@@ -1059,6 +1113,16 @@ def validate(text):
                   '"83928fa4538245abe33b08549da47f8cbdc50ed2"', '"CLEAN_VCS"', '"go1.27.2"'):
         require(token in identity, "compiler identity check changed")
     declarations = named["Check Gooo declarations"]
+    prior_declarations = declarations
+    require(hashlib.sha256(declarations.encode()).hexdigest() == URL_COMPONENT_DECLARATIONS_SHA,
+            'URL declarations must retain their exact reviewed common step')
+    for source in URL_COMPONENT_DECLARATIONS:
+        line = '          ./.gooo check ' + source + '\n'
+        require(declarations.count(line) == 1,
+                'URL declaration must run once unconditionally: ' + source)
+        prior_declarations = prior_declarations.replace(line, '', 1)
+    require(hashlib.sha256(prior_declarations.encode()).hexdigest() == URL_COMPONENT_PRIOR_DECLARATIONS_SHA,
+            'URL declarations may only add two commands to all prior declaration bytes')
     require("./.gooo check ports/image/geometry.gooo" in declarations
             and "./.gooo check examples/fits-crop/main.gooo" in declarations
             and "tools/probe.sh" not in declarations, "declaration/probe separation")
@@ -1120,6 +1184,119 @@ def validate(text):
 
 
 class WorkflowScopeTests(unittest.TestCase):
+    def test_url_component_source_scope_order_and_original_workflow_bytes_are_exact(self):
+        validate(self.text)
+        jobs = workflow_jobs(self.text)
+        policy, _ = policy_steps(jobs['policy-native-checks'])
+        step = policy[URL_COMPONENT_STEP]
+        identity = policy['Build and identify the pinned compiler from a clean checkout']
+        path = policy['Verify the isolated native path facts sidecar']
+        self.assertIn(identity + step + path, jobs['policy-native-checks'])
+        # A source roster is not a claim that GitHub has executed these72 steps.
+        self.assertEqual(len(re.findall(r'^      - (?:name|uses):', self.text, re.M)), 72)
+        self.assertEqual(len(HEAVY), 37)
+        prior = self.text.replace(step, '', 1).replace(
+            '          ' + URL_COMPONENT_COMMON + '\n', '', 1).replace(
+            '            out/url-components/\n', '', 1)
+        for source in URL_COMPONENT_DECLARATIONS:
+            prior = prior.replace('          ./.gooo check ' + source + '\n', '', 1)
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), URL_COMPONENT_PRIOR_WORKFLOW_SHA)
+        for replacement in ('', step + step,
+                            step.replace(FULL, DOCS, 1),
+                            step.replace(FULL, "steps.change-scope.outputs.docs_only == 'false'", 1),
+                            step.replace('        if: ' + FULL + '\n', '', 1),
+                            step.replace('timeout-minutes: 5', 'timeout-minutes: 40', 1),
+                            step.replace('        run: |', '        continue-on-error: true\n        run: |', 1)):
+            with self.subTest(step_mutation=replacement[:100]), self.assertRaises(ValueError):
+                validate(self.text.replace(step, replacement, 1))
+        without = self.text.replace(step, '', 1)
+        _, native, _ = job_steps(jobs['native-execution'])
+        for anchor in (identity, policy['Verify the original automatic redelivery policy'],
+                       native['Compare the ports with Go and replay every batch']):
+            with self.subTest(wrong_owner_or_order=anchor[:80]), self.assertRaises(ValueError):
+                validate(without.replace(anchor, step + anchor, 1))
+
+    def test_url_component_current_command_and_every_finite_summary_gate_are_required(self):
+        policy, _ = policy_steps(workflow_jobs(self.text)['policy-native-checks'])
+        step = policy[URL_COMPONENT_STEP]
+        self.assertTrue(NATIVE_COMMAND.search(URL_COMPONENT_COMMAND))
+        self.assertEqual(literal_commands(step), [URL_COMPONENT_COMMAND])
+        for token in (URL_COMPONENT_COMMAND,) + URL_COMPONENT_CLAUSES:
+            self.assertEqual(step.count(token), 1)
+            with self.subTest(missing_command_or_gate=token), self.assertRaises(ValueError):
+                validate(self.text.replace(step, step.replace(token, '', 1), 1))
+        for before, after in (('--root "$PWD"', '--root out/old-snapshot'),
+                              ('--compiler "$PWD/.gooo"', '--compiler /tmp/unbound'),
+                              ('--go "$(go env GOROOT)/bin/go"', '--go go'),
+                              ('--out "$PWD/out/url-components"', '--out out/old-receipts'),
+                              ('.input_rows == 128', '.input_rows == 18'),
+                              ('.unique_inputs == 128', '.unique_inputs == 1'),
+                              ('.typed_fields_per_layer == 1280', '.typed_fields_per_layer == 128'),
+                              ('.native_runs_per_layer == 2', '.native_runs_per_layer == 1'),
+                              ('.finite_total == 0', '.finite_total > 0'),
+                              ('.model_calls == 0', '.model_calls >= 0'),
+                              ('.catalog_extended == false', '.catalog_extended == true'),
+                              ('(.negative_controls | length) == 27', '(.negative_controls | length) > 0'),
+                              ('(.negative_controls | unique | length) == 27', '(.negative_controls | unique | length) == 1'),
+                              ('.processes_closed == true', '.processes_closed == false'),
+                              ('.owned_work_removed == true', '.owned_work_removed == false'),
+                              ('set -euo pipefail', 'set +e'),
+                              (URL_COMPONENT_COMMAND, URL_COMPONENT_COMMAND + ' || true')):
+            self.assertIn(before, step)
+            with self.subTest(weakened_gate=before), self.assertRaises(ValueError):
+                validate(self.text.replace(step, step.replace(before, after, 1), 1))
+
+    def test_url_component_common_controls_are_unconditional_and_not_native_execution(self):
+        observer = named_steps(self.text)[0]['Check the Go observer']
+        self.assertFalse(NATIVE_COMMAND.search(URL_COMPONENT_COMMON))
+        line = '          ' + URL_COMPONENT_COMMON + '\n'
+        self.assertEqual(observer.count(line), 1)
+        self.assertEqual(hashlib.sha256(observer.replace(line, '', 1).encode()).hexdigest(),
+                         OBSERVER_PRIOR_STEP_SHA)
+        for replacement in ('', line + line,
+                            '          if false; then\n  ' + line + '          fi\n',
+                            '          ' + URL_COMPONENT_COMMAND + '\n'):
+            with self.subTest(common_mutation=replacement[:100]), self.assertRaises(ValueError):
+                validate(self.text.replace(observer, observer.replace(line, replacement, 1), 1))
+
+    def test_url_component_artifact_is_complete_failure_safe_and_separate_from_docs(self):
+        policy, _ = policy_steps(workflow_jobs(self.text)['policy-native-checks'])
+        upload, docs = policy[POLICY_UPLOAD], policy[POLICY_DOC_ARTIFACT]
+        line = '            out/url-components/\n'
+        self.assertEqual(upload.count(line), 1)
+        self.assertEqual(hashlib.sha256(upload.replace(line, '', 1).encode()).hexdigest(),
+                         POLICY_PRIOR_UPLOAD_SHA)
+        for replacement in ('', line + line):
+            with self.subTest(artifact_path=replacement), self.assertRaises(ValueError):
+                validate(self.text.replace(upload, upload.replace(line, replacement, 1), 1))
+        with self.assertRaises(ValueError):
+            validate(self.text.replace(docs, docs.replace('path: out/ci-scope.json', 'path: out/url-components/', 1), 1))
+        for condition in ('', FULL, DOCS, 'always()'):
+            changed = upload.replace('        if: always() && ' + FULL + '\n',
+                                     '        if: ' + condition + '\n' if condition else '', 1)
+            with self.subTest(upload_condition=condition), self.assertRaises(ValueError):
+                validate(self.text.replace(upload, changed, 1))
+
+    def test_url_component_declarations_are_unconditional_unique_and_preserve_prior_bytes(self):
+        declarations = named_steps(self.text)[0]['Check Gooo declarations']
+        self.assertIsNone(field(declarations, 'if'))
+        prior = declarations
+        for source in URL_COMPONENT_DECLARATIONS:
+            command = './.gooo check ' + source
+            line = '          ' + command + '\n'
+            self.assertFalse(NATIVE_COMMAND.search(command))
+            self.assertEqual(literal_commands(declarations).count(command), 1)
+            prior = prior.replace(line, '', 1)
+            for replacement in ('', line + line,
+                                '          if false; then\n  ' + line + '          fi\n'):
+                with self.subTest(declaration=source, mutation=replacement[:100]), self.assertRaises(ValueError):
+                    validate(self.text.replace(declarations, declarations.replace(line, replacement, 1), 1))
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), URL_COMPONENT_PRIOR_DECLARATIONS_SHA)
+        for condition in (FULL, DOCS, "steps.change-scope.outputs.docs_only == 'false'"):
+            changed = declarations.replace('        run: |', '        if: ' + condition + '\n        run: |', 1)
+            with self.subTest(declarations_condition=condition), self.assertRaises(ValueError):
+                validate(self.text.replace(declarations, changed, 1))
+
     def test_tutorial_change_requires_same_job_original_and_exact_saved_replay_summary(self):
         browser = workflow_jobs(self.text)["browser-demo"]
         _, named, _ = job_steps(browser)

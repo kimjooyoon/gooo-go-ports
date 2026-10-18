@@ -204,6 +204,17 @@ compiler issue before passing a minimal case to the language repository.
 
 ## Choose a task that matches the current capability
 
+- **Prepare an API component without losing the original:** use the
+  [URL context facts](../examples/url-context-facts/README.md) workspace with
+  `{"text":"a+b /%20"}`. Run the strict input adapter, execute the ten-field
+  Gooo Report, and save a replay. Compare `path_segment` with `query_value` and
+  select the field matching the endpoint's declared component type. The
+  independent Go verifier accepts an optional `--inputs` document, so check your
+  own admitted inputs as well as the checked-in finite corpus. Text is limited
+  to 341 UTF-8 bytes; the report neither parses a URL nor grants permission to
+  send a request. Report the first failed command or whether these facts helped
+  with an actual API client task.
+
 - **Write a Gooo program:** use the first-program skill, then the existing
   [local edit-and-replay guide](../examples/learn-gooo/README.md#make-one-visible-change).
 - **Edit an API policy rule:** use the [editable source comparison](../examples/editable-api-policy/README.md).
