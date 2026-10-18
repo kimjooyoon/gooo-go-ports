@@ -193,7 +193,8 @@ for ordinal = 0; ordinal < 512; ordinal = ordinal + 1 {
 return 0`
 
 activity Compare(Text, Text) -> Integer id "gooo://golang.org/x/mod/semver/Compare"
-computes `let left_valid = IsValid(input0)
+computes `if input0 == input1 { return 0 }
+let left_valid = IsValid(input0)
 let right_valid = IsValid(input1)
 if !left_valid && !right_valid { return 0 }
 if !left_valid { return -1 }

@@ -22,7 +22,7 @@
     "Deploy/apply authority"
   ],
   "compiler_pin": "83928fa4538245abe33b08549da47f8cbdc50ed2",
-  "adapted_source_sha256": "54e8184ba1ccd8ed50a6e83e86b71ce58a38e6a0651a586b1f0c102bde219f83",
+  "adapted_source_sha256": "20d90c720f2b9beadb363017fadc04a40f8eaa0dcecacba5ee875c7e43953865",
   "helpers": "Internal bounded parser/record activities are not additional upstream APIs.",
   "native_evidence": "examples/version-eligibility/verify.py builds the independent original Go oracle and checks finite Gooo execution plus saved replay. Completed public runs retain separate gooo-semver-example-evidence CI artifacts.",
   "prerelease_identifier_loop": {
