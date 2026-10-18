@@ -1,0 +1,8 @@
+{
+  "header": "60",
+  "header_present": true,
+  "elapsed_seconds": 59,
+  "max_wait_seconds": 3600,
+  "request_binding_current": true,
+  "guidance_applicable": true
+}

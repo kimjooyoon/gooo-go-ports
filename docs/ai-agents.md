@@ -284,6 +284,13 @@ compiler issue before passing a minimal case to the language repository.
   [strong-validator workflow below](#inspect-etag-and-header-facts). It preserves
   raw input and separates parsed-tag strength, trailing content and raw header
   validity. It does not implement the write or full `If-Match` handling.
+- **Inspect cooldown facts before reassessing an API operation:** use the
+  [Retry-After facts prototype](../examples/retry-after-facts/README.md). Its
+  single verifier command runs the strict starter gate,113 original inputs,
+  fresh Go expectations, native execution, saved replay and eleven mutation
+  controls. Preserve the original six observations and all fourteen result
+  fields. `READY_TO_REASSESS` does not grant a retry or refresh supplied facts;
+  current request binding, guidance and a host-owned atomic claim remain separate.
 - **Evaluate a selected If-Match condition:** use the [bounded compatibility core](../ports/net/http/README.md#selected-if-match-compatibility-core), `if-match.workspace.json` and its strict `cmd/if-match-input` handoff. Preserve both original Texts; `condition`0/1/2 means none/true/false. Header selection, authenticated current facts and applying a write are separate.
 - **Edit and regression-check an isolated ETag project:** [export the current
   three-source project](../templates/etag-project/README.md), edit its Gooo
