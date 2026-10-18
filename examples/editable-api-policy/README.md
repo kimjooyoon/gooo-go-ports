@@ -41,6 +41,80 @@ forcing the original demo outcome. `--check-demo` additionally checks the
 separate original three-row literals and is intended for the unchanged demo
 and CI; omit it after editing the rule.
 
+## Extract a helper with the separate source-inspection profile
+
+The default compiler/profile keeps its existing one-activity-per-source check.
+To extract a rule into a named helper, select **`--compiler-profile
+source-inspection036`** and supply the official **Gooo0.6.36-dev** compiler at
+source revision `31497af3beaef210b5a075867b0de76cf55ee3ca`. This is an explicit
+consumer option; the repository-wide compiler pin remains83928fa.
+
+In `after.gooo`, replace
+`base.effective_principal != "synthetic:deploy-bot"` with
+`!IsDeployBot(base.effective_principal)`, and append this declaration in the same
+file. Keep the existing `EvaluateAPI` entry, imports and record unchanged:
+
+```gooo
+activity IsDeployBot(Text) -> Boolean id "gooo://editable-api-policy/is-deploy-bot/v1" computes `
+return input == "synthetic:deploy-bot"
+`
+```
+
+Prepare the matching [official release](https://github.com/kimjooyoon/meta-ontology-go/releases/tag/v0.6.36-dev)
+for your platform. The following download is specifically **Linux amd64** and
+checks that archive's SHA256 before extraction; Go1.27.2 must already be present:
+
+```sh
+(
+  set -eu
+  gooo_source_tools="$(mktemp -d "${TMPDIR:-/tmp}/gooo-source-inspection036.XXXXXX")"
+  gooo_source_archive="$gooo_source_tools/gooo-linux-amd64.tar.gz"
+  curl --fail --location --output "$gooo_source_archive" \
+    https://github.com/kimjooyoon/meta-ontology-go/releases/download/v0.6.36-dev/gooo-linux-amd64.tar.gz
+  printf '%s  %s\n' \
+    9dbd1c08b855a3c27ae43a8050531afaba724d90b24d4f72041db3a8a4a285b0 \
+    "$gooo_source_archive" | sha256sum --check --strict
+  test "$(tar -tzf "$gooo_source_archive")" = gooo
+  tar -xzf "$gooo_source_archive" -C "$gooo_source_tools" gooo
+  fixed_go="$(GOTOOLCHAIN=go1.27.2 go env GOROOT)/bin/go"
+  python3 -I -B examples/editable-api-policy/run.py \
+    --root "$PWD" --compiler "$gooo_source_tools/gooo" --go "$fixed_go" \
+    --compiler-profile source-inspection036 \
+    --out "$HOME/gooo-policy-helpers-1" --check-demo
+)
+```
+
+The runner checks the clean compiler build identity, exact source revision,
+unreplaced SDK `v0.2.51-experimental`, Go `go1.27.2` identity and selected Go
+binary hash. A fresh `package inspect --json` for each version must report
+`PREPARED`, zero program executions and zero model predictions. Every execute
+and saved replay must carry exactly that inspected program, including current
+source images, activity IDs and body hashes. The source-inspection summary
+records `prepared_inspections:2` and `package_commands:7`; its four positive
+receipts remain input-only `OBSERVED` records.
+
+Helpers and unused helpers in these selected sources are allowed in this
+profile; extra imports or a different manifest, entry or nine-input/fifteen-field
+ABI are not. For example, adding this unused helper to `after.gooo` should leave
+the three supplied decisions unchanged. Use a fresh output directory on each run:
+
+```gooo
+activity UnusedHelper(Text) -> Boolean id "gooo://editable-api-policy/unused-helper/v1" computes `
+return input == "unused"
+`
+```
+
+`--check-demo` still applies to this behavior-preserving extraction. Omit it if
+you deliberately change the rule. A control using the original `after.gooo`
+and the helper-extracted version preserved all fifteen fields for the same three
+inputs and their saved replays; comparing `before.gooo` with `after.gooo` also
+includes the intentional write-rule change and cannot isolate extraction.
+Prepared call plans come from the trusted compiler, not an independent semantic
+oracle. The control retained46 `UNMAPPED` target/value source components out
+of176 in both variants, with reason `SELECTED_RANGE_UNAVAILABLE`; matching
+missingness does not establish complete field provenance or equivalence for
+other inputs. Supplied authentication facts are still not live authority.
+
 `--inputs /absolute/path/facts.json` accepts one to three rows using the exact
 `demo-inputs.json` schema: three Boolean facts and six Unicode-scalar UTF8 Text
 facts per row, each Text at most1024bytes and the whole document at most30000bytes.

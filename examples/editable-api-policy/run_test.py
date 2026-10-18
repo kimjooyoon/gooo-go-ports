@@ -70,6 +70,85 @@ class ConsumerControls(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(RuntimeError):
                 R.producer(dict(rt, **{key: bad}), rt['go_version'], rt['go_tool_sha256'])
 
+    def inspection_profile(self):
+        lock = {'compiler_revision': R.H.REV, 'compiler_version': '0.6.32-dev', 'go_version': 'go1.27.2',
+                'consumer_compiler_profiles': {'source_inspection036': dict(R.SOURCE_INSPECTION036)}}
+        return lock, R.compiler_profile(lock, 'source-inspection036')
+
+    def test_explicit_profile_contract_and_producer_are_separate(self):
+        lock, profile = self.inspection_profile()
+        self.assertEqual(R.compiler_profile(lock)['compiler_revision'], R.H.REV)
+        for key in R.SOURCE_INSPECTION036:
+            changed = copy.deepcopy(lock); changed['consumer_compiler_profiles']['source_inspection036'][key] = 'other'
+            with self.subTest(key=key), self.assertRaises(RuntimeError):
+                R.compiler_profile(changed, 'source-inspection036')
+        rt = {'producer_source_sha': profile['compiler_revision'], 'go_tool_selection': 'explicit',
+              'go_tool_sha256': 'sha256:tool', 'go_version': 'go version go1.27.2 test/arch'}
+        R.producer(rt, rt['go_version'], rt['go_tool_sha256'], profile)
+        with self.assertRaises(RuntimeError): R.producer(rt, rt['go_version'], rt['go_tool_sha256'])
+        with self.assertRaises(RuntimeError):
+            R.producer(dict(rt, producer_source_sha=R.H.REV), rt['go_version'], rt['go_tool_sha256'], profile)
+        self.assertEqual(R.H.REV, lock['compiler_revision'])
+
+    def test_inspection_identity_requires_clean_unreplaced_sdk(self):
+        _, profile = self.inspection_profile()
+        identity = {'schema': 'gooo/build-identity/v1', 'language': 'gooo',
+                    'compiler_source_sha': profile['compiler_revision'], 'vcs_revision': profile['compiler_revision'],
+                    'source_status': 'CLEAN_VCS', 'vcs_modified': 'false', 'build_info_observed': True,
+                    'version': profile['compiler_version'], 'go_version': profile['go_version'],
+                    'native_go_required': profile['go_version'],
+                    'decision_runtime': {'module_path': 'github.com/kimjooyoon/gooo-decision-runtime',
+                                         'version': profile['decision_runtime_version'], 'replaced': False}}
+        R.compiler_identity(identity, profile)
+        for key, bad in [('compiler_source_sha', R.H.REV), ('vcs_modified', 'true'),
+                         ('build_info_observed', False), ('go_version', 'go1.27.1')]:
+            with self.subTest(key=key), self.assertRaises(RuntimeError): R.compiler_identity(dict(identity, **{key: bad}), profile)
+        for key, bad in [('module_path', 'other'), ('version', 'v0.2.41-experimental'), ('replaced', True)]:
+            changed = copy.deepcopy(identity); changed['decision_runtime'][key] = bad
+            with self.subTest(sdk_key=key), self.assertRaises(RuntimeError): R.compiler_identity(changed, profile)
+
+    def test_default_refuses_helpers_and_inspection_allows_unused_declaration(self):
+        _, profile = self.inspection_profile()
+        helper = b'\nactivity UnusedPolicy(Boolean) -> Boolean id "gooo://editable-api-policy/unused/v1" computes `return input0`\n'
+        def read(path):
+            raw = path.read_bytes()
+            return raw + helper if path == PATH.with_name('after.gooo') else raw
+        with self.assertRaisesRegex(RuntimeError, 'one activity per selected source'):
+            R.context(R.REPO, 'after', read)
+        ctx = R.context(R.REPO, 'after', read, profile)
+        self.assertIn(R.PACKAGE + ':UnusedPolicy', ctx['definitions'])
+        # A small source-contract object, not a fabricated native/PASS receipt.
+        entry = {'package_path': R.PACKAGE, 'activity': R.ACTIVITY, 'lowered_name': 'entry'}
+        participants = []
+        for key, d in ctx['definitions'].items():
+            if key.endswith(':UnusedPolicy'): continue
+            ref = entry if key == R.ENTRY else {'package_path': d['package'], 'activity': d['name'], 'lowered_name': d['name']}
+            participants.append({'activity': ref, 'activity_id': d['id'], 'lowered_activity_id': d['id'],
+                                 'source': d['source'], 'source_body_sha256': R.H.digest(d['body'].encode())})
+        program = {'schema': 'gooo/workspace-body-program/v1', 'entry': entry, 'activities': [entry],
+                   'workspace_image': {'schema': 'gooo/package-runtime-image/v1', 'init_order': [p for p, _ in ctx['packages']],
+                       'packages': [{'path': p, 'sources': [{'filename': n, 'source_digest': sha}]} for p, n, sha in ctx['images']],
+                       'entry': {'package_path': R.PACKAGE, 'source': ctx['packages'][-1][1], 'activity': R.ACTIVITY,
+                                 'inputs': R.INPUT_TYPES, 'output': 'ApiDecision'}},
+                   'pure_calls': {'schema': 'gooo/workspace-pure-calls/v1', 'activities': participants, 'sites': [
+                       {'caller': R.ENTRY, 'callee': 'app/cel-api-policy:APIAccess', 'surface': 'computes', 'start_byte': 0, 'end_byte': 1}]}}
+        R.source_program(program, ctx, profile)
+        changed = copy.deepcopy(program); changed['pure_calls']['activities'][0]['source_body_sha256'] = 'sha256:other'
+        with self.assertRaises(RuntimeError): R.source_program(changed, ctx, profile)
+        changed = copy.deepcopy(program); changed['pure_calls']['activities'][0]['activity_id'] = 'gooo://other'
+        with self.assertRaises(RuntimeError): R.source_program(changed, ctx, profile)
+
+    def test_prepared_program_mismatch_is_refused_without_using_output_values(self):
+        _, profile = self.inspection_profile()
+        program = {'lowered_gooo_source': 'current body', 'pure_calls': {'sites': [{'callee': 'original:Policy'}]}}
+        ctx = {'prepared_program': copy.deepcopy(program)}
+        R.prepared_binding(program, ctx, profile)
+        for changed in ({**program, 'lowered_gooo_source': 'different body'},
+                        {**program, 'pure_calls': {'sites': [{'callee': 'other:Policy'}]}},
+                        {**program, 'uninspected_metadata': True}):
+            with self.subTest(changed=changed), self.assertRaises(RuntimeError): R.prepared_binding(changed, ctx, profile)
+        with self.assertRaises(RuntimeError): R.prepared_binding(program, {}, profile)
+
     def test_refusal_requires_exact_parent_and_failure_kind(self):
         parent = b'original receipt'
         ctx = {'workspace': Path('/synthetic/after.workspace.json'), 'raw': b'current after manifest'}
@@ -86,6 +165,25 @@ class ConsumerControls(unittest.TestCase):
                 R.check_refusal(R.H.go_json(dict(refusal, **{key: bad})), parent, ctx)
         with self.assertRaises(RuntimeError):
             R.check_refusal(R.H.go_json(dict(refusal, inputs_digest='unexpected early-stage field')), parent, ctx)
+
+    def test_inspection_refusal_requires_exact_structured_manifest_failure(self):
+        _, profile = self.inspection_profile()
+        parent = b'original receipt'
+        ctx = {'workspace': Path('/synthetic/after.workspace.json'), 'raw': b'current after manifest'}
+        refusal = {'schema': 'gooo/workspace-body-execution-receipt/v1', 'decision': 'FAIL_CLOSED',
+                   'error': 'saved execution envelope or workspace manifest differs',
+                   'replayed_from_sha256': R.H.digest(parent), 'manifest_digest': R.H.digest(ctx['raw']),
+                   'manifest': str(ctx['workspace']), 'failure': {'code': 'REPLAY_MANIFEST_MISMATCH',
+                       'detail': 'saved execution envelope or workspace manifest differs'}}
+        R.check_refusal(R.H.go_json(refusal), parent, ctx, profile)
+        with self.assertRaises(RuntimeError): R.check_refusal(R.H.go_json(refusal), parent, ctx)
+        for failure in ({'code': 'REPLAY_SOURCE_MISMATCH', 'detail': refusal['error']},
+                        {'code': 'REPLAY_MANIFEST_MISMATCH', 'detail': 'other stage'},
+                        {**refusal['failure'], 'unknown': True}):
+            with self.subTest(failure=failure), self.assertRaises(RuntimeError):
+                R.check_refusal(R.H.go_json(dict(refusal, failure=failure)), parent, ctx, profile)
+        for changed in ({k: v for k, v in refusal.items() if k != 'failure'}, {**refusal, 'unknown': True}):
+            with self.assertRaises(RuntimeError): R.check_refusal(R.H.go_json(changed), parent, ctx, profile)
 
     def test_trace_to_reported_native_stdout_binding(self):
         values = [r['before'] for r in self.expected]

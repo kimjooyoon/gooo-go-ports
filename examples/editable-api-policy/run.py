@@ -31,6 +31,37 @@ TEXT_FIELDS = {'reason', 'access_result', 'effective_principal'}
 INPUT_TYPES = ['Boolean' if i in (0, 2, 4) else 'Text' for i in range(9)]
 DEPENDENCIES = [('go/cel.dev/cel-go/codelab', 'ports/cel/scalar_access.gooo'),
                 ('app/cel-api-policy', 'examples/cel-api-policy/main.gooo')]
+SOURCE_INSPECTION036 = {'compiler_revision': '31497af3beaef210b5a075867b0de76cf55ee3ca',
+                        'compiler_version': '0.6.36-dev',
+                        'decision_runtime_version': 'v0.2.51-experimental', 'go_version': 'go1.27.2'}
+
+
+def compiler_profile(lock, name='default'):
+    H.need(lock['compiler_revision'] == H.REV and lock['go_version'] == 'go1.27.2', 'repository tool pins')
+    if name == 'default':
+        return {'name': name, 'compiler_revision': H.REV, 'compiler_version': lock['compiler_version'],
+                'go_version': lock['go_version']}
+    H.need(name == 'source-inspection036' and
+           H.equal(lock.get('consumer_compiler_profiles', {}).get('source_inspection036'), SOURCE_INSPECTION036),
+           'explicit source-inspection036 compiler/SDK/Go contract')
+    return {'name': name, **SOURCE_INSPECTION036}
+
+
+def uses_inspection(profile):
+    return profile is not None and profile['name'] == 'source-inspection036'
+
+
+def compiler_identity(identity, profile):
+    revision = profile['compiler_revision']
+    for key, want in {'compiler_source_sha': revision, 'vcs_revision': revision, 'source_status': 'CLEAN_VCS',
+                      'vcs_modified': 'false', 'build_info_observed': True, 'version': profile['compiler_version'],
+                      'go_version': profile['go_version'], 'native_go_required': profile['go_version']}.items():
+        H.need(H.equal(identity.get(key), want), 'pinned clean compiler identity: ' + key)
+    if uses_inspection(profile):
+        H.need(identity.get('schema') == 'gooo/build-identity/v1' and identity.get('language') == 'gooo' and
+               H.equal(identity.get('decision_runtime'), {'module_path': 'github.com/kimjooyoon/gooo-decision-runtime',
+                       'version': profile['decision_runtime_version'], 'replaced': False}),
+               'source-inspection036 exact unreplaced decision runtime SDK')
 
 
 def decoded(raw):
@@ -62,8 +93,9 @@ def decision(value):
     return value
 
 
-def producer(runtime, go_version, go_sha):
-    H.need(runtime['producer_source_sha'] == H.REV and runtime['go_tool_selection'] == 'explicit' and
+def producer(runtime, go_version, go_sha, profile=None):
+    revision = H.REV if profile is None else profile['compiler_revision']
+    H.need(runtime['producer_source_sha'] == revision and runtime['go_tool_selection'] == 'explicit' and
            runtime['go_tool_sha256'] == go_sha and runtime['go_version'] == go_version, 'pinned producer and selected Go')
 
 
@@ -92,7 +124,7 @@ def compare(before, after):
             'before': before, 'after': after}
 
 
-def context(root, variant, read):
+def context(root, variant, read, profile=None):
     workspace = root / ('editable-api-policy-' + variant + '.workspace.json')
     raw = read(workspace); manifest = decoded(raw)
     packages = DEPENDENCIES + [(PACKAGE, BASE + variant + '.gooo')]
@@ -102,16 +134,23 @@ def context(root, variant, read):
     definitions = {}; images = []; records = {}
     for package, name in packages:
         text = read(root / name).decode('utf-8', 'strict')
-        activities = H.activities(text); H.need(len(activities) == 1, 'one activity per selected source')
-        d = activities[0]; d.update(package=package, source=name)
-        definitions[package + ':' + d['name']] = d
+        activities = H.activities(text)
+        if not uses_inspection(profile): H.need(len(activities) == 1, 'one activity per selected source')
+        for d in activities:
+            d.update(package=package, source=name)
+            key = package + ':' + d['name']
+            H.need(key not in definitions, 'unique source activity name')
+            definitions[key] = d
         images.append((package, name, H.digest(H.go_json(text))))
         for record, ident, body in H.RECORD.findall(text):
             fields = [{'name': n, 'id': i, 'type_id': 'urn:gooo:type:' + t} for n, i, t in H.FIELD.findall(body)]
             value = {'name': record, 'id': ident, 'fields': fields}
             H.need(ident not in records or H.equal(records[ident], value), 'consistent repeated record declaration')
             records[ident] = value
-    H.need(set(definitions) == {ENTRY, 'app/cel-api-policy:APIAccess', 'go/cel.dev/cel-go/codelab:ScalarAccess'}, 'three activity names')
+    original = {ENTRY, 'app/cel-api-policy:APIAccess', 'go/cel.dev/cel-go/codelab:ScalarAccess'}
+    H.need(original <= set(definitions) if uses_inspection(profile) else original == set(definitions), 'three original activity names')
+    if uses_inspection(profile):
+        H.need(len({d['id'] for d in definitions.values()}) == len(definitions), 'unique authored source activity IDs')
     d = definitions[ENTRY]
     H.need(d['inputs'] == INPUT_TYPES and d['output'] == 'ApiDecision' and d['id'] == AID, 'stable editable entry ABI')
     wanted = [{'name': n, 'id': 'gooo://api-example/decision/' + n.replace('_', '-'),
@@ -121,31 +160,78 @@ def context(root, variant, read):
             'definitions': definitions, 'records': records}
 
 
-def inspect_receipt(raw, rows, inputs, ctx, go_version, go_sha, parent=None):
-    receipt = decoded(raw)
-    H.need(receipt['schema'] == 'gooo/workspace-body-execution-receipt/v1' and
-           receipt['decision'] == 'OBSERVED' and not receipt.get('error'), 'input-only OBSERVED receipt')
-    H.need(receipt['manifest'] == str(ctx['workspace']) and receipt['manifest_digest'] == H.digest(ctx['raw']) and
-           receipt['inputs_digest'] == H.digest(inputs) and 'cases_digest' not in receipt, 'current manifest/input byte binding')
-    result = receipt['result']; program = result['program']; composition = result['composition']; rt = result['runtime']
-    H.need(result['schema'] == 'gooo/workspace-body-execution/v1' and program['schema'] == 'gooo/workspace-body-program/v1' and
-           composition['schema'] == 'gooo/body-composition/v1' and composition['stage'] == 'COMPLETE' and
+def source_program(program, ctx, profile=None):
+    H.need(program['schema'] == 'gooo/workspace-body-program/v1' and
            program['entry']['package_path'] == PACKAGE and program['entry']['activity'] == ACTIVITY, 'current entry')
+    H.need(H.equal(program['activities'], [program['entry']]), 'one prepared entry activity')
     image = program['workspace_image']
     actual_images = [(p['path'], s['filename'], s['source_digest']) for p in image['packages'] for s in p['sources']]
     H.need(image['schema'] == 'gooo/package-runtime-image/v1' and len(image['packages']) == 3 and
            image['init_order'] == [p for p, _ in ctx['packages']] and actual_images == ctx['images'], 'three current source images')
     H.need(H.equal(image['entry'], {'package_path': PACKAGE, 'source': ctx['packages'][-1][1],
            'activity': ACTIVITY, 'inputs': INPUT_TYPES, 'output': 'ApiDecision'}), 'image entry names and signature')
-    pure = program['pure_calls']; participants = pure['activities']
-    H.need(len(participants) == 3 and len(pure['sites']) == 2, 'retain the original three-activity call closure')
-    seen = set()
+    pure = program.get('pure_calls')
+    if pure is None:
+        H.need(uses_inspection(profile), 'retain the original three-activity call closure')
+        return
+    H.need(pure['schema'] == 'gooo/workspace-pure-calls/v1', 'source pure-call schema')
+    participants = pure['activities']
+    if not uses_inspection(profile):
+        H.need(len(participants) == 3 and len(pure['sites']) == 2, 'retain the original three-activity call closure')
+    seen = set(); lowered_names = set()
     for item in participants:
         activity = item['activity']; key = activity['package_path'] + ':' + activity['activity']
         H.need(key in ctx['definitions'] and key not in seen, 'unique current source participant'); seen.add(key)
         d = ctx['definitions'][key]
         H.need(item['source'] == d['source'] and item['source_body_sha256'] == H.digest(d['body'].encode()), 'current source computes body')
-    H.need(seen == set(ctx['definitions']), 'complete source participants')
+        if uses_inspection(profile):
+            H.need(item['activity_id'] == d['id'] == item['lowered_activity_id'] and
+                   type(activity['lowered_name']) is str and activity['lowered_name'] and
+                   activity['lowered_name'] not in lowered_names, 'authored current source participant ID and unique lowered name')
+            lowered_names.add(activity['lowered_name'])
+            if key == ENTRY: H.need(H.equal(activity, program['entry']), 'prepared source entry reference')
+    if not uses_inspection(profile): H.need(seen == set(ctx['definitions']), 'complete source participants')
+    else:
+        H.need(ENTRY in seen, 'prepared call closure contains current entry')
+        for site in pure['sites']:
+            H.need(site['caller'] in seen and site['callee'] in seen and site['surface'] == 'computes' and
+                   type(site['start_byte']) is int and type(site['end_byte']) is int and
+                   0 <= site['start_byte'] < site['end_byte'] <= len(ctx['definitions'][site['caller']]['body'].encode()),
+                   'prepared call site binds current participant body bytes')
+
+
+def inspect_source(raw, ctx, profile):
+    H.need(uses_inspection(profile), 'source inspection requires its explicit compiler profile')
+    receipt = decoded(raw)
+    H.need(set(receipt) == {'schema', 'decision', 'manifest', 'manifest_digest', 'program', 'program_executions',
+                           'model_predictions', 'transport_capacity', 'scope'} and
+           receipt['schema'] == 'gooo/workspace-source-inspection/v1' and receipt['decision'] == 'PREPARED' and
+           H.equal([receipt['program_executions'], receipt['model_predictions']], [0, 0]),
+           'fresh source-only PREPARED inspection, no execution or model prediction')
+    H.need(receipt['manifest'] == str(ctx['workspace']) and receipt['manifest_digest'] == H.digest(ctx['raw']),
+           'prepared current manifest byte binding')
+    source_program(receipt['program'], ctx, profile)
+    return receipt['program']
+
+
+def prepared_binding(program, ctx, profile=None):
+    if uses_inspection(profile):
+        # This is a fresh observation by the selected compiler, not an independent parser or semantic oracle.
+        H.need('prepared_program' in ctx and H.equal(program, ctx['prepared_program']),
+               'native program equals its fresh same-compiler source inspection in full')
+
+
+def inspect_receipt(raw, rows, inputs, ctx, go_version, go_sha, parent=None, profile=None):
+    receipt = decoded(raw)
+    H.need(receipt['schema'] == 'gooo/workspace-body-execution-receipt/v1' and
+           receipt['decision'] == 'OBSERVED' and not receipt.get('error'), 'input-only OBSERVED receipt')
+    H.need(receipt['manifest'] == str(ctx['workspace']) and receipt['manifest_digest'] == H.digest(ctx['raw']) and
+           receipt['inputs_digest'] == H.digest(inputs) and 'cases_digest' not in receipt, 'current manifest/input byte binding')
+    result = receipt['result']; program = result['program']; composition = result['composition']; rt = result['runtime']
+    H.need(result['schema'] == 'gooo/workspace-body-execution/v1' and
+           composition['schema'] == 'gooo/body-composition/v1' and composition['stage'] == 'COMPLETE', 'complete native composition')
+    prepared_binding(program, ctx, profile)
+    source_program(program, ctx, profile)
     lowered = H.digest(program['lowered_gooo_source'].encode())
     H.need(program['lowered_gooo_source'] == composition['gooo_source'] and lowered == result['execution_source_sha256'] ==
            composition['original_source_sha256'] == composition['selected_source_sha256'] == rt['original_source_sha256'] == rt['selected_source_sha256'], 'raw lowered source bindings')
@@ -153,7 +239,8 @@ def inspect_receipt(raw, rows, inputs, ctx, go_version, go_sha, parent=None):
            H.digest(composition['driver_source'].encode()) == composition['driver_sha256'] == rt['driver_sha256'], 'generated Go/driver raw hashes')
     H.need(len(composition['steps']) == 1, 'one generated entry')
     report = composition['steps'][0]['generation']['report']
-    H.need(report['schema'] == 'gooo/body-codegen-report/v3' and report['compiler_source_sha'] == H.REV and
+    revision = H.REV if profile is None else profile['compiler_revision']
+    H.need(report['schema'] == 'gooo/body-codegen-report/v3' and report['compiler_source_sha'] == revision and
            report['activity_id'] == AID and report['output_type'] == 'ApiDecision' and
            report['typecheck_passed'] is True and report['deterministic_replay'] is True, 'code generation producer and ABI')
     H.need(composition['steps'][0]['input_source_sha256'] == lowered and
@@ -173,7 +260,7 @@ def inspect_receipt(raw, rows, inputs, ctx, go_version, go_sha, parent=None):
     H.need(rt['schema'] == 'gooo/body-composition-runtime/v1' and rt['stage'] == 'COMPLETE' and
            H.equal([rt['finite_passed'], rt['finite_total'], rt['model_calls']], [0, 0, 0]) and
            rt['projection_replayed'] is True and rt['runtime_replayed'] is True, 'input-only runtime, no embedded expectations')
-    producer(rt, go_version, go_sha)
+    producer(rt, go_version, go_sha, profile)
     H.need(len(rt['runs']) == 2, 'two fresh native runs per command')
     for p in [rt['toolchain'], rt['build']] + rt['runs']:
         H.need(p['started'] and p['completed'] and p['exit_code'] == 0 and
@@ -200,13 +287,19 @@ def inspect_receipt(raw, rows, inputs, ctx, go_version, go_sha, parent=None):
     return decisions
 
 
-def check_refusal(raw, parent, ctx):
+def check_refusal(raw, parent, ctx, profile=None):
     r = decoded(raw)
-    H.need(set(r) == {'schema', 'decision', 'manifest', 'manifest_digest', 'error', 'replayed_from_sha256'} and
+    keys = {'schema', 'decision', 'manifest', 'manifest_digest', 'error', 'replayed_from_sha256'}
+    if uses_inspection(profile): keys.add('failure')
+    H.need(set(r) == keys and
            r['schema'] == 'gooo/workspace-body-execution-receipt/v1' and r['decision'] == 'FAIL_CLOSED' and
            r['error'] == 'saved execution envelope or workspace manifest differs' and
            r['replayed_from_sha256'] == H.digest(parent) and r['manifest'] == str(ctx['workspace']) and
            r['manifest_digest'] == H.digest(ctx['raw']), 'exact current manifest-stage cross-workspace refusal')
+    if uses_inspection(profile):
+        H.need(H.equal(r['failure'], {'code': 'REPLAY_MANIFEST_MISMATCH',
+                                     'detail': 'saved execution envelope or workspace manifest differs'}),
+               'exact source-inspection036 manifest-stage failure code and detail')
 
 
 def check_demo(inputs, comparisons, root, read):
@@ -221,11 +314,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('root', 'compiler', 'go', 'out'): parser.add_argument('--' + name, required=True)
     parser.add_argument('--inputs', help='one to three complete scalar rows; defaults to demo-inputs.json')
+    parser.add_argument('--compiler-profile', choices=('default', 'source-inspection036'), default='default',
+                        help='explicit separate compiler contract; default retains the repository 839 pin')
     parser.add_argument('--check-demo', action='store_true', help='also check the original three-row literals; omit after editing policy')
     args = parser.parse_args()
     out = H.canonical(Path(args.out)); H.need(out.parent.is_dir() and not out.exists(), 'fresh output with an existing parent required')
     out.mkdir(); started = time.monotonic(); pins = {}; work = runner = owner = None
-    failure = None; comparisons = []; source_ok = cleaned = refused = False; positives = 0
+    failure = None; comparisons = []; source_ok = cleaned = refused = False; positives = prepared = 0
     handlers = {n: signal.signal(n, lambda number, frame: (_ for _ in ()).throw(RuntimeError('signal ' + str(number)))) for n in (signal.SIGINT, signal.SIGTERM)}
     try:
         root, compiler, go = [H.canonical(Path(x)) for x in (args.root, args.compiler, args.go)]
@@ -233,14 +328,14 @@ def main():
         read = lambda path: H.frozen_read(path, pins)
         path = H.canonical(Path(args.inputs)) if args.inputs else root / (BASE + 'demo-inputs.json')
         H.need(path.stat().st_size <= 30000, 'input byte limit before reading'); inputs = read(path); rows = input_rows(inputs)
-        contexts = {v: context(root, v, read) for v in ('before', 'after')}
+        lock = decoded(read(root / 'upstream.json')); profile = compiler_profile(lock, args.compiler_profile)
+        contexts = {v: context(root, v, read, profile) for v in ('before', 'after')}
         for ctx in contexts.values():
             H.need(sum(pins[str(root / n)]['bytes'] for _, n in ctx['packages']) <= 10 << 20, 'bounded source closure')
         for name in ('run.py', 'run_test.py', 'README.md', 'NOTICE.md'): read(root / (BASE + name))
         if args.check_demo:
             for name in ('demo-inputs.json', 'demo-expected.json'): read(root / (BASE + name))
-        read(root / 'tools/check-header-addition-host.py'); lock = decoded(read(root / 'upstream.json'))
-        H.need(lock['compiler_revision'] == H.REV and lock['go_version'] == 'go1.27.2', 'repository tool pins')
+        for name in ('check-header-addition-host.py', 'native_verification_contract.py'): read(root / 'tools' / name)
         read(compiler); go_sha = H.digest(read(go))
         H.need(shutil.disk_usage(out).free >= 2 << 30, 'minimum2GiB free')
         work = Path(tempfile.mkdtemp(prefix='.editable-policy-owned-', dir=out)); owner = (work.stat().st_dev, work.stat().st_ino)
@@ -255,28 +350,28 @@ def main():
             raw = runner.call(label, argv, 90, allowed_exit=allowed_exit)
             H.need(H.owned_bytes(out) - H.owned_bytes(work) <= 64 << 20, 'retained64MiB bound'); return raw
         identity = decoded(call('compiler-identity', [compiler, 'version', '--build', '--json']))
-        for key, want in {'compiler_source_sha': H.REV, 'vcs_revision': H.REV, 'source_status': 'CLEAN_VCS',
-                          'vcs_modified': 'false', 'build_info_observed': True, 'version': lock['compiler_version'],
-                          'go_version': 'go1.27.2', 'native_go_required': 'go1.27.2'}.items():
-            H.need(H.equal(identity.get(key), want), 'pinned clean compiler identity: ' + key)
+        compiler_identity(identity, profile)
         go_version = call('go-version', [go, 'version']).decode('utf-8').strip()
         H.need(go_version.startswith('go version go1.27.2 '), 'Go1.27.2 required')
         observed = {}; initial = {}
         for variant in ('before', 'after'):
             ctx = contexts[variant]; parent = None
+            if uses_inspection(profile):
+                raw = call(variant + '-inspect', [compiler, 'package', 'inspect', '--json', ctx['workspace']])
+                ctx['prepared_program'] = inspect_source(raw, ctx, profile); prepared += 1
             for operation in ('execute', 'replay'):
                 label = variant + '-' + operation
                 argv = [compiler, 'package', operation, '--json', '--inputs', path, '--go', go]
                 if parent is not None: argv += ['--receipt', out / (variant + '-execute') / 'stdout']
                 raw = call(label, [*argv, ctx['workspace']])
-                values = inspect_receipt(raw, rows, inputs, ctx, go_version, go_sha, parent); positives += 1
+                values = inspect_receipt(raw, rows, inputs, ctx, go_version, go_sha, parent, profile); positives += 1
                 if parent is None: observed[variant] = values; initial[variant] = raw
                 else: H.need(H.equal(values, observed[variant]), 'fresh official replay values equal its initial observation')
                 parent = raw
         argv = [compiler, 'package', 'replay', '--json', '--receipt', out / 'before-execute/stdout',
                 '--inputs', path, '--go', go, contexts['after']['workspace']]
         raw = call('cross-workspace-refusal', argv, allowed_exit=(1,))
-        check_refusal(raw, initial['before'], contexts['after']); refused = True
+        check_refusal(raw, initial['before'], contexts['after'], profile); refused = True
         comparisons = [dict(index=i, **compare(a, b)) for i, (a, b) in enumerate(zip(observed['before'], observed['after']))]
         if args.check_demo: check_demo(inputs, comparisons, root, read)
         H.unchanged(pins); source_ok = True
@@ -294,10 +389,11 @@ def main():
     summary = {'schema': 'gooo/editable-api-policy-comparison/v1',
         'status': 'EDITABLE_POLICY_COMPARISON_AND_OFFICIAL_REPLAY_PASS' if failure is None else 'FIRST_FAILURE_PRESERVED',
         'failure': failure, 'rows': len(comparisons), 'positive_receipts': positives,
+        'compiler_profile': args.compiler_profile, 'prepared_inspections': prepared,
         'package_commands': sum(x['label'] not in ('compiler-identity', 'go-version') for x in runner.observations) if runner else 0,
         'input_echoes_checked': positives * (len(rows) if 'rows' in locals() else 0) * 9,
         'typed_output_fields_checked': positives * (len(rows) if 'rows' in locals() else 0) * 15,
-        'compiler_revision': H.REV if positives == 4 else None,
+        'compiler_revision': profile['compiler_revision'] if positives == 4 else None,
         'finite_total': 0 if positives == 4 else None, 'model_calls': 0 if positives == 4 else None,
         'demo_checked': args.check_demo and failure is None,
         'cross_workspace_refused': refused, 'cross_workspace_refusal_stage': 'manifest' if refused else None,

@@ -1021,5 +1021,13 @@
       "mapping": "Original13fieldGooo composition validates raw header separately from scanneredge trimming and strong-classifies only parsed tag; preserves raw,tag,remainder,bytecounts and ordered reason. Local facts without per-call approval; no currentresource/auth/effect/atomicupdate guarantee.",
       "license": "LICENSE"
     }
-  ]
+  ],
+  "consumer_compiler_profiles": {
+    "source_inspection036": {
+      "compiler_revision": "31497af3beaef210b5a075867b0de76cf55ee3ca",
+      "compiler_version": "0.6.36-dev",
+      "decision_runtime_version": "v0.2.51-experimental",
+      "go_version": "go1.27.2"
+    }
+  }
 }

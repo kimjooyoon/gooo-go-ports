@@ -28,7 +28,7 @@ An incomplete attempt is useful feedback. Share public source and inputs only.
 
 | Your task | Entry | Observable result |
 | --- | --- | --- |
-| Edit an API policy in Gooo | [Editable policy comparison](examples/editable-api-policy/README.md) | Change a source rule, compare the same supplied facts and replay each policy's own execution. |
+| Edit an API policy in Gooo | [Editable policy comparison](examples/editable-api-policy/README.md) | Compare edited rules on the same facts and replay each policy. A separate opt-in compiler profile supports extracting helpers. |
 | Check an API policy change in CI | [Existing policy Action](examples/api-policy-ci/README.md) | Compare the same nine facts under two sealed profiles; inspect newly denied requests and optionally fail CI. |
 | Inspect fixed API decisions without a toolchain (optional) | [Native preview.11 bundles](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.11) | Run the supplied read/write batch on Linux amd64 or macOS arm64, try synthetic copies and replay the saved comparison. This does not edit Gooo source. |
 | Use Gooo from an existing Go program | [Four-file Go quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726) | Run generated Go with Go 1.27.2; inspect input refusal, policy differences and a widening witness. |
