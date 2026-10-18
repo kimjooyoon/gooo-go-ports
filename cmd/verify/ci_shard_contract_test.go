@@ -110,7 +110,11 @@ func ciShardTestPartials(t *testing.T, p ciShardPlan) []ciShardPartial {
 				if err != nil {
 					t.Fatal(err)
 				}
-				record.Exhaustive = append(record.Exhaustive, ciShardExhaustive{Kind: kind, Report: raw, SHA256: contentDigest(raw)})
+				digest, err := ciShardExhaustiveDigest(raw)
+				if err != nil {
+					t.Fatal(err)
+				}
+				record.Exhaustive = append(record.Exhaustive, ciShardExhaustive{Kind: kind, Report: raw, SHA256: digest})
 			}
 			part.Suites = append(part.Suites, record)
 		}
@@ -285,11 +289,30 @@ func TestCIShardAllSevenExhaustiveContractsRemainRequired(t *testing.T) {
 			}
 			v["mismatches"] = 1
 			report.Report, _ = json.Marshal(v)
-			report.SHA256 = contentDigest(report.Report)
+			report.SHA256, _ = ciShardExhaustiveDigest(report.Report)
 			if _, err := reduceCIShardPartials(p, ps); err == nil {
 				t.Fatal("self-consistent bad exhaustive report accepted")
 			}
 		}
+	}
+}
+
+func TestCIShardExhaustiveReportsSurviveIndentedPartialRoundTrip(t *testing.T) {
+	p := ciShardTestPlan(t, 3, "go/unicode:SimpleFold", "go/image/color:RGBToYCbCr", "go/image/color:YCbCrToRGB", "go/unicode:To", "go/unicode:ToUpper", "go/unicode:ToLower", "go/unicode:ToTitle")
+	parts := ciShardTestPartials(t, p)
+	for i := range parts {
+		raw, err := json.MarshalIndent(parts[i], "", "  ")
+		if err != nil {
+			t.Fatal(err)
+		}
+		var decoded ciShardPartial
+		if err := decodeCIShardJSON(raw, &decoded); err != nil {
+			t.Fatal(err)
+		}
+		parts[i] = decoded
+	}
+	if _, err := reduceCIShardPartials(p, parts); err != nil {
+		t.Fatal("valid reports changed meaning after the actual partial writer", err)
 	}
 }
 

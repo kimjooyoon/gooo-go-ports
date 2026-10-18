@@ -1,9 +1,10 @@
-# Native CI shard metadata contract (preparation only)
+# Experimental native CI shard contracts
 
-The optional `ci-shard-*` verifier flags prepare and validate a versioned
-metadata contract. They do not execute a shard, inspect native receipt bytes,
-or establish native acceptance. The default verifier and current CI workflow
-remain unchanged. No CI speed improvement has been measured for this feature.
+The optional plan/select/reduce flags prepare and validate a versioned metadata
+contract. Separate experimental execute/verify flags run native work and inspect
+actual evidence. Neither path authenticates a GitHub producer or replaces the
+existing required CI result. The default verifier and current CI workflow remain
+unchanged. No CI speed improvement has been measured for this feature.
 
 The planner reads the current embedded and on-disk expected ledger. It retains
 every suite's original index, case/batch totals, source roster and selected
@@ -49,13 +50,12 @@ empty/default values, parse errors and metadata positional arguments are also
 rejected before source work; they never fall through to the full native path.
 Inputs are bounded regular
 files; symlink inputs, ambiguous JSON keys and overwriting outputs are rejected.
-Selection emits metadata only. There is currently no command that produces
-partials by running native suites, so the reducer command is not an end-to-end
-native verification procedure.
+Selection and metadata reduction emit metadata only. Native execution and raw
+receipt inspection require the separate explicit commands below.
 
 The plan hash binds the complete ledger, profiles, tested source identities,
 compiler/toolchain/run context, workspace manifests, entry producers and
-deterministic assignments. Its reader roster adds the three shard implementation
+deterministic assignments. Its reader roster adds the explicit shard implementation
 and test files without changing the historical full-mode source ledger. Reduce
 and select regenerate the plan independently from the clean checkout; a plan
 with a matching self-declared hash alone is insufficient.
@@ -88,11 +88,76 @@ unfinished or internally inconsistent partials fail closed. After all valid
 joined shards are available, failures select the lowest original suite index;
 lower indices within a failed shard must have completed first.
 
+## Explicit native execution and raw receipt inspection
+
+These experimental commands require the same clean, reviewed source and plan.
+Use Go1.27.2 and the pinned compiler. Each output directory must be fresh, and
+its parent must already exist. For each planned index, run separately:
+
+```sh
+go run ./cmd/verify --ci-shard-context /evidence/context.json \
+  --ci-shard-plan /evidence/plan.json --ci-shard-index 0 \
+  --ci-shard-native-compiler /tools/gooo \
+  --ci-shard-execute-out /evidence/native-0
+```
+
+The executor validates the compiler build identity, uses the existing suite
+verifier and three-worker coordinator, waits for callbacks and closes its one
+runner-private cache before re-inspecting raw files. Original case generators,
+profile-specific partitions, execute/replay and the seven exhaustive checks are
+reused. Every batch uses its original index in a separate shard/suite namespace.
+Failed or incomplete evidence and the first diagnostic remain retained; a
+partial is not the old full-run summary or timing footer.
+
+After all runners have joined, verify their original partials and evidence:
+
+```sh
+go run ./cmd/verify --ci-shard-context /evidence/context.json \
+  --ci-shard-plan /evidence/plan.json \
+  --ci-shard-partial /evidence/native-0/partial.json \
+  --ci-shard-partial /evidence/native-1/partial.json \
+  --ci-shard-partial /evidence/native-2/partial.json \
+  --ci-shard-evidence /evidence/native-0 \
+  --ci-shard-evidence /evidence/native-1 \
+  --ci-shard-evidence /evidence/native-2 \
+  --ci-shard-verify-out /evidence/native-verification.json
+```
+
+Pair the partials and evidence directories in the same order. The reader
+regenerates actual Go expectations and exact original case, manifest and copied
+source bytes. It reuses execution/replay inspection, checks the raw saved parent,
+and inspects each required exhaustive report, generated program and harness.
+Embedded report hashes describe canonical decoded JSON, so indenting a partial
+does not change its meaning. Compiler JSON and per-receipt producer identities
+are checked; these do not independently authenticate a job or joined resources.
+The reader refuses symlink descendants, outside paths, duplicate or missing
+namespaces and changed inspected bytes.
+
+A successful raw verification has state
+`NATIVE_RECEIPTS_CHECKED_PRODUCER_UNAUTHENTICATED`, with
+`raw_receipts_inspected: true`, `producer_authenticated: false` and
+`native_acceptance: false`. Complete metadata alone cannot produce this result.
+No workflow consumes it as an accepted replacement for the full CI gate.
+
+The optional build-tagged `gooo_shard_native_smoke` test exercises one small
+StatusText fixture with an actual pinned compiler and independent Go values.
+It is separate from the normal observer tests and the full82-suite CLI plan.
+It neither proves the full partition executed nor measures a speed improvement.
+
 A future multi-runner mode must use `fail-fast: false`, join every runner and
 then reduce the complete set. This differs from the existing single-process
 coordinator's cancellation timing: other runners may finish additional work
 after a failure. No immediate global-cancellation equivalence is claimed.
-Before dispatch is enabled, a native adapter and independent raw receipt/case
-reducer must preserve the original batch bytes, values, replay and exhaustive
-checks, and verify producer/job/source metadata and complete artifact sets.
-Workflow changes and their required checks need separate review and measurement.
+
+The next comparison should use a separate, non-required experimental workflow
+on the same exact source, keeping the current full gate. Before replacing that
+gate, the addition-input and atomic-host consumers need an explicit reader for
+the verified shard index and original batch evidence. They currently depend on
+the flat `out/ci` layout and one process's timing footer. Combining runner clocks
+into that footer or writing a substitute legacy summary would not preserve the
+contract. Authenticated run/job/artifact provenance and a measured end-to-end
+benefit, including evidence transfer and reduction, are also required.
+Before dispatch is enabled, validate the complete native partition and failure
+paths, authenticate producer/job/source metadata and complete artifact sets,
+and retain every original required check. Workflow changes and their required
+checks need separate review and real time/resource/setup-cost measurement.

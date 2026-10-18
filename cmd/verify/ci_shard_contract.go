@@ -20,7 +20,13 @@ const (
 
 // These additions bind the new reader separately; the existing full-mode ledger
 // and its historical guards are not rewritten to introduce an optional mode.
-var ciShardReaderSources = []string{"cmd/verify/ci_shard_contract.go", "cmd/verify/ci_shard_cli.go", "cmd/verify/ci_shard_contract_test.go"}
+var ciShardReaderSources = []string{
+	"cmd/verify/ci_shard_contract.go", "cmd/verify/ci_shard_cli.go", "cmd/verify/ci_shard_contract_test.go",
+	"cmd/verify/ci_shard_native_types.go", "cmd/verify/ci_shard_execute.go", "cmd/verify/ci_shard_execute_test.go",
+	"cmd/verify/ci_shard_native_evidence.go", "cmd/verify/ci_shard_native_evidence_test.go",
+	"cmd/verify/ci_shard_native_cli.go", "cmd/verify/ci_shard_native_cli_test.go",
+	"cmd/verify/ci_shard_native_smoke_test.go",
+}
 var ciShardRepositoryPattern = regexp.MustCompile(`^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$`)
 var ciShardDecimalPattern = regexp.MustCompile(`^[1-9][0-9]{0,19}$`)
 
@@ -325,6 +331,20 @@ func ciShardExhaustiveKind(s ContractSuite) string {
 	return ""
 }
 
+// The enclosing partial writer may indent RawMessage values. Bind the decoded
+// report independently of lexical whitespace; its actual artifact is read and
+// compared separately by the native evidence reducer.
+func ciShardExhaustiveDigest(raw json.RawMessage) (string, error) {
+	if err := decimalPayloadJSON(raw); err != nil {
+		return "", err
+	}
+	value, err := decode(raw)
+	if err != nil {
+		return "", err
+	}
+	return canonicalContractDigest(value)
+}
+
 func validateCIShardExhaustive(s ContractSuite, batches []ciShardBatch, reports []ciShardExhaustive, required bool) error {
 	kind := ciShardExhaustiveKind(s)
 	if len(reports) > 1 || (kind == "" && len(reports) != 0) || (required && kind != "" && len(reports) != 1) {
@@ -334,7 +354,8 @@ func validateCIShardExhaustive(s ContractSuite, batches []ciShardBatch, reports 
 		return nil
 	}
 	r := reports[0]
-	if len(batches) == 0 || r.Kind != kind || contentDigest(r.Report) != r.SHA256 {
+	digest, err := ciShardExhaustiveDigest(r.Report)
+	if err != nil || len(batches) == 0 || r.Kind != kind || digest != r.SHA256 {
 		return fmt.Errorf("exhaustive report binding differs")
 	}
 	generated := batches[0].GeneratedSHA256

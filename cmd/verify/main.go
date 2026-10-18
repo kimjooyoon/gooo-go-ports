@@ -50,6 +50,7 @@ func run() error {
 	caseProfileFlag := flag.String("case-profile", "", "optional case wire profile: legacy, uuid-compact-v1 or uuid-and-literal-report-compact-v1")
 	workspaceProfileFlag := flag.String("workspace-profile", "", "optional workspace source profile: legacy or dependency-closure-v1")
 	var shard ciShardOptions
+	var nativeShard ciShardNativeOptions
 	flag.StringVar(&shard.PlanOut, "ci-shard-plan-out", "", "write an optional CI shard metadata plan; no native execution")
 	flag.StringVar(&shard.SelectOut, "ci-shard-select-out", "", "write one CI shard metadata selection; no native execution")
 	flag.StringVar(&shard.ReduceOut, "ci-shard-reduce-out", "", "reduce all CI shard metadata contracts; never native acceptance")
@@ -58,6 +59,10 @@ func run() error {
 	flag.IntVar(&shard.Count, "ci-shard-count", 0, "number of metadata shards,1..16")
 	flag.IntVar(&shard.Index, "ci-shard-index", -1, "metadata shard selection index")
 	flag.Var(&shard.Partials, "ci-shard-partial", "one partial contract file; repeat for every shard")
+	flag.StringVar(&nativeShard.ExecuteOut, "ci-shard-execute-out", "", "experimental fresh directory for one native shard")
+	flag.StringVar(&nativeShard.VerifyOut, "ci-shard-verify-out", "", "experimental raw-receipt verification; no authenticated CI acceptance")
+	flag.StringVar(&nativeShard.Compiler, "ci-shard-native-compiler", "./.gooo", "pinned compiler for explicit native shard execution")
+	flag.Var(&nativeShard.Evidence, "ci-shard-evidence", "one actual shard evidence directory; repeat with partial files")
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		return err
 	}
@@ -65,12 +70,25 @@ func run() error {
 		if strings.HasPrefix(f.Name, "ci-shard-") {
 			shard.Requested = true
 		}
+		switch f.Name {
+		case "ci-shard-execute-out", "ci-shard-verify-out", "ci-shard-native-compiler", "ci-shard-evidence":
+			nativeShard.Requested = true
+		}
+		if f.Name == "ci-shard-native-compiler" {
+			nativeShard.CompilerRequested = true
+		}
 	})
 	if shard.enabled() {
 		if flag.NArg() != 0 {
 			return fmt.Errorf("CI shard metadata mode does not accept positional arguments")
 		}
 		conflicts := *compiler != "./.gooo" || *out != "" || *browser != "" || *workers != 1 || *suiteOrderFlag != "catalog" || *timingOut != "" || *caseProfileFlag != "" || *workspaceProfileFlag != ""
+		if nativeShard.Requested {
+			if err := nativeShard.validate(shard, conflicts); err != nil {
+				return err
+			}
+			return runCIShardNative(nativeShard, shard, ".")
+		}
 		if err := shard.validate(conflicts); err != nil {
 			return err
 		}
