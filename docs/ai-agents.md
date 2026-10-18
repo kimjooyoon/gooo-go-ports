@@ -197,6 +197,19 @@ compiler issue before passing a minimal case to the language repository.
   Tell us whether a successful run helps your real task, or share the first
   failure, through the [existing feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml).
   Select **Native setup, verification, or replay** and use public synthetic inputs.
+- **Edit a patch-line update rule with newer Gooo:** the separate
+  [same-minor source example](https://gist.github.com/kimjooyoon/9ca55091bd18ddb6f06a563e99f68348#file-00-readme-md)
+  uses released **0.6.36-dev**, compiler `31497af3` and Go 1.27.2. Follow its
+  isolated setup; this checkout still uses compiler `83928fa`. The program
+  adapts Go `semver.MajorMinor` to a result record whose `value` field explicitly
+  permits 1,026 UTF-8 bytes, preserving the longest supported shorthand input.
+  An importing Gooo rule requires a newer stable candidate in the same
+  major.minor line and at least the supplied minimum. `v0.1.0` to `v0.2.0`
+  returns `different_minor_line`; `v0.1.0` to `v0.1.1` can be eligible.
+  The source, original Go oracle and 27 finite cases are public. Read
+  `policy_eligible` with `policy_reason`; same-line eligibility does not establish
+  compatibility or authorize an update. Retained author-run receipt hashes are
+  documented, and the commands let you produce your own execution and replay.
 - **Port a Go function:** use the [contribution contract](../CONTRIBUTING.md)
   and [porting instructions](../AGENTS.md). Preserve the original API contract,
   full input domain, upstream license and independent Go reference. Unsupported

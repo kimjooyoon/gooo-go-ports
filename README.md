@@ -34,6 +34,7 @@ An incomplete attempt is useful feedback. Share public source and inputs only.
 | Use Gooo from an existing Go program | [Four-file Go quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726) | Run generated Go with Go 1.27.2; inspect input refusal, policy differences and a widening witness. |
 | Edit an importing Gooo project | [Separate ETag project](templates/etag-project/README.md) | Export three source files, edit supported bodies and compare 247 supplied inputs with Go. |
 | Explain a version upgrade decision | [Version eligibility](examples/version-eligibility/README.md) | Use Gooo to explain minimum-version or stable same-major update eligibility, with replayable inputs and refusal reasons. |
+| Edit a patch-line update rule with Gooo 0.6.36-dev | [Experimental same-minor source example](https://gist.github.com/kimjooyoon/9ca55091bd18ddb6f06a563e99f68348#file-00-readme-md) | Compare 27 supplied cases with the original Go package and replay the Gooo results, including a 1,026-byte result declared in source. This separate example requires compiler `31497af3`; the checkout keeps its `83928fa` pin. |
 | Find a Go API to migrate | [Ported API table](#이식한-함수) | Check available functions, input domains and Go-to-Gooo result differences before choosing a port. |
 
 These examples calculate bounded facts and policy decisions. Live effects still
