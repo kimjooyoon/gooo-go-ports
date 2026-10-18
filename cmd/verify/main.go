@@ -61,6 +61,7 @@ func run() error {
 	flag.Var(&shard.Partials, "ci-shard-partial", "one partial contract file; repeat for every shard")
 	flag.StringVar(&nativeShard.ExecuteOut, "ci-shard-execute-out", "", "experimental fresh directory for one native shard")
 	flag.StringVar(&nativeShard.VerifyOut, "ci-shard-verify-out", "", "experimental raw-receipt verification; no authenticated CI acceptance")
+	flag.StringVar(&nativeShard.ReferenceOut, "ci-shard-reference-out", "", "optional inspected shard-native reference index; requires native verify mode")
 	flag.StringVar(&nativeShard.Compiler, "ci-shard-native-compiler", "./.gooo", "pinned compiler for explicit native shard execution")
 	flag.Var(&nativeShard.Evidence, "ci-shard-evidence", "one actual shard evidence directory; repeat with partial files")
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
@@ -71,7 +72,7 @@ func run() error {
 			shard.Requested = true
 		}
 		switch f.Name {
-		case "ci-shard-execute-out", "ci-shard-verify-out", "ci-shard-native-compiler", "ci-shard-evidence":
+		case "ci-shard-execute-out", "ci-shard-verify-out", "ci-shard-reference-out", "ci-shard-native-compiler", "ci-shard-evidence":
 			nativeShard.Requested = true
 		}
 		if f.Name == "ci-shard-native-compiler" {

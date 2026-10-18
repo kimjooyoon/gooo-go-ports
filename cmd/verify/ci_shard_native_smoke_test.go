@@ -303,6 +303,19 @@ func TestCIShardActualNativeStatusTextSmoke(t *testing.T) {
 	if err := writeNewCIShardJSON(filepath.Join(output, "metadata-reduction.json"), reduced); err != nil {
 		t.Fatal(err)
 	}
+	references, err := buildCIShardNativeReference(plan, inventory, []ciShardPartial{roundtrip},
+		map[int]string{0: filepath.Join(evidence, "partial.json")}, map[int]string{0: evidence})
+	if err != nil {
+		t.Fatal("actual waited-command and raw-reference connection", err)
+	}
+	if references.NativeAcceptance || references.ProducerAuthenticated || !references.RawReceiptsInspected || len(references.Suites) != 1 || len(references.Suites[0].Batches) != 1 {
+		t.Fatal("small actual reference inflated its scope")
+	}
+	if err := writeNewCIShardJSON(filepath.Join(output, "reference-index.json"), references); err != nil {
+		t.Fatal(err)
+	}
+	receipt["actual_command_observations_and_reference_index_checked"] = true
+	receipt["reference_scope"] = "one injected13-case fixture only; the production Python provider must reject it as incomplete full82 evidence"
 	actual, err := inspectCIShardSuiteEvidence(plan, 0, 0, inventory, evidence, roundtrip.Suites[0])
 	if err != nil || !reflect.DeepEqual(actual, roundtrip.Suites[0]) {
 		t.Fatal("saved actual native evidence differs", err)

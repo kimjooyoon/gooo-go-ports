@@ -23,16 +23,33 @@ type nativeSuiteVerifier struct {
 	caseProfile nativeCaseProfile
 	// nil retains the original full-verifier evidence layout exactly.
 	batchDirectory func(int) string
-	execute        func(context.Context, string, string, ...string) ([]byte, error)
-	simpleFold     func(context.Context, string, []byte, string, *nativeBuildCache) (simpleFoldExhaustiveReport, error)
-	ycbcr          func(context.Context, string, []byte, string, string, *nativeBuildCache) (ycbcrExhaustiveReport, error)
-	caseMapping    func(context.Context, string, []byte, string, string, *nativeBuildCache) (caseMappingExhaustiveReport, error)
+	// Optional waited-command accounting for an explicit shard. nil preserves
+	// the original full timing path and its context exactly.
+	commandObserver func(int, string, nativeCommandResources)
+	execute         func(context.Context, string, string, ...string) ([]byte, error)
+	simpleFold      func(context.Context, string, []byte, string, *nativeBuildCache) (simpleFoldExhaustiveReport, error)
+	ycbcr           func(context.Context, string, []byte, string, string, *nativeBuildCache) (ycbcrExhaustiveReport, error)
+	caseMapping     func(context.Context, string, []byte, string, string, *nativeBuildCache) (caseMappingExhaustiveReport, error)
 }
 
 func newNativeSuiteVerifier(commands context.Context, compiler, root string, lock upstream, cache *nativeBuildCache) nativeSuiteVerifier {
 	return nativeSuiteVerifier{commands: commands, compiler: compiler, root: root, lock: lock, cache: cache,
 		execute: execute, simpleFold: checkSimpleFoldExhaustive,
 		ycbcr: checkYCbCrExhaustive, caseMapping: checkCaseMappingExhaustive}
+}
+
+func (v nativeSuiteVerifier) commandContext(parent context.Context, timing *nativeBatchTiming, batch int, phase string) context.Context {
+	observed := timing.commandContext(parent, phase)
+	if v.commandObserver == nil {
+		return observed
+	}
+	previous, _ := observed.Value(nativeCommandResourcesContextKey{}).(func(nativeCommandResources))
+	return withNativeCommandResources(observed, func(resources nativeCommandResources) {
+		if previous != nil {
+			previous(resources)
+		}
+		v.commandObserver(batch, phase, resources)
+	})
 }
 
 func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suiteWorkspace) (result nativeSuiteResult, returnedErr error) {
@@ -102,7 +119,7 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 			executeArgs = append(executeArgs, "--go", etagGoToolPath())
 		}
 		executeArgs = append(executeArgs, workspace)
-		raw, err := v.execute(pendingTiming.commandContext(v.commands, "execute"), v.compiler, receipt, executeArgs...)
+		raw, err := v.execute(v.commandContext(v.commands, pendingTiming, r.Batches, "execute"), v.compiler, receipt, executeArgs...)
 		if err != nil {
 			return result, err
 		}
@@ -118,7 +135,7 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 			replayArgs = append(replayArgs, "--go", etagGoToolPath())
 		}
 		replayArgs = append(replayArgs, workspace)
-		raw, err = v.execute(pendingTiming.commandContext(v.commands, "replay"), v.compiler, replayPath, replayArgs...)
+		raw, err = v.execute(v.commandContext(v.commands, pendingTiming, r.Batches, "replay"), v.compiler, replayPath, replayArgs...)
 		if err != nil {
 			return result, err
 		}

@@ -22,15 +22,7 @@ type ciShardNativeRuntime struct {
 }
 
 func executeCIShardNative(ctx context.Context, compiler, out string, plan ciShardPlan, shardIndex int, inventory ciShardNativeInventory) (ciShardPartial, error) {
-	return executeCIShardNativeWith(ctx, compiler, out, plan, shardIndex, inventory, ciShardNativeRuntime{
-		identify:   execute,
-		newCache:   newNativeBuildCache,
-		closeCache: func(cache *nativeBuildCache) error { return cache.close() },
-		verify: func(ctx context.Context, _ int, verifier nativeSuiteVerifier, s suite, workspace suiteWorkspace) (nativeSuiteResult, error) {
-			return verifier.verify(ctx, s, workspace)
-		},
-		inspect: inspectCIShardSuiteEvidence,
-	})
+	return executeObservedCIShardNative(ctx, compiler, out, plan, shardIndex, inventory)
 }
 
 func validateCIShardCompilerIdentity(raw []byte, lock upstream) error {

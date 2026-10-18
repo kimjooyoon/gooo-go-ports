@@ -120,6 +120,7 @@ go run ./cmd/verify --ci-shard-context /evidence/context.json \
   --ci-shard-evidence /evidence/native-0 \
   --ci-shard-evidence /evidence/native-1 \
   --ci-shard-evidence /evidence/native-2 \
+  --ci-shard-reference-out /evidence/native-reference.json \
   --ci-shard-verify-out /evidence/native-verification.json
 ```
 
@@ -139,6 +140,43 @@ A successful raw verification has state
 `native_acceptance: false`. Complete metadata alone cannot produce this result.
 No workflow consumes it as an accepted replacement for the full CI gate.
 
+The optional `--ci-shard-reference-out` additionally writes a separate
+`gooo/native-shard-reference-index/v1` for downstream consumers. It requires
+each original paired `partial.json`, complete actual execute/replay wait
+observations and unchanged compiler/Go/verifier binary snapshots. Missing
+observations remain `NOT_OBSERVED`; they are not filled with invented
+`NOT_AVAILABLE` values. Wait CPU/RSS observations describe the already-waited
+CLI and do not measure simultaneous memory or the actual child environment.
+These files retain their own schema and do not replace a legacy timing footer.
+
+Every reference binds the local shard root, safe relative blob path, length and
+raw hash. The receipt's original producer manifest path is a separate string;
+consumers compare it as data and never open it. Original receipts, manifests,
+case bytes and sources are not rewritten after artifact transfer. Exhaustive
+generated source, harness, module, diagnostic and report are semantically
+re-inspected with the same reader that exports their byte references.
+
+The header-addition consumers have an explicit experimental route:
+
+```sh
+python3 -I -B tools/check-header-addition-host.py --root "$PWD" \
+  --shard-native-index /evidence/native-reference.json \
+  --go /tools/go --out /evidence/fresh-host
+
+python3 -I -B tools/check-header-addition-inputs.py --root "$PWD" \
+  --shard-native-index /evidence/native-reference.json \
+  --compiler "$PWD/.gooo" --input-command /tools/header-addition-input \
+  --go /tools/go --out /evidence/fresh-input-route
+```
+
+These routes require the complete current source/plan and original case/batch
+population before selecting the seven addition batches. They share the
+existing receipt/ABI/Go-expectation and atomic-host checks. Their provider
+checks raw-file consistency; it does not independently rerun every Go oracle
+or authenticate a GitHub producer. The normal `--verification-out` plus
+`--timing` route keeps its full legacy checks. Mixed modes and incomplete
+shard references are refused; there is no fallback between them.
+
 The optional build-tagged `gooo_shard_native_smoke` test exercises one small
 StatusText fixture with an actual pinned compiler and independent Go values.
 It is separate from the normal observer tests and the full82-suite CLI plan.
@@ -151,9 +189,9 @@ after a failure. No immediate global-cancellation equivalence is claimed.
 
 The next comparison should use a separate, non-required experimental workflow
 on the same exact source, keeping the current full gate. Before replacing that
-gate, the addition-input and atomic-host consumers need an explicit reader for
-the verified shard index and original batch evidence. They currently depend on
-the flat `out/ci` layout and one process's timing footer. Combining runner clocks
+gate, the experimental addition-input and atomic-host routes must be validated
+against a complete actual shard run and its original batch evidence. Their
+normal route still uses the flat `out/ci` layout and one process's timing footer. Combining runner clocks
 into that footer or writing a substitute legacy summary would not preserve the
 contract. Authenticated run/job/artifact provenance and a measured end-to-end
 benefit, including evidence transfer and reduction, are also required.

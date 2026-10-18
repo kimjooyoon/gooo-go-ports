@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Check strict four-input helper output through actual Gooo execute/saved replay.
 
-The current full verifier supplies independent Go expectations through its seven
-source/case/raw-receipt timing anchors. Import has no execution side effects.
+Legacy full-run timing or an explicit experimental shard reference supplies the
+same independent Go case/raw-receipt anchors. Import has no execution side effects.
 """
 import argparse,hashlib,importlib.util,json,os,pathlib,re,signal,subprocess,sys,time
 REV='83928fa4538245abe33b08549da47f8cbdc50ed2'
@@ -121,11 +121,25 @@ def receipt(raw,row,trusted,manifest,images,go_version,prior=None):
     return {'receipt_sha256':sha(raw),'observations':len(rows),'typed_result_fields':len(rows)*16,'typed_input_record_fields':len(rows)*12}
 
 
+def parse_args(argv=None):
+    parser=argparse.ArgumentParser(description=__doc__)
+    for name in ['compiler','input-command','go','root','out']:parser.add_argument('--'+name,required=True)
+    mode=parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument('--verification-out')
+    mode.add_argument('--shard-native-index')
+    parser.add_argument('--timing')
+    args=parser.parse_args(argv)
+    if args.shard_native_index is not None:
+        if not args.shard_native_index or args.timing is not None:parser.error('--shard-native-index requires a nonempty path and forbids --timing')
+    elif not args.verification_out or not args.timing:parser.error('--verification-out and --timing require nonempty paths together')
+    return args
+
 def main():
     global PLAN,RAW,DEFS,RECORDS,MANIFEST,GO,TOOLS
-    parser=argparse.ArgumentParser()
-    for name in ['compiler','input-command','go','root','verification-out','timing','out']:parser.add_argument('--'+name,required=True)
-    a=parser.parse_args();root,compiler,helper,go,verification_out,timing,out=[canonical(x) for x in [a.root,a.compiler,a.input_command,a.go,a.verification_out,a.timing,a.out]]
+    a=parse_args();root,compiler,helper,go,out=[canonical(x) for x in [a.root,a.compiler,a.input_command,a.go,a.out]]
+    shard_index=canonical(a.shard_native_index) if a.shard_native_index is not None else None
+    verification_out=canonical(a.verification_out) if a.verification_out is not None else None
+    timing=canonical(a.timing) if a.timing is not None else None
     need(root.is_dir() and not out.exists(),'root must exist and output must be fresh')
     out.mkdir();(out/'tmp').mkdir();started=time.monotonic();observations=[];refusals=[];native_count=0
     def interrupted(signum,_frame):raise RuntimeError('received signal '+str(signum))
@@ -134,9 +148,9 @@ def main():
     module_spec=importlib.util.spec_from_file_location('gooo_header_addition_host',checker)
     host=importlib.util.module_from_spec(module_spec);sys.modules[module_spec.name]=host;module_spec.loader.exec_module(host)
     try:
-        verification=host.read_verification(root,verification_out,timing)
+        verification=host.read_shard_verification(root,shard_index) if shard_index is not None else host.read_verification(root,verification_out,timing)
     except BaseException as failure:
-        summary={'schema':'gooo/header-addition-input-route/v1','status':'FIRST_FAILURE_PRESERVED','failure':str(failure),'positive_requests':None,'prelaunch_refusals':0,'actual_Gooo_commands':0,'typed_fields_checked':0,'observations':[],'elapsed_s':time.monotonic()-started}
+        summary={'schema':'gooo/header-addition-input-route/v1','status':'FIRST_FAILURE_PRESERVED','failure':str(failure),'positive_requests':None,'prelaunch_refusals':0,'actual_Gooo_commands':0,'typed_fields_checked':0,'observations':[],'elapsed_s':time.monotonic()-started,'scope':('Experimental shard reference, producer unauthenticated; no native acceptance or authenticated GitHub-run claim.' if shard_index is not None else 'Legacy full-verifier evidence was refused before native input commands.')}
         save(out/'summary.json',summary);print(json.dumps(summary));return 1
     pins=dict(verification['pins'])
     tracked=[compiler,helper,go,pathlib.Path(__file__).resolve(),checker,*[root/name for _,name in SOURCES],root/'diagnostic-header-addition.workspace.json',root/'examples/diagnostic-header-addition/corpus.json',root/'upstream.json',root/'go.mod',root/'go.sum',root/'cmd/header-addition-input/main.go',root/'internal/headeradditioninput/preflight.go']
@@ -199,7 +213,7 @@ def main():
         unchanged(); return child.returncode,(d/'stdout').read_bytes()
     env=os.environ.copy();env.update(GOTOOLCHAIN='local',GOWORK='off',GOENV='off',GOPROXY='off',GOSUMDB='off',GOOO_LAYA_URL='',GOOO_LAYA_API_KEY='',TMPDIR=str(out/'tmp'))
     try:
-        unchanged();need(equal(pins[str(compiler)],pins[str(root/'.gooo')]) and equal(pins[str(go)],verification['go_binary']),'input route must use exact current full-verifier compiler/Go binaries');save(out/'source-tool-pins.json',pins)
+        unchanged();need(equal(pins[str(compiler)],pins[str(root/'.gooo')]) and equal(pins[str(go)],verification['go_binary']),'input route must use exact current evidence compiler/Go binaries');save(out/'source-tool-pins.json',pins)
         lock=load((root/'upstream.json').read_bytes());need(lock['compiler_revision']==REV and lock['go_version']=='go1.27.2','current upstream compiler/Go pins')
         MANIFEST=root/'diagnostic-header-addition.workspace.json';GO=go;TOOLS=pins
         PLAN={'sources':[{'package':package,'path':str(root/name),'target':name} for package,name in SOURCES]}
@@ -216,7 +230,7 @@ def main():
             need(labels.count(label)==1,'unique selected witness label');i=labels.index(label);request=spec['cases'][i]['input'];row=verification['rows'][i]
             need(equal(row['inputs'],{ENTRY+'.input0':request['name'],ENTRY+'.input1':request['value'],ENTRY+'.input2':request['declared_length'],ENTRY+'.input3':request['facts']}),'selected current Go case inputs')
             selection.append((label,request,row))
-        rc,raw=call('go-version',[str(go),'version'],20);go_version=raw.decode().strip();need(rc==0 and re.fullmatch(r'go version go1\.27\.2 [a-z0-9_]+/[a-z0-9_]+',go_version),'actual explicit Go identity');need(go_version==verification['go_version'],'same observed Go version as current full verifier')
+        rc,raw=call('go-version',[str(go),'version'],20);go_version=raw.decode().strip();need(rc==0 and re.fullmatch(r'go version go1\.27\.2 [a-z0-9_]+/[a-z0-9_]+',go_version),'actual explicit Go identity');need(go_version==verification['go_version'],'same observed Go version as current evidence')
         rc,raw=call('compiler-version',[str(compiler),'version','--build','--json'],20);identity=load(raw)
         need(rc==0 and all(equal(identity[k],v) for k,v in {'schema':'gooo/build-identity/v1','version':'0.6.32-dev','compiler_source_sha':REV,'vcs_revision':REV,'source_status':'CLEAN_VCS','vcs_modified':'false','go_version':'go1.27.2','native_go_required':'go1.27.2','build_info_observed':True}.items()),'actual pinned compiler identity')
         for index,(label,request,row) in enumerate(selection):
@@ -246,6 +260,6 @@ def main():
             need(rc!=0 and trusted==b'' and native_count==before,'malformed request must return before trusted output/native branch');refusals.append(label)
         need(native_count==len(observations)==8 and len(refusals)==16,'complete actual native/refusal roster');unchanged();status,error='FOUR_INPUT_ROUTES_AND16_PRELAUNCH_REFUSALS_PASS',None
     except BaseException as failure:status,error='FIRST_FAILURE_PRESERVED',str(failure)
-    summary={'schema':'gooo/header-addition-input-route/v1','status':status,'failure':error,'positive_requests':4 if error is None else None,'prelaunch_refusals':len(refusals),'refusal_labels':refusals,'actual_Gooo_commands':native_count,'typed_fields_checked':sum(x['typed_fields'] for x in observations),'typed_input_record_fields':sum(x['typed_input_record_fields'] for x in observations),'observations':observations,'elapsed_s':time.monotonic()-started,'scope':'Current helper output reaches actual pinned input-only execute/saved replay; all16 typed results use current independently computed Go case rows anchored to full-verifier timing/case/raw receipts. Raw replay parent checked. Inner typed canonical parent, direct CLI bypass, observation authenticity, network effects and durable/distributed safety remain NOT_CHECKED.'}
+    summary={'schema':'gooo/header-addition-input-route/v1','status':status,'failure':error,'positive_requests':4 if error is None else None,'prelaunch_refusals':len(refusals),'refusal_labels':refusals,'actual_Gooo_commands':native_count,'typed_fields_checked':sum(x['typed_fields'] for x in observations),'typed_input_record_fields':sum(x['typed_input_record_fields'] for x in observations),'observations':observations,'elapsed_s':time.monotonic()-started,'scope':'Current helper output reaches actual pinned input-only execute/saved replay; all16 typed results use current independently computed Go case rows anchored to '+('experimental unauthenticated shard reference/case/raw receipts; no native acceptance or authenticated GitHub-run claim. ' if shard_index is not None else 'full-verifier timing/case/raw receipts. ')+'Raw replay parent checked. Inner typed canonical parent, direct CLI bypass, observation authenticity, network effects and durable/distributed safety remain NOT_CHECKED.'}
     save(out/'summary.json',summary);print(json.dumps(summary));return 0 if error is None else 1
 if __name__=='__main__':sys.exit(main())
