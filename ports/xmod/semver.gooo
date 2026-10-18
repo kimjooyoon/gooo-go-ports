@@ -21,6 +21,11 @@ let zero = false
 let numeric = true
 let offset = 0
 for offset = 0; offset < 1024; offset = offset + 1 {
+    if offset >= size {
+        if count == 0 { return false }
+        if phase == 3 && numeric && zero && count > 1 { return false }
+        return true
+    }
     if offset > 0 && offset < size {
         let octet = int64(input[offset])
         if phase < 3 {
