@@ -69,6 +69,7 @@ jobs:
           python3 -I -B tools/ipv4_receipts_test.py
           python3 -I -B tools/check-ipv4_test.py
           python3 -I -B tools/prefix_rule_pair_receipts_test.py
+          python3 -I -B tools/check-url-components_test.py
           python3 -I -B tools/generate-rule-pair-corpus.py --check
           python3 -I -B tools/generate-payload-corpus.py --check
           python3 tools/bootstrap.test.py
@@ -308,6 +309,8 @@ jobs:
           ./.gooo check examples/diagnostic-header-addition/main.gooo
           ./.gooo check ports/net/textproto/canonical.gooo
           ./.gooo check examples/canonical-header-key/main.gooo
+          ./.gooo check ports/net/url/escape.gooo
+          ./.gooo check examples/url-context-facts/main.gooo
           ./.gooo check ports/net/http/etag.gooo
           ./.gooo check examples/strong-validator-facts/main.gooo
           ./.gooo check ports/net/http/precondition.gooo
@@ -1214,6 +1217,21 @@ jobs:
             .source_status == "CLEAN_VCS" and .vcs_modified == "false" and
             .go_version == "go1.27.2" and .native_go_required == "go1.27.2"
           ' out/compiler-build.json
+      - name: Verify the isolated native URL component facts sidecar
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+          python3 -I -B tools/check-url-components.py --root "$PWD" --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/url-components"
+          jq -e '
+            .schema == "gooo/url-component-verification/v1" and
+            .status == "NATIVE_ORACLE_AND_SAVED_REPLAY_MATCH" and
+            .input_rows == 128 and .unique_inputs == 128 and
+            .typed_fields_per_layer == 1280 and .native_runs_per_layer == 2 and
+            .finite_total == 0 and .model_calls == 0 and .catalog_extended == false and
+            (.negative_controls | length) == 27 and (.negative_controls | unique | length) == 27 and
+            .processes_closed == true and .owned_work_removed == true
+          ' out/url-components/summary.json
       - name: Verify the isolated native path facts sidecar
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
@@ -1653,6 +1671,7 @@ jobs:
             out/etag-project-evidence/
             out/api-policy-public-consumer/
             out/api-policy-original-download.json
+            out/url-components/
             out/path-facts/
             out/redelivery-policy/
             out/ipv4/
