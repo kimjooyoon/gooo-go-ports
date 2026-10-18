@@ -50,7 +50,25 @@ jobs:
           set -euo pipefail
           umask 077
           bundle_work="$(mktemp -d "$RUNNER_TEMP/service-grant.XXXXXX")"
-          trap 'rm -rf -- "$bundle_work"' EXIT
+          cleanup_bundle_work() {
+            local prior_status=$? cleanup_failure_status=1
+            if [ "$prior_status" -ne 0 ]; then cleanup_failure_status=$prior_status; fi
+            case "$bundle_work" in
+              "$RUNNER_TEMP"/service-grant.??????) ;;
+              *) printf '%s\n' 'Refusing cleanup outside the owned bundle path' >&2; return "$cleanup_failure_status" ;;
+            esac
+            if [ -L "$bundle_work" ] || [ ! -d "$bundle_work" ]; then
+              printf '%s\n' 'Refusing cleanup of a non-directory or symlink' >&2
+              return "$cleanup_failure_status"
+            fi
+            # Go's module cache contains read-only directories. Do not follow
+            # symlinks or change anything outside this one mktemp directory.
+            find -P "$bundle_work" -type d -exec chmod u+w {} + || return "$cleanup_failure_status"
+            rm -rf -- "$bundle_work" || return "$cleanup_failure_status"
+            test ! -e "$bundle_work" && test ! -L "$bundle_work" || return "$cleanup_failure_status"
+            return "$prior_status"
+          }
+          trap cleanup_bundle_work EXIT
           export GOCACHE="$bundle_work/cache" GOMODCACHE="$bundle_work/modcache"
           export GOPATH="$bundle_work/gopath" GOBIN="$bundle_work/bin" TMPDIR="$bundle_work/tmp"
           mkdir -p "$GOBIN" "$TMPDIR"
