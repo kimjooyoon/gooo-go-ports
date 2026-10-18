@@ -17,7 +17,7 @@
   const SUBSET_RULES = Object.freeze(['CANDIDATE_EMPTY', 'IDENTICAL_PATTERNS', 'OLD_GLOBAL', 'OLD_TYPED_ALL',
     'EXACT_CANDIDATE_ACCEPTED_BY_OLD', 'PREFIX_HIERARCHY', 'SUFFIX_HIERARCHY']);
   const COMPILER_REVISION = '83928fa4538245abe33b08549da47f8cbdc50ed2';
-  const GENERATION_SHA256 = 'sha256:db0da6be3c9c76d2fef5d45f1bd357f96e351859168ad9c39709906e428bd4e4';
+  const GENERATION_SHA256 = 'sha256:40ae704abbf2cae1974d2eec51cec2564c8d72dd44536b31c9c4f55f71fc0f85';
   const own = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
   const sha = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
   const nativeSHA = value => typeof value === 'string' && /^sha256:[a-f0-9]{64}$/.test(value);
