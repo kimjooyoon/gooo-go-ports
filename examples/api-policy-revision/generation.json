@@ -1,12 +1,12 @@
 {
   "assets": {
     "adapter_generated.go": "sha256:df5f55e3179042b916b6d7a2a995e67b9596646689994573c24b241c3458c32f",
-    "bindings.go": "sha256:e2e5bc1ea36125995e6c1d643fd4997d9ce8193c4aa3888450614d284fe345a9",
+    "bindings.go": "sha256:6d301290c8b6c5ad8f99e5d6d3b84e29e6ad6623764499a999ae93d70c2cee6b",
     "candidate.workspace.json": "sha256:6e074357fe49fc0cf1f00b6087ada7ab06a77dfc0910d6d227c85a26d53c81d4",
     "canonical/main.gooo": "sha256:72d5f8542c35bb610d094648befa98bbd4c215cbbaac138e18cbb88f58932f53",
     "canonical/scalar_access.gooo": "sha256:86a237641bd7b4de2722a00e1dd89e9f28d17ea953663e9ef1e2a435959c2b83",
-    "cmd/compare/diagnostics.go": "sha256:aa8615accd5cd51fd9a8cec3d6167022c4beeecbdc4376ea53e82224314c85a9",
-    "cmd/compare/main.go": "sha256:3cb44eff9d09f26deecd10953eb7d0ee6dc987d9370b0a5922c5abff798dbe46",
+    "cmd/compare/diagnostics.go": "sha256:b92014b24cf1fbb302374f483772151d409ceab756067b95fd7059939f127b2e",
+    "cmd/compare/main.go": "sha256:301776cba828e1c79d39aae1864820a2f248386155bcbc6c90ed65503d1e5c3e",
     "compare.go": "sha256:f019ba56fc40ba9ac0ffa9d35abf9ecda20534ede38a3efba5db0981d8ec8833",
     "compare.gooo": "sha256:5f040d255508ea42250d24a4b79cbbdacd8a4f11286b8110a2e0cbc9df89646a",
     "compiler.json": "sha256:9e61c23a1302e7390ba03af0606066a8cca1b13d5bd96864dc3c27a85c00dd5c",

@@ -131,11 +131,40 @@ group, principal and tenant facts; inspect them before sharing. Validation error
 produce a nonzero exit and no JSON result. Writing stdout or a redirected file
 is not an atomic file transaction.
 
+### Describe the current command
+
+After building the current source with the native quickstart above, an agent can
+discover this command's fixed profiles, embedded source hashes, supported modes,
+required fact fields and limits before supplying facts:
+
+```sh
+"$revision_run/compare" --describe > "$revision_run/description.json"
+```
+
+`-describe` is equivalent. This emits one JSON record with schema
+`gooo/api-policy-revision-description/v1` and status `DECLARED_CAPABILITIES`.
+It checks the executable's embedded bindings, reads no stdin or input file, and
+needs no external tool. The generation compiler identity describes the retained
+assets; it does not check an installed engine, verify a downloaded bundle,
+execute a policy, authenticate a producer, or establish new native acceptance.
+The executable's Go version is reported separately. This is capability help,
+not a decision or permission to perform an API action.
+Each mode's input byte limit covers the entire serialized input, including
+whitespace and, with `--batch`, the complete array. The batch output limit
+includes the complete encoded array and its final LF.
+
+Do not combine `--describe` with an explicitly supplied `--mode`, `--input` or
+`--batch`, even when that option has its default or false value. Such requests
+exit nonzero with no JSON result; `--diagnostics=json` remains available for
+stderr. The older immutable installation example and previously published
+bundles may reject this new flag. Preserve that failure and their original
+identity rather than treating them as the current source generation.
+
 ### Compare a set of requests
 
 The current checkout adds `--batch` for reviewing a bounded set of API facts.
 Its 38-asset generation is
-`sha256:1bbfaad1219950009acc4460490913eecf230e38338d734a771e171c59c9c760`.
+`sha256:a78b95c6f563450e0aacb2356594b270f9a6c42910f3995cec2577076139956e`.
 Earlier saved comparisons retain their earlier command and generation; they
 are not upgraded by changing a hash in the report.
 If your extracted bundle's `START-HERE.txt` includes a batch walkthrough, use that

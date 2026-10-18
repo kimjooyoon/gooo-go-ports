@@ -270,7 +270,8 @@ class PublicConsumerIdentityTests(unittest.TestCase):
             "8c9f27b3993d0810431cf33817ad6cb1ed726738eb90a68dfc52c4876c99713f",
             "ed24455944545110d0aae02209845086b5a8aafc9ea408a07240ee576cd59617",
             "ca4fc8ab3a120898ae43dd5f46bf1d4273502a77563211871ccaaa5b71662bd2",
-            "a352120b8c419a1c56bfabcd937ce7e8c671b7356f02bd47c05595579a3dcabd"})
+            "a352120b8c419a1c56bfabcd937ce7e8c671b7356f02bd47c05595579a3dcabd",
+            "3ec2b0619ddbbd9e99bbdcbdbb14f135903b47d0dbae6fa3c32afb7c610dc72b"})
         with mock.patch.object(HELPER.subprocess, "run", side_effect=AssertionError("no process")):
             self.assertIsNone(HELPER.verify_fixture_identities(self.source(), self.wanted()))
 
@@ -282,10 +283,12 @@ class PublicConsumerIdentityTests(unittest.TestCase):
                 "ed24455944545110d0aae02209845086b5a8aafc9ea408a07240ee576cd59617",
             "sha256:24f37267a7f4ad723b7228eeecd55fdc151c8534fa8a95bca19bb73d9b3973d0":
                 "ca4fc8ab3a120898ae43dd5f46bf1d4273502a77563211871ccaaa5b71662bd2",
+            "sha256:1bbfaad1219950009acc4460490913eecf230e38338d734a771e171c59c9c760":
+                "a352120b8c419a1c56bfabcd937ce7e8c671b7356f02bd47c05595579a3dcabd",
         }
         for generation, source_hash in historical.items():
             with self.subTest(generation=generation):
-                old = self.prior_source(generation, 38 if generation == "sha256:24f37267a7f4ad723b7228eeecd55fdc151c8534fa8a95bca19bb73d9b3973d0" else 37)
+                old = self.prior_source(generation, 38 if generation in {"sha256:24f37267a7f4ad723b7228eeecd55fdc151c8534fa8a95bca19bb73d9b3973d0", "sha256:1bbfaad1219950009acc4460490913eecf230e38338d734a771e171c59c9c760"} else 37)
                 self.assertNotEqual(old, self.source())
                 self.assertEqual(HELPER.sha(old), source_hash)
                 with self.assertRaisesRegex(HELPER.Refused, "identity tuple"):

@@ -23,7 +23,7 @@ const (
 	apiPolicyRevisionModule     = "github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision"
 	apiPolicyOriginalVersion    = "v0.0.0-20261014100709-8cddcc4e65af"
 	apiPolicyOriginalGeneration = "79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
-	apiPolicyRevisionGeneration = "1bbfaad1219950009acc4460490913eecf230e38338d734a771e171c59c9c760"
+	apiPolicyRevisionGeneration = "a78b95c6f563450e0aacb2356594b270f9a6c42910f3995cec2577076139956e"
 	apiPolicyCompilerRevision   = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 )
 

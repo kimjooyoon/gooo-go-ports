@@ -30,7 +30,7 @@ ORIGINAL = "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
 ORIGINAL_COMMIT = "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"
 ORIGINAL_VERSION = "v0.0.0-20261014100709-8cddcc4e65af"
 ORIGINAL_GENERATION = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
-PARENT_GENERATION = "sha256:1bbfaad1219950009acc4460490913eecf230e38338d734a771e171c59c9c760"
+PARENT_GENERATION = "sha256:a78b95c6f563450e0aacb2356594b270f9a6c42910f3995cec2577076139956e"
 COMPILER = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 REPOSITORY = "https://github.com/kimjooyoon/gooo-go-ports"
 # Exact owned fixture bytes and their independently reviewed source identities.
@@ -55,6 +55,11 @@ KNOWN_CONSUMER_FIXTURES = {
         "compiler_source_sha": "83928fa4538245abe33b08549da47f8cbdc50ed2",
         "original_generation_sha256": "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46",
         "revision_generation_sha256": "sha256:1bbfaad1219950009acc4460490913eecf230e38338d734a771e171c59c9c760",
+    },
+    "3ec2b0619ddbbd9e99bbdcbdbb14f135903b47d0dbae6fa3c32afb7c610dc72b": {
+        "compiler_source_sha": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+        "original_generation_sha256": "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46",
+        "revision_generation_sha256": "sha256:a78b95c6f563450e0aacb2356594b270f9a6c42910f3995cec2577076139956e",
     },
 }
 

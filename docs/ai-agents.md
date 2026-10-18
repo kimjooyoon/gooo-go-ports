@@ -35,6 +35,16 @@ saved report exits one, emits no result, and reports `REPORT_MISMATCH` at
 `verify_comparison` on stderr. Keep the first failure and exact installed version
 for a synthetic reproduction. Do not treat an error as a policy decision.
 
+For a build of the current source, first run `compare --describe` without input
+to obtain JSON capability help: the fixed profiles, embedded generation hashes,
+nine fact fields, mode and batch limits, and generation compiler pin. See the
+[current-command example](../examples/api-policy-revision/README.md#describe-the-current-command).
+This reads no stdin and executes no policy or external tool. It is declared
+capability metadata, not producer authentication or new native acceptance.
+Do not combine it with evaluation flags. The older immutable installation
+above and published bundles may not support it; keep their failure and exact
+identity instead of assuming that they match the current source.
+
 This route evaluates two fixed Gooo profiles. To change Gooo source or build a
 new policy generation, use the compiler workflow below. A successful comparison
 or replay does not grant permission to execute an API action.
