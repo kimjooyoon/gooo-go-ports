@@ -8,6 +8,20 @@ are developed separately; this repository supplies ports and runnable examples.
 
 ## Compare fixed API policies without a compiler
 
+For an optional look at decision output, use the
+[native preview.11 bundles](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.11).
+Select Linux amd64 or macOS arm64, download the archive and its matching checksum,
+verify it, then extract into a fresh private directory. A local shell, tar and a
+checksum tool are needed; running the bundle needs no Go, Gooo or Python.
+An agent needs local file and process tools. Follow `START-HERE.txt` to compare
+the supplied read/write batch, edit synthetic copies of the nine-field facts,
+and replay the saved comparison. A policy denial is exit zero; preserve stderr
+and the nonzero exit for a failure. Use the [existing feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml),
+select **Native setup, verification, or replay**, and say whether this helps a real
+task or report the first failed command and diagnostic. Share public data only.
+The profiles are fixed, facts are unsigned and the command performs no API action.
+To edit Gooo source, use the first-program compiler workflow below.
+
 For a review of the supplied API policy profiles, start with the
 [immutable command quickstart](../examples/api-policy-revision/README.md#install-the-command-without-cloning).
 It installs into a private bin directory without cloning or installing Gooo.
