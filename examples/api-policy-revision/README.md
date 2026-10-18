@@ -138,22 +138,32 @@ Its 38-asset generation is
 `sha256:1bbfaad1219950009acc4460490913eecf230e38338d734a771e171c59c9c760`.
 Earlier saved comparisons retain their earlier command and generation; they
 are not upgraded by changing a hash in the report.
-Build the current source with the native quickstart above; the older immutable
+If your extracted bundle's `START-HERE.txt` includes a batch walkthrough, use that
+same command and its supplied read/write facts; no rebuild is needed. Otherwise,
+build the current source with the native quickstart above; the older immutable
 installation example does not contain this option. Each mode reads one JSON
 array and preserves its order, including repeated requests. It uses the same
 Gooo policies and complete records as the single-request command.
 
-Put one to 128 complete nine-field facts objects in `facts.json`, then run:
+For a source build, start with the existing read/write pair in a private directory.
+For your own synthetic requests, edit copies of these complete nine-field objects.
+The array accepts one to 128 items:
 
 ```sh
 set -eu
-"$revision_run/compare" --diagnostics=json --batch --mode baseline --input facts.json > requests.json
-"$revision_run/compare" --diagnostics=json --batch --mode compare --input requests.json > comparisons.json
-"$revision_run/compare" --diagnostics=json --batch --mode replay --input comparisons.json > replayed.json
+umask 077
+batch_run="$(mktemp -d)"
+printf 'Saved batch files: %s\n' "$batch_run"
+{ printf '[\n'; cat examples/api-policy-revision/testdata/read-facts.json; printf ',\n'; cat examples/api-policy-revision/testdata/write-facts.json; printf ']\n'; } > "$batch_run/facts.json"
+"$revision_run/compare" --diagnostics=json --batch --mode baseline --input "$batch_run/facts.json" > "$batch_run/requests.json" 2> "$batch_run/baseline.stderr.json"
+"$revision_run/compare" --diagnostics=json --batch --mode compare --input "$batch_run/requests.json" > "$batch_run/comparisons.json" 2> "$batch_run/compare.stderr.json"
+"$revision_run/compare" --diagnostics=json --batch --mode replay --input "$batch_run/comparisons.json" > "$batch_run/replayed.json" 2> "$batch_run/replay.stderr.json"
 ```
 
 This creates one original proof per supplied request, compares both profiles
-and rechecks every saved result. A denial is a normal result, so allowed and
+and rechecks every saved result. The supplied read/write summaries are `UNCHANGED`
+then `NEWLY_DENIED`; the comparison and replay files are byte-identical.
+A denial is a normal result, so allowed and
 denied requests can appear in the same successful array. If any item is invalid
 or a saved report is changed, the command exits nonzero and emits no result on
 stdout. JSON diagnostics identify the first failing item with a zero-based
