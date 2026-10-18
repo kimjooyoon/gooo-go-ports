@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	mode := flag.String("mode", "matcher", "matcher, impact or refinement; JSON array on stdin")
+	mode := flag.String("mode", "matcher", "matcher, impact, refinement or grant-update; JSON array on stdin")
 	flag.Parse()
 	if err := run(*mode, flag.NArg(), os.Stdin, os.Stdout); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -20,7 +20,7 @@ func main() {
 }
 
 func run(mode string, extra int, input io.Reader, output io.Writer) error {
-	if extra != 0 || (mode != "matcher" && mode != "impact" && mode != "refinement") {
+	if extra != 0 || (mode != "matcher" && mode != "impact" && mode != "refinement" && mode != "grant-update") {
 		return fmt.Errorf("invalid evaluator mode or arguments")
 	}
 	raw, err := io.ReadAll(io.LimitReader(input, servicepolicy.MaxBatchBytes+1))
@@ -62,6 +62,23 @@ func run(mode string, extra int, input io.Reader, output io.Writer) error {
 		proofs := make([]servicepolicy.RefinementProof, len(rows))
 		for i, f := range facts {
 			proofs[i], err = servicepolicy.EvaluateRefinement(f)
+			if err != nil {
+				return err
+			}
+		}
+		return json.NewEncoder(output).Encode(proofs)
+	}
+	if mode == "grant-update" {
+		facts := make([]servicepolicy.GrantUpdateFacts, len(rows))
+		for i, row := range rows {
+			facts[i], err = servicepolicy.DecodeGrantUpdate(row)
+			if err != nil {
+				return fmt.Errorf("case%d: %w", i, err)
+			}
+		}
+		proofs := make([]servicepolicy.GrantUpdateProof, len(rows))
+		for i, f := range facts {
+			proofs[i], err = servicepolicy.EvaluateGrantUpdate(f)
 			if err != nil {
 				return err
 			}

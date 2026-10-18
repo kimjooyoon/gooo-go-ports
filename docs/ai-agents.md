@@ -369,6 +369,13 @@ compiler issue before passing a minimal case to the language repository.
   with fresh Go expectations in seven batches. Exporting is a source copy;
   the separate checker verifies actual Gooo results and an optional19-row CRLF
   mutation witness. Saved-receipt replay is a separate workflow.
+- **Assess a service-grant change from supplied JSON facts:** use the
+  [grant-update stdin CLI](../examples/agentmesh-service-policy/README.md#use-the-generated-ordinary-go-library-and-stdin-cli).
+  Supply `before`, `after`, `required_type` and `required_name`. Inspect all seven
+  Gooo decision fields and exact input/source bindings. Valid policy refusals and
+  `INVALID_INPUT` domain outcomes exit successfully; malformed JSON structure
+  refuses the whole batch without stdout. This pure check does not apply a grant
+  or call a service.
 - **Automatically check a versioned service-grant tightening:** use the
   [versioned grant-change example](../examples/versioned-grant-change/README.md).
   Gooo combines strict version matching with supported grant narrowing and

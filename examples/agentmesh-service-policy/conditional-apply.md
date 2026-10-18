@@ -12,6 +12,12 @@ confirmation in the application path.
 
 ## Run the four-case demo
 
+For caller-supplied facts without a state change, use the
+[`evaluate -mode grant-update` stdin CLI](README.md#use-the-generated-ordinary-go-library-and-stdin-cli).
+It accepts a bounded JSON array and returns the pure Gooo decisions, facts and
+source bindings. Policy refusals and invalid-domain decisions exit successfully;
+malformed JSON structure refuses the whole batch without stdout.
+
 With Go 1.27.2 already installed, run from `examples/agentmesh-service-policy`:
 
 ```sh
