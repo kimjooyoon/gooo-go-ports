@@ -99,20 +99,23 @@ default. Review this repository and the installation scope, then use its
 [extension installation flow](https://geminicli.com/docs/extensions/):
 
 ```sh
-gemini extensions install https://github.com/kimjooyoon/gooo-go-ports
+gemini extensions install https://github.com/kimjooyoon/gooo-go-ports \
+  --ref ab76fcdab771d65099ae19c68854438f20dc7c06
 gemini extensions list
 ```
 
 Check that `gooo-first-program` is listed, then start Gemini CLI in your Gooo
-task checkout and use the first-program task above. The extension installation
-follows this repository's default branch; the instructions retain their own
-immutable tutorial snapshot, compiler revision and Go version. Use the documented
-native setup to run or edit Gooo source and preserve existing project files.
+task checkout and use the first-program task above. The command pins the extension
+to the tested commit; its instructions retain their own immutable tutorial
+snapshot, compiler revision and Go version. Use the documented native setup to
+run or edit Gooo source and preserve existing project files.
 
 The manifest adds no MCP server or hooks. Gemini CLI **0.64.0** validated this
 manifest and linked the local extension in a fresh Gemini CLI profile on macOS.
 Its JSON list reported one active extension with the existing first-program
-context path and no registered Agent Skills. Remote installation, model context injection and a
+context path and no registered Agent Skills. A separate remote installation at
+the pinned commit matched the manifest and canonical context byte-for-byte and
+reported that same active context path. Model context injection and a
 Gemini-completed Gooo task remain unverified. A gallery listing alone does not
 establish that an agent completed the task.
 
