@@ -123,7 +123,10 @@ func TestLiteralCutWorkspaceClosureAndNoLegacySourceLeak(t *testing.T) {
 			t.Fatal("Cut closure", selected.Names, want)
 		}
 	}
-	for _, s := range original62NativeSuites(t) {
+	// Both passes select workspaces for the same original inputs. Only the
+	// frozen source map changes below; workspace selection does not mutate cases.
+	legacySuites := original62NativeSuites(t)
+	for _, s := range legacySuites {
 		before, err := frozen.workspaceForSuite(s)
 		if err != nil {
 			t.Fatal(err)
@@ -138,7 +141,7 @@ func TestLiteralCutWorkspaceClosureAndNoLegacySourceLeak(t *testing.T) {
 	// Source selection must occur before an unrelated Cut file is copied/hashed.
 	frozen.Sources[cut][0] ^= 1
 	delete(frozen.Sources, report)
-	for _, s := range original62NativeSuites(t) {
+	for _, s := range legacySuites {
 		if _, err := frozen.workspaceForSuite(s); err != nil {
 			t.Fatal("unrelated Cut source affected old workspace", err)
 		}

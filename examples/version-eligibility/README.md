@@ -62,11 +62,11 @@ version_request_dir="$(mktemp -d)"
 python3 examples/version-eligibility/request-inputs.py < request.json > "$version_request_dir/inputs.json"
 ./.gooo package execute --json --inputs "$version_request_dir/inputs.json" version-minimum.workspace.json > "$version_request_dir/execution.json"
 ./.gooo package replay --json --receipt "$version_request_dir/execution.json" --inputs "$version_request_dir/inputs.json" version-minimum.workspace.json > "$version_request_dir/replay.json"
-jq -ce '.result.runtime.traces[0].deliveries[0].actual' "$version_request_dir/replay.json"
+python3 -c 'import json, sys; print(json.dumps(json.load(sys.stdin)["result"]["runtime"]["traces"][0]["deliveries"][0]["actual"], ensure_ascii=False, indent=2))' < "$version_request_dir/replay.json"
 ```
 
 This request produces `eligible=false` with `reason="below_minimum"`: the candidate
-is newer than current, but below the supplied minimum. `jq` displays the result
+is newer than current, but below the supplied minimum. Python displays the result
 object and exits successfully even when its `eligible` field is false. It does
 not validate the receipt or grant authority. Input-only Gooo receipts remain
 `OBSERVED`; the finite oracle test profiles are separate.
@@ -101,7 +101,7 @@ stable_request_dir="$(mktemp -d)"
 python3 examples/version-eligibility/request-inputs.py --policy stable < request.json > "$stable_request_dir/inputs.json"
 ./.gooo package execute --json --inputs "$stable_request_dir/inputs.json" version-stable-same-major.workspace.json > "$stable_request_dir/execution.json"
 ./.gooo package replay --json --receipt "$stable_request_dir/execution.json" --inputs "$stable_request_dir/inputs.json" version-stable-same-major.workspace.json > "$stable_request_dir/replay.json"
-jq -ce '.result.runtime.traces[0].deliveries[0].actual | {eligible, reason, same_major, candidate_stable, policy_eligible, policy_reason}' "$stable_request_dir/replay.json"
+python3 -c 'import json, sys; print(json.dumps(json.load(sys.stdin)["result"]["runtime"]["traces"][0]["deliveries"][0]["actual"], ensure_ascii=False, indent=2))' < "$stable_request_dir/replay.json"
 ```
 
 Consume **`policy_eligible` with `policy_reason`** for this filter. The example
