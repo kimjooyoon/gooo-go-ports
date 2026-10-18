@@ -1,0 +1,1245 @@
+[
+  {
+    "name": "header-00",
+    "input": {
+      "header": "",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-01",
+    "input": {
+      "header": "0",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-02",
+    "input": {
+      "header": "00",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-03",
+    "input": {
+      "header": "1",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-04",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-05",
+    "input": {
+      "header": "00060",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-06",
+    "input": {
+      "header": "86400",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-07",
+    "input": {
+      "header": "86401",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-08",
+    "input": {
+      "header": "9223372036854775807",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-09",
+    "input": {
+      "header": "9223372036854775808",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-10",
+    "input": {
+      "header": "-9223372036854775808",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-11",
+    "input": {
+      "header": "-9223372036854775809",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-12",
+    "input": {
+      "header": "+60",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-13",
+    "input": {
+      "header": "-0",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-14",
+    "input": {
+      "header": " 60",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-15",
+    "input": {
+      "header": "60 ",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-16",
+    "input": {
+      "header": "60\t",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-17",
+    "input": {
+      "header": "60\n",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-18",
+    "input": {
+      "header": "1.0",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-19",
+    "input": {
+      "header": "1e2",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-20",
+    "input": {
+      "header": "1,2",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-21",
+    "input": {
+      "header": "Tue, 20 Oct 2026 07:28:00 GMT",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-22",
+    "input": {
+      "header": "６０",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-23",
+    "input": {
+      "header": "٦٠",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-24",
+    "input": {
+      "header": "\u0000",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-25",
+    "input": {
+      "header": "9999999999999999999999999999999999999999999999999999999999999999",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-26",
+    "input": {
+      "header": "0000000000000000000000000000000000000000000000000000000000000000",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-27",
+    "input": {
+      "header": "0000000000000000000000000000000000000000000000000000000000000001",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-28",
+    "input": {
+      "header": "999999999999999999999999999999999999999999999999999999999999999x",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-29",
+    "input": {
+      "header": "9223372036854775808x",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "header-30",
+    "input": {
+      "header": "€€€€€€€€€€€€€€€€€€€€€1",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-0-0-0",
+    "input": {
+      "header": "0",
+      "header_present": true,
+      "elapsed_seconds": 0,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-0-0-60",
+    "input": {
+      "header": "0",
+      "header_present": true,
+      "elapsed_seconds": 0,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-0-0-86400",
+    "input": {
+      "header": "0",
+      "header_present": true,
+      "elapsed_seconds": 0,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-0-1-0",
+    "input": {
+      "header": "0",
+      "header_present": true,
+      "elapsed_seconds": 1,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-0-1-60",
+    "input": {
+      "header": "0",
+      "header_present": true,
+      "elapsed_seconds": 1,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-0-1-86400",
+    "input": {
+      "header": "0",
+      "header_present": true,
+      "elapsed_seconds": 1,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-0-9223372036854775807-0",
+    "input": {
+      "header": "0",
+      "header_present": true,
+      "elapsed_seconds": 9223372036854775807,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-0-9223372036854775807-60",
+    "input": {
+      "header": "0",
+      "header_present": true,
+      "elapsed_seconds": 9223372036854775807,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-0-9223372036854775807-86400",
+    "input": {
+      "header": "0",
+      "header_present": true,
+      "elapsed_seconds": 9223372036854775807,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-1-0-0",
+    "input": {
+      "header": "1",
+      "header_present": true,
+      "elapsed_seconds": 0,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-1-0-60",
+    "input": {
+      "header": "1",
+      "header_present": true,
+      "elapsed_seconds": 0,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-1-0-86400",
+    "input": {
+      "header": "1",
+      "header_present": true,
+      "elapsed_seconds": 0,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-1-1-0",
+    "input": {
+      "header": "1",
+      "header_present": true,
+      "elapsed_seconds": 1,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-1-1-60",
+    "input": {
+      "header": "1",
+      "header_present": true,
+      "elapsed_seconds": 1,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-1-1-86400",
+    "input": {
+      "header": "1",
+      "header_present": true,
+      "elapsed_seconds": 1,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-1-2-0",
+    "input": {
+      "header": "1",
+      "header_present": true,
+      "elapsed_seconds": 2,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-1-2-60",
+    "input": {
+      "header": "1",
+      "header_present": true,
+      "elapsed_seconds": 2,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-1-2-86400",
+    "input": {
+      "header": "1",
+      "header_present": true,
+      "elapsed_seconds": 2,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-1-9223372036854775807-0",
+    "input": {
+      "header": "1",
+      "header_present": true,
+      "elapsed_seconds": 9223372036854775807,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-1-9223372036854775807-60",
+    "input": {
+      "header": "1",
+      "header_present": true,
+      "elapsed_seconds": 9223372036854775807,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-1-9223372036854775807-86400",
+    "input": {
+      "header": "1",
+      "header_present": true,
+      "elapsed_seconds": 9223372036854775807,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-60-0-0",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 0,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-60-0-60",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 0,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-60-0-86400",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 0,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-60-59-0",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-60-59-60",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-60-59-86400",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-60-60-0",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 60,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-60-60-60",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 60,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-60-60-86400",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 60,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-60-61-0",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 61,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-60-61-60",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 61,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-60-61-86400",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 61,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-60-9223372036854775807-0",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 9223372036854775807,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-60-9223372036854775807-60",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 9223372036854775807,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-60-9223372036854775807-86400",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 9223372036854775807,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-86400-0-0",
+    "input": {
+      "header": "86400",
+      "header_present": true,
+      "elapsed_seconds": 0,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-86400-0-60",
+    "input": {
+      "header": "86400",
+      "header_present": true,
+      "elapsed_seconds": 0,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-86400-0-86400",
+    "input": {
+      "header": "86400",
+      "header_present": true,
+      "elapsed_seconds": 0,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-86400-86399-0",
+    "input": {
+      "header": "86400",
+      "header_present": true,
+      "elapsed_seconds": 86399,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-86400-86399-60",
+    "input": {
+      "header": "86400",
+      "header_present": true,
+      "elapsed_seconds": 86399,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-86400-86399-86400",
+    "input": {
+      "header": "86400",
+      "header_present": true,
+      "elapsed_seconds": 86399,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-86400-86400-0",
+    "input": {
+      "header": "86400",
+      "header_present": true,
+      "elapsed_seconds": 86400,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-86400-86400-60",
+    "input": {
+      "header": "86400",
+      "header_present": true,
+      "elapsed_seconds": 86400,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-86400-86400-86400",
+    "input": {
+      "header": "86400",
+      "header_present": true,
+      "elapsed_seconds": 86400,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-86400-86401-0",
+    "input": {
+      "header": "86400",
+      "header_present": true,
+      "elapsed_seconds": 86401,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-86400-86401-60",
+    "input": {
+      "header": "86400",
+      "header_present": true,
+      "elapsed_seconds": 86401,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-86400-86401-86400",
+    "input": {
+      "header": "86400",
+      "header_present": true,
+      "elapsed_seconds": 86401,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-86400-9223372036854775807-0",
+    "input": {
+      "header": "86400",
+      "header_present": true,
+      "elapsed_seconds": 9223372036854775807,
+      "max_wait_seconds": 0,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-86400-9223372036854775807-60",
+    "input": {
+      "header": "86400",
+      "header_present": true,
+      "elapsed_seconds": 9223372036854775807,
+      "max_wait_seconds": 60,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "time-86400-9223372036854775807-86400",
+    "input": {
+      "header": "86400",
+      "header_present": true,
+      "elapsed_seconds": 9223372036854775807,
+      "max_wait_seconds": 86400,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "confirmation-000",
+    "input": {
+      "header": "60",
+      "header_present": false,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": false,
+      "guidance_applicable": false
+    }
+  },
+  {
+    "name": "confirmation-001",
+    "input": {
+      "header": "60",
+      "header_present": false,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": false,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "confirmation-010",
+    "input": {
+      "header": "60",
+      "header_present": false,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": false
+    }
+  },
+  {
+    "name": "confirmation-011",
+    "input": {
+      "header": "60",
+      "header_present": false,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "confirmation-100",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": false,
+      "guidance_applicable": false
+    }
+  },
+  {
+    "name": "confirmation-101",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": false,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "confirmation-110",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": false
+    }
+  },
+  {
+    "name": "invalid--9223372036854775808-3600-1",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": -9223372036854775808,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "invalid--9223372036854775808-3600-0",
+    "input": {
+      "header": "60",
+      "header_present": false,
+      "elapsed_seconds": -9223372036854775808,
+      "max_wait_seconds": 3600,
+      "request_binding_current": false,
+      "guidance_applicable": false
+    }
+  },
+  {
+    "name": "invalid--1-3600-1",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": -1,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "invalid--1-3600-0",
+    "input": {
+      "header": "60",
+      "header_present": false,
+      "elapsed_seconds": -1,
+      "max_wait_seconds": 3600,
+      "request_binding_current": false,
+      "guidance_applicable": false
+    }
+  },
+  {
+    "name": "invalid-59--9223372036854775808-1",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": -9223372036854775808,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "invalid-59--9223372036854775808-0",
+    "input": {
+      "header": "60",
+      "header_present": false,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": -9223372036854775808,
+      "request_binding_current": false,
+      "guidance_applicable": false
+    }
+  },
+  {
+    "name": "invalid-59--1-1",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": -1,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "invalid-59--1-0",
+    "input": {
+      "header": "60",
+      "header_present": false,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": -1,
+      "request_binding_current": false,
+      "guidance_applicable": false
+    }
+  },
+  {
+    "name": "invalid-59-86401-1",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 86401,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "invalid-59-86401-0",
+    "input": {
+      "header": "60",
+      "header_present": false,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 86401,
+      "request_binding_current": false,
+      "guidance_applicable": false
+    }
+  },
+  {
+    "name": "invalid-59-9223372036854775807-1",
+    "input": {
+      "header": "60",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 9223372036854775807,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "invalid-59-9223372036854775807-0",
+    "input": {
+      "header": "60",
+      "header_present": false,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 9223372036854775807,
+      "request_binding_current": false,
+      "guidance_applicable": false
+    }
+  },
+  {
+    "name": "precedence-stale-bad",
+    "input": {
+      "header": "bad",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": false,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "precedence-not-applicable-bad",
+    "input": {
+      "header": "bad",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": false
+    }
+  },
+  {
+    "name": "precedence-not-confirmed-bad",
+    "input": {
+      "header": "bad",
+      "header_present": false,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "precedence-stale-9223372036854775808",
+    "input": {
+      "header": "9223372036854775808",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": false,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "precedence-not-applicable-9223372036854775808",
+    "input": {
+      "header": "9223372036854775808",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": false
+    }
+  },
+  {
+    "name": "precedence-not-confirmed-9223372036854775808",
+    "input": {
+      "header": "9223372036854775808",
+      "header_present": false,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "precedence-stale-+60",
+    "input": {
+      "header": "+60",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": false,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "precedence-not-applicable-+60",
+    "input": {
+      "header": "+60",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": false
+    }
+  },
+  {
+    "name": "precedence-not-confirmed-+60",
+    "input": {
+      "header": "+60",
+      "header_present": false,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "precedence-stale-86401",
+    "input": {
+      "header": "86401",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": false,
+      "guidance_applicable": true
+    }
+  },
+  {
+    "name": "precedence-not-applicable-86401",
+    "input": {
+      "header": "86401",
+      "header_present": true,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": false
+    }
+  },
+  {
+    "name": "precedence-not-confirmed-86401",
+    "input": {
+      "header": "86401",
+      "header_present": false,
+      "elapsed_seconds": 59,
+      "max_wait_seconds": 3600,
+      "request_binding_current": true,
+      "guidance_applicable": true
+    }
+  }
+]

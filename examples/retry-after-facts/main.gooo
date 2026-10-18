@@ -1,0 +1,116 @@
+// Original bounded policy over a selected Retry-After observation.
+// Contract v2 is frozen in contract.json before this candidate and its oracle.
+// All parsing and decision calculations execute in Gooo. Caller assertions are
+// not authenticated here; this activity never sleeps, sends or permits a retry.
+package retry_after_facts
+namespace gooo_ports_examples_retry_after_facts
+import decimal "go/strconv"
+
+entity Text id "gooo://std/text"
+entity Boolean id "gooo://std/boolean"
+entity Integer id "gooo://std/integer"
+entity RetryAfterFacts id "gooo://retry-after-facts/report/v1" fields {
+    field header id "gooo://retry-after-facts/report/v1/header" type string required one
+    field header_present id "gooo://retry-after-facts/report/v1/header_present" type boolean required one
+    field parsed_value id "gooo://retry-after-facts/report/v1/parsed_value" type integer required one
+    field parse_error_kind id "gooo://retry-after-facts/report/v1/parse_error_kind" type integer required one
+    field delta_seconds_grammar id "gooo://retry-after-facts/report/v1/delta_seconds_grammar" type boolean required one
+    field elapsed_seconds id "gooo://retry-after-facts/report/v1/elapsed_seconds" type integer required one
+    field max_wait_seconds id "gooo://retry-after-facts/report/v1/max_wait_seconds" type integer required one
+    field request_binding_current id "gooo://retry-after-facts/report/v1/request_binding_current" type boolean required one
+    field guidance_applicable id "gooo://retry-after-facts/report/v1/guidance_applicable" type boolean required one
+    field delay_in_policy id "gooo://retry-after-facts/report/v1/delay_in_policy" type boolean required one
+    field cooldown_active id "gooo://retry-after-facts/report/v1/cooldown_active" type boolean required one
+    field remaining_seconds id "gooo://retry-after-facts/report/v1/remaining_seconds" type integer required one
+    field state id "gooo://retry-after-facts/report/v1/state" type string required one
+    field reason id "gooo://retry-after-facts/report/v1/reason" type string required one
+}
+
+// Inputs: original selected header, confirmed presence, observed elapsed seconds,
+// local maximum wait, current request binding and applicable guidance.
+// OUTER DOMAIN: Unicode-scalar UTF8 Text0..64B, exact signed-int64 Integers and
+// exact Booleans. Transport/domain refusal must precede native invocation.
+// A supplied true is only a host assertion; saved replay cannot refresh it.
+activity AssessDelay(Text, Boolean, Integer, Integer, Boolean, Boolean) -> RetryAfterFacts id "gooo://retry-after-facts/assess/v1" computes `let parsed = decimal.ParseIntDecimal64(input0)
+let length = int64(len(input0))
+let delta_seconds_grammar = length > 0 && length <= 64
+let offset = 0
+for offset = 0; offset < 64; offset = offset + 1 {
+    if offset < length {
+        let octet = int64(input0[offset])
+        if octet < 48 || octet > 57 { delta_seconds_grammar = false }
+    }
+}
+let metadata_valid = input2 >= 0 && input3 >= 0 && input3 <= 86400
+let delay_in_policy = metadata_valid && parsed.parsed && parsed.error_kind == 0 && delta_seconds_grammar && parsed.value >= 0 && parsed.value <= input3
+let state = "UNKNOWN"
+let reason = "GUIDANCE_UNCONFIRMED"
+let cooldown_active = false
+let remaining_seconds = -1
+let decided = false
+if !metadata_valid {
+    state = "DOMAIN_REFUSED"
+    reason = "INPUT_DOMAIN_INVALID"
+    decided = true
+}
+if !decided && !input4 {
+    reason = "REQUEST_BINDING_NOT_CURRENT"
+    decided = true
+}
+if !decided && !input5 {
+    reason = "GUIDANCE_NOT_APPLICABLE"
+    decided = true
+}
+if !decided && !input1 {
+    reason = "HEADER_NOT_CONFIRMED"
+    decided = true
+}
+if !decided && parsed.error_kind == 1 {
+    reason = "DELAY_SYNTAX_INVALID"
+    decided = true
+}
+if !decided && parsed.error_kind == 2 {
+    reason = "DELAY_RANGE_ERROR"
+    decided = true
+}
+if !decided && (!parsed.parsed || parsed.error_kind != 0) {
+    reason = "PARSER_CONTRACT_UNSUPPORTED"
+    decided = true
+}
+if !decided && !delta_seconds_grammar {
+    reason = "DELTA_SECONDS_GRAMMAR"
+    decided = true
+}
+if !decided && (parsed.value < 0 || parsed.value > input3) {
+    reason = "WAIT_POLICY_EXCEEDED"
+    decided = true
+}
+if !decided && input2 < parsed.value {
+    state = "WAIT"
+    reason = "COOLDOWN_ACTIVE"
+    cooldown_active = true
+    // Earlier rules establish0<=elapsed<delay<=max_wait<=86400 here.
+    remaining_seconds = parsed.value - input2
+    decided = true
+}
+if !decided {
+    state = "READY_TO_REASSESS"
+    reason = "COOLDOWN_ELAPSED"
+    remaining_seconds = 0
+}
+return RetryAfterFacts{
+    header: input0,
+    header_present: input1,
+    parsed_value: parsed.value,
+    parse_error_kind: parsed.error_kind,
+    delta_seconds_grammar: delta_seconds_grammar,
+    elapsed_seconds: input2,
+    max_wait_seconds: input3,
+    request_binding_current: input4,
+    guidance_applicable: input5,
+    delay_in_policy: delay_in_policy,
+    cooldown_active: cooldown_active,
+    remaining_seconds: remaining_seconds,
+    state: state,
+    reason: reason,
+}`

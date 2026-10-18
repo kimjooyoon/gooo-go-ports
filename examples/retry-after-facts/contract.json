@@ -1,0 +1,191 @@
+{
+  "schema": "gooo/retry-after-facts-contract/v2",
+  "status": "FROZEN_BEFORE_CANDIDATE_AND_INDEPENDENT_ORACLE",
+  "original_policy": true,
+  "package_path": "app/retry-after-facts",
+  "activity": "AssessDelay",
+  "activity_id": "gooo://retry-after-facts/assess/v1",
+  "result_id": "gooo://retry-after-facts/report/v1",
+  "inputs": [
+    "header:Text",
+    "header_present:Boolean",
+    "elapsed_seconds:Integer",
+    "max_wait_seconds:Integer",
+    "request_binding_current:Boolean",
+    "guidance_applicable:Boolean"
+  ],
+  "transport": {
+    "header": "Valid Unicode-scalar UTF8 Text0..64 bytes; exact echo; missing/wrong-type/duplicates/unknown keys/non-scalar Unicode/over64B refuse BEFORE compiler invocation. Direct raw native outside declared domain unsupported.",
+    "integers": "Exact JSON signed-int64; Boolean/floating-point not integers.",
+    "booleans": "Exact JSON Boolean.",
+    "positional_keys": [
+      "app/retry-after-facts:AssessDelay.input0",
+      "app/retry-after-facts:AssessDelay.input1",
+      "app/retry-after-facts:AssessDelay.input2",
+      "app/retry-after-facts:AssessDelay.input3",
+      "app/retry-after-facts:AssessDelay.input4",
+      "app/retry-after-facts:AssessDelay.input5"
+    ]
+  },
+  "parser": "Always call existing go/strconv:ParseIntDecimal64 on original header, including invalid metadata. Preserve parsed_value and error_kind exactly as its pinned port (0 success,1 syntax,2 range with signed-int64 saturation); this is diagnostics, not admission.",
+  "output_fields": [
+    {
+      "name": "header",
+      "type": "string",
+      "id": "gooo://retry-after-facts/report/v1/header"
+    },
+    {
+      "name": "header_present",
+      "type": "boolean",
+      "id": "gooo://retry-after-facts/report/v1/header_present"
+    },
+    {
+      "name": "parsed_value",
+      "type": "integer",
+      "id": "gooo://retry-after-facts/report/v1/parsed_value"
+    },
+    {
+      "name": "parse_error_kind",
+      "type": "integer",
+      "id": "gooo://retry-after-facts/report/v1/parse_error_kind"
+    },
+    {
+      "name": "delta_seconds_grammar",
+      "type": "boolean",
+      "id": "gooo://retry-after-facts/report/v1/delta_seconds_grammar"
+    },
+    {
+      "name": "elapsed_seconds",
+      "type": "integer",
+      "id": "gooo://retry-after-facts/report/v1/elapsed_seconds"
+    },
+    {
+      "name": "max_wait_seconds",
+      "type": "integer",
+      "id": "gooo://retry-after-facts/report/v1/max_wait_seconds"
+    },
+    {
+      "name": "request_binding_current",
+      "type": "boolean",
+      "id": "gooo://retry-after-facts/report/v1/request_binding_current"
+    },
+    {
+      "name": "guidance_applicable",
+      "type": "boolean",
+      "id": "gooo://retry-after-facts/report/v1/guidance_applicable"
+    },
+    {
+      "name": "delay_in_policy",
+      "type": "boolean",
+      "id": "gooo://retry-after-facts/report/v1/delay_in_policy"
+    },
+    {
+      "name": "cooldown_active",
+      "type": "boolean",
+      "id": "gooo://retry-after-facts/report/v1/cooldown_active"
+    },
+    {
+      "name": "remaining_seconds",
+      "type": "integer",
+      "id": "gooo://retry-after-facts/report/v1/remaining_seconds"
+    },
+    {
+      "name": "state",
+      "type": "string",
+      "id": "gooo://retry-after-facts/report/v1/state"
+    },
+    {
+      "name": "reason",
+      "type": "string",
+      "id": "gooo://retry-after-facts/report/v1/reason"
+    }
+  ],
+  "derived_fields": {
+    "delta_seconds_grammar": "Nonempty ASCII digits0..9 only; no trim, sign, separator, HTTP-date or Unicode digits; leading zeros allowed.",
+    "delay_in_policy": "Valid numeric metadata AND parser success/error0 AND delta grammar AND0<=parsed_value<=max_wait_seconds. Independent of the three confirmation booleans; membership alone is not trusted guidance.",
+    "cooldown_active": "True only when selected state is WAIT.",
+    "remaining_seconds": "-1 unless admitted WAIT or READY_TO_REASSESS; WAIT uses delay-elapsed, READY uses0.",
+    "echo": "header,header_present,elapsed_seconds,max_wait_seconds,request_binding_current,guidance_applicable preserved exactly."
+  },
+  "initial": {
+    "state": "UNKNOWN",
+    "reason": "GUIDANCE_UNCONFIRMED",
+    "cooldown_active": false,
+    "remaining_seconds": -1
+  },
+  "ordered_terminal_rules": [
+    {
+      "when": "elapsed_seconds<0 OR max_wait_seconds<0 OR max_wait_seconds>86400",
+      "state": "DOMAIN_REFUSED",
+      "reason": "INPUT_DOMAIN_INVALID"
+    },
+    {
+      "when": "request_binding_current is false",
+      "state": "UNKNOWN",
+      "reason": "REQUEST_BINDING_NOT_CURRENT"
+    },
+    {
+      "when": "guidance_applicable is false",
+      "state": "UNKNOWN",
+      "reason": "GUIDANCE_NOT_APPLICABLE"
+    },
+    {
+      "when": "header_present is false",
+      "state": "UNKNOWN",
+      "reason": "HEADER_NOT_CONFIRMED"
+    },
+    {
+      "when": "parser.error_kind==1",
+      "state": "UNKNOWN",
+      "reason": "DELAY_SYNTAX_INVALID"
+    },
+    {
+      "when": "parser.error_kind==2",
+      "state": "UNKNOWN",
+      "reason": "DELAY_RANGE_ERROR"
+    },
+    {
+      "when": "parser.parsed is false OR parser.error_kind!=0",
+      "state": "UNKNOWN",
+      "reason": "PARSER_CONTRACT_UNSUPPORTED"
+    },
+    {
+      "when": "delta_seconds_grammar is false",
+      "state": "UNKNOWN",
+      "reason": "DELTA_SECONDS_GRAMMAR"
+    },
+    {
+      "when": "parsed_value<0 OR parsed_value>max_wait_seconds",
+      "state": "UNKNOWN",
+      "reason": "WAIT_POLICY_EXCEEDED"
+    },
+    {
+      "when": "elapsed_seconds<parsed_value",
+      "state": "WAIT",
+      "reason": "COOLDOWN_ACTIVE",
+      "cooldown_active": true,
+      "remaining_seconds": "parsed_value-elapsed_seconds (both bounded nonnegative and delay<=86400)"
+    },
+    {
+      "when": "otherwise",
+      "state": "READY_TO_REASSESS",
+      "reason": "COOLDOWN_ELAPSED",
+      "remaining_seconds": 0
+    }
+  ],
+  "arithmetic": "No wall clock, absolute timestamp, duration scaling or timestamp arithmetic. Only subtract when0<=elapsed<delay<=max_wait<=86400; elapsed may otherwise span all nonnegative int64 without subtraction.",
+  "host_contract": [
+    "Host establishes selected response/request/whole-operation binding, confirmed header presence, applicability and elapsed observation. A supplied true is not authentication; absence of confirmation is UNKNOWN.",
+    "READY_TO_REASSESS schedules a fresh policy assessment. It never manufactures provider ALLOW or ABSENT, dispatch eligibility, authority, a durable claim or a retry-loop effect.",
+    "WAIT is a finite time fact, not a server repeat contract. Existing access, whole-operation history, request/key binding, budget and atomic claim obligations remain independent.",
+    "Saved replay reconstructs prior facts and cannot establish current guidance or elapsed time."
+  ],
+  "compatibility": "Original bounded composition over an existing Gooo port, not full Go SDK/rate-limiter/HTTP-date/RFC compatibility. The86400 policy maximum and64B header cap are explicit local profile choices; x-ratelimit-reset, multiple-header selection and network effects are absent.",
+  "supersedes_unimplemented_proposal": {
+    "path": "/Users/alice/meta-go/output/growth/strategy-retrospective-20261017/api-policy-helper036-20261018/queue-order-local/retry-after-facts-contract-frozen-1109.json",
+    "sha256": "c22806699a4a91f64f671c809c2afac8e9f61fbfbdd7818d16b53e7594274bef",
+    "reason": "Adopt research recommendation: reuse existing parser and elapsed-seconds facts, avoiding duplicated parser and wall-clock timestamp arithmetic. No candidate/oracle or execution existed for the prior proposal."
+  },
+  "validation": "Independent Go oracle from this frozen spec using strconv.ParseInt, errors.Is and regexp ASCII grammar; original boundary cases chosen before Gooo output. Actual pinned839 generation/native/saved replay and strict14-field/raw-parent/source/ABI checks remain required.",
+  "created_at_utc": "2026-10-18T11:09:55.129149+00:00"
+}

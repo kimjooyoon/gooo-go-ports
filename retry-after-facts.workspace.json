@@ -1,0 +1,21 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "app/retry-after-facts",
+    "activity": "AssessDelay"
+  },
+  "packages": [
+    {
+      "path": "go/strconv",
+      "sources": [
+        "ports/strconv/decimal.gooo"
+      ]
+    },
+    {
+      "path": "app/retry-after-facts",
+      "sources": [
+        "examples/retry-after-facts/main.gooo"
+      ]
+    }
+  ]
+}
