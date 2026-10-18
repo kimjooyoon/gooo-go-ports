@@ -108,6 +108,51 @@ class PublicConsumerDiagnosticsTests(unittest.TestCase):
             self.assertNotIn("acceptance", report)
             self.assertEqual(json.loads(output.getvalue())["status"], "FAIL")
 
+    def test_bundle_is_not_loaded_after_verification_or_cleanup_failure(self):
+        for failed_cleanup in (False, True):
+            with self.subTest(failed_cleanup=failed_cleanup), tempfile.TemporaryDirectory() as directory:
+                target = Path(directory) / "fresh"
+                args = ["check", "--go", "/not-invoked/go", "--revision", "a" * 40,
+                        "--out", str(target), "--bundle-cli"]
+
+                def incomplete_verify(_args, out, report):
+                    (out / ".validated-cli").write_bytes(b"must not be packaged")
+                    report.update(status="PUBLIC_API_POLICY_CONSUMER_PASS", acceptance={"direct_install": True})
+                    if failed_cleanup:
+                        report["temporary_sources_binaries_build_cache_removed"] = False
+                    else:
+                        raise HELPER.Refused("late verification failure")
+
+                with mock.patch.object(sys, "argv", args), \
+                        mock.patch.object(HELPER, "verify", side_effect=incomplete_verify), \
+                        mock.patch.object(HELPER.importlib.util, "spec_from_file_location") as load_bundle, \
+                        contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(HELPER.main(), 1)
+                load_bundle.assert_not_called()
+                report = json.loads((target / "verification.json").read_bytes())
+                self.assertEqual(report["status"], "FAIL")
+                self.assertNotIn("acceptance", report)
+                self.assertNotIn("cli_bundle", report)
+                self.assertFalse((target / ".validated-cli").exists())
+
+    def test_retained_cli_cleanup_error_preserves_primary_failure_report(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "fresh"
+            args = ["check", "--go", "/not-invoked/go", "--revision", "a" * 40,
+                    "--out", str(target), "--bundle-cli"]
+            output = io.StringIO()
+            with mock.patch.object(sys, "argv", args), \
+                    mock.patch.object(HELPER, "verify", side_effect=HELPER.Refused("primary failure")), \
+                    mock.patch.object(Path, "unlink", side_effect=OSError("cleanup unavailable")), \
+                    contextlib.redirect_stdout(output):
+                self.assertEqual(HELPER.main(), 1)
+            report = json.loads((target / "verification.json").read_bytes())
+            self.assertEqual(report["status"], "FAIL")
+            self.assertEqual(report["error"], "Refused: primary failure")
+            self.assertEqual(report["retained_cli_cleanup_error"], "OSError: cleanup unavailable")
+            self.assertNotIn("acceptance", report)
+            self.assertEqual(json.loads(output.getvalue())["status"], "FAIL")
+
     def test_subprocess_failure_is_not_retried(self):
         with tempfile.TemporaryDirectory() as directory:
             recorder = HELPER.Recorder(Path(directory))

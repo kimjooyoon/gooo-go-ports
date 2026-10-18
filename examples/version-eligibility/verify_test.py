@@ -45,9 +45,14 @@ class Boundaries(unittest.TestCase):
         inputs = json.loads((base / "minimum-inputs.json").read_text())
         selected = verify.policy("minimum")
         rows = verify.synchronized(reference, inputs, selected)
-        self.assertEqual(len(rows), 8)
+        self.assertEqual(len(rows), 9)
         self.assertEqual(len(rows[0]), 3)
         self.assertEqual(len(selected["fields"]), 13)
+        self.assertEqual(reference[-1], {"name": "numeric-prerelease-order",
+                         "current": "v1.0.0-beta.2", "candidate": "v1.0.0-beta.11",
+                         "minimum": "v1.0.0-beta.1"})
+        self.assertEqual(rows[-1], {selected["entry"] + ".input" + str(i): reference[-1][key]
+                                   for i, key in enumerate(selected["parameters"])})
         changed = copy.deepcopy(inputs)
         del changed["inputs"][0][selected["entry"] + ".input2"]
         with self.assertRaises(ValueError):

@@ -40,6 +40,11 @@
       "app/version-eligibility:AssessUpdate.input0": "v1.9.0",
       "app/version-eligibility:AssessUpdate.input1": "v2.0.0-rc.1",
       "app/version-eligibility:AssessUpdate.input2": "v2.0.0-rc.0"
+    },
+    {
+      "app/version-eligibility:AssessUpdate.input0": "v1.0.0-beta.2",
+      "app/version-eligibility:AssessUpdate.input1": "v1.0.0-beta.11",
+      "app/version-eligibility:AssessUpdate.input2": "v1.0.0-beta.1"
     }
   ]
 }

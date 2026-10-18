@@ -83,6 +83,7 @@ jobs:
           python3 -B tools/classify-ci-scope_test.py -v
           python3 -B tools/check-ci-scope-workflow_test.py -v
           python3 -B tools/check-api-policy-public-consumer_test.py -v
+          python3 -I -B tools/api_policy_cli_bundle_test.py -v
           python3 -I -B tools/check-header-addition-host_test.py -v
           python3 -I -B tools/native_verification_contract_test.py -v
           python3 -I -B examples/versioned-grant-change/verify_test.py
@@ -1195,8 +1196,8 @@ jobs:
         env:
           PUBLIC_API_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer"
-          jq -e '.schema == "gooo/api-policy-public-consumer/v1" and .status == "PUBLIC_API_POLICY_CONSUMER_PASS" and .acceptance.facts == 9 and .acceptance.positive_cases == 2 and .acceptance.decision_fields == 15 and .acceptance.difference_flags == 15 and .acceptance.summary_fields == 2 and .acceptance.public_asset_count == 38 and .acceptance.public_assets_exact == true and .acceptance.public_generation_exact == true and .acceptance.original_assets_exact == true and .acceptance.original_generation_unchanged == true and .acceptance.substitution_refused == true and .acceptance.runtime_empty_path == true and .acceptance.consumer_no_replace_or_workspace == true and .acceptance.direct_install == true and .acceptance.direct_install_cases == 2 and .acceptance.direct_install_tampered_report_refused == true and .acceptance.substitution_stdout_bytes == 0 and .acceptance.original_version == "v0.0.0-20261014100709-8cddcc4e65af" and .acceptance.original_commit == "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"' out/api-policy-public-consumer/verification.json
+          python3 -B tools/check-api-policy-public-consumer.py --go "$(go env GOROOT)/bin/go" --revision "$PUBLIC_API_REVISION" --out "$PWD/out/api-policy-public-consumer" --bundle-cli
+          jq -e '.schema == "gooo/api-policy-public-consumer/v1" and .status == "PUBLIC_API_POLICY_CONSUMER_PASS" and .acceptance.facts == 9 and .acceptance.positive_cases == 2 and .acceptance.decision_fields == 15 and .acceptance.difference_flags == 15 and .acceptance.summary_fields == 2 and .acceptance.public_asset_count == 38 and .acceptance.public_assets_exact == true and .acceptance.public_generation_exact == true and .acceptance.original_assets_exact == true and .acceptance.original_generation_unchanged == true and .acceptance.substitution_refused == true and .acceptance.runtime_empty_path == true and .acceptance.consumer_no_replace_or_workspace == true and .acceptance.direct_install == true and .acceptance.direct_install_cases == 2 and .acceptance.direct_install_tampered_report_refused == true and .acceptance.substitution_stdout_bytes == 0 and .acceptance.original_version == "v0.0.0-20261014100709-8cddcc4e65af" and .acceptance.original_commit == "8cddcc4e65afb42431f8f42a86f29859ae2f4d69" and .cli_bundle.status == "VALIDATED_NATIVE_CLI_BUNDLE" and .cli_bundle.platform == "linux/amd64" and .cli_bundle.archive_readback_verified == true and (.cli_bundle.members | length) == 10 and (.cli_bundle.archive.bytes > 0 and .cli_bundle.archive.bytes <= 33554432)' out/api-policy-public-consumer/verification.json
       - name: Build and identify the pinned compiler from a clean checkout
         if: steps.change-scope.outputs.docs_only != 'true'
         run: |
@@ -1780,7 +1781,7 @@ jobs:
                 .status == "FINITE_9_BOUNDARY_CASES_AND_FRESH_REPLAY_CHECKED" and .checked == 9
               elif $policy == "stable" then
                 .status == "FINITE_12_CASES_AND_FRESH_REPLAY_CHECKED" and .checked == 12
-              elif $policy == "major" or $policy == "prerelease" then
+              elif $policy == "minimum" or $policy == "major" or $policy == "prerelease" then
                 .status == "FINITE_9_CASES_AND_FRESH_REPLAY_CHECKED" and .checked == 9
               else
                 .status == "FINITE_8_CASES_AND_FRESH_REPLAY_CHECKED" and .checked == 8

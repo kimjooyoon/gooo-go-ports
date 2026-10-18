@@ -59,6 +59,32 @@ read/write baseline-comparison-replay and a tampered-report refusal. CI repeats
 the direct installation against the current proposal commit. This is a
 maintainer-run check, not an independent user's adoption or installation timing.
 
+## Portable command bundles
+
+The full CI run also packages its already installed and tested native command as
+`gooo-policy-compare-linux-amd64.tar.gz` in the policy evidence artifact. Packaging
+does not add a Go build or another CI job. The same producer can make a native
+`darwin-arm64` bundle on an Apple Silicon Mac; it does not cross-compile untested
+platforms. These CI artifacts are development evidence, not a published release.
+
+Each bundle contains the command, synthetic read/write facts, `START-HERE.txt`,
+four licenses, the original attribution notice and `BUNDLE.json`. The manifest
+records the public source commit, module versions/checksums, policy identities
+and member hashes. `SHA256SUMS` accompanies the archive. Hashes detect changed
+bytes; they do not authenticate a publisher or the supplied facts.
+
+After checking the archive checksum and extracting it into a private directory,
+follow `START-HERE.txt` to create, compare and replay a saved decision. Running
+the extracted command requires no Go, Gooo or Python installation. The two
+profiles remain fixed; this is not a runtime loader for arbitrary policies.
+
+To reproduce a bundle, add `--bundle-cli` to
+`tools/check-api-policy-public-consumer.py` with an absolute installed Go 1.27.2
+path, a full public source revision and a new output directory. Packaging fails
+unless the original consumer checks, direct execution, tampered-report refusal
+and private build-directory cleanup all succeed. The executable is copied from
+that checked installation and its bytes are verified again inside the archive.
+
 ## Native quickstart
 
 Start in the repository root with **Go 1.27.2 already installed and selected**.
@@ -180,15 +206,19 @@ Expected output: `NEWLY_DENIED 2`. Both `allowed` and `reason` change; all nine
 facts and both complete decisions remain in the report. This synthetic
 comparison does not authenticate the facts or authorize an API action.
 
-The parent now requires the original module at the actual Go-resolved version
-`v0.0.0-20261014100709-8cddcc4e65af`. Repository builds retain the local frozen
-replacement; dependency replacements are not inherited by an external project.
-Go module ZIPs exclude nested modules, so the public parent ZIP omits
-`profiles/original`; Go resolves that original module separately. Build and
-generator reproduction still use the full source checkout described above.
-`go install .../cmd/compare@version` is not a supported installation path.
+The older `e723f9af` snapshot used by this import example requires the original
+module at `v0.0.0-20261014100709-8cddcc4e65af`. That snapshot retains a local
+`replace` directive for repository builds; dependency replacements are not
+inherited by an external project. Its `go install .../cmd/compare@e723f9af`
+route is unsupported. For direct command installation, use the immutable
+`9cfe6513e11b` version in [Install the command without cloning](#install-the-command-without-cloning),
+which removes that replacement and retains the exact original dependency.
 
-Changing this dependency declaration creates a new parent generation even
+Go module ZIPs exclude nested modules, so the public parent ZIP omits
+`profiles/original`; Go resolves the original module separately. Build and
+generator reproduction still use the full source checkout described above.
+
+That dependency declaration created a new parent generation even
 though the Gooo policies and original 28 assets are unchanged. Original API
 proofs retain their original generation. A saved comparison from the earlier
 parent generation must be replayed with its original source version; it is not
