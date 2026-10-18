@@ -256,5 +256,218 @@ class BundleTests(unittest.TestCase):
                     BUNDLE.facts(changed, "read")
 
 
+SERVICE_SPEC = importlib.util.spec_from_file_location("service_bundle", Path(__file__).with_name("service_policy_cli_bundle.py"))
+SERVICE = importlib.util.module_from_spec(SERVICE_SPEC)
+SERVICE_SPEC.loader.exec_module(SERVICE)
+
+
+class ServiceBundleTests(unittest.TestCase):
+    def build(self):
+        return {"GoVersion": "go1.27.2", "Path": SERVICE.MODULE + "/cmd/evaluate",
+                "Main": {"Path": SERVICE.MODULE, "Version": SERVICE.VERSION, "Sum": SERVICE.MODULE_SUM},
+                "Settings": [{"Key": key, "Value": value} for key, value in
+                             (("CGO_ENABLED", "0"), ("GOOS", "darwin"), ("GOARCH", "arm64"))]}
+
+    def fixture(self, directory):
+        root = Path(directory)
+        repository = Path(__file__).resolve().parent.parent
+        for relative, _ in SERVICE.LICENSES.values():
+            target = root / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes((repository / relative).read_bytes())
+        go = root / "go/bin/go"
+        go.parent.mkdir(parents=True)
+        go.write_bytes(b"fake Go, never executed")
+        (go.parent.parent / "LICENSE").write_bytes(b"synthetic Go license for file-only tests")
+        generation = {"origin": "fresh_pinned_generation", "assets": {"entry": "sha256:" + "a" * 64}}
+        source = {"LICENSE": (root / "LICENSE").read_bytes(),
+                  "NOTICE.md": (root / "examples/agentmesh-service-policy/NOTICE.md").read_bytes(),
+                  "LICENSE-APACHE-2.0": (root / "examples/agentmesh-service-policy/LICENSE-APACHE-2.0").read_bytes()}
+        source["upstream/LICENSE"] = source["LICENSE-APACHE-2.0"]
+        build = SERVICE.build_identity(self.build(), "darwin/arm64")
+        return root, go, generation, source, build
+
+    def test_native_public_buildinfo_refuses_wrong_identity_not_just_metadata_label(self):
+        for mutate in (lambda b: b.update(GoVersion="go1.26.0"),
+                       lambda b: b.update(Path=SERVICE.MODULE + "/cmd/browser"),
+                       lambda b: b["Main"].update(Version="(devel)"),
+                       lambda b: b["Main"].update(Sum="h1:" + "B" * 43 + "="),
+                       lambda b: b["Main"].update(Replace={"Path": "local"}),
+                       lambda b: b.update(Deps=[{"Path": "unexpected"}]),
+                       lambda b: b["Settings"][0].update(Value="1"),
+                       lambda b: b["Settings"][1].update(Value="linux")):
+            changed = self.build()
+            mutate(changed)
+            with self.subTest(mutate=mutate), self.assertRaises(ValueError):
+                SERVICE.build_identity(changed, "darwin/arm64")
+        self.assertEqual(SERVICE.build_identity(self.build(), "darwin/arm64")["dependencies"], [])
+        changed = self.build()
+        changed["Deps"] = []
+        self.assertEqual(SERVICE.build_identity(changed, "darwin/arm64")["main"]["Sum"], SERVICE.MODULE_SUM)
+
+    def test_four_control_bytes_and_typed_full_bindings(self):
+        expected_hashes = ["eaa120445bed9038ab6d9a4e71949344f6d92c44bad73fc7d713b8fc17c0dcb4",
+                           "947f10f40652f17eb97c9f7d7a372a493a9eca5e24976ab7dbbe9c1863bac34e",
+                           "a9f4c61b9e64f46c6c81b94610ed3d5181b735d3532eb10417b6e52da01c2bbc",
+                           "d744fc59eceac73a8cc68430047424c5b065137f4807daea9a411318a220cc0a"]
+        generation = {"assets": {"entry": "sha256:" + "a" * 64}}
+        for index, (_, raw, facts, decision) in enumerate(SERVICE.controls()):
+            self.assertEqual(SERVICE.sha(raw), expected_hashes[index])
+            if facts is None:
+                SERVICE.checked_result(b"", b"case0: expected exact JSON Text service facts\n", 1, facts, decision, generation)
+                with self.assertRaises(ValueError):
+                    SERVICE.checked_result(b"[]", b"", 0, facts, decision, generation)
+                continue
+            row = {"facts": facts, "decision": decision, "bindings": {
+                "compiler_source_sha": SERVICE.PIN, "generation_sha256": "sha256:" + SERVICE.GENERATION,
+                "generation_origin": "fresh_pinned_generation", "assets": generation["assets"]}}
+            SERVICE.checked_result(SERVICE.encoded([row]), b"", 0, facts, decision, generation)
+            for kind in ("bool-as-int", "missing-field", "asset", "fact", "generation", "stderr"):
+                changed = copy.deepcopy(row)
+                stderr = b""
+                if kind == "bool-as-int": changed["decision"]["required_observed"] = int(decision["required_observed"])
+                elif kind == "missing-field": del changed["decision"]["subset_rule_id"]
+                elif kind == "asset": changed["bindings"]["assets"]["entry"] = "sha256:" + "b" * 64
+                elif kind == "fact": changed["facts"]["before"] = 1
+                elif kind == "generation": changed["bindings"]["generation_sha256"] = "sha256:" + "b" * 64
+                else: stderr = b"unexpected"
+                with self.subTest(index=index, kind=kind), self.assertRaises(ValueError):
+                    SERVICE.checked_result(SERVICE.encoded([changed]), stderr, 0, facts, decision, generation)
+
+    def test_duplicate_json_nonfinite_and_output_structural_errors_refused(self):
+        for raw in (b'{"x":1,"x":2}', b'{"x":NaN}', b'{"x":Infinity}'):
+            with self.assertRaises(ValueError):
+                SERVICE.load(raw)
+
+    def test_exact_twelve_regular_members_preserve_real_licenses_and_generator_scope(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, go, generation, source, build = self.fixture(directory)
+            files = SERVICE.archive_files(b"fake native executable; never run", build, generation, source, root, go, "1" * 40)
+            path = root / "candidate.tar.gz"
+            first = SERVICE.write_archive(path, files)
+            self.assertEqual(len(files), 12)
+            self.assertEqual(files["LICENSE"][0], source["LICENSE"])
+            self.assertEqual(SERVICE.sha(files["LICENSE"][0]), SERVICE.LICENSES["LICENSE"][1])
+            self.assertEqual(files["LICENSE-AgentMesh-Apache-2.0"][0], source["upstream/LICENSE"])
+            self.assertIn(b"no engine binary", files["START-HERE.txt"][0])
+            manifest = SERVICE.load(files["BUNDLE.json"][0])
+            self.assertEqual(manifest["source_commit"], SERVICE.REVISION)
+            self.assertEqual(manifest["packaging_checkout_commit"], "1" * 40)
+            self.assertFalse(manifest["finite_checks"]["grant_applied"])
+            self.assertEqual(set(manifest["members"]), set(files) - {"BUNDLE.json"})
+            saved = path.read_bytes()
+            with self.assertRaises(FileExistsError):
+                SERVICE.write_archive(path, files)
+            self.assertEqual(path.read_bytes(), saved)
+            path.unlink()
+            self.assertEqual(SERVICE.write_archive(path, files)["sha256"], first["sha256"])
+
+    def test_extra_links_corruption_and_gzip_tail_cannot_pass_readback(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "candidate.tar.gz"
+            files = {"command": (b"command", 0o755)}
+            SERVICE.write_archive(path, files)
+            path.write_bytes(path.read_bytes() + gzip.compress(b""))
+            with self.assertRaises(ValueError): SERVICE.verify_archive(path, files)
+            path.unlink()
+            SERVICE.write_archive(path, files)
+            raw = bytearray(path.read_bytes()); raw[-8] ^= 1; path.write_bytes(raw)
+            with self.assertRaises(Exception): SERVICE.verify_archive(path, files)
+            with tarfile.open(path, "w:gz") as archive:
+                item = tarfile.TarInfo("command"); item.type = tarfile.SYMTYPE; item.linkname = "outside"
+                archive.addfile(item)
+            with self.assertRaises(ValueError): SERVICE.verify_archive(path, files)
+
+    def test_full_zip_h1_crc_roster_and_injected_source_are_checked(self):
+        import zipfile
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); module = root / "module"; module.mkdir()
+            content = {**{"a" + str(n): b"asset" for n in range(89)},
+                       **{"p" + str(n): b"public" for n in range(16)},
+                       "go.mod": b"module synthetic\n", "LICENSE": b"license", "NOTICE.md": b"notice",
+                       "LICENSE-APACHE-2.0": b"apache", "upstream/LICENSE": b"apache", "extra": b"extra"}
+            generation = {"schema": "gooo/agentmesh-native-generation/v1", "origin": "fresh_pinned_generation", "assets": {
+                name: "sha256:" + SERVICE.sha(raw) for name, raw in content.items() if name.startswith("a")},
+                "public_sources": {name: "sha256:" + SERVICE.sha(raw) for name, raw in content.items() if name.startswith("p")}}
+            content["generation.json"] = SERVICE.encoded(generation)
+            prefix = SERVICE.MODULE + "@" + SERVICE.VERSION + "/"
+            path = root / "module.zip"
+            with zipfile.ZipFile(path, "w") as archive:
+                for name, raw in content.items():
+                    target = module / name; target.parent.mkdir(parents=True, exist_ok=True); target.write_bytes(raw)
+                    if name.startswith("p"):
+                        (root / name).write_bytes(raw)
+                    archive.writestr(prefix + name, raw)
+            current = root / "examples/agentmesh-service-policy"; current.mkdir(parents=True)
+            (current / "generation.json").write_bytes(content["generation.json"])
+            self.assertEqual(len(content), 112)
+            with mock.patch.object(SERVICE, "MODULE_SUM", SERVICE.dirhash({prefix + name: raw for name, raw in content.items()})), \
+                 mock.patch.object(SERVICE, "MOD_SUM", SERVICE.dirhash({"go.mod": content["go.mod"]})), \
+                 mock.patch.object(SERVICE, "GENERATION", SERVICE.sha(content["generation.json"])):
+                self.assertEqual(SERVICE.module_source(module, path, root)[0], generation)
+                injected = module / "unsealed.go"; injected.write_bytes(b"package injected")
+                with self.assertRaisesRegex(ValueError, "roster"):
+                    SERVICE.module_source(module, path, root)
+                injected.unlink()
+                (module / "a0").write_bytes(b"changed")
+                with self.assertRaisesRegex(ValueError, "differs from ZIP"):
+                    SERVICE.module_source(module, path, root)
+
+    def test_failed_control_never_publishes_and_cleans_work_preserving_first_failure(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, go, generation, source, build = self.fixture(directory)
+            binary = root / "binary"; binary.write_bytes(b"fake, never run"); binary.chmod(0o700)
+            out = root / "out"; out.mkdir()
+            native_build = self.build()
+            calls = []
+            def fake_run(argv, raw, cwd, env, output, label, deadline):
+                calls.append((label, env))
+                if label == "build-info": return SERVICE.encoded(native_build), b"", 0, {}
+                raise ValueError("original control failure")
+            with mock.patch.object(SERVICE, "module_source", return_value=(generation, source)), \
+                 mock.patch.object(SERVICE, "native_platform", return_value="darwin/arm64"), \
+                 mock.patch.object(SERVICE, "run_owned", side_effect=fake_run):
+                with self.assertRaisesRegex(ValueError, "original control failure"):
+                    SERVICE.produce(binary, root, root / "zip", go, root, out, "1" * 40)
+            self.assertEqual([row[0] for row in calls], ["build-info", "control-1"])
+            self.assertTrue(all(row[1]["PATH"] == "" and "GOROOT" not in row[1] for row in calls))
+            self.assertFalse((out / "work").exists())
+            self.assertFalse(any(path.name.endswith("tar.gz") for path in out.iterdir()))
+            self.assertEqual(SERVICE.load((out / "first-failure.json").read_bytes())["error"], "original control failure")
+
+    def test_diagnostic_write_failure_preserves_first_command_failure(self):
+        import sys
+        import time
+        for overflow in (False, True):
+            with self.subTest(overflow=overflow), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                original_write = Path.write_bytes
+                def fail_stdout(path, raw):
+                    if path.name == "tiny.stdout":
+                        raise OSError("synthetic diagnostic write failure")
+                    return original_write(path, raw)
+                script = "import sys; sys.stdout.buffer.write(b'x' * " + str(SERVICE.MAX_STREAM + 1 if overflow else 1) + ")"
+                with mock.patch.object(Path, "write_bytes", fail_stdout):
+                    with self.assertRaisesRegex(ValueError if overflow else OSError,
+                                                "stream exceeds bound" if overflow else "diagnostic write failure") as caught:
+                        SERVICE.run_owned([sys.executable, "-I", "-c", script], b"", root,
+                                          {"PATH": ""}, root, "tiny", time.monotonic() + 10)
+                self.assertTrue((root / "tiny.stderr").exists())
+                self.assertTrue((root / "tiny.json").exists())
+                if overflow and hasattr(caught.exception, "__notes__"):
+                    self.assertIn("synthetic diagnostic write failure", caught.exception.__notes__[0])
+
+    def test_empty_path_native_command_closes_pipes_and_group(self):
+        import sys
+        import time
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            stdout, stderr, code, record = SERVICE.run_owned(
+                [sys.executable, "-I", "-c", "import sys; sys.stdout.buffer.write(sys.stdin.buffer.read())"],
+                b"synthetic", root, {"PATH": ""}, root, "tiny", time.monotonic() + 10)
+            self.assertEqual((stdout, stderr, code), (b"synthetic", b"", 0))
+            self.assertTrue(record["waited"] and record["streams_eof"] and record["process_group_absent"])
+
+
 if __name__ == "__main__":
     unittest.main()
