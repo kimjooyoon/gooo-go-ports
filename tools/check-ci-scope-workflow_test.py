@@ -71,6 +71,7 @@ URL_COMPONENT_CLAUSES = (
 # compared later; it is never an input to the expected-data command.
 NATIVE_EXPECTED_COMMAND = 'python3 -I -B tools/native_verification_contract.py --root "$PWD" > out/native-contract-expected.json'
 NATIVE_EXPECTED_UNIT = 'python3 -I -B tools/native_verification_contract_test.py -v'
+NATIVE_SHARD_REFERENCE_UNIT = 'python3 -I -B tools/native-shard-reference_test.py -v'
 NATIVE_EXPECTED_SLURP = '--slurpfile expected out/native-contract-expected.json'
 NATIVE_EXPECTED_BINDING = "$expected[0] as $e |"
 NATIVE_SOURCE_PATHS_ASSERTION = "(.identity.source_files | keys) == $e.source_paths"
@@ -458,7 +459,8 @@ NATIVE_HEADER_SHA = '584d7a22663deb57be052a69d58f2b19e6233a7eefb7d4ce6ad1d5b650d
 # Add the URL sidecar's pure controls once. Removing that exact new line must
 # recover all previously reviewed observer bytes, including its full race scope.
 OBSERVER_PRIOR_STEP_SHA = '95a801fa3b7e40b3eb3c229d90a9f9e378ffab67557c3c6bfb563c175810b186'
-OBSERVER_STEP_SHA = 'c7c6e45c3f63a12d119cd151a3d40e95efe734bd0247add839bbe2832f76f1c3'
+OBSERVER_WITH_URL_STEP_SHA = 'c7c6e45c3f63a12d119cd151a3d40e95efe734bd0247add839bbe2832f76f1c3'
+OBSERVER_STEP_SHA = '9fb690b2dd762a4f4bf9d0d3f67e8abbb366c78017140bcad0a2cb76e8954855'
 OBSERVER_UPLOAD_NAME = 'Preserve Go observer test timing'
 OBSERVER_UPLOADS = {OBSERVER_UPLOAD_NAME}
 OBSERVER_UPLOAD_SHA = 'd5f0816bb5edd218d4e71c5ee870c0adfad7cc8f292c37b1b2093331b1fc4d3f'
@@ -613,9 +615,14 @@ def named_steps(text):
                     hashlib.sha256(named['Check pinned Unicode table generation'].encode()).hexdigest() == GENERATOR_STEP_SHA,
                     "common observer/generator commands changed without guard review")
             observer = named['Check the Go observer']
+            shard_unit_line = '          ' + NATIVE_SHARD_REFERENCE_UNIT + '\n'
+            require(observer.count(shard_unit_line) == 1 and
+                    hashlib.sha256(observer.replace(shard_unit_line, '', 1).encode()).hexdigest() == OBSERVER_WITH_URL_STEP_SHA,
+                    'shard reference controls may only add one unconditional line to the prior observer bytes')
+            prior_observer = observer.replace(shard_unit_line, '', 1)
             url_unit_line = '          ' + URL_COMPONENT_COMMON + '\n'
-            require(observer.count(url_unit_line) == 1 and
-                    hashlib.sha256(observer.replace(url_unit_line, '', 1).encode()).hexdigest() == OBSERVER_PRIOR_STEP_SHA,
+            require(prior_observer.count(url_unit_line) == 1 and
+                    hashlib.sha256(prior_observer.replace(url_unit_line, '', 1).encode()).hexdigest() == OBSERVER_PRIOR_STEP_SHA,
                     'URL pure controls may only add one unconditional line to the prior observer bytes')
             require(hashlib.sha256(named[OBSERVER_UPLOAD_NAME].encode()).hexdigest() == OBSERVER_UPLOAD_SHA,
                     "observer timing artifact pin, paths or failure retention changed")
@@ -806,11 +813,12 @@ def validate(text):
     policy_named, policy_unnamed = policy_steps(policy_job)
     prior_workflow = text.replace(policy_named[URL_COMPONENT_STEP], '', 1).replace(
         '          ' + URL_COMPONENT_COMMON + '\n', '', 1).replace(
+        '          ' + NATIVE_SHARD_REFERENCE_UNIT + '\n', '', 1).replace(
         '            out/url-components/\n', '', 1)
     for source in URL_COMPONENT_DECLARATIONS:
         prior_workflow = prior_workflow.replace('          ./.gooo check ' + source + '\n', '', 1)
     require(hashlib.sha256(prior_workflow.encode()).hexdigest() == URL_COMPONENT_PRIOR_WORKFLOW_SHA,
-            'URL integration may only add its native step, common unit line, two declarations and artifact path to the prior workflow bytes')
+            'URL integration plus the reviewed shard common unit line must preserve all other prior workflow bytes')
     preflight = named[PREFLIGHT_STEP_NAME]
     require(hashlib.sha256(preflight.encode()).hexdigest() == PREFLIGHT_STEP_SHA,
             "lightweight summary controls, source buffers, limits or first-failure evidence changed")
@@ -855,6 +863,9 @@ def validate(text):
     require(literal_commands(observer).count(NATIVE_EXPECTED_UNIT) == 1
             and text.count(NATIVE_EXPECTED_UNIT) == 1,
             "native expected-reader controls must run once as an unconditional common check")
+    require(literal_commands(observer).count(NATIVE_SHARD_REFERENCE_UNIT) == 1
+            and text.count(NATIVE_SHARD_REFERENCE_UNIT) == 1,
+            "experimental shard reference-reader controls must run once as an unconditional common check")
     require(comparison.count(CASE_PROFILE_ASSERTION) == 1,
             "native CI must require the exact explicit UUID compact profile identity")
     require(comparison.count(WORKSPACE_PROFILE_ASSERTION) == 1,
@@ -1197,6 +1208,7 @@ class WorkflowScopeTests(unittest.TestCase):
         self.assertEqual(len(HEAVY), 37)
         prior = self.text.replace(step, '', 1).replace(
             '          ' + URL_COMPONENT_COMMON + '\n', '', 1).replace(
+            '          ' + NATIVE_SHARD_REFERENCE_UNIT + '\n', '', 1).replace(
             '            out/url-components/\n', '', 1)
         for source in URL_COMPONENT_DECLARATIONS:
             prior = prior.replace('          ./.gooo check ' + source + '\n', '', 1)
@@ -1251,7 +1263,8 @@ class WorkflowScopeTests(unittest.TestCase):
         self.assertFalse(NATIVE_COMMAND.search(URL_COMPONENT_COMMON))
         line = '          ' + URL_COMPONENT_COMMON + '\n'
         self.assertEqual(observer.count(line), 1)
-        self.assertEqual(hashlib.sha256(observer.replace(line, '', 1).encode()).hexdigest(),
+        prior_observer = observer.replace('          ' + NATIVE_SHARD_REFERENCE_UNIT + '\n', '', 1)
+        self.assertEqual(hashlib.sha256(prior_observer.replace(line, '', 1).encode()).hexdigest(),
                          OBSERVER_PRIOR_STEP_SHA)
         for replacement in ('', line + line,
                             '          if false; then\n  ' + line + '          fi\n',
@@ -1410,12 +1423,13 @@ class WorkflowScopeTests(unittest.TestCase):
             with self.subTest(membership=after), self.assertRaises(ValueError):
                 validate(self.text.replace(comparison, altered, 1))
         observer = named["Check the Go observer"]
-        line = "          " + NATIVE_EXPECTED_UNIT + "\n"
-        self.assertEqual(observer.count(line), 1)
-        for after in ("", line + line, line.rstrip("\n") + " || true\n",
-                      '          if false; then\n' + line + '          fi\n'):
-            with self.subTest(reader_unit=after), self.assertRaises(ValueError):
-                validate(self.text.replace(observer, observer.replace(line, after, 1), 1))
+        for command in (NATIVE_EXPECTED_UNIT, NATIVE_SHARD_REFERENCE_UNIT):
+            line = "          " + command + "\n"
+            self.assertEqual(observer.count(line), 1)
+            for after in ("", line + line, line.rstrip("\n") + " || true\n",
+                          '          if false; then\n' + line + '          fi\n'):
+                with self.subTest(command=command, reader_unit=after), self.assertRaises(ValueError):
+                    validate(self.text.replace(observer, observer.replace(line, after, 1), 1))
 
     def setUp(self):
         self.text = WORKFLOW.read_text()

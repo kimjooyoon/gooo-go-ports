@@ -52,6 +52,9 @@ func TestCIShardNativeFlagsRejectBeforeSourceOrOutput(t *testing.T) {
 	defer os.Chdir(oldDirectory)
 	for _, args := range [][]string{
 		{"--ci-shard-execute-out="}, {"--ci-shard-verify-out="},
+		{"--ci-shard-reference-out="}, {"--ci-shard-reference-out=index.json"},
+		{"--ci-shard-reference-out=index.json", "--ci-shard-execute-out=fresh", "--ci-shard-context=unused", "--ci-shard-plan=unused", "--ci-shard-index=0"},
+		{"--ci-shard-reference-out=same", "--ci-shard-verify-out=same", "--ci-shard-context=unused", "--ci-shard-plan=unused", "--ci-shard-partial=unused", "--ci-shard-evidence=unused"},
 		{"--ci-shard-native-compiler=./.gooo"}, {"--ci-shard-native-compiler="},
 		{"--ci-shard-evidence="}, {"--ci-shard-evidence=unused"},
 		{"--ci-shard-execute-out=fresh", "--ci-shard-context=unused", "--ci-shard-plan=unused"},

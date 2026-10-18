@@ -12,9 +12,9 @@ import (
 )
 
 type ciShardNativeOptions struct {
-	Requested, CompilerRequested    bool
-	ExecuteOut, VerifyOut, Compiler string
-	Evidence                        ciShardPaths
+	Requested, CompilerRequested                  bool
+	ExecuteOut, VerifyOut, Compiler, ReferenceOut string
+	Evidence                                      ciShardPaths
 }
 
 func (n ciShardNativeOptions) validate(s ciShardOptions, conflicts bool) error {
@@ -25,11 +25,24 @@ func (n ciShardNativeOptions) validate(s ciShardOptions, conflicts bool) error {
 		return fmt.Errorf("choose exactly one nonempty native shard execute/verify output")
 	}
 	if n.ExecuteOut != "" {
-		if s.Index < 0 || s.Index >= maxCIShards || n.Compiler == "" || len(s.Partials) != 0 || len(n.Evidence) != 0 {
+		if s.Index < 0 || s.Index >= maxCIShards || n.Compiler == "" || len(s.Partials) != 0 || len(n.Evidence) != 0 || n.ReferenceOut != "" {
 			return fmt.Errorf("native shard execution requires one index/compiler and no partials/evidence")
 		}
 	} else if s.Index != -1 || len(s.Partials) < 1 || len(s.Partials) > maxCIShards || len(n.Evidence) != len(s.Partials) || n.CompilerRequested {
 		return fmt.Errorf("native shard verification requires all partials/evidence and no index/compiler")
+	}
+	if n.ReferenceOut != "" {
+		index, err := filepath.Abs(n.ReferenceOut)
+		if err != nil {
+			return err
+		}
+		verification, err := filepath.Abs(n.VerifyOut)
+		if err != nil {
+			return err
+		}
+		if index == verification {
+			return fmt.Errorf("reference and verification outputs must differ")
+		}
 	}
 	return nil
 }
@@ -138,6 +151,7 @@ func runCIShardNative(n ciShardNativeOptions, options ciShardOptions, repository
 	partials := make([]ciShardPartial, 0, len(options.Partials))
 	digests := []string{}
 	evidence := map[int]string{}
+	partialPaths := map[int]string{}
 	seenFiles := map[string]bool{}
 	seenDirectories := map[string]bool{}
 	for i, name := range options.Partials {
@@ -171,6 +185,7 @@ func runCIShardNative(n ciShardNativeOptions, options ciShardOptions, repository
 		partials = append(partials, partial)
 		digests = append(digests, contentDigest(raw))
 		evidence[partial.Index] = dir
+		partialPaths[partial.Index] = path
 		reader, err := newCIShardEvidenceReader(dir)
 		if err != nil {
 			return err
@@ -201,6 +216,15 @@ func runCIShardNative(n ciShardNativeOptions, options ciShardOptions, repository
 			if !equalCIShardSuiteRecords(observed, reported) {
 				return fmt.Errorf("actual shard evidence differs from partial metadata")
 			}
+		}
+	}
+	if n.ReferenceOut != "" {
+		references, err := buildCIShardNativeReference(plan, inventory, partials, partialPaths, evidence)
+		if err != nil {
+			return err
+		}
+		if err := writeCurrentCIShardJSON(root, plan, n.ReferenceOut, references); err != nil {
+			return err
 		}
 	}
 	sort.Strings(digests)

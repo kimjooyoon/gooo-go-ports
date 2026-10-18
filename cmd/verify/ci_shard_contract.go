@@ -26,6 +26,9 @@ var ciShardReaderSources = []string{
 	"cmd/verify/ci_shard_native_evidence.go", "cmd/verify/ci_shard_native_evidence_test.go",
 	"cmd/verify/ci_shard_native_cli.go", "cmd/verify/ci_shard_native_cli_test.go",
 	"cmd/verify/ci_shard_native_smoke_test.go",
+	"cmd/verify/ci_shard_native_reference.go", "cmd/verify/ci_shard_native_reference_test.go",
+	"cmd/verify/ci_shard_command_observations.go", "cmd/verify/ci_shard_command_observations_test.go",
+	"tools/native-shard-reference.py", "tools/native-shard-reference_test.py",
 }
 var ciShardRepositoryPattern = regexp.MustCompile(`^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$`)
 var ciShardDecimalPattern = regexp.MustCompile(`^[1-9][0-9]{0,19}$`)

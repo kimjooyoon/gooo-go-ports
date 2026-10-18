@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Fresh timing-bound generated Gooo → local atomic host check. Stdlib only.
+"""Fresh bound generated Gooo → local atomic host check. Stdlib only.
 
-read_verification is intentionally side-effect-free and is shared by the input
-route checker. Expected ABI values come from fresh independent Go case documents.
+Read legacy full-run timing or an explicit experimental shard reference without
+executing tools. Both routes share independent Go case-document ABI expectations.
 """
 import argparse, hashlib, importlib.util, json, os, pathlib, re, shutil, signal, stat, subprocess, sys, tempfile, time
 
@@ -191,10 +191,10 @@ def contracts(sources):
             target=definitions[site['callee']];alias=next(a for a,p in d['imports'].items() if p==target['package']);d['lowered_body']=d['lowered_body'].replace(alias+'.'+target['name'],target['lowered'])
     need(len(definitions[ENTRY]['sites'])==2,'root two actual composition calls');return definitions,records
 def record_fields(records,ident,value):return [{'id':f['id'],'name':f['name'],'value':value[f['name']]} for f in records[ident]['fields']]
-def receipt(raw,rows,cases,manifest,images,go_version,go_sha,definitions,records,workspace,prior=None):
+def receipt(raw,rows,cases,manifest,images,go_version,go_sha,definitions,records,producer_manifest_path,prior=None):
     DEFS,RECORDS=definitions,records
     r=load(raw);need(r['schema']=='gooo/workspace-body-execution-receipt/v1' and r['decision']=='PASS' and not r.get('error'),'producer PASS envelope')
-    need(r['manifest']==str(workspace) and r['manifest_digest']=='sha256:'+sha(manifest) and r['cases_digest']=='sha256:'+sha(cases) and 'inputs_digest' not in r,'exact manifest/case bytes')
+    need(r['manifest']==producer_manifest_path and r['manifest_digest']=='sha256:'+sha(manifest) and r['cases_digest']=='sha256:'+sha(cases) and 'inputs_digest' not in r,'exact manifest/case bytes')
     result=r['result'];p=result['program'];c=result['composition'];rt=result['runtime'];root=DEFS[ENTRY]
     ref={'package_path':ROOT,'activity':'AssessAddition','lowered_name':root['lowered']}
     need(result['schema']=='gooo/workspace-body-execution/v1' and p['schema']=='gooo/workspace-body-program/v1' and equal(p['entry'],ref) and equal(p['activities'],[ref]),'single exact original/lowered root')
@@ -358,14 +358,30 @@ def read_verification(root,verification_out,timing):
     validate_suite_sources(root,catalog,ends,read,contract_expected)
     need(planned[73]=={'index':73,'package':ROOT,'activity':'AssessAddition','cases':50},'preserved addition suite is exact50-case entry at73')
     addition=next(e for e in ends if e['suite_index']==73);addition_batches=sorted((e for e in batches if e['suite_index']==73),key=lambda e:e['batch_index'])
-    need(len(addition_batches)==7,'seven bounded addition batches')
+    evidence_root=verification_out/(ROOT.replace('/','-')+'-AssessAddition')
+    anchors=[]
+    for batch in addition_batches:
+        workspace=evidence_root/('%03d'%batch['batch_index'])/'gooo.workspace.json'
+        anchors.append({**{key:batch[key] for key in ('batch_index','start','end','manifest_digest','cases_digest','original_receipt_sha256')},'workspace':workspace,'producer_manifest_path':str(workspace)})
+    return read_addition_evidence(root,read,pins,addition['source_set'],addition['source_set_sha256'],anchors,'go version go1.27.2 '+summary['goos']+'/'+summary['goarch'],header['identity']['binaries']['go'],contract_expected.suite_count)
+
+def read_addition_evidence(root,read,pins,source_set,source_set_sha256,batches,go_version,go_binary,suite_count):
+    """Read the same seven local blobs and original producer-path bindings.
+
+    Independent Go case rows remain the ABI oracle. A relocated blob path never
+    replaces the original manifest string inside any preserved raw receipt.
+    """
+    need(type(batches) is list and len(batches)==7,'seven bounded addition batches')
+    need(type(suite_count) is int and suite_count>0,'positive complete suite population')
+    need(type(go_binary) is dict and set(go_binary)=={'bytes','sha256'} and type(go_binary['bytes']) is int and go_binary['bytes']>0 and type(go_binary['sha256']) is str and re.fullmatch('[0-9a-f]{64}',go_binary['sha256']) is not None,'addition Go identity shape')
+    need(type(go_version) is str and re.fullmatch(r'go version go1\.27\.2 [a-z0-9_]+/[a-z0-9_]+',go_version) is not None,'addition pinned Go version/platform')
     manifest_doc={'schema':'gooo/package-workspace-manifest/v1','entry':{'package_path':ROOT,'activity':'AssessAddition'},'packages':[{'path':pkg,'sources':[name]} for pkg,name in PACKAGES]}
     public_manifest=load(read(root/'diagnostic-header-addition.workspace.json'));need(equal(public_manifest,manifest_doc),'public exact five-package manifest')
     source_texts=[(pkg,name,read(root/name).decode('utf-8')) for pkg,name in PACKAGES];definitions,records=contracts(source_texts)
-    source_set={name:{'Package':pkg,'Digest':digest(go_json(text))} for pkg,name,text in sorted(source_texts,key=lambda x:x[1])}
+    current_source_set={name:{'Package':pkg,'Digest':digest(go_json(text))} for pkg,name,text in sorted(source_texts,key=lambda x:x[1])}
     # Outer map sorted, nested struct field order exactly Package,Digest (Go json.Marshal).
-    source_set_raw=json.dumps(source_set,ensure_ascii=False,separators=(',',':')).encode()
-    need(equal(addition['source_set'],source_set) and addition['source_set_sha256']==digest(source_set_raw),'actual source set exact5 and Go-map digest')
+    source_set_raw=json.dumps(current_source_set,ensure_ascii=False,separators=(',',':')).encode()
+    need(equal(source_set,current_source_set) and source_set_sha256==digest(source_set_raw),'actual source set exact5 and Go-map digest')
     images=[{'package':pkg,'filename':name,'source_digest':digest(go_json(text))} for pkg,name,text in source_texts]
     contract=load(read(root/'examples/diagnostic-header-addition/contract.json'));corpus=load(read(root/'examples/diagnostic-header-addition/corpus.json'))
     need(contract['entry']==ENTRY and contract['activity_id']==definitions[ENTRY]['id'] and contract['input_entity_id']==RID and contract['result_entity_id']==OID,'current contract IDs')
@@ -374,11 +390,15 @@ def read_verification(root,verification_out,timing):
         need(len(fields)==len(actual) and all(f['name']==a['name'] and f['id']==a['id'] and 'urn:gooo:type:'+f['type']==a['type_id'] for f,a in zip(fields,actual)),'contract/source ordered fields '+key)
     need(corpus['case_count']==50 and len(corpus['cases'])==50 and len({c['label'] for c in corpus['cases']})==50,'current 50 named source cases')
     rows=[];evidence=[];source=None;plan=None;selections=set()
-    go_version='go version go1.27.2 '+summary['goos']+'/'+summary['goarch'];go_sha=header['identity']['binaries']['go']['sha256']
-    evidence_root=verification_out/(ROOT.replace('/','-')+'-AssessAddition')
-    for index,batch in enumerate(addition_batches):
-        start,end=index*8,min(index*8+8,50);need(batch['start']==start and batch['end']==end and 1<=end-start<=8,'exact bounded addition range')
-        batchdir=evidence_root/('%03d'%index);workspace=batchdir/'gooo.workspace.json';manifest=read(workspace)
+    go_sha=go_binary['sha256']
+    anchors={'batch_index','start','end','manifest_digest','cases_digest','original_receipt_sha256','workspace','producer_manifest_path'}
+    for index,batch in enumerate(batches):
+        need(type(batch) is dict and set(batch)==anchors,'exact addition batch reference fields')
+        start,end=index*8,min(index*8+8,50);need(equal(batch['batch_index'],index) and equal(batch['start'],start) and equal(batch['end'],end) and 1<=end-start<=8,'exact bounded addition range')
+        need(isinstance(batch['workspace'],pathlib.Path),'local workspace must be a Path')
+        workspace=canonical(batch['workspace']);batchdir=workspace.parent
+        need(type(batch['producer_manifest_path']) is str and batch['producer_manifest_path'] and '\x00' not in batch['producer_manifest_path'],'original producer manifest path string')
+        manifest=read(workspace)
         need(equal(load(manifest),manifest_doc) and digest(manifest)==batch['manifest_digest'],'fresh batch exact manifest bytes')
         for _,name,text in source_texts:need(read(batchdir/name)==text.encode('utf-8'),'copied source equals current source: '+name)
         case_raw=read(batchdir/'cases.json');cases=load(case_raw)
@@ -390,14 +410,35 @@ def read_verification(root,verification_out,timing):
         original=read(batchdir/'execution.json');replay=read(batchdir/'replay.json')
         need(digest(original)==batch['original_receipt_sha256'],'fresh timing original raw receipt parent')
         for operation,raw,prior in [('execute',original,None),('replay',replay,original)]:
-            observed=receipt(raw,cases['cases'],case_raw,manifest,images,go_version,go_sha,definitions,records,workspace,prior)
+            observed=receipt(raw,cases['cases'],case_raw,manifest,images,go_version,go_sha,definitions,records,batch['producer_manifest_path'],prior)
             need(observed['source'].startswith('package main\n') and (source is None or source==observed['source']),'same exact generated Go text across seven original receipts and seven saved replays')
             need(plan is None or equal(plan,observed['plan']),'same current typed plan across all14 receipts')
             source,plan=observed['source'],observed['plan'];selections.add(observed['tool_selection'])
             evidence.append({'batch':index,'operation':operation,'receipt':str(batchdir/('execution.json' if operation=='execute' else 'replay.json')),'receipt_sha256':sha(raw),'cases_digest':batch['cases_digest'],'original_receipt_sha256':batch['original_receipt_sha256']})
         rows.extend(cases['cases'])
     need(len(rows)==50 and source is not None,'exact50 fresh case rows and generated source');unchanged(pins)
-    return {'rows':rows,'source':source,'pins':pins,'case_names':[c['label'] for c in corpus['cases']],'source_set':source_set,'typed_plan':plan,'records':records,'entry':ENTRY,'evidence':evidence,'go_binary':header['identity']['binaries']['go'],'go_version':go_version,'tool_selections':sorted(selections),'fresh_native_suites':contract_expected.suite_count,'fresh_addition_batches':7,'fresh_addition_cases':50}
+    return {'rows':rows,'source':source,'pins':pins,'case_names':[c['label'] for c in corpus['cases']],'source_set':source_set,'typed_plan':plan,'records':records,'entry':ENTRY,'evidence':evidence,'go_binary':go_binary,'go_version':go_version,'tool_selections':sorted(selections),'fresh_native_suites':suite_count,'fresh_addition_batches':7,'fresh_addition_cases':50}
+
+def read_shard_verification(root,index_path):
+    """Read only the explicit experimental provider API; never try legacy input."""
+    root,index_path=map(canonical,(root,index_path))
+    provider=canonical(root/'tools/native-shard-reference.py');bootstrap_pins={}
+    provider_raw=frozen_read(provider,bootstrap_pins)
+    spec=importlib.util.spec_from_file_location('gooo_native_shard_reference',provider)
+    need(spec is not None and spec.loader is not None,'explicit shard provider module')
+    module=importlib.util.module_from_spec(spec);sys.modules[spec.name]=module
+    # Execute only these frozen sibling bytes, never a stale or writable pyc.
+    exec(compile(provider_raw,str(provider),'exec'),module.__dict__)
+    unchanged(bootstrap_pins)
+    reference=module.read_reference(root,index_path)
+    need(type(reference) is dict and set(reference)=={'pins','source_set','source_set_sha256','batches','go_version','go_binary','suite_count'},'exact shard reference provider API')
+    pins=reference['pins'];need(type(pins) is dict,'shard reference frozen pins')
+    for name,value in bootstrap_pins.items():need(equal(pins.get(name),value),'shard provider bytes are frozen with its evidence')
+    read=lambda p:frozen_read(p,pins)
+    read(index_path)
+    result=read_addition_evidence(root,read,pins,reference['source_set'],reference['source_set_sha256'],reference['batches'],reference['go_version'],reference['go_binary'],reference['suite_count'])
+    result['evidence_mode']='experimental-shard-native-reference'
+    return result
 
 def render(root,verification,rendered):
     """Only bridge IDs and fresh hashes are substituted. Policy source stays exact."""
@@ -508,15 +549,29 @@ class OwnedCommands:
         need((directory/'stdout').stat().st_size<=8<<20 and (directory/'stderr').stat().st_size<=2<<20,'final output cap')
         unchanged(self.pins);return (directory/'stdout').read_bytes()
 
-def main():
+def parse_args(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
-    for name in ['root','verification-out','timing','go','out']:parser.add_argument('--'+name,required=True)
-    args=parser.parse_args();root=canonical(pathlib.Path(args.root).absolute());verification_out=canonical((root/args.verification_out).absolute());timing=canonical((root/args.timing).absolute());go=canonical(pathlib.Path(args.go).absolute());out=canonical((root/args.out).absolute())
+    for name in ['root','go','out']:parser.add_argument('--'+name,required=True)
+    mode=parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument('--verification-out')
+    mode.add_argument('--shard-native-index')
+    parser.add_argument('--timing')
+    args=parser.parse_args(argv)
+    if args.shard_native_index is not None:
+        if not args.shard_native_index or args.timing is not None:parser.error('--shard-native-index requires a nonempty path and forbids --timing')
+    elif not args.verification_out or not args.timing:parser.error('--verification-out and --timing require nonempty paths together')
+    return args
+
+def main():
+    args=parse_args();root=canonical(pathlib.Path(args.root).absolute());go=canonical(pathlib.Path(args.go).absolute());out=canonical((root/args.out).absolute())
+    shard_index=canonical((root/args.shard_native_index).absolute()) if args.shard_native_index is not None else None
+    verification_out=canonical((root/args.verification_out).absolute()) if args.verification_out is not None else None
+    timing=canonical((root/args.timing).absolute()) if args.timing is not None else None
     need(root.is_dir() and not out.exists(),'root exists and output is fresh');out.mkdir();started=time.monotonic();runner=None;work=None;error=None;verification=None;rendered=None;pins={};cleanup=False
     def interrupted(signum,_frame):raise RuntimeError('received signal '+str(signum))
     original_handlers={number:signal.signal(number,interrupted) for number in [signal.SIGTERM,signal.SIGINT]}
     try:
-        verification=read_verification(root,verification_out,timing);pins=dict(verification['pins']);go_raw=frozen_read(go,pins)
+        verification=read_shard_verification(root,shard_index) if shard_index is not None else read_verification(root,verification_out,timing);pins=dict(verification['pins']);go_raw=frozen_read(go,pins)
         need(equal(reference(go_raw),verification['go_binary']),'explicit host Go binary matches fresh differential Go identity')
         rendered=out/'rendered';transformation=render(root,verification,rendered);pins.update(transformation['rendered_pins'])
         save(out/'rendered-provenance.json',{'schema':'gooo/fresh-header-addition-host-provenance/v1','entry':ENTRY,'evidence':verification['evidence'],'input_pins':verification['pins'],**transformation})
@@ -543,7 +598,7 @@ def main():
             try:shutil.rmtree(work);cleanup=True
             except BaseException as failure:error=error or 'owned cleanup failure: '+str(failure)
         for number,handler in original_handlers.items():signal.signal(number,handler)
-    status='FRESH82_BOUND_ABI50_AND_ATOMIC_HOST_PASS' if error is None else 'FIRST_FAILURE_PRESERVED'
-    summary={'schema':'gooo/header-addition-host-CI/v1','status':status,'failure':error,'fresh_native_suites':verification['fresh_native_suites'] if verification else None,'fresh_addition_cases':50 if verification else None,'fresh_addition_batches':7 if verification else None,'ABI_generated_calls':50 if error is None else None,'ABI_typed_fields':800 if error is None else None,'ABI_count_scope':'Focused abi50 command only. Race repeats these50 and host scenarios call the generated assessor again; this is not the total generated-call count.','host_test_functions':18 if error is None else None,'demo_status':'APPLIED' if error is None else None,'processes_closed':runner.closed if runner else True,'source_bindings_unchanged':error is None,'owned_work_removed':cleanup,'elapsed_s':time.monotonic()-started,'commands':runner.observations if runner else [],'scope':'Fresh public native receipt source,50 independent-Go ABI expectations and local in-memory atomic host tests. No network effects, real authentication, durability, distributed transaction or production-safety claim. Independent inner typed canonical prior_result_sha256 remains NOT_CHECKED.'}
+    status=('EXPERIMENTAL_SHARD_REFERENCE_ABI50_AND_ATOMIC_HOST_PASS' if shard_index is not None else 'FRESH82_BOUND_ABI50_AND_ATOMIC_HOST_PASS') if error is None else 'FIRST_FAILURE_PRESERVED'
+    summary={'schema':'gooo/header-addition-host-CI/v1','status':status,'failure':error,'fresh_native_suites':verification['fresh_native_suites'] if verification else None,'fresh_addition_cases':50 if verification else None,'fresh_addition_batches':7 if verification else None,'ABI_generated_calls':50 if error is None else None,'ABI_typed_fields':800 if error is None else None,'ABI_count_scope':'Focused abi50 command only. Race repeats these50 and host scenarios call the generated assessor again; this is not the total generated-call count.','host_test_functions':18 if error is None else None,'demo_status':'APPLIED' if error is None else None,'processes_closed':runner.closed if runner else True,'source_bindings_unchanged':error is None,'owned_work_removed':cleanup,'elapsed_s':time.monotonic()-started,'commands':runner.observations if runner else [],'scope':('Experimental shard reference with unauthenticated producer identity; no native acceptance or authenticated GitHub-run claim. ' if shard_index is not None else '')+'Fresh public native receipt source,50 independent-Go ABI expectations and local in-memory atomic host tests. No network effects, real authentication, durability, distributed transaction or production-safety claim. Independent inner typed canonical prior_result_sha256 remains NOT_CHECKED.'}
     save(out/'summary.json',summary);print(json.dumps(summary));return 0 if error is None else 1
 if __name__=='__main__':sys.exit(main())

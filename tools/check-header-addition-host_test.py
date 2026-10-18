@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Source/expectation/provenance rejection tests. No Go or native invocation."""
 import importlib.util
+import contextlib
+import io
 import copy
 import json
 import pathlib
@@ -252,7 +254,7 @@ class FreshHostTests(unittest.TestCase):
         # the absent full native receipt/source fixture in this selected stage.
         import ast
         tree=ast.parse((ROOT/'tools/check-header-addition-host.py').read_text())
-        reader=next(node for node in tree.body if isinstance(node,ast.FunctionDef) and node.name=='read_verification')
+        reader=next(node for node in tree.body if isinstance(node,ast.FunctionDef) and node.name=='read_addition_evidence')
         statement=next(node for node in ast.walk(reader) if isinstance(node,ast.Expr)
                        and isinstance(node.value,ast.Call) and isinstance(node.value.func,ast.Name)
                        and node.value.func.id=='need' and len(node.value.args)==2
@@ -532,8 +534,8 @@ class FreshHostTests(unittest.TestCase):
         # Enforce the shared reader boundary independently of the host execution wrapper.
         import ast
         tree=ast.parse((ROOT/'tools/check-header-addition-host.py').read_text())
-        readers=[node for node in tree.body if isinstance(node,ast.FunctionDef) and node.name in ('read_verification','validate_timing_sources')]
-        self.assertEqual(len(readers),2)
+        readers=[node for node in tree.body if isinstance(node,ast.FunctionDef) and node.name in ('read_verification','validate_timing_sources','read_addition_evidence','read_shard_verification')]
+        self.assertEqual(len(readers),4)
         forbidden={'mkdir','write_bytes','write_text','Popen','run','check_output','save','render','call','unlink','rmtree'}
         for reader in readers:
             for node in ast.walk(reader):
@@ -651,5 +653,155 @@ class FreshHostTests(unittest.TestCase):
             with mock.patch.object(CHECK.subprocess,'Popen',return_value=child),mock.patch.object(CHECK,'processes',return_value={}),mock.patch.object(CHECK.os,'killpg') as kill:
                 with self.assertRaisesRegex(RuntimeError,'owned work1GiB bound'):runner.call('guard',['mocked-no-process'],1)
             kill.assert_called_once_with(child.pid,CHECK.signal.SIGKILL);self.assertTrue(child.waited)
+
+class EvidenceModesTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        spec=importlib.util.spec_from_file_location('header_addition_inputs_for_modes',ROOT/'tools/check-header-addition-inputs.py')
+        cls.inputs=importlib.util.module_from_spec(spec);spec.loader.exec_module(cls.inputs)
+
+    def arguments(self,module,out):
+        args=['--root',str(ROOT),'--go','/missing/go','--out',str(out)]
+        if module is self.inputs:args+=['--compiler','/missing/compiler','--input-command','/missing/helper']
+        return args
+
+    def test_legacy_pair_and_explicit_shard_modes(self):
+        for module in (CHECK,self.inputs):
+            with self.subTest(module=module.__name__):
+                args=self.arguments(module,pathlib.Path('/missing/out'))
+                legacy=module.parse_args(args+['--verification-out','/legacy','--timing','/legacy/timing.jsonl'])
+                self.assertEqual(legacy.verification_out,'/legacy');self.assertIsNone(legacy.shard_native_index)
+                shard=module.parse_args(args+['--shard-native-index','/shard/index.json'])
+                self.assertEqual(shard.shard_native_index,'/shard/index.json');self.assertIsNone(shard.verification_out);self.assertIsNone(shard.timing)
+
+    def test_invalid_or_mixed_mode_refuses_before_output_or_process(self):
+        invalid=[[],['--timing','/timing'],['--verification-out','/legacy'],
+                 ['--verification-out','','--timing','/timing'],
+                 ['--verification-out','/legacy','--timing',''],
+                 ['--shard-native-index',''],
+                 ['--shard-native-index','/index','--timing','/timing'],
+                 ['--shard-native-index','/index','--verification-out','/legacy','--timing','/timing']]
+        for module in (CHECK,self.inputs):
+            for suffix in invalid:
+                with self.subTest(module=module.__name__,suffix=suffix),tempfile.TemporaryDirectory() as directory:
+                    out=pathlib.Path(directory).resolve()/'must-not-be-created'
+                    with mock.patch.object(module.sys,'argv',['checker',*self.arguments(module,out),*suffix]),mock.patch.object(module.subprocess,'Popen',side_effect=AssertionError('no processes before mode validation')),contextlib.redirect_stderr(io.StringIO()):
+                        with self.assertRaises(SystemExit) as failure:module.main()
+                    self.assertEqual(failure.exception.code,2);self.assertFalse(out.exists())
+
+    def test_shard_provider_is_explicit_and_has_no_legacy_fallback(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=pathlib.Path(directory).resolve();(root/'tools').mkdir();index=root/'index.json';index.write_bytes(b'{}')
+            provider=root/'tools/native-shard-reference.py'
+            with mock.patch.object(CHECK,'read_verification',side_effect=AssertionError('legacy fallback forbidden')):
+                with self.assertRaisesRegex(RuntimeError,'regular input required'):CHECK.read_shard_verification(root,index)
+                provider.write_text('def read_reference(root,index_path):\n    raise RuntimeError("provider refused fixture")\n')
+                with self.assertRaisesRegex(RuntimeError,'provider refused fixture'):CHECK.read_shard_verification(root,index)
+                provider.write_text('def read_reference(root,index_path):\n    return {"unexpected": True}\n')
+                with self.assertRaisesRegex(RuntimeError,'exact shard reference provider API'):CHECK.read_shard_verification(root,index)
+
+    def test_shard_wrapper_passes_only_provider_api_to_common_reader(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=pathlib.Path(directory).resolve();(root/'tools').mkdir();index=root/'index.json';index.write_bytes(b'{}')
+            provider=root/'tools/native-shard-reference.py'
+            provider.write_text('import hashlib\ndef read_reference(root,index_path):\n    p=root/"tools/native-shard-reference.py"\n    raw=p.read_bytes()\n    return {"pins":{str(p):{"bytes":len(raw),"sha256":hashlib.sha256(raw).hexdigest()}},"source_set":{},"source_set_sha256":"source-set-fixture","batches":[],"go_version":"go-fixture","go_binary":{},"suite_count":82}\n')
+            with mock.patch.object(CHECK,'read_addition_evidence',return_value={'boundary_fixture':True}) as common:
+                result=CHECK.read_shard_verification(root,index)
+            self.assertEqual(result,{'boundary_fixture':True,'evidence_mode':'experimental-shard-native-reference'})
+            args=common.call_args.args
+            self.assertEqual(args[0],root);self.assertTrue(callable(args[1]));self.assertIn(str(index),args[2])
+            self.assertEqual(args[3:],({},'source-set-fixture',[],'go-fixture',{},82))
+
+
+class AdditionEvidenceBoundaryTests(unittest.TestCase):
+    """Selected reader-boundary fixtures, not fabricated native acceptance.
+
+    The deep ABI receipt validator is mocked here so that these tests isolate
+    local/producer paths and unchanged independent case-document consumption.
+    The production common reader always calls that original validator14 times.
+    """
+    def fixture(self,directory):
+        base=pathlib.Path(directory).resolve();manifest=(ROOT/'diagnostic-header-addition.workspace.json').read_bytes()
+        corpus=CHECK.load((ROOT/'examples/diagnostic-header-addition/corpus.json').read_bytes())
+        source_set={name:{'Package':pkg,'Digest':CHECK.digest(CHECK.go_json((ROOT/name).read_text()))} for pkg,name in sorted(CHECK.PACKAGES,key=lambda x:x[1])}
+        rows=[];batches=[];originals=[];replays=[]
+        for i,spec in enumerate(corpus['cases']):
+            inp=spec['input'];expected=copy.deepcopy(spec['expected'])
+            # Additional oracle-only fixture data must survive unchanged and
+            # must never be filled from a producer's actual delivery values.
+            expected['independent_fixture_sentinel']='oracle-'+str(i)
+            rows.append({'inputs':{CHECK.ENTRY+'.input'+str(j):v for j,v in enumerate([inp['name'],inp['value'],inp['declared_length'],inp['facts']])},'expected':{CHECK.ENTRY:expected}})
+        for index in range(7):
+            batchdir=base/('local-blob-%03d'%index);batchdir.mkdir()
+            workspace=batchdir/'gooo.workspace.json';workspace.write_bytes(manifest)
+            for _,name in CHECK.PACKAGES:
+                target=batchdir/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes((ROOT/name).read_bytes())
+            start,end=index*8,min(index*8+8,50)
+            cases=json.dumps({'schema':'gooo/body-composition-cases/v1','cases':rows[start:end]},ensure_ascii=False,separators=(',',':')).encode()
+            (batchdir/'cases.json').write_bytes(cases)
+            original=('original fixture %d\n'%index).encode();replay=('saved replay fixture %d\n'%index).encode()
+            (batchdir/'execution.json').write_bytes(original);(batchdir/'replay.json').write_bytes(replay)
+            originals.append(original);replays.append(replay)
+            batches.append({'batch_index':index,'start':start,'end':end,'manifest_digest':CHECK.digest(manifest),'cases_digest':CHECK.digest(cases),'original_receipt_sha256':CHECK.digest(original),'workspace':workspace,'producer_manifest_path':'/original/runner/evidence/%03d/gooo.workspace.json'%index})
+        return {'batches':batches,'source_set':source_set,'source_set_sha256':CHECK.digest(json.dumps(source_set,ensure_ascii=False,separators=(',',':')).encode()),'rows':rows,'originals':originals,'replays':replays}
+
+    def read(self,fixture):
+        pins={};read=lambda p:CHECK.frozen_read(p,pins)
+        return CHECK.read_addition_evidence(ROOT,read,pins,fixture['source_set'],fixture['source_set_sha256'],fixture['batches'],'go version go1.27.2 linux/amd64',{'bytes':1,'sha256':'a'*64},82)
+
+    def observed(self,*args):
+        return {'source':'package main\n// boundary fixture only\n','plan':{'fixture':'independent-current-plan'},'tool_selection':'explicit'}
+
+    def rewrite_cases(self,fixture,mutate):
+        batch=fixture['batches'][0];path=batch['workspace'].parent/'cases.json';doc=CHECK.load(path.read_bytes());mutate(doc['cases'][0])
+        raw=json.dumps(doc,ensure_ascii=False,separators=(',',':')).encode();path.write_bytes(raw);batch['cases_digest']=CHECK.digest(raw)
+
+    def test_local_blobs_and_original_manifest_strings_remain_distinct(self):
+        with tempfile.TemporaryDirectory() as directory:
+            fixture=self.fixture(directory)
+            with mock.patch.object(CHECK,'receipt',side_effect=self.observed) as validator:result=self.read(fixture)
+            self.assertEqual(len(validator.call_args_list),14);self.assertTrue(CHECK.equal(result['rows'],fixture['rows']))
+            self.assertEqual(len(result['evidence']),14);self.assertEqual(result['fresh_addition_cases'],50)
+            for index,batch in enumerate(fixture['batches']):
+                execute=validator.call_args_list[2*index].args;replay=validator.call_args_list[2*index+1].args
+                self.assertNotEqual(str(batch['workspace']),batch['producer_manifest_path'])
+                self.assertEqual(execute[9],batch['producer_manifest_path']);self.assertEqual(replay[9],batch['producer_manifest_path'])
+                self.assertIsNone(execute[10]);self.assertEqual(replay[10],fixture['originals'][index])
+                self.assertEqual(execute[0],fixture['originals'][index]);self.assertEqual(replay[0],fixture['replays'][index])
+                self.assertEqual(execute[2],(batch['workspace'].parent/'cases.json').read_bytes())
+                self.assertIn(str(batch['workspace']),result['pins']);self.assertNotIn(batch['producer_manifest_path'],result['pins'])
+                self.assertEqual((batch['workspace'].parent/'execution.json').read_bytes(),fixture['originals'][index])
+
+    def test_independent_original_inputs_and_partial_expectations_cannot_drift(self):
+        changes=[('inputs',lambda row:row['inputs'].__setitem__(CHECK.ENTRY+'.input0','forged')),
+                 ('expectation',lambda row:row['expected'][CHECK.ENTRY].__setitem__('eligible',not row['expected'][CHECK.ENTRY]['eligible']))]
+        for label,change in changes:
+            with self.subTest(change=label),tempfile.TemporaryDirectory() as directory:
+                fixture=self.fixture(directory);self.rewrite_cases(fixture,change)
+                with mock.patch.object(CHECK,'receipt',side_effect=AssertionError('reject before ABI validation')),self.assertRaisesRegex(RuntimeError,'fresh case inputs|partial source specification'):self.read(fixture)
+
+    def test_copied_source_case_digest_raw_parent_and_batch_identity_refuse(self):
+        for label in ('source','case-bytes','parent','batch-index','producer-path-type','local-path-type'):
+            with self.subTest(change=label),tempfile.TemporaryDirectory() as directory:
+                fixture=self.fixture(directory);batch=fixture['batches'][0];batchdir=batch['workspace'].parent
+                if label=='source':(batchdir/CHECK.PACKAGES[0][1]).write_bytes(b'changed source')
+                elif label=='case-bytes':(batchdir/'cases.json').write_bytes((batchdir/'cases.json').read_bytes()+b' ')
+                elif label=='parent':(batchdir/'execution.json').write_bytes(b'changed original raw receipt')
+                elif label=='batch-index':batch['batch_index']=True
+                elif label=='producer-path-type':batch['producer_manifest_path']=batch['workspace']
+                else:batch['workspace']=str(batch['workspace'])
+                with mock.patch.object(CHECK,'receipt',side_effect=AssertionError('must refuse before receipt')),self.assertRaises(RuntimeError):self.read(fixture)
+
+    def test_production_receipt_compares_producer_manifest_string(self):
+        # Execute the real early binding guard, before any synthetic result body.
+        raw=json.dumps({'schema':'gooo/workspace-body-execution-receipt/v1','decision':'PASS','manifest':'/producer/gooo.workspace.json','manifest_digest':CHECK.digest(b'{}'),'cases_digest':CHECK.digest(b'{}')}).encode()
+        with self.assertRaisesRegex(RuntimeError,'exact manifest/case bytes'):
+            CHECK.receipt(raw,[],b'{}',b'{}',[],'go version go1.27.2 linux/amd64','a'*64,{CHECK.ENTRY:{}},{},'/local/blob/gooo.workspace.json')
+        # With the original producer path this guard passes to the next required
+        # field; this is a guard test, not a complete native receipt fixture.
+        with self.assertRaises(KeyError) as failure:
+            CHECK.receipt(raw,[],b'{}',b'{}',[],'go version go1.27.2 linux/amd64','a'*64,{CHECK.ENTRY:{}},{},'/producer/gooo.workspace.json')
+        self.assertEqual(failure.exception.args,('result',))
+
 
 if __name__=='__main__':unittest.main()
