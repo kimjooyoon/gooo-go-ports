@@ -73,8 +73,12 @@ After selecting the tools above, use another fresh output directory:
 ```sh
 python3 -I -B tools/check-url-components.py \
   --root "$PWD" --compiler "$GOOO_COMPILER" --go "$GOOO_GO" \
+  --inputs "$run_dir/inputs.json" \
   --out "$run_dir/verification"
 ```
+
+This checks the input just supplied; omit `--inputs` to check the default
+128-input corpus instead.
 
 The checker compares finite inputs with an independent Go reference and checks
 saved Gooo replay. Inspect that run's retained results and first diagnostic;

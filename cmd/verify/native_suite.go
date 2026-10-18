@@ -21,10 +21,12 @@ type nativeSuiteVerifier struct {
 	cache       *nativeBuildCache
 	timing      *nativeTiming
 	caseProfile nativeCaseProfile
-	execute     func(context.Context, string, string, ...string) ([]byte, error)
-	simpleFold  func(context.Context, string, []byte, string, *nativeBuildCache) (simpleFoldExhaustiveReport, error)
-	ycbcr       func(context.Context, string, []byte, string, string, *nativeBuildCache) (ycbcrExhaustiveReport, error)
-	caseMapping func(context.Context, string, []byte, string, string, *nativeBuildCache) (caseMappingExhaustiveReport, error)
+	// nil retains the original full-verifier evidence layout exactly.
+	batchDirectory func(int) string
+	execute        func(context.Context, string, string, ...string) ([]byte, error)
+	simpleFold     func(context.Context, string, []byte, string, *nativeBuildCache) (simpleFoldExhaustiveReport, error)
+	ycbcr          func(context.Context, string, []byte, string, string, *nativeBuildCache) (ycbcrExhaustiveReport, error)
+	caseMapping    func(context.Context, string, []byte, string, string, *nativeBuildCache) (caseMappingExhaustiveReport, error)
 }
 
 func newNativeSuiteVerifier(commands context.Context, compiler, root string, lock upstream, cache *nativeBuildCache) nativeSuiteVerifier {
@@ -60,6 +62,9 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 		batch := s
 		batch.Cases = s.Cases[start:end]
 		dir := filepath.Join(suiteEvidenceDirectory(v.root, s), fmt.Sprintf("%03d", r.Batches))
+		if v.batchDirectory != nil {
+			dir = v.batchDirectory(r.Batches)
+		}
 		if err = os.MkdirAll(dir, 0755); err != nil {
 			return result, err
 		}
