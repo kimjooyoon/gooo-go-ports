@@ -29,6 +29,10 @@ The Python standard-library wire verifier exercises protocol versions
 exact native CLI proof equality, strict input errors and protocol-only stdout.
 The Go tests also compare concurrent handler calls with those complete native
 proofs; the focused workflow runs them with the race detector on Linux and macOS.
+Five Python regression checks use actual exited child processes and buffered
+pipes to verify that a failed request retains its first error and diagnostics.
+Injected cancellation exceptions check propagation after cleanup; they do not
+establish operating-system signal behavior.
 These observations do not establish that a task was completed inside any
 particular agent application.
 

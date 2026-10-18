@@ -110,13 +110,22 @@ class Session:
         self.sent.extend(frame)
 
     def close(self, failure):
-        self.process.stdin.close()
         drained = False
+        stdin_close_error = None
+        teardown_error = None
         try:
+            try:
+                self.process.stdin.close()
+            except BrokenPipeError as error:
+                # A previous failed write may leave buffered bytes to flush.
+                # Retain the error, but still drain and join the actual child.
+                stdin_close_error = error
             while self.selector.get_map():
                 self.read()
             drained = True
             self.process.wait(timeout=2)
+        except BaseException as error:
+            teardown_error = error
         finally:
             for sig in (signal.SIGTERM, signal.SIGKILL):
                 try:
@@ -140,8 +149,16 @@ class Session:
             self.process.stdout.close()
             self.process.stderr.close()
             self.selector.close()
+            first_failure = failure
+            if first_failure is None:
+                if stdin_close_error is not None:
+                    first_failure = repr(stdin_close_error)
+                elif teardown_error is not None:
+                    first_failure = repr(teardown_error)
             record = {'pid': self.process.pid, 'exit_code': self.process.returncode,
-                      'failure': failure, 'streams_EOF': drained,
+                      'failure': first_failure, 'streams_EOF': drained,
+                      'stdin_close_error': repr(stdin_close_error) if stdin_close_error is not None else None,
+                      'teardown_error': repr(teardown_error) if teardown_error is not None else None,
                       'waited': True, 'process_group_ESRCH': absent,
                       'elapsed_seconds': time.monotonic()-self.started,
                       'protocol_frames': len(self.frames), 'stderr_bytes': len(self.buffers['stderr']),
@@ -150,7 +167,16 @@ class Session:
                       'runtime_GOROOT_absent': True, 'model_calls': 0,
                       'server_created_work_files': runtime_files}
             (self.work/'process.json').write_text(json.dumps(record, indent=2)+'\n')
-        assert self.process.returncode == 0 and absent and drained and not self.linebuf and not self.buffers['stderr'] and not runtime_files, record
+        # Cancellation still propagates after cleanup, including with an earlier
+        # ordinary failure. Other secondary teardown failures must not replace it.
+        if teardown_error is not None and not isinstance(teardown_error, Exception):
+            raise teardown_error
+        if failure is None:
+            if stdin_close_error is not None:
+                raise stdin_close_error
+            if teardown_error is not None:
+                raise teardown_error
+            assert self.process.returncode == 0 and absent and drained and not self.linebuf and not self.buffers['stderr'] and not runtime_files, record
 
 
 def listed(session):
