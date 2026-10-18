@@ -190,6 +190,9 @@ func (f frozenVerificationCatalog) workspaceForSuite(s suite) (suiteWorkspace, e
 		return w, fmt.Errorf("verification catalog lacks trusted entry source for %s:%s", s.Package, s.Activity)
 	}
 	for name, source := range w.Sources {
+		if !bytes.Contains(source, []byte("import")) {
+			continue
+		}
 		for _, match := range catalogImport.FindAllSubmatch(source, -1) {
 			if !selected[string(match[1])] {
 				return w, fmt.Errorf("selected source %s imports absent package %s", name, match[1])
