@@ -576,17 +576,21 @@ func caseDocument(s suite) any {
 	rows := make([]any, 0, len(s.Cases))
 	key := s.Package + ":" + s.Activity
 	for _, c := range s.Cases {
-		inputs := make(map[string]any, len(c.Inputs))
-		for i, v := range c.Inputs {
-			k := key
-			if len(c.Inputs) > 1 {
-				k = fmt.Sprintf("%s.input%d", key, i)
-			}
-			inputs[k] = v
-		}
-		rows = append(rows, map[string]any{"inputs": inputs, "expected": map[string]any{key: c.Expected}})
+		rows = append(rows, caseDocumentRow(key, c))
 	}
 	return map[string]any{"schema": "gooo/body-composition-cases/v1", "cases": rows}
+}
+
+func caseDocumentRow(key string, c testCase) map[string]any {
+	inputs := make(map[string]any, len(c.Inputs))
+	for i, v := range c.Inputs {
+		k := key
+		if len(c.Inputs) > 1 {
+			k = fmt.Sprintf("%s.input%d", key, i)
+		}
+		inputs[k] = v
+	}
+	return map[string]any{"inputs": inputs, "expected": map[string]any{key: c.Expected}}
 }
 func execute(ctx context.Context, compiler, path string, args ...string) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, compiler, args...)
