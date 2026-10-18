@@ -24,6 +24,56 @@ Run ID, attempt and repository are caller assertions: reading a JSON file does
 not authenticate GitHub or an artifact's producer. A future CI integration
 must obtain and cross-check those values from trusted run/job metadata.
 
+The separate `Manual full82 native shard experiment` workflow is opt-in through
+`workflow_dispatch`. Supply the exact reviewed commit as `expected_source_sha`;
+it must match the workflow and checked source SHA. This route leaves required
+`ci.yml` unchanged. It has a planner, three matrix runners (`fail-fast: false`,
+`max-parallel: 3`), and a joined inspection with both header-addition consumers.
+Each executor still uses the contract's three workers, so the three runners can
+have up to **nine suite callbacks** in total. This is not a global three-callback
+limit. No local full-native execution or hosted speed comparison is implied.
+
+The planner builds one pinned compiler and verifier, then transfers those exact
+bytes to all workers and the join on homogeneous Linux amd64 runners. Go binary
+bytes must also match. Every original82-suite/175,649-case/2,305-batch obligation
+and all seven exhaustive reports remain; the join creates a fresh reference
+index from the original transferred `partial.json` and raw evidence directories.
+Original receipt bytes and producer manifest paths are never rewritten.
+The seven exhaustive Go tests run through the existing suite verifier, and the
+raw reader/exporter re-inspects their generated source, harness, module,
+diagnostic and report. The 2,305 batch execute/replay pairs yield 4,610 separate
+wait records; that number does not include the seven exhaustive Go test calls.
+
+The transport helper reads the official current run, attempt jobs and artifact
+metadata with `contents: read` and `actions: read`. It refuses incomplete or
+failed workers and missing, duplicate, foreign or changed context, plan, tool or
+artifact bindings. Names and producer handoffs do not directly attest which job
+uploaded bytes: artifact SHA256/length, official source/run metadata, job state
+and creation-time reconciliation are a separate evidence layer. The underlying
+reader continues to return `NATIVE_RECEIPTS_CHECKED_PRODUCER_UNAUTHENTICATED`,
+`producer_authenticated: false` and `native_acceptance: false`.
+
+Artifacts expire after one day. Downloads are capped at 512MiB per ZIP; each
+extracted artifact is capped at 2GiB, 100,000 entries and 64MiB per file. These
+finite experimental limits have not been measured against a hosted full shard
+run; exceeding them fails and preserves the first diagnostic. Planner/worker/join
+logs and original evidence are uploaded even on failure when available. The
+join records actual command/download intervals and compressed/uncompressed
+bytes; runner setup, queueing and upload intervals remain in official job
+metadata. Independent runner clocks are not combined into the old timing
+footer. Total runner time and storage may increase. Successful default full CI,
+review and a first actual hosted full run remain necessary before making any
+claim about this experimental route's operational benefit.
+
+The planner/worker/join phase budgets are 9/38/42 minutes inside 15/45/50-minute
+jobs, leaving separate setup and preservation time. SIGTERM/SIGINT interrupt the
+owned command, kill its process group and wait for the direct child before
+recording the first failure. Both command logs are sampled every 250ms with an
+8MiB limit; owned work is sampled every 2s with 3GiB per producer or 8GiB at join.
+Sampling and shutdown checks add overhead and are not kernel quotas. A hard
+runner kill, exhausted disk or platform cancellation can still prevent upload;
+no successful preservation is claimed without the resulting artifact.
+
 Run from the repository root. Write the context and new outputs outside the
 checkout so they do not violate its clean-source precondition. After this code
 is committed and independently reviewed, the metadata commands are:
@@ -182,12 +232,12 @@ StatusText fixture with an actual pinned compiler and independent Go values.
 It is separate from the normal observer tests and the full82-suite CLI plan.
 It neither proves the full partition executed nor measures a speed improvement.
 
-A future multi-runner mode must use `fail-fast: false`, join every runner and
-then reduce the complete set. This differs from the existing single-process
+The optional multi-runner mode uses `fail-fast: false`, joins every runner and
+then reduces the complete set. This differs from the existing single-process
 coordinator's cancellation timing: other runners may finish additional work
 after a failure. No immediate global-cancellation equivalence is claimed.
 
-The next comparison should use a separate, non-required experimental workflow
+The manual comparison uses a separate, non-required experimental workflow
 on the same exact source, keeping the current full gate. Before replacing that
 gate, the experimental addition-input and atomic-host routes must be validated
 against a complete actual shard run and its original batch evidence. Their
@@ -195,7 +245,8 @@ normal route still uses the flat `out/ci` layout and one process's timing footer
 into that footer or writing a substitute legacy summary would not preserve the
 contract. Authenticated run/job/artifact provenance and a measured end-to-end
 benefit, including evidence transfer and reduction, are also required.
-Before dispatch is enabled, validate the complete native partition and failure
-paths, authenticate producer/job/source metadata and complete artifact sets,
-and retain every original required check. Workflow changes and their required
-checks need separate review and real time/resource/setup-cost measurement.
+The first dispatch remains an explicitly reviewed experiment: the complete
+hosted partition and failure paths have not been observed by these local
+transport tests. Official metadata reconciliation does not complete the separate
+producer-authentication requirement. Retain every original required check;
+workflow changes need review and actual time/resource/setup-cost observations.
