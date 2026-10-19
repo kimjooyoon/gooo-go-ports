@@ -1,0 +1,77 @@
+name: Gooo service-grant MCP transport
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/service-grant-mcp.yml'
+      - 'examples/service-grant-mcp/**'
+  pull_request:
+    paths:
+      - '.github/workflows/service-grant-mcp.yml'
+      - 'examples/service-grant-mcp/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wire-client:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    env:
+      GOTOOLCHAIN: local
+      GOENV: 'off'
+      GOWORK: 'off'
+      GOTELEMETRY: 'off'
+      CGO_ENABLED: '0'
+      GOMAXPROCS: '2'
+      GOFLAGS: '-p=1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Preserve the first failure when a child exits early
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p out/service-grant-mcp
+          python3 -I -B examples/service-grant-mcp/verify_close_test.py \
+            --verifier "$PWD/examples/service-grant-mcp/verify.py" \
+            --out "$PWD/out/service-grant-mcp/teardown"
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version: '1.27.2'
+          cache: false
+      - name: Build the pinned transport and inspect its identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p out/service-grant-mcp
+          go -C examples/service-grant-mcp vet ./...
+          go -C examples/service-grant-mcp build -trimpath -o "$RUNNER_TEMP/gooo-service-grant-mcp" .
+          go version -m -json "$RUNNER_TEMP/gooo-service-grant-mcp" > out/service-grant-mcp/build-info.json
+      - name: Check concurrent handlers with the race detector
+        shell: bash
+        run: |
+          set -euo pipefail
+          CGO_ENABLED=1 go -C examples/service-grant-mcp test -race -count=1 ./...
+      - name: Verify with an independent stdio client
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B examples/service-grant-mcp/verify.py \
+            --binary "$RUNNER_TEMP/gooo-service-grant-mcp" \
+            --build-info "$PWD/out/service-grant-mcp/build-info.json" \
+            --out "$PWD/out/service-grant-mcp/wire"
+      - name: Retain the bounded original wire observations
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: service-grant-mcp-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          path: out/service-grant-mcp/

@@ -376,6 +376,14 @@ compiler issue before passing a minimal case to the language repository.
   `INVALID_INPUT` domain outcomes exit successfully; malformed JSON structure
   refuses the whole batch without stdout. This pure check does not apply a grant
   or call a service.
+- **Discover the same assessment through MCP:** build the
+  [local service-grant MCP server](../examples/service-grant-mcp/README.md)
+  and configure your host to launch its absolute executable path over stdio.
+  The `assess_service_grant` tool takes the four facts as one arguments object
+  and returns the complete Gooo proof. `ELIGIBLE`, `REFUSED` and `INVALID_INPUT`
+  are policy outcomes; `isError` means no decision was returned. The independent
+  wire verifier compares actual native CLI fixtures. No host-specific task
+  completion or universal MCP-client compatibility is implied.
 - **Automatically check a versioned service-grant tightening:** use the
   [versioned grant-change example](../examples/versioned-grant-change/README.md).
   Gooo combines strict version matching with supported grant narrowing and
