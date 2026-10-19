@@ -1,0 +1,85 @@
+{
+  "schema": "gooo/service-grant-many-source-provenance/v1",
+  "canonical_policy": {
+    "path": "ports/service-policy/multi_required.gooo",
+    "bytes": 7583,
+    "sha256": "097e2304fdd70e47d31f7295c8ea5de161afa4f8ab4c2d87a435a993513332ba"
+  },
+  "private_behavior_baseline_sha256": "f8f75f53b7438efd7b35d1fdd51c2c130344c7debe83793df92c463779df7219",
+  "behavior_body_byte_exact": true,
+  "metadata_changes_only": [
+    "private comment removed",
+    "namespace gooo_service_policy_multi_required_v1",
+    "gooo://service-policy/multi-required/* stable IDs",
+    "workspace package gooo/service-policy/multi-required and canonical ports source path"
+  ],
+  "dependency_source_revision": "00262a205c93eff646c53167bbcb5b06cd001c21",
+  "byte_exact_copies": [
+    {
+      "source_path": "ports/agentmesh/service_pattern.gooo",
+      "path": "ports/agentmesh/service_pattern.gooo",
+      "bytes": 1767,
+      "sha256": "e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d"
+    },
+    {
+      "source_path": "examples/agentmesh-service-policy/domain.gooo",
+      "path": "examples/agentmesh-service-policy/domain.gooo",
+      "bytes": 2317,
+      "sha256": "b866ea5aa827e6122541faa54fd920c9ec1942a308bf72adb82fb244f1b3c33c"
+    },
+    {
+      "source_path": "examples/agentmesh-service-policy/refinement.gooo",
+      "path": "examples/agentmesh-service-policy/refinement.gooo",
+      "bytes": 5622,
+      "sha256": "90bcc738c88eb5bec8b41b5306cccf274a5740560d7dd62b7f3a57b30b441ff0"
+    },
+    {
+      "source_path": "examples/agentmesh-service-policy/checked_refinement.gooo",
+      "path": "examples/agentmesh-service-policy/checked_refinement.gooo",
+      "bytes": 2622,
+      "sha256": "6628f15bf8a260e48bc7b58e5d05699c48138b145a1e42c6e6f872efd6f81772"
+    },
+    {
+      "source_path": "LICENSE",
+      "path": "LICENSE",
+      "bytes": 1496,
+      "sha256": "099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48"
+    },
+    {
+      "source_path": "examples/agentmesh-service-policy/source-pin.json",
+      "path": "examples/agentmesh-service-policy/source-pin.json",
+      "bytes": 3414,
+      "sha256": "c535c8eb7954eaf35a8ef8507d5cb69a1968b299d759c5815d2707c50bfc7c90"
+    },
+    {
+      "source_path": "examples/agentmesh-service-policy/LICENSE-APACHE-2.0",
+      "path": "ports/agentmesh/LICENSE-APACHE-2.0",
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    }
+  ],
+  "workspace": {
+    "path": "service-grant-many.workspace.json",
+    "bytes": 904,
+    "sha256": "25d809d2b28d7341325e369167951eb82aa432e89d87d64086d4078e7479035f"
+  },
+  "case_rows": [
+    1,
+    15,
+    16
+  ],
+  "case_facts_and12_decision_fields_unchanged": true,
+  "expected16": {
+    "path": "examples/service-grant-many/reference-expected.json",
+    "bytes": 15811,
+    "sha256": "5c4a1cc34a0b8c3b94d694a295149be15cfa05c17189bf82eb4a1be8b12af895"
+  },
+  "facts16": {
+    "path": "examples/service-grant-many/case-facts.json",
+    "bytes": 21392,
+    "sha256": "f31e31fe2f9d017086a3189507602c4cac7fd9d23dabb57f31f861bd3004ef10"
+  },
+  "fresh_Go_reference_execution": 0,
+  "Linux_execution": false,
+  "private_PASS_relabel": false
+}

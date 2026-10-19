@@ -34,6 +34,7 @@ An incomplete attempt is useful feedback. Share public source and inputs only.
 | Your task | Entry | Observable result |
 | --- | --- | --- |
 | Assess a service-grant change | [Native first call](docs/ai-agents.md#check-a-service-grant-change-without-a-toolchain) or [MCP host setup](docs/ai-agents.md#connect-the-service-grant-mcp-tool) | Check a supported narrowing while preserving one required request; no grant is applied. |
+| Preserve every required request when narrowing a grant | [Ordered service requirements](examples/service-grant-many/README.md) | Inspect the first request that would break, with original order and all 12 Gooo decision fields. |
 | Edit an API policy in Gooo | [Editable policy comparison](examples/editable-api-policy/README.md) | Compare edited rules on the same facts and replay each policy. A separate opt-in compiler profile supports extracting helpers. |
 | Check an API policy change in CI | [Existing policy Action](examples/api-policy-ci/README.md) | Compare the same nine facts under two sealed profiles; inspect newly denied requests and optionally fail CI. |
 | Inspect fixed API decisions without a toolchain (optional) | [Native preview.11 bundles](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.11) | Run the supplied read/write batch on Linux amd64 or macOS arm64, try synthetic copies and replay the saved comparison. This does not edit Gooo source. |
@@ -307,6 +308,17 @@ still valid. No per-change human approval is required. The demo also shows a sta
 proposal, a refused expansion, and recovery of a discarded response by operation ID.
 
 
+The original [ordered service-requirement composition](examples/service-grant-many/README.md)
+checks a proposed narrowing against every request needed by a workflow. For
+example, narrowing `*` to `mcp://weather` preserves a required weather call but
+refuses a workflow that also requires calculator; `first_counterexample: 1`
+points to the second original request. Gooo validates all supplied items, owns
+the 256-request policy budget and returns the subset rule plus 12 decision
+fields. Generated Go provides an ordered-pair API and strict JSON CLI. This
+separate `de99b770` consumer profile keeps the default compiler and 82-suite
+catalog unchanged. It assesses supplied facts and does not apply a grant.
+
+
 The appended selected If-Match core retains all284 original input occurrences
 in five batches. The preserved80-suite prefix has173,866 cases,2,252 batches
 and2,414 timing rows; its original79 suites retain173,582 cases and2,247
@@ -331,7 +343,7 @@ unchanged. See the [domain, strict input route and reference mapping](ports/net/
 | Apply a constrained policy change automatically | [Service-grant application](examples/agentmesh-service-policy/conditional-apply.md) | Tighten a local grant, observe conflict and refusal, and recover a recorded result |
 | Assess supplied service-grant changes from a script | [Grant-update stdin CLI](examples/agentmesh-service-policy/README.md#use-the-generated-ordinary-go-library-and-stdin-cli) | Check supported narrowing and preserve one required request; inspect eligibility, refusal or invalid input without applying a write |
 | Assess a service-grant change without installing Go | [Native preview.12 first call](docs/ai-agents.md#check-a-service-grant-change-without-a-toolchain) | Verify the matching bundle, submit a JSON array and retain its decision; no grant is applied |
-| Let an MCP host inspect a service-grant change | [MCP host setup](docs/ai-agents.md#connect-the-service-grant-mcp-tool) | Discover one read-only tool, supply four exact facts as an object and retain the Gooo decision and source bindings; no grant is applied |
+| Let an MCP host inspect a service-grant change | [Native MCP preview.13](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.13) and [host setup](docs/ai-agents.md#connect-the-service-grant-mcp-tool) | Linux amd64/macOS arm64 executable that runs without installing Go, Gooo or Python; supply four exact facts and retain the decision and source bindings; no grant is applied |
 | Search a diagnostic phrase locally | [Literal-text report](examples/literal-text-report/README.md) | Supply text and a phrase; export the first byte offset, non-overlapping count and both original inputs |
 | Find the final repeated diagnostic marker locally | [Final-marker report](examples/literal-final-marker-report/README.md) | Compare first and last UTF-8 byte positions, retain overlapping last matches, and replay the eight-field result |
 | Split a literal separator or remove an edge affix | [Literal Cut report](examples/literal-cut-report/README.md) | Compare Cut, CutPrefix and CutSuffix while retaining both original inputs and all eleven returned fields |
