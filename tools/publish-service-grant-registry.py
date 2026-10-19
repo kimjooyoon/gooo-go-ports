@@ -30,14 +30,15 @@ import urllib.error
 import urllib.request
 
 REPOSITORY = 'kimjooyoon/gooo-go-ports'
-SOURCE = 'c87d924747b894f1fdb0f74b513fc504129e4de0'
-TREE = 'a2f0f9323c4888c1760ff7caf635ea6408f8a2a8'
-TAG = 'v0.1.0-preview.13'
-TAG_OBJECT = 'eb21972a361dfd419e2664fb3f313f78365f40f4'
-RELEASE_ID = 416848648
+SOURCE = '694d485217c7ec9afac0437453038a66a0db0a33'
+TREE = 'd0bb31fc615b8e55c4bd930d15106b42ff16b410'
+TAG = 'v0.1.0-preview.14'
+TAG_OBJECT = '1dde066daf27ec6e2158ef1665c0adb9a390aeac'
+RELEASE_ID = 417284250
 NAME = 'io.github.kimjooyoon/gooo-service-grant'
-VERSION = '0.1.0-preview.13'
-METADATA_SHA = '891529d92ac784ed5068f33da8297402a77b5389a86b710d81e6192e02c97f6f'
+VERSION = '0.1.0-preview.14'
+METADATA_BYTES = 586
+METADATA_SHA = 'db666341355d94a18779259e0296d74a570a44160b38de8b18fb94a2c1360fd3'
 REGISTRY = 'https://registry.modelcontextprotocol.io'
 PUBLISHER_VERSION = 'v1.8.1'
 PUBLISHER_RELEASE_ID = 366432047
@@ -53,13 +54,25 @@ PUBLISHER_MEMBERS = {
 }
 ASSETS = {
     'gooo-service-grant-mcp-darwin-arm64.tar.gz':
-        (6843318, 'f866d79df3876aad85cc6942325f38b9ba422937f00db500241a690e282f712f'),
+        (6881761, 'be3a9f42eaea9d039bccd005148df1369dfda0913867bd62bab6e74f180211a9'),
     'gooo-service-grant-mcp-darwin-arm64.tar.gz.sha256':
-        (109, 'a772d84f543a6f9da16df0b8aecef01654034dda7c8b6458282860c79e1f1fe4'),
+        (109, 'b6e8b0e53b3dc97b1f93ba2d2c544dd5adf186d74b731e85f9750b276a7b2adf'),
     'gooo-service-grant-mcp-linux-amd64.tar.gz':
-        (7093748, '982ae6910ee3a28c9ab7f1944a44d27d956bf7b9a09101bfaeebd290ff4ab32d'),
+        (7135304, 'c088232e9bab197ed3021fcc68476e486455df92d8950b7cb9a40c7f2351e6ea'),
     'gooo-service-grant-mcp-linux-amd64.tar.gz.sha256':
-        (108, 'e6722caebc2356e78d0a176805351f2834353b8ddef1feb4974eb42bce00fb23'),
+        (108, '45acd1e976b5619abb5a2eee782a768a7a3242440b0569a339bc7261675dfba1'),
+}
+ASSET_IDS = {
+    'gooo-service-grant-mcp-darwin-arm64.tar.gz': 656260147,
+    'gooo-service-grant-mcp-darwin-arm64.tar.gz.sha256': 656260145,
+    'gooo-service-grant-mcp-linux-amd64.tar.gz': 656260142,
+    'gooo-service-grant-mcp-linux-amd64.tar.gz.sha256': 656260143,
+}
+BUNDLE_IDENTITIES = {
+    'gooo-service-grant-mcp-darwin-arm64.tar.gz':
+        (32188, '97e510d0cfe8c9165eadb7d4e9684b236db92c6714ebaf0ae017133408ec79ed'),
+    'gooo-service-grant-mcp-linux-amd64.tar.gz':
+        (32183, '88bde3e59d928e2a2648458efa1b4ad8181c3984472000d567d20bb2c82da5cd'),
 }
 HTTP_CAP = 32 * 1024 * 1024
 STREAM_CAP = 65536
@@ -129,6 +142,8 @@ def release_assets(release):
     require(len({r['name'] for r in rows}) == len(rows), 'duplicate preview asset name')
     require({r['name'] for r in rows} == set(ASSETS), 'preview asset names changed')
     for row in rows:
+        require(type(row['id']) is int and row['id'] == ASSET_IDS[row['name']],
+                'preview asset ID changed')
         size, digest = ASSETS[row['name']]
         require(row['state'] == 'uploaded' and type(row['size']) is int
                 and row['size'] == size and row['digest'] == 'sha256:' + digest,
@@ -268,7 +283,7 @@ class Runtime:
 
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), Redirect())
         request = urllib.request.Request(url, headers={
-            'User-Agent': 'Gooo-fixed-preview13-registry-publisher',
+            'User-Agent': 'Gooo-fixed-preview14-registry-publisher',
             'Accept': 'application/json' if '/api.' in url or
                       'registry.modelcontextprotocol.io' in url else 'application/octet-stream'})
         raw = bytearray()
@@ -482,9 +497,30 @@ class Runtime:
         return response['server']
 
 
+def preview_bundle_identity(raw, name):
+    """Read only BUNDLE metadata after the caller's fixed whole-archive SHA gate."""
+    size, digest = BUNDLE_IDENTITIES[name]
+    with gzip.GzipFile(fileobj=io.BytesIO(raw)) as stream:
+        unpacked = stream.read(BINARY_CAP + 1)
+        require(len(unpacked) <= BINARY_CAP and stream.read(1) == b'',
+                'preview expanded archive cap')
+    with tarfile.open(fileobj=io.BytesIO(unpacked), mode='r:') as archive:
+        rows = [row for row in archive if row.name == 'BUNDLE.json']
+        require(len(rows) == 1, 'preview BUNDLE missing or duplicated')
+        member = rows[0]
+        require(member.type in (tarfile.REGTYPE, tarfile.AREGTYPE)
+                and not member.pax_headers and not member.sparse and member.size == size,
+                'preview BUNDLE type or size changed')
+        with archive.extractfile(member) as stream:
+            body = stream.read(size + 1)
+        require(len(body) == size and sha(body) == digest, 'preview BUNDLE bytes changed')
+    require(load(body)['source_commit'] == SOURCE, 'preview BUNDLE source changed')
+    return {'bytes': size, 'sha256': digest, 'source_commit': SOURCE}
+
+
 def public_preview(runtime):
     api = 'https://api.github.com/repos/' + REPOSITORY
-    release = runtime.public_json('public-release13', api + '/releases/' + str(RELEASE_ID))
+    release = runtime.public_json('public-release14', api + '/releases/' + str(RELEASE_ID))
     rows = release_assets(release)  # A draft/404 stops before download or OIDC.
     tag = runtime.public_json('tag-ref', api + '/git/ref/tags/' + TAG)
     require(tag['object']['type'] == 'tag' and tag['object']['sha'] == TAG_OBJECT,
@@ -495,12 +531,15 @@ def public_preview(runtime):
     commit = runtime.public_json('release-source', api + '/git/commits/' + SOURCE)
     require(commit['sha'] == SOURCE and commit['tree']['sha'] == TREE, 'source tree changed')
     checksum_lines = {}
+    bundles = {}
     for row in rows:
         size, digest = ASSETS[row['name']]
         body = runtime.fetch('asset-' + row['name'], row['browser_download_url'], size)
         require(len(body) == size and sha(body) == digest, 'public preview asset bytes changed')
         if row['name'].endswith('.sha256'):
             checksum_lines[row['name']] = body
+        else:
+            bundles[row['name']] = preview_bundle_identity(body, row['name'])
     for name, (_, digest) in ASSETS.items():
         if not name.endswith('.sha256'):
             require(checksum_lines[name + '.sha256'] == (digest + '  ' + name + '\n').encode(),
@@ -508,6 +547,7 @@ def public_preview(runtime):
     dump(runtime.proof / 'public-release-byte-gate.json', {
         'status': 'FOUR_PUBLIC_ASSET_BYTES_MATCH', 'release_id': RELEASE_ID,
         'source': SOURCE, 'tree': TREE, 'tag': TAG, 'assets': ASSETS,
+        'asset_ids': ASSET_IDS, 'BUNDLE_identities': bundles,
         'new_MCP_or_Gooo_binary_execution': False})
 
 
@@ -555,10 +595,10 @@ def main():
             'publisher requires Linux amd64')
     require(threading.current_thread() is threading.main_thread()
             and threading.active_count() == 1, 'single main thread required')
-    metadata_path = Path(__file__).resolve().parent.parent / 'registry/service-grant-preview13.server.json'
+    metadata_path = Path(__file__).resolve().parent.parent / 'registry/service-grant-preview14.server.json'
     require(stat.S_ISREG(metadata_path.lstat().st_mode), 'metadata must be a regular file')
     metadata_raw = metadata_path.read_bytes()
-    require(len(metadata_raw) == 581 and sha(metadata_raw) == METADATA_SHA, 'metadata bytes changed')
+    require(len(metadata_raw) == METADATA_BYTES and sha(metadata_raw) == METADATA_SHA, 'metadata bytes changed')
     metadata = load(metadata_raw)
     require(metadata['name'] == NAME and metadata['version'] == VERSION
             and 'packages' not in metadata and 'remotes' not in metadata,

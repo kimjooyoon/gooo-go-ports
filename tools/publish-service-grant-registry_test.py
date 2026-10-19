@@ -26,7 +26,7 @@ def release():
         'published_at': '2026-10-19T00:00:00Z', 'tag_name': M.TAG,
         'target_commitish': M.SOURCE,
         'html_url': f'https://github.com/{M.REPOSITORY}/releases/tag/{M.TAG}',
-        'assets': [dict(name=name, size=size, digest='sha256:' + digest, state='uploaded',
+        'assets': [dict(id=M.ASSET_IDS[name], name=name, size=size, digest='sha256:' + digest, state='uploaded',
                         browser_download_url=f'https://github.com/{M.REPOSITORY}/releases/download/{M.TAG}/{name}')
                    for name, (size, digest) in M.ASSETS.items()],
     }
@@ -78,7 +78,7 @@ class PublicReleaseGate(unittest.TestCase):
         runtime = FakeRuntime()
         with self.assertRaisesRegex(M.Refused, 'public prerelease'):
             M.public_preview(runtime)
-        self.assertEqual(runtime.calls, ['public-release13'])
+        self.assertEqual(runtime.calls, ['public-release14'])
 
     def test_unpublished_release_refused(self):
         value = release()
@@ -120,6 +120,40 @@ class PublicReleaseGate(unittest.TestCase):
                 M.release_assets(value)
 
 
+class Preview14IdentityGate(unittest.TestCase):
+    def test_published_preview13_metadata_bytes_remain_unchanged(self):
+        raw = (SOURCE.parent.parent / 'registry/service-grant-preview13.server.json').read_bytes()
+        self.assertEqual(len(raw), 581)
+        self.assertEqual(M.sha(raw),
+                         '891529d92ac784ed5068f33da8297402a77b5389a86b710d81e6192e02c97f6f')
+        self.assertEqual(M.load(raw)['version'], '0.1.0-preview.13')
+        self.assertEqual(M.VERSION, '0.1.0-preview.14')
+
+    def test_native_asset_id_mismatch_and_bool_refused(self):
+        for identity in (M.ASSET_IDS[next(iter(M.ASSETS))] + 1, True):
+            value = release()
+            value['assets'][0]['id'] = identity
+            with self.subTest(identity=identity), self.assertRaisesRegex(M.Refused, 'asset ID'):
+                M.release_assets(value)
+
+    def test_BUNDLE_raw_hash_and_source_are_fixed(self):
+        name = next(iter(M.BUNDLE_IDENTITIES))
+        body = M.json.dumps({'source_commit': M.SOURCE}).encode()
+        data = archive([('BUNDLE.json', tarfile.REGTYPE, body)])
+        with mock.patch.dict(M.BUNDLE_IDENTITIES, {name: (len(body), M.sha(body))}, clear=True):
+            self.assertEqual(M.preview_bundle_identity(data, name),
+                             {'bytes': len(body), 'sha256': M.sha(body),
+                              'source_commit': M.SOURCE})
+            changed = archive([('BUNDLE.json', tarfile.REGTYPE, body.replace(b'694', b'693', 1))])
+            with self.assertRaisesRegex(M.Refused, 'BUNDLE bytes'):
+                M.preview_bundle_identity(changed, name)
+        wrong = M.json.dumps({'source_commit': 'c87d924747b894f1fdb0f74b513fc504129e4de0'}).encode()
+        with mock.patch.dict(M.BUNDLE_IDENTITIES, {name: (len(wrong), M.sha(wrong))}, clear=True):
+            with self.assertRaisesRegex(M.Refused, 'BUNDLE source'):
+                M.preview_bundle_identity(
+                    archive([('BUNDLE.json', tarfile.REGTYPE, wrong)]), name)
+
+
 class PublisherArchiveGate(unittest.TestCase):
     def test_unpinned_whole_archive_refused_before_unpacking(self):
         with self.assertRaisesRegex(M.Refused, 'archive hash changed'):
@@ -137,15 +171,18 @@ class PublisherArchiveGate(unittest.TestCase):
 
 class MetadataGate(unittest.TestCase):
     def test_fixed_metadata_hash_and_shape(self):
-        path = SOURCE.parent.parent / 'registry/service-grant-preview13.server.json'
+        path = SOURCE.parent.parent / 'registry/service-grant-preview14.server.json'
         raw = path.read_bytes()
-        self.assertEqual(len(raw), 581)
+        self.assertEqual(len(raw), M.METADATA_BYTES)
         self.assertEqual(M.sha(raw), M.METADATA_SHA)
         value = M.load(raw)
         self.assertEqual(value['name'], M.NAME)
         self.assertEqual(value['version'], M.VERSION)
         self.assertNotIn('packages', value)
         self.assertNotIn('remotes', value)
+        self.assertLessEqual(len(value['description']), 100)
+        self.assertEqual(value['websiteUrl'],
+                         f'https://github.com/{M.REPOSITORY}/releases/tag/{M.TAG}')
 
     def test_duplicate_and_nonfinite_json_refused(self):
         for raw in (b'{"name":"a","name":"b"}', b'{"n":NaN}'):
@@ -313,7 +350,7 @@ class ValidationOnlySafety(unittest.TestCase):
         self.addCleanup(temp.cleanup)
         out = Path(temp.name) / 'out'
         instances, trace = [], []
-        metadata = M.load((SOURCE.parent.parent / 'registry/service-grant-preview13.server.json').read_bytes())
+        metadata = M.load((SOURCE.parent.parent / 'registry/service-grant-preview14.server.json').read_bytes())
         actual_runtime = M.Runtime
 
         class FakeRuntime(actual_runtime):
@@ -405,9 +442,9 @@ class ValidationOnlySafety(unittest.TestCase):
         self.assertFalse(runtime.home.exists())
 
     def test_namespace_still_refused_after_hash_gate_before_any_runtime(self):
-        path = SOURCE.parent.parent / 'registry/service-grant-preview13.server.json'
+        path = SOURCE.parent.parent / 'registry/service-grant-preview14.server.json'
         raw = path.read_bytes().replace(b'io.github.kimjooyoon/', b'io.github.wrongowner/')
-        self.assertEqual(len(raw), 581)
+        self.assertEqual(len(raw), M.METADATA_BYTES)
         with mock.patch.dict(M.os.environ, self.context(), clear=True), \
                 mock.patch.object(__import__('sys'), 'argv',
                                   ['registry-test', '--out', '/synthetic-no-create', '--validate-only']), \
@@ -430,7 +467,9 @@ class ValidationOnlySafety(unittest.TestCase):
         self.assertNotIn('secrets.', raw)
         self.assertNotIn('--allow-publish', raw)
         self.assertEqual(raw.count('      contents: read\n'), 1)
-        self.assertEqual(raw.count('      - \'', raw.index('    paths:\n'), raw.index('\npermissions:')), 5)
+        self.assertEqual(raw.count('      - \'', raw.index('    paths:\n'), raw.index('\npermissions:')), 6)
+        self.assertIn("      - 'registry/service-grant-preview13.server.json'\n", raw)
+        self.assertIn("      - 'registry/service-grant-preview14.server.json'\n", raw)
         self.assertIn('    timeout-minutes: 10\n', raw)
         self.assertIn('actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1', raw)
         self.assertIn('actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9', raw)
