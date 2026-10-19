@@ -33,6 +33,7 @@ An incomplete attempt is useful feedback. Share public source and inputs only.
 
 | Your task | Entry | Observable result |
 | --- | --- | --- |
+| Assess a service-grant change | [Native first call](docs/ai-agents.md#check-a-service-grant-change-without-a-toolchain) or [MCP host setup](docs/ai-agents.md#connect-the-service-grant-mcp-tool) | Check a supported narrowing while preserving one required request; no grant is applied. |
 | Edit an API policy in Gooo | [Editable policy comparison](examples/editable-api-policy/README.md) | Compare edited rules on the same facts and replay each policy. A separate opt-in compiler profile supports extracting helpers. |
 | Check an API policy change in CI | [Existing policy Action](examples/api-policy-ci/README.md) | Compare the same nine facts under two sealed profiles; inspect newly denied requests and optionally fail CI. |
 | Inspect fixed API decisions without a toolchain (optional) | [Native preview.11 bundles](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.11) | Run the supplied read/write batch on Linux amd64 or macOS arm64, try synthetic copies and replay the saved comparison. This does not edit Gooo source. |
@@ -329,8 +330,8 @@ unchanged. See the [domain, strict input route and reference mapping](ports/net/
 | Edit and run Gooo code locally | [Run and edit locally](#run-and-edit-locally) | Install the pinned compiler, then change the tutorial's condition and rerun it |
 | Apply a constrained policy change automatically | [Service-grant application](examples/agentmesh-service-policy/conditional-apply.md) | Tighten a local grant, observe conflict and refusal, and recover a recorded result |
 | Assess supplied service-grant changes from a script | [Grant-update stdin CLI](examples/agentmesh-service-policy/README.md#use-the-generated-ordinary-go-library-and-stdin-cli) | Check supported narrowing and preserve one required request; inspect eligibility, refusal or invalid input without applying a write |
-| Assess a service-grant change without installing Go | [Native CLI release candidate](docs/service-grant-cli.md) | Download a checked native bundle, verify its checksum and submit the supplied facts on stdin; no grant is applied |
-| Let an MCP host inspect a service-grant change | [Local service-grant MCP tool](examples/service-grant-mcp/README.md) | Discover one read-only tool, supply four exact facts and retain the Gooo decision and source bindings; no grant is applied |
+| Assess a service-grant change without installing Go | [Native preview.12 first call](docs/ai-agents.md#check-a-service-grant-change-without-a-toolchain) | Verify the matching bundle, submit a JSON array and retain its decision; no grant is applied |
+| Let an MCP host inspect a service-grant change | [MCP host setup](docs/ai-agents.md#connect-the-service-grant-mcp-tool) | Discover one read-only tool, supply four exact facts as an object and retain the Gooo decision and source bindings; no grant is applied |
 | Search a diagnostic phrase locally | [Literal-text report](examples/literal-text-report/README.md) | Supply text and a phrase; export the first byte offset, non-overlapping count and both original inputs |
 | Find the final repeated diagnostic marker locally | [Final-marker report](examples/literal-final-marker-report/README.md) | Compare first and last UTF-8 byte positions, retain overlapping last matches, and replay the eight-field result |
 | Split a literal separator or remove an edge affix | [Literal Cut report](examples/literal-cut-report/README.md) | Compare Cut, CutPrefix and CutSuffix while retaining both original inputs and all eleven returned fields |
