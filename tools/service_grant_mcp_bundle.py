@@ -24,10 +24,11 @@ import tarfile
 import time
 import types
 import unittest
+import zipfile
 REFERENCE_SOURCE = '9c29602f77492be0e60c0ef91afd6d3968890b24'
 
 SOURCE_FILES = {'examples/service-grant-mcp/LICENSE': '099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48',
- 'examples/service-grant-mcp/README.md': 'b9a58f00738107a3c5280036835e9d230309f92ef3faae3e94839d5f3be353b8',
+ 'examples/service-grant-mcp/README.md': '67c2f9955b868eaf926ef8ce215b6ae0144be3e987c9b2f4176fd317018cfd79',
  'examples/service-grant-mcp/fixtures/control-1.input': 'eaa120445bed9038ab6d9a4e71949344f6d92c44bad73fc7d713b8fc17c0dcb4',
  'examples/service-grant-mcp/fixtures/control-1.stdout': '0617f412a5a00e9ad3e76c9c1ecca6acbef76b366f5f838a607dbdb9ed0944f9',
  'examples/service-grant-mcp/fixtures/control-2.input': '947f10f40652f17eb97c9f7d7a372a493a9eca5e24976ab7dbbe9c1863bac34e',
@@ -37,12 +38,13 @@ SOURCE_FILES = {'examples/service-grant-mcp/LICENSE': '099e1adf9145f6fe45357f004
  'examples/service-grant-mcp/fixtures/control-4.input': 'd744fc59eceac73a8cc68430047424c5b065137f4807daea9a411318a220cc0a',
  'examples/service-grant-mcp/fixtures/control-4.stdout': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
  'examples/service-grant-mcp/fixtures/origin.json': '192814d54805c802cad17c6038a13daf12a3460bc4853922923ba10c016a75a7',
- 'examples/service-grant-mcp/go.mod': '13ce78fd2039122563c9f6b28081ee6b0a196f8d208ae934430e586dec76a20f',
- 'examples/service-grant-mcp/go.sum': 'c4ac5b32430704aa5ac7ea506fcacadc410ef5798eaf8c4f6e5c15e6f7f11926',
- 'examples/service-grant-mcp/main.go': 'ff1dbc06e7a63f2f5fcb75f4a9fbeafa68a2fd840488871f1429f25b2ed4ffbd',
- 'examples/service-grant-mcp/main_test.go': '482e38af1241697b94dffc69a4f2b58144b23b2c513a8a114a8a1115b1e06aa8',
+ 'examples/service-grant-mcp/go.mod': 'aa1b03d77f17e066f81919033193126693e6e43558e2419cc91485d8b2829f86',
+ 'examples/service-grant-mcp/go.sum': 'aff5d12a9b61e0b132d3aa4a2b1021a56ef6f2779516b4a371e57aae9ab33e5e',
+ 'examples/service-grant-mcp/main.go': '2cfc7be9bb79df4a89eeda8d4b5ee8e59fc069d13a3956b85589ef83f95adc3c',
+ 'examples/service-grant-mcp/main_test.go': 'bfd6a2b45c6ffeb293e0b68b0a9afa08a02e16409ba8b9e0ff7aa9e1e5e9f6d6',
  'examples/service-grant-mcp/verify.py': 'a55b628f0b6d2bd2d7f490685449b571edd379382d4124675eb83200c8df6c46',
- 'examples/service-grant-mcp/verify_close_test.py': '63076fe685edbed02e8d6ebb821b1660f6c6504ca110ac44dcf5a01e5b523375'}
+ 'examples/service-grant-mcp/verify_close_test.py': '63076fe685edbed02e8d6ebb821b1660f6c6504ca110ac44dcf5a01e5b523375',
+ 'examples/service-grant-mcp/verify_many.py': '4f81d2e8b23fe0d264b840892e823a8569de6d2d130fd996ceab121bcec34228'}
 
 DEPENDENCIES = [{'dependency': {'Path': 'github.com/google/jsonschema-go',
                  'Sum': 'h1:/DBOLZTfDow7pe2GmaJNhltueGTtDKICi8V8p+DQPd0=',
@@ -55,6 +57,12 @@ DEPENDENCIES = [{'dependency': {'Path': 'github.com/google/jsonschema-go',
               'LICENSE-APACHE-2.0': 'c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4',
               'NOTICE.md': '90163940130087486fa104d9db6e9c56da1c7de37c2e32364340c0cdc367bc30',
               'upstream/LICENSE': 'c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4'}},
+ {'dependency': {'Path': 'github.com/kimjooyoon/gooo-go-ports/examples/service-grant-many',
+                 'Sum': 'h1:VGOxGwZDHGMk8p4GvkmBN6xlXactcKMHvYSUKoQFZ3Q=',
+                 'Version': 'v0.0.0-20261019032231-f4f89b814b42'},
+  'notices': {'LICENSE': '099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48',
+              'LICENSE-APACHE-2.0': 'c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4',
+              'NOTICE.md': 'abd202e771c34e66987ee4b9bc006acb0841ea6321abf21f7dd819e36915779d'}},
  {'dependency': {'Path': 'github.com/modelcontextprotocol/go-sdk',
                  'Sum': 'h1:KIvahhYqwtbeniWVPs3TcXEA7b8jEtwfBpOTAI+Urx4=',
                  'Version': 'v1.8.0'},
@@ -263,6 +271,50 @@ GENERATION = "40ae704abbf2cae1974d2eec51cec2564c8d72dd44536b31c9c4f55f71fc0f85"
 PIN = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 
 
+MANY_MODULE = 'github.com/kimjooyoon/gooo-go-ports/examples/service-grant-many'
+MANY_VERSION = 'v0.0.0-20261019032231-f4f89b814b42'
+MANY_SUM = 'h1:VGOxGwZDHGMk8p4GvkmBN6xlXactcKMHvYSUKoQFZ3Q='
+MANY_MOD_SUM = 'h1:0m4ggbjuqLpP4nfiiCNvnxPPakbu8QuZ5aBoPI7o2vE='
+MANY_PIN = 'de99b770b8b5adea608233c3c0664902336e3310'
+MANY_GENERATION = '3c49d16a549bc961c1712c122383e1c4d2dd232361a526d146f1a5347108918c'
+MANY_FILES = {'LICENSE': '099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48',
+ 'LICENSE-APACHE-2.0': 'c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4',
+ 'NOTICE.md': 'abd202e771c34e66987ee4b9bc006acb0841ea6321abf21f7dd819e36915779d',
+ 'README.md': '478fdf2b54af03f4d848ac61a76e11f144ec2d4e9b9d41275fee0341c7cb4bee',
+ 'all-cases.json': '0bd2386252984cb2e1aaf7297e9263e71d221b03b3a55e05788aa8bad2abc165',
+ 'bindings.go': '560045a704dea6fd85c7a33a97bdfc4f4f8ef70500ef10da17432127a28cdc8a',
+ 'bridge_generated.go': 'e4b88a9db690bec6077ec5d0d26c605149e4946ad121781b4ca7e44b7d4a2cd9',
+ 'case-facts.json': 'f31e31fe2f9d017086a3189507602c4cac7fd9d23dabb57f31f861bd3004ef10',
+ 'cmd/evaluate/main.go': 'e43dd9533b14d9b85a7da4916aa71dff7ee92ad78d1cc74c4aa811920766c2f5',
+ 'cmd/evaluate/main_test.go': '5c6f5aac865e8c9e17aaee20bc313b6c2d39d4393ff40e4e12f07ad5d5f883ca',
+ 'compiler-pin.json': 'd25ca85cb16b4b89664838eccdc896439d62400766f997b9dca6a43d69f2b5d8',
+ 'compiler.json': 'c9d06f19f7fe1a101f88765f6c3d2edb19fd568ffb37d07580d7373c808a0486',
+ 'generate.py': '2e504c85164f07f940a53baa16834d0e753d4c273b5a6bd6ae940a511b823a05',
+ 'generation.json': '3c49d16a549bc961c1712c122383e1c4d2dd232361a526d146f1a5347108918c',
+ 'go.mod': '85fb0e71d323ef58d09297ef959176a6046c4c4bcdb363a93ff408723f4bdfc0',
+ 'input.go': '1c24ea415bd88ea9c50370df3de4f735a29910fae0dd83ac76ae4cccdce9b451',
+ 'model.go': 'f3f296ffa4d93244b19261af3c1436e948b6ab333d7f16c0a13459b8b31b51bd',
+ 'normal-cases.json': 'a88fb3846ea66dfb3e81d808f1f390cdcbbafeea7aef49fbc94bed8420feeea5',
+ 'policy_test.go': 'c6871032df101c4256528a2315de9cb93cb41655c5afb8877addb38c762cef17',
+ 'projection_generated.go': '530eb18b45065838ddd04c0f0a00c9dc08e582b9c7d629fc4b8a8aac0e1ceb36',
+ 'reference-cases.json': '1bf13f43ed05f56c77da79e0eac716cb059a1d7afef67acf841414a57f8518e9',
+ 'reference-expected.json': '5c4a1cc34a0b8c3b94d694a295149be15cfa05c17189bf82eb4a1be8b12af895',
+ 'remaining-cases.json': '711253c360d8244173dc180da40abc7e801654b59c5c34d5a84cf114a51a9760',
+ 'source-provenance.json': 'ca5e4401702346b91ef420f58df5229af900b29b7b8d843e68de2895a6e94896',
+ 'verify.py': 'd84e30a9872db4b5a12aa0bbf3b980dc0c85451a3b86ac7e6e9f59192ff93a24',
+ 'verify_saved.py': '931122026b8fa1ad243a3091e9f253d681d9326508f14e57feefc2ec34a2af9e'}
+MANY_REFERENCE_ASSETS = {'reference/LICENSE': '099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48',
+ 'reference/go.mod': 'd59c5def2449a039feb11d38a86b4303c170306d84ca8ccc167a5790c5cf2884',
+ 'reference/main.go': 'f21b3ea164c8df4b201cfc1de14b1b416247a343d720d0125b6d0fd71223c58f',
+ 'reference/source-pin.json': '4196b726d4f596363131994d637960d8750ec27ca0b0b5165e7d6e634bd3d25a',
+ 'reference/upstream/LICENSE': 'c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4',
+ 'reference/upstream/extracted.go': '01efb5b882fa532d537e8051148bba780af01806c5e5ee328a2b9327bde1c2fe'}
+MANY_PUBLIC_SOURCES = {'examples/agentmesh-service-policy/checked_refinement.gooo': 'sha256:6628f15bf8a260e48bc7b58e5d05699c48138b145a1e42c6e6f872efd6f81772',
+ 'examples/agentmesh-service-policy/domain.gooo': 'sha256:b866ea5aa827e6122541faa54fd920c9ec1942a308bf72adb82fb244f1b3c33c',
+ 'examples/agentmesh-service-policy/refinement.gooo': 'sha256:90bcc738c88eb5bec8b41b5306cccf274a5740560d7dd62b7f3a57b30b441ff0',
+ 'ports/agentmesh/service_pattern.gooo': 'sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d',
+ 'ports/service-policy/multi_required.gooo': 'sha256:097e2304fdd70e47d31f7295c8ea5de161afa4f8ab4c2d87a435a993513332ba'}
+
 def imported(name, path):
     spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
@@ -402,7 +454,8 @@ def source_contract(root, modcache):
     runtime = modcache/(SERVICE.MODULE+"@"+SERVICE.VERSION)
     archive = modcache/"cache/download"/SERVICE.MODULE/"@v"/(SERVICE.VERSION+".zip")
     generation, _ = SERVICE.module_source(runtime, archive, root)
-    return generation
+    many_generation, _ = many_module_source(modcache, root)
+    return generation, many_generation
 
 
 def checked_report(report, build, binary_sha, root, generation):
@@ -426,6 +479,313 @@ def checked_report(report, build, binary_sha, root, generation):
     want = [{"protocol": p, "native_CLI_equal": proofs, "strict_tool_errors": errors,
              "unknown_tool_error": -32602, **SCHEMAS} for p in ("2025-11-25", "2026-07-28")]
     exact(report["observations"], want)
+
+
+def many_module_source(modcache, root):
+    """Verify the public nested module separately from the legacy112-file module."""
+    directory = modcache/(MANY_MODULE+"@"+MANY_VERSION)
+    archive_path = modcache/"cache/download"/MANY_MODULE/"@v"/(MANY_VERSION+".zip")
+    prefix = MANY_MODULE+"@"+MANY_VERSION+"/"
+    files = {}
+    with zipfile.ZipFile(io.BytesIO(read(archive_path, 1 << 20))) as archive:
+        rows = archive.infolist()
+        need(len(rows) == 26 and sum(row.file_size for row in rows) == 258704,
+             "complete many module roster/size differs")
+        for row in rows:
+            name = row.filename
+            relative = name.removeprefix(prefix)
+            need(name.startswith(prefix) and relative in MANY_FILES and name not in files
+                 and "\\" not in name and "\n" not in name and "\r" not in name
+                 and all(part not in ("", ".", "..") for part in relative.split("/"))
+                 and not row.is_dir() and row.file_size <= MAX_SOURCE
+                 and (row.external_attr >> 16) & 0o170000 in (0, stat.S_IFREG),
+                 "unsafe, duplicate or foreign many module member")
+            content = archive.read(row)  # Full ZIP CRC and declared-size validation.
+            need(sha(content) == MANY_FILES[relative], "many module source bytes differ: "+relative)
+            need(member(directory, relative) == content, "many installed module differs from ZIP")
+            files[name] = content
+    need(SERVICE.dirhash(files) == MANY_SUM, "many public module h1 differs")
+    relative_files = {name[len(prefix):]: raw for name, raw in files.items()}
+    actual = set()
+    need(stat.S_ISDIR(directory.lstat().st_mode), "regular many module directory required")
+    for current, dirs, names in os.walk(directory, followlinks=False):
+        need(all(not (Path(current)/x).is_symlink() for x in dirs), "many module directory symlink")
+        for name in names:
+            path = Path(current)/name
+            need(stat.S_ISREG(path.lstat().st_mode), "many module nonregular file")
+            actual.add(path.relative_to(directory).as_posix())
+    need(actual == set(MANY_FILES), "many installed module complete roster differs")
+    need(SERVICE.dirhash({"go.mod": relative_files["go.mod"]}) == MANY_MOD_SUM,
+         "many go.mod h1 differs")
+    generation_raw = relative_files["generation.json"]
+    need(sha(generation_raw) == MANY_GENERATION, "many generation bytes differ")
+    generation = load(generation_raw)
+    need(generation.get("schema") == "gooo/service-grant-many-generation/v1"
+         and generation.get("origin") == "fresh_pinned_generation"
+         and generation.get("compiler_source_sha") == MANY_PIN
+         and type(generation.get("assets")) is dict and len(generation["assets"]) == 30
+         and type(generation.get("public_sources")) is dict and len(generation["public_sources"]) == 5,
+         "many generation identity/scope differs")
+    embedded, outside = 0, 0
+    for relative, digest in generation["assets"].items():
+        need(type(digest) is str and re.fullmatch(r"sha256:[0-9a-f]{64}", digest), "many asset hash differs")
+        if relative in relative_files:
+            need(digest == "sha256:"+sha(relative_files[relative]), "many embedded asset bytes differ")
+            embedded += 1
+        else:
+            need(relative in MANY_REFERENCE_ASSETS
+                 and digest == "sha256:"+MANY_REFERENCE_ASSETS[relative]
+                 and digest == "sha256:"+sha(member(root, "examples/service-grant-many/"+relative)),
+                 "many omitted nested-reference asset bytes differ")
+            outside += 1
+    need(embedded == 24 and outside == 6, "many embedded/reference asset partition differs")
+    exact(generation["public_sources"], MANY_PUBLIC_SOURCES)
+    for relative, digest in generation["public_sources"].items():
+        need(digest == "sha256:"+sha(member(root, relative)), "many public Gooo source bytes differ")
+    need(member(root, "examples/service-grant-many/generation.json") == generation_raw,
+         "packaging checkout has another many generation")
+    return generation, directory
+
+
+def many_result(facts, decision, generation):
+    return {"facts": facts, "decision": decision,
+            "bindings": {"compiler_source_sha": MANY_PIN,
+                         "generation_sha256": "sha256:"+MANY_GENERATION,
+                         "sources": generation["public_sources"], "assets": generation["assets"]}}
+
+
+def many_summary(proof):
+    return {"status": proof["decision"]["status"], "reason": proof["decision"]["reason"],
+            "facts_sha256": sha(json.dumps(proof["facts"], separators=(",", ":"), ensure_ascii=True).encode()),
+            "full_proof_sha256": sha(json.dumps(proof, separators=(",", ":"), ensure_ascii=True).encode())}
+
+
+def checked_many_negative_requests(request_lines, first_facts):
+    """Bind every refusal to the exact malformed bytes the pinned client sends."""
+    base = json.dumps({"before": first_facts["before"], "after": first_facts["after"],
+        "required_requests": [{"type": kind, "name": name} for kind, name in
+            zip(first_facts["required_types"], first_facts["required_names"])]},
+        separators=(",", ":"), ensure_ascii=True).encode()
+    maximum = b"{" + b" "*((1 << 20)-len(base)) + base[1:]
+    need(len(maximum) == 1 << 20, "many argument fixture size differs")
+    exact_arguments = {
+        20: maximum,
+        21: b'{"before":"*","after":"mcp://weather","required_requests":[{"type":"mcp","name":"calculator"},{"type":"mcp","name":"weather","name":"calculator"}]}',
+        22: b'{"before":"*","after":"mcp://weather","required_requests":[{"type":"mcp","name":"calculator"},null]}',
+        23: b'{"before":"*","after":"mcp://weather","required_requests":[{"type":"mcp","name":"calculator"},{"type":"mcp","name":"weather","decision":"ELIGIBLE"}]}',
+        24: br'{"before":"*","after":"mcp://weather","required_requests":[{"type":"mcp","name":"calculator"},{"type":"mcp","name":"\ud800"}]}',
+        25: maximum[:-1] + b" }",
+    }
+    for identifier, expected in exact_arguments.items():
+        raw = request_lines[identifier]
+        prefix, separator, tail = raw.rpartition(b',"arguments":')
+        need(separator and tail.endswith(b"}}"), "many refusal argument framing differs")
+        # Strictly parse the outer request without reparsing/re-encoding its
+        # deliberately duplicate/surrogate/over-limit argument object.
+        outer = load(prefix + b"}}")
+        need(type(outer) is dict and set(outer) == {"jsonrpc", "id", "method", "params"}
+             and outer["jsonrpc"] == "2.0" and type(outer["id"]) is int
+             and outer["id"] == identifier and outer["method"] == "tools/call",
+             "many refusal method/identity differs")
+        params = outer["params"]
+        need(type(params) is dict and {"name"} <= set(params) <= {"name", "_meta"}
+             and params["name"] == "assess_service_grant_change",
+             "many refusal tool differs")
+        need(tail[:-2] == expected, "many refusal exact argument bytes differ: "+str(identifier))
+
+
+def checked_many_report(report_path, binary, root, modcache, generation):
+    report = load(read(report_path, MAX_SOURCE))
+    need(type(report) is dict and set(report) == {"status", "binary", "legacy_verifier", "generation",
+         "independent_expected", "observations", "actual_protocol_sessions", "Go_compiler_or_model_calls",
+         "live_authority_or_application", "other_hosts_OSes_or_external_adoption_proven"},
+         "many wire report fields differ")
+    need(report["status"] == "PRIVATE_MANY_MCP_TWO_PROTOCOL_WIRE_REFERENCE_CASES_ACCEPTED",
+         "many wire report status differs")
+    module = modcache/(MANY_MODULE+"@"+MANY_VERSION)
+    for key, path in [("binary", binary), ("legacy_verifier", root/"examples/service-grant-mcp/verify.py"),
+                      ("generation", module/"generation.json"),
+                      ("independent_expected", module/"reference-expected.json")]:
+        content = read(path, BASE.MAX_BINARY if key == "binary" else MAX_SOURCE)
+        exact(report[key], {"path": str(path), "bytes": len(content), "sha256": sha(content)})
+    need(type(report["actual_protocol_sessions"]) is int and report["actual_protocol_sessions"] == 2
+         and type(report["Go_compiler_or_model_calls"]) is int and report["Go_compiler_or_model_calls"] == 0
+         and report["live_authority_or_application"] is False
+         and report["other_hosts_OSes_or_external_adoption_proven"] is False,
+         "many wire scope differs")
+    reference = load(member(module, "reference-expected.json"))
+    need(type(reference) is list and len(reference) == 16, "many reference population differs")
+    paired = [row for row in reference if len(row["facts"]["required_types"]) == len(row["facts"]["required_names"])]
+    need(len(paired) == 15 and [x["name"] for x in reference if x not in paired] == ["length-mismatch"],
+         "many pair-transport population differs")
+    many_proofs = [many_result(row["facts"], row["decision"], generation) for row in paired]
+    boundary = many_result({"before": "*", "after": "mcp://*", "required_types": ["mcp"]*257,
+        "required_names": ["weather"]*257}, {"status": "INVALID_INPUT", "reason": "REQUIRED_REQUEST_LIMIT_EXCEEDED",
+        "invalid_field": "required_types", "invalid_index": -1, "first_counterexample": -1,
+        "request_count": 257, "checked_count": 0, "all_preserved": False, "supported_subset": False,
+        "subset_rule_id": "", "counterexample_before_match": False, "counterexample_after_match": False}, generation)
+    legacy = load(member(root, "examples/service-grant-mcp/fixtures/control-1.stdout"))[0]
+    legacy_summary = {"fixture": 1, "status": legacy["decision"]["status"],
+        "proof_sha256": sha(json.dumps(legacy, separators=(",", ":"), ensure_ascii=True).encode())}
+    errors = ["later-duplicate", "later-null", "later-unknown", "later-surrogate", "argument-byte-limit-plus-one"]
+    observations = [{"protocol": protocol, "legacy_tool_case": legacy_summary,
+        "reference_cases": [{"name": case["name"], **many_summary(proof)} for case, proof in zip(paired, many_proofs)],
+        "native_policy257": many_summary(boundary), "argument_bytes_at_limit": 1 << 20,
+        "structural_failures_no_partial_proof": errors, "after_error_repeat_equal": True}
+        for protocol in ("2025-11-25", "2026-07-28")]
+    exact(report["observations"], observations)
+    # Independently compare the retained whole wire proofs and closure records;
+    # report PASS/hash summaries alone are not enough for a distribution candidate.
+    for label, protocol in [("many-legacy-session", "2025-11-25"), ("many-current-session", "2026-07-28")]:
+        process = load(member(report_path.parent, label+"/process.json"))
+        for key in ("streams_EOF", "waited", "process_group_ESRCH", "all_stdout_frames_parsed",
+                    "runtime_PATH_empty", "runtime_GOROOT_absent"):
+            need(process.get(key) is True, "many wire process closure differs: "+key)
+        need(type(process.get("pid")) is int and process["pid"] > 0
+             and type(process.get("exit_code")) is int and process["exit_code"] == 0
+             and process.get("failure") is None and process.get("stdin_close_error") is None
+             and process.get("teardown_error") is None
+             and process.get("server_created_work_files") == []
+             and process.get("client_uses_MCP_SDK") is False
+             and type(process.get("model_calls")) is int and process["model_calls"] == 0,
+             "many wire direct process result differs")
+        need(member(report_path.parent, label+"/stderr", MAX_STREAM) == b""
+             and process.get("stderr_bytes") == 0, "many wire stderr differs")
+        received = member(report_path.parent, label+"/stdout", 2 << 20)
+        need(received.endswith(b"\n"), "many wire stdout frame EOF differs")
+        frames = [load(line) for line in received.splitlines()]
+        need(len(frames) == 26 and process.get("protocol_frames") == 26
+             and all(type(frame) is dict and frame.get("jsonrpc") == "2.0"
+                     and type(frame.get("id")) is int and frame["id"] == i for i, frame in enumerate(frames, 1)),
+             "many wire response IDs/population differ")
+        sent_raw = member(report_path.parent, label+"/stdin", 3 << 20)
+        need(sent_raw.endswith(b"\n"), "many wire input frame EOF differs")
+        # Intentionally malformed argument objects are retained in negative inputs.
+        # Strict parsing still applies to every positive request and all responses.
+        sent_lines = sent_raw.splitlines()
+        sent = [json.loads(line) for line in sent_lines]
+        need(all(type(frame.get("id")) is int for frame in sent if "id" in frame), "many input ID type differs")
+        request_lines = {frame["id"]: line for frame, line in zip(sent, sent_lines) if "id" in frame}
+        requests = {frame["id"]: frame for frame in sent if "id" in frame}
+        need(len(requests) == 26 and set(requests) == set(range(1, 27)), "many wire input IDs differ")
+        positives = {3: legacy, **{i: proof for i, proof in enumerate(many_proofs, 4)},
+                     19: boundary, 20: many_proofs[0], 26: many_proofs[0]}
+        for identifier, proof in positives.items():
+            request = load(request_lines[identifier])
+            need(request["method"] == "tools/call", "many proof request method differs")
+            facts = proof["facts"]
+            arguments = facts if identifier == 3 else {"before": facts["before"], "after": facts["after"],
+                "required_requests": [{"type": kind, "name": name}
+                    for kind, name in zip(facts["required_types"], facts["required_names"])]}
+            exact(request["params"]["arguments"], arguments)
+            need(request["params"]["name"] == ("assess_service_grant" if identifier == 3 else "assess_service_grant_change"),
+                 "many proof tool name differs")
+            frame = frames[identifier-1]
+            need(set(frame) == {"jsonrpc", "id", "result"}, "many proof is a protocol error")
+            result = frame["result"]
+            allowed = {"content", "structuredContent", "isError"}
+            if protocol == "2026-07-28":
+                allowed |= {"resultType", "_meta"}
+                need(result.get("resultType") == "complete", "many modern result is not complete")
+                exact(result.get("_meta"), {"io.modelcontextprotocol/serverInfo": {"name": "gooo-service-grant", "version": "0.1.0-dev"}})
+            need(type(result) is dict and set(result) <= allowed
+                 and type(result.get("isError", False)) is bool and result.get("isError", False) is False,
+                 "many complete result fields differ")
+            exact(result["structuredContent"], proof)
+            need(type(result["content"]) is list and len(result["content"]) == 1
+                 and set(result["content"][0]) == {"type", "text"}
+                 and result["content"][0]["type"] == "text", "many proof text shape differs")
+            exact(load(result["content"][0]["text"].encode()), proof)
+        checked_many_negative_requests(request_lines, many_proofs[0]["facts"])
+        for identifier in range(21, 26):
+            frame = frames[identifier-1]
+            if "error" in frame:
+                need(set(frame) == {"jsonrpc", "id", "error"} and type(frame["error"]) is dict
+                     and set(frame["error"]) <= {"code", "message"}
+                     and type(frame["error"].get("code")) is int and frame["error"]["code"] == -32602
+                     and type(frame["error"].get("message")) is str and frame["error"]["message"],
+                     "many negative protocol result differs")
+            else:
+                need(set(frame) == {"jsonrpc", "id", "result"}, "many negative frame fields differ")
+                result = frame["result"]
+                allowed = {"isError", "content"} | ({"resultType", "_meta"} if protocol == "2026-07-28" else set())
+                need(type(result) is dict and set(result) <= allowed and result.get("isError") is True,
+                     "many structural failure returned a partial proof")
+                if protocol == "2026-07-28":
+                    need(result.get("resultType") == "complete", "many modern error is not complete")
+                    exact(result.get("_meta"), {"io.modelcontextprotocol/serverInfo": {"name": "gooo-service-grant", "version": "0.1.0-dev"}})
+                need(type(result.get("content")) is list and len(result["content"]) == 1
+                     and set(result["content"][0]) == {"type", "text"}
+                     and result["content"][0]["type"] == "text"
+                     and result["content"][0]["text"].startswith("INVALID_FACTS:"),
+                     "many structural failure diagnostic differs")
+    return report
+
+
+def native_many_verify(root, binary, modcache, output):
+    output.mkdir(mode=0o700)
+    tracker = OwnedChildren(output)
+    verifier = imported("mcp_bundle_many_wire_verifier", root/"examples/service-grant-mcp/verify_many.py")
+    verifier.subprocess = types.SimpleNamespace(Popen=tracker.spawn, PIPE=subprocess.PIPE,
+                                               TimeoutExpired=subprocess.TimeoutExpired)
+    stdout, stderr, failure = BoundedText(), BoundedText(), None
+    previous_argv = sys.argv
+    old_handlers, pending = {}, []
+    def interrupted(number, _frame):
+        # No asynchronous exception is allowed between finally entry and close,
+        # or inside a per-child close. The client checks this pending state.
+        if not pending:
+            pending.append(number)
+        if verifier.PENDING_SIGNAL is None:
+            verifier.PENDING_SIGNAL = number
+    try:
+        for number in (signal.SIGINT, signal.SIGTERM, signal.SIGALRM):
+            old_handlers[number] = signal.getsignal(number)
+            signal.signal(number, interrupted)
+        sys.argv = [str(root/"examples/service-grant-mcp/verify_many.py"), "--binary", str(binary),
+            "--legacy-verifier", str(root/"examples/service-grant-mcp/verify.py"), "--many-module",
+            str(modcache/(MANY_MODULE+"@"+MANY_VERSION)), "--out", str(output/"wire")]
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            verifier.main()
+    except BaseException as error:
+        failure = error
+    finally:
+        # The latch remains installed through diagnostics and every child wait.
+        # Keep the existing global180s timer armed: its signal becomes a pending
+        # client cancellation, never permission to skip owned cleanup.
+        sys.argv = previous_argv
+        try:
+            (output/"verifier.stdout").write_text(stdout.getvalue())
+            (output/"verifier.stderr").write_text(stderr.getvalue())
+        except BaseException as error:
+            if failure is None:
+                failure = error
+            elif hasattr(failure, "add_note"):
+                failure.add_note("many verifier diagnostics: "+str(error))
+        try:
+            tracker.close(failure)
+        except BaseException as error:
+            if failure is None:
+                failure = error
+            elif error is not failure and hasattr(failure, "add_note"):
+                failure.add_note("many child cleanup: "+str(error))
+        if failure is None and pending:
+            failure = verifier.WireCancelled("optional wire interrupted by signal "+str(pending[0]))
+        try:
+            if failure is not None:
+                (output/"first-failure.json").write_bytes(encoded({"error": repr(failure),
+                    "pending_signals": pending, "owned_children": tracker.records}))
+        except BaseException as error:
+            if failure is None:
+                failure = error
+            elif hasattr(failure, "add_note"):
+                failure.add_note("many first-failure diagnostic: "+str(error))
+        finally:
+            for number, handler in old_handlers.items():
+                signal.signal(number, handler)
+    if failure is not None:
+        raise failure
+    return output/"wire/acceptance.json"
 
 
 def notice_files(modcache, go_root, root):
@@ -454,7 +814,7 @@ def notice_files(modcache, go_root, root):
         files[name] = (raw, 0o644)
         inventory.append({"file": name, "source_relative_path": relative, "sha256": digest,
                           "scope": "Generation tool attribution only; no Gooo compiler is included" if "Gooo" in name else "transport license"})
-    need(len(files) == 55, "exact 55 notice texts required")
+    need(len(files) == 58, "exact 58 notice texts required")
     return files, inventory
 
 
@@ -625,7 +985,7 @@ def native_verify(root, binary, build_path, output):
 
 
 def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
-            packager_commit=None, verify_native=False):
+            packager_commit=None, verify_native=False, many_wire_path=None):
     need(out.is_dir() and not out.is_symlink() and not any(out.iterdir()), "fresh owned output directory required")
     need(verify_native or packager_commit is None, "committed packaging requires fresh extracted-native verification")
     need(packager_commit is None or re.fullmatch(r"[0-9a-f]{40}", packager_commit), "packager commit differs")
@@ -639,9 +999,11 @@ def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
         build = load(read(build_path, MAX_SOURCE))
         exact(embedded_info(raw), build)
         build_identity(build, target, commit)
-        generation = source_contract(root, modcache)
+        generation, many_generation = source_contract(root, modcache)
         report = load(read(wire_path, MAX_SOURCE))
         checked_report(report, build, sha(raw), root, generation)
+        need(isinstance(many_wire_path, Path), "source-bound many wire report required")
+        many_report = checked_many_report(many_wire_path, binary, root, modcache, many_generation)
         files, notices = notice_files(modcache, go_root, root)
         files[COMMAND] = (raw, 0o755)
         files["BUILD-INFO.json"] = (encoded(build), 0o644)
@@ -653,33 +1015,45 @@ def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
                  "This is not the preview12 evaluate CLI, which accepts a JSON array.\n"
                  "ELIGIBLE, REFUSED and INVALID_INPUT are decisions on supplied unsigned facts; no grant is applied.\n"
                  "Preserve complete facts, decision and 89 asset bindings. Report first diagnostics with synthetic public facts.\n"
+                 "Optional: args [--many-required] additionally exposes assess_service_grant_change.\n"
+                 "Its OBJECT arguments use before, after and required_requests [{type,name},...]; order and duplicates survive.\n"
+                 "Optional results retain ordered-column facts, 12 decision fields and separate de99/30-asset/5-source bindings.\n"
+                 "No authority is authenticated and no grant is applied in either mode.\n"
                  "Some included Go toolchain notices concern compiler/test components; inventory scope is explicit.\n")
         files["START-HERE.txt"] = (guide.encode(), 0o644)
-        manifest = {"schema": "gooo/service-grant-mcp-native-bundle/v1", "platform": target,
-                    "source_commit": commit, "reference_module_bytes": REFERENCE_SOURCE,
+        manifest = {"schema": "gooo/service-grant-mcp-native-bundle/v2", "platform": target,
+                    "source_commit": commit, "legacy_transport_reference": REFERENCE_SOURCE, "source_files": SOURCE_FILES,
                     "packager": {"commit": packager_commit, "kind": "uncommitted-private-prototype" if packager_commit is None else "committed-CI-candidate",
                                  "source_sha256": sha(read(Path(__file__), MAX_SOURCE)), "support_sources": SUPPORT_HASHES},
                     "compiler_source_sha": PIN, "generation_sha256": "sha256:"+GENERATION,
                     "generation_origin": "fresh_pinned_generation", "assets": generation["assets"],
-                    "build_info": build, "binary_sha256": sha(raw), "notice_texts": 55,
+                    "optional_profiles": {"many_required": {"argv": ["--many-required"],
+                        "additional_tool": "assess_service_grant_change", "module": {"Path": MANY_MODULE, "Version": MANY_VERSION, "Sum": MANY_SUM},
+                        "compiler_source_sha": MANY_PIN, "generation_sha256": "sha256:"+MANY_GENERATION,
+                        "assets": many_generation["assets"], "sources": many_generation["public_sources"]}},
+                    "build_info": build, "binary_sha256": sha(raw), "notice_texts": 58,
                     "finite_checks": {"original_wire_report_binary_SHA_equal": True, "original_report_proofs": 8,
+                                      "original_many_report_binary_SHA_equal": True, "many_reference_comparisons": 30,
+                                      "many_policy257_observations": 2,
                                       "fresh_extracted_native_wire_requested": verify_native,
                                       "new_Linux_execution": verify_native and target == "linux/amd64",
                                       "grant_applied": False, "producer_authenticated": False, "external_adoption": False},
                     "members": {name: {"bytes": len(content), "sha256": sha(content), "mode": mode}
                                 for name, (content, mode) in sorted(files.items())}}
         files["BUNDLE.json"] = (encoded(manifest), 0o644)
-        need(len(files) == 60, "exact sixty archive members required")
+        need(len(files) == 63, "exact sixty-three archive members required")
         name = COMMAND+"-"+target.replace("/", "-")+".tar.gz"
         candidate = work/name
         SERVICE.write_archive(candidate, files)
         extracted = work/"extracted"
         extract_checked(candidate, files, extracted)
-        new_report = None
+        new_report, new_many_report = None, None
         if verify_native:
             need(SERVICE.native_platform() == target, "native runtime platform differs")
             new_report = native_verify(root, extracted/COMMAND, extracted/"BUILD-INFO.json", out/"native-verification")
             checked_report(new_report, build, sha(raw), root, generation)
+            native_many_path = native_many_verify(root, extracted/COMMAND, modcache, out/"many-native-verification")
+            new_many_report = checked_many_report(native_many_path, extracted/COMMAND, root, modcache, many_generation)
         need(read(extracted/COMMAND, BASE.MAX_BINARY) == raw == read(binary, BASE.MAX_BINARY), "binary changed during checks")
         final_raw = read(candidate, BASE.MAX_ARCHIVE)
         shutil.rmtree(work)
@@ -699,6 +1073,7 @@ def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
                   "platform": target, "archive": checked, "checksum": {"name": checksum.name, "sha256": sha(checksum_raw)},
                   "source_commit": commit, "binary_sha256": sha(raw), "members": sorted(files), "manifest": manifest,
                   "extracted_binary_SHA_equal": True, "new_extracted_native_wire": new_report is not None,
+                  "new_extracted_many_wire": new_many_report is not None,
                   "Linux_scope": "fresh native stdio" if verify_native and target == "linux/amd64" else "no new Linux execution; previous original-CI byte equivalence only",
                   "owned_work_removed": True, "not_published": True}
         (out/"verification.json").write_bytes(encoded(result))
@@ -733,7 +1108,7 @@ def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ("binary", "build-info", "wire-report", "module-cache", "go-root", "root", "out"):
+    for name in ("binary", "build-info", "wire-report", "many-wire-report", "module-cache", "go-root", "root", "out"):
         parser.add_argument("--"+name, type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--packager-commit")
@@ -748,7 +1123,8 @@ def main():
     try:
         result = produce(args.binary.absolute(), args.build_info.absolute(), args.wire_report.absolute(),
                          args.module_cache.absolute(), args.go_root.absolute(), args.root.absolute(),
-                         args.out.absolute(), args.source_commit, args.packager_commit, args.verify_native)
+                         args.out.absolute(), args.source_commit, args.packager_commit, args.verify_native,
+                         args.many_wire_report.absolute())
         print(json.dumps({"status": result["status"], "platform": result["platform"],
                           "archive_sha256": result["archive"]["sha256"], "new_native_wire": result["new_extracted_native_wire"]}))
     finally:

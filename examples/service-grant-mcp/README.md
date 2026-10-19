@@ -98,3 +98,42 @@ in the [first-run feedback form](https://github.com/kimjooyoon/gooo-go-ports/iss
 Choose **Native setup, verification, or replay** and use synthetic public facts.
 Feedback about a real task or a missing capability is more useful than a claim
 of compatibility with every MCP client or every service-pattern language.
+
+## Optional ordered required requests
+
+The default command and `assess_service_grant` tool keep the original 839
+profile, seven decision fields and 89 asset bindings. Start the same native
+command with `--many-required` to additionally expose
+`assess_service_grant_change`. Its arguments are one object, for example:
+
+```json
+{"before":"*","after":"mcp://*","required_requests":[{"type":"mcp","name":"weather"},{"type":"mcp","name":"calculator"}]}
+```
+
+The optional tool preserves request order and duplicates. It returns the complete
+ordered-column facts, 12 typed decision fields and the separate de99 generation's
+30 asset and five source-hash bindings. Domain-invalid requests and the 257-request
+policy limit return decisions; malformed JSON returns no partial proof. Supplied
+facts are unsigned: this tool authenticates no authority and applies no grant.
+The five Gooo source bodies remain repository sources, not embedded module files.
+
+Run the existing default wire check and the optional check separately after
+building the transport as above. The optional check reads the exact public
+`service-grant-many` dependency selected by this module:
+
+```sh
+mcp_binary=/absolute/private/bin/gooo-service-grant-mcp
+mkdir -p out
+python3 -I -B examples/service-grant-mcp/verify.py \
+  --binary "$mcp_binary" --out "$PWD/out/mcp-default-wire"
+many_module="$(go -C examples/service-grant-mcp list -m -f '{{.Dir}}' \
+  github.com/kimjooyoon/gooo-go-ports/examples/service-grant-many)"
+python3 -I -B examples/service-grant-mcp/verify_many.py \
+  --binary "$mcp_binary" \
+  --legacy-verifier "$PWD/examples/service-grant-mcp/verify.py" \
+  --many-module "$many_module" --out "$PWD/out/mcp-many-wire"
+```
+
+Both clients exercise the two documented protocol versions without a model.
+The paired MCP input cannot express a mismatch between two column lengths; that
+separate public Go API case remains covered in `service-grant-many` tests.
