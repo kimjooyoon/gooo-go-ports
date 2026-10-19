@@ -1,0 +1,47 @@
+name: Check fixed Gooo MCP Registry metadata without authentication
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/check-service-grant-registry.yml'
+      - '.github/workflows/publish-service-grant-registry.yml'
+      - 'tools/publish-service-grant-registry.py'
+      - 'tools/publish-service-grant-registry_test.py'
+      - 'registry/service-grant-preview13.server.json'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    if: github.repository == 'kimjooyoon/gooo-go-ports' && github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    env:
+      GOTOOLCHAIN: local
+      GOENV: 'off'
+      GOWORK: 'off'
+      GOPROXY: 'off'
+      GOSUMDB: 'off'
+    steps:
+      - name: Check out the current PR merge
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Check no-auth mode and publication safety
+        run: python3 -I -B tools/publish-service-grant-registry_test.py -v
+      - name: Validate pinned public metadata without authentication or publication
+        run: >-
+          python3 -I -B tools/publish-service-grant-registry.py
+          --out "$RUNNER_TEMP/gooo-registry-check-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          --validate-only
+      - name: Retain anonymous checks and credential-free process summaries
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: gooo-registry-check-preview13-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/gooo-registry-check-${{ github.run_id }}-${{ github.run_attempt }}/proof
+          if-no-files-found: error
+          retention-days: 7
