@@ -410,8 +410,10 @@ compiler issue before passing a minimal case to the language repository.
   Supply `before`, `after` and ordered `required_requests` pairs. Inspect the first
   failing original index and all 12 decision fields; preserve duplicates and input
   order. The generated Go API and JSON CLI need Go 1.27.2, while source editing
-  uses the separate pinned `de99b770` compiler profile. This is a separate API;
-  the MCP tool below still assesses one required request.
+  uses the separate pinned `de99b770` compiler profile. To call this assessment
+  from an MCP host, use the explicit
+  [ordered-request mode](#preserve-several-required-requests-through-mcp).
+  The default MCP tool still assesses one required request.
 - **Discover the same assessment through MCP:** build the
   [local service-grant MCP server](../examples/service-grant-mcp/README.md)
   and configure your host to launch its absolute executable path over stdio.
@@ -516,6 +518,58 @@ tool discovery, the call or returning the complete result failed. Preserve the
 first command, exit status and diagnostic, and use public synthetic facts.
 Did it help one real API or automation task, or which service pattern could you
 not express? The command contacts no service and uploads no feedback itself.
+
+## Preserve several required requests through MCP
+
+Use a reviewed source checkout containing the
+[optional ordered-request mode](../examples/service-grant-mcp/README.md#optional-ordered-required-requests)
+and [build the server with Go 1.27.2](../examples/service-grant-mcp/README.md#build-and-connect).
+The preview.13 download above contains only `assess_service_grant`; it cannot
+serve this mode. The source-built executable needs no Go or Gooo at runtime.
+
+Launch its absolute path with `--many-required`. For Codex, follow the official
+[configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
+and use this server entry instead of the default entry above; other stdio hosts
+use the same command/args:
+
+```toml
+[mcp_servers.gooo_service_grant]
+command = "/ABSOLUTE/PATH/gooo-service-grant-mcp"
+args = ["--many-required"]
+enabled_tools = ["assess_service_grant_change"]
+```
+
+Discover `assess_service_grant_change`, then give the agent this finite task:
+
+> An automation needs both weather and calculator. Call
+> `assess_service_grant_change` once with each arguments object:
+>
+> `{"before":"*","after":"mcp://*","required_requests":[{"type":"mcp","name":"weather"},{"type":"mcp","name":"calculator"}]}`
+>
+> `{"before":"*","after":"mcp://weather","required_requests":[{"type":"mcp","name":"weather"},{"type":"mcp","name":"calculator"}]}`
+>
+> Automatically select only an `ELIGIBLE` proposal, without asking for approval.
+> Retain both complete results and report the rejected candidate's first original
+> failure index. If the tool is absent or either assessment fails, report that
+> failure rather than substituting the single-request tool. Do not apply a grant
+> or call either service.
+
+The first candidate is `ELIGIBLE`; the second is `REFUSED` with
+`REQUIRED_REQUEST_REMOVED` at `first_counterexample: 1` (calculator). These are
+argument **objects**, not CLI batch arrays. Preserve the ordered-column facts,
+all 12 typed decision fields and full bindings: this mode uses the separate
+`de99b770` generation with 30 asset and five source hashes. Neither outcome
+authenticates supplied facts or applies a change; the
+[host application boundary](../examples/agentmesh-service-policy/conditional-apply.md)
+still applies. The Codex observation above covers only the default tool; a
+many-request task inside Codex, Claude Code or Cursor remains unverified.
+
+For [first-run feedback](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml),
+try your own public synthetic API/automation requirements and report the
+host/version, candidates and ordered pairs, the selected proposal or first
+failure, and any missing facts or patterns. The useful first success is an agent
+selecting a narrowing that preserves every required pair; internal trials are
+not external adoption.
 
 ## Optional Claude Code ETag workflow
 
