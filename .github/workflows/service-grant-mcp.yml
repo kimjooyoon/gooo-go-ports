@@ -38,7 +38,9 @@ jobs:
       GOTELEMETRY: 'off'
       CGO_ENABLED: '0'
       GOMAXPROCS: '2'
-      GOFLAGS: '-p=1'
+      GOFLAGS: '-mod=readonly -p=1'
+      GOPROXY: https://proxy.golang.org
+      GOSUMDB: sum.golang.org
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Preserve the first failure when a child exits early
@@ -76,6 +78,17 @@ jobs:
             --binary "$RUNNER_TEMP/gooo-service-grant-mcp" \
             --build-info "$PWD/out/service-grant-mcp/build-info.json" \
             --out "$PWD/out/service-grant-mcp/wire"
+      - name: Verify the optional ordered-request tool independently
+        shell: bash
+        run: |
+          set -euo pipefail
+          many_module="$(go -C examples/service-grant-mcp list -m -f '{{if eq .Version "v0.0.0-20261019032231-f4f89b814b42"}}{{.Dir}}{{end}}' github.com/kimjooyoon/gooo-go-ports/examples/service-grant-many)"
+          test -n "$many_module"
+          python3 -I -B examples/service-grant-mcp/verify_many.py \
+            --binary "$RUNNER_TEMP/gooo-service-grant-mcp" \
+            --legacy-verifier "$PWD/examples/service-grant-mcp/verify.py" \
+            --many-module "$many_module" \
+            --out "$PWD/out/service-grant-mcp/many-wire"
       - name: Check native MCP packaging refusal controls
         shell: bash
         run: |
@@ -89,6 +102,7 @@ jobs:
             --binary "$RUNNER_TEMP/gooo-service-grant-mcp" \
             --build-info "$PWD/out/service-grant-mcp/build-info.json" \
             --wire-report "$PWD/out/service-grant-mcp/wire/verification.json" \
+            --many-wire-report "$PWD/out/service-grant-mcp/many-wire/acceptance.json" \
             --module-cache "$(go env GOMODCACHE)" \
             --go-root "$(go env GOROOT)" --root "$PWD" \
             --out "$PWD/out/service-grant-mcp-bundle" \
@@ -112,6 +126,7 @@ jobs:
           path: |
             out/service-grant-mcp-bundle/first-failure.json
             out/service-grant-mcp-bundle/native-verification/
+            out/service-grant-mcp-bundle/many-native-verification/
       - name: Retain the bounded original wire observations
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

@@ -3,12 +3,18 @@ import copy
 import gzip
 import importlib.util
 import io
+import json
 import os
 from pathlib import Path
 import struct
+import signal
+import subprocess
+import sys
+import types
 import tarfile
 import tempfile
 import unittest
+import zipfile
 from unittest.mock import patch
 
 SPEC = importlib.util.spec_from_file_location("mcp_bundle_under_test", Path(__file__).with_name("service_grant_mcp_bundle.py"))
@@ -34,6 +40,179 @@ class BundleRefusals(unittest.TestCase):
 
     def tearDown(self):
         self.temp.cleanup()
+
+    def many_module_fixture(self, omit=None, change=None):
+        repo = Path(os.environ.get("MCP_BUNDLE_TEST_SOURCE_ROOT", Path(__file__).resolve().parents[1]))
+        cache = self.root/"modulecache"
+        module = cache/(M.MANY_MODULE+"@"+M.MANY_VERSION)
+        archive_path = cache/"cache/download"/M.MANY_MODULE/"@v"/(M.MANY_VERSION+".zip")
+        archive_path.parent.mkdir(parents=True)
+        with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+            for relative, digest in M.MANY_FILES.items():
+                data = (repo/"examples/service-grant-many"/relative).read_bytes()
+                self.assertEqual(M.sha(data), digest)
+                if relative == omit:
+                    continue
+                if relative == change:
+                    data += b"changed"
+                path = module/relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(data)
+                archive.writestr(M.MANY_MODULE+"@"+M.MANY_VERSION+"/"+relative, data)
+        return cache, module, repo
+
+    def test_many_dependency_is_required_with_exact_public_identity(self):
+        original = build()
+        many_index = next(i for i, row in enumerate(original["Deps"]) if row["Path"] == M.MANY_MODULE)
+        self.assertEqual(len(original["Deps"]), 11)
+        changes = [
+            lambda x: x["Deps"][many_index].update(Sum="h1:wrong"),
+            lambda x: x["Deps"][many_index].update(Version="v0.0.0-other"),
+            lambda x: x["Deps"][many_index].update(Replace={"Path": "local"}),
+            lambda x: x["Deps"].pop(many_index),
+            lambda x: x["Deps"].append(copy.deepcopy(x["Deps"][many_index])),
+        ]
+        for change in changes:
+            value = copy.deepcopy(original)
+            change(value)
+            with self.assertRaises(ValueError):
+                M.build_identity(value, "darwin/arm64", COMMIT)
+
+    def test_many_public_zip_and_installed_bytes_must_both_match(self):
+        cache, module, repo = self.many_module_fixture()
+        generation, actual = M.many_module_source(cache, repo)
+        self.assertEqual(actual, module)
+        self.assertEqual(len(generation["assets"]), 30)
+        self.assertEqual(len(generation["public_sources"]), 5)
+        source = module/"model.go"
+        original = source.read_bytes()
+        source.write_bytes(original + b"changed")
+        with self.assertRaisesRegex(ValueError, "installed module differs"):
+            M.many_module_source(cache, repo)
+        source.write_bytes(original)
+        (module/"unsealed.go").write_bytes(b"package servicegrantmany")
+        with self.assertRaisesRegex(ValueError, "complete roster"):
+            M.many_module_source(cache, repo)
+
+    def test_many_missing_apache_notice_is_not_silently_omitted(self):
+        cache, _, repo = self.many_module_fixture(omit="LICENSE-APACHE-2.0")
+        with self.assertRaisesRegex(ValueError, "roster/size"):
+            M.many_module_source(cache, repo)
+
+    def test_many_omitted_reference_asset_is_bound_to_checkout_bytes(self):
+        cache, _, repo = self.many_module_fixture()
+        original = M.member
+        def changed(root, relative, *args):
+            if root == repo and relative == "examples/service-grant-many/reference/LICENSE":
+                return b"changed"
+            return original(root, relative, *args)
+        with patch.object(M, "member", side_effect=changed):
+            with self.assertRaisesRegex(ValueError, "nested-reference asset"):
+                M.many_module_source(cache, repo)
+
+    def test_many_refusals_require_exact_wire_bytes_not_interchangeable_errors(self):
+        first = {"before": "*", "after": "mcp://*", "required_types": ["mcp"], "required_names": ["weather"]}
+        base = b'{"before":"*","after":"mcp://*","required_requests":[{"type":"mcp","name":"weather"}]}'
+        maximum = b"{" + b" "*((1 << 20)-len(base)) + base[1:]
+        arguments = {
+            20: maximum,
+            21: b'{"before":"*","after":"mcp://weather","required_requests":[{"type":"mcp","name":"calculator"},{"type":"mcp","name":"weather","name":"calculator"}]}',
+            22: b'{"before":"*","after":"mcp://weather","required_requests":[{"type":"mcp","name":"calculator"},null]}',
+            23: b'{"before":"*","after":"mcp://weather","required_requests":[{"type":"mcp","name":"calculator"},{"type":"mcp","name":"weather","decision":"ELIGIBLE"}]}',
+            24: br'{"before":"*","after":"mcp://weather","required_requests":[{"type":"mcp","name":"calculator"},{"type":"mcp","name":"\ud800"}]}',
+            25: maximum[:-1] + b" }",
+        }
+        def frame(identifier, raw, method="tools/call", tool="assess_service_grant_change"):
+            prefix = json.dumps({"jsonrpc": "2.0", "id": identifier, "method": method,
+                "params": {"name": tool}}, separators=(",", ":")).encode()[:-2]
+            return prefix + b',"arguments":' + raw + b"}}"
+        lines = {identifier: frame(identifier, raw) for identifier, raw in arguments.items()}
+        M.checked_many_negative_requests(lines, first)
+        replaced = dict(lines)
+        for identifier in range(21, 26):
+            raw = b"null" if identifier < 25 else b"null"+b" "*((1 << 20)+1-4)
+            replaced[identifier] = frame(identifier, raw)
+        with self.assertRaisesRegex(ValueError, "exact argument bytes"):
+            M.checked_many_negative_requests(replaced, first)
+        for identifier in range(21, 26):
+            for change in ["method", "tool"]:
+                with self.subTest(identifier=identifier, change=change):
+                    changed = dict(lines)
+                    changed[identifier] = frame(identifier, arguments[identifier],
+                        method="tools/list" if change == "method" else "tools/call",
+                        tool="another_tool" if change == "tool" else "assess_service_grant_change")
+                    with self.assertRaises(ValueError):
+                        M.checked_many_negative_requests(changed, first)
+
+    def test_native_many_cancellation_latches_through_cleanup_and_preserves_primary(self):
+        class Cancelled(BaseException):
+            pass
+        def original_async(number, _frame):
+            raise RuntimeError("parent asynchronous interruption "+str(number))
+        signals = (signal.SIGINT, signal.SIGTERM, signal.SIGALRM)
+        previous = {number: signal.getsignal(number) for number in signals}
+        timer = signal.getitimer(signal.ITIMER_REAL)
+        for number in signals:
+            signal.signal(number, original_async)
+        try:
+            for index, primary in enumerate([None, RuntimeError("original verifier failure")]):
+                with self.subTest(primary=primary is not None):
+                    fake = types.SimpleNamespace(PENDING_SIGNAL=None, WireCancelled=Cancelled, child=None)
+                    output = self.root/("signal-"+str(index))
+                    def main():
+                        child = fake.subprocess.Popen([sys.executable, "-I", "-B", "-c",
+                            "import os;os.write(1,b'actual child stdout\\n');os.write(2,b'actual child stderr\\n')"],
+                            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            start_new_session=True,
+                            preexec_fn=lambda: signal.pthread_sigmask(signal.SIG_SETMASK, set()))
+                        fake.child = child
+                        child.stdin.close()
+                        fake.stdout, fake.stderr = child.stdout.read(), child.stderr.read()
+                        child.stdout.close(); child.stderr.close()
+                        if primary is not None:
+                            raise primary
+                    fake.main = main
+                    original_absent = M.absent
+                    class AtClose(M.OwnedChildren):
+                        def close(self, first=None):
+                            signal.raise_signal(signal.SIGTERM)
+                            def repeated(pid):
+                                signal.raise_signal(signal.SIGINT)
+                                return original_absent(pid)
+                            with patch.object(M, "absent", side_effect=repeated):
+                                return super().close(first)
+                    caught = None
+                    try:
+                        with patch.object(M, "imported", return_value=fake), patch.object(M, "OwnedChildren", AtClose):
+                            M.native_many_verify(self.root, self.root/"unused-binary", self.root/"unused-cache", output)
+                    except BaseException as error:
+                        caught = error
+                    finally:
+                        if fake.child is not None:
+                            fake.child.wait(timeout=2)
+                    if primary is None:
+                        self.assertIsInstance(caught, Cancelled)
+                    else:
+                        self.assertIs(caught, primary)
+                    self.assertIsNotNone(fake.child)
+                    self.assertEqual(fake.child.returncode, 0)
+                    self.assertTrue(original_absent(fake.child.pid))
+                    self.assertEqual(fake.stdout, b"actual child stdout\n")
+                    self.assertEqual(fake.stderr, b"actual child stderr\n")
+                    self.assertEqual(fake.PENDING_SIGNAL, signal.SIGTERM)
+                    closures = json.loads((output/"owned-child-closure.json").read_text())
+                    self.assertEqual(len(closures), 1)
+                    self.assertTrue(closures[0]["direct_wait"] and closures[0]["PG_ESRCH"] and closures[0]["pipe_objects_closed"])
+                    self.assertTrue((output/"first-failure.json").is_file())
+                    for number in signals:
+                        self.assertIs(signal.getsignal(number), original_async)
+                    print(json.dumps({"native_many_fake_child": fake.child.pid, "primary_kept": primary is not None,
+                        "direct_wait": True, "stdout_stderr_EOF": True, "PG_ESRCH": True,
+                        "repeated_actual_cleanup_signals": True, "actual_native_or_model": False}))
+        finally:
+            for number, handler in previous.items():
+                signal.signal(number, handler)
+        self.assertEqual(signal.getitimer(signal.ITIMER_REAL), timer)
 
     def test_real_build_shape_and_bad_identity_controls(self):
         M.build_identity(build(), "darwin/arm64", COMMIT)
