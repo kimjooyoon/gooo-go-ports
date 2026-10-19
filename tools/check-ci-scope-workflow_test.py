@@ -148,6 +148,9 @@ TIMING_ASSERTION = ("          tail -n 1 out/ci/timing.jsonl | jq -e --slurpfile
                     + "\n          '\n")
 LITERAL_REPORT_COMPACT_SCOPE = 'Only app/literal-text-report:Report adds compact case JSON plus one LF, <=128 original rows, <=30000 raw bytes and a pinned839 source-derived nonexpanding-key <=32768 translated bound. Index/Count retain their prior indented writer and partitions. Native execution and saved replay must freshly inspect all9313 original Report pairs; count-only281-to235 is not native, full-CI or performance acceptance. Decimal/payload policies remain unchanged.'
 TIMING_SUMMARY_SHA = 'ca262e77de47a75e3c458a84862b7d5eb13333d1c1af7c6e313ce20f99ee3ae8'
+RUNTIME_TIMING_SUMMARY_SHA = 'ab2b619d7f18cb671dcade8cfcb5dcd393dee53f8641ebfc49a4e556fee10ff3'
+PRIOR_TIMING_SCOPE = 'Monotonic observed elapsed intervals, including recorder overhead. Concurrent sums are not CPU time or speed forecasts. Batch selection and compiler build/run internals are not separately measured.'
+RUNTIME_TIMING_SCOPE = 'Monotonic observed elapsed intervals, including recorder overhead. Concurrent sums are not CPU time or speed forecasts. Batch selection is unmeasured. Optional build/run values are compiler-reported diagnostics; compile/link/cache-hit phases are not separated.'
 HEADER_ADDITION_NEW_SOURCE_PATHS = ('cmd/header-addition-input/main.go', 'cmd/header-addition-input/main_test.go', 'cmd/verify/header_addition_batches.go', 'cmd/verify/header_addition_batches_test.go', 'cmd/verify/header_addition_contracts.go', 'cmd/verify/header_addition_contracts_test.go', 'cmd/verify/header_addition_corpus.go', 'cmd/verify/header_addition_corpus_test.go', 'diagnostic-header-addition.workspace.json', 'examples/diagnostic-header-addition/README.md', 'examples/diagnostic-header-addition/contract.json', 'examples/diagnostic-header-addition/corpus.json', 'examples/diagnostic-header-addition/inputs.json', 'examples/diagnostic-header-addition/main.gooo', 'examples/diagnostic-header-addition/request.json', 'examples/header-addition-host/LICENSE', 'examples/header-addition-host/NOTICE', 'examples/header-addition-host/README.md', 'examples/header-addition-host/bindings.go.txt', 'examples/header-addition-host/bindings_test.go.txt', 'examples/header-addition-host/go.mod.txt', 'examples/header-addition-host/host.go.txt', 'examples/header-addition-host/host_test.go.txt', 'examples/header-addition-host/main.go.txt', 'examples/header-addition-host/provenance.json', 'internal/headeradditioninput/preflight.go', 'internal/headeradditioninput/preflight_test.go', 'tools/check-header-addition-host.py', 'tools/check-header-addition-host_test.py', 'tools/check-header-addition-inputs.py')
 HEADER_ADDITION_INPUT_STEP_NAME = 'Verify strict addition inputs against the fresh native references'
 HEADER_ADDITION_HOST_STEP_NAME = 'Verify the freshly generated atomic header-addition host'
@@ -1286,8 +1289,23 @@ def project_ordered_service_integration(text):
             'ordered-service integration may add only its exact step and ten evidence paths')
     return prior
 
+def project_runtime_timing_scope(text):
+    # Only the console explanation changes. Bind the exact current summary,
+    # then recover all original workflow bytes for the historical contracts.
+    jobs = workflow_jobs(text)
+    _, native, _ = job_steps(jobs['native-execution'])
+    comparison = native['Compare the ports with Go and replay every batch']
+    summaries = re.findall(r"^          jq -c -s '\n.*?^          ' out/ci/timing.jsonl\n", comparison, re.M | re.S)
+    require(len(summaries) == 1 and
+            hashlib.sha256(summaries[0].encode()).hexdigest() == RUNTIME_TIMING_SUMMARY_SHA,
+            'compiler runtime timing console must retain its exact summary and actual input')
+    require(text.count(RUNTIME_TIMING_SCOPE) == 1 and PRIOR_TIMING_SCOPE not in text,
+            'compiler runtime timing scope must appear exactly once')
+    return text.replace(RUNTIME_TIMING_SCOPE, PRIOR_TIMING_SCOPE, 1)
+
+
 def validate_ordered_service_workflow(text):
-    prior = project_ordered_service_integration(text)
+    prior = project_ordered_service_integration(project_runtime_timing_scope(text))
     validate(prior)
     return prior
 
@@ -3236,6 +3254,23 @@ class OrderedServiceIntegrationTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), ORDERED_SERVICE_PRIOR_WORKFLOW_SHA)
         self.assertEqual(len(re.findall(r'^      - (?:name|uses):', prior, re.M)), 73)
         self.assertNotIn('out/service-grant-many/', prior)
+
+    def test_runtime_timing_changes_only_the_exact_console_explanation(self):
+        projected = project_runtime_timing_scope(self.text)
+        self.assertEqual(projected.replace(PRIOR_TIMING_SCOPE, RUNTIME_TIMING_SCOPE, 1), self.text)
+        self.assertEqual(projected.count(PRIOR_TIMING_SCOPE), 1)
+        self.assertNotIn(RUNTIME_TIMING_SCOPE, projected)
+        for replacement in ('', PRIOR_TIMING_SCOPE, RUNTIME_TIMING_SCOPE * 2,
+                            RUNTIME_TIMING_SCOPE.replace('compiler-reported diagnostics', 'verified performance'),
+                            RUNTIME_TIMING_SCOPE.replace('compile/link/cache-hit phases are not separated', 'compiler phases are measured')):
+            with self.subTest(scope=replacement), self.assertRaises(ValueError):
+                validate_ordered_service_workflow(self.text.replace(RUNTIME_TIMING_SCOPE, replacement, 1))
+        for before, after in (("' out/ci/timing.jsonl", "' out/old-timing.jsonl"),
+                              ('.[-1] as $footer', '.[0] as $footer'),
+                              ('footer: ($footer | del(.identity_after))', 'footer:null')):
+            self.assertIn(before, self.text)
+            with self.subTest(summary=before), self.assertRaises(ValueError):
+                validate_ordered_service_workflow(self.text.replace(before, after, 1))
 
     def test_ordered_step_cannot_be_missing_duplicated_or_renamed(self):
         for replacement in ('', ORDERED_SERVICE_STEP * 2,

@@ -657,7 +657,7 @@ jobs:
                 map({phase: .[0].name, observations: length, sum_observed_elapsed_ns: (map(.duration_ns) | add)})),
               suite_costs: ($suites | sort_by(.suite_index) |
                 map({suite_index, package, activity, status, duration_ns, observed_batches, covered_cases, source_set, source_set_sha256})),
-              scope: "Monotonic observed elapsed intervals, including recorder overhead. Concurrent sums are not CPU time or speed forecasts. Batch selection and compiler build/run internals are not separately measured."
+              scope: "Monotonic observed elapsed intervals, including recorder overhead. Concurrent sums are not CPU time or speed forecasts. Batch selection is unmeasured. Optional build/run values are compiler-reported diagnostics; compile/link/cache-hit phases are not separated."
             }
           ' out/ci/timing.jsonl
       - name: Verify strict If-Match inputs against the fresh native references

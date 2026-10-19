@@ -23,6 +23,91 @@ const nativeTimingMaxBytes = 8 << 20
 const nativeCommandResourcesSchema = "gooo/native-command-resources/v1"
 const nativeCommandResourcesScope = "Optional accounting from the already-waited execute/replay CLI, including only descendants accounted for by the OS wait. CPU is accumulated user/system time, not elapsed time or a complete live process tree. MaxRSS is the OS wait high-water mark, not simultaneous memory, a sum across commands, or a memory limit. Linux raw MaxRSS is KiB; Darwin raw MaxRSS is bytes. Unavailable and unobserved values are null. Resources do not replace receipt, replay, source, summary or timing-completeness checks."
 
+const nativeReportedRuntimeSchema = "gooo/compiler-reported-runtime/v1"
+const nativeReportedRuntimeScope = "Unsigned compiler-reported diagnostics collected only after semantic inspection. Execute and replay are separate. Runtime elapsed is fresh runtime metadata, never composition elapsed. Process wall intervals include their reported work and pipes; compile/link/cache phases are not separated. These are not independent timers, CPU, proof or authorization. Missing or invalid metrics are all null. Footer totals sum started batch slots across overlapping workers, not critical-path wall time; absent observations and sum overflow have null totals."
+
+type nativeBatchReportedRuntime struct {
+	Execute *nativeReportedRuntime `json:"execute"`
+	Replay  *nativeReportedRuntime `json:"replay"`
+}
+
+type nativeReportedRuntimeTotals struct {
+	RuntimeElapsedNS int64    `json:"runtime_elapsed_ns"`
+	ToolchainWallNS  int64    `json:"toolchain_wall_ns"`
+	BuildWallNS      int64    `json:"build_wall_ns"`
+	RunWallNS        [2]int64 `json:"run_wall_ns"`
+}
+
+type nativeReportedRuntimePhaseSummary struct {
+	Reported     int                          `json:"reported"`
+	NotAvailable int                          `json:"not_available"`
+	Unobserved   int                          `json:"unobserved"`
+	Overflow     bool                         `json:"overflow"`
+	Totals       *nativeReportedRuntimeTotals `json:"totals"`
+}
+
+type nativeReportedRuntimeSummary struct {
+	Execute nativeReportedRuntimePhaseSummary `json:"execute"`
+	Replay  nativeReportedRuntimePhaseSummary `json:"replay"`
+}
+
+// This diagnostic aggregate never changes semantic or timing completeness.
+func (summary *nativeReportedRuntimePhaseSummary) add(value *nativeReportedRuntime) {
+	if value == nil {
+		summary.Unobserved++
+		return
+	}
+	if value.Status != "REPORTED" || value.RuntimeElapsedNS == nil || value.ToolchainWallNS == nil || value.BuildWallNS == nil || value.RunWallNS == nil {
+		summary.NotAvailable++
+		return
+	}
+	summary.Reported++
+	if summary.Overflow {
+		return
+	}
+	next := nativeReportedRuntimeTotals{}
+	if summary.Totals != nil {
+		next = *summary.Totals
+	}
+	destinations := []*int64{&next.RuntimeElapsedNS, &next.ToolchainWallNS, &next.BuildWallNS, &next.RunWallNS[0], &next.RunWallNS[1]}
+	inputs := [5]int64{*value.RuntimeElapsedNS, *value.ToolchainWallNS, *value.BuildWallNS, value.RunWallNS[0], value.RunWallNS[1]}
+	for i, input := range inputs {
+		if input < 0 || input > int64(1<<63-1)-*destinations[i] {
+			summary.Overflow, summary.Totals = true, nil
+			return
+		}
+		*destinations[i] += input
+	}
+	summary.Totals = &next
+}
+
+// Called only in the corresponding successful semantic-inspection phase.
+func (bt *nativeBatchTiming) recordReportedRuntime(phase string, value *nativeReportedRuntime) {
+	if bt == nil {
+		return
+	}
+	t := bt.owner
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	index, active := -1, ""
+	if phase == "execute" {
+		index, active = 0, "inspect_execution"
+	} else if phase == "replay" {
+		index, active = 1, "inspect_replay"
+	}
+	if bt.done || index < 0 || bt.phases[bt.phaseIndex].Name != active || bt.runtimeObserved[index] || value == nil {
+		t.failLocked(fmt.Errorf("compiler runtime diagnostic is duplicate or outside its active inspection phase"))
+		return
+	}
+	observed := copyReportedRuntime(*value)
+	bt.runtimeObserved[index] = true
+	if index == 0 {
+		bt.reportedRuntime.Execute = &observed
+	} else {
+		bt.reportedRuntime.Replay = &observed
+	}
+}
+
 type nativeTimingConfig struct {
 	Output, EvidenceRoot, RepositoryRoot, Compiler string
 	Workers                                        int
@@ -110,6 +195,8 @@ type nativeBatchTiming struct {
 	status                string
 	commandResources      nativeBatchCommandResources
 	commandObserved       [2]bool
+	reportedRuntime       nativeBatchReportedRuntime
+	runtimeObserved       [2]bool
 }
 
 type nativeBatchCommandResources struct {
@@ -337,6 +424,7 @@ func newNativeTimingWithSnapshot(cfg nativeTimingConfig, snapshot func(nativeTim
 		"source_set_scope":         "Each suite_end stores its checked source set once. Batch events bind that exact map by SHA-256; source inputs and the complete frozen catalog are hashed in the header and rechecked at close.",
 		"timing_scope":             "Suite and batch elapsed intervals include recorder lock/event overhead; enqueue, slot wait, dispatch and resource contention are not measured. Batch selection happens before beginBatch and is unmeasured. Run duration includes identity observations and ends before footer finalization. UTC is for correlation; durations use Go monotonic time.",
 		"command_resources_schema": nativeCommandResourcesSchema, "command_resources_scope": nativeCommandResourcesScope,
+		"compiler_reported_runtime_schema": nativeReportedRuntimeSchema, "compiler_reported_runtime_scope": nativeReportedRuntimeScope,
 		"finalization_scope": "A footer is diagnostic evidence only; successful close return and the original native verification/summary gates are also required. No effect authorization or performance causality is asserted.",
 	}
 	for _, s := range cfg.Suites {
@@ -764,9 +852,10 @@ func (bt *nativeBatchTiming) finish(returnedErr, contextErr error, verified bool
 		"batch_index": bt.index, "start": bt.start, "end": bt.end, "cases": bt.end - bt.start,
 		"started_at_utc": bt.started.UTC().Format(time.RFC3339Nano), "finished_at_utc": now.UTC().Format(time.RFC3339Nano), "duration_ns": now.Sub(bt.started).Nanoseconds(),
 		"status": bt.status, "verified": bt.verified, "returned_error": returnedErr != nil, "context_error": contextErr != nil,
-		"phases":            bt.phases,
-		"command_resources": bt.commandResources,
-		"compiler_revision": bt.identity.CompilerRevision, "go_version": bt.identity.GoVersion,
+		"phases":                    bt.phases,
+		"command_resources":         bt.commandResources,
+		"compiler_reported_runtime": bt.reportedRuntime,
+		"compiler_revision":         bt.identity.CompilerRevision, "go_version": bt.identity.GoVersion,
 		"manifest_digest": bt.identity.ManifestDigest, "cases_digest": bt.identity.CasesDigest,
 		"source_set_sha256": bt.suite.sourceSetSHA256, "original_receipt_sha256": bt.receipt})
 }
@@ -806,6 +895,7 @@ func (t *nativeTiming) close(returnedErr, contextErr error) error {
 	started, finished, verified, batches, verifiedBatches, cases := 0, 0, 0, 0, 0, 0
 	failedSuites, canceledSuites, failedBatches, incompleteBatches := 0, 0, 0, 0
 	notStarted := []int{}
+	var reportedRuntimeSummary nativeReportedRuntimeSummary
 	for _, st := range t.suites {
 		if st.begun {
 			started++
@@ -827,6 +917,8 @@ func (t *nativeTiming) close(returnedErr, contextErr error) error {
 		complete = complete && st.begun && st.done && st.verified
 		for _, bt := range st.batches {
 			batches++
+			reportedRuntimeSummary.Execute.add(bt.reportedRuntime.Execute)
+			reportedRuntimeSummary.Replay.add(bt.reportedRuntime.Replay)
 			if bt.verified {
 				verifiedBatches++
 				cases += bt.end - bt.start
@@ -854,7 +946,8 @@ func (t *nativeTiming) close(returnedErr, contextErr error) error {
 			"not_started_suites": len(notStarted), "missing_suite_finishes": started - finished, "not_started_suite_indices": notStarted,
 			"observed_batches": batches, "verified_batches": verifiedBatches, "verified_cases": cases,
 			"failed_batches": failedBatches, "incomplete_batches": incompleteBatches, "logger_errors": t.errorCount,
-			"source_bindings_unchanged": unchanged, "identity_after": after, "event_count": t.eventCount + 1, "successful_close_return_required": true})
+			"compiler_reported_runtime_summary": reportedRuntimeSummary,
+			"source_bindings_unchanged":         unchanged, "identity_after": after, "event_count": t.eventCount + 1, "successful_close_return_required": true})
 	}
 	t.failLocked(t.writer.Flush())
 	t.failLocked(t.file.Sync())

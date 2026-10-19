@@ -59,6 +59,10 @@ type envelope struct {
 			Total      *int            `json:"finite_total"`
 			Projection bool            `json:"projection_replayed"`
 			Replayed   bool            `json:"runtime_replayed"`
+			Elapsed    json.RawMessage `json:"elapsed_ns,omitempty"`
+			Toolchain  json.RawMessage `json:"toolchain,omitempty"`
+			Build      json.RawMessage `json:"build,omitempty"`
+			Runs       json.RawMessage `json:"runs,omitempty"`
 			Traces     []struct {
 				Index      int `json:"case_index"`
 				Deliveries []struct {
@@ -82,6 +86,100 @@ type envelope struct {
 }
 type checked struct{ Generated, ReplayedFrom string }
 
+// nativeReportedRuntime is unsigned, compiler-reported diagnostic metadata.
+// It is never an independently timed interval, CPU/RSS report or proof gate.
+// All four metrics are available together or all are null; zero is valid.
+type nativeReportedRuntime struct {
+	Status           string    `json:"status"`
+	Reason           string    `json:"reason,omitempty"`
+	RuntimeElapsedNS *int64    `json:"runtime_elapsed_ns"`
+	ToolchainWallNS  *int64    `json:"toolchain_wall_ns"`
+	BuildWallNS      *int64    `json:"build_wall_ns"`
+	RunWallNS        *[2]int64 `json:"run_wall_ns"`
+}
+
+const nativeReportedRuntimeComponentMaxBytes = 64 << 10
+
+// The enclosing receipt has already passed its original duplicate-key check.
+// Decode only these captured fields, never the whole receipt/runtime again.
+func reportedRuntime(elapsed, toolchain, build, runs json.RawMessage) nativeReportedRuntime {
+	unavailable := func(reason string) nativeReportedRuntime {
+		return nativeReportedRuntime{Status: "NOT_AVAILABLE", Reason: reason}
+	}
+	if len(elapsed) > 128 || len(toolchain) > nativeReportedRuntimeComponentMaxBytes ||
+		len(build) > nativeReportedRuntimeComponentMaxBytes || len(runs) > nativeReportedRuntimeComponentMaxBytes {
+		return unavailable("runtime timing component exceeds diagnostic cap")
+	}
+	readNS := func(raw json.RawMessage) (int64, bool) {
+		raw = bytes.TrimSpace(raw)
+		if len(raw) == 0 {
+			return 0, false
+		}
+		for _, digit := range raw {
+			if digit < '0' || digit > '9' {
+				return 0, false
+			}
+		}
+		var value int64
+		if err := json.Unmarshal(raw, &value); err != nil || value < 0 {
+			return 0, false
+		}
+		return value, true
+	}
+	readProcess := func(raw json.RawMessage) (int64, bool) {
+		var fields map[string]json.RawMessage
+		if err := json.Unmarshal(raw, &fields); err != nil {
+			return 0, false
+		}
+		// Exact lookup deliberately avoids encoding/json's struct case folding.
+		return readNS(fields["wall_ns"])
+	}
+	total, totalOK := readNS(elapsed)
+	tool, toolOK := readProcess(toolchain)
+	built, buildOK := readProcess(build)
+	var rawRuns []json.RawMessage
+	if err := json.Unmarshal(runs, &rawRuns); err != nil || len(rawRuns) != 2 {
+		return unavailable("runtime timing is missing or invalid")
+	}
+	first, firstOK := readProcess(rawRuns[0])
+	second, secondOK := readProcess(rawRuns[1])
+	if !totalOK || !toolOK || !buildOK || !firstOK || !secondOK {
+		return unavailable("runtime timing is missing or invalid")
+	}
+	const maxNS = int64(1<<63 - 1)
+	sum := int64(0)
+	for _, value := range [...]int64{tool, built, first, second} {
+		if value > maxNS-sum {
+			return unavailable("runtime child wall sum overflows")
+		}
+		sum += value
+	}
+	if sum > total {
+		return unavailable("runtime child wall sum exceeds elapsed")
+	}
+	walls := [2]int64{first, second}
+	return nativeReportedRuntime{Status: "REPORTED", RuntimeElapsedNS: &total,
+		ToolchainWallNS: &tool, BuildWallNS: &built, RunWallNS: &walls}
+}
+
+func copyReportedRuntime(value nativeReportedRuntime) nativeReportedRuntime {
+	copyNS := func(source *int64) *int64 {
+		if source == nil {
+			return nil
+		}
+		result := *source
+		return &result
+	}
+	value.RuntimeElapsedNS = copyNS(value.RuntimeElapsedNS)
+	value.ToolchainWallNS = copyNS(value.ToolchainWallNS)
+	value.BuildWallNS = copyNS(value.BuildWallNS)
+	if value.RunWallNS != nil {
+		runs := *value.RunWallNS
+		value.RunWallNS = &runs
+	}
+	return value
+}
+
 func inspectReplayBinding(original, replay checked, receiptDigest string) error {
 	if !validDigest(receiptDigest) || replay.Generated != original.Generated || replay.ReplayedFrom != receiptDigest {
 		return fmt.Errorf("saved replay is not bound to the same receipt and generated program")
@@ -90,6 +188,10 @@ func inspectReplayBinding(original, replay checked, receiptDigest string) error 
 }
 
 func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (checked, error) {
+	return inspectWithRuntime(raw, s, replay, identity, nil)
+}
+
+func inspectWithRuntime(raw []byte, s suite, replay bool, identity expectedIdentity, reported *nativeReportedRuntime) (checked, error) {
 	contract, err := contractFor(s)
 	if err != nil {
 		return checked{}, err
@@ -215,6 +317,9 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 		if err := inspectWhitespaceFields(s, d.ActualFields, row.Expected); err != nil {
 			return fail(err.Error())
 		}
+	}
+	if reported != nil {
+		*reported = reportedRuntime(r.Elapsed, r.Toolchain, r.Build, r.Runs)
 	}
 	return checked{c.SHA, e.ReplayedFrom}, nil
 }
