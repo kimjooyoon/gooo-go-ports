@@ -713,3 +713,395 @@ func TestNativeTimingDisabledHasNoObserverEffects(t *testing.T) {
 	bt.bind(expectedIdentity{}, "")
 	bt.finish(nil, nil, false)
 }
+
+// These diagnostics tests use saved synthetic receipts or recorder fixtures;
+// they never execute a compiler, generated program or new command.
+func nativeReportedRuntimeForTest(elapsed, toolchain, build, firstRun, secondRun int64) nativeReportedRuntime {
+	return reportedRuntime(json.RawMessage(fmt.Sprint(elapsed)),
+		json.RawMessage(fmt.Sprintf("{\"wall_ns\":%d}", toolchain)),
+		json.RawMessage(fmt.Sprintf("{\"wall_ns\":%d}", build)),
+		json.RawMessage(fmt.Sprintf("[{\"wall_ns\":%d},{\"wall_ns\":%d}]", firstRun, secondRun)))
+}
+
+func TestNativeReportedRuntimeDecoderAllOrNothing(t *testing.T) {
+	base := [4]json.RawMessage{json.RawMessage("100"), json.RawMessage("{\"wall_ns\":10}"), json.RawMessage("{\"wall_ns\":20}"), json.RawMessage("[{\"wall_ns\":30},{\"wall_ns\":40}]")}
+	tests := []struct {
+		name     string
+		index    int
+		value    string
+		reported bool
+	}{
+		{"complete", 0, "100", true},
+		{"above_float_precision", 0, "9007199254740993", true},
+		{"unknown_process_fields", 1, "{\"Wall_NS\":99,\"wall_ns\":10,\"other\":{\"nested\":true}}", true},
+		{"missing", 0, "", false},
+		{"null_elapsed", 0, "null", false},
+		{"negative", 0, "-100", false},
+		{"negative_zero", 0, "-0", false},
+		{"fraction", 0, "100.0", false},
+		{"exponent", 0, "1e2", false},
+		{"overflow", 0, "9223372036854775808", false},
+		{"boolean", 0, "true", false},
+		{"quoted_integer", 0, "\"100\"", false},
+		{"process_absent", 1, "", false},
+		{"process_null", 1, "null", false},
+		{"process_array", 1, "[]", false},
+		{"case_folded_key", 1, "{\"Wall_NS\":10}", false},
+		{"null_wall", 1, "{\"wall_ns\":null}", false},
+		{"fractional_wall", 2, "{\"wall_ns\":20.0}", false},
+		{"runs_absent", 3, "", false},
+		{"runs_null", 3, "null", false},
+		{"one_run", 3, "[{\"wall_ns\":30}]", false},
+		{"three_runs", 3, "[{\"wall_ns\":0},{\"wall_ns\":0},{\"wall_ns\":0}]", false},
+		{"bad_run", 3, "[{\"wall_ns\":30},null]", false},
+		{"inconsistent_sum", 0, "99", false},
+		{"elapsed_cap", 0, strings.Repeat(" ", 129), false},
+		{"component_cap", 1, "{\"wall_ns\":10,\"other\":\"" + strings.Repeat("x", nativeReportedRuntimeComponentMaxBytes) + "\"}", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fields := base
+			fields[tt.index] = json.RawMessage(tt.value)
+			got := reportedRuntime(fields[0], fields[1], fields[2], fields[3])
+			encoded, err := json.Marshal(got)
+			if err != nil || len(got.Reason) > 64 || len(encoded) > 350 {
+				t.Fatal("unbounded diagnostic", string(encoded), err)
+			}
+			if tt.reported {
+				if got.Status != "REPORTED" || got.RuntimeElapsedNS == nil || got.ToolchainWallNS == nil || got.BuildWallNS == nil || got.RunWallNS == nil || *got.ToolchainWallNS != 10 || *got.BuildWallNS != 20 || *got.RunWallNS != [2]int64{30, 40} || got.Reason != "" {
+					t.Fatal("complete integer metrics were lost", string(encoded))
+				}
+				if tt.name == "above_float_precision" && *got.RuntimeElapsedNS != 9007199254740993 {
+					t.Fatal("integer metadata rounded through floating point")
+				}
+			} else if got.Status != "NOT_AVAILABLE" || got.RuntimeElapsedNS != nil || got.ToolchainWallNS != nil || got.BuildWallNS != nil || got.RunWallNS != nil || got.Reason == "" {
+				t.Fatal("invalid component retained partial metrics", string(encoded))
+			}
+		})
+	}
+	zero := nativeReportedRuntimeForTest(0, 0, 0, 0, 0)
+	limit := nativeReportedRuntimeForTest(int64(1<<63-1), 0, 0, int64(1<<63-1), 0)
+	overflow := nativeReportedRuntimeForTest(int64(1<<63-1), int64(1<<63-1), 1, 0, 0)
+	if zero.Status != "REPORTED" || *zero.RuntimeElapsedNS != 0 || limit.Status != "REPORTED" || overflow.Status != "NOT_AVAILABLE" || overflow.RuntimeElapsedNS != nil {
+		t.Fatal("zero, exact int64 boundary or checked child sum changed", zero, limit, overflow)
+	}
+}
+
+func TestInspectRuntimeDiagnosticsPreserveSemanticAcceptance(t *testing.T) {
+	raw, s, identity := fixture(t)
+	tests := []struct {
+		name      string
+		configure func(*envelope)
+		status    string
+	}{
+		{"absent", func(e *envelope) {
+			e.Result.Runtime.Elapsed, e.Result.Runtime.Toolchain, e.Result.Runtime.Build, e.Result.Runtime.Runs = nil, nil, nil, nil
+		}, "NOT_AVAILABLE"},
+		{"valid", func(e *envelope) {
+			e.Result.Runtime.Elapsed = json.RawMessage("100")
+			e.Result.Runtime.Toolchain = json.RawMessage("{\"wall_ns\":10}")
+			e.Result.Runtime.Build = json.RawMessage("{\"wall_ns\":20}")
+			e.Result.Runtime.Runs = json.RawMessage("[{\"wall_ns\":30},{\"wall_ns\":40}]")
+		}, "REPORTED"},
+		{"bad_diagnostic_types", func(e *envelope) {
+			e.Result.Runtime.Elapsed = json.RawMessage("{\"unexpected\":true}")
+			e.Result.Runtime.Toolchain = json.RawMessage("false")
+			e.Result.Runtime.Build = json.RawMessage("[1]")
+			e.Result.Runtime.Runs = json.RawMessage("\"wrong\"")
+		}, "NOT_AVAILABLE"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var e envelope
+			if err := json.Unmarshal(raw, &e); err != nil {
+				t.Fatal(err)
+			}
+			tt.configure(&e)
+			body, err := json.Marshal(e)
+			if err != nil {
+				t.Fatal(err)
+			}
+			without, oldErr := inspect(body, s, false, identity)
+			var observed nativeReportedRuntime
+			with, newErr := inspectWithRuntime(body, s, false, identity, &observed)
+			if oldErr != nil || newErr != nil || without != with || observed.Status != tt.status {
+				t.Fatal("diagnostic altered semantic inspection", without, with, observed, oldErr, newErr)
+			}
+			for _, failure := range []string{"early_producer", "late_oracle"} {
+				t.Run(failure, func(t *testing.T) {
+					var bad envelope
+					if err := json.Unmarshal(body, &bad); err != nil {
+						t.Fatal(err)
+					}
+					if failure == "early_producer" {
+						bad.Result.Runtime.Producer = "wrong compiler"
+					} else {
+						bad.Result.Runtime.Traces[0].Deliveries[0].Actual = json.RawMessage("0")
+					}
+					badBody, err := json.Marshal(bad)
+					if err != nil {
+						t.Fatal(err)
+					}
+					sentinel := nativeReportedRuntime{Status: "unchanged"}
+					_, oldErr := inspect(badBody, s, false, identity)
+					_, newErr := inspectWithRuntime(badBody, s, false, identity, &sentinel)
+					if oldErr == nil || newErr == nil || oldErr.Error() != newErr.Error() || sentinel.Status != "unchanged" || sentinel.RuntimeElapsedNS != nil {
+						t.Fatal("diagnostics hid an original error or escaped before semantic success", oldErr, newErr, sentinel)
+					}
+				})
+			}
+		})
+	}
+	// The receipt-wide duplicate gate still runs before both semantic and
+	// diagnostic decoders; the four small fields do not replace that gate.
+	var object map[string]any
+	if err := json.Unmarshal(raw, &object); err != nil {
+		t.Fatal(err)
+	}
+	runtimeObject := object["result"].(map[string]any)["runtime"].(map[string]any)
+	runtimeObject["elapsed_ns"] = 100
+	body, err := json.Marshal(object)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body = bytes.Replace(body, []byte("\"elapsed_ns\":100"), []byte("\"elapsed_ns\":100,\"elapsed_ns\":100"), 1)
+	var observed nativeReportedRuntime
+	if _, err := inspectWithRuntime(body, s, false, identity, &observed); err == nil || observed.Status != "" {
+		t.Fatal("duplicate diagnostic keys bypassed the original duplicate gate", err, observed)
+	}
+}
+
+func TestNativeReportedRuntimeTimingPreservesEvidence(t *testing.T) {
+	raw, original, identity := fixture(t)
+	s := repeatNativeCase(original, 129)
+	workspace := fakeNativeWorkspace(t, s, identity)
+	var evidence [2]map[string][]byte
+	var observations [2][]nativeSuiteResult
+	for mode := range 2 {
+		root := timingIntegrationRoot(t)
+		var timing *nativeTiming
+		var path string
+		if mode == 1 {
+			timing, path = timingRecorderForTest(t, root, []suite{s})
+		}
+		fake := fakeNativeCommand{templates: map[string][]byte{suiteEvidenceDirectory(root, s): raw}, calls: map[string][]string{},
+			mutate: func(action string, receipt map[string]any) {
+				r := receipt["result"].(map[string]any)["runtime"].(map[string]any)
+				scale := 1
+				if action == "replay" {
+					scale = 10
+				}
+				r["elapsed_ns"] = 10 * scale
+				r["toolchain"] = map[string]any{"wall_ns": scale}
+				r["build"] = map[string]any{"wall_ns": 2 * scale}
+				r["runs"] = []any{map[string]any{"wall_ns": 3 * scale}, map[string]any{"wall_ns": 4 * scale}}
+				// Replay may retain its parent's composition timing. It must
+				// never replace the fresh runtime elapsed observation.
+				receipt["result"].(map[string]any)["composition"].(map[string]any)["elapsed_ns"] = 999999
+			}}
+		ctx := workerTestContext(t)
+		verifier := newNativeSuiteVerifier(ctx, "unused", root, upstream{CompilerRevision: identity.CompilerRevision, GoVersion: identity.GoVersion}, nil)
+		verifier.execute, verifier.timing = fake.execute, timing
+		results, err := runNativeSuites(ctx, []suite{s}, 1, func(ctx context.Context, index int, current suite) (nativeSuiteResult, error) {
+			span := timing.beginSuite(index, current)
+			result, err := verifier.verify(ctx, current, workspace)
+			span.finish(result, err, ctx.Err())
+			return result, err
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := timing.close(nil, ctx.Err()); err != nil {
+			t.Fatal(err)
+		}
+		observations[mode] = results
+		for batch, name := range []string{"000", "001"} {
+			dir := filepath.Join(suiteEvidenceDirectory(root, s), name)
+			if !reflect.DeepEqual(fake.calls[dir], []string{"execute", "replay"}) {
+				t.Fatal("diagnostics added or reordered commands", mode, batch, fake.calls)
+			}
+		}
+		if len(fake.calls) != 2 {
+			t.Fatal("diagnostics changed original 128+1 batch partition", fake.calls)
+		}
+		if mode == 1 {
+			events := nativeTimingTestEvents(t, path)
+			batches := 0
+			for _, event := range events {
+				if event["kind"] != "batch_end" {
+					continue
+				}
+				batches++
+				encoded, err := json.Marshal(event["compiler_reported_runtime"])
+				if err != nil {
+					t.Fatal(err)
+				}
+				var pair nativeBatchReportedRuntime
+				if err := json.Unmarshal(encoded, &pair); err != nil {
+					t.Fatal(err)
+				}
+				if pair.Execute == nil || pair.Replay == nil || pair.Execute.Status != "REPORTED" || pair.Replay.Status != "REPORTED" || *pair.Execute.RuntimeElapsedNS != 10 || *pair.Replay.RuntimeElapsedNS != 100 || *pair.Execute.RunWallNS != [2]int64{3, 4} || *pair.Replay.RunWallNS != [2]int64{30, 40} {
+					t.Fatal("execute/replay or runtime/composition timing were mixed", pair)
+				}
+			}
+			last := events[len(events)-1]
+			encoded, err := json.Marshal(last["compiler_reported_runtime_summary"])
+			if err != nil {
+				t.Fatal(err)
+			}
+			var summary nativeReportedRuntimeSummary
+			if err := json.Unmarshal(encoded, &summary); err != nil {
+				t.Fatal(err)
+			}
+			if batches != 2 || last["status"] != "COMPLETE" || last["verified_cases"] != float64(129) || summary.Execute.Reported != 2 || summary.Replay.Reported != 2 || summary.Execute.Totals.RuntimeElapsedNS != 20 || summary.Replay.Totals.RuntimeElapsedNS != 200 {
+				t.Fatal("original coverage or separate integer totals changed", last)
+			}
+		}
+		evidence[mode] = timingIntegrationEvidence(t, root, path)
+	}
+	if !reflect.DeepEqual(observations[0], observations[1]) || !reflect.DeepEqual(evidence[0], evidence[1]) {
+		t.Fatal("runtime diagnostics changed source/receipt/replay bytes or original observations")
+	}
+}
+
+func TestNativeReportedRuntimeParallelAndIncompleteSlots(t *testing.T) {
+	suites := []suite{nativeTimingTestSuite("FirstRuntime", 1), nativeTimingTestSuite("SecondRuntime", 1)}
+	recorder, path := timingRecorderForTest(t, nativeTimingTestRoot(t), suites)
+	identity := nativeTimingTestBinding(t, recorder)
+	var wait sync.WaitGroup
+	for index, s := range suites {
+		wait.Add(1)
+		go func(index int, s suite) {
+			defer wait.Done()
+			span := recorder.beginSuite(index, s)
+			bt := recorder.beginBatch(s, 0, 0, 1)
+			bt.phase("execute")
+			bt.phase("inspect_execution")
+			value := nativeReportedRuntimeForTest(int64(10*(index+1)), int64(index+1), int64(2*(index+1)), int64(3*(index+1)), int64(4*(index+1)))
+			bt.recordReportedRuntime("execute", &value)
+			*value.RuntimeElapsedNS = 99999 // Recorder owns its observed copy.
+			if index == 0 {
+				bt.phase("replay")
+				bt.phase("inspect_replay")
+				unavailable := reportedRuntime(nil, nil, nil, nil)
+				bt.recordReportedRuntime("replay", &unavailable)
+				bt.phase("receipt_binding")
+				bt.bind(identity, contentDigest([]byte("source-bound timing fixture")))
+				bt.finish(nil, nil, true)
+				span.finish(nativeTimingTestObservation(s, 1), nil, nil)
+			} else {
+				failure := errors.New("synthetic failure before replay inspection")
+				bt.finish(failure, nil, false)
+				span.finish(nativeSuiteResult{}, failure, nil)
+			}
+		}(index, s)
+	}
+	wait.Wait()
+	if err := recorder.close(errors.New("original partial run"), nil); err == nil {
+		t.Fatal("partial original work was reported complete")
+	}
+	events := nativeTimingTestEvents(t, path)
+	for _, event := range events {
+		if event["kind"] != "batch_end" {
+			continue
+		}
+		encoded, err := json.Marshal(event["compiler_reported_runtime"])
+		if err != nil {
+			t.Fatal(err)
+		}
+		var pair nativeBatchReportedRuntime
+		if err := json.Unmarshal(encoded, &pair); err != nil {
+			t.Fatal(err)
+		}
+		index := int(event["suite_index"].(float64))
+		if pair.Execute == nil || *pair.Execute.RuntimeElapsedNS != int64(10*(index+1)) || (index == 0 && (pair.Replay == nil || pair.Replay.Status != "NOT_AVAILABLE")) || (index == 1 && pair.Replay != nil) {
+			t.Fatal("parallel slot mixed metrics, unavailable and unobserved", event)
+		}
+	}
+	footer := events[len(events)-1]
+	encoded, err := json.Marshal(footer["compiler_reported_runtime_summary"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	var summary nativeReportedRuntimeSummary
+	if err := json.Unmarshal(encoded, &summary); err != nil {
+		t.Fatal(err)
+	}
+	if footer["complete"] != false || summary.Execute.Reported != 2 || summary.Execute.Totals == nil || summary.Execute.Totals.RuntimeElapsedNS != 30 || summary.Replay.Reported != 0 || summary.Replay.NotAvailable != 1 || summary.Replay.Unobserved != 1 || summary.Replay.Totals != nil {
+		t.Fatal("incomplete started-batch counts or all-null totals changed", footer)
+	}
+}
+
+func TestNativeReportedRuntimeSummaryIntegerBoundaries(t *testing.T) {
+	var summary nativeReportedRuntimePhaseSummary
+	summary.add(nil)
+	unavailable := reportedRuntime(nil, nil, nil, nil)
+	summary.add(&unavailable)
+	if summary.Reported != 0 || summary.NotAvailable != 1 || summary.Unobserved != 1 || summary.Totals != nil || summary.Overflow {
+		t.Fatal("no observed metrics must have null totals", summary)
+	}
+	zero := nativeReportedRuntimeForTest(0, 0, 0, 0, 0)
+	summary.add(&zero)
+	if summary.Reported != 1 || summary.Totals == nil || *summary.Totals != (nativeReportedRuntimeTotals{}) {
+		t.Fatal("legitimate zero was treated as missing", summary)
+	}
+	limit := nativeReportedRuntimeForTest(int64(1<<63-1), 0, 0, 0, 0)
+	summary.add(&limit)
+	one := nativeReportedRuntimeForTest(1, 0, 0, 0, 0)
+	summary.add(&one)
+	summary.add(&zero)
+	if summary.Reported != 4 || !summary.Overflow || summary.Totals != nil {
+		t.Fatal("checked overflow was wrapped, partially retained or lost counts", summary)
+	}
+	// Even maximum int64 decimal strings keep each pair compact. The cap is
+	// unchanged and these diagnostic declarations do not grow per batch.
+	maximum := nativeReportedRuntimeForTest(int64(1<<63-1), int64(1<<63-1), 0, 0, 0)
+	pair, err := json.Marshal(nativeBatchReportedRuntime{Execute: &maximum, Replay: &maximum})
+	if err != nil || len(pair) > 600 || len(nativeReportedRuntimeSchema)+len(nativeReportedRuntimeScope) > 1024 || nativeTimingMaxBytes != 8<<20 {
+		t.Fatal("diagnostic envelope or unchanged timing cap exceeded", len(pair), err)
+	}
+
+	var noObservation nativeReportedRuntimePhaseSummary
+	noObservation.add(nil)
+	var allUnavailable nativeReportedRuntimePhaseSummary
+	allUnavailable.add(&unavailable)
+	allUnavailable.add(&unavailable)
+	if noObservation.Unobserved != 1 || noObservation.Reported != 0 || noObservation.Totals != nil || allUnavailable.NotAvailable != 2 || allUnavailable.Unobserved != 0 || allUnavailable.Totals != nil {
+		t.Fatal("absent and attempted-unavailable slots became the same population", noObservation, allUnavailable)
+	}
+	// Overflow affects diagnostics only: original phase/source/coverage gates
+	// still complete, and the footer reports null sums instead of failing.
+	s := nativeTimingTestSuite("OverflowDiagnostic", 2)
+	recorder, path := timingRecorderForTest(t, nativeTimingTestRoot(t), []suite{s})
+	span := recorder.beginSuite(0, s)
+	identity := nativeTimingTestBinding(t, recorder)
+	for index := range 2 {
+		bt := recorder.beginBatch(s, index, index, index+1)
+		bt.phase("execute")
+		bt.phase("inspect_execution")
+		bt.recordReportedRuntime("execute", &limit)
+		bt.phase("replay")
+		bt.phase("inspect_replay")
+		bt.recordReportedRuntime("replay", &zero)
+		bt.phase("receipt_binding")
+		bt.bind(identity, contentDigest([]byte("original receipt")))
+		bt.finish(nil, nil, true)
+	}
+	span.finish(nativeTimingTestObservation(s, 2), nil, nil)
+	if err := recorder.close(nil, nil); err != nil {
+		t.Fatal("compiler diagnostic overflow changed original completion", err)
+	}
+	events := nativeTimingTestEvents(t, path)
+	footer := events[len(events)-1]
+	encoded, err := json.Marshal(footer["compiler_reported_runtime_summary"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	var aggregate nativeReportedRuntimeSummary
+	if err := json.Unmarshal(encoded, &aggregate); err != nil {
+		t.Fatal(err)
+	}
+	if footer["complete"] != true || aggregate.Execute.Reported != 2 || !aggregate.Execute.Overflow || aggregate.Execute.Totals != nil || aggregate.Replay.Totals == nil || aggregate.Replay.Totals.RuntimeElapsedNS != 0 {
+		t.Fatal("overflow was semantic failure or execute/replay sums were conflated", footer)
+	}
+}

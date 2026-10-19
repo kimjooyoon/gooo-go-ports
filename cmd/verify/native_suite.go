@@ -124,10 +124,15 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 			return result, err
 		}
 		pendingTiming.phase("inspect_execution")
-		original, err := inspect(raw, batch, false, identity)
+		var executeReported *nativeReportedRuntime
+		if pendingTiming != nil {
+			executeReported = &nativeReportedRuntime{}
+		}
+		original, err := inspectWithRuntime(raw, batch, false, identity, executeReported)
 		if err != nil {
 			return result, fmt.Errorf("%s: %w", receipt, err)
 		}
+		pendingTiming.recordReportedRuntime("execute", executeReported)
 		replayPath := filepath.Join(dir, "replay.json")
 		pendingTiming.phase("replay")
 		replayArgs := []string{"package", "replay", "--json", "--receipt", receipt, "--cases", cases}
@@ -140,10 +145,15 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 			return result, err
 		}
 		pendingTiming.phase("inspect_replay")
-		replay, err := inspect(raw, batch, true, identity)
+		var replayReported *nativeReportedRuntime
+		if pendingTiming != nil {
+			replayReported = &nativeReportedRuntime{}
+		}
+		replay, err := inspectWithRuntime(raw, batch, true, identity, replayReported)
 		if err != nil {
 			return result, fmt.Errorf("%s: %w", replayPath, err)
 		}
+		pendingTiming.recordReportedRuntime("replay", replayReported)
 		pendingTiming.phase("receipt_binding")
 		h, err := digestFile(receipt)
 		if err != nil {
