@@ -1,0 +1,24 @@
+{
+  "schema": "gooo/service-grant-many-reference-source/v1",
+  "role": "independent test-only Go reference; never imported into production package or Gooo workspace",
+  "original_reference_sha256": "a8e840ba81d19c42e4ae862fa1e03188c4cbba8c0a459f2e9468edc3c9448b4c",
+  "original_reference_observation_sha256": "5c4a1cc34a0b8c3b94d694a295149be15cfa05c17189bf82eb4a1be8b12af895",
+  "adaptation": [
+    "import path and fixture path made module-local",
+    "finite reference budget17rows/max257",
+    "new policy256-refusal after prior pattern/mismatch/empty precedence; original16 policy branches/expectations unchanged"
+  ],
+  "upstream_repository": "google/agentmesh",
+  "upstream_revision": "9fd1a41a15174df0aaef601c942410c2116bff91",
+  "upstream_matcher_source": "api/tar.go:MatchServicePattern",
+  "ports_source_revision": "00262a205c93eff646c53167bbcb5b06cd001c21",
+  "ports_extracted_source": "examples/agentmesh-service-policy/oracle/extracted.go",
+  "extracted_matcher_sha256": "01efb5b882fa532d537e8051148bba780af01806c5e5ee328a2b9327bde1c2fe",
+  "extracted_copy_byte_exact": true,
+  "original_reference_wrapper_license": "BSD-3-Clause (reference/LICENSE)",
+  "upstream_license": "Apache-2.0 (reference/upstream/LICENSE)",
+  "actual_fresh_reference_execution_in_phase1": 0,
+  "future_required_fresh_cases": 17,
+  "adapted_reference_main_sha256": "f21b3ea164c8df4b201cfc1de14b1b416247a343d720d0125b6d0fd71223c58f",
+  "formatter": "pinned Go1.27.2 gofmt"
+}

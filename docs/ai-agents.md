@@ -405,6 +405,13 @@ compiler issue before passing a minimal case to the language repository.
   `INVALID_INPUT` domain outcomes exit successfully; malformed JSON structure
   refuses the whole batch without stdout. This pure check does not apply a grant
   or call a service.
+- **Preserve an ordered workflow requirement list:** use the
+  [multi-request Gooo composition](../examples/service-grant-many/README.md).
+  Supply `before`, `after` and ordered `required_requests` pairs. Inspect the first
+  failing original index and all 12 decision fields; preserve duplicates and input
+  order. The generated Go API and JSON CLI need Go 1.27.2, while source editing
+  uses the separate pinned `de99b770` compiler profile. This is a separate API;
+  the MCP tool below still assesses one required request.
 - **Discover the same assessment through MCP:** build the
   [local service-grant MCP server](../examples/service-grant-mcp/README.md)
   and configure your host to launch its absolute executable path over stdio.

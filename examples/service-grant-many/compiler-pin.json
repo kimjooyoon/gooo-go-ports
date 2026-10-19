@@ -1,0 +1,52 @@
+{
+  "schema": "gooo/service-grant-many-compiler-pin/v1",
+  "profile": "multi-required-de99",
+  "compiler_repository": "https://github.com/kimjooyoon/meta-ontology-go",
+  "compiler_revision": "de99b770b8b5adea608233c3c0664902336e3310",
+  "compiler_version": "0.6.35-dev",
+  "go_version": "go1.27.2",
+  "decision_runtime": {
+    "module_path": "github.com/kimjooyoon/gooo-decision-runtime",
+    "version": "v0.2.51-experimental",
+    "replaced": false
+  },
+  "required_source_status": "CLEAN_VCS",
+  "global_repository_pin": "83928fa4538245abe33b08549da47f8cbdc50ed2 unchanged",
+  "release_tag": "v0.6.35-dev",
+  "release_archives": [
+    {
+      "name": "gooo-darwin-arm64.tar.gz",
+      "digest": "sha256:f8cc2c78ea1ff704cffa5da753dbf001747e39d82d5a7316c18d7139e5ac1219",
+      "bytes": 15042783
+    },
+    {
+      "name": "gooo-linux-amd64.tar.gz",
+      "digest": "sha256:e68a43a1937c327b1240a5fd7a2ee5ed427f32c7564415891fa808958421bb76",
+      "bytes": 15646044
+    }
+  ],
+  "observed_compiler": {
+    "schema": "gooo/build-identity/v1",
+    "language": "gooo",
+    "version": "0.6.35-dev",
+    "status": "development",
+    "build_info_observed": true,
+    "go_version": "go1.27.2",
+    "module_version": "v0.0.0-20261017214145-de99b770b8b5",
+    "module": {
+      "path": "github.com/kimjooyoon/meta-ontology-go",
+      "version": "v0.0.0-20261017214145-de99b770b8b5"
+    },
+    "compiler_source_sha": "de99b770b8b5adea608233c3c0664902336e3310",
+    "source_status": "CLEAN_VCS",
+    "vcs_revision": "de99b770b8b5adea608233c3c0664902336e3310",
+    "vcs_modified": "false",
+    "decision_runtime": {
+      "module_path": "github.com/kimjooyoon/gooo-decision-runtime",
+      "version": "v0.2.51-experimental",
+      "replaced": false
+    },
+    "native_go_required": "go1.27.2"
+  },
+  "release_archive_metadata_only_not_Linux_execution": true
+}

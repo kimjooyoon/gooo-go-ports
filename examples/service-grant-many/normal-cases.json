@@ -1,0 +1,37 @@
+{
+  "schema": "gooo/body-composition-cases/v1",
+  "cases": [
+    {
+      "inputs": {
+        "gooo/service-policy/multi-required:AssessRequiredRequests": {
+          "before": "*",
+          "after": "mcp://*",
+          "required_types": [
+            "mcp",
+            "mcp"
+          ],
+          "required_names": [
+            "weather",
+            "calculator"
+          ]
+        }
+      },
+      "expected": {
+        "gooo/service-policy/multi-required:AssessRequiredRequests": {
+          "status": "ELIGIBLE",
+          "reason": "SUBSET_AND_ALL_REQUIRED_REQUESTS_PRESERVED",
+          "invalid_field": "",
+          "invalid_index": -1,
+          "first_counterexample": -1,
+          "request_count": 2,
+          "checked_count": 2,
+          "all_preserved": true,
+          "supported_subset": true,
+          "subset_rule_id": "OLD_GLOBAL",
+          "counterexample_before_match": false,
+          "counterexample_after_match": false
+        }
+      }
+    }
+  ]
+}

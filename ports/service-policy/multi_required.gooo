@@ -1,0 +1,79 @@
+// Original Gooo multi-request composition; no real grant or service effect.
+// Reuses byte-exact licensed matcher/domain/refinement sources from ports00262.
+// Every represented item is validated before any preservation refusal is returned.
+package multi_required
+namespace gooo_service_policy_multi_required_v1
+import domain "gooo/service-domain"
+import svc "go/google/agentmesh/api"
+import refinement "gooo/service-policy/checked-refinement"
+entity RequestColumns id "gooo://service-policy/multi-required/input/v1" fields {
+ field before id "gooo://service-policy/multi-required/input/before" type string required one
+ field after id "gooo://service-policy/multi-required/input/after" type string required one
+ field required_types id "gooo://service-policy/multi-required/input/types" type string required many
+ field required_names id "gooo://service-policy/multi-required/input/names" type string required many
+}
+entity Decision id "gooo://service-policy/multi-required/decision/v1" fields {
+ field status id "gooo://service-policy/multi-required/status" type string required one
+ field reason id "gooo://service-policy/multi-required/reason" type string required one
+ field invalid_field id "gooo://service-policy/multi-required/invalid_field" type string required one
+ field invalid_index id "gooo://service-policy/multi-required/invalid_index" type integer required one
+ field first_counterexample id "gooo://service-policy/multi-required/first_counterexample" type integer required one
+ field request_count id "gooo://service-policy/multi-required/request_count" type integer required one
+ field checked_count id "gooo://service-policy/multi-required/checked_count" type integer required one
+ field all_preserved id "gooo://service-policy/multi-required/all_preserved" type boolean required one
+ field supported_subset id "gooo://service-policy/multi-required/supported_subset" type boolean required one
+ field subset_rule_id id "gooo://service-policy/multi-required/subset_rule_id" type string required one
+ field counterexample_before_match id "gooo://service-policy/multi-required/counterexample_before" type boolean required one
+ field counterexample_after_match id "gooo://service-policy/multi-required/counterexample_after" type boolean required one
+}
+activity AssessRequiredRequests(RequestColumns) -> Decision id "gooo://service-policy/multi-required/assess/v1" computes `
+let count = int64(len(input.required_types))
+if !domain.ValidateServicePattern(input.before) { return Decision{status: "INVALID_INPUT", reason: "INVALID_CANONICAL_INPUT", invalid_field: "before", invalid_index: -1, first_counterexample: -1, request_count: count, checked_count: 0, all_preserved: false, supported_subset: false, subset_rule_id: "", counterexample_before_match: false, counterexample_after_match: false} }
+if !domain.ValidateServicePattern(input.after) { return Decision{status: "INVALID_INPUT", reason: "INVALID_CANONICAL_INPUT", invalid_field: "after", invalid_index: -1, first_counterexample: -1, request_count: count, checked_count: 0, all_preserved: false, supported_subset: false, subset_rule_id: "", counterexample_before_match: false, counterexample_after_match: false} }
+if count != int64(len(input.required_names)) { return Decision{status: "INVALID_INPUT", reason: "COLUMN_LENGTH_MISMATCH", invalid_field: "required_names", invalid_index: -1, first_counterexample: -1, request_count: count, checked_count: 0, all_preserved: false, supported_subset: false, subset_rule_id: "", counterexample_before_match: false, counterexample_after_match: false} }
+if count == 0 { return Decision{status: "INVALID_INPUT", reason: "EMPTY_REQUIRED_REQUESTS", invalid_field: "required_types", invalid_index: -1, first_counterexample: -1, request_count: 0, checked_count: 0, all_preserved: false, supported_subset: false, subset_rule_id: "", counterexample_before_match: false, counterexample_after_match: false} }
+// This policy owns its 256-request work budget at the generated native entry too.
+if count > 256 { return Decision{status: "INVALID_INPUT", reason: "REQUIRED_REQUEST_LIMIT_EXCEEDED", invalid_field: "required_types", invalid_index: -1, first_counterexample: -1, request_count: count, checked_count: 0, all_preserved: false, supported_subset: false, subset_rule_id: "", counterexample_before_match: false, counterexample_after_match: false} }
+let index = 0
+let invalid = -1
+let invalidField = ""
+let invalidReason = ""
+for typ in input.required_types {
+ let name = input.required_names[index]
+ let validType = domain.ValidateServiceType(typ)
+ let validName = domain.ValidateServiceName(name)
+ if invalid == -1 {
+  if !validType || typ == "" { invalid = index; invalidField = "required_types"; invalidReason = "INVALID_CANONICAL_INPUT"; if typ == "" { invalidReason = "EMPTY_REQUIRED_REQUEST" } } else {
+   if !validName || name == "" { invalid = index; invalidField = "required_names"; invalidReason = "INVALID_CANONICAL_INPUT"; if name == "" { invalidReason = "EMPTY_REQUIRED_REQUEST" } }
+  }
+ }
+ index = index + 1
+}
+if invalid != -1 { return Decision{status: "INVALID_INPUT", reason: invalidReason, invalid_field: invalidField, invalid_index: invalid, first_counterexample: -1, request_count: count, checked_count: index, all_preserved: false, supported_subset: false, subset_rule_id: "", counterexample_before_match: false, counterexample_after_match: false} }
+let first = -1
+let firstBefore = false
+let firstAfter = false
+let failureReason = ""
+let position = 0
+for typ in input.required_types {
+ let name = input.required_names[position]
+ let before = svc.MatchServicePattern(input.before, typ, name)
+ let after = svc.MatchServicePattern(input.after, typ, name)
+ if first == -1 && (!before || !after) {
+  first = position; firstBefore = before; firstAfter = after
+  failureReason = "REQUIRED_REQUEST_REMOVED"
+  if !before { failureReason = "CURRENT_REQUIRED_REQUEST_DENIED" }
+ }
+ position = position + 1
+}
+let preserved = first == -1
+let grant = refinement.AnalyzeServiceGrantChecked(input.before, input.after)
+if grant.domain_status != "VALID_INPUT" || grant.invalid_field != "" { return Decision{status: "REFUSED", reason: "DEPENDENCY_RESULT_INVALID", invalid_field: "", invalid_index: -1, first_counterexample: first, request_count: count, checked_count: index, all_preserved: preserved, supported_subset: false, subset_rule_id: "", counterexample_before_match: firstBefore, counterexample_after_match: firstAfter} }
+if !grant.supported_subset {
+ let reason = "REFINEMENT_UNPROVEN"
+ if grant.status == "WIDENING_WITNESS" { reason = "WIDENING_WITNESS" }
+ return Decision{status: "REFUSED", reason: reason, invalid_field: "", invalid_index: -1, first_counterexample: first, request_count: count, checked_count: index, all_preserved: preserved, supported_subset: false, subset_rule_id: "", counterexample_before_match: firstBefore, counterexample_after_match: firstAfter}
+}
+if !preserved { return Decision{status: "REFUSED", reason: failureReason, invalid_field: "", invalid_index: -1, first_counterexample: first, request_count: count, checked_count: index, all_preserved: false, supported_subset: true, subset_rule_id: grant.rule_id, counterexample_before_match: firstBefore, counterexample_after_match: firstAfter} }
+return Decision{status: "ELIGIBLE", reason: "SUBSET_AND_ALL_REQUIRED_REQUESTS_PRESERVED", invalid_field: "", invalid_index: -1, first_counterexample: -1, request_count: count, checked_count: index, all_preserved: true, supported_subset: true, subset_rule_id: grant.rule_id, counterexample_before_match: false, counterexample_after_match: false}
+`

@@ -1257,6 +1257,41 @@ def validate(text):
             and "browser-demo job retains its separate" in log, "misleading execution scope log")
 
 
+# The ordered-service profile is an additional, separately pinned composition.
+# Project only its exact reviewed step and ten evidence paths before applying
+# every original73-workflow source/hash/mutation contract below.
+ORDERED_SERVICE_STEP_NAME = 'Verify ordered required-service grant preservation'
+ORDERED_SERVICE_STEP = '      - name: Verify ordered required-service grant preservation\n        if: steps.change-scope.outputs.docs_only != \'true\'\n        timeout-minutes: 20\n        run: |\n          set -euo pipefail\n          python3 -I -B tools/service-grant-many-verifier_test.py --out "$PWD/out/service-grant-many-cancellation"\n          # This consumer profile does not replace .gooo/default839 or its82 suites.\n          test ! -e out/service-grant-many-compiler\n          mkdir out/service-grant-many-compiler\n          curl --fail --location --silent --show-error --connect-timeout 15 --max-time 120 --max-filesize 16777216 --output out/service-grant-many-compiler/gooo-linux-amd64.tar.gz https://github.com/kimjooyoon/meta-ontology-go/releases/download/v0.6.35-dev/gooo-linux-amd64.tar.gz\n          printf \'%s  %s\\n\' \'e68a43a1937c327b1240a5fd7a2ee5ed427f32c7564415891fa808958421bb76\' \'out/service-grant-many-compiler/gooo-linux-amd64.tar.gz\' | sha256sum --check --strict\n          python3 -I -B - <<\'PY_MANY_COMPILER\'\n          import pathlib, tarfile\n          folder = pathlib.Path(\'out/service-grant-many-compiler\')\n          archive = folder / \'gooo-linux-amd64.tar.gz\'\n          assert archive.stat().st_size == 15646044\n          with tarfile.open(archive, \'r:gz\') as tf:\n              members = tf.getmembers()\n              assert len(members) == 1\n              item = members[0]\n              assert item.name == \'gooo\' and item.isfile() and not item.issym() and not item.islnk()\n              assert 0 < item.size <= 64 * 1024 * 1024\n              raw = tf.extractfile(item).read(item.size + 1)\n              assert len(raw) == item.size\n              binary = folder / \'gooo\'\n              with binary.open(\'xb\') as f:\n                  f.write(raw)\n              binary.chmod(0o700)\n          PY_MANY_COMPILER\n          python3 -I -B examples/service-grant-many/verify.py --compiler "$PWD/out/service-grant-many-compiler/gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/service-grant-many"\n          jq -e \'\n            .schema == "gooo/service-grant-many-verification/v1" and\n            .status == "PUBLIC_SOURCE_REFERENCE17_AND_NATIVE_TRANSPORT_PASS" and\n            .first_failure == null and .compiler_revision == "de99b770b8b5adea608233c3c0664902336e3310" and\n            .fresh_genuine_commands == 4 and .genuine_cases == 16 and .genuine_split == [1,15] and\n            .typed_decision_fields == 12 and .fresh_reference_cases == 17 and\n            .actual_compiled_columns_cases == 17 and .actual_compiled_friendly_cases == 16 and\n            .binary_metadata.version == "go1.27.2" and .binary_metadata.dependencies == 0 and\n            .binary_metadata.settings.CGO_ENABLED == "0" and\n            .binary_metadata.settings.GOOS == "linux" and .binary_metadata.settings.GOARCH == "amd64" and\n            .all_direct_wait_EOF_PG_ESRCH == true and .remaining_owned_groups == 0 and\n            .model_calls == 0 and .engine_builds == 0 and .local_lineage_complete_claim == false\n          \' out/service-grant-many/summary.json\n'
+ORDERED_SERVICE_ARTIFACT_BLOCK = '            out/service-grant-many/summary.json\n            out/service-grant-many/source-before.json\n            out/service-grant-many/source-after.json\n            out/service-grant-many/consumer-metadata.json\n            out/service-grant-many/friendly-case-mapping.json\n            out/service-grant-many/*/stdout\n            out/service-grant-many/*/stderr\n            out/service-grant-many/*/process.json\n            out/service-grant-many/*/started-process.json\n            out/service-grant-many-cancellation/\n'
+ORDERED_SERVICE_PRIOR_WORKFLOW_SHA = 'aa70ab9b6c8bdf16b15f7562d684227c849cf956ef07fdc9f7d9f161a556ec50'
+
+def project_ordered_service_integration(text):
+    require(len(re.findall(r'^      - (?:name|uses):', text, re.M)) == 74,
+            'ordered-service integration requires exactly74 source declarations')
+    jobs = workflow_jobs(text)
+    _, policy, _ = job_steps(jobs['policy-native-checks'])
+    step = policy.get(ORDERED_SERVICE_STEP_NAME, '')
+    require(step == ORDERED_SERVICE_STEP and text.count(ORDERED_SERVICE_STEP) == 1,
+            'ordered-service step must retain exact owner/name/if/timeout/archive/argv/jq bytes')
+    require(policy[EDITABLE_POLICY_STEP] + step + policy[AUTOBOT_STEP] in jobs['policy-native-checks'],
+            'ordered-service step must stay between editable and AutoBot checks')
+    upload = policy[POLICY_UPLOAD]
+    require(upload.count(ORDERED_SERVICE_ARTIFACT_BLOCK) == 1 and
+            text.count(ORDERED_SERVICE_ARTIFACT_BLOCK) == 1,
+            'ordered-service evidence requires all ten exact contiguous paths once')
+    require(field(upload, 'if') == 'always() && ' + FULL,
+            'ordered-service evidence must upload on failure in full scope only')
+    prior = text.replace(step, '', 1).replace(ORDERED_SERVICE_ARTIFACT_BLOCK, '', 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == ORDERED_SERVICE_PRIOR_WORKFLOW_SHA,
+            'ordered-service integration may add only its exact step and ten evidence paths')
+    return prior
+
+def validate_ordered_service_workflow(text):
+    prior = project_ordered_service_integration(text)
+    validate(prior)
+    return prior
+
+
 class WorkflowScopeTests(unittest.TestCase):
     def test_retry_after_additions_preserve_the_entire_prior_workflow_and_required_order(self):
         validate(self.text)
@@ -1603,7 +1638,9 @@ class WorkflowScopeTests(unittest.TestCase):
                     validate(self.text.replace(observer, observer.replace(line, after, 1), 1))
 
     def setUp(self):
-        self.text = WORKFLOW.read_text()
+        # First bind the complete current74 workflow; unchanged historical tests
+        # then exercise exactly the reviewed73-byte projection.
+        self.text = validate_ordered_service_workflow(WORKFLOW.read_text())
 
     def test_summary_preflight_is_exact_full_only_and_precedes_go_setup(self):
         named, unnamed = named_steps(self.text)
@@ -3187,6 +3224,114 @@ class WorkflowScopeTests(unittest.TestCase):
             with self.subTest(missing=missing):
                 self.assertFalse(outcome(environment))
 
+
+
+
+class OrderedServiceIntegrationTests(unittest.TestCase):
+    def setUp(self):
+        self.text = WORKFLOW.read_text()
+
+    def test_current74_projects_to_the_complete_reviewed73_contract(self):
+        prior = validate_ordered_service_workflow(self.text)
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), ORDERED_SERVICE_PRIOR_WORKFLOW_SHA)
+        self.assertEqual(len(re.findall(r'^      - (?:name|uses):', prior, re.M)), 73)
+        self.assertNotIn('out/service-grant-many/', prior)
+
+    def test_ordered_step_cannot_be_missing_duplicated_or_renamed(self):
+        for replacement in ('', ORDERED_SERVICE_STEP * 2,
+                            ORDERED_SERVICE_STEP.replace(ORDERED_SERVICE_STEP_NAME, 'Unreviewed composition', 1)):
+            with self.subTest(replacement=replacement[:80]), self.assertRaises(ValueError):
+                validate_ordered_service_workflow(self.text.replace(ORDERED_SERVICE_STEP, replacement, 1))
+
+    def test_ordered_process_regression_command_is_required_once_before_download(self):
+        line = '          python3 -I -B tools/service-grant-many-verifier_test.py --out "$PWD/out/service-grant-many-cancellation"\n'
+        self.assertEqual(ORDERED_SERVICE_STEP.count(line), 1)
+        self.assertIn('          set -euo pipefail\n' + line, ORDERED_SERVICE_STEP)
+        self.assertLess(ORDERED_SERVICE_STEP.index(line), ORDERED_SERVICE_STEP.index('          curl '))
+        for replacement in ('', line * 2, line.replace('-I -B', '-B'),
+                            line.replace(' --out "$PWD/out/service-grant-many-cancellation"', ''),
+                            line.replace('$PWD/out/service-grant-many-cancellation', '$PWD/out/unreviewed'),
+                            line.rstrip('\n') + ' || true\n',
+                            line.replace('tools/service-grant-many-verifier_test.py', 'tools/unreviewed-test.py')):
+            with self.subTest(command_boundary=replacement), self.assertRaises(ValueError):
+                validate_ordered_service_workflow(self.text.replace(line, replacement, 1))
+
+    def test_ordered_if_timeout_and_fail_closed_shell_are_required(self):
+        mutations = (("if: " + FULL, "if: " + DOCS),
+                     ('        if: ' + FULL + '\n', ''),
+                     ('timeout-minutes: 20', 'timeout-minutes: 40'),
+                     ('set -euo pipefail', 'set +e'),
+                     ('        run: |', '        continue-on-error: true\n        run: |'))
+        for before, after in mutations:
+            self.assertIn(before, ORDERED_SERVICE_STEP)
+            with self.subTest(boundary=before), self.assertRaises(ValueError):
+                validate_ordered_service_workflow(self.text.replace(ORDERED_SERVICE_STEP, ORDERED_SERVICE_STEP.replace(before, after, 1), 1))
+
+    def test_ordered_archive_identity_extraction_and_exact_command_are_required(self):
+        mutations = (('v0.6.35-dev/', 'v0.6.36-dev/'),
+                     ('e68a43a1937c327b1240a5fd7a2ee5ed427f32c7564415891fa808958421bb76', '0' * 64),
+                     ('archive.stat().st_size == 15646044', 'archive.stat().st_size > 0'),
+                     ('len(members) == 1', 'len(members) >= 1'),
+                     ("item.name == 'gooo'", "item.name.endswith('gooo')"),
+                     ('item.isfile() and not item.issym() and not item.islnk()', 'True'),
+                     ('--compiler "$PWD/out/service-grant-many-compiler/gooo"', '--compiler "$PWD/.gooo"'),
+                     ('--go "$(go env GOROOT)/bin/go"', '--go go'),
+                     ('--out "$PWD/out/service-grant-many"', '--out out/old'),
+                     )
+        for before, after in mutations:
+            self.assertIn(before, ORDERED_SERVICE_STEP)
+            with self.subTest(boundary=before), self.assertRaises(ValueError):
+                validate_ordered_service_workflow(self.text.replace(ORDERED_SERVICE_STEP, ORDERED_SERVICE_STEP.replace(before, after, 1), 1))
+
+    def test_every_ordered_summary_gate_and_jq_failure_are_required(self):
+        gates = [line for line in ORDERED_SERVICE_STEP.splitlines(True)
+                 if line.startswith('            .') or line.startswith('            \x27') ]
+        self.assertGreaterEqual(len(gates), 11)
+        for line in gates:
+            with self.subTest(missing_gate=line.strip()), self.assertRaises(ValueError):
+                validate_ordered_service_workflow(self.text.replace(ORDERED_SERVICE_STEP, ORDERED_SERVICE_STEP.replace(line, '', 1), 1))
+        for before, after in (('jq -e', 'jq'), ('.fresh_genuine_commands == 4', '.fresh_genuine_commands >= 1'),
+                              ('.genuine_split == [1,15]', '.genuine_split == [1]'),
+                              ('.actual_compiled_columns_cases == 17', '.actual_compiled_columns_cases == 16'),
+                              ('.all_direct_wait_EOF_PG_ESRCH == true', '.all_direct_wait_EOF_PG_ESRCH == false'),
+                              ('.local_lineage_complete_claim == false', '.local_lineage_complete_claim == true')):
+            self.assertIn(before, ORDERED_SERVICE_STEP)
+            with self.subTest(weakened_gate=before), self.assertRaises(ValueError):
+                validate_ordered_service_workflow(self.text.replace(ORDERED_SERVICE_STEP, ORDERED_SERVICE_STEP.replace(before, after, 1), 1))
+
+    def test_ordered_producer_cannot_move_to_other_job_or_order(self):
+        jobs = workflow_jobs(self.text)
+        _, policy, _ = job_steps(jobs['policy-native-checks'])
+        _, native, _ = job_steps(jobs['native-execution'])
+        without = self.text.replace(ORDERED_SERVICE_STEP, '', 1)
+        for anchor in (policy[EDITABLE_POLICY_STEP], policy[POLICY_UPLOAD],
+                       native['Compare the ports with Go and replay every batch']):
+            with self.subTest(anchor=anchor[:80]), self.assertRaises(ValueError):
+                validate_ordered_service_workflow(without.replace(anchor, ORDERED_SERVICE_STEP + anchor, 1))
+
+    def test_each_ordered_evidence_path_is_required_once_and_full_only(self):
+        for line in ORDERED_SERVICE_ARTIFACT_BLOCK.splitlines(True):
+            for replacement in ('', line * 2, '            out/service-grant-many/\n'):
+                with self.subTest(path=line.strip(), replacement=replacement), self.assertRaises(ValueError):
+                    validate_ordered_service_workflow(self.text.replace(line, replacement, 1))
+        jobs = workflow_jobs(self.text)
+        _, policy, _ = job_steps(jobs['policy-native-checks'])
+        upload = policy[POLICY_UPLOAD]
+        for after in ('always()', FULL, DOCS):
+            with self.subTest(artifact_scope=after), self.assertRaises(ValueError):
+                validate_ordered_service_workflow(self.text.replace(upload, upload.replace('always() && ' + FULL, after, 1), 1))
+        docs = policy[POLICY_DOC_ARTIFACT]
+        with self.assertRaises(ValueError):
+            validate_ordered_service_workflow(self.text.replace(docs, docs.replace('path: out/ci-scope.json', 'path: out/service-grant-many/', 1), 1))
+
+    def test_prior_source_native_workers_pins_and_deployment_are_not_weakened(self):
+        for before, after in (('sh tools/bootstrap.sh', 'true'),
+                              ('--workers 3', '--workers 1'),
+                              ('83928fa4538245abe33b08549da47f8cbdc50ed2', '0' * 40),
+                              ('go-version: \x271.27.2\x27', 'go-version: \x271.26.0\x27')):
+            self.assertIn(before, self.text)
+            with self.subTest(prior_boundary=before), self.assertRaises(ValueError):
+                validate_ordered_service_workflow(self.text.replace(before, after, 1))
 
 
 if __name__ == "__main__":

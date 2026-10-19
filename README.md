@@ -34,6 +34,7 @@ An incomplete attempt is useful feedback. Share public source and inputs only.
 | Your task | Entry | Observable result |
 | --- | --- | --- |
 | Assess a service-grant change | [Native first call](docs/ai-agents.md#check-a-service-grant-change-without-a-toolchain) or [MCP host setup](docs/ai-agents.md#connect-the-service-grant-mcp-tool) | Check a supported narrowing while preserving one required request; no grant is applied. |
+| Preserve every required request when narrowing a grant | [Ordered service requirements](examples/service-grant-many/README.md) | Inspect the first request that would break, with original order and all 12 Gooo decision fields. |
 | Edit an API policy in Gooo | [Editable policy comparison](examples/editable-api-policy/README.md) | Compare edited rules on the same facts and replay each policy. A separate opt-in compiler profile supports extracting helpers. |
 | Check an API policy change in CI | [Existing policy Action](examples/api-policy-ci/README.md) | Compare the same nine facts under two sealed profiles; inspect newly denied requests and optionally fail CI. |
 | Inspect fixed API decisions without a toolchain (optional) | [Native preview.11 bundles](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.11) | Run the supplied read/write batch on Linux amd64 or macOS arm64, try synthetic copies and replay the saved comparison. This does not edit Gooo source. |
@@ -305,6 +306,17 @@ a change to one in-memory grant only when the candidate is a recognized subset,
 one configured required request stays allowed, and the writer and revision are
 still valid. No per-change human approval is required. The demo also shows a stale
 proposal, a refused expansion, and recovery of a discarded response by operation ID.
+
+
+The original [ordered service-requirement composition](examples/service-grant-many/README.md)
+checks a proposed narrowing against every request needed by a workflow. For
+example, narrowing `*` to `mcp://weather` preserves a required weather call but
+refuses a workflow that also requires calculator; `first_counterexample: 1`
+points to the second original request. Gooo validates all supplied items, owns
+the 256-request policy budget and returns the subset rule plus 12 decision
+fields. Generated Go provides an ordered-pair API and strict JSON CLI. This
+separate `de99b770` consumer profile keeps the default compiler and 82-suite
+catalog unchanged. It assesses supplied facts and does not apply a grant.
 
 
 The appended selected If-Match core retains all284 original input occurrences

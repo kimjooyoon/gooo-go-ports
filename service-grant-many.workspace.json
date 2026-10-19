@@ -1,0 +1,39 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "gooo/service-policy/multi-required",
+    "activity": "AssessRequiredRequests"
+  },
+  "packages": [
+    {
+      "path": "gooo/service-domain",
+      "sources": [
+        "examples/agentmesh-service-policy/domain.gooo"
+      ]
+    },
+    {
+      "path": "go/google/agentmesh/api",
+      "sources": [
+        "ports/agentmesh/service_pattern.gooo"
+      ]
+    },
+    {
+      "path": "app/service-grant-refinement",
+      "sources": [
+        "examples/agentmesh-service-policy/refinement.gooo"
+      ]
+    },
+    {
+      "path": "gooo/service-policy/checked-refinement",
+      "sources": [
+        "examples/agentmesh-service-policy/checked_refinement.gooo"
+      ]
+    },
+    {
+      "path": "gooo/service-policy/multi-required",
+      "sources": [
+        "ports/service-policy/multi_required.gooo"
+      ]
+    }
+  ]
+}

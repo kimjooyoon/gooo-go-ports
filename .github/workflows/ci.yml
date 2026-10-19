@@ -1649,6 +1649,49 @@ jobs:
             .source_tool_unchanged == true and .processes_closed == true and .owned_work_removed == true and
             .model_calls == 0 and .compiler_revision == "31497af3beaef210b5a075867b0de76cf55ee3ca"
           ' out/editable-api-policy-helpers/summary.json
+      - name: Verify ordered required-service grant preservation
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 20
+        run: |
+          set -euo pipefail
+          python3 -I -B tools/service-grant-many-verifier_test.py --out "$PWD/out/service-grant-many-cancellation"
+          # This consumer profile does not replace .gooo/default839 or its82 suites.
+          test ! -e out/service-grant-many-compiler
+          mkdir out/service-grant-many-compiler
+          curl --fail --location --silent --show-error --connect-timeout 15 --max-time 120 --max-filesize 16777216 --output out/service-grant-many-compiler/gooo-linux-amd64.tar.gz https://github.com/kimjooyoon/meta-ontology-go/releases/download/v0.6.35-dev/gooo-linux-amd64.tar.gz
+          printf '%s  %s\n' 'e68a43a1937c327b1240a5fd7a2ee5ed427f32c7564415891fa808958421bb76' 'out/service-grant-many-compiler/gooo-linux-amd64.tar.gz' | sha256sum --check --strict
+          python3 -I -B - <<'PY_MANY_COMPILER'
+          import pathlib, tarfile
+          folder = pathlib.Path('out/service-grant-many-compiler')
+          archive = folder / 'gooo-linux-amd64.tar.gz'
+          assert archive.stat().st_size == 15646044
+          with tarfile.open(archive, 'r:gz') as tf:
+              members = tf.getmembers()
+              assert len(members) == 1
+              item = members[0]
+              assert item.name == 'gooo' and item.isfile() and not item.issym() and not item.islnk()
+              assert 0 < item.size <= 64 * 1024 * 1024
+              raw = tf.extractfile(item).read(item.size + 1)
+              assert len(raw) == item.size
+              binary = folder / 'gooo'
+              with binary.open('xb') as f:
+                  f.write(raw)
+              binary.chmod(0o700)
+          PY_MANY_COMPILER
+          python3 -I -B examples/service-grant-many/verify.py --compiler "$PWD/out/service-grant-many-compiler/gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/service-grant-many"
+          jq -e '
+            .schema == "gooo/service-grant-many-verification/v1" and
+            .status == "PUBLIC_SOURCE_REFERENCE17_AND_NATIVE_TRANSPORT_PASS" and
+            .first_failure == null and .compiler_revision == "de99b770b8b5adea608233c3c0664902336e3310" and
+            .fresh_genuine_commands == 4 and .genuine_cases == 16 and .genuine_split == [1,15] and
+            .typed_decision_fields == 12 and .fresh_reference_cases == 17 and
+            .actual_compiled_columns_cases == 17 and .actual_compiled_friendly_cases == 16 and
+            .binary_metadata.version == "go1.27.2" and .binary_metadata.dependencies == 0 and
+            .binary_metadata.settings.CGO_ENABLED == "0" and
+            .binary_metadata.settings.GOOS == "linux" and .binary_metadata.settings.GOARCH == "amd64" and
+            .all_direct_wait_EOF_PG_ESRCH == true and .remaining_owned_groups == 0 and
+            .model_calls == 0 and .engine_builds == 0 and .local_lineage_complete_claim == false
+          ' out/service-grant-many/summary.json
       - name: Verify original AutoBot resolver adaptation
         if: steps.change-scope.outputs.docs_only != 'true'
         timeout-minutes: 6
@@ -1690,6 +1733,16 @@ jobs:
             out/cel-api-policy/
             out/api-policy-revision/
             out/agentmesh-service-policy/
+            out/service-grant-many/summary.json
+            out/service-grant-many/source-before.json
+            out/service-grant-many/source-after.json
+            out/service-grant-many/consumer-metadata.json
+            out/service-grant-many/friendly-case-mapping.json
+            out/service-grant-many/*/stdout
+            out/service-grant-many/*/stderr
+            out/service-grant-many/*/process.json
+            out/service-grant-many/*/started-process.json
+            out/service-grant-many-cancellation/
             out/etag-project/
             out/etag-project-evidence/
             out/api-policy-public-consumer/
