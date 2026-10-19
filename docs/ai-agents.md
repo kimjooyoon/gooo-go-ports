@@ -6,6 +6,35 @@ source, and save a new execution/replay pair.
 The [Gooo language and compiler](https://github.com/kimjooyoon/meta-ontology-go)
 are developed separately; this repository supplies ports and runnable examples.
 
+## Check a service-grant change without a toolchain
+
+Start with [native preview.12](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.12)
+for **Linux amd64 or macOS arm64**. Download the matching archive and `.sha256`
+file, verify the checksum using the release instructions, then extract into a
+fresh private directory. The executable needs no Go, Gooo or Python installation.
+From the extracted directory, submit one request as a **JSON array**:
+
+```sh
+printf '%s\n' '[{"before":"*","after":"mcp://*","required_type":"mcp","required_name":"weather"}]' |
+  ./gooo-service-grant-evaluate -mode grant-update
+```
+
+This narrows `*` to `mcp://*` while preserving `mcp://weather`, returning
+`ELIGIBLE` with reason `SUBSET_AND_REQUIRED_REQUEST_PRESERVED`. Retain the
+original facts, all seven `decision` fields and the complete source/generation
+bindings. The bundle also includes `required-removed-facts.json` (`REFUSED`) and
+`domain-invalid-facts.json` (`INVALID_INPUT`). These are represented decisions
+with exit zero. Structurally rejected JSON, such as duplicate keys, exits one
+with no result on stdout; preserve stderr and do not report it as a policy refusal.
+
+This [Gooo](https://github.com/kimjooyoon/meta-ontology-go) calculation preserves
+one required request per change within its documented service-pattern domain.
+It checks supplied facts only: no grant is applied, no authority is
+authenticated and no service is called. Use the [MCP connection below](#connect-the-service-grant-mcp-tool)
+for an agent-callable version of the same assessment, or send
+[first-run feedback](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml)
+with your platform, release, first failed command and diagnostic.
+
 ## Compare fixed API policies without a compiler
 
 For an optional look at decision output, use the
@@ -382,8 +411,9 @@ compiler issue before passing a minimal case to the language repository.
   The `assess_service_grant` tool takes the four facts as one arguments object
   and returns the complete Gooo proof. `ELIGIBLE`, `REFUSED` and `INVALID_INPUT`
   are policy outcomes; `isError` means no decision was returned. The independent
-  wire verifier compares actual native CLI fixtures. No host-specific task
-  completion or universal MCP-client compatibility is implied.
+  wire verifier compares actual native CLI fixtures. See the
+  [host setup and finite Codex observation](#connect-the-service-grant-mcp-tool);
+  task completion in other hosts remains unverified.
 - **Automatically check a versioned service-grant tightening:** use the
   [versioned grant-change example](../examples/versioned-grant-change/README.md).
   Gooo combines strict version matching with supported grant narrowing and
@@ -393,6 +423,79 @@ compiler issue before passing a minimal case to the language repository.
 - **Import current ports into a separate Gooo project:** follow the
   [current path-import walkthrough](use-current-path-in-your-project.md) with
   its pinned toolchain, source mapping and saved execution/replay.
+
+## Connect the service-grant MCP tool
+
+Build `gooo-service-grant-mcp` from the reviewed checkout with **Go 1.27.2**,
+following the [MCP module's build command](../examples/service-grant-mcp/README.md#build-and-connect).
+Initial setup downloads pinned modules. Replace
+`/ABSOLUTE/PATH/gooo-service-grant-mcp` below with the built executable's absolute
+path. The preview.12 `gooo-service-grant-evaluate` CLI is **not an MCP server**.
+The local stdio server opens no HTTP port, needs no API key and makes no model
+call; the host retains its own authentication and permission settings.
+Decisions come from the pinned [Gooo](https://github.com/kimjooyoon/meta-ontology-go)
+generation without running the language engine.
+
+For [Codex MCP configuration](https://learn.chatgpt.com/docs/extend/mcp?surface=cli),
+merge this server entry using the client's documented configuration scope:
+
+```toml
+[mcp_servers.gooo_service_grant]
+command = "/ABSOLUTE/PATH/gooo-service-grant-mcp"
+enabled_tools = ["assess_service_grant"]
+```
+
+For [Claude Code local stdio](https://code.claude.com/docs/en/mcp), register it
+in the project-local scope:
+
+```sh
+claude mcp add --transport stdio --scope local gooo-service-grant -- /ABSOLUTE/PATH/gooo-service-grant-mcp
+```
+
+For [Cursor](https://cursor.com/docs/mcp), merge this entry into the project's
+`.cursor/mcp.json`, preserving existing entries:
+
+```json
+{
+  "mcpServers": {
+    "gooo-service-grant": {
+      "type": "stdio",
+      "command": "/ABSOLUTE/PATH/gooo-service-grant-mcp"
+    }
+  }
+}
+```
+
+The [Cursor CLI](https://cursor.com/docs/cli/mcp) uses the same configuration;
+`agent mcp list-tools gooo-service-grant` inspects the configured server's tools.
+
+Then ask the host to perform one finite task:
+
+> Call `assess_service_grant` with
+> `{"before":"*","after":"mcp://*","required_type":"mcp","required_name":"weather"}`,
+> then call it once more with only `after` changed to `http://*`. Return both
+> complete results: all facts, seven decision fields, and every source binding.
+
+These are tool argument **objects**, unlike the standalone CLI's JSON array.
+The represented statuses are `ELIGIBLE` and `REFUSED`; neither applies a grant.
+Authentication, current facts and atomic application remain
+[host responsibilities](../examples/agentmesh-service-policy/conditional-apply.md).
+
+One maintainer-owned macOS arm64 Codex CLI `0.163.0-alpha.10.2` session completed
+this two-call task using a passive Python stdio recorder. The captured responses,
+CLI tool events and two complete final proofs matched the native controls,
+including all 89 asset bindings and false/empty fields. This was a synthetic
+maintainer test, not external adoption or a registry installation. The direct
+configuration above was not a separate measured run. Claude Code and Cursor
+connection examples follow their official documentation; task completion in
+those hosts remains unverified. Other client capabilities were not proven disabled.
+
+For useful [first-run feedback](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml),
+include the host/version, OS and server source version. Say whether registration,
+tool discovery, the call or returning the complete result failed. Preserve the
+first command, exit status and diagnostic, and use public synthetic facts.
+Did it help one real API or automation task, or which service pattern could you
+not express? The command contacts no service and uploads no feedback itself.
 
 ## Optional Claude Code ETag workflow
 
