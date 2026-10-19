@@ -426,11 +426,19 @@ compiler issue before passing a minimal case to the language repository.
 
 ## Connect the service-grant MCP tool
 
-Build `gooo-service-grant-mcp` from the reviewed checkout with **Go 1.27.2**,
-following the [MCP module's build command](../examples/service-grant-mcp/README.md#build-and-connect).
-Initial setup downloads pinned modules. Replace
-`/ABSOLUTE/PATH/gooo-service-grant-mcp` below with the built executable's absolute
-path. The preview.12 `gooo-service-grant-evaluate` CLI is **not an MCP server**.
+Download the [native MCP preview.13](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.13)
+archive and matching `.sha256` file for **Linux amd64** or **macOS arm64**.
+In the download directory, verify the checksum with `sha256sum -c FILE.sha256`
+(Linux) or `shasum -a 256 -c FILE.sha256` (macOS), then extract the verified
+archive. It contains `gooo-service-grant-mcp` and 55 license/attribution texts.
+Running this executable needs no Go, Gooo compiler or Python installation.
+Replace `/ABSOLUTE/PATH/gooo-service-grant-mcp` below with its absolute path;
+pass no command arguments.
+
+To build from source instead, use **Go 1.27.2** and the
+[MCP module's build command](../examples/service-grant-mcp/README.md#build-and-connect).
+Initial source setup downloads pinned modules. The preview.12
+`gooo-service-grant-evaluate` CLI is **not an MCP server**.
 The local stdio server opens no HTTP port, needs no API key and makes no model
 call; the host retains its own authentication and permission settings.
 Decisions come from the pinned [Gooo](https://github.com/kimjooyoon/meta-ontology-go)
@@ -472,23 +480,28 @@ The [Cursor CLI](https://cursor.com/docs/cli/mcp) uses the same configuration;
 Then ask the host to perform one finite task:
 
 > Call `assess_service_grant` with
-> `{"before":"*","after":"mcp://*","required_type":"mcp","required_name":"weather"}`,
-> then call it once more with only `after` changed to `http://*`. Return both
-> complete results: all facts, seven decision fields, and every source binding.
+> `{"before":"mcp://weather.*","after":"mcp://weather.forecast","required_type":"mcp","required_name":"weather.forecast"}`,
+> then call it once more with only `after` changed to `mcp://weather.health`.
+> Report both decisions and retain the complete tool results, including their
+> supplied facts and source bindings.
 
 These are tool argument **objects**, unlike the standalone CLI's JSON array.
 The represented statuses are `ELIGIBLE` and `REFUSED`; neither applies a grant.
 Authentication, current facts and atomic application remain
 [host responsibilities](../examples/agentmesh-service-policy/conditional-apply.md).
 
-One maintainer-owned macOS arm64 Codex CLI `0.163.0-alpha.10.2` session completed
-this two-call task using a passive Python stdio recorder. The captured responses,
-CLI tool events and two complete final proofs matched the native controls,
-including all 89 asset bindings and false/empty fields. This was a synthetic
-maintainer test, not external adoption or a registry installation. The direct
-configuration above was not a separate measured run. Claude Code and Cursor
-connection examples follow their official documentation; task completion in
-those hosts remains unverified. Other client capabilities were not proven disabled.
+One maintainer-owned macOS arm64 Codex CLI `0.163.0-alpha.10.2` session used the
+preview.13 executable downloaded from the public release and verified against
+its SHA-256. It connected directly, without a Python stdio recorder, and
+completed these two calls. Both copies of each tool result and the two complete
+final proofs matched all four facts, seven typed decision fields and 89 asset
+bindings, including false/empty fields. The test explicitly asked for complete
+final proofs; the shorter reporting prompt above avoids requiring another copy
+of every source hash. This is a synthetic maintainer observation, not external
+adoption or a registry installation. Claude Code and Cursor connection examples
+follow their official documentation; task completion in those hosts remains
+unverified. Other client capabilities and independent native-child termination
+were not proven by the host output.
 
 For useful [first-run feedback](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml),
 include the host/version, OS and server source version. Say whether registration,
