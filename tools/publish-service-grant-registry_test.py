@@ -726,6 +726,188 @@ class ValidationOnlySafety(unittest.TestCase):
               'main_private_HOME_removed': True, 'actual_new_children': 0}))
 
 
+class RegistryReadTimeoutTests(unittest.TestCase):
+    def runtime(self, clock, validate_only=False):
+        import tempfile
+        temporary = tempfile.TemporaryDirectory(prefix='registry-read-clock-offline-')
+        self.addCleanup(temporary.cleanup)
+        with mock.patch.object(M.time, 'monotonic', side_effect=lambda: clock[0]):
+            return M.Runtime(Path(temporary.name) / 'out', validate_only=validate_only)
+
+    def version_url(self):
+        return (M.REGISTRY + '/v0.1/servers/' + M.urllib.parse.quote(M.NAME, safe='')
+                + '/versions/' + M.urllib.parse.quote(M.VERSION, safe=''))
+
+    def transport(self, clock, delay, body=b'{}', status=200):
+        # A virtual socket read advances time, never sleeps or opens a socket.
+        state = types.SimpleNamespace(open_calls=[], reads=0, closed=False)
+
+        class Response:
+            headers = {'Content-Length': str(len(body))}
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                state.closed = True
+
+            def read(self, _amount):
+                state.reads += 1
+                if state.reads > 1:
+                    return b''
+                clock[0] += min(delay, self.timeout)
+                if delay > self.timeout:
+                    state.primary = TimeoutError('synthetic bounded read timeout')
+                    raise state.primary
+                return body
+
+        response = Response()
+        response.status = status
+
+        def build_opener(*handlers):
+            def open_request(request, timeout):
+                request.timeout = timeout
+                for handler in handlers:
+                    if hasattr(handler, 'https_request') and request.type == 'https':
+                        request = handler.https_request(request)
+                response.timeout = request.timeout
+                state.open_calls.append((request.full_url, response.timeout))
+                return response
+            return types.SimpleNamespace(open=open_request)
+
+        return state, build_opener
+
+    def test_exact_registry_origin_and_version_path_only(self):
+        url = self.version_url()
+        for accepted in (url, url + '?include_deleted=true',
+                         url.replace('registry.modelcontextprotocol.io',
+                                     'REGISTRY.MODELCONTEXTPROTOCOL.IO:443')):
+            with self.subTest(url=accepted):
+                self.assertEqual(M.read_timeout(accepted), 45)
+        for other in ('https://api.github.com/repos/kimjooyoon/gooo-go-ports',
+                      'https://github.com/kimjooyoon/gooo-go-ports/releases/download/x/a',
+                      'https://release-assets.githubusercontent.com/a',
+                      url.replace('https:', 'http:'),
+                      url.replace('registry.modelcontextprotocol.io',
+                                  'registry.modelcontextprotocol.io.example.invalid'),
+                      url.replace('https://', 'https://user@'),
+                      url.replace('registry.modelcontextprotocol.io',
+                                  'registry.modelcontextprotocol.io:444'),
+                      url.replace('/v0.1/servers/', '/other/servers/'),
+                      url + '?include_deleted=true&other=1', url + '#fragment'):
+            with self.subTest(url=other):
+                self.assertEqual(M.read_timeout(other), 20)
+        redirected = M.urllib.request.Request('https://github.com/example/asset')
+        redirected.timeout = 45
+        self.assertIs(M.OriginReadTimeout().https_request(redirected), redirected)
+        self.assertEqual(redirected.timeout, 20)
+
+    def test_registry_25_second_read_completes_once(self):
+        clock = [0.0]
+        runtime = self.runtime(clock)
+        body = b'{"title":"Not Found","status":404,"detail":"Server not found"}'
+        state, opener = self.transport(clock, 25, body, 404)
+        with mock.patch.object(M.time, 'monotonic', side_effect=lambda: clock[0]), \
+                mock.patch.object(M.urllib.request, 'build_opener', side_effect=opener):
+            self.assertIsNone(runtime.registry_version('registry-before', allow_missing=True))
+        self.assertEqual(state.open_calls, [(self.version_url() + '?include_deleted=true', 45)])
+        self.assertEqual((clock[0], state.reads, state.closed), (25, 2, True))
+        self.assertEqual(runtime.http['known_bytes'], len(body))
+        self.assertEqual(runtime.http['unknown_reserved_bytes'], 0)
+        self.assertIsNone(runtime.first_failure)
+        self.assertEqual(set(runtime.http['requests'][0]),
+                         {'label', 'url', 'cap_bytes', 'EOF', 'status', 'bytes', 'sha256'})
+        self.assertEqual(runtime.calls, [])
+
+    def test_github_25_second_read_keeps20_and_full_reservation(self):
+        clock = [0.0]
+        runtime = self.runtime(clock)
+        state, opener = self.transport(clock, 25)
+        url = 'https://api.github.com/repos/kimjooyoon/gooo-go-ports'
+        with mock.patch.object(M.time, 'monotonic', side_effect=lambda: clock[0]), \
+                mock.patch.object(M.urllib.request, 'build_opener', side_effect=opener), \
+                self.assertRaises(TimeoutError) as caught:
+            runtime.fetch('public-metadata', url, 64)
+        self.assertIs(caught.exception, state.primary)
+        self.assertIs(runtime.first_failure, state.primary)
+        self.assertEqual(state.open_calls, [(url, 20)])
+        self.assertEqual((clock[0], state.closed), (20, True))
+        self.assertEqual((runtime.http['known_bytes'], runtime.http['unknown_reserved_bytes']), (0, 65))
+        self.assertFalse(runtime.http['requests'][0]['EOF'])
+
+    def test_registry_timeout_retains_reservation_before_bootstrap_and_auth(self):
+        import sys
+        import tempfile
+        temporary = tempfile.TemporaryDirectory(prefix='registry-timeout-main-offline-')
+        self.addCleanup(temporary.cleanup)
+        clock, instances = [0.0], []
+        state, opener = self.transport(clock, 46)
+        actual_runtime = M.Runtime
+
+        def create_runtime(*args, **kwargs):
+            runtime = actual_runtime(*args, **kwargs)
+            instances.append(runtime)
+            return runtime
+
+        environment = {'GITHUB_ACTIONS': 'true', 'GITHUB_REPOSITORY': M.REPOSITORY,
+                       'GITHUB_EVENT_NAME': 'workflow_dispatch', 'GITHUB_REF': 'refs/heads/main'}
+        out = Path(temporary.name) / 'out'
+        with mock.patch.dict(M.os.environ, environment, clear=True), \
+                mock.patch.object(sys, 'argv', ['registry-test', '--out', str(out), '--allow-publish']), \
+                mock.patch.object(M.platform, 'system', return_value='Linux'), \
+                mock.patch.object(M.platform, 'machine', return_value='x86_64'), \
+                mock.patch.object(M.time, 'monotonic', side_effect=lambda: clock[0]), \
+                mock.patch.object(M.urllib.request, 'build_opener', side_effect=opener), \
+                mock.patch.object(M, 'Runtime', side_effect=create_runtime), \
+                mock.patch.object(M, 'public_preview') as preview, \
+                mock.patch.object(M, 'bootstrap') as bootstrap, \
+                mock.patch.object(actual_runtime, 'command') as command, \
+                mock.patch.object(M.signal, 'signal', return_value=None), \
+                self.assertRaises(TimeoutError) as caught:
+            M.main()
+        runtime = instances[0]
+        self.assertIs(caught.exception, state.primary)
+        self.assertIs(runtime.first_failure, state.primary)
+        self.assertEqual(state.open_calls, [(self.version_url() + '?include_deleted=true', 45)])
+        self.assertEqual((clock[0], state.closed), (45, True))
+        self.assertEqual((runtime.http['known_bytes'], runtime.http['unknown_reserved_bytes']),
+                         (0, 262145))
+        row = runtime.http['requests'][0]
+        self.assertEqual(row['received_prefix_bytes'], 0)
+        self.assertEqual(row['failure_class'], 'TimeoutError')
+        self.assertFalse(row['EOF'])
+        self.assertFalse(runtime.home.exists())
+        self.assertEqual(runtime.stage, 'registry-version-absence')
+        self.assertEqual(runtime.calls, [])
+        preview.assert_called_once_with(runtime)
+        bootstrap.assert_not_called()
+        command.assert_not_called()
+        first = M.load((runtime.proof / 'first-failure.json').read_bytes())
+        self.assertEqual((first['class'], first['stage']),
+                         ('TimeoutError', 'registry-version-absence'))
+        self.assertFalse((runtime.proof / 'registration.json').exists())
+
+    def test_registry_wait_does_not_extend_publish_or_validation_deadline(self):
+        for validate_only, limit in ((False, 600), (True, 480)):
+            with self.subTest(validate_only=validate_only):
+                clock = [0.0]
+                runtime = self.runtime(clock, validate_only=validate_only)
+                clock[0] = limit - 24
+                state, opener = self.transport(clock, 25, b'x')
+                with mock.patch.object(M.time, 'monotonic', side_effect=lambda: clock[0]), \
+                        mock.patch.object(M.urllib.request, 'build_opener', side_effect=opener), \
+                        self.assertRaisesRegex(M.Refused, 'registry task deadline') as caught:
+                    runtime.fetch('registry-deadline', self.version_url(), 64)
+                self.assertEqual(clock[0], limit + 1)
+                self.assertEqual(state.open_calls, [(self.version_url(), 45)])
+                self.assertIs(runtime.first_failure, caught.exception)
+                self.assertEqual(runtime.http['unknown_reserved_bytes'], 65)
+                self.assertEqual(runtime.http['known_bytes'], 0)
+                self.assertEqual(runtime.http['requests'][0]['received_prefix_bytes'], 1)
+                self.assertFalse(runtime.http['requests'][0]['EOF'])
+                self.assertTrue(state.closed)
+
+
 
 if __name__ == '__main__':
     unittest.main()

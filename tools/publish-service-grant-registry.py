@@ -75,8 +75,30 @@ BUNDLE_IDENTITIES = {
         (32183, '88bde3e59d928e2a2648458efa1b4ad8181c3984472000d567d20bb2c82da5cd'),
 }
 HTTP_CAP = 32 * 1024 * 1024
+PUBLIC_READ_TIMEOUT = 20
+REGISTRY_READ_TIMEOUT = 45
 STREAM_CAP = 65536
 BINARY_CAP = 64 * 1024 * 1024
+
+
+def read_timeout(url):
+    """Allow only the fixed official Registry version read a longer socket wait."""
+    parsed = urllib.parse.urlsplit(url)
+    version_path = ('/v0.1/servers/' + urllib.parse.quote(NAME, safe='')
+                    + '/versions/' + urllib.parse.quote(VERSION, safe=''))
+    if (parsed.scheme == 'https' and parsed.hostname == 'registry.modelcontextprotocol.io'
+            and parsed.port in (None, 443) and parsed.username is None and parsed.password is None
+            and parsed.path == version_path and parsed.query in ('', 'include_deleted=true')
+            and not parsed.fragment):
+        return REGISTRY_READ_TIMEOUT
+    return PUBLIC_READ_TIMEOUT
+
+
+class OriginReadTimeout(urllib.request.BaseHandler):
+    def https_request(self, request):
+        # urllib also processes redirected requests: public asset hops keep20s.
+        request.timeout = read_timeout(request.full_url)
+        return request
 
 
 class Refused(RuntimeError):
@@ -281,7 +303,8 @@ class Runtime:
                     'objects.githubusercontent.com'}, 'unexpected public redirect')
                 return super().redirect_request(req, fp, code, msg, headers, newurl)
 
-        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), Redirect())
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), Redirect(),
+                                             OriginReadTimeout())
         request = urllib.request.Request(url, headers={
             'User-Agent': 'Gooo-fixed-preview14-registry-publisher',
             'Accept': 'application/json' if '/api.' in url or
@@ -289,7 +312,7 @@ class Runtime:
         raw = bytearray()
         try:
             try:
-                response = opener.open(request, timeout=20)
+                response = opener.open(request, timeout=read_timeout(url))
             except urllib.error.HTTPError as error:
                 if error.code not in accepted_statuses:
                     raise
