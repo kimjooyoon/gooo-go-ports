@@ -30,6 +30,20 @@ Both complete fifteen-field decisions and changed field names are saved in
 in separate subdirectories. These files include the original supplied facts;
 review them before sharing.
 
+After all existing checks and cleanup succeed, `source-comparison.json` joins
+the same complete fifteen-field comparisons to the before/after source and
+workspace hashes, the two common source files, and all four execution/replay
+records. Each record has a relative output path, raw-file SHA256 and its replay
+parent where applicable. `summary.json` references this local file by relative
+path, byte count and raw SHA256. Raw source hashes are labelled separately from
+the receipts' JSON-string source digests; these are different representations.
+The policy-source unified diff retains CRLF and marks a missing final LF. Diff
+computation is limited to128KiB combined source bytes and2,000 combined LF-based
+lines. Larger edits retain full hashes with `NOT_RENDERED_LIMIT`; identical
+sources report `IDENTICAL`. This is a display index, not a semantic proof or
+permission to perform an action. It is not printed or uploaded automatically.
+Review private source as well as facts before sharing any output.
+
 Now edit the condition or reason in `after.gooo`, keeping the same nine scalar
 inputs, fifteen-field record and call to `original.APIAccess`. For example,
 replace `synthetic:deploy-bot` with `synthetic:user` and change the reason to
