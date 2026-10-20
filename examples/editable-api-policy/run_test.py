@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Transport/comparison/refusal controls; no compiler, network or subprocess."""
 import copy
+import contextlib
 import importlib.util
+import io
 import json
 from pathlib import Path
 import unittest
@@ -200,6 +202,118 @@ class ConsumerControls(unittest.TestCase):
         with self.assertRaises(RuntimeError): R.output_binding(broken, values)
         changed = copy.deepcopy(values); changed[0]['allowed'] = False
         with self.assertRaises(RuntimeError): R.output_binding(runtime, changed)
+
+
+class NamedFactsControls(unittest.TestCase):
+    def fact(self):
+        return {'group_present': False, 'group_value': 'group-raw',
+                'principal_present': True, 'principal_value': 'principal-raw',
+                'authenticated': False, 'caller_tenant': 'caller-raw',
+                'resource_tenant': 'resource-raw', 'requested_action': 'request-raw',
+                'allowed_action': 'allowed-raw'}
+
+    def raw(self, rows):
+        return json.dumps(rows, ensure_ascii=True, separators=(',', ':')).encode() + b'\n'
+
+    def test_semantic_names_map_to_each_original_position_without_reordering_rows(self):
+        fact = self.fact()
+        raw = self.raw([fact, dict(reversed(list(fact.items()))), fact])
+        saved = bytes(raw)
+        converted = R.named_facts_inputs(raw)
+        self.assertEqual(raw, saved)
+        self.assertTrue(converted.endswith(b'\n'))
+        self.assertEqual(converted, R.named_facts_inputs(raw))
+        doc = R.decoded(converted)
+        self.assertEqual(set(doc), {'schema', 'inputs'})
+        self.assertEqual(doc['schema'], 'gooo/body-composition-inputs/v1')
+        expected = {R.ENTRY + '.input0': False, R.ENTRY + '.input1': 'group-raw',
+                    R.ENTRY + '.input2': True, R.ENTRY + '.input3': 'principal-raw',
+                    R.ENTRY + '.input4': False, R.ENTRY + '.input5': 'caller-raw',
+                    R.ENTRY + '.input6': 'resource-raw', R.ENTRY + '.input7': 'request-raw',
+                    R.ENTRY + '.input8': 'allowed-raw'}
+        self.assertEqual(doc['inputs'], [expected, expected, expected])
+        self.assertEqual(R.input_rows(converted), doc['inputs'])
+
+    def test_inactive_and_unicode_text_is_not_filled_trimmed_or_normalized(self):
+        fact = self.fact()
+        fact.update(principal_present=False, principal_value='  한e\u0301😀\x00<&>\u2028\u2029  ',
+                    group_value='', caller_tenant=' A ', resource_tenant='A')
+        value = R.input_rows(R.named_facts_inputs(self.raw([fact])))[0]
+        self.assertIs(value[R.ENTRY + '.input2'], False)
+        self.assertEqual(value[R.ENTRY + '.input3'], fact['principal_value'])
+        self.assertEqual(value[R.ENTRY + '.input1'], '')
+        self.assertEqual(value[R.ENTRY + '.input5'], ' A ')
+        self.assertEqual(value[R.ENTRY + '.input6'], 'A')
+
+    def test_exact_array_row_and_key_shape_including_a_bad_late_row(self):
+        fact = self.fact()
+        for value in ({'facts': [fact]}, fact, [], [fact] * 4, [None], ['facts']):
+            with self.subTest(shape=type(value).__name__), self.assertRaises(RuntimeError):
+                R.named_facts_inputs(self.raw(value))
+        for mode in ('missing', 'extra'):
+            late = dict(fact)
+            if mode == 'missing': del late['principal_value']
+            else: late['principal'] = 'not-an-alias'
+            with self.subTest(mode=mode), self.assertRaises(RuntimeError):
+                R.named_facts_inputs(self.raw([fact, fact, late]))
+
+    def test_no_boolean_or_text_type_coercion(self):
+        fact = self.fact()
+        for name in ('group_present', 'principal_present', 'authenticated'):
+            for bad in (0, 1, None, 'false'):
+                with self.subTest(name=name, bad=bad), self.assertRaises(RuntimeError):
+                    R.named_facts_inputs(self.raw([dict(fact, **{name: bad})]))
+        for name in ('group_value', 'principal_value', 'caller_tenant', 'resource_tenant',
+                     'requested_action', 'allowed_action'):
+            for bad in (0, None, False, [], {}):
+                with self.subTest(name=name, bad=bad), self.assertRaises(RuntimeError):
+                    R.named_facts_inputs(self.raw([dict(fact, **{name: bad})]))
+
+    def test_text_limit_counts_utf8_bytes_and_refuses_invalid_scalars(self):
+        fact = dict(self.fact(), principal_value='é' * 512)
+        self.assertEqual(R.input_rows(R.named_facts_inputs(self.raw([fact])))[0][R.ENTRY + '.input3'], fact['principal_value'])
+        for text in ('é' * 513, '\ud800', '\udc00'):
+            with self.subTest(text_length=len(text)), self.assertRaises((RuntimeError, UnicodeError)):
+                R.named_facts_inputs(self.raw([dict(fact, principal_value=text)]))
+
+    def test_strict_raw_json_duplicates_trailing_and_nonfinite_refuse(self):
+        raw = self.raw([self.fact()])
+        duplicate = raw.replace(b'"group_present":false', b'"group_present":false,"group_\\u0070resent":true')
+        for bad in (duplicate, raw + b'{}', raw.replace(b'"group-raw"', b'NaN'),
+                    raw.replace(b'"group-raw"', b'"\xff"')):
+            with self.subTest(prefix=bad[:40]), self.assertRaises((ValueError, RuntimeError, UnicodeError)):
+                R.named_facts_inputs(bad)
+
+    def test_source_and_encoded_native_byte_limits_are_both_enforced(self):
+        raw = self.raw([self.fact()])
+        exact = raw + b' ' * (30000 - len(raw))
+        self.assertEqual(len(R.input_rows(R.named_facts_inputs(exact))), 1)
+        with self.assertRaises(RuntimeError): R.named_facts_inputs(exact + b'\n')
+        # These six1024-byte facts fit the source budget, but Go-compatible HTML
+        # escaping expands the actual native JSON past30000. No partial input is returned.
+        fact = self.fact()
+        for name in ('group_value', 'principal_value', 'caller_tenant', 'resource_tenant',
+                     'requested_action', 'allowed_action'): fact[name] = '&' * 1024
+        raw = self.raw([fact])
+        self.assertLess(len(raw), 30000)
+        with self.assertRaisesRegex(RuntimeError, '30000-byte joint wire limit'):
+            R.named_facts_inputs(raw)
+
+    def test_flags_are_mutually_exclusive_and_default_native_path_remains(self):
+        base = ['--root', '/root', '--compiler', '/compiler', '--go', '/go', '--out', '/out']
+        default = R.arguments(base)
+        self.assertIsNone(default.facts)
+        self.assertIsNone(default.inputs)
+        self.assertEqual(default.compiler_profile, 'default')
+        named = R.arguments(base + ['--facts', '/facts'])
+        self.assertEqual(named.facts, '/facts')
+        self.assertIsNone(named.inputs)
+        native = R.arguments(base + ['--inputs', '/inputs'])
+        self.assertEqual(native.inputs, '/inputs')
+        for flags in (['--facts', '/facts', '--inputs', '/inputs'], ['--facts', ''], ['--facts']):
+            with self.subTest(flags=flags), contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as error:
+                R.arguments(base + flags)
+            self.assertEqual(error.exception.code, 2)
 
 
 if __name__ == '__main__': unittest.main()

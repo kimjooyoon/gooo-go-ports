@@ -29,6 +29,8 @@ FIELDS = ('allowed', 'reason', 'authenticated', 'tenant_present', 'tenant_matche
           'principal_defaulted', 'effective_principal')
 TEXT_FIELDS = {'reason', 'access_result', 'effective_principal'}
 INPUT_TYPES = ['Boolean' if i in (0, 2, 4) else 'Text' for i in range(9)]
+FACT_FIELDS = ('group_present', 'group_value', 'principal_present', 'principal_value',
+               'authenticated', 'caller_tenant', 'resource_tenant', 'requested_action', 'allowed_action')
 DEPENDENCIES = [('go/cel.dev/cel-go/codelab', 'ports/cel/scalar_access.gooo'),
                 ('app/cel-api-policy', 'examples/cel-api-policy/main.gooo')]
 SOURCE_INSPECTION036 = {'compiler_revision': '31497af3beaef210b5a075867b0de76cf55ee3ca',
@@ -83,6 +85,24 @@ def input_rows(raw):
             if type(value) is str:
                 H.need(len(value.encode('utf-8', 'strict')) <= 1024, 'Text must be valid scalar UTF8, at most1024 bytes')
     return rows
+
+
+def named_facts_inputs(raw):
+    H.need(len(raw) <= 30000, 'facts exceed the 30000-byte source limit')
+    facts = decoded(raw)
+    H.need(type(facts) is list and 1 <= len(facts) <= 3, 'supply one to three named facts objects')
+    rows = []
+    for row in facts:
+        H.need(type(row) is dict and set(row) == set(FACT_FIELDS), 'nine exact named facts; missing facts are errors')
+        for i, name in enumerate(FACT_FIELDS):
+            value = row[name]
+            H.need(type(value) is (bool if INPUT_TYPES[i] == 'Boolean' else str), 'wrong scalar type: ' + name)
+            if type(value) is str:
+                H.need(len(value.encode('utf-8', 'strict')) <= 1024, 'Text must be valid scalar UTF8, at most1024 bytes: ' + name)
+        rows.append({ENTRY + '.input' + str(i): row[name] for i, name in enumerate(FACT_FIELDS)})
+    inputs = H.go_json({'schema': 'gooo/body-composition-inputs/v1', 'inputs': rows}) + b'\n'
+    input_rows(inputs)  # Retain the native byte, scalar type and Text-domain checks.
+    return inputs
 
 
 def decision(value):
@@ -310,14 +330,22 @@ def check_demo(inputs, comparisons, root, read):
         for key in ('before', 'after', 'status', 'changed_fields'): H.need(H.equal(row[key], want[key]), 'demo literal mismatch: ' + key)
 
 
-def main():
+def arguments(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('root', 'compiler', 'go', 'out'): parser.add_argument('--' + name, required=True)
-    parser.add_argument('--inputs', help='one to three complete scalar rows; defaults to demo-inputs.json')
+    source = parser.add_mutually_exclusive_group()
+    source.add_argument('--inputs', help='one to three complete native scalar rows; defaults to demo-inputs.json')
+    source.add_argument('--facts', help='JSON array of one to three exact nine-field named API facts objects')
     parser.add_argument('--compiler-profile', choices=('default', 'source-inspection036'), default='default',
                         help='explicit separate compiler contract; default retains the repository 839 pin')
     parser.add_argument('--check-demo', action='store_true', help='also check the original three-row literals; omit after editing policy')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+    if args.facts == '': parser.error('--facts requires a nonempty path')
+    return args
+
+
+def main():
+    args = arguments()
     out = H.canonical(Path(args.out)); H.need(out.parent.is_dir() and not out.exists(), 'fresh output with an existing parent required')
     out.mkdir(); started = time.monotonic(); pins = {}; work = runner = owner = None
     failure = None; comparisons = []; source_ok = cleaned = refused = False; positives = prepared = 0
@@ -326,8 +354,15 @@ def main():
         root, compiler, go = [H.canonical(Path(x)) for x in (args.root, args.compiler, args.go)]
         H.need(root == REPO and root.is_dir(), 'run from this source checkout')
         read = lambda path: H.frozen_read(path, pins)
-        path = H.canonical(Path(args.inputs)) if args.inputs else root / (BASE + 'demo-inputs.json')
-        H.need(path.stat().st_size <= 30000, 'input byte limit before reading'); inputs = read(path); rows = input_rows(inputs)
+        source_path = args.facts or args.inputs
+        path = H.canonical(Path(source_path)) if source_path else root / (BASE + 'demo-inputs.json')
+        H.need(path.stat().st_size <= 30000, 'input byte limit before reading'); inputs = read(path)
+        if args.facts:
+            inputs = named_facts_inputs(inputs)
+            path = out / 'facts-inputs.json'
+            with path.open('xb') as handle: handle.write(inputs)
+            H.need(read(path) == inputs, 'saved named-facts native input bytes')
+        rows = input_rows(inputs)
         lock = decoded(read(root / 'upstream.json')); profile = compiler_profile(lock, args.compiler_profile)
         contexts = {v: context(root, v, read, profile) for v in ('before', 'after')}
         for ctx in contexts.values():
