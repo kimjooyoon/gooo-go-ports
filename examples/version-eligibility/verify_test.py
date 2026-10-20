@@ -1,5 +1,6 @@
 """Boundary tests; no Go/Gooo command or module download is performed."""
 import copy
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -18,6 +19,40 @@ class Boundaries(unittest.TestCase):
         base = Path(__file__).parent
         return (json.loads((base / "reference-inputs.json").read_text()),
                 json.loads((base / "inputs.json").read_text()))
+
+    def test_source_digest_matches_exact_go_json_bytes(self):
+        cases = (
+            (b'"\\<>&\xe2\x80\xa8\xe2\x80\xa9\r\n',
+             b'"\\"\\\\\\u003c\\u003e\\u0026\\u2028\\u2029\\r\\n"'),
+            (b'caf\xc3\xa9\xf0\x9f\x98\x80', b'"caf\xc3\xa9\xf0\x9f\x98\x80"'),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "source.gooo"
+            for raw, expected_json in cases:
+                with self.subTest(raw=raw):
+                    source.write_bytes(raw)
+                    with mock.patch.object(verify, "sha", wraps=verify.sha) as digest:
+                        actual = verify.source_digest(source)
+                    digest.assert_called_once_with(expected_json)
+                    self.assertEqual(actual, "sha256:" + hashlib.sha256(expected_json).hexdigest())
+                    self.assertEqual(source.read_bytes(), raw)
+
+    def test_source_digest_preserves_original_line_endings(self):
+        cases = ((b"line\r\n", b'"line\\r\\n"'),
+                 (b"line\n", b'"line\\n"'),
+                 (b"line", b'"line"'))
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "source.gooo"
+            observed = []
+            for raw, expected_json in cases:
+                with self.subTest(raw=raw):
+                    source.write_bytes(raw)
+                    with mock.patch.object(verify, "sha", wraps=verify.sha) as digest:
+                        actual = verify.source_digest(source)
+                    digest.assert_called_once_with(expected_json)
+                    self.assertEqual(actual, "sha256:" + hashlib.sha256(expected_json).hexdigest())
+                    observed.append(actual)
+            self.assertEqual(len(set(observed)), 3)
 
     def test_reference_sync_preserves_original_order_and_types(self):
         reference, inputs = self.inputs()

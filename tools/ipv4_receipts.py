@@ -336,7 +336,7 @@ class Evidence:
             need(exact(package['imports'], [PORT] if path == APP else None), 'Original imports differ')
             sources = package['sources']
             need(type(sources) is list and len(sources) == 1 and sources[0]['filename'] == source and
-                 sources[0]['source_digest'] == digest(go_string((self.repository / source).read_text(encoding='utf-8'))), 'Original source image digest differs')
+                 sources[0]['source_digest'] == digest(go_string((self.repository / source).read_bytes().decode('utf-8', 'strict'))), 'Original source image digest differs')
             expected = {'Integer': ('entity', INTEGER)}
             if path == PORT:
                 expected['Boolean'] = ('entity', BOOLEAN)

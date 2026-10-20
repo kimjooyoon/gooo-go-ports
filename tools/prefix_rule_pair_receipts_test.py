@@ -6,6 +6,7 @@ values are tested separately against the fresh independent Go oracle.
 """
 from pathlib import Path
 import copy
+import hashlib
 import importlib.util
 import json
 import subprocess
@@ -133,6 +134,44 @@ class RecordProtocolTests(unittest.TestCase):
             raw=wire(good);replay=copy.deepcopy(good);replay['replayed_from_sha256']=R.digest(raw);replay['result']['replay']={'schema':'gooo/workspace-body-replay/v1','model_calls':0,'body_fills_replayed':0,'prior_result_sha256':'sha256:'+'9'*64}
             replay['result']['runtime']['observed_driver_sha256']='sha256:'+'2'*64
             with self.assertRaisesRegex(R.ReceiptError,'PAIR_REPLAY_ARITHMETIC'):self.checker.inspect(wire(replay),entry,ip,manifest,GO,raw,'sha256:'+'9'*64)
+
+    def test_workspace_source_digest_preserves_crlf_and_bare_cr(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp).resolve();entry=Q.REPORT;ip=root/'inputs.json'
+            ip.write_bytes(Q.input_document(self.checker.rows[entry][:18],entry))
+            image=fixture(self.checker,entry,ip)['result']['program']['workspace_image']
+            self.checker.repo=root
+            # Literal Go JSON-string bytes; no fixture normalization is reused.
+            for raw,encoded in ((b'// line\n',b'"// line\\n"'),
+                                (b'// line\r\n',b'"// line\\r\\n"'),
+                                (b'// line\r',b'"// line\\r"')):
+                with self.subTest(raw=raw):
+                    for package in image['packages']:
+                        for source in package['sources']:
+                            target=root/source['filename'];target.parent.mkdir(parents=True,exist_ok=True)
+                            target.write_bytes(raw)
+                            source['source_digest']='sha256:'+hashlib.sha256(encoded).hexdigest()
+                    self.checker.workspace(image,entry)
+
+    def test_workspace_source_digest_rejects_line_ending_changes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp).resolve();entry=Q.REPORT;ip=root/'inputs.json'
+            ip.write_bytes(Q.input_document(self.checker.rows[entry][:18],entry))
+            image=fixture(self.checker,entry,ip)['result']['program']['workspace_image']
+            self.checker.repo=root;targets=[]
+            for package in image['packages']:
+                for source in package['sources']:
+                    target=root/source['filename'];target.parent.mkdir(parents=True,exist_ok=True)
+                    target.write_bytes(b'// line\n');targets.append(target)
+                    source['source_digest']='sha256:'+hashlib.sha256(b'"// line\\n"').hexdigest()
+            self.checker.workspace(image,entry)
+            for changed in (b'// line\r\n',b'// line\r'):
+                with self.subTest(changed=changed):
+                    targets[0].write_bytes(changed)
+                    with self.assertRaisesRegex(R.ReceiptError,'^PAIR_SOURCE_IMAGE$'):
+                        self.checker.workspace(image,entry)
+            targets[0].write_bytes(b'// line\xff\n')
+            with self.assertRaises(UnicodeDecodeError):self.checker.workspace(image,entry)
 
 
 if __name__=='__main__':unittest.main()

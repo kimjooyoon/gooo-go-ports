@@ -337,6 +337,51 @@ class ReceiptBoundaries(unittest.TestCase):
             with self.assertRaisesRegex(R.ReceiptError, '^CANONICAL_FILE_REQUIRED$'):
                 R._read_regular(alias, 100)
 
+    def test_workspace_source_digest_preserves_crlf_and_bare_cr(self):
+        with tempfile.TemporaryDirectory() as name:
+            directory = Path(name).resolve()
+            checker = self.checker()
+            original, _, _, _ = fixture(checker, directory)
+            image = R.strict_json(original)['result']['program']['workspace_image']
+            checker.repository = directory
+            # These literal JSON bytes are independent of the fixture encoder.
+            for raw, encoded in ((b'// line\n', b'"// line\\n"'),
+                                 (b'// line\r\n', b'"// line\\r\\n"'),
+                                 (b'// line\r', b'"// line\\r"')):
+                with self.subTest(raw=raw):
+                    for package in image['packages']:
+                        for source in package['sources']:
+                            target = directory / source['filename']
+                            target.parent.mkdir(parents=True, exist_ok=True)
+                            target.write_bytes(raw)
+                            source['source_digest'] = 'sha256:' + hashlib.sha256(encoded).hexdigest()
+                    checker.workspace(image, R.REPORT_ENTRY)
+
+    def test_workspace_source_digest_rejects_line_ending_changes(self):
+        with tempfile.TemporaryDirectory() as name:
+            directory = Path(name).resolve()
+            checker = self.checker()
+            original, _, _, _ = fixture(checker, directory)
+            image = R.strict_json(original)['result']['program']['workspace_image']
+            checker.repository = directory
+            targets = []
+            for package in image['packages']:
+                for source in package['sources']:
+                    target = directory / source['filename']
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes(b'// line\n')
+                    targets.append(target)
+                    source['source_digest'] = 'sha256:' + hashlib.sha256(b'"// line\\n"').hexdigest()
+            checker.workspace(image, R.REPORT_ENTRY)
+            for changed in (b'// line\r\n', b'// line\r'):
+                with self.subTest(changed=changed):
+                    targets[0].write_bytes(changed)
+                    with self.assertRaisesRegex(R.ReceiptError, '^Original source image digest differs$'):
+                        checker.workspace(image, R.REPORT_ENTRY)
+            targets[0].write_bytes(b'// line\xff\n')
+            with self.assertRaises(UnicodeDecodeError):
+                checker.workspace(image, R.REPORT_ENTRY)
+
 
 if __name__ == '__main__':
     unittest.main()
