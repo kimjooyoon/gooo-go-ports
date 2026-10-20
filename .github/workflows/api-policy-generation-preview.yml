@@ -17,8 +17,8 @@ jobs:
       GOTOOLCHAIN: local
       GOWORK: 'off'
       EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
-      PREVIEW_BASE: b19b5517f8e9716affb0f75fd07045b8217cdaf1
-      PREVIEW_TREE: 097a39e64abc0f159c55cdc8dce1d12025af9b54
+      PREVIEW_BASE: ecfa6d862527bb5564ccc6eccc74061b3440876f
+      PREVIEW_TREE: ef92c3467b684fe728acc12cbdc2103929d50b77
     defaults:
       run:
         shell: bash
@@ -268,7 +268,7 @@ jobs:
             test "$baseline_generation" != "$observed_generation"
             jq -e '.schema == "gooo/api-policy-revision-generation/v1" and
               .compiler_source_sha == "205896a413e5dea92366309c35ae85e542d055f6" and
-              (.assets | length) == 37' observed-generation.json
+              (.assets | length) == 38' observed-generation.json
             jq -S '.assets | keys' baseline-generation.json > baseline-asset-paths.json
             jq -S '.assets | keys' observed-generation.json > observed-asset-paths.json
             cmp baseline-asset-paths.json observed-asset-paths.json

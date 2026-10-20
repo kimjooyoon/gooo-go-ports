@@ -38,7 +38,7 @@ or write into the installed skill.
 
 Read the exported `README.md` and `NOTICE`. Reuse absolute, non-symlink paths to
 Go **1.27.3** and a clean Gooo compiler at
-`83928fa4538245abe33b08549da47f8cbdc50ed2`; the checker checks their actual
+`205896a413e5dea92366309c35ae85e542d055f6`; the checker checks their actual
 identities. For a current-source export, compiler/checker pins must agree with
 the Go 1.27.3 target before execution. The immutable export guide above retains
 its Go 1.27.2 profile; do not relabel that export or its old receipts.

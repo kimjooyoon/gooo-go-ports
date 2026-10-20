@@ -12,8 +12,8 @@ matches; it cannot be reconstructed from the count alone.
 ## Run the supplied inputs
 
 Use the repository's [local setup](../../README.md#run-and-edit-locally) with
-the clean Gooo compiler at `83928fa4538245abe33b08549da47f8cbdc50ed2`
-(`0.6.32-dev`) and Go **1.27.3**. From the repository root:
+the clean Gooo compiler at `205896a413e5dea92366309c35ae85e542d055f6`
+(`0.6.37-dev`) and Go **1.27.3**. From the repository root:
 
 ```sh
 export GOTOOLCHAIN=go1.27.3 GOWORK=off

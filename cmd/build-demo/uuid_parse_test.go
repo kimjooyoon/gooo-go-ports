@@ -31,7 +31,7 @@ func TestUUIDParseBoundaryTransportPreservesPartialValuesAndDecoderUnits(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(rows) != 24 || len(raw) > 32768 || !strings.Contains(string(raw), `\ud800`) {
+	if len(rows) != 24 || len(raw) > 32768 || strings.Contains(string(raw), `\ud800`) || strings.Contains(string(raw), `\udfff`) {
 		t.Fatalf("boundary roster or JSON spelling changed: %d/%d", len(rows), len(raw))
 	}
 	decoded, err := uuidParseRows(raw)

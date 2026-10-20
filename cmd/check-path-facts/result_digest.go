@@ -65,7 +65,7 @@ func pinnedResultBytes(receipt []byte) ([]byte, error) {
 	if len(resultProfileJSON) == 0 {
 		return nil, fmt.Errorf("pinned result profile is not loaded")
 	}
-	if len(resultProfileJSON) != 196047 || digest(resultProfileJSON) != "sha256:9fc596175547cf3f8582bcf51e42e399f3a036355c0c49f81f28acea0713df0d" || compilerRevision != "205896a413e5dea92366309c35ae85e542d055f6" {
+	if len(resultProfileJSON) != 197573 || digest(resultProfileJSON) != "sha256:295ec33a2b0c9aecb60da52e5907950c3652d39d9a30aaebe927febdc36afb4c" || compilerRevision != "205896a413e5dea92366309c35ae85e542d055f6" {
 		return nil, fmt.Errorf("current result profile raw identity differs")
 	}
 	return pinnedResultBytesWithProfile(receipt, resultProfileJSON, compilerRevision)

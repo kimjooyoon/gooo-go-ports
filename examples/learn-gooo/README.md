@@ -67,7 +67,7 @@ export GOWORK=off
 mkdir compiler
 git -C compiler init
 git -C compiler remote add origin https://github.com/kimjooyoon/meta-ontology-go.git
-git -C compiler fetch --depth=1 origin 83928fa4538245abe33b08549da47f8cbdc50ed2
+git -C compiler fetch --depth=1 origin 205896a413e5dea92366309c35ae85e542d055f6
 git -C compiler checkout --detach FETCH_HEAD
 cd compiler
 go build -o ../gooo ./cmd/gooo
@@ -161,8 +161,10 @@ fits as an input can still make execution fail when its output exceeds that
 limit. The browser follows these same limits.
 
 JSON string mode can represent CR, LF, NUL and explicit surrogate escapes.
-Go's JSON input binding turns an isolated surrogate escape into U+FFFD; the
-browser shows the bound label explicitly. A valid surrogate pair retains its
+The browser UTF-8 binding turns isolated UTF-16 surrogates into U+FFFD and
+shows the bound label explicitly. Native comparison inputs encode that bound
+scalar Text; the compiler rejects raw unpaired JSON surrogate escapes. A valid
+surrogate pair retains its
 Unicode scalar value. No trimming, case conversion or Unicode normalization is
 part of this example.
 

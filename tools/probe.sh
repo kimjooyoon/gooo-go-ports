@@ -94,7 +94,7 @@ def validate(root, out):
         statuses = list(csv.DictReader(stream, delimiter="\t"))
     require([row["probe"] for row in statuses] == ["loop", "byte-index", "bitwise"], "probe command roster changed")
     errors = {
-        "loop": "for requires an existing counter initialized to 0, counter < literal bound, and counter = counter + 1",
+        "loop": "for requires a counter initialized to 0, counter < literal bound, and a unit forward step;declare it with for let or use an existing local",
         "bitwise": "unsupported binary operator &",
     }
     rows = []

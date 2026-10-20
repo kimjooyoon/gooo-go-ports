@@ -12,7 +12,7 @@ an unsigned browser observation. The native execution and saved replay below
 produce a different kind of record.
 
 Use Git, a POSIX shell and a Go installation with toolchain selection support.
-From this repository's root, build the pinned Gooo 0.6.32-dev compiler with
+From this repository's root, build the pinned Gooo 0.6.37-dev compiler with
 Go 1.27.3, then execute and replay the example:
 
 ```sh

@@ -7,6 +7,10 @@ import (
 	"os"
 )
 
+const compilerModulePath = "github.com/kimjooyoon/meta-ontology-go"
+const compilerModuleVersion = "v0.6.37-dev.0.20261020180505-205896a413e5"
+const compilerRuntimeVersion = "v0.2.51-experimental"
+
 type compilerPin struct {
 	Revision string `json:"compiler_revision"`
 	Version  string `json:"compiler_version"`
@@ -14,12 +18,23 @@ type compilerPin struct {
 }
 
 type compilerBuild struct {
-	Revision string `json:"compiler_source_sha"`
-	Version  string `json:"version"`
-	Go       string `json:"go_version"`
-	Native   string `json:"native_go_required"`
-	Status   string `json:"source_status"`
-	Modified string `json:"vcs_modified"`
+	Revision      string `json:"compiler_source_sha"`
+	Version       string `json:"version"`
+	Go            string `json:"go_version"`
+	Native        string `json:"native_go_required"`
+	Status        string `json:"source_status"`
+	Modified      string `json:"vcs_modified"`
+	ModuleVersion string `json:"module_version"`
+	Module        *struct {
+		Path        string          `json:"path"`
+		Version     string          `json:"version"`
+		Replacement json.RawMessage `json:"replacement"`
+	} `json:"module"`
+	Runtime *struct {
+		Path     string `json:"module_path"`
+		Version  string `json:"version"`
+		Replaced *bool  `json:"replaced"`
+	} `json:"decision_runtime"`
 }
 
 func validateBuild(raw []byte, pin compilerPin) error {
@@ -30,8 +45,13 @@ func validateBuild(raw []byte, pin compilerPin) error {
 	if pin.Revision == "" || pin.Version == "" || pin.Go == "" ||
 		build.Revision != pin.Revision || build.Version != pin.Version ||
 		build.Go != pin.Go || build.Native != pin.Go ||
-		build.Status != "CLEAN_VCS" || build.Modified != "false" {
-		return fmt.Errorf("compiler build identity differs from upstream.json; existing executable preserved")
+		build.Status != "CLEAN_VCS" || build.Modified != "false" ||
+		build.ModuleVersion != compilerModuleVersion || build.Module == nil ||
+		build.Module.Path != compilerModulePath || build.Module.Version != compilerModuleVersion ||
+		len(build.Module.Replacement) != 0 || build.Runtime == nil ||
+		build.Runtime.Path != "github.com/kimjooyoon/gooo-decision-runtime" ||
+		build.Runtime.Version != compilerRuntimeVersion || build.Runtime.Replaced == nil || *build.Runtime.Replaced {
+		return fmt.Errorf("compiler build identity differs from upstream.json/current module profile; existing executable preserved")
 	}
 	return nil
 }

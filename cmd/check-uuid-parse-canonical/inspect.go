@@ -115,7 +115,10 @@ func inspect(raw []byte, rows []row, id identity, priorReceipt string) (checked,
 	for i, item := range traces {
 		trace := object(item)
 		deliveries := array(trace["deliveries"])
-		if !keys(trace, "case_index", "deliveries") || !isInt(trace["case_index"], i) || len(deliveries) != 1 {
+		if err := inspectTraceMetadata(trace); err != nil {
+			return fail(err.Error())
+		}
+		if !isInt(trace["case_index"], i) || len(deliveries) != 1 {
 			return fail("case index or delivery roster")
 		}
 		delivery := object(deliveries[0])

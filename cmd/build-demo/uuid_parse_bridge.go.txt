@@ -23,7 +23,8 @@ func main() {
 			return uuidParseFailure("Expected one text string.")
 		}
 		// syscall/js TextEncoder replaces unpaired UTF-16 surrogates with U+FFFD,
-		// matching the native JSON decoder. The page retains original code units.
+		// an explicit browser transport rule. Native comparisons encode that bound
+		// scalar Text; raw unpaired JSON escapes are refused by the compiler.
 		input := args[0].String()
 		if !utf8.ValidString(input) || len(input) > 1024 {
 			return uuidParseFailure("The decoded input must fit in 1,024 UTF-8 bytes.")

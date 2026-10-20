@@ -4,6 +4,10 @@ cd "$(dirname "$0")/.."
 revision=205896a413e5dea92366309c35ae85e542d055f6
 repository=https://github.com/kimjooyoon/meta-ontology-go.git
 required_go=go1.27.3
+version_tag=v0.6.37-dev
+version_tag_object=5fe4540544066fc4ea7ce81b36eb3e70ac440c27
+version_tag_commit=a483100e5c35d3638ac8e444888a193135b337d5
+source_depth=64
 
 fail() { printf 'bootstrap: %s\n' "$*" >&2; exit 1; }
 for tool in git go mktemp; do
@@ -85,10 +89,20 @@ if [ "$fresh" = true ]; then
   compiler_source=$stage/compiler
   git init "$compiler_source"
   git -C "$compiler_source" remote add origin "$repository"
-  git -C "$compiler_source" fetch --depth=1 origin "$revision"
+  git -C "$compiler_source" fetch --depth="$source_depth" --no-tags origin "$revision" "refs/tags/$version_tag:refs/tags/$version_tag"
   git -C "$compiler_source" checkout --detach "$revision"
 fi
+check_version_context() {
+  # Go1.27 derives a clean source build's real module version from local tags.
+  # A depth-one checkout cannot name the same official pseudo-version.
+  observed_tag=$(git -C "$compiler_source" rev-parse --verify "refs/tags/$version_tag" 2>/dev/null || :) || fail 'cannot inspect compiler version tag'
+  [ "$observed_tag" = "$version_tag_object" ] || fail 'compiler version tag is missing or differs; existing checkout preserved'
+  observed_base=$(git -C "$compiler_source" rev-parse --verify "refs/tags/$version_tag^{commit}" 2>/dev/null || :) || fail 'cannot inspect compiler version base'
+  [ "$observed_base" = "$version_tag_commit" ] || fail 'compiler version tag target differs; existing checkout preserved'
+  git -C "$compiler_source" merge-base --is-ancestor "$version_tag_commit" "$revision" || fail 'compiler version base is not a retained ancestor; existing checkout preserved'
+}
 [ "$(git -C "$compiler_source" rev-parse HEAD)" = "$revision" ] || fail 'staged compiler revision differs'
+check_version_context
 source_status=$(git -C "$compiler_source" status --porcelain --untracked-files=all --ignored) || fail 'cannot inspect compiler status'
 [ -z "$source_status" ] || fail 'compiler sources are not clean'
 (cd "$compiler_source" && go build -trimpath -o "$stage/gooo" ./cmd/gooo)
@@ -98,6 +112,7 @@ go run ./tools/bootstrap-check.go "$stage/identity.json"
 [ "$(git -C "$compiler_source" rev-parse HEAD)" = "$revision" ] || fail 'compiler revision changed while building'
 source_status=$(git -C "$compiler_source" status --porcelain --untracked-files=all --ignored) || fail 'cannot inspect compiler status after building'
 [ -z "$source_status" ] || fail 'compiler sources changed while building'
+check_version_context
 
 if [ "$fresh" = true ]; then
   if [ "$legacy" = true ]; then

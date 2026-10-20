@@ -90,9 +90,14 @@ class ConsumerControls(unittest.TestCase):
         rt = {'producer_source_sha': profile['compiler_revision'], 'go_tool_selection': 'explicit',
               'go_tool_sha256': 'sha256:tool', 'go_version': 'go version go1.27.3 test/arch'}
         R.producer(rt, rt['go_version'], rt['go_tool_sha256'], profile)
-        with self.assertRaises(RuntimeError): R.producer(rt, rt['go_version'], rt['go_tool_sha256'])
-        with self.assertRaises(RuntimeError):
-            R.producer(dict(rt, producer_source_sha=R.H.REV), rt['go_version'], rt['go_tool_sha256'], profile)
+        # Both current profiles now select the same205 source. A foreign
+        # historical source must still be refused with either profile selection.
+        self.assertEqual(profile['compiler_revision'], R.H.REV)
+        R.producer(rt, rt['go_version'], rt['go_tool_sha256'])
+        for selected in (None, profile):
+            with self.subTest(profile=selected), self.assertRaises(RuntimeError):
+                R.producer(dict(rt, producer_source_sha=R.SOURCE_INSPECTION036['compiler_revision']),
+                           rt['go_version'], rt['go_tool_sha256'], selected)
         self.assertEqual(R.H.REV, lock['compiler_revision'])
 
     def test_inspection_identity_requires_clean_unreplaced_sdk(self):
@@ -105,7 +110,7 @@ class ConsumerControls(unittest.TestCase):
                     'decision_runtime': {'module_path': 'github.com/kimjooyoon/gooo-decision-runtime',
                                          'version': profile['decision_runtime_version'], 'replaced': False}}
         R.compiler_identity(identity, profile)
-        for key, bad in [('compiler_source_sha', R.H.REV), ('vcs_modified', 'true'),
+        for key, bad in [('compiler_source_sha', R.SOURCE_INSPECTION036['compiler_revision']), ('vcs_modified', 'true'),
                          ('build_info_observed', False), ('go_version', 'go1.27.1')]:
             with self.subTest(key=key), self.assertRaises(RuntimeError): R.compiler_identity(dict(identity, **{key: bad}), profile)
         for key, bad in [('module_path', 'other'), ('version', 'v0.2.41-experimental'), ('replaced', True)]:

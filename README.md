@@ -1394,8 +1394,8 @@ literal Report만281→235배치이며 Cut 네 suite와 Index·Count 경계는 �
 
 [upstream.json](upstream.json)에 Go **1.27.2**의 커밋
 `022c8636110ebac86a9b88724cda168ed713c21f`, 파일 SHA-256,
-Gooo **0.6.32-dev** 컴파일러 커밋
-`83928fa4538245abe33b08549da47f8cbdc50ed2`을 고정했습니다.
+현재 Gooo **0.6.37-dev** 컴파일러 커밋
+`205896a413e5dea92366309c35ae85e542d055f6`과 실행 도구 체인 Go **1.27.3**을 고정했습니다.
 테스트의 Go 도구 체인에서도 원본 파일 해시가 일치해야 합니다.
 
 기존 Go 이식 부분은 BSD 3-Clause 라이선스입니다. Go 원본 저작권과

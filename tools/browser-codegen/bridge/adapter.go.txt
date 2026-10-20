@@ -47,7 +47,7 @@ const (
 	requestSchema    = "gooo/browser-body-codegen-request/v1"
 	responseSchema   = "gooo/browser-body-codegen-response/v1"
 	metadataSchema   = "gooo/browser-body-codegen-metadata/v1"
-	compilerPin      = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+	compilerPin      = "205896a413e5dea92366309c35ae85e542d055f6"
 	maxSourceBytes   = 64 << 10
 	maxRequestBytes  = 400 << 10
 	maxFilenameBytes = 128

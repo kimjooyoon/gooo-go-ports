@@ -28,8 +28,8 @@ consumer does not normalize text, count code points or graphemes, or provide a
 whole-string Unicode validator.
 
 With Git, a POSIX shell and a Go installation that supports toolchain selection,
-run from the repository root. Bootstrap prepares Gooo 0.6.32-dev from clean compiler
-source `83928fa4538245abe33b08549da47f8cbdc50ed2` using Go 1.27.3:
+run from the repository root. Bootstrap prepares Gooo 0.6.37-dev from clean compiler
+source `205896a413e5dea92366309c35ae85e542d055f6` using Go 1.27.3:
 
 ```sh
 export GOTOOLCHAIN=go1.27.3

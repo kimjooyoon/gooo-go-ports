@@ -45,7 +45,7 @@ func fixture(t *testing.T, rows []row) ([]byte, identity) {
 	var activities []any
 	for key := range participants {
 		d := id.Declarations[key]
-		activities = append(activities, map[string]any{"activity": map[string]string{"package_path": d.Package, "activity": d.Name, "lowered_name": d.Lowered}, "activity_id": namespaceID(d.Namespace, d.Name), "lowered_activity_id": namespaceID("gooo_workspace", d.Lowered), "source": d.Source, "source_body_sha256": digest([]byte(d.Body))})
+		activities = append(activities, map[string]any{"activity": map[string]string{"package_path": d.Package, "activity": d.Name, "lowered_name": d.Lowered}, "activity_id": d.ID, "lowered_activity_id": d.ID, "source": d.Source, "source_body_sha256": digest([]byte(d.Body))})
 	}
 	entry := map[string]string{"package_path": appPackage, "activity": "ParseCanonical", "lowered_name": id.Declarations[appPackage+":ParseCanonical"].Lowered}
 	source, generated, driver, step := "synthetic lowered source", syntheticABI(), "synthetic driver", "synthetic generated step"
@@ -178,6 +178,28 @@ func TestReceiptRejectsCoordinatedOracleAndProvenanceTampering(t *testing.T) {
 		"call offset": func(e map[string]any) {
 			calls := object(object(object(e["result"])["program"])["pure_calls"])
 			object(array(calls["sites"])[0])["start_byte"] = 0
+		},
+		"historical original namespace alias": func(e map[string]any) {
+			calls := object(object(object(e["result"])["program"])["pure_calls"])
+			item := object(array(calls["activities"])[0])
+			ref := object(item["activity"])
+			d := id.Declarations[str(ref["package_path"])+":"+str(ref["activity"])]
+			alias := namespaceID(d.Namespace, d.Name)
+			if alias == d.ID {
+				t.Fatal("ineffective original ID mutation")
+			}
+			item["activity_id"] = alias
+		},
+		"historical lowered namespace alias": func(e map[string]any) {
+			calls := object(object(object(e["result"])["program"])["pure_calls"])
+			item := object(array(calls["activities"])[0])
+			ref := object(item["activity"])
+			d := id.Declarations[str(ref["package_path"])+":"+str(ref["activity"])]
+			alias := namespaceID("gooo_workspace", d.Lowered)
+			if alias == d.ID {
+				t.Fatal("ineffective lowered ID mutation")
+			}
+			item["lowered_activity_id"] = alias
 		},
 		"helper source body": func(e map[string]any) {
 			calls := object(object(object(e["result"])["program"])["pure_calls"])

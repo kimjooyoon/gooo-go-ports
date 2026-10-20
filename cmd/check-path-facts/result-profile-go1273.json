@@ -1,11 +1,11 @@
 {
   "compiler_revision": "205896a413e5dea92366309c35ae85e542d055f6",
   "go_version": "go1.27.3",
-  "profile_status": "SOURCE_EQUIVALENT_FINAL205_NO_FRESH205_RESULT_OBSERVATION",
+  "profile_status": "SOURCE_BACKED_FINAL205_FINITE_READ_ORIGIN_EXTENSION",
   "expected_typed_result_bytes": null,
   "expected_typed_result_sha256": null,
   "original_receipt_sha256": null,
-  "format": "Canonical same-pin Go1.27.3 workspaceexecution.Result finite profile. Object order and omission flags come from exact205 source declarations byte-identical to the prior2a source declarations; nil slices retain null. RawMessage paths preserve raw compacted number/key/escape spelling. Only the two previously supported generic-map paths sort keys. Unpopulated source-declared body-fill/provider/policy branches remain unsupported.",
+  "format": "Canonical same-pin Go1.27.3 workspaceexecution.Result finite profile. Object order and omission flags come from exact205 source declarations byte-identical to the prior2a source declarations, including the finite BodyReadOrigin array and scalar local-use reason/drop fields; nil slices retain null. RawMessage paths preserve raw compacted number/key/escape spelling. Only the two previously supported generic-map paths sort keys. Unpopulated source-declared body-fill/provider/policy branches remain unsupported.",
   "nodes": {
     "$": {
       "kinds": [
@@ -1112,6 +1112,75 @@
       ]
     },
     "$.composition.steps.*.generation.report.body_locals.*.variable_ordinal": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_reads": {
+      "kinds": [
+        "array",
+        "null"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_reads.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "activity_id"
+        },
+        {
+          "name": "kind"
+        },
+        {
+          "name": "native_ordinal"
+        },
+        {
+          "name": "body_sha256"
+        },
+        {
+          "name": "decoded_start"
+        },
+        {
+          "name": "decoded_end"
+        },
+        {
+          "name": "expression"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_reads.*.activity_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_reads.*.body_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_reads.*.decoded_end": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_reads.*.decoded_start": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_reads.*.expression": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_reads.*.kind": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_reads.*.native_ordinal": {
       "kinds": [
         "integer"
       ]
@@ -7618,6 +7687,11 @@
         "integer"
       ]
     },
+    "$.runtime.traces.*.local_use_dropped": {
+      "kinds": [
+        "integer"
+      ]
+    },
     "$.runtime.traces.*.local_uses": {
       "kinds": [
         "array",
@@ -7655,7 +7729,17 @@
         "integer"
       ]
     },
+    "$.runtime.traces.*.local_uses.*.reason": {
+      "kinds": [
+        "string"
+      ]
+    },
     "$.runtime.traces.*.local_uses.*.site_index": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.traces.*.local_write_dropped": {
       "kinds": [
         "integer"
       ]
@@ -7886,10 +7970,6 @@
     "$.composition.steps.*.generation.report.record_assembly": {
       "reason": "not covered by this source-backed finite profile; populated value must fail closed",
       "go_type": "RecordAssemblyReceipt"
-    },
-    "$.composition.steps.*.generation.report.body_reads": {
-      "reason": "not covered by this source-backed finite profile; populated value must fail closed",
-      "go_type": "[]BodyReadOrigin"
     },
     "$.composition.steps.*.generation.report.body_constructions": {
       "reason": "not covered by this source-backed finite profile; populated value must fail closed",
@@ -8299,14 +8379,6 @@
       "reason": "not covered by this source-backed finite profile; populated value must fail closed",
       "go_type": "int"
     },
-    "$.runtime.traces.*.local_write_dropped": {
-      "reason": "not covered by this source-backed finite profile; populated value must fail closed",
-      "go_type": "int"
-    },
-    "$.runtime.traces.*.local_use_dropped": {
-      "reason": "not covered by this source-backed finite profile; populated value must fail closed",
-      "go_type": "int"
-    },
     "$.runtime.traces.*.reads": {
       "reason": "not covered by this source-backed finite profile; populated value must fail closed",
       "go_type": "[]CompositionReadObservation"
@@ -8358,10 +8430,6 @@
     "$.runtime.traces.*.deliveries.*.inputs.*.fields": {
       "reason": "not covered by this source-backed finite profile; populated value must fail closed",
       "go_type": "[]CompositionRecordField"
-    },
-    "$.runtime.traces.*.local_uses.*.reason": {
-      "reason": "not covered by this source-backed finite profile; populated value must fail closed",
-      "go_type": "string"
     }
   },
   "profile_source_files": {
@@ -8589,9 +8657,14 @@
       "bytes": 5994,
       "sha256": "ecaf6104e7ab2214b996b2385a9bb2ff42fb578029d84c507c7f8f6f6c0e3cf7",
       "git_blob_oid": "57dceeb3f0491a4b6d01ad56a36bba585190ce07"
+    },
+    "internal/bodycodegen/body_read_origin.go": {
+      "bytes": 3153,
+      "sha256": "8e9e50939e6ed2a718b546035bff4e0c6a1791b6ee14bb1e9dfba125534996db",
+      "git_blob_oid": "d7401e382f6271556ca0552610acb448fe22365f"
     }
   },
-  "scope": "Source-backed final205 finite837-node profile derived from exact50 relevant unchanged Git sources. Current trusted selector must require205 producer. Historical2a tutorial raw/typed hashes are calibration only; no actual205 receipt or typed parent has been observed by this task. Four original RawMessage boundaries and two generic-map paths are unchanged; populated unsupported branches fail closed.",
+  "scope": "Source-backed final205 finite849-node profile: original50 unchanged Git sources plus exact body_read_origin.go. Only12 typed path shapes advance for the observed index-read branch and scalar local-use reason/drop metadata including the bounded local-use drop count; all other unsupported branches still fail closed. Historical2a tutorial calibration and its original raw/typed hashes remain unchanged. Four RawMessage boundaries and two generic-map paths remain unchanged. New actual205 literal receipt/replay validation is recorded separately, never as rewritten historical calibration.",
   "machine_int_bits": 64,
   "historical_calibration": {
     "compiler_revision": "2a05847facf6ba9ce7d433aab87da931bfb927b2",

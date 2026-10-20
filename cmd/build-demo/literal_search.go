@@ -111,8 +111,9 @@ func literalBoundaryCases() []literalCase {
 	} {
 		rows = append(rows, literalNewCase(fmt.Sprintf("boundary-%02d", i), pair[0], pair[1]))
 	}
-	// The exact native JSON spellings and original browser UTF-16 units survive.
-	// Only the decoded Text values feed the Go reference and generated program.
+	// Original browser UTF-16 units survive for the actual Wasm call. Native
+	// comparisons encode the bound scalar Text, not malformed surrogate escapes.
+	// The compiler independently refuses those raw JSON spellings.
 	for _, p := range []struct {
 		name, text, needle string
 		tu, nu             []uint16
@@ -128,8 +129,6 @@ func literalBoundaryCases() []literalCase {
 		r := literalNewCase(p.name, text, needle)
 		r.TextUTF16 = p.tu
 		r.NeedleUTF16 = p.nu
-		r.textJSON = []byte(p.text)
-		r.needleJSON = []byte(p.needle)
 		rows = append(rows, r)
 	}
 	return rows

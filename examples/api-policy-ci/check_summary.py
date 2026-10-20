@@ -18,7 +18,7 @@ import tempfile
 import unittest
 
 
-FIXTURE_SHA256 = "f556006a57ff9dedef37e610efd1219170d81dba2792b7861273b231b18156df"
+FIXTURE_SHA256 = "49df4793058fcdf06906f0123ff1da3f2b538b3c78d4a8973f4c4c50a7b8db32"
 REPORT_CAP = 16 << 20
 OUTPUT_CAP = 4096
 SECRET = "SUMMARY_PRIVACY_SENTINEL_b5d198af_"
@@ -64,7 +64,7 @@ class SummaryChecks(unittest.TestCase):
     def setUpClass(cls):
         fixture = Path(__file__).resolve().parent / "fixtures" / "synthetic-write.comparison.json"
         cls.saved_raw = fixture.read_bytes()
-        if len(cls.saved_raw) != 14048 or sha256(cls.saved_raw) != FIXTURE_SHA256:
+        if len(cls.saved_raw) != 14466 or sha256(cls.saved_raw) != FIXTURE_SHA256:
             raise AssertionError("frozen saved write fixture changed")
         cls.saved_write = json.loads(cls.saved_raw)
         # These are existing literal facts, not values obtained from formatter.

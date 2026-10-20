@@ -105,7 +105,7 @@ def display_fields(report):
         "status": "COMPARED",
         "scope": "same_saved_facts_two_sealed_profiles",
         "before_profile": "cel-api-original-v1",
-        "candidate_profile": "cel-api-readonly-v1",
+        "candidate_profile": "cel-api-readonly-principal-v1",
     }
     for name, fixed in expected.items():
         require(type(report[name]) is str and report[name] == fixed)

@@ -290,9 +290,36 @@ def go_parts(source, names, records):
     return functions
 
 
+# Current57-case receipt includes typed local/field provenance. Its retained
+# original is7,565,743bytes; keep this finite parser within the existing8MiB
+# owned-command stdout cap rather than removing bounds or reducing the corpus.
+RECEIPT_CAP = 8 << 20
+PRODUCER_PATH = 'github.com/kimjooyoon/meta-ontology-go'
+PRODUCER_VERSIONS = ('v0.0.0-20261020180505-205896a413e5',
+                     'v0.6.37-dev.0.20261020180505-205896a413e5')
+
+
+def producer_module(identity):
+    """Bind independently queried clean compiler identity, never receipt input."""
+    need(type(identity) is dict and identity.get('schema') == 'gooo/build-identity/v1' and
+         identity.get('compiler_source_sha') == identity.get('vcs_revision') == REV and
+         identity.get('source_status') == 'CLEAN_VCS' and identity.get('vcs_modified') == 'false' and
+         identity.get('go_version') == identity.get('native_go_required') == 'go1.27.3' and
+         identity.get('build_info_observed') is True and identity.get('version') == '0.6.37-dev' and
+         equal(identity.get('decision_runtime'), {'module_path': 'github.com/kimjooyoon/gooo-decision-runtime',
+               'version': 'v0.2.51-experimental', 'replaced': False}),
+         'go_identity', 'clean pinned compiler and unreplaced runtime build identity')
+    module = identity.get('module')
+    need(type(module) is dict and set(module) == {'path', 'version'} and
+         module['path'] == PRODUCER_PATH and module['version'] in PRODUCER_VERSIONS and
+         identity.get('module_version') == module['version'],
+         'go_identity', 'actual clean-bootstrap or installed-source module identity')
+    return copy.deepcopy(module)
+
+
 def load(raw):
     need(type(raw) is bytes, 'json', 'raw JSON must be bytes')
-    need(0 < len(raw) <= 4 << 20, 'json', 'bounded nonempty JSON evidence')
+    need(0 < len(raw) <= RECEIPT_CAP, 'json', 'bounded nonempty JSON evidence')
     def pairs(rows):
         out = {}
         for key, value in rows:
@@ -338,13 +365,16 @@ def _input(value):
         need(type(value[name]) is bool, 'typedfield', 'exact Boolean input: ' + name)
 
 
-def _prepare(root, oracle_raw, go_version, go_sha, read):
+def _prepare(root, oracle_raw, go_version, go_sha, read, producer):
     root = Path(root)
     need(root.is_absolute() and callable(read), 'source', 'caller selects one absolute root and bounded frozen read')
     need(type(go_version) is str and re.fullmatch(r'go version go1\.27\.3 (?:linux/amd64|darwin/arm64)', go_version) is not None,
          'go_identity', 'pinned Go1.27.3 on Linux/amd64 or Darwin/arm64')
     need(type(go_sha) is str and re.fullmatch(r'sha256:[0-9a-f]{64}', go_sha) is not None,
          'go_identity', 'caller-provided actual Go binary digest')
+    need(type(producer) is dict and set(producer) == {'path', 'version'} and
+         producer['path'] == PRODUCER_PATH and producer['version'] in PRODUCER_VERSIONS,
+         'go_identity', 'caller-supplied independently observed compiler module')
     refs = {}
     def current(name):
         # Names originate in this module, never a receipt, source import, oracle,
@@ -434,22 +464,23 @@ def _prepare(root, oracle_raw, go_version, go_sha, read):
     closure = {'schema': 'gooo/pure-activity-call-closure/v1', 'activities': [{'name': lowered_names[0], 'activity_id': CALLEE, 'program_sha256': digest(decimal_body.encode())}], 'edges': [{'caller_id': ENTRY, 'callee_id': CALLEE, 'ordinal': 0}], 'max_calls_per_invocation': 1}
     call_start = root_body.encode().index(b'decimal.ParseIntDecimal64')
     pure = {'schema': 'gooo/workspace-pure-calls/v1', 'activities': [
-        {'activity': {'package_path': PACKAGE, 'activity': 'AssessDelay', 'lowered_name': lowered_names[1]}, 'activity_id': 'gooo-ports-examples-retry-after-facts://activity/assess-delay', 'lowered_activity_id': 'gooo-workspace://activity/gooo-package1activity-assess-delay', 'source': SOURCE_PATHS[1], 'source_body_sha256': digest(root_body.encode())},
-        {'activity': {'package_path': 'go/strconv', 'activity': 'ParseIntDecimal64', 'lowered_name': lowered_names[0]}, 'activity_id': 'gooo-ports-strconv://activity/parse-int-decimal64', 'lowered_activity_id': 'gooo-workspace://activity/gooo-package0activity-parse-int-decimal64', 'source': SOURCE_PATHS[0], 'source_body_sha256': digest(decimal_body.encode())}],
+        {'activity': {'package_path': PACKAGE, 'activity': 'AssessDelay', 'lowered_name': lowered_names[1]}, 'activity_id': ENTRY, 'lowered_activity_id': ENTRY, 'source': SOURCE_PATHS[1], 'source_body_sha256': digest(root_body.encode())},
+        {'activity': {'package_path': 'go/strconv', 'activity': 'ParseIntDecimal64', 'lowered_name': lowered_names[0]}, 'activity_id': CALLEE, 'lowered_activity_id': CALLEE, 'source': SOURCE_PATHS[0], 'source_body_sha256': digest(decimal_body.encode())}],
         'sites': [{'caller': PACKAGE + ':AssessDelay', 'callee': 'go/strconv:ParseIntDecimal64', 'surface': 'computes', 'start_byte': call_start, 'end_byte': call_start + len(b'decimal.ParseIntDecimal64')}]}
     manifest_raw = current('retry-after-facts.workspace.json')
     need(equal(load(manifest_raw), {'schema': 'gooo/package-workspace-manifest/v1', 'entry': {'package_path': PACKAGE, 'activity': 'AssessDelay'}, 'packages': [{'path': 'go/strconv', 'sources': [SOURCE_PATHS[0]]}, {'path': PACKAGE, 'sources': [SOURCE_PATHS[1]]}]}), 'source', 'exact fixed two-package manifest closure')
     return {'root': root, 'contract': contract, 'fields': fields, 'inputs': inputs, 'witnesses': witnesses,
             'oracle': oracle['rows'], 'oracle_ref': reference(oracle_raw), 'sources': sources, 'records': records,
             'lowered': lowered, 'bodies': bodies, 'names': lowered_names, 'pure': pure, 'closure': closure,
-            'go_sha': go_sha, 'go_version': go_version, 'version_raw': (go_version + '\n').encode(),
+            'go_sha': go_sha, 'go_version': go_version, 'producer_module': copy.deepcopy(producer),
+            'version_raw': (go_version + '\n').encode(),
             'manifest': manifest_raw, 'source_refs': refs, 'not_checked': copy.deepcopy(NOT_CHECKED)}
 
 
-def prepare(root, oracle_raw, go_version, go_sha, read):
+def prepare(root, oracle_raw, go_version, go_sha, read, producer):
     """Bind fresh independent Go output to current fixed source/corpus inputs."""
     try:
-        return _prepare(root, oracle_raw, go_version, go_sha, read)
+        return _prepare(root, oracle_raw, go_version, go_sha, read, producer)
     except ReceiptError:
         raise
     except (KeyError, TypeError, ValueError, IndexError, AttributeError, UnicodeError) as error:
@@ -490,7 +521,7 @@ def _verify(r, ctx, batch, parent_raw=None, parent_program=None):
         need(r['replayed_from_sha256'] == digest(parent_raw), 'raw_parent', 'saved replay exact raw parent including whitespace')
         need(equal(r['result']['program'], parent_program), 'raw_parent', 'saved program unchanged')
     p, c, rt = (r['result'][k] for k in ['program', 'composition', 'runtime'])
-    need(rt['producer_source_sha'] == REV and rt['go_version'] == ctx['go_version'] and rt['go_tool_selection'] == 'explicit' and rt['go_tool_sha256'] == ctx['go_sha'] and equal(rt['producer_module'], {'path': 'github.com/kimjooyoon/meta-ontology-go', 'version': 'v0.6.37-dev.0.20261020180505-205896a413e5'}), 'go_identity', 'actual pinned native producer/tool digest')
+    need(rt['producer_source_sha'] == REV and rt['go_version'] == ctx['go_version'] and rt['go_tool_selection'] == 'explicit' and rt['go_tool_sha256'] == ctx['go_sha'] and equal(rt['producer_module'], ctx['producer_module']), 'go_identity', 'actual pinned native producer/tool digest')
     image = p['workspace_image']
     need(image['init_order'] == ['go/strconv', PACKAGE] and [pkg['path'] for pkg in image['packages']] == ['go/strconv', PACKAGE], 'source', 'exact two-package source closure')
     observed_sources = [(pkg['path'], source['filename'], source['source_digest']) for pkg in image['packages'] for source in pkg['sources']]

@@ -75,7 +75,7 @@ async function runSmoke(directory) {
    assert.equal(runtime.projection_replayed,true);assert.equal(runtime.runtime_replayed,true);assert.equal(runtime.traces.length,rows.length);
    for (let i=0;i<rows.length;i++) {
     const row=rows[i], supplied=inputDoc.inputs[i], trace=runtime.traces[i];integer(row.inputs[0]);output(row.expected);
-    assert.equal(supplied['app/report:Describe.input1'],labelFromUnits(row.label_utf16));
+    assert.equal(supplied['app/report:Describe.input1'],boundLabel(labelFromUnits(row.label_utf16)));
     assert.deepEqual([supplied['app/report:Describe.input0'],boundLabel(supplied['app/report:Describe.input1'])],row.inputs);
     assert.equal(trace.case_index,String(i));assert.equal(trace.deliveries.length,1);const d=trace.deliveries[0];keys(d,['activity_id','inputs','actual','actual_fields']);assert.equal(d.activity_id,entry);
     assert.deepEqual(d.inputs,[{port:'input0',entity_id:'urn:gooo:type:integer',value:row.inputs[0]},{port:'input1',entity_id:'urn:gooo:type:string',value:row.inputs[1]}]);

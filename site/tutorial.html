@@ -58,7 +58,7 @@
           <details class="tutorial-details tutorial-input-detail">
             <summary>See the label passed to Gooo</summary>
             <pre id="tutorial-label-preview" tabindex="0"></pre>
-            <p class="tutorial-help">This JSON view shows CR, LF and NUL as escapes. Other Unicode characters may remain invisible. A normal text editor may convert CR/CRLF to LF; JSON string mode preserves explicit escapes. Native JSON decoding replaces unpaired UTF-16 surrogates with U+FFFD. Valid pairs, BOMs and combining marks are preserved.</p>
+            <p class="tutorial-help">This JSON view shows CR, LF and NUL as escapes. Other Unicode characters may remain invisible. A normal text editor may convert CR/CRLF to LF; JSON string mode preserves explicit escapes. The browser UTF-8 binding replaces unpaired UTF-16 surrogates with U+FFFD; raw unpaired JSON escapes are rejected by the native compiler. Valid pairs, BOMs and combining marks are preserved.</p>
             <p class="tutorial-help">The label input and returned Text each allow up to 1,024 UTF-8 bytes. The program adds <code>: low</code> or <code>: high</code>, so a long accepted input can still produce an output-limit error. Inputs are never shortened to make them fit.</p>
           </details>
           <button id="tutorial-run" class="primary-button" type="submit" disabled>Run this example <span aria-hidden="true">→</span></button>

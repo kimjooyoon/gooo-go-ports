@@ -55,8 +55,13 @@ func TestTutorialManualAndTransportBoundaries(t *testing.T) {
 			t.Fatal("missing integer", score)
 		}
 	}
-	if !strings.Contains(string(raw), `\ud800`) {
-		t.Fatal("raw escaped native surrogate lost")
+	if strings.Contains(string(raw), `\ud800`) || strings.Contains(string(raw), `\udfff`) {
+		t.Fatal("native comparison must encode bound scalar Text, not raw malformed escapes")
+	}
+	for _, row := range f.Cases {
+		if row.Name == "lone-high" && (row.Inputs[1] != "\ufffd" || !reflect.DeepEqual(row.LabelUTF16, []uint16{0xd800})) {
+			t.Fatal("original browser units and bound native Text must remain separate")
+		}
 	}
 	documented, err := tutorialRows(cropTestRead(t, tutorialInputs))
 	if err != nil || len(documented) != 4 {

@@ -189,7 +189,8 @@ func uuidParseBoundaryCases() []uuidParseCase {
 		var text string
 		_ = json.Unmarshal([]byte(p.text), &text)
 		row := uuidParseNewCase(p.name, text)
-		row.InputUTF16, row.inputJSON = p.units, []byte(p.text)
+		// Preserve browser units; uuidParseNewCase already encoded bound scalar Text.
+		row.InputUTF16 = p.units
 		rows = append(rows, row)
 	}
 	return rows

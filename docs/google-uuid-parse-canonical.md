@@ -66,8 +66,10 @@ It does not use `Validate` as a parsing gate or call Go's parser as a wrapper.
 
 The input is decoded valid UTF-8 Text of at most 1,024 bytes. Lengths and
 positions are measured in UTF-8 bytes. Inputs longer than this native boundary
-are rejected before this activity executes. JSON decoding can replace invalid
-UTF-8 or lone surrogate spellings; this API does not preserve arbitrary Go byte
+are rejected before this activity executes. The current compiler also rejects
+invalid UTF-8 and lone JSON surrogate escapes. The browser explicitly binds
+unpaired UTF-16 units to U+FFFD before the compiled call; native comparisons
+encode that bound scalar Text. This API does not preserve arbitrary Go byte
 strings or malformed wire encodings.
 
 This record preserves the selected observations of `Parse` plus `String`.

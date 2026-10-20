@@ -251,7 +251,7 @@ func bindCodegenLicenses(ctx context.Context, core, hostPath, evidence string, l
 	}
 	dependencies := make(map[string]string)
 	for _, module := range info.Deps {
-		if module.Path != "github.com/kimjooyoon/gooo-decision-runtime" || module.Version != "v0.2.41-experimental" || module.Replace != nil {
+		if module.Path != "github.com/kimjooyoon/gooo-decision-runtime" || module.Version != "v0.2.51-experimental" || module.Replace != nil {
 			return nil, fmt.Errorf("browser codegen contains an unexpected or replaced linked module %s", module.Path)
 		}
 		dependencies[module.Path] = module.Version

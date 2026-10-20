@@ -22,7 +22,7 @@ These are workload examples, without implying that either project uses Gooo.
 
 Complete the [repository setup](../../README.md#run-and-edit-locally) with Go
 **1.27.3** and the pinned Gooo compiler revision
-`83928fa4538245abe33b08549da47f8cbdc50ed2`. From the repository root:
+`205896a413e5dea92366309c35ae85e542d055f6`. From the repository root:
 
 ```sh
 set -eu

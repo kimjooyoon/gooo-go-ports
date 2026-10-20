@@ -137,7 +137,7 @@ def literal_report(input_facts, *, action='read', authenticated=True):
         summary = {'classification': 'NEWLY_DENIED', 'changed_count': 2}
     return {'schema': 'gooo/api-policy-revision-comparison/v1', 'status': 'COMPARED',
             'scope': 'same_saved_facts_two_sealed_profiles',
-            'before_profile': 'cel-api-original-v1', 'candidate_profile': 'cel-api-readonly-v1',
+            'before_profile': 'cel-api-original-v1', 'candidate_profile': 'cel-api-readonly-principal-v1',
             'before': {'facts': input_facts, 'decision': before, 'bindings': copy.deepcopy(ORIGINAL_BINDINGS)},
             'after': {'facts': input_facts, 'decision': after, 'bindings': copy.deepcopy(REVISION_BINDINGS)},
             'differences': differences, 'summary': summary, 'classifier_bindings': copy.deepcopy(REVISION_BINDINGS)}

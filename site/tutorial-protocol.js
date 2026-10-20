@@ -15,7 +15,8 @@
     Object.keys(value).sort().join(',') === [...keys].sort().join(',');
 
   function boundText(text) {
-    // Match Go's JSON string decoder / JS UTF-8 transport for unpaired surrogates.
+    // Browser transport binds unpaired UTF-16 surrogates to U+FFFD explicitly.
+    // The native compiler refuses raw unpaired JSON escapes.
     return new TextDecoder('utf-8', { ignoreBOM: true }).decode(new TextEncoder().encode(text));
   }
   function labelFromEditor(value, mode) {

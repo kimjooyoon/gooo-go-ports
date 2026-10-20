@@ -1,42 +1,38 @@
 diff --git a/examples/api-policy-revision/model.go b/examples/api-policy-revision/model.go
-index 644d68e3f51907edab60f52022b2e7caef5caacd..176355ef40fd21d599667e4bac5e4137c9900ccc 100644
+index 176355ef40fd21d599667e4bac5e4137c9900ccc..f28ce740bf6f3ee91c5d6e34e880aaa6ce244b55 100644
 --- a/examples/api-policy-revision/model.go
 +++ b/examples/api-policy-revision/model.go
 @@ -6,7 +6,7 @@ import original "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
  
  const (
  	OriginalProfile  = "cel-api-original-v1"
--	CandidateProfile = "cel-api-readonly-v1"
-+	CandidateProfile = "cel-api-readonly-principal-v1"
+-	CandidateProfile = "cel-api-readonly-principal-v1"
++	CandidateProfile = "cel-api-readonly-named-principal-v1"
  	ComparisonSchema = "gooo/api-policy-revision-comparison/v1"
  	ComparisonStatus = "COMPARED"
  	ComparisonScope  = "same_saved_facts_two_sealed_profiles"
 diff --git a/examples/api-policy-revision/profiles.json b/examples/api-policy-revision/profiles.json
-index 0a6adbd072a3cb0e27df0033003730cd9be637c6..498bec51857285de3a55b9bc4c311a2d658dd2a2 100644
+index a4e04577423c2670ed70a65b647fefae7d0d3195..64efaa7f2cbfeaf98c8fcb341b7a6476b9097bea 100644
 --- a/examples/api-policy-revision/profiles.json
 +++ b/examples/api-policy-revision/profiles.json
 @@ -2,7 +2,7 @@
    "candidate": {
-     "compiler_source_sha": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+     "compiler_source_sha": "205896a413e5dea92366309c35ae85e542d055f6",
      "generation_file": "generation.json",
--    "profile_id": "cel-api-readonly-v1",
-+    "profile_id": "cel-api-readonly-principal-v1",
+-    "profile_id": "cel-api-readonly-principal-v1",
++    "profile_id": "cel-api-readonly-named-principal-v1",
      "source_commit": "defined_by_this_generation"
    },
    "original": {
 diff --git a/examples/api-policy-revision/readonly.gooo b/examples/api-policy-revision/readonly.gooo
-index 4707638b0c470b979b3e5c6df55d31bd90625a4a..8df6e72b09b1ac232baa44a605ef162cca0500a3 100644
+index 8df6e72b09b1ac232baa44a605ef162cca0500a3..5f26088ac2df468b7822b176a167b3154fabbed1 100644
 --- a/examples/api-policy-revision/readonly.gooo
 +++ b/examples/api-policy-revision/readonly.gooo
-@@ -26,7 +26,11 @@ activity ReadOnlyAPI(Boolean, Text, Boolean, Text, Boolean, Text, Text, Text, Te
- let base = original.APIAccess(input0, input1, input2, input3, input4, input5, input6, input7, input8)
- let allowed = base.allowed
- let reason = base.reason
-+let principal_present = input2
-+let principal = input3
- if allowed && input7 != "read" { allowed = false
+@@ -32,5 +32,7 @@ if allowed && input7 != "read" { allowed = false
   reason = "ACTION_NOT_READ_ONLY" }
-+if allowed && (!principal_present || principal == "") { allowed = false
-+ reason = "EXPLICIT_PRINCIPAL_REQUIRED" }
+ if allowed && (!principal_present || principal == "") { allowed = false
+  reason = "EXPLICIT_PRINCIPAL_REQUIRED" }
++if allowed && principal != "synthetic:user" { allowed = false
++ reason = "PRINCIPAL_NOT_SELECTED" }
  return ApiDecision{allowed: allowed, reason: reason, authenticated: base.authenticated, tenant_present: base.tenant_present, tenant_matched: base.tenant_matched, action_present: base.action_present, action_matched: base.action_matched, access_allowed: base.access_allowed, access_error: base.access_error, access_result: base.access_result, group_matched: base.group_matched, principal_matched: base.principal_matched, group_missing: base.group_missing, principal_defaulted: base.principal_defaulted, effective_principal: base.effective_principal}
  `

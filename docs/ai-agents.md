@@ -600,7 +600,7 @@ Review the source and choose an installation scope in the
 [official install flow](https://code.claude.com/docs/en/plugins/install#add-a-marketplace-and-install-in-one-command).
 
 On macOS or Linux, prepare Git, Python 3, a POSIX shell, Go **1.27.3**, and a
-clean Gooo compiler at `83928fa4538245abe33b08549da47f8cbdc50ed2`.
+clean Gooo compiler at `205896a413e5dea92366309c35ae85e542d055f6`.
 Reuse matching tools and prepare the pinned Go modules once using the
 [project setup guide](../templates/etag-project/README.md#prepare-and-run).
 Keep setup and exported projects outside the installed plugin bundle.
@@ -636,7 +636,7 @@ go version
 ./.gooo version --build --json
 ```
 
-Require compiler revision `83928fa4538245abe33b08549da47f8cbdc50ed2`, Go
+Require compiler revision `205896a413e5dea92366309c35ae85e542d055f6`, Go
 `go1.27.3` and build identity `vcs_modified: "false"`, as pinned in
 `upstream.json`. If this fresh checkout has no matching compiler, run
 `./tools/bootstrap.sh` and inspect the build identity again. Bootstrap downloads

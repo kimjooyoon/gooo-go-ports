@@ -27,7 +27,8 @@ func main() {
 			return tutorialFailure("Score must be a canonical signed 64-bit decimal integer.")
 		}
 		// syscall/js decodes via TextEncoder: lone UTF-16 surrogates become U+FFFD,
-		// matching native Go JSON string decoding. Echo the bound text explicitly.
+		// an explicit browser transport rule. Native JSON uses bound scalar Text;
+		// raw unpaired escapes are refused by the compiler. Echo the bound text.
 		if len(label) > 1024 {
 			return tutorialFailure("Input Text exceeds the native 1024 UTF-8-byte limit.")
 		}
