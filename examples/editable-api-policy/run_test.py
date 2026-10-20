@@ -2,11 +2,14 @@
 """Transport/comparison/refusal controls; no compiler, network or subprocess."""
 import copy
 import contextlib
+import hashlib
 import importlib.util
 import io
 import json
 from pathlib import Path
+import tempfile
 import unittest
+from unittest import mock
 
 PATH = Path(__file__).resolve().with_name('run.py')
 SPEC = importlib.util.spec_from_file_location('editable_policy', PATH)
@@ -314,6 +317,119 @@ class NamedFactsControls(unittest.TestCase):
             with self.subTest(flags=flags), contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as error:
                 R.arguments(base + flags)
             self.assertEqual(error.exception.code, 2)
+
+
+class SourceComparisonControls(unittest.TestCase):
+    def index_fixture(self, out):
+        contexts = {name: R.context(R.REPO, name, lambda path: path.read_bytes()) for name in ('before', 'after')}
+        receipts = {}
+        # Linkage-only JSON fixtures, not synthetic successful native receipts.
+        # Production calls the index builder only after full inspect_receipt validation.
+        for variant in ('before', 'after'):
+            initial = json.dumps({'unit_fixture': variant}).encode() + b'\n'
+            receipts[variant + '-execute'] = initial
+            receipts[variant + '-replay'] = json.dumps({'unit_fixture': variant,
+                'replayed_from_sha256': 'sha256:' + hashlib.sha256(initial).hexdigest()}).encode() + b'\n'
+        for label, raw in receipts.items():
+            (out / label).mkdir(); (out / label / 'stdout').write_bytes(raw)
+        expected = R.decoded(PATH.with_name('demo-expected.json').read_bytes())['rows']
+        comparisons = [R.compare(row['before'], row['after']) for row in expected]
+        return contexts, receipts, comparisons
+
+    def test_raw_file_hash_is_not_the_receipt_json_string_digest(self):
+        raw = b'activity Example() // <&>\r\n'
+        encoded = json.dumps(raw.decode(), ensure_ascii=False).replace('<', '\\u003c').replace('&', '\\u0026').replace('>', '\\u003e').encode()
+        digest = 'sha256:' + hashlib.sha256(encoded).hexdigest()
+        ctx = {'source_raw': {'policy.gooo': raw}, 'images': [('example', 'policy.gooo', digest)]}
+        result = R.source_metadata(ctx, 'example', 'policy.gooo')
+        self.assertEqual(result['raw_sha256'], hashlib.sha256(raw).hexdigest())
+        self.assertEqual(result['receipt_json_string_digest'], digest)
+        self.assertNotEqual('sha256:' + result['raw_sha256'], digest)
+        self.assertEqual(result['bytes'], len(raw))
+        ctx['source_raw']['policy.gooo'] = raw + b'\n'
+        with self.assertRaisesRegex(RuntimeError, 'validated receipt source image'):
+            R.source_metadata(ctx, 'example', 'policy.gooo')
+
+    def test_four_actual_file_refs_parents_manifests_and_complete_comparisons(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory)
+            contexts, receipts, comparisons = self.index_fixture(out)
+            artifact = R.source_comparison(R.REPO, out, contexts, receipts, b'native input\n', comparisons, Path.read_bytes)
+            self.assertNotIn('status', artifact)  # The display index is not a new PASS authority.
+            self.assertEqual(len(artifact['raw_records']), 4)
+            for label, raw in receipts.items():
+                ref = artifact['raw_records'][label]
+                self.assertEqual(ref['relative_path'], label + '/stdout')
+                self.assertEqual(ref['bytes'], len(raw))
+                self.assertEqual(ref['raw_sha256'], hashlib.sha256(raw).hexdigest())
+                parent = hashlib.sha256(receipts[label.replace('-replay', '-execute')]).hexdigest() if label.endswith('-replay') else None
+                self.assertEqual(ref['replay_parent_raw_sha256'], parent)
+            self.assertEqual(artifact['native_input']['raw_sha256'], hashlib.sha256(b'native input\n').hexdigest())
+            self.assertEqual(artifact['comparisons'], comparisons)
+            for comparison in artifact['comparisons']:
+                self.assertEqual(set(comparison['before']), set(R.FIELDS))
+                self.assertEqual(set(comparison['after']), set(R.FIELDS))
+            self.assertEqual(len(artifact['common_sources']), 2)
+            for name, ctx in contexts.items():
+                ref = artifact['variants'][name]['manifest']
+                self.assertEqual(ref['relative_path'], 'editable-api-policy-' + name + '.workspace.json')
+                self.assertEqual(ref['raw_sha256'], hashlib.sha256(ctx['raw']).hexdigest())
+                source = artifact['variants'][name]['policy_source']
+                self.assertEqual(source['relative_path'], R.BASE + name + '.gooo')
+                self.assertEqual(source['raw_sha256'], hashlib.sha256(ctx['source_raw'][source['relative_path']]).hexdigest())
+            saved = R.save_source_comparison(out, artifact, Path.read_bytes)
+            raw = (out / saved['relative_path']).read_bytes()
+            self.assertEqual(saved, {'relative_path': 'source-comparison.json', 'bytes': len(raw),
+                                     'raw_sha256': hashlib.sha256(raw).hexdigest()})
+            self.assertEqual(json.loads(raw), artifact)
+
+    def test_saved_receipt_mutation_and_wrong_replay_parent_are_refused(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory); contexts, receipts, comparisons = self.index_fixture(out)
+            path = out / 'after-execute/stdout'; path.write_bytes(receipts['after-execute'] + b' ')
+            with self.assertRaisesRegex(RuntimeError, 'actual command return'):
+                R.source_comparison(R.REPO, out, contexts, receipts, b'input', comparisons, Path.read_bytes)
+            path.write_bytes(receipts['after-execute'])
+            bad = dict(receipts); bad['after-replay'] = json.dumps({'replayed_from_sha256': 'sha256:' + '0' * 64}).encode()
+            (out / 'after-replay/stdout').write_bytes(bad['after-replay'])
+            with self.assertRaisesRegex(RuntimeError, 'replay raw parent'):
+                R.source_comparison(R.REPO, out, contexts, bad, b'input', comparisons, Path.read_bytes)
+            self.assertFalse((out / 'source-comparison.json').exists())
+
+    def test_diff_preserves_crlf_and_missing_final_lf(self):
+        result = R.source_diff(b'value\r\n', b'value\n', 'before.gooo', 'after.gooo')
+        self.assertEqual(result['status'], 'RENDERED')
+        self.assertIn('-value\r\n+value\n', result['unified_diff'])
+        self.assertEqual(result['before_line_endings']['crlf_count'], 1)
+        self.assertEqual(result['after_line_endings']['crlf_count'], 0)
+        result = R.source_diff(b'value', b'value\n', 'before.gooo', 'after.gooo')
+        self.assertIn('-value\n\\ No newline at end of file\n+value\n', result['unified_diff'])
+        self.assertFalse(result['before_line_endings']['ends_with_lf'])
+        self.assertTrue(result['after_line_endings']['ends_with_lf'])
+
+    def test_identical_source_skips_diff_even_when_large(self):
+        raw = b'x' * (R.DIFF_MAX_BYTES + 1)
+        with mock.patch.object(R.difflib, 'unified_diff', side_effect=AssertionError('must not compute')):
+            result = R.source_diff(raw, raw, 'before.gooo', 'after.gooo')
+        self.assertEqual(result['status'], 'IDENTICAL')
+        self.assertEqual(result['unified_diff'], '')
+
+    def test_display_limits_are_checked_before_diff_and_are_inclusive(self):
+        for before, after, reason in [(b'a' * R.DIFF_MAX_BYTES, b'b', 'COMBINED_RAW_BYTES_EXCEED_131072'),
+                                      (b'a\n' * 1001, b'b\n' * 1000, 'COMBINED_LF_LINES_EXCEED_2000')]:
+            with self.subTest(reason=reason), mock.patch.object(R.difflib, 'unified_diff', side_effect=AssertionError('must not compute')):
+                result = R.source_diff(before, after, 'before.gooo', 'after.gooo')
+            self.assertEqual(result['status'], 'NOT_RENDERED_LIMIT')
+            self.assertEqual(result['reason'], reason)
+            self.assertEqual(result['unified_diff'], '')
+        self.assertEqual(R.source_diff(b'a' * 65536, b'b' * 65536, 'before', 'after')['status'], 'RENDERED')
+        self.assertEqual(R.source_diff(b'a\n' * 1000, b'b\n' * 1000, 'before', 'after')['status'], 'RENDERED')
+
+    def test_artifact_write_failure_does_not_return_a_reference(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory); (out / 'source-comparison.json').mkdir()
+            with self.assertRaises(FileExistsError):
+                R.save_source_comparison(out, {'unit_fixture': 'display only'}, Path.read_bytes)
 
 
 if __name__ == '__main__': unittest.main()

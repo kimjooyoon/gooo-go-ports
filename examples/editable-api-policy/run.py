@@ -5,6 +5,7 @@ Supplied scalar facts are not authenticated events or current authority.
 The official replay command owns inner canonical receipt verification.
 """
 import argparse
+import difflib
 import importlib.util
 import json
 import os
@@ -36,6 +37,7 @@ DEPENDENCIES = [('go/cel.dev/cel-go/codelab', 'ports/cel/scalar_access.gooo'),
 SOURCE_INSPECTION036 = {'compiler_revision': '31497af3beaef210b5a075867b0de76cf55ee3ca',
                         'compiler_version': '0.6.36-dev',
                         'decision_runtime_version': 'v0.2.51-experimental', 'go_version': 'go1.27.2'}
+DIFF_MAX_BYTES, DIFF_MAX_LINES = 128 << 10, 2000
 
 
 def compiler_profile(lock, name='default'):
@@ -151,9 +153,10 @@ def context(root, variant, read, profile=None):
     H.need(H.equal(manifest, {'schema': 'gooo/package-workspace-manifest/v1',
         'entry': {'package_path': PACKAGE, 'activity': ACTIVITY},
         'packages': [{'path': p, 'sources': [s]} for p, s in packages]}), 'fixed three-source workspace contract')
-    definitions = {}; images = []; records = {}
+    definitions = {}; images = []; records = {}; sources = {}
     for package, name in packages:
-        text = read(root / name).decode('utf-8', 'strict')
+        source_raw = read(root / name); sources[name] = source_raw
+        text = source_raw.decode('utf-8', 'strict')
         activities = H.activities(text)
         if not uses_inspection(profile): H.need(len(activities) == 1, 'one activity per selected source')
         for d in activities:
@@ -177,7 +180,7 @@ def context(root, variant, read, profile=None):
                'type_id': 'urn:gooo:type:' + ('string' if n in TEXT_FIELDS else 'boolean')} for n in FIELDS]
     H.need(H.equal(records[RID]['fields'], wanted), 'stable ordered fifteen-field ABI')
     return {'workspace': workspace, 'raw': raw, 'packages': packages, 'images': images,
-            'definitions': definitions, 'records': records}
+            'definitions': definitions, 'records': records, 'source_raw': sources}
 
 
 def source_program(program, ctx, profile=None):
@@ -330,6 +333,85 @@ def check_demo(inputs, comparisons, root, read):
         for key in ('before', 'after', 'status', 'changed_fields'): H.need(H.equal(row[key], want[key]), 'demo literal mismatch: ' + key)
 
 
+def source_diff(before, after, before_name, after_name):
+    # Split only at LF: Unicode separators and bare CR remain original source text.
+    def endings(raw):
+        return {'lf_count': raw.count(b'\n'), 'crlf_count': raw.count(b'\r\n'),
+                'ends_with_lf': raw.endswith(b'\n')}
+    lines = sum(raw.count(b'\n') + int(bool(raw) and not raw.endswith(b'\n')) for raw in (before, after))
+    result = {'status': 'IDENTICAL', 'reason': None, 'unified_diff': '',
+              'combined_raw_bytes': len(before) + len(after), 'combined_lf_lines': lines,
+              'limits': {'combined_raw_bytes': DIFF_MAX_BYTES, 'combined_lf_lines': DIFF_MAX_LINES},
+              'before_line_endings': endings(before), 'after_line_endings': endings(after)}
+    if before == after: return result
+    if result['combined_raw_bytes'] > DIFF_MAX_BYTES:
+        result.update(status='NOT_RENDERED_LIMIT', reason='COMBINED_RAW_BYTES_EXCEED_131072'); return result
+    if lines > DIFF_MAX_LINES:
+        result.update(status='NOT_RENDERED_LIMIT', reason='COMBINED_LF_LINES_EXCEED_2000'); return result
+    def split(raw):
+        parts = raw.decode('utf-8', 'strict').split('\n')
+        return [line + '\n' for line in parts[:-1]] + ([parts[-1]] if parts[-1] else [])
+    rendered = []
+    for line in difflib.unified_diff(split(before), split(after), fromfile=before_name,
+                                     tofile=after_name, lineterm='\n'):
+        rendered.append(line if line.endswith('\n') else line + '\n\\ No newline at end of file\n')
+    result.update(status='RENDERED', unified_diff=''.join(rendered))
+    return result
+
+
+def source_metadata(ctx, package, name):
+    raw = ctx['source_raw'][name]
+    source_digest = H.digest(H.go_json(raw.decode('utf-8', 'strict')))
+    H.need((package, name, source_digest) in ctx['images'], 'display source matches validated receipt source image')
+    return {'package_path': package, 'relative_path': name, 'bytes': len(raw),
+            'raw_sha256': H.sha(raw), 'receipt_json_string_digest': source_digest}
+
+
+def source_comparison(root, out, contexts, receipts, inputs, comparisons, read):
+    # The caller first validates all four full receipts, replay values, current
+    # sources and cleanup. This index issues no independent validation/PASS claim.
+    labels = [variant + '-' + operation for variant in ('before', 'after') for operation in ('execute', 'replay')]
+    H.need(set(receipts) == set(labels), 'four validated raw receipts required for display index')
+    records = {}
+    for label in labels:
+        raw = receipts[label]; relative = label + '/stdout'
+        H.need(read(out / relative) == raw, 'saved receipt differs from actual command return: ' + label)
+        parent = None
+        if label.endswith('-replay'):
+            original = receipts[label.replace('-replay', '-execute')]
+            H.need(decoded(raw)['replayed_from_sha256'] == H.digest(original), 'display replay raw parent binding')
+            parent = H.sha(original)
+        records[label] = {'relative_path': relative, 'bytes': len(raw), 'raw_sha256': H.sha(raw),
+                          'replay_parent_raw_sha256': parent}
+    common = []
+    for package, name in DEPENDENCIES:
+        H.need(contexts['before']['source_raw'][name] == contexts['after']['source_raw'][name], 'common source bytes')
+        before = source_metadata(contexts['before'], package, name)
+        H.need(H.equal(before, source_metadata(contexts['after'], package, name)), 'common source identities')
+        common.append(before)
+    variants = {}
+    for variant, ctx in contexts.items():
+        variants[variant] = {'manifest': {'relative_path': ctx['workspace'].relative_to(root).as_posix(),
+                                        'bytes': len(ctx['raw']), 'raw_sha256': H.sha(ctx['raw'])},
+                             'policy_source': source_metadata(ctx, PACKAGE, BASE + variant + '.gooo')}
+    return {'schema': 'gooo/editable-policy-source-comparison/v1',
+            'native_input': {'bytes': len(inputs), 'raw_sha256': H.sha(inputs)},
+            'variants': variants, 'common_sources': common, 'raw_records': records,
+            'source_diff': source_diff(contexts['before']['source_raw'][BASE + 'before.gooo'],
+                                       contexts['after']['source_raw'][BASE + 'after.gooo'],
+                                       BASE + 'before.gooo', BASE + 'after.gooo'),
+            'comparisons': comparisons,
+            'scope': 'Local display index of this run\'s validated receipts and complete fifteen-field comparisons. Raw-file SHA256 and receipt JSON-string source digest are distinct. Diff rendering is bounded and is not a semantic proof, producer authentication or permission for live effects. Review source and facts before sharing.'}
+
+
+def save_source_comparison(out, artifact, read):
+    path = out / 'source-comparison.json'
+    H.save(path, artifact)
+    raw = read(path)
+    H.need(raw == (json.dumps(artifact, ensure_ascii=False, indent=2) + '\n').encode('utf-8'), 'saved source comparison bytes')
+    return {'relative_path': path.name, 'bytes': len(raw), 'raw_sha256': H.sha(raw)}
+
+
 def arguments(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('root', 'compiler', 'go', 'out'): parser.add_argument('--' + name, required=True)
@@ -349,6 +431,7 @@ def main():
     out = H.canonical(Path(args.out)); H.need(out.parent.is_dir() and not out.exists(), 'fresh output with an existing parent required')
     out.mkdir(); started = time.monotonic(); pins = {}; work = runner = owner = None
     failure = None; comparisons = []; source_ok = cleaned = refused = False; positives = prepared = 0
+    receipts = {}; source_comparison_ref = None
     handlers = {n: signal.signal(n, lambda number, frame: (_ for _ in ()).throw(RuntimeError('signal ' + str(number)))) for n in (signal.SIGINT, signal.SIGTERM)}
     try:
         root, compiler, go = [H.canonical(Path(x)) for x in (args.root, args.compiler, args.go)]
@@ -402,6 +485,7 @@ def main():
                 values = inspect_receipt(raw, rows, inputs, ctx, go_version, go_sha, parent, profile); positives += 1
                 if parent is None: observed[variant] = values; initial[variant] = raw
                 else: H.need(H.equal(values, observed[variant]), 'fresh official replay values equal its initial observation')
+                receipts[label] = raw
                 parent = raw
         argv = [compiler, 'package', 'replay', '--json', '--receipt', out / 'before-execute/stdout',
                 '--inputs', path, '--go', go, contexts['after']['workspace']]
@@ -421,6 +505,18 @@ def main():
                 shutil.rmtree(work); cleaned = True
             except BaseException as error: failure = failure or 'owned cleanup: ' + str(error)
         for number, handler in handlers.items(): signal.signal(number, handler)
+    if failure is None:
+        try:
+            H.need(positives == 4 and source_ok and cleaned and runner is not None and runner.closed,
+                   'complete validated comparison, closed processes and cleanup before display artifact')
+            source_ok = False
+            artifact = source_comparison(root, out, contexts, receipts, inputs, comparisons, read)
+            source_comparison_ref = save_source_comparison(out, artifact, read)
+            H.unchanged(pins)
+            source_ok = True
+            H.need(H.owned_bytes(out) <= 64 << 20, 'retained64MiB bound including source comparison')
+        except BaseException as error:
+            failure = str(error); source_comparison_ref = None
     summary = {'schema': 'gooo/editable-api-policy-comparison/v1',
         'status': 'EDITABLE_POLICY_COMPARISON_AND_OFFICIAL_REPLAY_PASS' if failure is None else 'FIRST_FAILURE_PRESERVED',
         'failure': failure, 'rows': len(comparisons), 'positive_receipts': positives,
@@ -433,6 +529,7 @@ def main():
         'demo_checked': args.check_demo and failure is None,
         'cross_workspace_refused': refused, 'cross_workspace_refusal_stage': 'manifest' if refused else None,
         'comparisons': comparisons, 'source_tool_unchanged': source_ok,
+        'source_comparison': source_comparison_ref,
         'processes_closed': runner.closed if runner else True, 'owned_work_removed': cleaned,
         'commands': runner.observations if runner else [], 'source_tool_pins': pins,
         'scope': 'One to three supplied synthetic scalar rows, input-only OBSERVED/finite0. Each successful execute/replay runs two fresh native executions. Official replay owns canonical verification; raw outer parents/current sources/typed observations and reported native stdout hashes are checked here. Cross-workspace refusal exercises the manifest stage, not a same-manifest changed-source guard. No live authorization, trace truth, missing-state synthesis, stateful replay, policy Go fallback or external adoption.'}
