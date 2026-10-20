@@ -1618,7 +1618,7 @@ jobs:
         timeout-minutes: 12
         run: |
           set -euo pipefail
-          python3 -I -B examples/editable-api-policy/run.py --root "$PWD" --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/editable-api-policy" --check-demo
+          python3 -I -B examples/editable-api-policy/run.py --root "$PWD" --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/editable-api-policy" --facts "$PWD/examples/editable-api-policy/demo-facts.json" --check-demo
           jq -e '
             .schema == "gooo/editable-api-policy-comparison/v1" and
             .status == "EDITABLE_POLICY_COMPARISON_AND_OFFICIAL_REPLAY_PASS" and

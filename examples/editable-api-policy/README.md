@@ -41,6 +41,58 @@ forcing the original demo outcome. `--check-demo` additionally checks the
 separate original three-row literals and is intended for the unchanged demo
 and CI; omit it after editing the rule.
 
+## Supply your own named facts
+
+Use `--facts /absolute/path/facts.json` to avoid assigning your values to
+`input0` through `input8` by hand. The root is a JSON array of **one to three
+objects**, each with exactly these nine fields. For example, save this public
+synthetic write request as `facts.json`:
+
+```json
+[
+  {
+    "group_present": true,
+    "group_value": "admin",
+    "principal_present": true,
+    "principal_value": "synthetic:user",
+    "authenticated": true,
+    "caller_tenant": "tenant-a",
+    "resource_tenant": "tenant-a",
+    "requested_action": "write",
+    "allowed_action": "write"
+  }
+]
+```
+
+After editing `after.gooo`, use the same prepared tools and a fresh output:
+
+```sh
+(
+  set -eu
+  fixed_go="$(GOTOOLCHAIN=go1.27.2 go env GOROOT)/bin/go"
+  python3 -I -B examples/editable-api-policy/run.py \
+    --root "$PWD" --compiler "$PWD/.gooo" --go "$fixed_go" \
+    --facts "$PWD/facts.json" --out "$HOME/gooo-policy-own-facts-1"
+)
+```
+
+`--facts` and the existing native-envelope `--inputs` option are mutually
+exclusive. Names map to the existing nine scalar positions; this adapter does
+not evaluate policy, authenticate facts, fill absent values, trim or normalize
+Text. The three presence/authentication fields must be Boolean, and the other
+six must be Unicode-scalar UTF8 Text, each at most1,024bytes. Inactive Text values
+are still required and preserved. Missing, unknown or duplicate keys are errors.
+Both the original facts file and the converted native JSON, including its final
+LF, must fit30,000bytes; JSON escaping can make the latter larger. Row order and
+duplicates are preserved. The generated `facts-inputs.json` stays in the output,
+and both input files' hashes are recorded in `summary.json`'s source/tool pins.
+The same generated file is used by each policy's execution and its own replay.
+CI supplies the same three predeclared demo cases through `demo-facts.json` and
+`--facts`, keeping the existing full execution, own replay and demo assertions.
+Declare your expected allowed/denied cases before running; inspect all changed
+fields or send the first failure through the existing feedback form below.
+Omit `--check-demo` when intentionally changing the facts or rule.
+
 ## Extract a helper with the separate source-inspection profile
 
 The default compiler/profile keeps its existing one-activity-per-source check.

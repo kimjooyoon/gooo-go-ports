@@ -339,6 +339,8 @@ AUTOBOT_CLAUSES = (
 
 EDITABLE_POLICY_STEP = 'Verify editable API policy source comparison'
 EDITABLE_POLICY_COMMAND = 'python3 -I -B examples/editable-api-policy/run.py --root "$PWD" --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/editable-api-policy" --check-demo'
+EDITABLE_NAMED_FACTS_COMMAND = EDITABLE_POLICY_COMMAND.replace(' --check-demo',
+    ' --facts "$PWD/examples/editable-api-policy/demo-facts.json" --check-demo')
 EDITABLE_POLICY_HELPER_COMMAND = 'python3 -I -B tools/check-editable-policy-helpers.py --root "$PWD" --compiler "$PWD/out/source-inspection036/gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/editable-api-policy-helpers"'
 EDITABLE_POLICY_SOURCE_SETUP = """          # The default pinned839 check above remains independent of this opt-in compiler.
           test ! -e out/source-inspection036
@@ -1304,8 +1306,23 @@ def project_runtime_timing_scope(text):
     return text.replace(RUNTIME_TIMING_SCOPE, PRIOR_TIMING_SCOPE, 1)
 
 
+def project_named_facts_input(text):
+    # The current run must exercise named facts. Recover the exact previous
+    # workflow for all historical contracts, including every execution gate.
+    _, policy, _ = job_steps(workflow_jobs(text)['policy-native-checks'])
+    step = policy[EDITABLE_POLICY_STEP]
+    require(literal_commands(step) == [EDITABLE_NAMED_FACTS_COMMAND, EDITABLE_POLICY_HELPER_COMMAND]
+            and text.count(EDITABLE_NAMED_FACTS_COMMAND) == 1,
+            'editable policy CI must execute the named demo facts exactly once')
+    prior = text.replace(EDITABLE_NAMED_FACTS_COMMAND, EDITABLE_POLICY_COMMAND, 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() ==
+            'fe431377b3c3ca27f926e74e36d00566d74e68becf733ced0045fbdc855d9c46',
+            'named facts may change only the reviewed input argument')
+    return prior
+
+
 def validate_ordered_service_workflow(text):
-    prior = project_ordered_service_integration(project_runtime_timing_scope(text))
+    prior = project_ordered_service_integration(project_runtime_timing_scope(project_named_facts_input(text)))
     validate(prior)
     return prior
 
@@ -3248,6 +3265,26 @@ class WorkflowScopeTests(unittest.TestCase):
 class OrderedServiceIntegrationTests(unittest.TestCase):
     def setUp(self):
         self.text = WORKFLOW.read_text()
+
+    def test_named_facts_runs_the_same_demo_and_preserves_every_previous_gate(self):
+        prior = project_named_facts_input(self.text)
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(),
+                         'fe431377b3c3ca27f926e74e36d00566d74e68becf733ced0045fbdc855d9c46')
+        self.assertEqual(prior.replace(EDITABLE_POLICY_COMMAND, EDITABLE_NAMED_FACTS_COMMAND, 1), self.text)
+        self.assertEqual(len(re.findall(r'^      - (?:name|uses):', self.text, re.M)), 74)
+
+    def test_named_facts_cannot_be_removed_replaced_or_made_optional(self):
+        for command in (EDITABLE_POLICY_COMMAND,
+                        EDITABLE_NAMED_FACTS_COMMAND.replace('demo-facts.json', 'other-facts.json'),
+                        EDITABLE_NAMED_FACTS_COMMAND + ' || true',
+                        EDITABLE_NAMED_FACTS_COMMAND + '\n          ' + EDITABLE_NAMED_FACTS_COMMAND):
+            with self.subTest(command=command), self.assertRaises(ValueError):
+                validate_ordered_service_workflow(self.text.replace(EDITABLE_NAMED_FACTS_COMMAND, command, 1))
+        for token in ('.positive_receipts == 4', '.input_echoes_checked == 108',
+                      '.typed_output_fields_checked == 180', '.cross_workspace_refused == true'):
+            self.assertIn(token, self.text)
+            with self.subTest(gate=token), self.assertRaises(ValueError):
+                validate_ordered_service_workflow(self.text.replace(token, token.replace('==', '!='), 1))
 
     def test_current74_projects_to_the_complete_reviewed73_contract(self):
         prior = validate_ordered_service_workflow(self.text)

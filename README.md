@@ -34,7 +34,7 @@ An incomplete attempt is useful feedback. Share public source and inputs only.
 | Your task | Entry | Observable result |
 | --- | --- | --- |
 | Assess a service-grant change | [Native first call](docs/ai-agents.md#check-a-service-grant-change-without-a-toolchain) or [MCP host setup](docs/ai-agents.md#connect-the-service-grant-mcp-tool) | Check a supported narrowing while preserving one required request; no grant is applied. |
-| Preserve every required request when narrowing a grant | [Ordered service requirements](examples/service-grant-many/README.md) | Inspect the first request that would break, with original order and all 12 Gooo decision fields. |
+| Preserve every required request when narrowing a grant | [Native MCP setup](docs/ai-agents.md#preserve-several-required-requests-through-mcp) or [Go API](examples/service-grant-many/README.md) | Inspect the first request that would break, with original order and all 12 Gooo decision fields. |
 | Run the MCP tool in an offline container | [Docker setup and smoke check](docs/service-grant-container.md) | Build from the checked Linux bundle; run as a nonroot user with a read-only filesystem and no application network. |
 | Edit an API policy in Gooo | [Editable policy comparison](examples/editable-api-policy/README.md) | Compare edited rules on the same facts and replay each policy. A separate opt-in compiler profile supports extracting helpers. |
 | Check an API policy change in CI | [Existing policy Action](examples/api-policy-ci/README.md) | Compare the same nine facts under two sealed profiles; inspect newly denied requests and optionally fail CI. |
