@@ -66,10 +66,10 @@ for compatibility. Use the checked entries below for direct Gooo imports.
 
 ## Use the generated ordinary Go library and stdin CLI
 
-With Go 1.27.2 selected, run these commands from this example directory:
+With Go 1.27.3 selected, run these commands from this example directory:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 mkdir -p out
 go build -trimpath -o ./out/evaluate ./cmd/evaluate
@@ -164,7 +164,7 @@ returns this record before the core's empty-candidate shortcut can run:
 {"domain_status":"INVALID_INPUT","invalid_field":"before","status":"INVALID_INPUT","rule_id":"","supported_subset":false,"has_witness":false,"witness_type":"","witness_name":"","before_match":false,"after_match":false}
 ```
 
-Use the pinned compiler and Go 1.27.2 from the repository root:
+Use the pinned compiler and Go 1.27.3 from the repository root:
 
 ```sh
 go_tool="$(go env GOROOT)/bin/go"
@@ -194,7 +194,7 @@ Historical receipts keep their original identities and do not establish checked 
 ## Regenerate and independently verify
 
 From this example directory, use an already-installed clean compiler at
-`83928fa4538245abe33b08549da47f8cbdc50ed2` and Go 1.27.2. Setup is separate;
+`83928fa4538245abe33b08549da47f8cbdc50ed2` and Go 1.27.3. Setup is separate;
 generation and verification disable automatic dependency/toolchain downloads.
 
 ```sh

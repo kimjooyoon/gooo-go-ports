@@ -16,7 +16,8 @@ import (
 	original "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
 )
 
-const CompilerPin = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+const CompilerPin = "205896a413e5dea92366309c35ae85e542d055f6"
+const historicalCompilerPin = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 const originalGeneration = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
 
 // Hashes establish unsigned consistency inside a trusted executable. They are
@@ -118,11 +119,15 @@ func checkRevisionBindings(files map[string][]byte, manifest []byte) (original.B
 		}
 	}
 	compiler, err := revisionJSON(files["compiler.json"])
-	if err != nil || compiler["schema"] != "gooo/build-identity/v1" || compiler["compiler_source_sha"] != CompilerPin || compiler["vcs_revision"] != CompilerPin || compiler["source_status"] != "CLEAN_VCS" || compiler["vcs_modified"] != "false" || compiler["go_version"] != "go1.27.2" || compiler["native_go_required"] != "go1.27.2" {
+	if err != nil || compiler["schema"] != "gooo/build-identity/v1" || compiler["version"] != "0.6.37-dev" || compiler["compiler_source_sha"] != CompilerPin || compiler["vcs_revision"] != CompilerPin || compiler["source_status"] != "CLEAN_VCS" || compiler["vcs_modified"] != "false" || compiler["go_version"] != "go1.27.3" || compiler["native_go_required"] != "go1.27.3" {
+		return original.Bindings{}, invalid
+	}
+	module := revisionObject(compiler["module"])
+	if module["path"] != "github.com/kimjooyoon/meta-ontology-go" || module["version"] != "v0.6.37-dev.0.20261020180505-205896a413e5" {
 		return original.Bindings{}, invalid
 	}
 	runtime := revisionObject(compiler["decision_runtime"])
-	if runtime["module_path"] != "github.com/kimjooyoon/gooo-decision-runtime" || runtime["version"] != "v0.2.41-experimental" || runtime["replaced"] != false {
+	if runtime["module_path"] != "github.com/kimjooyoon/gooo-decision-runtime" || runtime["version"] != "v0.2.51-experimental" || runtime["replaced"] != false {
 		return original.Bindings{}, invalid
 	}
 	profiles, err := revisionJSON(files["profiles.json"])
@@ -134,7 +139,7 @@ func checkRevisionBindings(files map[string][]byte, manifest []byte) (original.B
 		return original.Bindings{}, invalid
 	}
 	frozen, err := original.SourceBindings()
-	if err != nil || frozen.CompilerSourceSHA != CompilerPin || frozen.GenerationSHA256 != originalGeneration || len(frozen.Assets) != 28 {
+	if err != nil || frozen.CompilerSourceSHA != historicalCompilerPin || frozen.GenerationSHA256 != originalGeneration || len(frozen.Assets) != 28 {
 		return original.Bindings{}, invalid
 	}
 	frozenMap := revisionObject(before["assets"])
@@ -223,7 +228,7 @@ func checkRevisionProgram(files map[string][]byte, c revisionConfig) bool {
 func checkRevisionRuntime(r map[string]any, lowered string) bool {
 	version, ok := r["go_version"].(string)
 	module := revisionObject(r["producer_module"])
-	if !ok || !strings.HasPrefix(version, "go version go1.27.2 ") || r["schema"] != "gooo/body-composition-runtime/v1" || r["stage"] != "COMPLETE" || r["producer_source_sha"] != CompilerPin || module["path"] != "github.com/kimjooyoon/meta-ontology-go" || module["version"] != "v0.0.0-20261011201109-83928fa45382" || r["projection_replayed"] != true || r["runtime_replayed"] != true || r["original_source_sha256"] != revisionDigest([]byte(lowered)) || r["selected_source_sha256"] != revisionDigest([]byte(lowered)) || revisionInteger(r["model_calls"]) != 0 || revisionInteger(r["elapsed_ns"]) < 0 {
+	if !ok || !strings.HasPrefix(version, "go version go1.27.3 ") || r["schema"] != "gooo/body-composition-runtime/v1" || r["stage"] != "COMPLETE" || r["producer_source_sha"] != CompilerPin || module["path"] != "github.com/kimjooyoon/meta-ontology-go" || module["version"] != "v0.6.37-dev.0.20261020180505-205896a413e5" || r["projection_replayed"] != true || r["runtime_replayed"] != true || r["original_source_sha256"] != revisionDigest([]byte(lowered)) || r["selected_source_sha256"] != revisionDigest([]byte(lowered)) || revisionInteger(r["model_calls"]) != 0 || revisionInteger(r["elapsed_ns"]) < 0 {
 		return false
 	}
 	if !checkRevisionProcess(revisionObject(r["toolchain"])) || !checkRevisionProcess(revisionObject(r["build"])) {

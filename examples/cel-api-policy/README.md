@@ -37,10 +37,10 @@ pure decisions require no approval for each call.
 
 ## Run the already-generated native CLI
 
-From the repository root, with Go 1.27.2 selected:
+From the repository root, with Go 1.27.3 selected:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 go -C examples/cel-api-policy run ./cmd/evaluate -mode scalar \
   < examples/cel-api-policy/scalar-demo.json
@@ -96,7 +96,7 @@ effect method remain at zero calls, and application state remains unchanged for
 both saved allow and deny observations. Raw group/principal/tenant facts belong
 in private storage, not a public API response or automatic upload.
 
-From the repository root with Go 1.27.2 already selected:
+From the repository root with Go 1.27.3 already selected:
 
 ```sh
 umask 077
@@ -134,7 +134,7 @@ Setup may download the pinned compiler and pinned oracle dependencies. Actual
 verification runs with automatic toolchain/dependency networking disabled:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 ./tools/bootstrap.sh
 go -C examples/cel-api-policy/oracle mod download
@@ -152,9 +152,8 @@ native Gooo, and compares all fifteen outputs for 32 independently authored
 original API cases. Archived observations remain unchanged; current executions
 are written to the output directory.
 
-The pinned compiler `83928fa4538245abe33b08549da47f8cbdc50ed2` has no `package
-inspect` command. The generator therefore obtains the exact flattened Gooo source
-and lowered entry name from **actual package seed execution**, verifies the
+The generator obtains the exact flattened Gooo source and lowered entry name
+from **actual package seed execution**, verifies the
 imported pure-call closure, saves its replay, and invokes body-codegen on those
 compiler-owned bytes. Scalar/API projections use separate Go packages. The
 canonical declared/export/body-codegen activity IDs are retained; the pinned
@@ -165,13 +164,17 @@ producer fields, normalizing only recorded route latency and the generating
 process's GOOS/GOARCH observation.
 
 Workspace execution/replay independently checks all fields of 48 scalar and all
-32 API tuples in deterministic batches of at most 16. Its text input limit is
-1,024 UTF-8 bytes and its JSON transport limit is 32 KiB. Four 65,536-byte scalar
-cases remain in the full native comparison; their actual framework rejection
-receipts and a separate 1,025-byte text probe are recorded. The larger complete
-pretty-printed workspace suites also produce actual size-limit probes before
-batching. These overlapping workspace and native checks are **not** added
-together as unique cases or to the repository's existing port corpus.
+32 API tuples in deterministic batches of at most 16, each at most 32 KiB. This
+is a consumer batching policy. The current compiler's aggregate input JSON limit
+is 1 MiB (1,048,576 bytes), separately from 128 rows and the default 1,024 UTF-8
+byte Text bound. The complete 48/32-case source suites fit that aggregate JSON
+cap. Two size-refusal probes preserve their valid cases and add only trailing
+whitespace to reach 1 MiB + 1 byte. Each must fail closed without a result and
+report the exact current size limit. Four 65,536-byte scalar cases remain in the
+full native comparison; their framework rejection receipts and a separate
+1,025-byte Text probe are also recorded. These overlapping workspace and native
+checks are **not** added together as unique cases or to the repository's existing
+port corpus.
 
 Checks also include fresh generation, race-enabled native tests, vet, strict JSON
 and typed-domain refusal, each of 28 embedded-asset and 28 saved binding-digest

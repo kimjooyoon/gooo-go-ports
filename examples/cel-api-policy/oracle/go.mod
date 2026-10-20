@@ -1,6 +1,6 @@
 module example.com/gooo-cel-proto-oracle
 
-go 1.23.0
+go 1.27.3
 
 require (
 	cel.dev/cel-go v0.32.0

@@ -208,7 +208,7 @@ class GrantUpdateEvidenceTests(unittest.TestCase):
         source_hash = V.digest(b'lowered fixture')
         runtime = {'schema': 'gooo/body-composition-runtime/v1', 'stage': 'COMPLETE',
                    'producer_source_sha': V.PIN, 'producer_module': {'path': 'github.com/kimjooyoon/meta-ontology-go'},
-                   'go_version': 'go version go1.27.2 test/fixture', 'projection_replayed': True,
+                   'go_version': 'go version go1.27.3 test/fixture', 'projection_replayed': True,
                    'runtime_replayed': True, 'finite_passed': 1, 'finite_total': 1, 'model_calls': 0,
                    'runs': [process], 'toolchain': process, 'build': process, 'traces': [self.trace],
                    'original_source_sha256': source_hash, 'selected_source_sha256': source_hash,

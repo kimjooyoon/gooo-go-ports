@@ -2,11 +2,12 @@
 import hashlib
 import json
 from collections import Counter
+from verification_checks import check_trace_envelope
 
 if not __debug__:
     raise SystemExit("Python optimization disables integrity assertions; run without -O/PYTHONOPTIMIZE")
 
-PIN = '83928fa4538245abe33b08549da47f8cbdc50ed2'
+PIN = '205896a413e5dea92366309c35ae85e542d055f6'
 PACKAGE = 'gooo/service-policy/conditional-apply'
 ACTIVITY = 'AssessServiceGrantUpdate'
 ENTRY = PACKAGE + ':' + ACTIVITY
@@ -120,9 +121,7 @@ def check_trace(trace, index, case, program, report):
     assert len(records) == 1 and records[0]['name'] == 'GrantUpdateDecision'
     schemas = records[0]['fields']
     assert type(schemas) is list and [s['name'] for s in schemas] == list(FIELDS)
-    assert type(trace) is dict and set(trace) == {'case_index', 'deliveries'}
-    assert type(trace['case_index']) is int and trace['case_index'] == index
-    assert type(trace['deliveries']) is list and len(trace['deliveries']) == 1
+    check_trace_envelope(trace, index)
     delivery = trace['deliveries'][0]
     assert type(delivery) is dict and set(delivery) == {
         'activity_id', 'inputs', 'actual', 'expected', 'passed', 'actual_fields'}
@@ -244,7 +243,7 @@ def verify_grant_update(args, out, run, bindings, ROOT, REPO, audit_runtime):
     host = out / 'grant-update-native-host'
     host.mkdir()
     module = 'github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy'
-    (host / 'go.mod').write_text('module private.invalid/gooo-grant-update-host\n\ngo 1.27.2\n\nrequire ' + module + ' v0.0.0\nreplace ' + module + ' => ' + json.dumps(str(ROOT)) + '\n')
+    (host / 'go.mod').write_text('module private.invalid/gooo-grant-update-host\n\ngo 1.27.3\n\nrequire ' + module + ' v0.0.0\nreplace ' + module + ' => ' + json.dumps(str(ROOT)) + '\n')
     (host / 'main.go').write_text('''package main
 import("encoding/json";"os";p "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy")
 func main(){var facts []p.GrantUpdateFacts;if err:=json.NewDecoder(os.Stdin).Decode(&facts);err!=nil{panic(err)};proofs:=make([]p.GrantUpdateProof,0,len(facts));for _,f:=range facts{v,err:=p.EvaluateGrantUpdate(f);if err!=nil{panic(err)};proofs=append(proofs,v)};if err:=json.NewEncoder(os.Stdout).Encode(proofs);err!=nil{panic(err)}}

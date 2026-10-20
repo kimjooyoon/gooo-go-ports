@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const CompilerPin = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+const CompilerPin = "205896a413e5dea92366309c35ae85e542d055f6"
 
 // These hashes detect inconsistency in a trusted executable, not issuer trust.
 // Canonical mirrors are compared with the original importing workspace by
@@ -127,7 +127,12 @@ func checkBindings(files map[string][]byte, manifest []byte) (Bindings, error) {
 		}
 	}
 	var compiler struct {
-		Schema    string `json:"schema"`
+		Schema  string `json:"schema"`
+		Version string `json:"version"`
+		Module  struct {
+			Path    string `json:"path"`
+			Version string `json:"version"`
+		} `json:"module"`
 		Source    string `json:"compiler_source_sha"`
 		Revision  string `json:"vcs_revision"`
 		Status    string `json:"source_status"`
@@ -135,7 +140,7 @@ func checkBindings(files map[string][]byte, manifest []byte) (Bindings, error) {
 		GoVersion string `json:"go_version"`
 		NativeGo  string `json:"native_go_required"`
 	}
-	if json.Unmarshal(files["compiler.json"], &compiler) != nil || compiler.Schema != "gooo/build-identity/v1" || compiler.Source != CompilerPin || compiler.Revision != CompilerPin || compiler.Status != "CLEAN_VCS" || compiler.Modified != "false" || compiler.GoVersion != "go1.27.2" || compiler.NativeGo != "go1.27.2" {
+	if json.Unmarshal(files["compiler.json"], &compiler) != nil || compiler.Schema != "gooo/build-identity/v1" || compiler.Version != "0.6.37-dev" || compiler.Module.Path != "github.com/kimjooyoon/meta-ontology-go" || compiler.Module.Version != "v0.6.37-dev.0.20261020180505-205896a413e5" || compiler.Source != CompilerPin || compiler.Revision != CompilerPin || compiler.Status != "CLEAN_VCS" || compiler.Modified != "false" || compiler.GoVersion != "go1.27.3" || compiler.NativeGo != "go1.27.3" {
 		return Bindings{}, invalid
 	}
 	for _, c := range []struct{ prefix, workspace, pkg, activity, id, input, output string }{
@@ -153,7 +158,7 @@ func checkBindings(files map[string][]byte, manifest []byte) (Bindings, error) {
 			return Bindings{}, invalid
 		}
 		for _, e := range []executionRecord{execution, replay} {
-			if e.Schema != "gooo/workspace-body-execution-receipt/v1" || (e.Decision != "OBSERVED" && e.Decision != "PASS") || e.ManifestDigest != digest(files["canonical/"+c.workspace]) || e.InputsDigest != digest(files["receipts/"+c.prefix+"-seed-inputs.json"]) || e.Result.Runtime.Producer != CompilerPin || !strings.HasPrefix(e.Result.Runtime.GoVersion, "go version go1.27.2 ") || !e.Result.Runtime.ProjectionReplay || !e.Result.Runtime.RuntimeReplay || len(e.Result.Runtime.Runs) == 0 {
+			if e.Schema != "gooo/workspace-body-execution-receipt/v1" || (e.Decision != "OBSERVED" && e.Decision != "PASS") || e.ManifestDigest != digest(files["canonical/"+c.workspace]) || e.InputsDigest != digest(files["receipts/"+c.prefix+"-seed-inputs.json"]) || e.Result.Runtime.Producer != CompilerPin || !strings.HasPrefix(e.Result.Runtime.GoVersion, "go version go1.27.3 ") || !e.Result.Runtime.ProjectionReplay || !e.Result.Runtime.RuntimeReplay || len(e.Result.Runtime.Runs) == 0 {
 				return Bindings{}, invalid
 			}
 			for _, r := range e.Result.Runtime.Runs {

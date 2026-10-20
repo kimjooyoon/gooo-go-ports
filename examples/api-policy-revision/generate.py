@@ -15,7 +15,8 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parent.parent
-PIN = '83928fa4538245abe33b08549da47f8cbdc50ed2'
+PIN = '205896a413e5dea92366309c35ae85e542d055f6'
+HISTORICAL_COMPILER = '83928fa4538245abe33b08549da47f8cbdc50ed2'
 MODULE = 'github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision'
 CONFIGS = [
     ('candidate', 'candidate.workspace.json', 'app/api-policy-readonly', 'ReadOnlyAPI', 'gooo://api-revision/readonly/v1', '(bool,string,bool,string,bool,string,string,string,string)', 'ApiDecision', 'readonly.gooo'),
@@ -75,7 +76,7 @@ def check_runtime_sources():
     assert actual == {name for name in FILES if name.endswith('.go')}, 'unsealed compiled Go source'
 
 
-def program(receipt, cfg):
+def program(receipt, cfg, expected_go="go1.27.3", expected_compiler=PIN):
     prefix, workspace, package, activity, _, _, _, source = cfg
     assert receipt['schema'] == 'gooo/workspace-body-execution-receipt/v1' and receipt['decision'] in ['OBSERVED', 'PASS']
     assert receipt['manifest_digest'] == digest((ROOT / workspace).read_bytes())
@@ -88,7 +89,7 @@ def program(receipt, cfg):
     for name, sha in sources.items():
         assert sha == source_digest((ROOT / name).read_bytes())
     r = receipt['result']['runtime']
-    assert r['stage'] == 'COMPLETE' and r['producer_source_sha'] == PIN and r['go_version'].split()[:3] == ['go', 'version', 'go1.27.2']
+    assert r['stage'] == 'COMPLETE' and r['producer_source_sha'] == expected_compiler and r['go_version'].split()[:3] == ['go', 'version', expected_go]
     assert r['projection_replayed'] and r['runtime_replayed'] and len(r['runs']) == 2
     for process in [r['toolchain'], r['build'], *r['runs']]:
         assert process['started'] and process['completed'] and process['exit_code'] == 0 and not process['canceled'] and not process['timed_out'] and not process['output_truncated']
@@ -118,6 +119,19 @@ def check_saved_replay(receipt, raw_execution):
     # binds the raw saved execution; it does not infer that separate inner hash.
 
 
+
+def stored_compiler_profile():
+    """Select the exact stored producer role; never relabel a saved receipt."""
+    value = json.loads((ROOT / 'compiler.json').read_bytes())
+    historical = value.get('compiler_source_sha') == HISTORICAL_COMPILER
+    revision = HISTORICAL_COMPILER if historical else PIN
+    version = '0.6.32-dev' if historical else '0.6.37-dev'
+    go = 'go1.27.2' if historical else 'go1.27.3'
+    assert value['compiler_source_sha'] == value['vcs_revision'] == revision
+    assert value['version'] == version and value['go_version'] == value['native_go_required'] == go
+    assert value['source_status'] == 'CLEAN_VCS' and value['vcs_modified'] == 'false'
+    return go, revision
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--compiler', type=Path, default=REPO / '.gooo')
@@ -127,14 +141,15 @@ def main():
     args.compiler = args.compiler.resolve()
     args.go = args.go.resolve()
     version = run([args.go, 'version']).decode().split()
-    assert version[:3] == ['go', 'version', 'go1.27.2']
+    assert version[:3] == ['go', 'version', 'go1.27.3']
     compiler_raw = run([args.compiler, 'version', '--build', '--json'])
     compiler = json.loads(compiler_raw)
     assert compiler['compiler_source_sha'] == compiler['vcs_revision'] == PIN and compiler['vcs_modified'] == 'false' and compiler['source_status'] == 'CLEAN_VCS'
-    assert compiler['go_version'] == compiler['native_go_required'] == 'go1.27.2' and compiler['decision_runtime']['version'] == 'v0.2.41-experimental'
+    assert compiler['go_version'] == compiler['native_go_required'] == 'go1.27.3' and compiler['decision_runtime']['version'] == 'v0.2.51-experimental'
     check_archive()
     if args.check:
         check_runtime_sources()
+    saved_go, saved_compiler = stored_compiler_profile() if args.check else (None, None)
     assets = {'compiler.json': compiler_raw}
     entries = {}
     with tempfile.TemporaryDirectory(prefix='gooo-api-revision-') as tmp:
@@ -145,10 +160,10 @@ def main():
             receipt = json.loads(fresh)
             p = program(receipt, cfg)
             if args.check:
-                assert program(json.loads((ROOT / 'receipts' / (prefix + '-execution.json')).read_bytes()), cfg) == p
+                assert program(json.loads((ROOT / 'receipts' / (prefix + '-execution.json')).read_bytes()), cfg, expected_go=saved_go, expected_compiler=saved_compiler) == p
                 saved_replay = json.loads((ROOT / 'receipts' / (prefix + '-replay.json')).read_bytes())
                 check_saved_replay(saved_replay, (ROOT / 'receipts' / (prefix + '-execution.json')).read_bytes())
-                assert program(saved_replay, cfg) == p
+                assert program(saved_replay, cfg, expected_go=saved_go, expected_compiler=saved_compiler) == p
             else:
                 assets['receipts/' + prefix + '-execution.json'] = fresh
                 execution_file = Path(tmp) / (prefix + '-execution.json')

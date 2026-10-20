@@ -15,7 +15,7 @@ import (
 	"sync"
 )
 
-const CompilerPin = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+const CompilerPin = "205896a413e5dea92366309c35ae85e542d055f6"
 
 // These are consistency checks in a trusted executable, not signature/issuer or
 // later host-binary attestations. The source pin preserves exact Google bytes.
@@ -245,7 +245,12 @@ func checkBindings(files map[string][]byte, manifest []byte) (Bindings, error) {
 		}
 	}
 	var compiler struct {
-		Schema   string `json:"schema"`
+		Schema  string `json:"schema"`
+		Version string `json:"version"`
+		Module  struct {
+			Path    string `json:"path"`
+			Version string `json:"version"`
+		} `json:"module"`
 		Source   string `json:"compiler_source_sha"`
 		Revision string `json:"vcs_revision"`
 		Status   string `json:"source_status"`
@@ -253,7 +258,7 @@ func checkBindings(files map[string][]byte, manifest []byte) (Bindings, error) {
 		Go       string `json:"go_version"`
 		NativeGo string `json:"native_go_required"`
 	}
-	if json.Unmarshal(files["compiler.json"], &compiler) != nil || compiler.Schema != "gooo/build-identity/v1" || compiler.Source != CompilerPin || compiler.Revision != CompilerPin || compiler.Status != "CLEAN_VCS" || compiler.Modified != "false" || compiler.Go != "go1.27.2" || compiler.NativeGo != "go1.27.2" {
+	if json.Unmarshal(files["compiler.json"], &compiler) != nil || compiler.Schema != "gooo/build-identity/v1" || compiler.Version != "0.6.37-dev" || compiler.Module.Path != "github.com/kimjooyoon/meta-ontology-go" || compiler.Module.Version != "v0.6.37-dev.0.20261020180505-205896a413e5" || compiler.Source != CompilerPin || compiler.Revision != CompilerPin || compiler.Status != "CLEAN_VCS" || compiler.Modified != "false" || compiler.Go != "go1.27.3" || compiler.NativeGo != "go1.27.3" {
 		return Bindings{}, invalid
 	}
 	var pin struct {

@@ -18,7 +18,7 @@ It accepts a bounded JSON array and returns the pure Gooo decisions, facts and
 source bindings. Policy refusals and invalid-domain decisions exit successfully;
 malformed JSON structure refuses the whole batch without stdout.
 
-With Go 1.27.2 already installed, run from `examples/agentmesh-service-policy`:
+With Go 1.27.3 already installed, run from `examples/agentmesh-service-policy`:
 
 ```sh
 GOWORK=off GOTOOLCHAIN=local go run -mod=readonly ./cmd/apply-demo

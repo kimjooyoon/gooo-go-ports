@@ -22,7 +22,7 @@ expectations for the original API composition; they are not upstream CEL
 observations of authentication, tenancy or external API effects.
 
 The oracle module is deliberately separate from the dependency-free native
-example. Setup with Go1.27.2 and `go mod download` in this directory, then run
+example. Setup with Go1.27.3 and `go mod download` in this directory, then run
 `go run ./cmd/oracle --cases cases.json` with cached dependencies. Current output
 contains a fresh execution timestamp. Full module graph, private implementation
 proofs and built executables are not committed.

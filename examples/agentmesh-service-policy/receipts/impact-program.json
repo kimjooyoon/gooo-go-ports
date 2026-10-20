@@ -6,6 +6,488 @@
       "package_path": "app/service-grant-impact"
     }
   ],
+  "activity_origins": [
+    {
+      "input_source": {
+        "activity_id": "gooo://service-impact/compare",
+        "declaration": {
+          "end_byte": 982,
+          "kind": "activity",
+          "name": "CompareServiceGrant",
+          "source_sha256": "sha256:e7e84b71beab8661298ed2d6fdd85e8d01586d3546b1c0a7f5f86bb0d155f647",
+          "stable_id": "gooo://service-impact/compare",
+          "start_byte": 514,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 981,
+        "filename": "examples/agentmesh-service-policy/impact.gooo",
+        "package_path": "app/service-grant-impact",
+        "source_sha256": "sha256:e7e84b71beab8661298ed2d6fdd85e8d01586d3546b1c0a7f5f86bb0d155f647",
+        "start_byte": 627,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://service-impact/compare"
+    },
+    {
+      "input_source": {
+        "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+        "declaration": {
+          "end_byte": 1766,
+          "kind": "activity",
+          "name": "MatchServicePattern",
+          "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+          "stable_id": "gooo://agentmesh-prototype/match-service-pattern",
+          "start_byte": 425,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 1765,
+        "filename": "ports/agentmesh/service_pattern.gooo",
+        "package_path": "go/google/agentmesh/api",
+        "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+        "start_byte": 547,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://agentmesh-prototype/match-service-pattern"
+    }
+  ],
+  "condition_origins": [
+    {
+      "input_source": {
+        "activity_id": "gooo://service-impact/compare",
+        "declaration": {
+          "end_byte": 982,
+          "kind": "activity",
+          "name": "CompareServiceGrant",
+          "source_sha256": "sha256:e7e84b71beab8661298ed2d6fdd85e8d01586d3546b1c0a7f5f86bb0d155f647",
+          "stable_id": "gooo://service-impact/compare",
+          "start_byte": 514,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 788,
+        "expression": "before",
+        "filename": "examples/agentmesh-service-policy/impact.gooo",
+        "package_path": "app/service-grant-impact",
+        "source_sha256": "sha256:e7e84b71beab8661298ed2d6fdd85e8d01586d3546b1c0a7f5f86bb0d155f647",
+        "start_byte": 782,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://service-impact/compare",
+      "lowered_body_sha256": "sha256:e03d1b777642b5f4b745ff5ab601289e3a2b3e9d8441723b5be08a6a2b4b267a",
+      "lowered_decoded_end": 193,
+      "lowered_decoded_start": 187
+    },
+    {
+      "input_source": {
+        "activity_id": "gooo://service-impact/compare",
+        "declaration": {
+          "end_byte": 982,
+          "kind": "activity",
+          "name": "CompareServiceGrant",
+          "source_sha256": "sha256:e7e84b71beab8661298ed2d6fdd85e8d01586d3546b1c0a7f5f86bb0d155f647",
+          "stable_id": "gooo://service-impact/compare",
+          "start_byte": 514,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 800,
+        "expression": "after",
+        "filename": "examples/agentmesh-service-policy/impact.gooo",
+        "package_path": "app/service-grant-impact",
+        "source_sha256": "sha256:e7e84b71beab8661298ed2d6fdd85e8d01586d3546b1c0a7f5f86bb0d155f647",
+        "start_byte": 795,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://service-impact/compare",
+      "lowered_body_sha256": "sha256:e03d1b777642b5f4b745ff5ab601289e3a2b3e9d8441723b5be08a6a2b4b267a",
+      "lowered_decoded_end": 205,
+      "lowered_decoded_start": 200
+    },
+    {
+      "input_source": {
+        "activity_id": "gooo://service-impact/compare",
+        "declaration": {
+          "end_byte": 982,
+          "kind": "activity",
+          "name": "CompareServiceGrant",
+          "source_sha256": "sha256:e7e84b71beab8661298ed2d6fdd85e8d01586d3546b1c0a7f5f86bb0d155f647",
+          "stable_id": "gooo://service-impact/compare",
+          "start_byte": 514,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 878,
+        "expression": "after",
+        "filename": "examples/agentmesh-service-policy/impact.gooo",
+        "package_path": "app/service-grant-impact",
+        "source_sha256": "sha256:e7e84b71beab8661298ed2d6fdd85e8d01586d3546b1c0a7f5f86bb0d155f647",
+        "start_byte": 873,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://service-impact/compare",
+      "lowered_body_sha256": "sha256:e03d1b777642b5f4b745ff5ab601289e3a2b3e9d8441723b5be08a6a2b4b267a",
+      "lowered_decoded_end": 283,
+      "lowered_decoded_start": 278
+    },
+    {
+      "input_source": {
+        "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+        "declaration": {
+          "end_byte": 1766,
+          "kind": "activity",
+          "name": "MatchServicePattern",
+          "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+          "stable_id": "gooo://agentmesh-prototype/match-service-pattern",
+          "start_byte": 425,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 595,
+        "expression": "input0 == \"\" || input1 == \"\" || input2 == \"\"",
+        "filename": "ports/agentmesh/service_pattern.gooo",
+        "package_path": "go/google/agentmesh/api",
+        "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+        "start_byte": 551,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+      "lowered_body_sha256": "sha256:d50db801b5843f358ca308dd6ab55edc138d7ab9a12eb197f5bb1b9ce0c4ae79",
+      "lowered_decoded_end": 48,
+      "lowered_decoded_start": 4
+    },
+    {
+      "input_source": {
+        "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+        "declaration": {
+          "end_byte": 1766,
+          "kind": "activity",
+          "name": "MatchServicePattern",
+          "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+          "stable_id": "gooo://agentmesh-prototype/match-service-pattern",
+          "start_byte": 425,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 629,
+        "expression": "input0 == \"*\"",
+        "filename": "ports/agentmesh/service_pattern.gooo",
+        "package_path": "go/google/agentmesh/api",
+        "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+        "start_byte": 616,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+      "lowered_body_sha256": "sha256:d50db801b5843f358ca308dd6ab55edc138d7ab9a12eb197f5bb1b9ce0c4ae79",
+      "lowered_decoded_end": 82,
+      "lowered_decoded_start": 69
+    },
+    {
+      "input_source": {
+        "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+        "declaration": {
+          "end_byte": 1766,
+          "kind": "activity",
+          "name": "MatchServicePattern",
+          "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+          "stable_id": "gooo://agentmesh-prototype/match-service-pattern",
+          "start_byte": 425,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 779,
+        "expression": "end <= int64(len(input0))",
+        "filename": "ports/agentmesh/service_pattern.gooo",
+        "package_path": "go/google/agentmesh/api",
+        "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+        "start_byte": 754,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+      "lowered_body_sha256": "sha256:d50db801b5843f358ca308dd6ab55edc138d7ab9a12eb197f5bb1b9ce0c4ae79",
+      "lowered_decoded_end": 232,
+      "lowered_decoded_start": 207
+    },
+    {
+      "input_source": {
+        "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+        "declaration": {
+          "end_byte": 1766,
+          "kind": "activity",
+          "name": "MatchServicePattern",
+          "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+          "stable_id": "gooo://agentmesh-prototype/match-service-pattern",
+          "start_byte": 425,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 814,
+        "expression": "input0[offset:end] == \"://\"",
+        "filename": "ports/agentmesh/service_pattern.gooo",
+        "package_path": "go/google/agentmesh/api",
+        "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+        "start_byte": 787,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+      "lowered_body_sha256": "sha256:d50db801b5843f358ca308dd6ab55edc138d7ab9a12eb197f5bb1b9ce0c4ae79",
+      "lowered_decoded_end": 267,
+      "lowered_decoded_start": 240
+    },
+    {
+      "input_source": {
+        "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+        "declaration": {
+          "end_byte": 1766,
+          "kind": "activity",
+          "name": "MatchServicePattern",
+          "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+          "stable_id": "gooo://agentmesh-prototype/match-service-pattern",
+          "start_byte": 425,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 831,
+        "expression": "split == -1",
+        "filename": "ports/agentmesh/service_pattern.gooo",
+        "package_path": "go/google/agentmesh/api",
+        "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+        "start_byte": 820,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+      "lowered_body_sha256": "sha256:d50db801b5843f358ca308dd6ab55edc138d7ab9a12eb197f5bb1b9ce0c4ae79",
+      "lowered_decoded_end": 284,
+      "lowered_decoded_start": 273
+    },
+    {
+      "input_source": {
+        "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+        "declaration": {
+          "end_byte": 1766,
+          "kind": "activity",
+          "name": "MatchServicePattern",
+          "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+          "stable_id": "gooo://agentmesh-prototype/match-service-pattern",
+          "start_byte": 425,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 870,
+        "expression": "split < 0",
+        "filename": "ports/agentmesh/service_pattern.gooo",
+        "package_path": "go/google/agentmesh/api",
+        "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+        "start_byte": 861,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+      "lowered_body_sha256": "sha256:d50db801b5843f358ca308dd6ab55edc138d7ab9a12eb197f5bb1b9ce0c4ae79",
+      "lowered_decoded_end": 323,
+      "lowered_decoded_start": 314
+    },
+    {
+      "input_source": {
+        "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+        "declaration": {
+          "end_byte": 1766,
+          "kind": "activity",
+          "name": "MatchServicePattern",
+          "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+          "stable_id": "gooo://agentmesh-prototype/match-service-pattern",
+          "start_byte": 425,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 1048,
+        "expression": "patternType != input1 || patternName == \"\"",
+        "filename": "ports/agentmesh/service_pattern.gooo",
+        "package_path": "go/google/agentmesh/api",
+        "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+        "start_byte": 1006,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+      "lowered_body_sha256": "sha256:d50db801b5843f358ca308dd6ab55edc138d7ab9a12eb197f5bb1b9ce0c4ae79",
+      "lowered_decoded_end": 501,
+      "lowered_decoded_start": 459
+    },
+    {
+      "input_source": {
+        "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+        "declaration": {
+          "end_byte": 1766,
+          "kind": "activity",
+          "name": "MatchServicePattern",
+          "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+          "stable_id": "gooo://agentmesh-prototype/match-service-pattern",
+          "start_byte": 425,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 1087,
+        "expression": "patternName == \"*\"",
+        "filename": "ports/agentmesh/service_pattern.gooo",
+        "package_path": "go/google/agentmesh/api",
+        "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+        "start_byte": 1069,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+      "lowered_body_sha256": "sha256:d50db801b5843f358ca308dd6ab55edc138d7ab9a12eb197f5bb1b9ce0c4ae79",
+      "lowered_decoded_end": 540,
+      "lowered_decoded_start": 522
+    },
+    {
+      "input_source": {
+        "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+        "declaration": {
+          "end_byte": 1766,
+          "kind": "activity",
+          "name": "MatchServicePattern",
+          "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+          "stable_id": "gooo://agentmesh-prototype/match-service-pattern",
+          "start_byte": 425,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 1208,
+        "expression": "patternLength >= 2",
+        "filename": "ports/agentmesh/service_pattern.gooo",
+        "package_path": "go/google/agentmesh/api",
+        "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+        "start_byte": 1190,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+      "lowered_body_sha256": "sha256:d50db801b5843f358ca308dd6ab55edc138d7ab9a12eb197f5bb1b9ce0c4ae79",
+      "lowered_decoded_end": 661,
+      "lowered_decoded_start": 643
+    },
+    {
+      "input_source": {
+        "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+        "declaration": {
+          "end_byte": 1766,
+          "kind": "activity",
+          "name": "MatchServicePattern",
+          "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+          "stable_id": "gooo://agentmesh-prototype/match-service-pattern",
+          "start_byte": 425,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 1239,
+        "expression": "patternName[0:2] == \"*.\"",
+        "filename": "ports/agentmesh/service_pattern.gooo",
+        "package_path": "go/google/agentmesh/api",
+        "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+        "start_byte": 1215,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+      "lowered_body_sha256": "sha256:d50db801b5843f358ca308dd6ab55edc138d7ab9a12eb197f5bb1b9ce0c4ae79",
+      "lowered_decoded_end": 692,
+      "lowered_decoded_start": 668
+    },
+    {
+      "input_source": {
+        "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+        "declaration": {
+          "end_byte": 1766,
+          "kind": "activity",
+          "name": "MatchServicePattern",
+          "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+          "stable_id": "gooo://agentmesh-prototype/match-service-pattern",
+          "start_byte": 425,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 1359,
+        "expression": "requestLength < suffixLength",
+        "filename": "ports/agentmesh/service_pattern.gooo",
+        "package_path": "go/google/agentmesh/api",
+        "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+        "start_byte": 1331,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+      "lowered_body_sha256": "sha256:d50db801b5843f358ca308dd6ab55edc138d7ab9a12eb197f5bb1b9ce0c4ae79",
+      "lowered_decoded_end": 812,
+      "lowered_decoded_start": 784
+    },
+    {
+      "input_source": {
+        "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+        "declaration": {
+          "end_byte": 1766,
+          "kind": "activity",
+          "name": "MatchServicePattern",
+          "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+          "stable_id": "gooo://agentmesh-prototype/match-service-pattern",
+          "start_byte": 425,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 1565,
+        "expression": "patternName[tailStart:patternLength] == \".*\"",
+        "filename": "ports/agentmesh/service_pattern.gooo",
+        "package_path": "go/google/agentmesh/api",
+        "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+        "start_byte": 1521,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+      "lowered_body_sha256": "sha256:d50db801b5843f358ca308dd6ab55edc138d7ab9a12eb197f5bb1b9ce0c4ae79",
+      "lowered_decoded_end": 1018,
+      "lowered_decoded_start": 974
+    },
+    {
+      "input_source": {
+        "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+        "declaration": {
+          "end_byte": 1766,
+          "kind": "activity",
+          "name": "MatchServicePattern",
+          "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+          "stable_id": "gooo://agentmesh-prototype/match-service-pattern",
+          "start_byte": 425,
+          "status": "MAPPED",
+          "view": "workspace_input_file"
+        },
+        "end_byte": 1674,
+        "expression": "requestLength < prefixEnd",
+        "filename": "ports/agentmesh/service_pattern.gooo",
+        "package_path": "go/google/agentmesh/api",
+        "source_sha256": "sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d",
+        "start_byte": 1649,
+        "status": "MAPPED",
+        "view": "workspace_input_file"
+      },
+      "lowered_activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+      "lowered_body_sha256": "sha256:d50db801b5843f358ca308dd6ab55edc138d7ab9a12eb197f5bb1b9ce0c4ae79",
+      "lowered_decoded_end": 1127,
+      "lowered_decoded_start": 1102
+    }
+  ],
   "entry": {
     "activity": "CompareServiceGrant",
     "lowered_name": "GoooPackage1ActivityCompareServiceGrant",
@@ -20,8 +502,8 @@
           "lowered_name": "GoooPackage1ActivityCompareServiceGrant",
           "package_path": "app/service-grant-impact"
         },
-        "activity_id": "gooo-original-service-impact://activity/compare-service-grant",
-        "lowered_activity_id": "gooo-workspace://activity/gooo-package1activity-compare-service-grant",
+        "activity_id": "gooo://service-impact/compare",
+        "lowered_activity_id": "gooo://service-impact/compare",
         "source": "examples/agentmesh-service-policy/impact.gooo",
         "source_body_sha256": "sha256:b6ee45f6cf1ee5e765f66a5d7d0b1015c0d258b6dc310e9cff328dc83a661884"
       },
@@ -31,8 +513,8 @@
           "lowered_name": "GoooPackage0ActivityMatchServicePattern",
           "package_path": "go/google/agentmesh/api"
         },
-        "activity_id": "gooo-agentmesh-prototype://activity/match-service-pattern",
-        "lowered_activity_id": "gooo-workspace://activity/gooo-package0activity-match-service-pattern",
+        "activity_id": "gooo://agentmesh-prototype/match-service-pattern",
+        "lowered_activity_id": "gooo://agentmesh-prototype/match-service-pattern",
         "source": "ports/agentmesh/service_pattern.gooo",
         "source_body_sha256": "sha256:eff57dfbb7c96a29ec5199e1369c9329a576461408450d40957c19a0e26d6ec5"
       }

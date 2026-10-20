@@ -314,7 +314,7 @@ class RefinementEvidenceChecks(unittest.TestCase):
             d=row['want']
             if d['has_witness']:
                 for side,want in [('before',False),('after',True)]:requests.append(dict(name=row['name']+'/'+side,pattern=row[side],req_type=d['witness_type'],req_name=d['witness_name'],want=want))
-        actual=dict(schema='gooo/agentmesh-matcher-oracle/v1',go_version='go1.27.2',source_revision=revision,observations=[dict({k:r[k] for k in ['name','pattern','req_type','req_name']},matched=r['want']) for r in requests],impact_matches=[])
+        actual=dict(schema='gooo/agentmesh-matcher-oracle/v1',go_version='go1.27.3',source_revision=revision,observations=[dict({k:r[k] for k in ['name','pattern','req_type','req_name']},matched=r['want']) for r in requests],impact_matches=[])
         check_witness_oracle(actual,requests,revision)
         for field in ['name','pattern','req_type','req_name','matched']:
             changed=copy.deepcopy(actual);changed['observations'][-1][field]=False if field=='matched' else 'wrong'
@@ -448,6 +448,95 @@ class FrozenDomainReferenceChecks(unittest.TestCase):
                 elif mode=='source-sha':r['source_sha256']='0'*64
                 else:r['baseline_commit']='0'*40
                 with self.assertRaises(AssertionError):check_domain_reference(r)
+
+
+class CurrentTrace205MetadataChecks(unittest.TestCase):
+    """Synthetic diagnostic shape controls, not new native observations."""
+
+    def metadata(self):
+        return {
+            'field_local_bridge': {
+                'locals': [dict(other_start=0, other_end=1, other_drops=0, start_clock=0, completion=1)],
+                'fields': [], 'local_clocks': [0, 1], 'field_clocks': [], 'completions': 1},
+            'field_writes': [dict(site_index=0, frame=0, use_start=0, use_end=0,
+                uses_dropped=0, parent_assignment=-1, completion=1, completed=True)],
+            'field_uses': [dict(site_index=0, frame=0, assignment=-1, completion_clock=1, reason='input')],
+            'field_frames': 1, 'conditions_observed': True,
+            'conditions': [dict(site_index=0, value=False)],
+            'local_writes': [dict(site_index=0, frame=0, read_start=0, read_end=0,
+                use_start=0, use_end=0, reads_dropped=0, uses_dropped=0, completed=True)],
+            'local_uses': [dict(site_index=0, frame=0, assignment=0)],
+            'local_frames': 1, 'reads_observed': True,
+            'called_inputs_observed': True,
+            'calls': [dict(root_activity_id='root', activity_id='called', inputs=['mcp://a.x'])],
+        }
+
+    def trace(self):
+        return dict(case_index=0, deliveries=[{}], **self.metadata())
+
+    def check(self, trace):
+        from verification_checks import check_trace_envelope
+        check_trace_envelope(trace, 0)
+
+    def test_legacy_and_current_metadata_shapes(self):
+        self.check(dict(case_index=0, deliveries=[{}]))
+        self.check(self.trace())
+        trace=self.trace()
+        trace.update(field_local_bridge=None, reads=None, constructions=[], local_elements=[])
+        self.check(trace)
+
+    def test_metadata_keeps_existing_typed_delivery_checks(self):
+        for prefix in ('matcher', 'impact'):
+            with self.subTest(prefix=prefix):
+                context=copy.deepcopy(FIXTURE['workspace'][prefix])
+                context['trace'].update(self.metadata())
+                workspace_check(prefix, context)
+                context['trace']['deliveries'][0]['inputs'][0]['value'] += '-forged'
+                with self.assertRaises(AssertionError):
+                    workspace_check(prefix, context)
+
+    def test_unknown_and_missing_metadata_fields_refused(self):
+        mutations=[lambda t:t.update(unknown=True),
+            lambda t:t['field_local_bridge'].update(unknown=0),
+            lambda t:t['field_local_bridge']['locals'][0].pop('completion'),
+            lambda t:t['field_writes'][0].update(unknown=0),
+            lambda t:t['calls'][0].update(unknown=0)]
+        for mutation in mutations:
+            trace=self.trace(); mutation(trace)
+            with self.subTest(mutation=mutations.index(mutation)), self.assertRaises(AssertionError):
+                self.check(trace)
+
+    def test_boolean_integer_and_numeric_bounds_refused(self):
+        mutations=[lambda t:t.update(conditions_observed=1),
+            lambda t:t.update(field_frames=True), lambda t:t.update(local_frames=-1),
+            lambda t:t['conditions'][0].update(value=1),
+            lambda t:t['field_writes'][0].update(completed=1),
+            lambda t:t['field_local_bridge']['local_clocks'].__setitem__(0, True),
+            lambda t:t['local_uses'][0].update(assignment=1 << 63),
+            lambda t:t['conditions'][0].update(site_index=0.0)]
+        for mutation in mutations:
+            trace=self.trace(); mutation(trace)
+            with self.subTest(mutation=mutations.index(mutation)), self.assertRaises(AssertionError):
+                self.check(trace)
+
+    def test_list_record_and_text_shapes_refused(self):
+        mutations=[lambda t:t.update(conditions={}), lambda t:t.update(local_writes=[None]),
+            lambda t:t.update(field_local_bridge=[]), lambda t:t.update(deliveries=[]),
+            lambda t:t['field_uses'][0].update(reason=0),
+            lambda t:t['calls'][0].update(inputs=[False]),
+            lambda t:t['calls'][0].update(inputs=['x' * 1025]),
+            lambda t:t['calls'][0].update(activity_id='\ud800')]
+        for mutation in mutations:
+            trace=self.trace(); mutation(trace)
+            with self.subTest(mutation=mutations.index(mutation)), self.assertRaises(AssertionError):
+                self.check(trace)
+
+    def test_finite_container_and_unsupported_collection_bounds(self):
+        for name, value in [('conditions', [dict(site_index=0,value=True)] * 65537),
+                            ('reads', [{}]), ('constructions', [{}]), ('local_elements', [{}])]:
+            with self.subTest(name=name):
+                trace=self.trace(); trace[name]=value
+                with self.assertRaises(AssertionError): self.check(trace)
 
 
 if __name__ == '__main__':

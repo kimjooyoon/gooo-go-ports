@@ -23,6 +23,9 @@ internally consistent; a report does not attest that an event occurred.
 
 ## Install the command without cloning
 
+This immutable recipe preserves its Go 1.27.2 profile. Current-source build
+commands below target Go 1.27.3; do not relabel the fixed command or old bundles.
+
 With **Go 1.27.2 already installed and selected**, install the checked immutable
 command into a private directory. No repository checkout or Gooo compiler is
 needed. Initial installation uses the public Go proxy and checksum service.
@@ -79,7 +82,7 @@ the extracted command requires no Go, Gooo or Python installation. The two
 profiles remain fixed; this is not a runtime loader for arbitrary policies.
 
 To reproduce a bundle, add `--bundle-cli` to
-`tools/check-api-policy-public-consumer.py` with an absolute installed Go 1.27.2
+`tools/check-api-policy-public-consumer.py` with an absolute installed Go 1.27.3
 path, a full public source revision and a new output directory. Packaging fails
 unless the original consumer checks, direct execution, tampered-report refusal
 and private build-directory cleanup all succeed. The executable is copied from
@@ -87,7 +90,7 @@ that checked installation and its bytes are verified again inside the archive.
 
 ## Native quickstart
 
-Start in the repository root with **Go 1.27.2 already installed and selected**.
+Start in the repository root with **Go 1.27.3 already installed and selected**.
 The module requires the exact published original module and uses standard-library-only
 native code. Consuming the generated profiles requires no Gooo compiler or CEL
 evaluator. Toolchain installation and its initial cache setup are separate.
@@ -239,6 +242,8 @@ API effect. This CLI remains an offline computation with no dispatcher.
 
 ## Import the published policy from another Go project
 
+This fixed-module walkthrough retains its recorded Go 1.27.2 setup.
+
 With Go 1.27.2 installed and selected, this separate project imports the public
 module at immutable commit `e723f9af6dc33ecfff002a951e4b09a310439338`.
 Initial dependency downloads use the public Go proxy and checksum service.
@@ -351,6 +356,12 @@ are classifier inputs, not additional readonly policy paths, external requests,
 ported-function cases or evidence of independent adoption.
 
 ## Reproduce the finite validation
+
+The compiler/runtime identity below describes the historical Go 1.27.2 profile.
+Keep its receipt reproduction separate from current-source Go 1.27.3 validation;
+updated validators and an actual matching compiler build are required for that target.
+For the commands in this historical section, use the [pre-migration source
+snapshot](https://github.com/kimjooyoon/gooo-go-ports/tree/cc946350de37c48d509b1d383b8ce7e8a0062483) in a separate checkout.
 
 This developer check also needs Python 3, the installed race-test C toolchain,
 and an existing compiler from source

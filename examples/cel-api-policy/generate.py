@@ -15,7 +15,8 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parent.parent
-PIN = '83928fa4538245abe33b08549da47f8cbdc50ed2'
+PIN = '205896a413e5dea92366309c35ae85e542d055f6'
+HISTORICAL_COMPILER = '83928fa4538245abe33b08549da47f8cbdc50ed2'
 CANONICAL = {'canonical/scalar_access.gooo':'ports/cel/scalar_access.gooo',
              'canonical/main.gooo':'examples/cel-api-policy/main.gooo',
              'canonical/cel-scalar.workspace.json':'cel-scalar.workspace.json',
@@ -37,7 +38,7 @@ def run(cmd, data=None):
     env=os.environ.copy();env.update(GOTOOLCHAIN='local',GOWORK='off',GOPROXY='off',GOSUMDB='off')
     return subprocess.run([str(x) for x in cmd],input=data,cwd=REPO,env=env,capture_output=True,check=True,timeout=60).stdout
 
-def program(receipt, workspace, package, activity, prefix):
+def program(receipt, workspace, package, activity, prefix, expected_go="go1.27.3", expected_compiler=PIN):
     assert receipt['schema']=='gooo/workspace-body-execution-receipt/v1'
     assert receipt['decision'] in ['OBSERVED','PASS']
     assert receipt['manifest_digest']==digest((REPO/workspace).read_bytes())
@@ -67,7 +68,7 @@ def program(receipt, workspace, package, activity, prefix):
         assert len(sites)==1 and sites[0]['caller']=='app/cel-api-policy:APIAccess' and sites[0]['callee']=='go/cel.dev/cel-go/codelab:ScalarAccess'
         assert {a['source'] for a in p['pure_calls']['activities']}==expected
     runtime=receipt['result']['runtime']
-    assert runtime['producer_source_sha']==PIN and runtime['go_version'].split()[:3]==['go','version','go1.27.2']
+    assert runtime['producer_source_sha']==expected_compiler and runtime['go_version'].split()[:3]==['go','version',expected_go]
     assert runtime['projection_replayed'] and runtime['runtime_replayed']
     assert runtime['runs'] and all(r['started'] and r['completed'] and r['exit_code']==0 and not r['timed_out'] and not r['output_truncated'] for r in runtime['runs'])
     return p
@@ -83,12 +84,26 @@ def stable(receipt):
     # Every other source/projection/semantic/producer field remains byte-exact.
     return value
 
+
+def stored_compiler_profile():
+    """Select the exact stored producer role; never relabel a saved receipt."""
+    value = json.loads((ROOT / 'compiler.json').read_bytes())
+    historical = value.get('compiler_source_sha') == HISTORICAL_COMPILER
+    revision = HISTORICAL_COMPILER if historical else PIN
+    version = '0.6.32-dev' if historical else '0.6.37-dev'
+    go = 'go1.27.2' if historical else 'go1.27.3'
+    assert value['compiler_source_sha'] == value['vcs_revision'] == revision
+    assert value['version'] == version and value['go_version'] == value['native_go_required'] == go
+    assert value['source_status'] == 'CLEAN_VCS' and value['vcs_modified'] == 'false'
+    return go, revision
+
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--compiler',type=Path,default=REPO/'.gooo');parser.add_argument('--go',type=Path,required=True);parser.add_argument('--check',action='store_true');args=parser.parse_args()
-    version=run([args.go,'version']).decode().split();assert version[:3]==['go','version','go1.27.2'] and len(version)==4
+    version=run([args.go,'version']).decode().split();assert version[:3]==['go','version','go1.27.3'] and len(version)==4
     compiler_raw=run([args.compiler,'version','--build','--json']);compiler=json.loads(compiler_raw)
     assert compiler['compiler_source_sha']==compiler['vcs_revision']==PIN
-    assert compiler['source_status']=='CLEAN_VCS' and compiler['vcs_modified']=='false' and compiler['go_version']==compiler['native_go_required']=='go1.27.2'
+    assert compiler['source_status']=='CLEAN_VCS' and compiler['vcs_modified']=='false' and compiler['go_version']==compiler['native_go_required']=='go1.27.3'
+    saved_go,saved_compiler=stored_compiler_profile() if args.check else (None,None)
     assets={'compiler.json':compiler_raw}
     for mirror,source in CANONICAL.items():assets[mirror]=(REPO/source).read_bytes()
     entries={}
@@ -99,8 +114,8 @@ def main():
             p=program(receipt,workspace,package,activity,prefix)
             if args.check:
                 saved=json.loads((ROOT/'receipts'/(prefix+'-execution.json')).read_bytes())
-                assert program(saved,workspace,package,activity,prefix)==p,'fresh compiler-owned lowering changed'
-                replay=json.loads((ROOT/'receipts'/(prefix+'-replay.json')).read_bytes());assert program(replay,workspace,package,activity,prefix)==p
+                assert program(saved,workspace,package,activity,prefix,expected_go=saved_go,expected_compiler=saved_compiler)==p,'fresh compiler-owned lowering changed'
+                replay=json.loads((ROOT/'receipts'/(prefix+'-replay.json')).read_bytes());assert program(replay,workspace,package,activity,prefix,expected_go=saved_go,expected_compiler=saved_compiler)==p
             else:
                 assets['receipts/'+prefix+'-execution.json']=fresh
                 replaypath=Path(tmp)/(prefix+'-execution.json');replaypath.write_bytes(fresh)
