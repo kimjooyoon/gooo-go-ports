@@ -37,13 +37,13 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
         with:
-          go-version: '1.27.2'
+          go-version: '1.27.3'
           cache: false
       - name: Record the exact hosted source and build Linux control binary
         run: |
           set -euo pipefail
           umask 077
-          test "$(go env GOVERSION)" = go1.27.2
+          test "$(go env GOVERSION)" = go1.27.3
           test "$(go env GOOS)" = linux
           test "$(go env GOARCH)" = amd64
           mkdir -p out/api-policy-ci-hosted
@@ -165,7 +165,7 @@ jobs:
           assert receipt['schema'] == 'gooo/api-policy-action-observation/v1'
           assert receipt['mode'] == 'compare' and receipt['saved_replay'] == 'COMPLETE_TYPED_REPORT_RECOMPUTED'
           assert receipt['compiled_modules'] == literals['MODULES']
-          assert receipt['compiled_go'] == 'go1.27.2' and receipt['compiled_os'] == 'linux' and receipt['compiled_arch'] == 'amd64'
+          assert receipt['compiled_go'] == 'go1.27.3' and receipt['compiled_os'] == 'linux' and receipt['compiled_arch'] == 'amd64'
           original = (root/'examples/api-policy-revision/testdata/write-facts.json').read_bytes()
           assert receipt['input_sha256'] == hashlib.sha256(original).hexdigest() and receipt['input_bytes'] == len(original)
           assert receipt['report_sha256'] == hashlib.sha256(raw).hexdigest() and receipt['report_bytes'] == len(raw)
@@ -260,7 +260,7 @@ jobs:
               assert receipt['schema'] == 'gooo/api-policy-action-observation/v1' and receipt['mode'] == 'compare'
               assert receipt['saved_replay'] == 'COMPLETE_TYPED_REPORT_RECOMPUTED'
               assert receipt['compiled_modules'] == literals['MODULES']
-              assert (receipt['compiled_go'], receipt['compiled_os'], receipt['compiled_arch']) == ('go1.27.2', 'linux', 'amd64')
+              assert (receipt['compiled_go'], receipt['compiled_os'], receipt['compiled_arch']) == ('go1.27.3', 'linux', 'amd64')
               original = (root/('examples/api-policy-revision/testdata/'+action+'-facts.json')).read_bytes()
               assert receipt['input_sha256'] == hashlib.sha256(original).hexdigest() and receipt['input_bytes'] == len(original)
               assert receipt['report_sha256'] == digest and receipt['report_bytes'] == len(raw)

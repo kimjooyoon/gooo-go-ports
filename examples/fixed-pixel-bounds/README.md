@@ -16,11 +16,11 @@ shows raw values, pixel values and the empty-before-rounding rule in a compact t
 
 ## Run and verify
 
-From the repository root, with Go 1.27.2, Git, a POSIX shell and Python 3 on
+From the repository root, with Go 1.27.3, Git, a POSIX shell and Python 3 on
 amd64 or arm64:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 ./tools/bootstrap.sh
 mkdir -p out/fixed-pixel-bounds

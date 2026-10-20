@@ -27,7 +27,7 @@ def build():
     settings = {"-buildmode": "exe", "-compiler": "gc", "-trimpath": "true", "CGO_ENABLED": "0",
                 "GOOS": "darwin", "GOARCH": "arm64", "GOARM64": "v8.0", "vcs": "git",
                 "vcs.revision": COMMIT, "vcs.time": "2026-10-19T00:16:10Z", "vcs.modified": "false"}
-    return {"GoVersion": "go1.27.2", "Path": M.MODULE,
+    return {"GoVersion": "go1.27.3", "Path": M.MODULE,
             "Main": {"Path": M.MODULE, "Version": "v0.0.0-20261019001610-"+COMMIT[:12]},
             "Deps": copy.deepcopy([x["dependency"] for x in M.DEPENDENCIES]),
             "Settings": [{"Key": k, "Value": v} for k, v in settings.items()]}

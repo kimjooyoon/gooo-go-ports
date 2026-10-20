@@ -6,7 +6,7 @@ import (
 )
 
 func TestCompilerIdentityMustMatchEveryPinnedField(t *testing.T) {
-	pin := compilerPin{"0123456789012345678901234567890123456789", "0.6.24-dev", "go1.27.2"}
+	pin := compilerPin{"0123456789012345678901234567890123456789", "0.6.24-dev", "go1.27.3"}
 	good := map[string]string{"compiler_source_sha": pin.Revision, "version": pin.Version,
 		"go_version": pin.Go, "native_go_required": pin.Go, "source_status": "CLEAN_VCS", "vcs_modified": "false"}
 	marshal := func(value any) []byte {

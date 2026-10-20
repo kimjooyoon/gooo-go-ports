@@ -148,7 +148,7 @@ func run() error {
 	if err = verifyFailureProbe(out); err != nil {
 		return err
 	}
-	summary := map[string]any{"schema": "decision-policy-pilot/summary/v1", "status": "PASS", "synthetic_context": true, "provider_mode": "offline provider-neutral Choice fixtures", "compiler_revision": compilerRevision, "go_version": "go1.27.2", "fixtures": len(fixtures), "gooo_reference_cases": len(valid), "manual_expected_cases": len(fixtures), "host_input_rejections": len(fixtures) - len(valid), "mock_dispatches": allows, "replay_dispatches": 0, "actual_compiler_failure_probes": 1, "compiler_failure_dispatches": errorSpy.calls, "external_api_calls": 0, "real_exports": 0, "performance_measured": false, "scope": "Finite synthetic observations; no customer, provider accuracy, authentication, transaction or production safety claim."}
+	summary := map[string]any{"schema": "decision-policy-pilot/summary/v1", "status": "PASS", "synthetic_context": true, "provider_mode": "offline provider-neutral Choice fixtures", "compiler_revision": compilerRevision, "go_version": "go1.27.3", "fixtures": len(fixtures), "gooo_reference_cases": len(valid), "manual_expected_cases": len(fixtures), "host_input_rejections": len(fixtures) - len(valid), "mock_dispatches": allows, "replay_dispatches": 0, "actual_compiler_failure_probes": 1, "compiler_failure_dispatches": errorSpy.calls, "external_api_calls": 0, "real_exports": 0, "performance_measured": false, "scope": "Finite synthetic observations; no customer, provider accuracy, authentication, transaction or production safety claim."}
 	if err = save(out, "summary.json", append(marshal(summary), '\n')); err != nil {
 		return err
 	}
@@ -209,7 +209,7 @@ func checkIdentity(raw []byte) error {
 	if err := json.Unmarshal(raw, &b); err != nil {
 		return err
 	}
-	if b.Revision != compilerRevision || b.Go != "go1.27.2" || b.Native != "go1.27.2" || b.Version != "0.6.32-dev" || b.Modified != "false" || b.Status != "CLEAN_VCS" {
+	if b.Revision != compilerRevision || b.Go != "go1.27.3" || b.Native != "go1.27.3" || b.Version != "0.6.37-dev" || b.Modified != "false" || b.Status != "CLEAN_VCS" {
 		return errors.New("compiler identity mismatch")
 	}
 	return nil

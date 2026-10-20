@@ -5,7 +5,7 @@ Legacy full-run timing or an explicit experimental shard reference supplies the
 same independent Go case/raw-receipt anchors. Import has no execution side effects.
 """
 import argparse,hashlib,importlib.util,json,os,pathlib,re,signal,subprocess,sys,time
-REV='83928fa4538245abe33b08549da47f8cbdc50ed2'
+REV='205896a413e5dea92366309c35ae85e542d055f6'
 ENTRY='app/diagnostic-header-addition:AssessAddition'
 ROOT='app/diagnostic-header-addition'
 RID='gooo://diagnostic-header-addition/request/v1'
@@ -218,7 +218,7 @@ def _main(scan_state):
     env=os.environ.copy();env.update(GOTOOLCHAIN='local',GOWORK='off',GOENV='off',GOPROXY='off',GOSUMDB='off',GOOO_LAYA_URL='',GOOO_LAYA_API_KEY='',TMPDIR=str(out/'tmp'))
     try:
         pin_scans.observe('initial','initial',unchanged,pins);need(equal(pins[str(compiler)],pins[str(root/'.gooo')]) and equal(pins[str(go)],verification['go_binary']),'input route must use exact current evidence compiler/Go binaries');save(out/'source-tool-pins.json',pins)
-        lock=load((root/'upstream.json').read_bytes());need(lock['compiler_revision']==REV and lock['go_version']=='go1.27.2','current upstream compiler/Go pins')
+        lock=load((root/'upstream.json').read_bytes());need(lock['compiler_revision']==REV and lock['go_version']=='go1.27.3','current upstream compiler/Go pins')
         MANIFEST=root/'diagnostic-header-addition.workspace.json';GO=go;TOOLS=pins
         PLAN={'sources':[{'package':package,'path':str(root/name),'target':name} for package,name in SOURCES]}
         RAW={str(root/name):(root/name).read_bytes() for _,name in SOURCES};DEFS,RECORDS=contracts()
@@ -234,9 +234,9 @@ def _main(scan_state):
             need(labels.count(label)==1,'unique selected witness label');i=labels.index(label);request=spec['cases'][i]['input'];row=verification['rows'][i]
             need(equal(row['inputs'],{ENTRY+'.input0':request['name'],ENTRY+'.input1':request['value'],ENTRY+'.input2':request['declared_length'],ENTRY+'.input3':request['facts']}),'selected current Go case inputs')
             selection.append((label,request,row))
-        rc,raw=call('go-version',[str(go),'version'],20);go_version=raw.decode().strip();need(rc==0 and re.fullmatch(r'go version go1\.27\.2 [a-z0-9_]+/[a-z0-9_]+',go_version),'actual explicit Go identity');need(go_version==verification['go_version'],'same observed Go version as current evidence')
+        rc,raw=call('go-version',[str(go),'version'],20);go_version=raw.decode().strip();need(rc==0 and re.fullmatch(r'go version go1\.27\.3 [a-z0-9_]+/[a-z0-9_]+',go_version),'actual explicit Go identity');need(go_version==verification['go_version'],'same observed Go version as current evidence')
         rc,raw=call('compiler-version',[str(compiler),'version','--build','--json'],20);identity=load(raw)
-        need(rc==0 and all(equal(identity[k],v) for k,v in {'schema':'gooo/build-identity/v1','version':'0.6.32-dev','compiler_source_sha':REV,'vcs_revision':REV,'source_status':'CLEAN_VCS','vcs_modified':'false','go_version':'go1.27.2','native_go_required':'go1.27.2','build_info_observed':True}.items()),'actual pinned compiler identity')
+        need(rc==0 and all(equal(identity[k],v) for k,v in {'schema':'gooo/build-identity/v1','version':'0.6.37-dev','compiler_source_sha':REV,'vcs_revision':REV,'source_status':'CLEAN_VCS','vcs_modified':'false','go_version':'go1.27.3','native_go_required':'go1.27.3','build_info_observed':True}.items()),'actual pinned compiler identity')
         for index,(label,request,row) in enumerate(selection):
             prefix='positive-'+str(index);request_raw=json.dumps(request,ensure_ascii=False,separators=(',',':')).encode()
             rc,trusted=call(prefix+'-preflight',[str(helper)],10,request_raw)

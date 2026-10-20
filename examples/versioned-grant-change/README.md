@@ -17,7 +17,7 @@ version/authority checks. This example does not apply a grant or send HTTP.
 
 ## Verify the current sources
 
-Use Python 3, Git and Go **1.27.2**. From the repository root, prepare the pinned
+Use Python 3, Git and Go **1.27.3**. From the repository root, prepare the pinned
 compiler and dependencies once:
 
 ```sh

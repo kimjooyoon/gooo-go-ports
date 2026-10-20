@@ -160,7 +160,7 @@ func ciShardRunValid(r ciShardRun) bool {
 	return ciShardRepositoryPattern.MatchString(r.Repository) && !strings.Contains(r.Repository, "..") &&
 		ciShardDecimalPattern.MatchString(r.RunID) && r.Attempt > 0 && r.Attempt <= 1000000 &&
 		commitPattern.MatchString(r.TestedCommit) && commitPattern.MatchString(r.TestedTree) &&
-		commitPattern.MatchString(r.CompilerRevision) && r.GoVersion == "go1.27.2" && r.Workers == 3
+		commitPattern.MatchString(r.CompilerRevision) && r.GoVersion == "go1.27.3" && r.Workers == 3
 }
 
 func ciShardExpectedSourceModes(c *NativeVerificationContract) (map[string]string, error) {

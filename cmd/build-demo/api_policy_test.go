@@ -18,9 +18,10 @@ import (
 )
 
 const (
-	apiPolicyTestCompiler = "83928fa4538245abe33b08549da47f8cbdc50ed2"
-	apiPolicyTestRevision = "sha256:a78b95c6f563450e0aacb2356594b270f9a6c42910f3995cec2577076139956e"
-	apiPolicyTestOriginal = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
+	apiPolicyTestOriginalCompiler = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+	apiPolicyTestCurrentCompiler  = "205896a413e5dea92366309c35ae85e542d055f6"
+	apiPolicyTestRevision         = "sha256:1904100e57ff22b00f4db1597c4f12ebb3c6893063d6deac69e2eb516452a2ca"
+	apiPolicyTestOriginal         = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
 )
 
 // These are source/package validator tests. They neither execute a compiler nor
@@ -129,14 +130,14 @@ func TestAPIPolicyBuildBindsCompleteFrozenProfiles(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, profile := range []struct {
-		name, generation string
-		count            int
-		bindings         apiPolicyBindings
+		name, generation, compiler string
+		count                      int
+		bindings                   apiPolicyBindings
 	}{
-		{"examples/api-policy-revision/", apiPolicyTestRevision, 38, bound.Revision},
-		{"examples/api-policy-revision/profiles/original/", apiPolicyTestOriginal, 28, bound.Original},
+		{"examples/api-policy-revision/", apiPolicyTestRevision, apiPolicyTestCurrentCompiler, 38, bound.Revision},
+		{"examples/api-policy-revision/profiles/original/", apiPolicyTestOriginal, apiPolicyTestOriginalCompiler, 28, bound.Original},
 	} {
-		if profile.bindings.CompilerSourceSHA != apiPolicyTestCompiler || profile.bindings.GenerationSHA256 != profile.generation || len(profile.bindings.Assets) != profile.count {
+		if profile.bindings.CompilerSourceSHA != profile.compiler || profile.bindings.GenerationSHA256 != profile.generation || len(profile.bindings.Assets) != profile.count {
 			t.Fatalf("incomplete or rebound profile metadata: %s", profile.name)
 		}
 		if got := apiPolicyTestHash(documents[profile.name+"generation.json"]); got != profile.generation {

@@ -23,14 +23,15 @@ for `"ababa"` and `"aba"`, it is `1`, because occurrences do not overlap.
 ## Run supplied inputs and export a checked report
 
 Use the existing clean Gooo **0.6.32-dev** compiler at source
-`83928fa4538245abe33b08549da47f8cbdc50ed2`, built with Go **1.27.2**. The
-repository's [setup guide](../../README.md#run-and-edit-locally) explains how to
+`83928fa4538245abe33b08549da47f8cbdc50ed2`, with the Go **1.27.3** build identity
+required by the current-source migration target. This is not a claim that an
+older compiler binary was rebuilt. The repository's [setup guide](../../README.md#run-and-edit-locally) explains how to
 obtain that pin. These commands assume `./.gooo` is already installed and the
 matching Go toolchain is available. Run from the repository root and keep the
 source files unchanged through execution, replay and checking.
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 NATIVE_GO="$(go env GOROOT)/bin/go"
 mkdir -p out/literal-text-report

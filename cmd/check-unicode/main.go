@@ -103,8 +103,8 @@ func run() error {
 	if err := readJSON("upstream.json", &lock); err != nil {
 		return err
 	}
-	if runtime.Version() != lock.GoVersion || lock.GoVersion != "go1.27.2" || unicode.Version != "17.0.0" {
-		return fmt.Errorf("require pinned Go 1.27.2 / Unicode 17.0.0 oracle")
+	if runtime.Version() != lock.GoVersion || lock.GoVersion != "go1.27.3" || unicode.Version != "17.0.0" {
+		return fmt.Errorf("require pinned Go 1.27.3 / Unicode 17.0.0 oracle")
 	}
 	for _, name := range []string{"src/unicode/graphic.go", "src/unicode/letter.go", "src/unicode/digit.go", "src/unicode/tables.go"} {
 		raw, err := os.ReadFile(filepath.Join(runtime.GOROOT(), name))
@@ -210,7 +210,7 @@ func run() error {
 		return fmt.Errorf("saved replay generated program differs")
 	}
 	native := filepath.Join(dir, "native")
-	if err := write(filepath.Join(native, "go.mod"), []byte("module gooo-unicode-check\n\ngo 1.27.2\n")); err != nil {
+	if err := write(filepath.Join(native, "go.mod"), []byte("module gooo-unicode-check\n\ngo 1.27.3\n")); err != nil {
 		return err
 	}
 	// Preserve every byte, including the package clause and generated helper bodies.

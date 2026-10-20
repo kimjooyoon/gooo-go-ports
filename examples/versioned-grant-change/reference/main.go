@@ -584,8 +584,8 @@ func run(args []string) error {
 	if _, err := os.Lstat(*out); !errors.Is(err, os.ErrNotExist) {
 		return errors.New("fresh output must not exist")
 	}
-	if runtime.Version() != "go1.27.2" {
-		return errors.New("pinned Go1.27.2 required")
+	if runtime.Version() != "go1.27.3" {
+		return errors.New("pinned Go1.27.3 required")
 	}
 	if err := validateProvenance(*root); err != nil {
 		return err

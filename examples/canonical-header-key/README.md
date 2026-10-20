@@ -13,7 +13,7 @@ octet 32. Canonical output alone is therefore insufficient for a validity check.
 ## Run the importing Gooo program
 
 After the [repository setup](../../README.md#run-and-edit-locally), use the pinned
-Gooo `83928fa` compiler and Go 1.27.2 from the repository root. The bundled
+Gooo `83928fa` compiler and Go 1.27.3 from the repository root. The bundled
 `inputs.json` is a trusted, single-Text CLI document for `fOO-bAr`:
 
 ```sh

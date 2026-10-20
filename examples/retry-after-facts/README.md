@@ -5,7 +5,7 @@ observations. It imports the existing [decimal parser](../../ports/strconv/decim
 Gooo calculates the grammar, policy membership, ordered reason and remaining time.
 The [frozen v2 contract](contract.json) defines all fourteen result fields and rule
 priority. The portable verifier compares113 original inputs with an independently
-authored Go reference using pinned compiler839 and Go1.27.2. It checks all fourteen
+authored Go reference using pinned compiler839 and Go1.27.3. It checks all fourteen
 fields in fresh native execution and saved replay, source bodies, generated ABI,
 tool identities and exact raw saved parents, then requires eleven deliberate
 receipt mutations to fail at their intended boundaries. This remains a bounded
@@ -35,7 +35,7 @@ Its refusal tests also verify that semantic-invalid signed integers reach Gooo
 unchanged instead of being normalized or mistaken for transport failures.
 
 For a checked first run, bootstrap the repository's pinned compiler as described
-in the root README, install Go1.27.2, and run from the checkout root:
+in the root README, install Go1.27.3, and run from the checkout root:
 
 ```sh
 mkdir -p out
@@ -54,13 +54,13 @@ failures remain in the output. Only owned temporary work is removed after child
 processes close. Downloads are disabled; the existing Go cache is reused.
 
 The whole check has a300-second command budget and a1GiB owned temporary-file
-cap. It supports Linux/amd64 and Darwin/arm64 with Go1.27.2. It is not a complete
+cap. It supports Linux/amd64 and Darwin/arm64 with Go1.27.3. It is not a complete
 toolchain attestation: [receipts.py](receipts.py) explicitly lists inner canonical
 digests, regenerated instrumentation and native executable hashes it does not
 independently check. The full-only CI sidecar requires this same summary and
 retains its evidence on failure; ordinary native catalog coverage is unchanged.
 
-From the repository root, with the pinned compiler and an absolute Go1.27.2
+From the repository root, with the pinned compiler and an absolute Go1.27.3
 executable in `GOOO_GO`, use a fresh output directory:
 
 ```sh

@@ -15,7 +15,7 @@ const metadata = {
   schema: 'gooo/browser-body-codegen-metadata/v1',
   compiler_pin: fixtureBook.compiler_pin,
   bridge_source_sha256: 'b'.repeat(64),
-  go_version: 'go1.27.2', native_execution: false, model_calls: false,
+  go_version: 'go1.27.3', native_execution: false, model_calls: false,
   resource_limits: { max_source_bytes: 65536, max_request_bytes: 409600, max_activity_bytes: 128 },
 };
 const manifest = {

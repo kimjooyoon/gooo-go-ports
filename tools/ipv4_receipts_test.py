@@ -128,7 +128,7 @@ def fixture(checker, directory, entry=R.REPORT_ENTRY):
         delivery['actual_fields'] = [{'id': R.RESULT + '/' + f, 'name': f, 'value': expected[f]} for f in R.FIELDS]
     runtime = {'schema': 'gooo/body-composition-runtime/v1', 'stage': 'COMPLETE',
         'producer_source_sha': R.REV, 'go_version': checker.go_version, 'go_tool_sha256': GO, 'go_tool_selection': 'explicit',
-        'producer_module': {'path': 'github.com/kimjooyoon/meta-ontology-go', 'version': 'v0.0.0-20261011201109-83928fa45382'},
+        'producer_module': {'path': 'github.com/kimjooyoon/meta-ontology-go', 'version': 'v0.6.37-dev.0.20261020180505-205896a413e5'},
         'generated_sha256': composition['generated_sha256'], 'driver_sha256': composition['driver_sha256'],
         'original_source_sha256': source_digest, 'selected_source_sha256': source_digest,
         'typed_plan_sha256': plan['typed_plan_sha256'], 'executable_sha256': R.digest(b'not retained synthetic binary'),
@@ -204,13 +204,13 @@ class ReceiptBoundaries(unittest.TestCase):
     def setUpClass(cls):
         cls.oracle = synthetic_oracle()
 
-    def checker(self, version='go version go1.27.2 linux/amd64'):
+    def checker(self, version='go version go1.27.3 linux/amd64'):
         return R.Evidence(REPO, copy.deepcopy(self.oracle), version)
 
     def test_accepted_execute_replay_all_seven_entries_and_selected_host(self):
         with tempfile.TemporaryDirectory() as name:
             directory = Path(name).resolve()
-            for version in ('go version go1.27.2 linux/amd64', 'go version go1.27.2 darwin/arm64'):
+            for version in ('go version go1.27.3 linux/amd64', 'go version go1.27.3 darwin/arm64'):
                 checker = self.checker(version)
                 for entry in R.MANIFESTS:
                     with self.subTest(version=version, entry=entry):
@@ -299,7 +299,7 @@ class ReceiptBoundaries(unittest.TestCase):
                 (['result', 'runtime', 'runs'], []),
                 (['result', 'runtime', 'finite_passed'], True),
                 (['result', 'runtime', 'traces', 0, 'case_index'], False),
-                (['result', 'runtime', 'go_version'], 'go version go1.27.2 darwin/arm64'),
+                (['result', 'runtime', 'go_version'], 'go version go1.27.3 darwin/arm64'),
                 (['result', 'composition', 'plan', 'activities', 0, 'inputs', 0, 'from'], False),
             ]
             for path, value in mutations:
@@ -319,9 +319,9 @@ class ReceiptBoundaries(unittest.TestCase):
             elif mutate == 'echo-kind':rows[0]['expected']['a'] = False
             else:rows[0], rows[1] = rows[1], rows[0]
             with self.subTest(mutate=mutate), self.assertRaises(R.ReceiptError):
-                R.Evidence(REPO, rows, 'go version go1.27.2 linux/amd64')
+                R.Evidence(REPO, rows, 'go version go1.27.3 linux/amd64')
         with self.assertRaisesRegex(R.ReceiptError, '^SELECTED_GO_VERSION$'):
-            self.checker('go version go1.27.3 linux/amd64')
+            self.checker('go version go1.27.2 linux/amd64')
 
     def test_source_decoding_and_canonical_regular_file_boundary(self):
         body = 'return input0 >= 0 && input0 <= 255\n'

@@ -25,7 +25,7 @@ FILES = tuple(BASE + n for n in ('run.py', 'run_test.py', 'README.md', 'NOTICE.m
     'editable-api-policy-before.workspace.json', 'editable-api-policy-after.workspace.json',
     'ports/cel/scalar_access.gooo', 'examples/cel-api-policy/main.gooo',
     'tools/check-header-addition-host.py', 'tools/native_verification_contract.py', 'upstream.json')
-REV = '31497af3beaef210b5a075867b0de76cf55ee3ca'
+REV = '205896a413e5dea92366309c35ae85e542d055f6'
 ENTRY = 'app/editable-api-policy:EvaluateAPI'
 USED = 'app/editable-api-policy:IsDeployBot'
 UNUSED = 'app/editable-api-policy:UnusedIdentity'
@@ -50,7 +50,7 @@ def complete(summary):
         'schema': 'gooo/editable-api-policy-comparison/v1',
         'status': 'EDITABLE_POLICY_COMPARISON_AND_OFFICIAL_REPLAY_PASS', 'failure': None,
         'rows': 3, 'positive_receipts': 4, 'package_commands': 7,
-        'compiler_profile': 'source-inspection036', 'prepared_inspections': 2,
+        'compiler_profile': 'source-inspection037', 'prepared_inspections': 2,
         'input_echoes_checked': 108, 'typed_output_fields_checked': 180,
         'compiler_revision': REV, 'finite_total': 0, 'model_calls': 0, 'demo_checked': True,
         'cross_workspace_refused': True, 'cross_workspace_refusal_stage': 'manifest',
@@ -116,7 +116,7 @@ def main():
             for path in FILES: read(checkout / path)
             evidence = case / 'evidence'
             argv = [sys.executable, '-I', '-B', checkout / (BASE + 'run.py'), '--root', checkout,
-                    '--compiler', compiler, '--go', go, '--compiler-profile', 'source-inspection036',
+                    '--compiler', compiler, '--go', go, '--compiler-profile', 'source-inspection037',
                     '--out', evidence, '--check-demo']
             try: runner.call(name + '-consumer', argv, 140)
             except BaseException as error:

@@ -187,7 +187,7 @@ func inspectReceipt(raw, manifest, source, cases []byte, valid []Fixture, replay
 	if c.Stage != "COMPLETE" || t.Stage != "COMPLETE" || t.Schema != "gooo/body-composition-runtime/v1" || len(t.Failure) > 0 && string(t.Failure) != "null" {
 		return reject("runtime completion")
 	}
-	if t.Producer != compilerRevision || !strings.HasPrefix(t.Go, "go version go1.27.2 ") {
+	if t.Producer != compilerRevision || !strings.HasPrefix(t.Go, "go version go1.27.3 ") {
 		return reject("producer identity")
 	}
 	if c.Source == "" || c.Digest != digest([]byte(c.Source)) || t.Digest != c.Digest {

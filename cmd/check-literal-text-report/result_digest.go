@@ -10,8 +10,13 @@ import (
 	"unicode/utf8"
 )
 
-//go:embed result-profile-83928fa.json
+//go:embed result-profile-go1273.json
 var resultProfileJSON []byte
+
+// Frozen archival profile; only explicit historical fixture callers use it.
+//
+//go:embed result-profile-83928fa.json
+var legacy839ResultProfileJSON []byte
 
 type resultProfile struct {
 	Compiler string                  `json:"compiler_revision"`
@@ -38,7 +43,7 @@ var genericResultMaps = map[string]bool{
 	"$.composition.steps.*.generation.report.completeness_receipt.status_counts": true,
 }
 
-// At compiler 83928fa, ReplayWorkspace hashes json.Marshal(prior typed Result).
+// The explicitly selected compiler source hashes json.Marshal(prior typed Result).
 // This deliberately supports only the canonical native CLI result profile for
 // this frozen workflow. Typed field order, scalar spelling, optional fields and
 // shapes must match the pinned profile; unsupported reserializations fail closed.
@@ -56,6 +61,32 @@ func pinnedResultDigest(receipt []byte) (string, error) {
 }
 
 func pinnedResultBytes(receipt []byte) ([]byte, error) {
+	if len(resultProfileJSON) == 0 {
+		return nil, fmt.Errorf("pinned result profile is not loaded")
+	}
+	if len(resultProfileJSON) != 196047 || digest(resultProfileJSON) != "sha256:9fc596175547cf3f8582bcf51e42e399f3a036355c0c49f81f28acea0713df0d" || compilerRevision != "205896a413e5dea92366309c35ae85e542d055f6" {
+		return nil, fmt.Errorf("current result profile raw identity differs")
+	}
+	return pinnedResultBytesWithProfile(receipt, resultProfileJSON, compilerRevision)
+}
+
+// Explicit archival fixture entry; no input-based fallback or global reload.
+func legacy839ResultBytes(receipt []byte) ([]byte, error) {
+	if digest(legacy839ResultProfileJSON) != "sha256:2404ffcb5b1a206bed6b8787378fdbdb2712900bc632fed460c87bfdf9142c55" {
+		return nil, fmt.Errorf("historical result profile raw identity differs")
+	}
+	return pinnedResultBytesWithProfile(receipt, legacy839ResultProfileJSON, "83928fa4538245abe33b08549da47f8cbdc50ed2")
+}
+
+func legacy839ResultDigest(receipt []byte) (string, error) {
+	encoded, err := legacy839ResultBytes(receipt)
+	if err != nil {
+		return "", err
+	}
+	return digest(encoded), nil
+}
+
+func pinnedResultBytesWithProfile(receipt, profileJSON []byte, profileCompiler string) ([]byte, error) {
 	if len(receipt) == 0 || len(receipt) > 32<<20 || !utf8.Valid(receipt) {
 		return nil, fmt.Errorf("invalid pinned receipt size or UTF-8")
 	}
@@ -86,8 +117,16 @@ func pinnedResultBytes(receipt []byte) ([]byte, error) {
 		}
 	}
 	var profile resultProfile
-	if err := json.Unmarshal(resultProfileJSON, &profile); err != nil || profile.Compiler != compilerRevision {
+	if err := json.Unmarshal(profileJSON, &profile); err != nil || profile.Compiler != profileCompiler {
 		return nil, fmt.Errorf("invalid pinned result format profile")
+	}
+	var producer struct {
+		Runtime struct {
+			Source string `json:"producer_source_sha"`
+		} `json:"runtime"`
+	}
+	if json.Unmarshal(envelope["result"], &producer) != nil || producer.Runtime.Source != profileCompiler {
+		return nil, fmt.Errorf("receipt producer differs from explicitly selected result profile")
 	}
 	raw, ok := envelope["result"]
 	if !ok {

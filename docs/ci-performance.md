@@ -19,7 +19,7 @@ go run -mod=readonly ./cmd/verify --workers 3 \
 
 The required population remains 82 suites, 175,649 cases and 2,305 batches under
 these profiles, using the pinned `83928fa4538245abe33b08549da47f8cbdc50ed2`
-compiler and Go 1.27.2. The selector changes dispatch order only. It preserves
+compiler and Go 1.27.3. The selector changes dispatch order only. It preserves
 each suite's source workspace, inputs, expectations and batch boundaries;
 execution, inspection, saved replay, receipt binding and exhaustive checks remain
 required. Results and suite indices remain in catalog order. All 71 workflow

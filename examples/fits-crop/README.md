@@ -14,7 +14,7 @@ From this repository's root on macOS or Linux, with Git, a POSIX shell,
 Python 3 and a Go installation supporting toolchain selection:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 ./tools/bootstrap.sh
 mkdir -p out/fits-crop
@@ -27,7 +27,7 @@ python3 tools/check-fits-crop.py \
   out/fits-crop/execution.json out/fits-crop/replay.json
 ```
 
-Bootstrap selects the repository's pinned Gooo 0.6.32-dev compiler and Go 1.27.2.
+Bootstrap selects the repository's pinned Gooo 0.6.32-dev compiler and Go 1.27.3.
 This native example supports amd64/arm64. Keep the compiler with its receipts.
 For an existing older checkout, follow the root README's upgrade instructions.
 The first installation may download the compiler and Go toolchain.

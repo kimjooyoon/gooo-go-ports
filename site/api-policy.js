@@ -158,8 +158,10 @@
     return [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(n => n.toString(16).padStart(2, '0')).join('');
   }
   function binding(value, count, generation) {
+    const compiler = count === 28 ? '83928fa4538245abe33b08549da47f8cbdc50ed2' :
+      count === 38 ? '205896a413e5dea92366309c35ae85e542d055f6' : null;
     return exactObject(value, ['compiler_source_sha', 'generation_sha256', 'assets']) &&
-      value.compiler_source_sha === '83928fa4538245abe33b08549da47f8cbdc50ed2' && value.generation_sha256 === generation &&
+      compiler !== null && value.compiler_source_sha === compiler && value.generation_sha256 === generation &&
       value.assets && typeof value.assets === 'object' && !Array.isArray(value.assets) && Object.keys(value.assets).length === count &&
       Object.entries(value.assets).every(([name, hash]) => name && !name.split('/').includes('..') && /^sha256:[0-9a-f]{64}$/.test(hash));
   }
@@ -182,7 +184,7 @@
         !sameJSON(info.modes, ['baseline', 'compare', 'replay']) || !sameJSON(info.profiles, PROFILES) || !sameJSON(info.limits, limits) ||
         !exactObject(info.bindings, ['original', 'revision']) ||
         !binding(info.bindings.original, 28, 'sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46') ||
-        !binding(info.bindings.revision, 38, 'sha256:a78b95c6f563450e0aacb2356594b270f9a6c42910f3995cec2577076139956e')) throw new Error('The UI manifest changes the fixed native profiles, complete bindings or limits.');
+        !binding(info.bindings.revision, 38, 'sha256:1904100e57ff22b00f4db1597c4f12ebb3c6893063d6deac69e2eb516452a2ca')) throw new Error('The UI manifest changes the fixed native profiles, complete bindings or limits.');
     return manifest;
   }
 

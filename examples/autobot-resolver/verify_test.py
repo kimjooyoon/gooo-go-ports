@@ -58,7 +58,7 @@ def fixture():
     process = {'started': True, 'completed': True, 'exit_code': 0, 'canceled': False,
                'timed_out': False, 'output_truncated': False}
     runtime = {'schema': 'gooo/body-composition-runtime/v1', 'stage': 'COMPLETE', 'producer_source_sha': V.REV,
-               'go_version': 'go version go1.27.2 synthetic/fixture', 'go_tool_selection': 'explicit',
+               'go_version': 'go version go1.27.3 synthetic/fixture', 'go_tool_selection': 'explicit',
                'go_tool_sha256': V.digest(go), 'original_source_sha256': source_sha, 'selected_source_sha256': source_sha,
                'generated_sha256': V.digest(generated), 'driver_sha256': V.digest(driver),
                'finite_total': 0, 'finite_passed': 0, 'model_calls': 0, 'projection_replayed': True,

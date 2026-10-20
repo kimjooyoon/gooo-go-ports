@@ -38,6 +38,10 @@ var platformPattern = regexp.MustCompile(`^(darwin|linux)/(amd64|arm64)$`)
 // accept an arbitrary program, compiler revision, input corpus or expected result.
 func Check(before, after, replay, compilerBuild []byte) (Summary, error) {
 	var out Summary
+	profile, err := selectEvidenceProfile(compilerBuild)
+	if err != nil {
+		return out, err
+	}
 	raws := [][]byte{before, after, replay}
 	labels := []string{"before", "after", "replay"}
 	records := make([]map[string]any, 3)
@@ -47,17 +51,20 @@ func Check(before, after, replay, compilerBuild []byte) (Summary, error) {
 			return out, fmt.Errorf("%s: %w", labels[i], err)
 		}
 		records[i] = object(v)
-		ref, _ := profileFiles.ReadFile("testdata/" + labels[i] + ".json")
+		ref, err := profile.record(labels[i] + ".json")
+		if err != nil {
+			return out, err
+		}
 		want, err := decode(ref)
 		if err != nil {
 			return out, fmt.Errorf("embedded tutorial profile: %w", err)
 		}
 		version := stringAt(records[i], "result", "runtime", "go_version")
-		platform := strings.TrimPrefix(version, "go version go1.27.2 ")
-		if version != "go version go1.27.2 "+platform || !platformPattern.MatchString(platform) {
+		platform := strings.TrimPrefix(version, "go version "+profile.goVersion+" ")
+		if version != "go version "+profile.goVersion+" "+platform || !platformPattern.MatchString(platform) {
 			return out, fmt.Errorf("%s: unsupported Go tool version/platform", labels[i])
 		}
-		if err := matchProfile(v, want, "$", platform, 0); err != nil {
+		if err := matchProfile(v, want, "$", platform, profile.goVersion, 0); err != nil {
 			return out, fmt.Errorf("%s: %w", labels[i], err)
 		}
 		if err := checkBindings(raw, records[i]); err != nil {
@@ -71,7 +78,10 @@ func Check(before, after, replay, compilerBuild []byte) (Summary, error) {
 	if err != nil {
 		return out, fmt.Errorf("compiler-build: %w", err)
 	}
-	buildRef, _ := profileFiles.ReadFile("testdata/compiler-build.json")
+	buildRef, err := profile.record("compiler-build.json")
+	if err != nil {
+		return out, err
+	}
 	wantBuild, err := decode(buildRef)
 	if err != nil || !reflect.DeepEqual(build, wantBuild) {
 		return out, fmt.Errorf("compiler-build: exact clean pinned compiler BuildInfo differs")
@@ -89,14 +99,17 @@ func Check(before, after, replay, compilerBuild []byte) (Summary, error) {
 	if records[2]["replayed_from_sha256"] != digest(after) {
 		return out, fmt.Errorf("replay: raw parent does not identify the edited execution")
 	}
-	priorResult, err := pinnedResultDigest(after)
+	priorResult, err := pinnedResultDigestForProfile(after, profile.resultProfile, profile.compiler)
 	if err != nil {
 		return out, fmt.Errorf("edited typed Result: %w", err)
 	}
 	if stringAt(records[2], "result", "replay", "prior_result_sha256") != priorResult {
 		return out, fmt.Errorf("replay: pinned typed Result parent differs")
 	}
-	return summarize(raws, compilerBuild, records, object(build), priorResult), nil
+	summary := summarize(raws, compilerBuild, records, object(build), priorResult)
+	summary.Profile = profile.name
+	summary.Limits[1] = "Exactly the selected embedded " + profile.name + " tutorial profile, four original inputs and the sole threshold60-to80 edit; not a general receipt validator or all-input correctness proof."
+	return summary, nil
 }
 
 func decode(raw []byte) (any, error) {
@@ -138,11 +151,11 @@ func stringAt(v map[string]any, keys ...string) string {
 // Strict structure/static-value comparison also covers the codec's deliberately
 // opaque RawMessage and generic-map fields. An added or missing key is rejected
 // at every level, including provider, trace, field, ABI and source-image metadata.
-func matchProfile(v, want any, path, platform string, depth int) error {
+func matchProfile(v, want any, path, platform, goVersion string, depth int) error {
 	if depth > 64 {
 		return fmt.Errorf("profile depth exceeded")
 	}
-	if handled, ok := observedLeaf(v, path, platform); handled {
+	if handled, ok := observedLeaf(v, path, platform, goVersion); handled {
 		if !ok {
 			return fmt.Errorf("invalid observed value at %s", path)
 		}
@@ -159,7 +172,7 @@ func matchProfile(v, want any, path, platform string, depth int) error {
 			if !exists {
 				return fmt.Errorf("missing field at %s.%s", path, key)
 			}
-			if err := matchProfile(value, expected, path+"."+key, platform, depth+1); err != nil {
+			if err := matchProfile(value, expected, path+"."+key, platform, goVersion, depth+1); err != nil {
 				return err
 			}
 		}
@@ -169,7 +182,7 @@ func matchProfile(v, want any, path, platform string, depth int) error {
 			return fmt.Errorf("unsupported array roster at %s", path)
 		}
 		for i := range w {
-			if err := matchProfile(a[i], w[i], path+".*", platform, depth+1); err != nil {
+			if err := matchProfile(a[i], w[i], path+".*", platform, goVersion, depth+1); err != nil {
 				return err
 			}
 		}
@@ -181,9 +194,9 @@ func matchProfile(v, want any, path, platform string, depth int) error {
 	return nil
 }
 
-func observedLeaf(v any, path, platform string) (bool, bool) {
+func observedLeaf(v any, path, platform, goVersion string) (bool, bool) {
 	if path == "$.result.runtime.go_version" {
-		return true, v == "go version go1.27.2 "+platform
+		return true, v == "go version "+goVersion+" "+platform
 	}
 	if path == "$.result.runtime.go_tool_selection" {
 		// These are the pin839 selectGoTool source tags. The selection route

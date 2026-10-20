@@ -14,8 +14,8 @@ unset GOFLAGS GOOS GOARCH GOROOT GOPRIVATE GONOPROXY GONOSUMDB GOCACHE GOMODCACH
 unset GH_TOKEN GITHUB_TOKEN GOOO_LAYA_URL GOOO_LAYA_API_KEY
 export GOTOOLCHAIN=local GOWORK=off GOENV=off CGO_ENABLED=0 GOMAXPROCS=2
 export GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org
-if [[ "$(go env GOVERSION)" != go1.27.2 ]]; then
-  printf '%s\n' 'Select Go 1.27.2 before this action; automatic toolchain installation is disabled.' >&2
+if [[ "$(go env GOVERSION)" != go1.27.3 ]]; then
+  printf '%s\n' 'Select Go 1.27.3 before this action; automatic toolchain installation is disabled.' >&2
   exit 2
 fi
 

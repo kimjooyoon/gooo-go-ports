@@ -11,7 +11,7 @@ with different decisions.
 
 ## Build and connect
 
-Build from a reviewed checkout with **Go 1.27.2**:
+Build from a reviewed checkout with **Go 1.27.3**:
 
 ```sh
 GOTOOLCHAIN=local GOWORK=off CGO_ENABLED=0 \
@@ -74,15 +74,16 @@ automatically applies a change.
 ## Versions and verification
 
 The runtime is pinned to the public
-[`agentmesh-service-policy` module](https://github.com/kimjooyoon/gooo-go-ports/tree/2aa0f96805f116c6e5ec2a20c22f62bb284a5abc/examples/agentmesh-service-policy)
-`v0.0.0-20261018191951-2aa0f96805f1`. Its Gooo compiler source is
-`83928fa4538245abe33b08549da47f8cbdc50ed2`; this adapter does not upgrade or
+[`agentmesh-service-policy` module](https://github.com/kimjooyoon/gooo-go-ports/tree/7180a4a0f36a1b0d89470100d6ccf6efdb5fd38d/examples/agentmesh-service-policy)
+`v0.0.0-20261020182808-7180a4a0f36a`. Its Gooo compiler source is
+`205896a413e5dea92366309c35ae85e542d055f6`; this adapter does not upgrade or
 run the language engine. MCP transport uses the official Go SDK **v1.8.0**.
 `go.sum` pins both modules and their dependency graph.
 
 The files under `fixtures/` retain actual native CLI inputs and outputs.
-`fixtures/origin.json` records their hashes, generation identity and Linux CI
-origin. The verifier compares whole proof objects, including false/empty fields
+`fixtures/origin.json` records their hashes, actual public module, Go 1.27.3
+build identity and platform. Earlier Linux observations are retained as history;
+they do not certify these new bytes. The verifier compares whole proof objects, including false/empty fields
 and all 89 asset bindings; it does not reconstruct a substitute policy result.
 
 To verify a built command, choose a fresh output directory:
@@ -101,7 +102,7 @@ of compatibility with every MCP client or every service-pattern language.
 
 ## Optional ordered required requests
 
-The default command and `assess_service_grant` tool keep the original 839
+The default command and `assess_service_grant` tool use the current 205
 profile, seven decision fields and 89 asset bindings. Start the same native
 command with `--many-required` to additionally expose
 `assess_service_grant_change`. Its arguments are one object, for example:
@@ -111,8 +112,9 @@ command with `--many-required` to additionally expose
 ```
 
 The optional tool preserves request order and duplicates. It returns the complete
-ordered-column facts, 12 typed decision fields and the separate de99 generation's
-30 asset and five source-hash bindings. Domain-invalid requests and the 257-request
+ordered-column facts, 12 typed decision fields and the many-request generation's
+30 asset and five source-hash bindings. Both policy modules were generated with
+compiler `205896a` using Go 1.27.3. Domain-invalid requests and the 257-request
 policy limit return decisions; malformed JSON returns no partial proof. Supplied
 facts are unsigned: this tool authenticates no authority and applies no grant.
 The five Gooo source bodies remain repository sources, not embedded module files.

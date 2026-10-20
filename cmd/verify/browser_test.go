@@ -20,7 +20,7 @@ func TestBrowserFixturesKeepOracleCoverageAndExactStrings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	lock := upstream{GoVersion: "go1.27.2", CompilerRevision: "fixture-revision"}
+	lock := upstream{GoVersion: "go1.27.3", CompilerRevision: "fixture-revision"}
 	doc, err := makeBrowserFixtures(suites, lock)
 	if err != nil {
 		t.Fatal(err)

@@ -28,7 +28,7 @@ function metadata() {
   }));
   files['program.wasm'] = { sha256: 'a'.repeat(64), bytes: 100 };
   files['wasm_exec.js'] = { sha256: 'b'.repeat(64), bytes: 100 };
-  return { schema: 'gooo/browser-service-policy/v1', compiler_revision: bindings.compiler_source_sha, go_version: 'go1.27.2',
+  return { schema: 'gooo/browser-service-policy/v1', compiler_revision: bindings.compiler_source_sha, go_version: 'go1.27.3',
     source_revision: 'c'.repeat(40), source_dirty: false, generation_sha256: bindings.generation_sha256,
     bindings, wasm_sha256: files['program.wasm'].sha256, wasm_bytes: 100,
     wasm_exec_sha256: files['wasm_exec.js'].sha256, wasm_exec_bytes: 100, files };
@@ -152,7 +152,7 @@ test('published metadata binds the exact file roster, source identities and boun
   for (const key of Object.keys(program)) {
     const changed = clone(program); delete changed[key]; assert.throws(() => protocol.validateMetadata(changed), key);
   }
-  for (const patch of [{ schema: 'unknown' }, { compiler_revision: '0'.repeat(40) }, { source_revision: 'main' },
+  for (const patch of [{ schema: 'unknown' }, { compiler_revision: '0'.repeat(40) }, { compiler_revision: '83928fa4538245abe33b08549da47f8cbdc50ed2' }, { source_revision: 'main' },
     { source_dirty: 0 }, { go_version: 'go1.27.1' }, { generation_sha256: 'sha256:' + '0'.repeat(64) },
     { wasm_sha256: '0'.repeat(64) }, { wasm_bytes: 0 }, { wasm_exec_bytes: 101 }, { extra: true }]) {
     assert.throws(() => protocol.validateMetadata({ ...program, ...patch }));
@@ -360,8 +360,8 @@ test('historical metadata still refuses inconsistent identities, malformed roste
   const refuse = change => { const altered = withSavedProgram(saved, change); assert.throws(() => protocol.validateObservation(altered)); };
   for (const field of Object.keys(saved.program)) refuse(program => { delete program[field]; });
   for (const patch of [{ schema: 'v2' }, { compiler_revision: 'x'.repeat(40) }, { generation_sha256: 'sha256:' + '0'.repeat(64) },
-    { source_revision: 'main' }, { source_dirty: 1 }, { go_version: 'go1.27' }, { go_version: 'go01.27.2' },
-    { go_version: 'go1.27.2extra' }, { go_version: 'go1000.0.0' }, { wasm_bytes: 101 }, { wasm_exec_sha256: '0'.repeat(64) }, { extra: true }]) refuse(p => Object.assign(p, patch));
+    { source_revision: 'main' }, { source_dirty: 1 }, { go_version: 'go1.27' }, { go_version: 'go01.27.3' },
+    { go_version: 'go1.27.3extra' }, { go_version: 'go1000.0.0' }, { wasm_bytes: 101 }, { wasm_exec_sha256: '0'.repeat(64) }, { extra: true }]) refuse(p => Object.assign(p, patch));
   for (const field of Object.keys(saved.program.bindings)) refuse(p => { delete p.bindings[field]; });
   for (const patch of [{ compiler_source_sha: 'bad' }, { generation_sha256: 'bad' }, { generation_origin: 'unverified' }, { extra: true }]) refuse(p => Object.assign(p.bindings, patch));
   for (const name of protocol.ASSET_NAMES) {

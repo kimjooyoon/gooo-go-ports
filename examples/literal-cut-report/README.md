@@ -24,7 +24,7 @@ Go multiple returns become `CutResult{before,after,found}` and
 
 Use the repository's existing clean compiler pin
 `83928fa4538245abe33b08549da47f8cbdc50ed2` (Gooo `0.6.32-dev`) and Go
-**1.27.2**, as described in the [setup guide](../../README.md#run-and-edit-locally).
+**1.27.3**, as described in the [setup guide](../../README.md#run-and-edit-locally).
 Run from the repository root. These commands assume the matching compiler and
 toolchain are already installed; they do not download or upgrade either.
 

@@ -32,7 +32,7 @@ jobs:
             --github-output "$GITHUB_OUTPUT"
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
-          go-version: '1.27.2'
+          go-version: '1.27.3'
           cache: false
       - name: Check the Go observer
         run: |
@@ -259,7 +259,7 @@ jobs:
           PY
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
-          go-version: '1.27.2'
+          go-version: '1.27.3'
           cache: false
       - name: Build and identify the pinned compiler from a clean checkout
         run: |
@@ -267,10 +267,10 @@ jobs:
           sh tools/bootstrap.sh
           ./.gooo version --build --json > out/compiler-build.json
           jq -e '
-            .version == "0.6.32-dev" and
-            .compiler_source_sha == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+            .version == "0.6.37-dev" and
+            .compiler_source_sha == "205896a413e5dea92366309c35ae85e542d055f6" and
             .source_status == "CLEAN_VCS" and .vcs_modified == "false" and
-            .go_version == "go1.27.2" and .native_go_required == "go1.27.2"
+            .go_version == "go1.27.3" and .native_go_required == "go1.27.3"
           ' out/compiler-build.json
       - name: Check Gooo declarations
         run: |
@@ -361,14 +361,14 @@ jobs:
             .native_suite_workers == 3 and
             .suite_order == "largest-corpus-first" and
             .planned_dispatch_indices == (.runs | to_entries | sort_by([-.value.cases, .key]) | map(.key)) and
-            .go_version == "go1.27.2" and
-            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+            .go_version == "go1.27.3" and
+            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
             .case_profile == {
               schema: "gooo/native-case-profile/v1", name: "uuid-and-literal-report-compact-v1",
-              compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.2",
+              compiler_revision: "205896a413e5dea92366309c35ae85e542d055f6", go_version: "go1.27.3",
               entries: ["go/github.com/google/uuid:Validate", "app/uuid-format-inspector:Inspect", "go/github.com/google/uuid/text:ParseCanonical", "app/literal-text-report:Report"],
               basis_profile: "uuid-compact-v1",
-              serializer: "Go1.27.2 json.Marshal(caseDocument(batch)) plus exactly one LF",
+              serializer: "Go1.27.3 json.Marshal(caseDocument(batch)) plus exactly one LF",
               maximum_rows: 128, raw_bytes_including_LF: 30000,
               translated_compact_engine_bytes: 32768, maximum_selected_source_bytes: 10485760,
               lowering_guard: "Pinned839 source-derived nonexpansion upper bound; not measured translated bytes or an actual LoweredName.",
@@ -378,7 +378,7 @@ jobs:
               schema: "gooo/native-workspace-profile/v1", name: "dependency-closure-v1",
               basis: "legacy-selected-workspace",
               selection: "entry import closure over whole already-selected packages; original package/source order",
-              compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.2"
+              compiler_revision: "205896a413e5dea92366309c35ae85e542d055f6", go_version: "go1.27.3"
             } and
             .ported_functions == 54 and .consumer_programs == 26 and .consumer_activities == 28 and
             .uuid_port_reference_cases == 21745 and .uuid_consumer_reference_cases == 21745 and
@@ -412,7 +412,7 @@ jobs:
             .ycbcr_consumer_reference_cases == 924 and .ycbcr_consumer_rejection_cases == 24 and
             (.ycbcr_exhaustive | keys) == ["RGBToYCbCr", "YCbCrToRGB"] and
             all(.ycbcr_exhaustive[];
-              .schema == "gooo/ycbcr-exhaustive-native/v1" and .go_version == "go1.27.2" and
+              .schema == "gooo/ycbcr-exhaustive-native/v1" and .go_version == "go1.27.3" and
               .input_count == 16777216 and .comparison_count == 16777216 and
               .component_comparison_count == 50331648 and .mismatches == 0 and
               .output_sha256 == .oracle_sha256) and
@@ -433,7 +433,7 @@ jobs:
             (.case_mapping_exhaustive | keys) == ["To", "ToLower", "ToTitle", "ToUpper"] and
             all(.case_mapping_exhaustive | to_entries[];
               .key == .value.operation and .value.schema == "gooo/case-mapping-exhaustive-native/v1" and
-              .value.go_version == "go1.27.2" and .value.unicode_version == "17.0.0" and
+              .value.go_version == "go1.27.3" and .value.unicode_version == "17.0.0" and
               .value.unicode_range_inputs == 1114112 and .value.mismatches == 0) and
             .case_mapping_exhaustive.To.unicode_range_comparisons == 3342336 and
             ([.case_mapping_exhaustive[].unicode_range_comparisons] | add) == 6684672 and
@@ -494,7 +494,7 @@ jobs:
             .runs[75].cases == 1059 and .runs[75].passed == 1059 and .runs[75].batches == 37 and
             .source_sha256["ports/net/textproto/canonical.gooo"] == "a3e09e26baa01cdafa0b27edb7eb3a32c09237b3d510bc1a80b17eb63969e1b5" and
             .source_sha256["examples/canonical-header-key/main.gooo"] == "f7da15ccb5c52dff714f2338b9bedf79074d009ad07bfca9d8ddf2f81d119c06" and
-            .canonical_header_scope == "Decoded validUTF8 Text0..1024bytes, including empty and invalid header names. Actual Go1.27.2 net/textproto.CanonicalMIMEHeaderKey supplies canonical Text; the importing original8-field Report retains exact original/canonical Text, changed/validity, byte lengths and first invalid offset/octet. All1059 ordered occurrences,1054 unique keys,zero within-partition and five cross-partition duplicates are retained per entry. No arbitrary-byte/unbounded Go string, HTTP parsing, authorization, effect, production or performance claim." and
+            .canonical_header_scope == "Decoded validUTF8 Text0..1024bytes, including empty and invalid header names. Actual Go1.27.3 net/textproto.CanonicalMIMEHeaderKey supplies canonical Text; the importing original8-field Report retains exact original/canonical Text, changed/validity, byte lengths and first invalid offset/octet. All1059 ordered occurrences,1054 unique keys,zero within-partition and five cross-partition duplicates are retained per entry. No arbitrary-byte/unbounded Go string, HTTP parsing, authorization, effect, production or performance claim." and
             .canonical_header_provenance_scope == "Fresh native execution and saved replay bind original Text, exact typed8 result fields and order, current2/4-source closures, lowered source/record/callee ABI, producer identities and raw outer saved parents. The scalar expectation is the actual pinned Go standard library; Report diagnostics reuse the independent existing header reference. Independent inner typed canonical prior_result_sha256 remains NOT_CHECKED; private pilot receipts are not fresh public acceptance." and
             ([.runs[:73][].cases] | add) == 171167 and ([.runs[:73][].batches] | add) == 2174 and
             .header_addition_reference_cases == 50 and .header_addition_fixed_batch_rows == 8 and
@@ -574,7 +574,7 @@ jobs:
             .workspace_profile == $summary[0].workspace_profile and
             .suite_order == "largest-corpus-first" and .suite_order == $summary[0].suite_order and
             .planned_dispatch_indices == $summary[0].planned_dispatch_indices and
-            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
+            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and .go_version == "go1.27.3" and
             .configured_workers == 3 and .expected_suites == $e.totals.suites and .expected_cases == $e.totals.cases and
             .command_resources_schema == "gooo/native-command-resources/v1" and
             .expected_boundaries_recomputed == false and
@@ -1069,8 +1069,8 @@ jobs:
             def sha: test("^sha256:[0-9a-f]{64}$");
             .schema == "gooo/literal-text-report-checked/v1" and
             .decision == "PASS_FINITE_GO_ORACLE_AND_SAVED_REPLAY" and
-            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
-            .compiler_version == "0.6.32-dev" and .go_version == "go1.27.2" and
+            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
+            .compiler_version == "0.6.37-dev" and .go_version == "go1.27.3" and
             .native_observed_cases == 24 and .independent_go_oracle_cases == 24 and
             .saved_replay_observed_cases == 24 and .native_receipt_expectation_cases == 0 and
             (.results | length) == 24 and
@@ -1087,8 +1087,8 @@ jobs:
             .schema == "gooo/literal-text-input-rejections/v1" and .status == "PASS" and
             .planned_framework_inputs == 224 and .observed_framework_rejections == 224 and
             .go_reference_cases == 0 and
-            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
-            .compiler_version == "0.6.32-dev" and .go_version == "go1.27.2" and
+            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
+            .compiler_version == "0.6.37-dev" and .go_version == "go1.27.3" and
             (.planned_by_entry | keys) == ["app/literal-cut-report:Report", "app/literal-text-report:Report", "go/net/http/precondition:IfMatchCondition", "go/strings:Count", "go/strings:Cut", "go/strings:CutPrefix", "go/strings:CutSuffix", "go/strings:Index"] and
             .planned_by_entry == .observed_by_entry and all(.observed_by_entry[]; . == 28) and
             all(.cases[:196][]; .entry != "go/net/http/precondition:IfMatchCondition") and
@@ -1110,8 +1110,8 @@ jobs:
             .schema == "gooo/last-index-input-rejections/v1" and .status == "PASS" and
             .planned_framework_inputs == 56 and .observed_framework_rejections == 56 and
             .go_reference_cases == 0 and
-            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
-            .compiler_version == "0.6.32-dev" and .go_version == "go1.27.2" and
+            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
+            .compiler_version == "0.6.37-dev" and .go_version == "go1.27.3" and
             .planned_by_entry == {"go/strings:LastIndex": 28, "app/literal-final-marker-report:Report": 28} and
             .planned_by_entry == .observed_by_entry and
             (.source_bindings | length) == 4 and (.manifest_bindings | length) == 2 and
@@ -1136,7 +1136,7 @@ jobs:
           jq -e '
             .status == "PASS" and .planned_framework_inputs == 90 and
             .observed_framework_rejections == 90 and .go_reference_cases == 0 and
-            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
             (.cases | length) == 90 and (.failures | length) == 0 and
             all(.cases[]; .rejection_verified == true and .exit_code == 1 and .timed_out == false)
           ' out/fits-crop-input-rejections/summary.json
@@ -1200,7 +1200,7 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         if: steps.change-scope.outputs.docs_only != 'true'
         with:
-          go-version: '1.27.2'
+          go-version: '1.27.3'
           cache: false
       - name: Verify the public API policy consumer
         if: steps.change-scope.outputs.docs_only != 'true'
@@ -1216,10 +1216,10 @@ jobs:
           sh tools/bootstrap.sh
           ./.gooo version --build --json > out/compiler-build.json
           jq -e '
-            .version == "0.6.32-dev" and
-            .compiler_source_sha == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+            .version == "0.6.37-dev" and
+            .compiler_source_sha == "205896a413e5dea92366309c35ae85e542d055f6" and
             .source_status == "CLEAN_VCS" and .vcs_modified == "false" and
-            .go_version == "go1.27.2" and .native_go_required == "go1.27.2"
+            .go_version == "go1.27.3" and .native_go_required == "go1.27.3"
           ' out/compiler-build.json
       - name: Verify the isolated native URL component facts sidecar
         if: steps.change-scope.outputs.docs_only != 'true'
@@ -1270,7 +1270,7 @@ jobs:
             . as $s | [$ext_cleanup[0], $isabs_cleanup[0], $report_cleanup[0]] as $native |
             .schema == "gooo/path-facts-two-layer-CI/v1" and
             .status == "MANUAL24_CLI_REPLAY_AND_FULL9841_GENERATED_NATIVE_PASS" and
-            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
+            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and .go_version == "go1.27.3" and
             .manual_input_count_per_entry == 24 and .manual_entry_count == 3 and
             .manual_execute_outputs == 72 and .manual_saved_replay_outputs == 72 and
             .generated_native_input_count_per_entry == 9841 and .generated_native_entry_outputs == 29523 and
@@ -1351,7 +1351,7 @@ jobs:
           s = read(root / "summary.json")
           assert s["schema"] == "gooo/redelivery-public-two-layer-CI/v1"
           assert s["status"] == "FRESH_MANUAL16_REPLAY_AND_FULL12288_GENERATED_NATIVE_PASS"
-          assert s["compiler_revision"] == "83928fa4538245abe33b08549da47f8cbdc50ed2" and s["go_version"] == "go1.27.2"
+          assert s["compiler_revision"] == "205896a413e5dea92366309c35ae85e542d055f6" and s["go_version"] == "go1.27.3"
           assert s["contract_sha256"] == "e9dadc2b2bfe776648b216477ffd9cfe7b23ee0deaf2b22bd3ab27c268acdac0"
           counts = {"top_level_stages":70, "manual_execute_outputs":16, "manual_saved_replay_outputs":16,
               "manual_reason_count":13, "typed_fields_compared_per_phase":240, "echo_values_compared_per_phase":144,
@@ -1442,7 +1442,7 @@ jobs:
           python3 -I -B tools/check-ipv4.py --verify-summary "$PWD/out/ipv4/summary.json" > out/ipv4/summary-readback.json
           jq -e '
             .schema == "gooo/ipv4-public-sidecar/v2" and .status == "IPV4_PREFIX_RULE_PAIR_CURRENT_NATIVE_REPLAY_GENERATED_PASS" and
-            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.2" and
+            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and .go_version == "go1.27.3" and
             .manual_execute_outputs == 352 and .manual_saved_replay_outputs == 352 and
             .typed_scalar_fields_each_phase == 992 and .original_report_echoes_each_phase == 256 and
             .native_internal_run_records == 60 and .independent_oracle_cases == 202 and
@@ -1589,7 +1589,7 @@ jobs:
             .baseline_rows == 247 and .verified_returned_scalars == 727 and .baseline_execute_commands == 7 and
             .mutation_checked == true and .mutation_rows == 19 and .mutation_execute_commands == 1 and
             .source_tool_unchanged_after == true and .first_failure == null and
-            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
             .corpus_sha256 == "sha256:ce9015cc12bc37e785761f4ee6907a77603082cd69b4d8edc80a634ff4478345" and
             .mutation_witness == "CRLF-trim-does-not-sanitize-header: single_strong false→true"
           ' out/etag-project-evidence/summary.json
@@ -1611,7 +1611,7 @@ jobs:
             .source_tool_unchanged == true and
             .processes_closed == true and
             .owned_work_removed == true and
-            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2"
+            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6"
           ' out/versioned-grant-change/summary.json
       - name: Verify editable API policy source comparison
         if: steps.change-scope.outputs.docs_only != 'true'
@@ -1630,16 +1630,10 @@ jobs:
             .processes_closed == true and .owned_work_removed == true and
             ([.comparisons[].changed_count] == [0,2,0]) and
             ([.comparisons[].status] == ["UNCHANGED","NEWLY_DENIED","UNCHANGED"]) and
-            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2"
+            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6"
           ' out/editable-api-policy/summary.json
-          # The default pinned839 check above remains independent of this opt-in compiler.
-          test ! -e out/source-inspection036
-          mkdir out/source-inspection036
-          curl --fail --location --silent --show-error --connect-timeout 15 --max-time 120 --output out/source-inspection036/gooo-linux-amd64.tar.gz https://github.com/kimjooyoon/meta-ontology-go/releases/download/v0.6.36-dev/gooo-linux-amd64.tar.gz
-          printf '%s  %s\n' '9dbd1c08b855a3c27ae43a8050531afaba724d90b24d4f72041db3a8a4a285b0' 'out/source-inspection036/gooo-linux-amd64.tar.gz' | sha256sum --check --strict
-          test "$(tar -tzf out/source-inspection036/gooo-linux-amd64.tar.gz)" = gooo
-          tar --no-same-owner --no-same-permissions -xzf out/source-inspection036/gooo-linux-amd64.tar.gz -C out/source-inspection036 gooo
-          python3 -I -B tools/check-editable-policy-helpers.py --root "$PWD" --compiler "$PWD/out/source-inspection036/gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/editable-api-policy-helpers"
+          # Explicit037 source-inspection profile reuses the already identified current compiler.
+          python3 -I -B tools/check-editable-policy-helpers.py --root "$PWD" --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/editable-api-policy-helpers"
           jq -e '
             .schema == "gooo/editable-api-policy-helpers-CI/v1" and
             .status == "HELPER_EXTRACTION_AND_OFFICIAL_REPLAY_PASS" and
@@ -1647,7 +1641,7 @@ jobs:
             .default_helper_refused == true and .default_package_commands == 0 and
             .prepared_inspections == 4 and .positive_receipts == 8 and
             .source_tool_unchanged == true and .processes_closed == true and .owned_work_removed == true and
-            .model_calls == 0 and .compiler_revision == "31497af3beaef210b5a075867b0de76cf55ee3ca"
+            .model_calls == 0 and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6"
           ' out/editable-api-policy-helpers/summary.json
       - name: Verify ordered required-service grant preservation
         if: steps.change-scope.outputs.docs_only != 'true'
@@ -1655,38 +1649,16 @@ jobs:
         run: |
           set -euo pipefail
           python3 -I -B tools/service-grant-many-verifier_test.py --out "$PWD/out/service-grant-many-cancellation"
-          # This consumer profile does not replace .gooo/default839 or its82 suites.
-          test ! -e out/service-grant-many-compiler
-          mkdir out/service-grant-many-compiler
-          curl --fail --location --silent --show-error --connect-timeout 15 --max-time 120 --max-filesize 16777216 --output out/service-grant-many-compiler/gooo-linux-amd64.tar.gz https://github.com/kimjooyoon/meta-ontology-go/releases/download/v0.6.35-dev/gooo-linux-amd64.tar.gz
-          printf '%s  %s\n' 'e68a43a1937c327b1240a5fd7a2ee5ed427f32c7564415891fa808958421bb76' 'out/service-grant-many-compiler/gooo-linux-amd64.tar.gz' | sha256sum --check --strict
-          python3 -I -B - <<'PY_MANY_COMPILER'
-          import pathlib, tarfile
-          folder = pathlib.Path('out/service-grant-many-compiler')
-          archive = folder / 'gooo-linux-amd64.tar.gz'
-          assert archive.stat().st_size == 15646044
-          with tarfile.open(archive, 'r:gz') as tf:
-              members = tf.getmembers()
-              assert len(members) == 1
-              item = members[0]
-              assert item.name == 'gooo' and item.isfile() and not item.issym() and not item.islnk()
-              assert 0 < item.size <= 64 * 1024 * 1024
-              raw = tf.extractfile(item).read(item.size + 1)
-              assert len(raw) == item.size
-              binary = folder / 'gooo'
-              with binary.open('xb') as f:
-                  f.write(raw)
-              binary.chmod(0o700)
-          PY_MANY_COMPILER
-          python3 -I -B examples/service-grant-many/verify.py --compiler "$PWD/out/service-grant-many-compiler/gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/service-grant-many"
+          # Current many profile reuses the already identified current compiler; oldde99 release evidence is historical.
+          python3 -I -B examples/service-grant-many/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/service-grant-many"
           jq -e '
             .schema == "gooo/service-grant-many-verification/v1" and
             .status == "PUBLIC_SOURCE_REFERENCE17_AND_NATIVE_TRANSPORT_PASS" and
-            .first_failure == null and .compiler_revision == "de99b770b8b5adea608233c3c0664902336e3310" and
+            .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
             .fresh_genuine_commands == 4 and .genuine_cases == 16 and .genuine_split == [1,15] and
             .typed_decision_fields == 12 and .fresh_reference_cases == 17 and
             .actual_compiled_columns_cases == 17 and .actual_compiled_friendly_cases == 16 and
-            .binary_metadata.version == "go1.27.2" and .binary_metadata.dependencies == 0 and
+            .binary_metadata.version == "go1.27.3" and .binary_metadata.dependencies == 0 and
             .binary_metadata.settings.CGO_ENABLED == "0" and
             .binary_metadata.settings.GOOS == "linux" and .binary_metadata.settings.GOARCH == "amd64" and
             .all_direct_wait_EOF_PG_ESRCH == true and .remaining_owned_groups == 0 and
@@ -1712,7 +1684,7 @@ jobs:
             ([.verified[] | select(.operation == "execute") | .rows] | add) == 204 and
             ([.verified[] | select(.operation == "replay") | .rows] | add) == 204 and
             all(.commands[]; .exit_code == 0 and .failure == null and .observed_owned_processes_remaining == []) and
-            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2"
+            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6"
           ' out/autobot-resolver/summary.json
       - name: Upload offline policy experiment evidence
         if: always() && steps.change-scope.outputs.docs_only != 'true'
@@ -1784,7 +1756,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
-          go-version: '1.27.2'
+          go-version: '1.27.3'
           cache: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
@@ -1831,7 +1803,7 @@ jobs:
           jq -e '
             .schema == "gooo/tutorial-change-run/v1" and
             .status == "TUTORIAL_CHANGE_AND_REPLAY_CHECKED" and
-            .compiler_pin == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+            .compiler_pin == "205896a413e5dea92366309c35ae85e542d055f6" and
             .new_Gooo_commands == 2 and .model_calls == 0 and
             .reused_before != null and (.commands | length) == 6 and
             .repository_sources_unchanged == true and .compiler_binary_unchanged == true and
@@ -1844,7 +1816,7 @@ jobs:
           jq -e '
             .schema == "gooo/tutorial-change-summary/v1" and
             .status == "CHECKED_FINITE_OBSERVATIONS" and
-            .receipt_compiler.source_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
+            .receipt_compiler.source_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
             .repository_revision == null and .repository_revision_status == "NOT_CAPTURED" and
             .replay_raw_parent_sha256 == .raw_records.after.sha256 and
             (.sources | length) == 2 and .sources[0].changed == false and .sources[1].changed == true and
@@ -1904,8 +1876,8 @@ jobs:
               else
                 .status == "FINITE_8_CASES_AND_FRESH_REPLAY_CHECKED" and .checked == 8
               end) and
-              .compiler_build.compiler_source_sha == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
-              .compiler_build.vcs_modified == "false" and .compiler_build.go_version == "go1.27.2" and
+              .compiler_build.compiler_source_sha == "205896a413e5dea92366309c35ae85e542d055f6" and
+              .compiler_build.vcs_modified == "false" and .compiler_build.go_version == "go1.27.3" and
               .sources_unchanged == true and .tools_unchanged == true and
               .all_processes_waited == true and .owned_work_removed == true and
               [.commands[].label] == ["go-version", "compiler-build", "oracle-build", "oracle-buildinfo", "oracle", "execute", "replay"] and

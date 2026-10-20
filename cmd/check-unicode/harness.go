@@ -38,7 +38,7 @@ func makeHarness(names generatedNames) ([]byte, error) {
 	return out.Bytes(), nil
 }
 func validateExhaustive(r exhaustiveReport) error {
-	want := exhaustiveReport{"gooo/unicode-exhaustive-native/v1", "go1.27.2", "17.0.0", 1114112, 2228224, 4456448, 8, 16, 32, 8, 16, 32, 0}
+	want := exhaustiveReport{"gooo/unicode-exhaustive-native/v1", "go1.27.3", "17.0.0", 1114112, 2228224, 4456448, 8, 16, 32, 8, 16, 32, 0}
 	if r != want {
 		return fmt.Errorf("native exhaustive report counters or identity differ: %+v", r)
 	}

@@ -19,7 +19,7 @@ func fixture(t *testing.T) ([]byte, suite, expectedIdentity) {
 		t.Fatal(err)
 	}
 	s := suite{Package: "go/unicode/utf16", Activity: "DecodeRune", Cases: []testCase{{Inputs: []any{int64(-1), int64(-1)}, Expected: int64(65533)}}}
-	identity := expectedIdentity{CompilerRevision: "366ee6ef8f9d2b9b57331dfd26b6f908c0289851", GoVersion: "go1.27.2", ManifestDigest: e.ManifestDigest, CasesDigest: e.CasesDigest}
+	identity := expectedIdentity{CompilerRevision: "366ee6ef8f9d2b9b57331dfd26b6f908c0289851", GoVersion: "go1.27.3", ManifestDigest: e.ManifestDigest, CasesDigest: e.CasesDigest}
 	identity.Sources = fixtureSources(t, s)
 	return raw, s, identity
 }

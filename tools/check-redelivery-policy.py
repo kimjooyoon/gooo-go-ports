@@ -25,7 +25,7 @@ RAW_CAP,GZIP_CAP,LINE_CAP,WIRE_CAP=16<<20,2<<20,16<<10,8192
 GZIP_HEADER=bytes.fromhex('1f8b08000000000002ff')
 MODULE_NAMES=('go.mod','main.go','candidate.go','corpus.go','rows.go','boundary.go','policy.go','harness_test.go','generated.go')
 POSITIVE=('go-root','build-oracle','build-checker','compiler-build','original-oracle-manual16','batch-0-strict','batch-0-execute','batch-0-replay','batch-0-observe','batch-8-strict','batch-8-execute','batch-8-replay','batch-8-observe','harness-tests','build-harness','full12288-generated-native')
-HELPER_SHA='9dfd7c2c365b2bca4edc8659a5044b7aff499474012407749da81a2327ff7a94'
+HELPER_SHA='95d565708d554fe1d37c0eee9030bc243b11c0755d6d1032197a0a346e030c28'
 H=None
 
 WIRE_NAMES=('missing','unknown','null-text','null-boolean','null-integer','bool-as-integer','number-as-boolean','fractional-integer','out-of-int64','duplicate-exact','duplicate-escaped','raw-invalid-utf8','unpaired-high','unpaired-low','text-1025','trailing','malformed','nonobject')
@@ -220,7 +220,7 @@ def check_summary(value,rows,boundary):
 CORE=['automatic-redelivery.workspace.json']+['examples/automatic-redelivery/'+x for x in
  ('main.gooo','contract.json','inputs.json','manual-inputs.json','manual-witnesses.json','README.md')]+[
  'examples/automatic-redelivery/reference/'+x for x in ('go.mod','main.go','policy.go','policy_test.go','strict.go')]
-CHECKER=('main.go','inspect.go','binding.go','origin.go','wire.go','wire_test.go','observer_test.go','result_digest.go','result_digest_test.go')
+CHECKER=('main.go','inspect.go','binding.go','origin.go','wire.go','wire_test.go','observer_test.go','result_digest.go','result_digest_test.go','current_result_profile_test.go')
 TEMPLATES=tuple(x for x in MODULE_NAMES if x not in ('policy.go','generated.go'))
 
 
@@ -240,7 +240,7 @@ class Attempt:
         self.contract_path=self.repository/'examples/automatic-redelivery/contract.json';self.contract=load(self.contract_path)
         self.witness_path=self.repository/'examples/automatic-redelivery/manual-witnesses.json';self.witness=load(self.witness_path)
         self.native_path=self.repository/'examples/automatic-redelivery/manual-inputs.json'
-        self.profile=self.repository/'cmd/check-path-facts/result-profile-83928fa.json'
+        self.profile=self.repository/'cmd/check-path-facts/result-profile-go1273.json'
         self.reference=self.repository/'examples/automatic-redelivery/reference'
         self.wire_dir=self.repository/'cmd/check-redelivery-policy/testdata/wire';self.wire=load(self.wire_dir/'manifest.json')
         cases=self.wire.get('cases')
@@ -250,7 +250,9 @@ class Attempt:
         names=CORE+['cmd/check-redelivery-policy/'+n for n in CHECKER]+[
          'tools/redelivery-native-source/'+n+'.txt' for n in TEMPLATES]+[
          'tools/check-redelivery-policy.py','tools/check-redelivery-policy_test.py',
-         'tools/check-path-facts.py','cmd/check-path-facts/result-profile-83928fa.json',
+         'tools/check-path-facts.py','cmd/check-path-facts/result-profile-83928fa.json','cmd/check-path-facts/result-profile-go1273.json',
+         'cmd/check-path-facts/testdata/current-go1273-execution.json',
+         'cmd/check-path-facts/testdata/current-go1273-execution.provenance.json',
          'cmd/check-literal-text-report/testdata/pinned-original-execution.json',
          'internal/jsonkeys/keys.go','internal/jsonkeys/keys_test.go','LICENSE','go.mod','upstream.json',
          'cmd/check-redelivery-policy/testdata/wire/manifest.json']
@@ -337,7 +339,7 @@ class Attempt:
         self.producers.append(ref(self.work/'bin/checker'))
         build=self.call('compiler-build',[str(self.compiler),'version','--build','--json'],30)
         identity=load(build)
-        for key,want in [('version','0.6.32-dev'),('compiler_source_sha','83928fa4538245abe33b08549da47f8cbdc50ed2'),('source_status','CLEAN_VCS'),('vcs_modified','false'),('go_version','go1.27.2'),('native_go_required','go1.27.2')]:
+        for key,want in [('version','0.6.37-dev'),('compiler_source_sha','205896a413e5dea92366309c35ae85e542d055f6'),('source_status','CLEAN_VCS'),('vcs_modified','false'),('go_version','go1.27.3'),('native_go_required','go1.27.3')]:
             if identity.get(key)!=want:raise ValueError('Fresh compiler identity differs')
         fresh=self.call('original-oracle-manual16',[str(self.work/'bin/oracle'),'--contract',str(self.contract_path),'--manual'],30,self.reference)
         self.oracle_ref=ref(fresh);self.runtime_refs.append(self.oracle_ref)
@@ -375,7 +377,7 @@ class Attempt:
         self.tampers()
         self.audit_retained(True);self.budget()
         return {'schema':'gooo/redelivery-public-two-layer-CI/v1','status':'VERIFIED_VALUES_PENDING_OWNED_CLEANUP','source_freeze':self.freeze,
-         'compiler_revision':'83928fa4538245abe33b08549da47f8cbdc50ed2','go_version':'go1.27.2','contract_sha256':self.contract_ref['sha256'],
+         'compiler_revision':'205896a413e5dea92366309c35ae85e542d055f6','go_version':'go1.27.3','contract_sha256':self.contract_ref['sha256'],
          'top_level_stages':70,'manual_execute_outputs':16,'manual_saved_replay_outputs':16,'manual_reason_count':13,'typed_fields_compared_per_phase':240,'echo_values_compared_per_phase':144,
          'generated_native_outputs':12288,'generated_native_scalar_comparisons':184320,'generated_native_echo_comparisons':110592,
          'readback_outputs':12288,'readback_scalar_comparisons':184320,'readback_echo_comparisons':110592,
@@ -405,7 +407,7 @@ class Attempt:
          'native_inputs':ref(self.native_path),'compiler_build':ref(build),'result_profile':ref(self.profile),'generated_source':self.generated_ref,
          'oracle_policy':self.policy_ref,'entry':first['result']['program']['entry'],'activity_id':ACTIVITY_ID,'record_id':'gooo://automatic-redelivery/decision/v1',
          'generated_function':'GoooComposedActivity0','contract_sha256':self.contract_ref['sha256'],
-         'compiler_revision':'83928fa4538245abe33b08549da47f8cbdc50ed2','Go_version':'go1.27.2',
+         'compiler_revision':'205896a413e5dea92366309c35ae85e542d055f6','Go_version':'go1.27.3',
          'generated_sha256':c['generated_sha256'],'driver_sha256':c['driver_sha256'],
          'lowered_source_sha256':first['result']['execution_source_sha256'],'typed_plan_sha256':c['plan']['typed_plan_sha256'],
          'original_body_sha256':c['steps'][0]['generation']['report']['program_digest'],'slices':self.records}

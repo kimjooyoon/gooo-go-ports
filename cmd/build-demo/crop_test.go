@@ -27,7 +27,7 @@ func cropEvidenceFixture(t *testing.T) ([]byte, lockfile, []byte, []byte, map[st
 
 func cropProgramEvidenceFixture(t *testing.T, program cropProgram) ([]byte, lockfile, []byte, []byte, map[string][]byte) {
 	t.Helper()
-	lock := lockfile{CompilerRevision: strings.Repeat("a", 40), GoVersion: "go1.27.2"}
+	lock := lockfile{CompilerRevision: strings.Repeat("a", 40), GoVersion: "go1.27.3"}
 	manifestRaw, inputsRaw := cropTestRead(t, program.manifest), cropTestRead(t, program.inputs)
 	rows, err := cropProgramInputRows(inputsRaw, program)
 	if err != nil {
@@ -85,7 +85,7 @@ func cropProgramEvidenceFixture(t *testing.T, program cropProgram) ([]byte, lock
 		"result": map[string]any{
 			"program":     map[string]any{"entry": map[string]any{"package_path": "example/crop-planner", "activity": program.activity, "lowered_name": "GoooPackage4ActivityCropPlan"}, "workspace_image": map[string]any{"packages": packages}},
 			"composition": map[string]any{"stage": "COMPLETE", "source": source, "generated_sha256": sha, "plan": map[string]any{"record_types": layouts, "entry_activity": "GoooPackage4ActivityCropPlan", "activities": []any{map[string]any{"name": "GoooPackage4ActivityCropPlan", "id": program.activityID, "go_function": "GoooComposedActivity0"}}}, "steps": []any{map[string]any{"generation": map[string]any{"report": map[string]any{"activity_id": program.activityID, "compiler_source_sha": lock.CompilerRevision}}}}},
-			"runtime":     map[string]any{"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "producer_source_sha": lock.CompilerRevision, "go_version": "go version go1.27.2 darwin/arm64", "generated_sha256": sha, "model_calls": 0, "finite_total": 0, "finite_passed": 0, "projection_replayed": true, "runtime_replayed": true, "traces": traces},
+			"runtime":     map[string]any{"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "producer_source_sha": lock.CompilerRevision, "go_version": "go version go1.27.3 darwin/arm64", "generated_sha256": sha, "model_calls": 0, "finite_total": 0, "finite_passed": 0, "projection_replayed": true, "runtime_replayed": true, "traces": traces},
 		},
 	})
 	return raw, lock, manifestRaw, inputsRaw, sources

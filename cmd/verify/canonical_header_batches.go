@@ -66,8 +66,8 @@ func (f frozenVerificationCatalog) canonicalHeaderWorkspace(s suite) (suiteWorks
 	return w, err
 }
 func canonicalHeaderBatchPolicy(s suite, w suiteWorkspace, lock upstream) (nativeCaseBatchPolicy, error) {
-	if !isCanonicalHeaderSuite(s) || len(s.Cases) == 0 || lock.CompilerRevision != uuidCompactCompilerRevision || lock.GoVersion != "go1.27.2" {
-		return nativeCaseBatchPolicy{}, fmt.Errorf("canonical header nonempty original suite and pinned839/Go1.27.2 required")
+	if !isCanonicalHeaderSuite(s) || len(s.Cases) == 0 || lock.CompilerRevision != uuidCompactCompilerRevision || lock.GoVersion != "go1.27.3" {
+		return nativeCaseBatchPolicy{}, fmt.Errorf("canonical header nonempty original suite and pinned839/Go1.27.3 required")
 	}
 	if w.Manifest.Schema != "gooo/package-workspace-manifest/v1" || w.Manifest.Entry.Package != s.Package || w.Manifest.Entry.Activity != s.Activity || !reflect.DeepEqual(w.Manifest.Packages, canonicalHeaderPackages(s)) || len(w.Names) != len(w.Manifest.Packages) || len(w.Sources) != len(w.Names) {
 		return nativeCaseBatchPolicy{}, fmt.Errorf("canonical header exact selected closure")

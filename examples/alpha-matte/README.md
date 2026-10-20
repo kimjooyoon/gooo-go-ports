@@ -21,7 +21,7 @@ Run from the repository root with Git, a POSIX shell and Go toolchain selection
 enabled:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 ./tools/bootstrap.sh
 mkdir -p out/alpha-matte-demo

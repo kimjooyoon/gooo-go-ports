@@ -49,7 +49,7 @@ class FixedReceiptTest(unittest.TestCase):
         a = {"schema": "gooo/workspace-body-execution-receipt/v1", "decision": "OBSERVED", "manifest_digest": CHECK.digest(manifest_raw), "inputs_digest": CHECK.digest(input_raw), "result": {
             "program": {"entry": manifest["entry"], "workspace_image": {"packages": packages}},
             "composition": {"stage": "COMPLETE", "source": source, "generated_sha256": digest, "steps": [{"generation": {"report": {"activity_id": CHECK.ACTIVITY, "compiler_source_sha": lock["compiler_revision"]}}}]},
-            "runtime": {"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "producer_source_sha": lock["compiler_revision"], "go_version": "go version go1.27.2 linux/amd64", "generated_sha256": digest, "finite_total": 0, "finite_passed": 0, "model_calls": 0, "projection_replayed": True, "runtime_replayed": True, "traces": traces}}}
+            "runtime": {"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "producer_source_sha": lock["compiler_revision"], "go_version": "go version go1.27.3 linux/amd64", "generated_sha256": digest, "finite_total": 0, "finite_passed": 0, "model_calls": 0, "projection_replayed": True, "runtime_replayed": True, "traces": traces}}}
         b = copy.deepcopy(a)
         b["result"]["replay"] = {"model_calls": 0}
         return a, b

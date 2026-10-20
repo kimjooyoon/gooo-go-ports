@@ -19,7 +19,7 @@ value, IPv6, mapped IPv6, zones, text parsing, DNS or actual network operations.
 A false query alone does not distinguish an invalid input from a disjoint range.
 
 After the [repository setup](../../README.md), run from the repository root
-with the pinned compiler and an explicit Go 1.27.2 executable:
+with the pinned compiler and an explicit Go 1.27.3 executable:
 
 ```sh
 mkdir -p out/ipv4-prefix-example

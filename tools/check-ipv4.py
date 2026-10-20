@@ -17,12 +17,12 @@ import tempfile
 import time
 import types
 
-REV = '83928fa4538245abe33b08549da47f8cbdc50ed2'
-GO_VERSION = 'go1.27.2'
-LIFECYCLE_SHA = '9dfd7c2c365b2bca4edc8659a5044b7aff499474012407749da81a2327ff7a94'
-PROFILE_SHA = '9eafadab81a6c7fe33a4f59777e3776cc27f31c7962e472f3828e77867142d44'
-CODEC_SHA = '601cee4a4a9fc22c0e3ff41ed0cc1a5652be2438bf3300f4bf7d89686bc31ce6'
-RECORD_PROFILE_SHA = 'sha256:631d6c3bff8101efef78d9bd0d60c9de4ee8949067c280a573f39a4354288483'
+REV = '205896a413e5dea92366309c35ae85e542d055f6'
+GO_VERSION = 'go1.27.3'
+LIFECYCLE_SHA ='95d565708d554fe1d37c0eee9030bc243b11c0755d6d1032197a0a346e030c28'
+PROFILE_SHA = '9fc596175547cf3f8582bcf51e42e399f3a036355c0c49f81f28acea0713df0d'
+CODEC_SHA = 'e1097ad2b072d0151835e7cedce56322ca9d713cfd7d752a884179c9ad16029d'
+RECORD_PROFILE_SHA = 'sha256:32fc8db408f72123a38bd051144198002bb4a3196a7c1847df851482af150b2a'
 NETIP_SHA = '32295f4761825d8c6fdade4dad093b08683bdd1945010bee8a90a298e18cf208'
 CORPUS_SHA = '7fb8c9d44e8fa77807e9b5580ab8aa975a8775486d5dfb6daaef9be2472b4b08'
 WORK_CAP, PRE_CAP, PROOF_CAP, FREE_MIN = 384 << 20, 320 << 20, 16 << 20, 5 << 30
@@ -49,6 +49,7 @@ BASE_SOURCES = ('LICENSE', 'third_party/GO-LICENSE', 'third_party/go/netip.go.tx
                 'examples/ipv4-address-facts/inputs.json', 'examples/ipv4-address-facts/README.md',
                 'cmd/ipv4-oracle/main.go', 'cmd/ipv4-oracle/main_test.go',
                 'cmd/check-path-facts/result_digest.go', 'cmd/check-path-facts/result-profile-83928fa.json',
+                'cmd/check-path-facts/result-profile-go1273.json',
                 'tools/check-path-facts.py', 'tools/check-ipv4.py', 'tools/check-ipv4_test.py',
                 'tools/ipv4_receipts.py', 'tools/ipv4_receipts_test.py',
                 'tools/check-ci-scope-workflow_test.py')
@@ -281,7 +282,7 @@ class Attempt:
         require(self.tools[3]['sha256'] == NETIP_SHA and
                 ref(self.repo / 'third_party/go/netip.go.txt')['sha256'] == NETIP_SHA, 'Pinned/current netip source differs')
         require(ref(self.repo / 'cmd/check-path-facts/result_digest.go')['sha256'] == CODEC_SHA and
-                ref(self.repo / 'cmd/check-path-facts/result-profile-83928fa.json')['sha256'] == PROFILE_SHA,
+                ref(self.repo / 'cmd/check-path-facts/result-profile-go1273.json')['sha256'] == PROFILE_SHA,
                 'Unchanged public Result codec/profile required')
 
     def prepare(self):
@@ -365,15 +366,15 @@ class Attempt:
         self.selected_version = 'go version '+GO_VERSION+' '+selected['GOOS']+'/'+selected['GOARCH']
         build_path = self.invoke('compiler-build',[self.compiler,'version','--build','--json'])
         build = load(build_path)
-        for key,want in {'schema':'gooo/build-identity/v1','version':'0.6.32-dev','compiler_source_sha':REV,
+        for key,want in {'schema':'gooo/build-identity/v1','version':'0.6.37-dev','compiler_source_sha':REV,
                          'vcs_revision':REV,'vcs_modified':'false','source_status':'CLEAN_VCS',
                          'go_version':GO_VERSION,'native_go_required':GO_VERSION}.items():
             require(build.get(key)==want, 'Pinned compiler build identity differs: '+key)
-        module_text = b'module gooo.local/ipv4-sidecar\n\ngo 1.27.2\n'
+        module_text = b'module gooo.local/ipv4-sidecar\n\ngo 1.27.3\n'
         oracle_module = self.make_module('oracle',[('main.go',self.repo/'cmd/ipv4-oracle/main.go'),('prefix_rule_pair.go',self.repo/'cmd/ipv4-oracle/prefix_rule_pair.go')],{'go.mod':module_text})
         bridge = self.make_module('bridge',[(n,self.repo/p) for n,p in (
             ('main.go','tools/ipv4-native-source/bridge-main.go.txt'),('support.go','tools/ipv4-native-source/support.go.txt'),
-            ('result_digest.go','cmd/check-path-facts/result_digest.go'),('result-profile-83928fa.json','cmd/check-path-facts/result-profile-83928fa.json'))],{'go.mod':module_text})
+            ('result_digest.go','cmd/check-path-facts/result_digest.go'),('result-profile-83928fa.json','cmd/check-path-facts/result-profile-83928fa.json'),('result-profile-go1273.json','cmd/check-path-facts/result-profile-go1273.json'))],{'go.mod':module_text})
         self.oracle_binary=self.work/'bin/oracle';self.bridge_binary=self.work/'bin/bridge'
         self.invoke('build-oracle',[self.go,'-C',oracle_module,'build','-trimpath','-o',self.oracle_binary,'.']); self.producers.append(ref(self.oracle_binary))
         self.invoke('build-bridge',[self.go,'-C',bridge,'build','-trimpath','-o',self.bridge_binary,'.']); self.producers.append(ref(self.bridge_binary))
@@ -438,7 +439,7 @@ class Attempt:
         require(abi=={'schema':'gooo/ipv4-generated-ABI/v1','generated_source':ref(generated_path),'functions':8,'record_fields':11,'input_ports':4},'Generated exact ABI report')
         module=self.make_module('harness',[(n,self.repo/'tools/ipv4-native-source'/src) for n,src in (
             ('main.go','harness-main.go.txt'),('support.go','support.go.txt'),('harness_test.go','harness-test.go.txt'))]+[('generated.go',generated_path)],
-            {'go.mod':b'module gooo.local/ipv4-sidecar\n\ngo 1.27.2\n'})
+            {'go.mod':b'module gooo.local/ipv4-sidecar\n\ngo 1.27.3\n'})
         self.invoke('harness-tests',[self.go,'-C',module,'test','-count=1','-timeout=45s','.'],seconds=60)
         binary=self.work/'bin/harness'
         self.invoke('build-harness',[self.go,'-C',module,'build','-trimpath','-o',binary,'.']);self.producers.append(ref(binary))
@@ -487,7 +488,7 @@ class Attempt:
         self.runtime_refs.append(ref(gp))
         abi=self.invoke('pair-generated-abi',[self.bridge_binary,'--abi-profile','prefix-rule-pair','--check-generated',gp])
         require(load(abi)=={'schema':'gooo/ipv4-rule-pair-generated-ABI/v1','generated_source':ref(gp),'functions':5,'records':4,'record_fields':28,'root_fields':11,'input_ports':2},'Pair exact generated ABI')
-        module=self.make_module('pair-harness',[(n,self.repo/'tools/ipv4-native-source'/src) for n,src in (('main.go','pair-harness-main.go.txt'),('support.go','support.go.txt'),('harness_test.go','pair-harness-test.go.txt'))]+[('generated.go',gp)],{'go.mod':b'module gooo.local/ipv4-sidecar\n\ngo 1.27.2\n'})
+        module=self.make_module('pair-harness',[(n,self.repo/'tools/ipv4-native-source'/src) for n,src in (('main.go','pair-harness-main.go.txt'),('support.go','support.go.txt'),('harness_test.go','pair-harness-test.go.txt'))]+[('generated.go',gp)],{'go.mod':b'module gooo.local/ipv4-sidecar\n\ngo 1.27.3\n'})
         self.invoke('pair-harness-tests',[self.go,'-C',module,'test','-count=1','-timeout=45s','.'])
         binary=self.work/'bin/pair-harness';self.invoke('build-pair-harness',[self.go,'-C',module,'build','-trimpath','-o',binary,'.']);self.producers.append(ref(binary))
         boundary={'schema':'gooo/ipv4-rule-pair-generated-boundary/v1','source_freeze':self.freeze,'generated_source':ref(module/'generated.go'),'corpus':ref(self.repo/'examples/ipv4-rule-pair/corpus-112.json'),'oracle':ref(op),'abi':ref(abi),'go_tool':self.tools[0],'binary':ref(binary),'module_sources':[ref(module/n) for n in ('go.mod','main.go','support.go','harness_test.go','generated.go')],'report_receipts':[batch[k] for k in ('execution','replay')],'report_checked':[batch['checked']]}
@@ -663,7 +664,7 @@ def verify_summary(path):
     work=Path(clean['owned_path'])
     require([v['path'] for v in lifetime['before_cleanup']]==[str(work/'bin'/n) for n in (('oracle','bridge','harness','pair-harness') if include_pair else ('oracle','bridge','harness'))],
             'Exact three producer binary lifetime roster')
-    module_names={'oracle':{'go.mod','main.go','prefix_rule_pair.go'},'bridge':{'go.mod','main.go','support.go','result_digest.go','result-profile-83928fa.json'},
+    module_names={'oracle':{'go.mod','main.go','prefix_rule_pair.go'},'bridge':{'go.mod','main.go','support.go','result_digest.go','result-profile-83928fa.json','result-profile-go1273.json'},
                   'harness':{'go.mod','main.go','support.go','harness_test.go','generated.go'}}
     if include_pair:module_names['pair-harness']={'go.mod','main.go','support.go','harness_test.go','generated.go'}
     require(len(lifetime['owned_modules'])==(4 if include_pair else 3),'Exact owned module roots')

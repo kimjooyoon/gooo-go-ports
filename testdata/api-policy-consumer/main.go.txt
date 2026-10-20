@@ -17,9 +17,10 @@ import (
 // Exact identities of the source generations this consumer accepts. Observations
 // exist only after the public-module verification helper actually runs this binary.
 const (
-	expectedCompiler = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+	expectedCompiler           = "205896a413e5dea92366309c35ae85e542d055f6"
+	expectedOriginalCompiler   = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 	expectedOriginalGeneration = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
-	expectedRevisionGeneration = "sha256:a78b95c6f563450e0aacb2356594b270f9a6c42910f3995cec2577076139956e"
+	expectedRevisionGeneration = "sha256:1904100e57ff22b00f4db1597c4f12ebb3c6893063d6deac69e2eb516452a2ca"
 )
 
 func main() {
@@ -30,7 +31,7 @@ func main() {
 }
 
 type caseObservation struct {
-	Action string `json:"action"`
+	Action string                          `json:"action"`
 	Report revisionpolicy.ComparisonReport `json:"report"`
 }
 
@@ -38,7 +39,7 @@ func run() error {
 	// Explicit nine-field inputs; there is no current trusted fact provider.
 	cases := []struct {
 		action string
-		raw string
+		raw    string
 	}{
 		{"read", `{"group_present":true,"group_value":"admin","principal_present":true,"principal_value":"synthetic:user","authenticated":true,"caller_tenant":"tenant-a","resource_tenant":"tenant-a","requested_action":"read","allowed_action":"read"}`},
 		{"write", `{"group_present":true,"group_value":"admin","principal_present":true,"principal_value":"synthetic:user","authenticated":true,"caller_tenant":"tenant-a","resource_tenant":"tenant-a","requested_action":"write","allowed_action":"write"}`},
@@ -53,9 +54,9 @@ func run() error {
 	}
 	// Emit only after both complete native comparisons and saved replays agree.
 	output, err := json.Marshal(struct {
-		Schema string `json:"schema"`
-		Scope string `json:"scope"`
-		Cases []caseObservation `json:"cases"`
+		Schema string            `json:"schema"`
+		Scope  string            `json:"scope"`
+		Cases  []caseObservation `json:"cases"`
 	}{"gooo/api-policy-consumer-observation/v1", "synthetic_unsigned_historical_hypothetical_readonly", observations})
 	if err != nil {
 		return err
@@ -146,7 +147,7 @@ func checkCase(action string, raw []byte, observation *revisionpolicy.Comparison
 		!reflect.DeepEqual(report.Before, baseline.Before) {
 		return fmt.Errorf("nine facts, fifteen decisions, fifteen flags or summary differ")
 	}
-	if report.Before.Bindings.CompilerSourceSHA != expectedCompiler ||
+	if report.Before.Bindings.CompilerSourceSHA != expectedOriginalCompiler ||
 		report.Before.Bindings.GenerationSHA256 != expectedOriginalGeneration ||
 		len(report.Before.Bindings.Assets) != 28 ||
 		report.After.Bindings.CompilerSourceSHA != expectedCompiler ||

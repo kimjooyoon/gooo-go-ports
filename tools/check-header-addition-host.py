@@ -12,7 +12,7 @@ CONTRACT=importlib.util.module_from_spec(_CONTRACT_SPEC)
 sys.modules[_CONTRACT_SPEC.name]=CONTRACT
 _CONTRACT_SPEC.loader.exec_module(CONTRACT)
 
-REV='83928fa4538245abe33b08549da47f8cbdc50ed2'
+REV='205896a413e5dea92366309c35ae85e542d055f6'
 ROOT='app/diagnostic-header-addition'
 ENTRY=ROOT+':AssessAddition'
 RID='gooo://diagnostic-header-addition/request/v1'
@@ -48,7 +48,7 @@ CANONICAL_SUMMARY = {
     "canonical_header_report_fields": 8,
     "canonical_header_port_source_count": 2,
     "canonical_header_report_source_count": 4,
-    "canonical_header_scope": "Decoded validUTF8 Text0..1024bytes, including empty and invalid header names. Actual Go1.27.2 net/textproto.CanonicalMIMEHeaderKey supplies canonical Text; the importing original8-field Report retains exact original/canonical Text, changed/validity, byte lengths and first invalid offset/octet. All1059 ordered occurrences,1054 unique keys,zero within-partition and five cross-partition duplicates are retained per entry. No arbitrary-byte/unbounded Go string, HTTP parsing, authorization, effect, production or performance claim.",
+    "canonical_header_scope": "Decoded validUTF8 Text0..1024bytes, including empty and invalid header names. Actual Go1.27.3 net/textproto.CanonicalMIMEHeaderKey supplies canonical Text; the importing original8-field Report retains exact original/canonical Text, changed/validity, byte lengths and first invalid offset/octet. All1059 ordered occurrences,1054 unique keys,zero within-partition and five cross-partition duplicates are retained per entry. No arbitrary-byte/unbounded Go string, HTTP parsing, authorization, effect, production or performance claim.",
     "canonical_header_provenance_scope": "Fresh native execution and saved replay bind original Text, exact typed8 result fields and order, current2/4-source closures, lowered source/record/callee ABI, producer identities and raw outer saved parents. The scalar expectation is the actual pinned Go standard library; Report diagnostics reuse the independent existing header reference. Independent inner typed canonical prior_result_sha256 remains NOT_CHECKED; private pilot receipts are not fresh public acceptance."
 }
 
@@ -370,12 +370,12 @@ def read_verification(root,verification_out,timing):
     need(len(events)>2 and all(equal(e.get('seq'),i) and e.get('schema')=='gooo/native-verification-timing/v1' for i,e in enumerate(events)),'complete ordered timing event stream')
     header,footer=events[0],events[-1]
     need(header['kind']=='header' and footer['kind']=='run_end','timing header/footer')
-    need(header['compiler_revision']==REV and header['go_version']=='go1.27.2','timing compiler/Go pins')
+    need(header['compiler_revision']==REV and header['go_version']=='go1.27.3','timing compiler/Go pins')
     need(header['workspace_profile']['name']==contract_expected.document['profiles']['workspace'] and header['case_profile']['name']==contract_expected.document['profiles']['case'],'current workspace/case profiles')
     summary=load(read(verification_out/'summary.json'));catalog_raw=read(root/'verification-catalog.json');catalog=load(catalog_raw)
     lock=load(read(root/'upstream.json'))
-    need(lock['compiler_revision']==REV and lock['go_version']=='go1.27.2','current upstream pins')
-    need(summary['schema']=='gooo/go-ports-differential/v1' and summary['compiler_revision']==REV and summary['go_version']=='go1.27.2','native summary producer')
+    need(lock['compiler_revision']==REV and lock['go_version']=='go1.27.3','current upstream pins')
+    need(summary['schema']=='gooo/go-ports-differential/v1' and summary['compiler_revision']==REV and summary['go_version']=='go1.27.3','native summary producer')
     need(equal(summary['cases'],contract_expected.total_cases) and equal(summary['passed'],contract_expected.total_cases) and len(summary['runs'])==contract_expected.suite_count,'fresh complete reviewed-suite original summary')
     need(summary['verification_catalog_sha256']==digest(catalog_raw) and header['catalog']==reference(catalog_raw),'current catalog bytes')
     need(equal(summary['source_sha256'],header['catalog_source_sha256']),'summary/header source map')
@@ -383,7 +383,7 @@ def read_verification(root,verification_out,timing):
     need(len(catalog['packages'])==56 and len(summary['source_sha256'])==67,'exact current56 packages/67 Gooo sources')
     catalog_sources={name:sha(read(root/name)) for pkg in catalog['packages'] for name in pkg['sources']}
     need(equal(summary['source_sha256'],catalog_sources),'current catalog Gooo source bytes')
-    need(equal(header['upstream_pins'].get('compiler_revision'),REV) and equal(header['upstream_pins'].get('go_version'),'go1.27.2'),'header upstream compiler pins')
+    need(equal(header['upstream_pins'].get('compiler_revision'),REV) and equal(header['upstream_pins'].get('go_version'),'go1.27.3'),'header upstream compiler pins')
     compiler_raw=read(root/'.gooo');need(equal(reference(compiler_raw),header['identity']['binaries']['compiler']),'current actual compiler binary')
     need(set(header['identity']['binaries'])=={'compiler','go','verifier'},'three observed native tool identities')
     for ref in header['identity']['binaries'].values():need(type(ref['bytes']) is int and ref['bytes']>0 and re.fullmatch('[0-9a-f]{64}',ref['sha256']) is not None,'tool identity shape')
@@ -406,7 +406,7 @@ def read_verification(root,verification_out,timing):
         need(len(bs)==s['batches'],'suite actual batch count')
         for j,b in enumerate(bs):
             need(equal(b['batch_index'],j) and equal(b['start'],at) and type(b['end']) is int and b['end']>at and b['cases']==b['end']-at and b['status']=='VERIFIED' and b['verified'] is True and b['returned_error'] is False and b['context_error'] is False,'successful contiguous actual batches')
-            need(b['package']==p['package'] and b['activity']==p['activity'] and b['compiler_revision']==REV and b['go_version']=='go1.27.2' and b['source_set_sha256']==end['source_set_sha256'],'batch source/producer binding');at=b['end']
+            need(b['package']==p['package'] and b['activity']==p['activity'] and b['compiler_revision']==REV and b['go_version']=='go1.27.3' and b['source_set_sha256']==end['source_set_sha256'],'batch source/producer binding');at=b['end']
         need(at==p['cases'],'suite actual complete coverage')
     current_population(summary,planned,ends,contract_expected)
     validate_suite_sources(root,catalog,ends,read,contract_expected)
@@ -417,7 +417,7 @@ def read_verification(root,verification_out,timing):
     for batch in addition_batches:
         workspace=evidence_root/('%03d'%batch['batch_index'])/'gooo.workspace.json'
         anchors.append({**{key:batch[key] for key in ('batch_index','start','end','manifest_digest','cases_digest','original_receipt_sha256')},'workspace':workspace,'producer_manifest_path':str(workspace)})
-    return read_addition_evidence(root,read,pins,addition['source_set'],addition['source_set_sha256'],anchors,'go version go1.27.2 '+summary['goos']+'/'+summary['goarch'],header['identity']['binaries']['go'],contract_expected.suite_count)
+    return read_addition_evidence(root,read,pins,addition['source_set'],addition['source_set_sha256'],anchors,'go version go1.27.3 '+summary['goos']+'/'+summary['goarch'],header['identity']['binaries']['go'],contract_expected.suite_count)
 
 def read_addition_evidence(root,read,pins,source_set,source_set_sha256,batches,go_version,go_binary,suite_count):
     """Read the same seven local blobs and original producer-path bindings.
@@ -428,7 +428,7 @@ def read_addition_evidence(root,read,pins,source_set,source_set_sha256,batches,g
     need(type(batches) is list and len(batches)==7,'seven bounded addition batches')
     need(type(suite_count) is int and suite_count>0,'positive complete suite population')
     need(type(go_binary) is dict and set(go_binary)=={'bytes','sha256'} and type(go_binary['bytes']) is int and go_binary['bytes']>0 and type(go_binary['sha256']) is str and re.fullmatch('[0-9a-f]{64}',go_binary['sha256']) is not None,'addition Go identity shape')
-    need(type(go_version) is str and re.fullmatch(r'go version go1\.27\.2 [a-z0-9_]+/[a-z0-9_]+',go_version) is not None,'addition pinned Go version/platform')
+    need(type(go_version) is str and re.fullmatch(r'go version go1\.27\.3 [a-z0-9_]+/[a-z0-9_]+',go_version) is not None,'addition pinned Go version/platform')
     manifest_doc={'schema':'gooo/package-workspace-manifest/v1','entry':{'package_path':ROOT,'activity':'AssessAddition'},'packages':[{'path':pkg,'sources':[name]} for pkg,name in PACKAGES]}
     public_manifest=load(read(root/'diagnostic-header-addition.workspace.json'));need(equal(public_manifest,manifest_doc),'public exact five-package manifest')
     source_texts=[(pkg,name,read(root/name).decode('utf-8')) for pkg,name in PACKAGES];definitions,records=contracts(source_texts)

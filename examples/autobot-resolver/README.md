@@ -13,7 +13,7 @@ is not an execution fallback. Source, license and modification details are in
 
 ## Supply facts and inspect one result
 
-Prepare Git, a POSIX shell, Python 3, Go **1.27.2**, and the repository's pinned
+Prepare Git, a POSIX shell, Python 3, Go **1.27.3**, and the repository's pinned
 Gooo compiler **0.6.32-dev**, revision
 `83928fa4538245abe33b08549da47f8cbdc50ed2`, using the
 [existing setup instructions](../../README.md#run-and-edit-locally).

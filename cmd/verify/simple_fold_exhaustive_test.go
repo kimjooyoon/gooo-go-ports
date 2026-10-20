@@ -170,7 +170,7 @@ func simpleFoldSyntheticSource(extraCase, fallback string) string {
 }
 
 func TestSimpleFoldNativeExhaustiveRunsUnchangedSource(t *testing.T) {
-	if runtime.Version() != "go1.27.2" || unicode.Version != "17.0.0" {
+	if runtime.Version() != "go1.27.3" || unicode.Version != "17.0.0" {
 		t.Fatal("test requires the pinned toolchain")
 	}
 	text := simpleFoldSyntheticSource("", "x")

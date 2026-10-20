@@ -23,8 +23,8 @@ const (
 	// The friendly arguments object has its own1MiB decoder limit. Reserve
 	// another64KiB for JSON-RPC framing/metadata only in the explicit profile.
 	manyFrameMax      = many.MaxBatchBytes + defaultFrameMax
-	manyCompilerPin   = "de99b770b8b5adea608233c3c0664902336e3310"
-	manyGenerationPin = "sha256:3c49d16a549bc961c1712c122383e1c4d2dd232361a526d146f1a5347108918c"
+	manyCompilerPin   = "205896a413e5dea92366309c35ae85e542d055f6"
+	manyGenerationPin = "sha256:86d714e4793f04d7d45d53e824cd7066ddee5f7d1e987697f26f4216a6b4e164"
 )
 
 func closedObject(properties map[string]any, required []string) map[string]any {

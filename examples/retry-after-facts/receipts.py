@@ -15,7 +15,7 @@ import json
 import re
 
 __all__ = ['ReceiptError', 'prepare', 'batches', 'validate', 'negative_controls']
-REV = '83928fa4538245abe33b08549da47f8cbdc50ed2'
+REV = '205896a413e5dea92366309c35ae85e542d055f6'
 PACKAGE = 'app/retry-after-facts'
 ENTRY = 'gooo://retry-after-facts/assess/v1'
 RESULT = 'gooo://retry-after-facts/report/v1'
@@ -341,8 +341,8 @@ def _input(value):
 def _prepare(root, oracle_raw, go_version, go_sha, read):
     root = Path(root)
     need(root.is_absolute() and callable(read), 'source', 'caller selects one absolute root and bounded frozen read')
-    need(type(go_version) is str and re.fullmatch(r'go version go1\.27\.2 (?:linux/amd64|darwin/arm64)', go_version) is not None,
-         'go_identity', 'pinned Go1.27.2 on Linux/amd64 or Darwin/arm64')
+    need(type(go_version) is str and re.fullmatch(r'go version go1\.27\.3 (?:linux/amd64|darwin/arm64)', go_version) is not None,
+         'go_identity', 'pinned Go1.27.3 on Linux/amd64 or Darwin/arm64')
     need(type(go_sha) is str and re.fullmatch(r'sha256:[0-9a-f]{64}', go_sha) is not None,
          'go_identity', 'caller-provided actual Go binary digest')
     refs = {}
@@ -490,7 +490,7 @@ def _verify(r, ctx, batch, parent_raw=None, parent_program=None):
         need(r['replayed_from_sha256'] == digest(parent_raw), 'raw_parent', 'saved replay exact raw parent including whitespace')
         need(equal(r['result']['program'], parent_program), 'raw_parent', 'saved program unchanged')
     p, c, rt = (r['result'][k] for k in ['program', 'composition', 'runtime'])
-    need(rt['producer_source_sha'] == REV and rt['go_version'] == ctx['go_version'] and rt['go_tool_selection'] == 'explicit' and rt['go_tool_sha256'] == ctx['go_sha'] and equal(rt['producer_module'], {'path': 'github.com/kimjooyoon/meta-ontology-go', 'version': 'v0.0.0-20261011201109-83928fa45382'}), 'go_identity', 'actual pinned native producer/tool digest')
+    need(rt['producer_source_sha'] == REV and rt['go_version'] == ctx['go_version'] and rt['go_tool_selection'] == 'explicit' and rt['go_tool_sha256'] == ctx['go_sha'] and equal(rt['producer_module'], {'path': 'github.com/kimjooyoon/meta-ontology-go', 'version': 'v0.6.37-dev.0.20261020180505-205896a413e5'}), 'go_identity', 'actual pinned native producer/tool digest')
     image = p['workspace_image']
     need(image['init_order'] == ['go/strconv', PACKAGE] and [pkg['path'] for pkg in image['packages']] == ['go/strconv', PACKAGE], 'source', 'exact two-package source closure')
     observed_sources = [(pkg['path'], source['filename'], source['source_digest']) for pkg in image['packages'] for source in pkg['sources']]

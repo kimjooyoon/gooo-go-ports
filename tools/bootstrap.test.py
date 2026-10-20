@@ -83,7 +83,7 @@ os.execv(os.environ['REAL_GIT'],[os.environ['REAL_GIT'],*args])
 from pathlib import Path
 args=sys.argv[1:]; state=Path(os.environ['STATE_DIR'])
 if args==['env','GOVERSION']:
- print(os.environ.get('TEST_GOVERSION','go1.27.2')); sys.exit(0)
+ print(os.environ.get('TEST_GOVERSION','go1.27.3')); sys.exit(0)
 if args and args[0]=='build':
  with open(state/'build.log','a') as log: log.write('build\\n')
  if os.environ.get('WAIT_BUILD'):
@@ -92,7 +92,7 @@ if args and args[0]=='build':
  output=Path(args[args.index('-o')+1])
  if os.environ.get('FAIL_BUILD'):
   output.write_text('partial failed build'); sys.exit(72)
- identity={'compiler_source_sha':os.environ['TEST_REVISION'],'version':os.environ['TEST_COMPILER_VERSION'],'go_version':'go1.27.2','native_go_required':'go1.27.2','source_status':'CLEAN_VCS','vcs_modified':'false'}
+ identity={'compiler_source_sha':os.environ['TEST_REVISION'],'version':os.environ['TEST_COMPILER_VERSION'],'go_version':'go1.27.3','native_go_required':'go1.27.3','source_status':'CLEAN_VCS','vcs_modified':'false'}
  if os.environ.get('BAD_IDENTITY'): identity[os.environ['BAD_IDENTITY']]='wrong'
  output.write_text("#!/bin/sh\\ncat <<'IDENTITY'\\n"+json.dumps(identity)+"\\nIDENTITY\\n")
  output.chmod(0o755); sys.exit(0)
@@ -112,7 +112,7 @@ os.execv(os.environ['REAL_GO'],[os.environ['REAL_GO'],*args])
         self.assertEqual(git("rev-parse", "HEAD", cwd=self.app / ".compiler"), self.revision)
         identity = json.loads(subprocess.check_output([str(self.app / ".gooo")], text=True))
         self.assertEqual(identity["compiler_source_sha"], self.revision)
-        self.assertEqual(identity["go_version"], "go1.27.2")
+        self.assertEqual(identity["go_version"], "go1.27.3")
         self.assertFalse((self.app / ".bootstrap.lock").exists())
 
     def incomplete(self, origin=None):
@@ -255,7 +255,7 @@ os.execv(os.environ['REAL_GO'],[os.environ['REAL_GO'],*args])
     def test_wrong_go_fails_before_creating_install_state(self):
         result = self.run_bootstrap(TEST_GOVERSION="go1.28.0")
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("GOTOOLCHAIN=go1.27.2", result.stderr)
+        self.assertIn("GOTOOLCHAIN=go1.27.3", result.stderr)
         self.assertFalse((self.app / ".compiler").exists())
         self.assertFalse((self.app / ".bootstrap.lock").exists())
         self.assertFalse((self.state / "git.log").exists())

@@ -92,7 +92,7 @@ func fixture(t *testing.T, rows []row) ([]byte, identity) {
 			},
 			"runtime": map[string]any{
 				"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "producer_source_sha": compilerRevision,
-				"producer_module": map[string]any{"path": "github.com/kimjooyoon/meta-ontology-go", "version": "v0.0.0-20261011201109-83928fa45382"},
+				"producer_module": map[string]any{"path": "github.com/kimjooyoon/meta-ontology-go", "version": "v0.6.37-dev.0.20261020180505-205896a413e5"},
 				"go_version":      "go version " + goVersion + " " + runtimePlatform(), "go_tool_sha256": id.GoTool, "go_tool_selection": "explicit",
 				"generated_sha256": digest([]byte(generated)), "driver_sha256": digest([]byte(driver)), "original_source_sha256": digest([]byte(source)), "selected_source_sha256": digest([]byte(source)),
 				"executable_sha256": digest([]byte("executable")), "runtime_suite_sha256": digest([]byte("suite")), "typed_plan_sha256": plan,

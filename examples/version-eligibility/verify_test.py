@@ -178,7 +178,7 @@ class Boundaries(unittest.TestCase):
                         verify.synchronized(changed, None, selected)
 
     def test_buildinfo_replacement_and_wrong_checksum_refused(self):
-        good = {"GoVersion": "go1.27.2", "Path": verify.ORACLE,
+        good = {"GoVersion": "go1.27.3", "Path": verify.ORACLE,
                 "Main": {"Path": verify.ORACLE},
                 "Deps": [{"Path": verify.MODULE, "Version": verify.VERSION, "Sum": verify.SUM}]}
         verify.build_info(good)

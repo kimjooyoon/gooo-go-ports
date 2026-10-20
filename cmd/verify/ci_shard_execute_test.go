@@ -22,7 +22,7 @@ import (
 func ciShardExecutorFixture(t *testing.T) (ciShardPlan, ciShardNativeInventory, ciShardNativeRuntime) {
 	t.Helper()
 	plan := ciShardTestPlan(t, 1)
-	inventory := ciShardNativeInventory{Lock: upstream{CompilerRevision: plan.Run.CompilerRevision, CompilerVersion: "0.6.32-dev", GoVersion: plan.Run.GoVersion}}
+	inventory := ciShardNativeInventory{Lock: upstream{CompilerRevision: plan.Run.CompilerRevision, CompilerVersion: "0.6.37-dev", GoVersion: plan.Run.GoVersion}}
 	// Profiles require the currently admitted pin, even in synthetic fixtures.
 	plan.Run.CompilerRevision = uuidCompactCompilerRevision
 	var err error

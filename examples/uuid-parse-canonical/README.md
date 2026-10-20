@@ -13,10 +13,10 @@ produce a different kind of record.
 
 Use Git, a POSIX shell and a Go installation with toolchain selection support.
 From this repository's root, build the pinned Gooo 0.6.32-dev compiler with
-Go 1.27.2, then execute and replay the example:
+Go 1.27.3, then execute and replay the example:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 ./tools/bootstrap.sh
 mkdir -p out/uuid-parse-canonical
@@ -28,7 +28,7 @@ mkdir -p out/uuid-parse-canonical
 ```
 
 Leave `--go` unset so the native commands can select the installed matching
-Go 1.27.2 executable, including the toolchain cache populated during setup.
+Go 1.27.3 executable, including the toolchain cache populated during setup.
 Bootstrap preserves an older compiler checkout; follow the repository's
 [upgrade guidance](../../README.md#run-and-edit-locally) for an existing checkout.
 

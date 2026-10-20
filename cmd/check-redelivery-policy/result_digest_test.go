@@ -21,7 +21,7 @@ func codecSibling(t *testing.T, name string) string {
 }
 func codecProfile(t *testing.T) resultProfile {
 	t.Helper()
-	if err := loadResultProfile(codecSibling(t, "check-path-facts/result-profile-83928fa.json")); err != nil {
+	if err := loadResultProfile(codecSibling(t, "check-path-facts/result-profile-go1273.json")); err != nil {
 		t.Fatal(err)
 	}
 	var p resultProfile
@@ -77,14 +77,14 @@ func TestResultCodecProfileBinding(t *testing.T) {
 	if _, err := pinnedResultBytes([]byte(`{}`)); err == nil || !strings.Contains(err.Error(), "not loaded") {
 		t.Fatal("uninitialized profile accepted", err)
 	}
-	path := codecSibling(t, "check-path-facts/result-profile-83928fa.json")
+	path := codecSibling(t, "check-path-facts/result-profile-go1273.json")
 	good, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
 	mutated := append([]byte{}, good...)
 	mutated[len(mutated)-2] ^= 1
-	wrongCompiler := bytes.Replace(good, []byte("83928fa"), []byte("93928fa"), 1)
+	wrongCompiler := bytes.Replace(good, []byte("205896a"), []byte("305896a"), 1)
 	for i, bad := range [][]byte{nil, good[:len(good)-1], append(append([]byte{}, good...), '\n'), mutated, wrongCompiler} {
 		if err := loadResultProfile(path); err != nil {
 			t.Fatal(err)
@@ -114,8 +114,14 @@ func TestResultCodecProfileBinding(t *testing.T) {
 func TestResultCodecGoldenAndRefusals(t *testing.T) {
 	codecProfile(t)
 	raw := codecGolden(t)
+	legacyProfile, err := os.ReadFile(codecSibling(t, "check-path-facts/result-profile-83928fa.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	legacyBytes := func(raw []byte) ([]byte, error) { return legacy839ResultBytes(raw, legacyProfile) }
+	legacyDigest := func(raw []byte) (string, error) { return legacy839ResultDigest(raw, legacyProfile) }
 	const want = "sha256:9283884c6026ae620152b2ac6353162acd5c6491e12737855ea6e1859bfa1ab1"
-	b, err := pinnedResultBytes(raw)
+	b, err := legacyBytes(raw)
 	if err != nil || len(b) != 95075 || digest(b) != want {
 		t.Fatal("typed original result differs", len(b), err)
 	}
@@ -130,13 +136,13 @@ func TestResultCodecGoldenAndRefusals(t *testing.T) {
 		old := codecAt(t, raw, "result", "composition", "steps", "0", "generation", "report", "completeness_receipt", field)
 		x := bytes.Replace(raw, old, []byte(`{"b":9007199254740993,"a":1}`), 1)
 		y := bytes.Replace(raw, old, []byte(`{"a":1,"b":9007199254740993}`), 1)
-		dx, ex := pinnedResultDigest(x)
-		dy, ey := pinnedResultDigest(y)
+		dx, ex := legacyDigest(x)
+		dy, ey := legacyDigest(y)
 		if ex != nil || ey != nil || dx != dy {
 			t.Fatal("generic key sorting changed digest", field, ex, ey)
 		}
 		z := bytes.Replace(raw, old, []byte(`{"b":9007199254740994,"a":1}`), 1)
-		dz, ez := pinnedResultDigest(z)
+		dz, ez := legacyDigest(z)
 		if ez != nil || dz == dx {
 			t.Fatal("generic number change lost", field, ez)
 		}
@@ -165,13 +171,13 @@ func TestResultCodecGoldenAndRefusals(t *testing.T) {
 		if bytes.Equal(value, raw) {
 			t.Fatal("ineffective mutation", name)
 		}
-		if _, err := pinnedResultDigest(value); err == nil {
+		if _, err := legacyDigest(value); err == nil {
 			t.Fatal("unsupported form accepted", name)
 		}
 	}
 	for _, keys := range [][]string{{"result", "composition", "steps", "0", "generation", "report", "completeness_receipt", "scope"}, {"result", "runtime", "traces", "0", "deliveries", "0", "actual"}} {
 		deep := []byte(`{"deep":` + strings.Repeat("[", 66) + "0" + strings.Repeat("]", 66) + `}`)
-		if _, err := pinnedResultDigest(bytes.Replace(raw, codecAt(t, raw, keys...), deep, 1)); err == nil {
+		if _, err := legacyDigest(bytes.Replace(raw, codecAt(t, raw, keys...), deep, 1)); err == nil {
 			t.Fatal("deep opaque input accepted", keys)
 		}
 	}

@@ -30,12 +30,17 @@ ORIGINAL = "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
 ORIGINAL_COMMIT = "8cddcc4e65afb42431f8f42a86f29859ae2f4d69"
 ORIGINAL_VERSION = "v0.0.0-20261014100709-8cddcc4e65af"
 ORIGINAL_GENERATION = "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
-PARENT_GENERATION = "sha256:a78b95c6f563450e0aacb2356594b270f9a6c42910f3995cec2577076139956e"
-COMPILER = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+PARENT_GENERATION = "sha256:1904100e57ff22b00f4db1597c4f12ebb3c6893063d6deac69e2eb516452a2ca"
+COMPILER = "205896a413e5dea92366309c35ae85e542d055f6"
+HISTORICAL_COMPILER = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 REPOSITORY = "https://github.com/kimjooyoon/gooo-go-ports"
 # Exact owned fixture bytes and their independently reviewed source identities.
 # These rows describe inputs; every source still compiles and executes its caller.
 KNOWN_CONSUMER_FIXTURES = {
+    '426105c94717957ea6e09f8459e5c251a9685adc965035b3082c8c2542e7036d': {'compiler_source_sha': '205896a413e5dea92366309c35ae85e542d055f6',
+                                                                          'original_generation_sha256': 'sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46',
+                                                                          'revision_generation_sha256': 'sha256:1904100e57ff22b00f4db1597c4f12ebb3c6893063d6deac69e2eb516452a2ca'},
+
     "8c9f27b3993d0810431cf33817ad6cb1ed726738eb90a68dfc52c4876c99713f": {
         "compiler_source_sha": "83928fa4538245abe33b08549da47f8cbdc50ed2",
         "original_generation_sha256": "sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46",
@@ -178,13 +183,16 @@ def sealed_source(root, count, expected_generation):
                 and set(document) == {"schema", "assets"},
                 "unexpected frozen original generation schema")
     compiler = decode(result["compiler.json"])
+    # The 28-asset original is an immutable historical generation.
+    expected_go = "go1.27.3" if count == 38 else "go1.27.2"
+    expected_compiler = COMPILER if count == 38 else HISTORICAL_COMPILER
     require(compiler.get("schema") == "gooo/build-identity/v1"
-            and compiler.get("compiler_source_sha") == COMPILER
-            and compiler.get("vcs_revision") == COMPILER
+            and compiler.get("compiler_source_sha") == expected_compiler
+            and compiler.get("vcs_revision") == expected_compiler
             and compiler.get("source_status") == "CLEAN_VCS"
             and compiler.get("vcs_modified") == "false"
-            and compiler.get("go_version") == "go1.27.2"
-            and compiler.get("native_go_required") == "go1.27.2",
+            and compiler.get("go_version") == expected_go
+            and compiler.get("native_go_required") == expected_go,
             "unexpected sealed compiler build identity")
     return result
 
@@ -284,10 +292,10 @@ class Recorder:
         return stdout
 
 
-def module_identity(value, path, revision, version=None):
+def module_identity(value, path, revision, version=None, *, expected_go="1.27.3"):
     require(isinstance(value, dict) and value.get("Path") == path,
             "module resolver returned a different module")
-    require(value.get("GoVersion") == "1.27.2", "module requires an unexpected Go version")
+    require(value.get("GoVersion") == expected_go, "module requires an unexpected Go version")
     require(isinstance(value.get("Version"), str) and value["Version"],
             "resolver omitted actual version")
     if version is not None:
@@ -302,7 +310,7 @@ def module_identity(value, path, revision, version=None):
 
 
 def check_install_build_info(value, parent_version, parent_sum, original_sum):
-    require(isinstance(value, dict) and value.get("GoVersion") == "go1.27.2"
+    require(isinstance(value, dict) and value.get("GoVersion") == "go1.27.3"
             and value.get("Path") == PARENT + "/cmd/compare",
             "installed command toolchain/package identity differs")
     main = value.get("Main")
@@ -598,7 +606,7 @@ def check_observations(raw, parent_assets, original_assets):
             require(set(proof) == {"facts", "decision", "bindings"}, "proof shape differs")
             require(same_typed_json(proof["facts"], facts) and same_typed_json(proof["decision"], decision),
                     "consumer raw facts or complete decision differ")
-            expected_bindings = {"compiler_source_sha": COMPILER,
+            expected_bindings = {"compiler_source_sha": HISTORICAL_COMPILER if side == "before" else COMPILER,
                                  "generation_sha256": generation, "assets": assets}
             require(proof["bindings"] == expected_bindings, "complete proof source bindings differ")
         require(same_typed_json(report["differences"], flags) and same_typed_json(report["summary"], summary),
@@ -670,15 +678,15 @@ def verify(args, out, report):
                "GOTELEMETRY": "off", "CGO_ENABLED": "0"}
         report["go_environment"] = env
         version = recorder.success("installed-go", [go, "version"], work / "query", env)
-        require(re.fullmatch(rb"go version go1\.27\.2 [a-z0-9]+/[a-z0-9]+\n", version) is not None,
-                "installed Go is not exactly 1.27.2")
+        require(re.fullmatch(rb"go version go1\.27\.3 [a-z0-9]+/[a-z0-9]+\n", version) is not None,
+                "installed Go is not exactly 1.27.3")
         report["go_toolchain"] = {"executable": file_ref(go), "version": version.decode().strip()}
         parent_query = decode(recorder.public_module_query("parent-query", go, PARENT,
                                                           args.revision, work / "query", env))
         parent_version = module_identity(parent_query, PARENT, args.revision)
         original_query = decode(recorder.public_module_query("original-query", go, ORIGINAL,
                                                             ORIGINAL_COMMIT, work / "query", env))
-        module_identity(original_query, ORIGINAL, ORIGINAL_COMMIT, ORIGINAL_VERSION)
+        module_identity(original_query, ORIGINAL, ORIGINAL_COMMIT, ORIGINAL_VERSION, expected_go="1.27.2")
         report["resolved"] = {"parent": parent_query, "original": original_query}
         public_sources = {}
         for label, module, resolved, expected, count in (
@@ -696,7 +704,7 @@ def verify(args, out, report):
             recorder, go, parent_version, public_sources, work, env)
         consumer = work / "consumer"
         (consumer / "main.go").write_bytes(fixture_raw)
-        (consumer / "go.mod").write_text("module example.invalid/gooo-api-policy-public-consumer\n\ngo 1.27.2\n\n"
+        (consumer / "go.mod").write_text("module example.invalid/gooo-api-policy-public-consumer\n\ngo 1.27.3\n\n"
                                         + "require " + PARENT + " " + parent_version + "\n")
         recorder.success("consumer-tidy", [go, "mod", "tidy"], consumer, env)
         modules = json_stream(recorder.success("consumer-selected-modules", [go, "list", "-m", "-json", "all"], consumer, env))
@@ -856,7 +864,7 @@ def console_summary(report, verification):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--go", required=True, help="absolute installed Go 1.27.2 executable")
+    parser.add_argument("--go", required=True, help="absolute installed Go 1.27.3 executable")
     parser.add_argument("--revision", required=True, help="exact public parent full commit SHA")
     parser.add_argument("--out", required=True, help="new directory for stable evidence")
     parser.add_argument("--module-cache", help="existing absolute cache to reuse and retain")

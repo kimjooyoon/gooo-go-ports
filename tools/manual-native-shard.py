@@ -22,8 +22,8 @@ import zlib
 
 REPOSITORY = "kimjooyoon/gooo-go-ports"
 WORKFLOW = ".github/workflows/manual-native-shards.yml"
-COMPILER = "83928fa4538245abe33b08549da47f8cbdc50ed2"
-GO_VERSION = "go1.27.2"
+COMPILER = "205896a413e5dea92366309c35ae85e542d055f6"
+GO_VERSION = "go1.27.3"
 PLAN_JOB = "Plan full native shards"
 JOIN_JOB = "Join full native shards"
 MAX_ZIP = 512 << 20
@@ -481,7 +481,7 @@ def shared_tools(root, control, commands, go):
     for name in ("context.json", "plan.json", "compiler", "verify", "compiler-build.json"):
         need(file_ref(control / name) == metadata["files"][name], "shared tool/plan bytes differ")
     need(file_ref(go) == metadata["go_binary"], "actual Go binary differs from planner")
-    need(commands.run("go-version", [str(go), "version"], 15).decode().strip() == "go version go1.27.2 linux/amd64", "pinned Linux Go required")
+    need(commands.run("go-version", [str(go), "version"], 15).decode().strip() == "go version go1.27.3 linux/amd64", "pinned Linux Go required")
     validate_plan(read_json(control / "plan.json"), metadata["context"])
     compiler = root / ".gooo"
     need(not compiler.exists() and not compiler.is_symlink(), "fresh compiler destination required")
@@ -519,11 +519,11 @@ def handoff_matches(document, context, plan, control, index, job, artifacts):
 
 def plan_phase(root, work, context, api, commands, go):
     run, jobs = api.run_jobs([PLAN_JOB], set())
-    need(commands.run("go-version", [str(go), "version"], 15).decode().strip() == "go version go1.27.2 linux/amd64", "pinned Linux Go required")
+    need(commands.run("go-version", [str(go), "version"], 15).decode().strip() == "go version go1.27.3 linux/amd64", "pinned Linux Go required")
     commands.run("bootstrap", ["sh", "tools/bootstrap.sh"], 300)
     identity = decode(commands.run("compiler-identity", [str(root / ".gooo"), "version", "--build", "--json"], 20))
     for key, value in {"schema": "gooo/build-identity/v1", "compiler_source_sha": COMPILER,
-                       "vcs_revision": COMPILER, "version": "0.6.32-dev", "source_status": "CLEAN_VCS",
+                       "vcs_revision": COMPILER, "version": "0.6.37-dev", "source_status": "CLEAN_VCS",
                        "vcs_modified": "false", "go_version": GO_VERSION, "native_go_required": GO_VERSION}.items():
         need(identity[key] == value, "pinned compiler build differs")
     shutil.copyfile(root / ".gooo", work / "compiler")

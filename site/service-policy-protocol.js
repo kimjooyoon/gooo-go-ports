@@ -16,8 +16,8 @@
       'witness_type', 'witness_name', 'before_match', 'after_match']) });
   const SUBSET_RULES = Object.freeze(['CANDIDATE_EMPTY', 'IDENTICAL_PATTERNS', 'OLD_GLOBAL', 'OLD_TYPED_ALL',
     'EXACT_CANDIDATE_ACCEPTED_BY_OLD', 'PREFIX_HIERARCHY', 'SUFFIX_HIERARCHY']);
-  const COMPILER_REVISION = '83928fa4538245abe33b08549da47f8cbdc50ed2';
-  const GENERATION_SHA256 = 'sha256:40ae704abbf2cae1974d2eec51cec2564c8d72dd44536b31c9c4f55f71fc0f85';
+  const COMPILER_REVISION = '205896a413e5dea92366309c35ae85e542d055f6';
+  const GENERATION_SHA256 = 'sha256:3c86dd9273168f1fe4e0712aa7cfdfc075a211d05b64ff2fbd0b8c9135315a3b';
   const own = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
   const sha = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
   const nativeSHA = value => typeof value === 'string' && /^sha256:[a-f0-9]{64}$/.test(value);
@@ -282,7 +282,7 @@
     object(metadata, ['schema', 'compiler_revision', 'go_version', 'source_revision', 'source_dirty', 'generation_sha256', 'bindings',
       'wasm_sha256', 'wasm_bytes', 'wasm_exec_sha256', 'wasm_exec_bytes', 'files'], 'build manifest');
     if (metadata.schema !== 'gooo/browser-service-policy/v1' || metadata.compiler_revision !== COMPILER_REVISION ||
-        metadata.go_version !== 'go1.27.2' || typeof metadata.source_revision !== 'string' || !/^[a-f0-9]{40}$/.test(metadata.source_revision) || typeof metadata.source_dirty !== 'boolean' ||
+        metadata.go_version !== 'go1.27.3' || typeof metadata.source_revision !== 'string' || !/^[a-f0-9]{40}$/.test(metadata.source_revision) || typeof metadata.source_dirty !== 'boolean' ||
         metadata.generation_sha256 !== GENERATION_SHA256 || !sha(metadata.wasm_sha256) || !sha(metadata.wasm_exec_sha256)) throw new Error('Unsupported policy build identity.');
     validateBindings(metadata.bindings);
     object(metadata.files, FILE_NAMES, 'published file roster');

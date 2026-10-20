@@ -737,7 +737,7 @@
       1024
     ],
     "raw_go_case_document_max_bytes": 30000,
-    "raw_serializer": "Go1.27.2 encoding/json.MarshalIndent plus one LF; includes independent expected records",
+    "raw_serializer": "Go1.27.3 encoding/json.MarshalIndent plus one LF; includes independent expected records",
     "translated_compact_upper_max_bytes": 32768,
     "absolute_max_rows_per_batch": 128,
     "initial_max_rows_per_batch": 8,
@@ -797,10 +797,10 @@
     "Handle conflict, durability/recovery and operation idempotency at the application boundary; ELIGIBLE is not APPLIED or a guarantee that a write occurred."
   ],
   "pins": {
-    "go_version": "go1.27.2",
+    "go_version": "go1.27.3",
     "compiler_repository": "https://github.com/kimjooyoon/meta-ontology-go",
-    "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
-    "compiler_version": "0.6.32-dev",
+    "compiler_revision": "205896a413e5dea92366309c35ae85e542d055f6",
+    "compiler_version": "0.6.37-dev",
     "compiler_source_status": "CLEAN_VCS",
     "upstream_lock": "upstream.json",
     "go_repository": "https://github.com/golang/go",

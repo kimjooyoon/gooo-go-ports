@@ -137,7 +137,7 @@ node tools/browser-smoke.cjs out/browser-text/site
 node tools/text-inspector-smoke.cjs out/browser-text/site
 ```
 
-The output directory must be new. Use the repository's pinned Go 1.27.2.
+The output directory must be new. Use the repository's pinned Go 1.27.3.
 Browser tests also cover raw paste handling, rejected oversized inputs, malformed
 runtime responses, input replacement during execution, and failed runs clearing
 old results. Report checks reconstruct every original input, compare every

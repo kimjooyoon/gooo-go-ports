@@ -159,7 +159,7 @@ func TestLastIndexUpstreamAndDedicatedManifestMetadata(t *testing.T) {
 	if err := readJSON("../../upstream.json", &lock); err != nil {
 		t.Fatal(err)
 	}
-	if lock.GoVersion != "go1.27.2" || lock.GoRevision != "022c8636110ebac86a9b88724cda168ed713c21f" || lock.CompilerRevision != uuidCompactCompilerRevision || lock.SourceSHA["src/strings/strings.go"] != "a81bdf73a308277c322e35d0c602e3813f57b6f769c091f8f8962c8884a45ea3" {
+	if lock.GoVersion != "go1.27.3" || lock.GoRevision != "022c8636110ebac86a9b88724cda168ed713c21f" || lock.CompilerRevision != uuidCompactCompilerRevision || lock.SourceSHA["src/strings/strings.go"] != "a81bdf73a308277c322e35d0c602e3813f57b6f769c091f8f8962c8884a45ea3" {
 		t.Fatal("upstream/compiler identities changed")
 	}
 	found := 0

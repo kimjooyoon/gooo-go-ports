@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	pinnedGo     = "go1.27.2"
+	pinnedGo     = "go1.27.3"
 	corpusBytes  = 43919
 	corpusSHA256 = "7fb8c9d44e8fa77807e9b5580ab8aa975a8775486d5dfb6daaef9be2472b4b08"
 	corpusSchema = "gooo/ipv4-classification-corpus/v1"

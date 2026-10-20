@@ -22,7 +22,7 @@ import time
 
 
 ROOT = Path(__file__).resolve().parent.parent
-PIN = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+PIN = "205896a413e5dea92366309c35ae85e542d055f6"
 SOURCE_NAMES = ("examples/learn-gooo/limits.gooo", "examples/learn-gooo/main.gooo")
 MAX_OUTPUT = 2 << 20
 MAX_CACHE = 512 << 20
@@ -49,13 +49,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", required=True, type=Path, help="new evidence directory; never overwritten")
     parser.add_argument("--compiler", type=Path, default=ROOT / ".gooo")
-    parser.add_argument("--go", type=Path, help="installed Go1.27.2 executable; defaults to go on PATH")
+    parser.add_argument("--go", type=Path, help="installed Go1.27.3 executable; defaults to go on PATH")
     parser.add_argument("--before", type=Path, help="reuse an already produced original four-input record")
     args = parser.parse_args()
     compiler = args.compiler.absolute()
     require(compiler.is_file(), "build the pinned compiler with tools/bootstrap.sh first")
     selected_go = args.go or shutil.which("go")
-    require(selected_go is not None, "select an installed Go1.27.2 executable")
+    require(selected_go is not None, "select an installed Go1.27.3 executable")
     go = Path(selected_go).resolve()
     require(go.is_file(), "Go executable is missing")
     before_path = args.before.absolute() if args.before else None
@@ -179,7 +179,7 @@ def main():
         main_source = (stage / SOURCE_NAMES[1]).read_bytes()
         require(main_source.count(b"if score >= 60") == 1, "expected one original threshold condition")
         version = run("go-version", [go, "version"], ROOT).read_text().strip()
-        require(version.startswith("go version go1.27.2 "), "select Go1.27.2 before running this tool")
+        require(version.startswith("go version go1.27.3 "), "select Go1.27.3 before running this tool")
         build = run("compiler-build", [compiler, "version", "--build", "--json"], ROOT)
         compiler_build = json.loads(build.read_bytes())
         require(compiler_build.get("compiler_source_sha") == PIN and compiler_build.get("vcs_modified") == "false", "expected the pinned clean compiler build")

@@ -150,9 +150,37 @@ func inspectLegacy445Suite(s suite, w suiteWorkspace, want legacy445Suite, sourc
 	return nil
 }
 
+// Only these three actual regenerated Unicode headers may be projected into
+// the historical selector. All remaining original bytes must match the fixed
+// main445 fixture; current Go 1.27.3 sources and receipts remain unchanged.
+func legacy445ProjectUnicodeSource(current []byte, original legacy445Source) ([]byte, error) {
+	var digest string
+	switch original.Name {
+	case "ports/unicode/classification.gooo":
+		digest = "sha256:cf7451143fe7c3349b5cf2a3cfcfe7144bf8633f25782025c7120a672c179c46"
+	case "ports/unicode/simple_fold.gooo":
+		digest = "sha256:3a5d3098a3abf68d69b2d3d028687f991107fc35512d54968dcaee60fa8c0433"
+	case "ports/unicode/case_mapping.gooo":
+		digest = "sha256:e22f7d025e90de36849aa2bae94f61dd93766c6056b9d3f4c07ae0af1e88ec2f"
+	default:
+		return nil, fmt.Errorf("source is not an approved historical Unicode projection")
+	}
+	oldHeader := []byte("// Go 1.27.2; Unicode 17.0.0; source revision 022c8636110ebac86a9b88724cda168ed713c21f.\n")
+	newHeader := []byte("// Go 1.27.3; Unicode 17.0.0; source revision 022c8636110ebac86a9b88724cda168ed713c21f.\n")
+	if original.SHA256 != digest || contentDigest(original.Bytes) != digest || bytes.Count(original.Bytes, oldHeader) != 1 || bytes.Contains(original.Bytes, newHeader) {
+		return nil, fmt.Errorf("immutable Unicode fixture bytes or original header differ")
+	}
+	expectedCurrent := bytes.Replace(original.Bytes, oldHeader, newHeader, 1)
+	if !bytes.Equal(current, expectedCurrent) || bytes.Count(current, newHeader) != 1 || bytes.Contains(current, oldHeader) {
+		return nil, fmt.Errorf("Unicode source changed beyond the exact reviewed Go patch header")
+	}
+	return bytes.Clone(original.Bytes), nil
+}
+
 // Recheck the historical selector against its original source bytes. The
-// current snapshot must contain the one exact reviewed quote revision; only
-// the owned historical projection replaces it with the immutable fixture bytes.
+// current snapshot must contain the exact reviewed quote revision and the three
+// approved Go patch headers; the owned historical projection restores only these
+// immutable fixture bytes.
 // This does not establish current-source native equivalence or rewrite history.
 func legacy445HistoricalSnapshot(t *testing.T, current frozenVerificationCatalog, fixture legacy445Fixture) frozenVerificationCatalog {
 	t.Helper()
@@ -186,6 +214,26 @@ func legacy445HistoricalSnapshot(t *testing.T, current frozenVerificationCatalog
 	}
 	if !found || !bytes.Equal(current.Sources[quote], currentQuote) || current.Hashes[quote] != reviewedCurrentQuote {
 		t.Fatal("missing historical quote or projection mutated the current snapshot")
+	}
+	unicodeSources := 0
+	for _, original := range fixture.Sources {
+		switch original.Name {
+		case "ports/unicode/classification.gooo", "ports/unicode/simple_fold.gooo", "ports/unicode/case_mapping.gooo":
+			currentRaw := current.Sources[original.Name]
+			if "sha256:"+current.Hashes[original.Name] != contentDigest(currentRaw) {
+				t.Fatal("current Unicode snapshot hash differs", original.Name)
+			}
+			projected, err := legacy445ProjectUnicodeSource(currentRaw, original)
+			if err != nil {
+				t.Fatal(original.Name, err)
+			}
+			historical.Sources[original.Name] = projected
+			historical.Hashes[original.Name] = original.SHA256[len("sha256:"):]
+			unicodeSources++
+		}
+	}
+	if unicodeSources != 3 {
+		t.Fatal("historical Unicode projection roster differs")
 	}
 	return historical
 }
@@ -343,5 +391,52 @@ func TestLegacy445HistoricalSnapshotRegressionEvidenceRejectsChanges(t *testing.
 	}
 	if err := inspectLegacy445Suite(s, w, fixture.Suites[0], sources); err != nil {
 		t.Fatal("rejection test mutated its baseline", err)
+	}
+}
+
+func TestLegacy445UnicodeProjectionRejectsUnreviewedBytes(t *testing.T) {
+	fixture := loadLegacy445Fixture(t)
+	current, err := freezeVerificationCatalog("../../verification-catalog.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	checked := 0
+	for _, original := range fixture.Sources {
+		switch original.Name {
+		case "ports/unicode/classification.gooo", "ports/unicode/simple_fold.gooo", "ports/unicode/case_mapping.gooo":
+		default:
+			continue
+		}
+		raw := current.Sources[original.Name]
+		before := bytes.Clone(raw)
+		projected, err := legacy445ProjectUnicodeSource(raw, original)
+		if err != nil || !bytes.Equal(projected, original.Bytes) {
+			t.Fatal("exact approved projection failed", original.Name, err)
+		}
+		for name, changed := range map[string][]byte{
+			"historical header": original.Bytes,
+			"other patch":       bytes.Replace(raw, []byte("Go 1.27.3;"), []byte("Go 1.27.4;"), 1),
+			"source revision":   bytes.Replace(raw, []byte("022c8636"), []byte("122c8636"), 1),
+			"extra bytes":       append(bytes.Clone(raw), '\n'),
+			"body byte":         bytes.Replace(raw, []byte("activity "), []byte("activitX "), 1),
+		} {
+			if bytes.Equal(changed, raw) {
+				t.Fatal("negative control did not mutate source", name)
+			}
+			if _, err := legacy445ProjectUnicodeSource(changed, original); err == nil {
+				t.Fatal("accepted unreviewed Unicode bytes", original.Name, name)
+			}
+		}
+		if !bytes.Equal(raw, before) {
+			t.Fatal("projection mutated current source", original.Name)
+		}
+		projected[0] ^= 1
+		if !bytes.Equal(raw, before) || contentDigest(original.Bytes) != original.SHA256 {
+			t.Fatal("projection aliases current or historical source", original.Name)
+		}
+		checked++
+	}
+	if checked != 3 {
+		t.Fatal("Unicode projection test roster differs")
 	}
 }

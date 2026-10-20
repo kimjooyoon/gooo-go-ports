@@ -11,7 +11,7 @@ Evaluation is automatic; no per-evaluation human approval step is added.
 
 ## Run the minimum-version rule
 
-Use the repository's [pinned compiler and Go 1.27.2 setup](../../docs/ai-agents.md).
+Use the repository's [pinned compiler and Go 1.27.3 setup](../../docs/ai-agents.md).
 From the repository root, run the supplied nine inputs and save a replay:
 
 ```sh

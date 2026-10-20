@@ -1,5 +1,9 @@
 # Use the current path ports in a separate Gooo project
 
+This is a frozen Go 1.27.2 walkthrough at the source revision below, not the
+current checkout's Go 1.27.3 setup target. Keep its commands and identities
+together; see the repository README for current-source setup.
+
 This walkthrough copies a working Gooo application into its own directory. Its
 `Report` activity imports `path.Ext` and `path.IsAbs` and returns six required
 fields: the original text, extension, absolute marker, both byte lengths and

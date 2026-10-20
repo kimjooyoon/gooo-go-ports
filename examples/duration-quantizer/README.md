@@ -11,10 +11,10 @@ measurement buckets and interval precision; it does not read a clock or schedule
 
 ## Run and replay
 
-From the repository root, with Go 1.27.2, Git and a POSIX shell:
+From the repository root, with Go 1.27.3, Git and a POSIX shell:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 ./tools/bootstrap.sh
 mkdir -p out/duration-demo

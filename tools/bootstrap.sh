@@ -1,9 +1,9 @@
 #!/bin/sh
 set -eu
 cd "$(dirname "$0")/.."
-revision=83928fa4538245abe33b08549da47f8cbdc50ed2
+revision=205896a413e5dea92366309c35ae85e542d055f6
 repository=https://github.com/kimjooyoon/meta-ontology-go.git
-required_go=go1.27.2
+required_go=go1.27.3
 
 fail() { printf 'bootstrap: %s\n' "$*" >&2; exit 1; }
 for tool in git go mktemp; do

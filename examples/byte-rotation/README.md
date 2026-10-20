@@ -11,11 +11,11 @@ back, and compares the number of one bits before and after. It imports
 
 ## 실행하기
 
-저장소 루트에서 Go 1.27.2, Git, POSIX shell을 사용합니다. 컴파일러 소스는
+저장소 루트에서 Go 1.27.3, Git, POSIX shell을 사용합니다. 컴파일러 소스는
 [upstream.json](../../upstream.json)의 리비전으로 고정하며 모델 호출이 필요하지 않습니다.
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 ./tools/bootstrap.sh
 mkdir -p out/rotation-demo

@@ -16,7 +16,7 @@ func etagTestSuites() []suite {
 }
 func etagTestIdentity(t *testing.T, s suite) expectedIdentity {
 	t.Helper()
-	id := expectedIdentity{CompilerRevision: uuidCompactCompilerRevision, GoVersion: "go1.27.2", Sources: map[string]sourceIdentity{}, SourceBytes: map[string][]byte{}}
+	id := expectedIdentity{CompilerRevision: uuidCompactCompilerRevision, GoVersion: "go1.27.3", Sources: map[string]sourceIdentity{}, SourceBytes: map[string][]byte{}}
 	for _, spec := range etagSpecs(s) {
 		raw, err := os.ReadFile(filepath.Join("../..", spec.source))
 		if err != nil {

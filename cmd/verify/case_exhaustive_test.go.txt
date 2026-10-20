@@ -12,7 +12,7 @@ import (
 // The generated composition remains unchanged in its own file. Only the oracle,
 // exhaustive loop, explicit int64 extension contract and reporting live here.
 func TestCaseMappingExhaustive(t *testing.T) {
-    if runtime.Version() != "go1.27.2" || unicode.Version != "17.0.0" || strconv.IntSize != 64 {
+    if runtime.Version() != "go1.27.3" || unicode.Version != "17.0.0" || strconv.IntSize != 64 {
         t.Fatal("wrong pinned Go / Unicode oracle or integer width")
     }
     cases := []int64{ {{range .ValidCases}}{{.}},{{end}} }

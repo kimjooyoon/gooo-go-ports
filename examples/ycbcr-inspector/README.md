@@ -12,7 +12,7 @@ ICC profiles and image file processing are outside this example's scope.
 
 ## Run and change the inputs
 
-Use Go 1.27.2, Git and a POSIX shell on macOS or Linux, from the repository root:
+Use Go 1.27.3, Git and a POSIX shell on macOS or Linux, from the repository root:
 
 ```sh
 ./tools/bootstrap.sh

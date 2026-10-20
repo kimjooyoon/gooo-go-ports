@@ -5,10 +5,10 @@ boundary is difficult to see. This Gooo consumer imports `unicode.IsSpace`,
 `utf8.ValidRune`, `utf8.RuneLen`, and `utf16.RuneLen`; all calculations stay in
 Gooo. It accepts code points rather than strings and does not trim or scan text.
 
-From the repository root with Go 1.27.2, Git and a POSIX shell:
+From the repository root with Go 1.27.3, Git and a POSIX shell:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2 GOWORK=off
+export GOTOOLCHAIN=go1.27.3 GOWORK=off
 ./tools/bootstrap.sh
 mkdir -p out/whitespace-demo
 ./.gooo package execute --json --inputs examples/whitespace-inspector/inputs.json \

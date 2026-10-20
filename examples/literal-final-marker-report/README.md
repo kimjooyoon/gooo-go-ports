@@ -13,10 +13,10 @@ matches; it cannot be reconstructed from the count alone.
 
 Use the repository's [local setup](../../README.md#run-and-edit-locally) with
 the clean Gooo compiler at `83928fa4538245abe33b08549da47f8cbdc50ed2`
-(`0.6.32-dev`) and Go **1.27.2**. From the repository root:
+(`0.6.32-dev`) and Go **1.27.3**. From the repository root:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2 GOWORK=off
+export GOTOOLCHAIN=go1.27.3 GOWORK=off
 NATIVE_GO="$(go env GOROOT)/bin/go"
 mkdir -p out/literal-final-marker-report
 ./.gooo package execute --json --go "$NATIVE_GO" \

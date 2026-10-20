@@ -74,7 +74,7 @@ func headerReceiptFixture(t *testing.T, s suite) (map[string]any, suite, expecte
 	if err != nil {
 		t.Fatal(err)
 	}
-	id := expectedIdentity{CompilerRevision: "83928fa4538245abe33b08549da47f8cbdc50ed2", GoVersion: "go1.27.2", ManifestDigest: contentDigest([]byte("synthetic manifest")), CasesDigest: contentDigest([]byte("synthetic case")), Sources: identities, SourceBytes: bytes}
+	id := expectedIdentity{CompilerRevision: "83928fa4538245abe33b08549da47f8cbdc50ed2", GoVersion: "go1.27.3", ManifestDigest: contentDigest([]byte("synthetic manifest")), CasesDigest: contentDigest([]byte("synthetic case")), Sources: identities, SourceBytes: bytes}
 	definitions, err := headerBodies(s, id)
 	if err != nil {
 		t.Fatal(err)
@@ -164,7 +164,7 @@ func headerReceiptFixture(t *testing.T, s suite) (map[string]any, suite, expecte
 	}
 	m := map[string]any{"schema": "gooo/workspace-body-execution-receipt/v1", "decision": "PASS", "manifest_digest": id.ManifestDigest, "cases_digest": id.CasesDigest, "result": map[string]any{"schema": "gooo/workspace-body-execution/v1", "program": program, "execution_source_sha256": sh,
 		"composition": map[string]any{"schema": "gooo/body-composition/v1", "stage": "COMPLETE", "gooo_source": text, "original_source_sha256": sh, "selected_source_sha256": sh, "source": composed, "generated_sha256": contentDigest([]byte(composed)), "driver_source": driver, "driver_sha256": contentDigest([]byte(driver)), "plan": plan, "steps": []any{map[string]any{"input_source_sha256": sh, "generation": map[string]any{"source": generated, "report": g}}}},
-		"runtime":     map[string]any{"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "producer_source_sha": id.CompilerRevision, "go_version": "go version go1.27.2 linux/amd64", "generated_sha256": contentDigest([]byte(composed)), "driver_sha256": contentDigest([]byte(driver)), "typed_plan_sha256": plan["typed_plan_sha256"], "original_source_sha256": sh, "selected_source_sha256": sh, "model_calls": 0, "finite_passed": 1, "finite_total": 1, "projection_replayed": true, "runtime_replayed": true, "traces": []any{map[string]any{"case_index": 0, "deliveries": []any{delivery}}}},
+		"runtime":     map[string]any{"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "producer_source_sha": id.CompilerRevision, "go_version": "go version go1.27.3 linux/amd64", "generated_sha256": contentDigest([]byte(composed)), "driver_sha256": contentDigest([]byte(driver)), "typed_plan_sha256": plan["typed_plan_sha256"], "original_source_sha256": sh, "selected_source_sha256": sh, "model_calls": 0, "finite_passed": 1, "finite_total": 1, "projection_replayed": true, "runtime_replayed": true, "traces": []any{map[string]any{"case_index": 0, "deliveries": []any{delivery}}}},
 	}}
 	return headerTestClone(t, m), s, id
 }

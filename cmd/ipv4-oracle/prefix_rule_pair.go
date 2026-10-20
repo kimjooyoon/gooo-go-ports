@@ -19,7 +19,10 @@ import (
 
 const profileOutputSchema = "gooo/ipv4-prefix-rule-pair-independent-oracle/v1"
 const profileNetipSHA = "32295f4761825d8c6fdade4dad093b08683bdd1945010bee8a90a298e18cf208"
-const profileContractSHA = "864c62caa16e4b900cad4bc7579e35cd56473f618a9b8be9151109ed7d218891"
+
+// The raw current contract is Go 1.27.3 metadata; its test projects only the
+// reviewed version and compiler lines to the fixed historical contract digest.
+const profileContractSHA = "7ea9cf058641000710c4dfe1f00b3fcf40939cb4a99360c2781a95d719adb515"
 const prefixCorpusSHA = "573f6a836ceed5f28a7ed6eee92ea8dbfb00896b78e04711a6b291c2386c9e5c"
 const pairCorpusSHA = "8a7b9470c17f3244ef9bf4d9e6016b4b83d0f61b2bec0ca0a22801416d51d698"
 

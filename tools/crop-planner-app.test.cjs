@@ -13,7 +13,7 @@ const bytes = Buffer.from('synthetic Wasm bytes for UI loading tests');
 const dragBytes = Buffer.from('different synthetic DragCropPlan Wasm bytes');
 const metadata = { schema: 'gooo/browser-crop-planner/v1', entry_id: protocol.modes.ordered.entryId, wasm_sha256: createHash('sha256').update(bytes).digest('hex'),
   wasm_bytes: bytes.length, source_revision: 'b'.repeat(40), source_dirty: false, compiler_revision: 'c'.repeat(40),
-  go_version: 'go1.27.2', generated_sha256: 'd'.repeat(64), execution_sha256: 'e'.repeat(64), replay_sha256: 'f'.repeat(64), fixture_cases: 486 };
+  go_version: 'go1.27.3', generated_sha256: 'd'.repeat(64), execution_sha256: 'e'.repeat(64), replay_sha256: 'f'.repeat(64), fixture_cases: 486 };
 const expected = { min_x: '0', min_y: '40', max_x: '200', max_y: '480', has_pixels: true };
 const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
 async function until(predicate) {

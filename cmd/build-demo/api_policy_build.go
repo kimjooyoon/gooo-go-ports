@@ -61,8 +61,8 @@ func buildAPIRevisionDemo(ctx context.Context, site, dir string, lock lockfile) 
 
 func (b *apiPolicyBuild) prepare(ctx context.Context) error {
 	var err error
-	if runtime.Version() != b.lock.GoVersion || b.lock.GoVersion != "go1.27.2" {
-		return fmt.Errorf("API policy browser requires the installed pinned Go1.27.2")
+	if runtime.Version() != b.lock.GoVersion || b.lock.GoVersion != "go1.27.3" {
+		return fmt.Errorf("API policy browser requires the installed pinned Go1.27.3")
 	}
 	b.root, err = filepath.Abs(".")
 	if err != nil {
@@ -212,7 +212,7 @@ func (b *apiPolicyBuild) prepareConsumer(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	b.module = fmt.Sprintf("module github.com/kimjooyoon/gooo-go-ports/browser-api-policy-build\n\ngo 1.27.2\n\nrequire (\n\t%s v0.0.0\n\t%s %s\n)\n\nreplace %s => %q\nreplace %s => %q\n", apiPolicyRevisionModule, apiPolicyOriginalModule, apiPolicyOriginalVersion, apiPolicyRevisionModule, filepath.ToSlash(revisionRelative), apiPolicyOriginalModule, filepath.ToSlash(originalRelative))
+	b.module = fmt.Sprintf("module github.com/kimjooyoon/gooo-go-ports/browser-api-policy-build\n\ngo 1.27.3\n\nrequire (\n\t%s v0.0.0\n\t%s %s\n)\n\nreplace %s => %q\nreplace %s => %q\n", apiPolicyRevisionModule, apiPolicyOriginalModule, apiPolicyOriginalVersion, apiPolicyRevisionModule, filepath.ToSlash(revisionRelative), apiPolicyOriginalModule, filepath.ToSlash(originalRelative))
 	if err := os.WriteFile(filepath.Join(b.consumer, "go.mod"), []byte(b.module), 0600); err != nil {
 		return err
 	}

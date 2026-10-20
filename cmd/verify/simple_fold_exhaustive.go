@@ -49,7 +49,7 @@ func simpleFoldExtensionInputs() []int64 {
 func expectedSimpleFoldExhaustive(generated string) simpleFoldExhaustiveReport {
 	outside, extensions := simpleFoldOutsideUnicodeInputs(), simpleFoldExtensionInputs()
 	return simpleFoldExhaustiveReport{
-		Schema: "gooo/simple-fold-exhaustive-native/v1", GoVersion: "go1.27.2", UnicodeVersion: "17.0.0",
+		Schema: "gooo/simple-fold-exhaustive-native/v1", GoVersion: "go1.27.3", UnicodeVersion: "17.0.0",
 		GeneratedSHA256: generated, UnicodeRangeInputs: 1114112, UnicodeRangeComparisons: 1114112,
 		OutsideUnicodeInt32Inputs: outside, OutsideUnicodeInt32Comparisons: len(outside),
 		OutsideInt32ExtensionInputs: extensions, OutsideInt32ExtensionComparisons: len(extensions),
@@ -65,8 +65,8 @@ func expectedSimpleFoldExhaustive(generated string) simpleFoldExhaustiveReport {
 // are finite samples. This does not check every signed rune or consumer pair.
 func checkSimpleFoldExhaustive(ctx context.Context, dir string, raw []byte, expectedGenerated string, cache *nativeBuildCache) (simpleFoldExhaustiveReport, error) {
 	var zero simpleFoldExhaustiveReport
-	if runtime.Version() != "go1.27.2" || unicode.Version != "17.0.0" {
-		return zero, fmt.Errorf("SimpleFold exhaustive check requires Go 1.27.2 / Unicode 17.0.0")
+	if runtime.Version() != "go1.27.3" || unicode.Version != "17.0.0" {
+		return zero, fmt.Errorf("SimpleFold exhaustive check requires Go 1.27.3 / Unicode 17.0.0")
 	}
 	source, function, err := inspectSimpleFoldGenerated(raw, expectedGenerated)
 	if err != nil {
@@ -98,7 +98,7 @@ func checkSimpleFoldExhaustive(ctx context.Context, dir string, raw []byte, expe
 		}
 	}
 	for name, content := range map[string][]byte{
-		"go.mod":       []byte("module gooo-simple-fold-exhaustive\n\ngo 1.27.2\n"),
+		"go.mod":       []byte("module gooo-simple-fold-exhaustive\n\ngo 1.27.3\n"),
 		"generated.go": []byte(source), "exhaustive_test.go": harness,
 	} {
 		if err := os.WriteFile(filepath.Join(native, name), content, 0644); err != nil {

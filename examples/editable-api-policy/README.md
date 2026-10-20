@@ -6,7 +6,7 @@ an experimental offline example, not live authorization or a trace importer.
 The existing sealed API-policy consumer and Action remain separate.
 
 Start in the repository root with the pinned **Gooo compiler83928fa** and
-**Go1.27.2** already prepared; see [setup](../../README.md#run-and-edit-locally).
+**Go1.27.3** already prepared; see [setup](../../README.md#run-and-edit-locally).
 The script uses Python3's standard library and an existing repository process
 helper. It does not install tools, download modules, or build an engine.
 Use canonical absolute tool/output paths and a new output directory whose
@@ -15,7 +15,7 @@ parent exists. On macOS/Linux, for example:
 ```sh
 (
   set -eu
-  fixed_go="$(GOTOOLCHAIN=go1.27.2 go env GOROOT)/bin/go"
+  fixed_go="$(GOTOOLCHAIN=go1.27.3 go env GOROOT)/bin/go"
   python3 -I -B examples/editable-api-policy/run.py \
     --root "$PWD" --compiler "$PWD/.gooo" --go "$fixed_go" \
     --out "$HOME/gooo-policy-demo-1"
@@ -83,7 +83,7 @@ After editing `after.gooo`, use the same prepared tools and a fresh output:
 ```sh
 (
   set -eu
-  fixed_go="$(GOTOOLCHAIN=go1.27.2 go env GOROOT)/bin/go"
+  fixed_go="$(GOTOOLCHAIN=go1.27.3 go env GOROOT)/bin/go"
   python3 -I -B examples/editable-api-policy/run.py \
     --root "$PWD" --compiler "$PWD/.gooo" --go "$fixed_go" \
     --facts "$PWD/facts.json" --out "$HOME/gooo-policy-own-facts-1"
@@ -108,6 +108,12 @@ fields or send the first failure through the existing feedback form below.
 Omit `--check-demo` when intentionally changing the facts or rule.
 
 ## Extract a helper with the separate source-inspection profile
+
+This opt-in release profile retains its exact Go 1.27.2 compiler/SDK identity.
+It is separate from the current-source Go 1.27.3 migration target above; the
+old archive and saved observations have not become Go 1.27.3 builds.
+Reproduce the following frozen release recipe with the [pre-migration source
+snapshot](https://github.com/kimjooyoon/gooo-go-ports/tree/cc946350de37c48d509b1d383b8ce7e8a0062483) in a separate checkout.
 
 The default compiler/profile keeps its existing one-activity-per-source check.
 To extract a rule into a named helper, select **`--compiler-profile

@@ -35,7 +35,7 @@ production decision rules. The existing port-compatibility counts are unchanged.
 Use Git, a POSIX shell and Go toolchain selection, from the repository root:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 ./tools/bootstrap.sh
 ./.gooo package execute --inputs examples/learn-gooo/inputs.json \
@@ -62,7 +62,7 @@ example and build it. Run the commands in order in the same shell, and stop if
 a command fails. Start without an existing `compiler` directory:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 mkdir compiler
 git -C compiler init
@@ -82,7 +82,7 @@ cd ..
   --inputs inputs.json gooo.workspace.json > replay.json
 ```
 
-The build record should report the pinned compiler revision, Go 1.27.2 and
+The build record should report the pinned compiler revision, Go 1.27.3 and
 `vcs_modified: "false"`. A successful `check` alone validates declarations;
 the `execute` command is what compiles and runs the bodies.
 
@@ -143,7 +143,7 @@ For an automated fresh run without editing repository sources, use
 `python3 tools/verify-tutorial-change.py --out out/tutorial-change-new` from the
 repository root after setup. This optional runner also needs Python 3, keeps the
 three records and summary, and removes its own temporary workspace and Go cache.
-Select an installed Go 1.27.2 executable on `PATH` or with `--go /path/to/go`;
+Select an installed Go 1.27.3 executable on `PATH` or with `--go /path/to/go`;
 the runner disables toolchain switching and module downloads. Choose a new
 output directory each time. CI reuses the already checked original
 tutorial record from the same job, then executes and replays the copied edit.

@@ -127,21 +127,21 @@
       "left",
       "right"
     ],
-    "calculation": "Independent pinned Go1.27.2 net/netip PrefixFrom/Overlaps/Masked/Contains; int64 guards before byte/int conversion; do not reproduce Gooo arithmetic formula",
+    "calculation": "Independent pinned Go1.27.3 net/netip PrefixFrom/Overlaps/Masked/Contains; int64 guards before byte/int conversion; do not reproduce Gooo arithmetic formula",
     "manual_input_corpus": "examples/ipv4-rule-pair/corpus-18.json",
     "manual_case_count": 18
   },
   "pinned_prefix_source": {
     "path": "ports/net/netip/prefix.gooo",
     "sha256": "05eadddddfc8959c9b2e721967b8650734f1f52a4a0b0927a684f07758060261",
-    "go_version": "go1.27.2",
+    "go_version": "go1.27.3",
     "go_revision": "022c8636110ebac86a9b88724cda168ed713c21f",
     "go_source_sha256": "32295f4761825d8c6fdade4dad093b08683bdd1945010bee8a90a298e18cf208",
-    "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+    "compiler_revision": "205896a413e5dea92366309c35ae85e542d055f6",
     "shared_declarations": "ports/net/netip/ipv4.gooo"
   },
   "engine_constraint": {
-    "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+    "compiler_revision": "205896a413e5dea92366309c35ae85e542d055f6",
     "maximum_fields_per_record": 16,
     "input_rule_fields": 8,
     "output_fields": 11,

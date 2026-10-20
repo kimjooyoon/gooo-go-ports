@@ -19,8 +19,11 @@ dispatcher, GitHub token, PR comment, human approval step or GitHub API write.
 
 Save the nine-field JSON sample below as `ci/policy-case.json` in your repository,
 then add this workflow. The Action reference pins the supplied experimental
-implementation to an immutable commit. For a checkout of this repository,
-`./examples/api-policy-ci` also works.
+implementation to an immutable commit. The workflow below retains that published
+Go 1.27.2 profile. Current-source local use of `./examples/api-policy-ci` targets
+Go 1.27.3 with matching toolchain checks; a new tested immutable Action reference
+is needed before presenting the remote recipe as upgraded. Changing only its
+`go-version` does not upgrade the pinned Action.
 Use a GitHub-hosted Ubuntu runner with Go **1.27.2** selected. The pilot uses Bash,
 GNU `timeout`, standard tools and two checksum-pinned public Go modules; initial
 dependency retrieval reads the Go proxy/checksum service. It does not install a
@@ -138,11 +141,22 @@ guarantee, generic policy rollout service or production validation.
 
 ## Reproduction and publication boundary
 
-The revision module is pinned to public commit
-`e723f9af6dc33ecfff002a951e4b09a310439338`; the original module is pinned to
-`8cddcc4e65afb42431f8f42a86f29859ae2f4d69`. Their previously verified public
-pseudo-versions and checksum lines are retained in `go.mod`/`go.sum`. Consumer
-replacement modules and automatic toolchain switching are refused.
+The current-source revision module is pinned to public commit
+`7180a4a0f36a1b0d89470100d6ccf6efdb5fd38d`, version
+`v0.0.0-20261020182808-7180a4a0f36a`. Its 38-asset generation
+`1904100e57ff22b00f4db1597c4f12ebb3c6893063d6deac69e2eb516452a2ca`
+records compiler `205896a413e5dea92366309c35ae85e542d055f6` and Go 1.27.3.
+The original module remains pinned to
+`8cddcc4e65afb42431f8f42a86f29859ae2f4d69`: its original 28 assets, generation
+`79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46`,
+compiler `83928fa4538245abe33b08549da47f8cbdc50ed2` and recorded Go 1.27.2
+are preserved. The Action host built from current source requires Go 1.27.3;
+this does not regenerate or relabel the frozen original profile.
+
+Exact public module versions and checksums are recorded in `go.mod`/`go.sum`.
+Consumer replacement modules and automatic toolchain switching are refused.
+The historical remote recipe above still selects its published Go 1.27.2 Action;
+these dependency updates do not establish a new hosted Action observation.
 
 The separate `.github/workflows/api-policy-action.yml` records the checked source,
 runs all twenty-one Linux CLI controls, sixteen formatter controls and two

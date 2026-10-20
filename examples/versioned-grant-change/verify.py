@@ -100,7 +100,7 @@ def check_contract(contract, manifest, sources):
                 {'name': n, 'id': i, 'type': k, 'required': True, 'cardinality': 'one'} for n, i, k in H.FIELD.findall(body)]})
     H.need(H.equal(contract['records'], record_contracts), 'all nine documented source record layouts')
     H.need(contract['corpus']['sha256'] == CORPUS_SHA and contract['corpus']['occurrences'] == 48 and
-           contract['pins']['compiler_revision'] == H.REV and contract['pins']['go_version'] == 'go1.27.2', 'public corpus/tool contract')
+           contract['pins']['compiler_revision'] == H.REV and contract['pins']['go_version'] == 'go1.27.3', 'public corpus/tool contract')
     bounds = contract['wire_bounds']
     H.need(H.equal(bounds['each_scalar_utf8_bytes'], [0, 1024]) and bounds['raw_go_case_document_max_bytes'] == 30000 and
            bounds['translated_compact_upper_max_bytes'] == 32768 and bounds['absolute_max_rows_per_batch'] == 128 and
@@ -337,7 +337,7 @@ def main():
                      'examples/agentmesh-service-policy/oracle/go.mod', 'examples/agentmesh-service-policy/oracle/extracted.go',
                      'examples/agentmesh-service-policy/oracle/cmd/oracle/main.go'): read(root / name)
         lock = decoded(read(root / 'upstream.json'))
-        H.need(lock['compiler_revision'] == H.REV and lock['go_version'] == 'go1.27.2', 'repository compiler/Go pins')
+        H.need(lock['compiler_revision'] == H.REV and lock['go_version'] == 'go1.27.3', 'repository compiler/Go pins')
         agentmesh_sources(root, read)
         go_sha = H.digest(read(go)); read(compiler)
         H.need(shutil.disk_usage(out).free >= 2 << 30, 'minimum2GiB free')
@@ -380,10 +380,10 @@ def main():
             return raw
         identity = decoded(call('compiler-identity', [compiler, 'version', '--build', '--json']))
         for k, v in {'compiler_source_sha': H.REV, 'vcs_revision': H.REV, 'source_status': 'CLEAN_VCS',
-                     'vcs_modified': 'false', 'build_info_observed': True, 'version': '0.6.32-dev',
-                     'go_version': 'go1.27.2', 'native_go_required': 'go1.27.2'}.items(): H.need(H.equal(identity.get(k), v), 'clean compiler identity: ' + k)
+                     'vcs_modified': 'false', 'build_info_observed': True, 'version': '0.6.37-dev',
+                     'go_version': 'go1.27.3', 'native_go_required': 'go1.27.3'}.items(): H.need(H.equal(identity.get(k), v), 'clean compiler identity: ' + k)
         go_version = call('go-version', [go, 'version']).decode().strip()
-        H.need(go_version.startswith('go version go1.27.2 '), 'exact pinned Go version')
+        H.need(go_version.startswith('go version go1.27.3 '), 'exact pinned Go version')
         call('reference-vet', [go, 'vet', './' + BASE + 'reference'])
         call('reference-tests', [go, 'test', '-count=1', './' + BASE + 'reference'])
         prepared = out / 'prepared'
@@ -391,7 +391,7 @@ def main():
         plan = decoded(H.frozen_read(prepared / 'plan.json', pins)); images = plan['images']
         H.need(plan['schema'] == 'gooo/versioned-grant-reference-plan/v1' and plan['rows'] == 48 and
                plan['master_sha256'] == H.digest(master_raw) and plan['manifest_sha256'] == H.digest(manifest_raw) and
-               plan['source_bytes'] == sum(map(len, sources.values())) and plan['go_version'] == 'go1.27.2', 'fresh reference plan/source binding')
+               plan['source_bytes'] == sum(map(len, sources.values())) and plan['go_version'] == 'go1.27.3', 'fresh reference plan/source binding')
         expected_images = [{'package': pkg['path'], 'filename': pkg['sources'][0], 'source_digest': H.digest(H.go_json(sources[pkg['sources'][0]].decode()))} for pkg in manifest['packages']]
         H.need(H.equal(images, expected_images), 'fresh Go actual source-image serialization')
         components = plan['components']
@@ -412,7 +412,7 @@ def main():
         H.save(prepared / 'matcher.json', []); H.save(prepared / 'impact.json', impacts)
         H.frozen_read(prepared / 'matcher.json', pins); H.frozen_read(prepared / 'impact.json', pins)
         oracle = decoded(call('agentmesh-components', [go, 'run', './cmd/oracle', '--cases', prepared / 'matcher.json', '--impact-cases', prepared / 'impact.json'], root / 'examples/agentmesh-service-policy/oracle'))
-        H.need(oracle['schema'] == 'gooo/agentmesh-matcher-oracle/v1' and oracle['source_revision'] == '9fd1a41a15174df0aaef601c942410c2116bff91' and oracle['go_version'] == 'go1.27.2' and len(oracle['impact_matches']) == 48, 'fresh original AgentMesh reference')
+        H.need(oracle['schema'] == 'gooo/agentmesh-matcher-oracle/v1' and oracle['source_revision'] == '9fd1a41a15174df0aaef601c942410c2116bff91' and oracle['go_version'] == 'go1.27.3' and len(oracle['impact_matches']) == 48, 'fresh original AgentMesh reference')
         for i, (row, observed) in enumerate(zip(master['cases'], oracle['impact_matches'])):
             _, expected = case_values(row)
             H.need(observed['name'] == str(i), 'ordered upstream component identity')

@@ -18,7 +18,7 @@ and freshness and atomically claim an eligible attempt before sending anything.
 
 ## Try the Gooo activity
 
-From a source checkout with the repository's pinned compiler and Go 1.27.2,
+From a source checkout with the repository's pinned compiler and Go 1.27.3,
 set `GOOO_GO` to the absolute path of the Go executable. Use a new output
 directory for the execution and its saved replay:
 

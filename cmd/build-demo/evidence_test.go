@@ -15,7 +15,7 @@ const generatedFixture = "package main\n\n// Preserve whitespace and UTF-8: í•œê
 func evidenceFixture(t *testing.T) ([]byte, lockfile, map[string]string) {
 	t.Helper()
 	t.Chdir(t.TempDir())
-	lock := lockfile{CompilerRevision: strings.Repeat("a", 40), CompilerVersion: "0.6.24-dev", GoVersion: "go1.27.2"}
+	lock := lockfile{CompilerRevision: strings.Repeat("a", 40), CompilerVersion: "0.6.24-dev", GoVersion: "go1.27.3"}
 	// Workspace source_digest hashes JSON-encoded source text, unlike the raw
 	// generated_sha256. Keep this fixture aligned with the pinned compiler.
 	sources := map[string]string{
@@ -86,7 +86,7 @@ func evidenceFixture(t *testing.T) ([]byte, lockfile, map[string]string) {
 				}}}},
 			},
 			"runtime": map[string]any{
-				"stage": "COMPLETE", "producer_source_sha": lock.CompilerRevision, "go_version": "go version go1.27.2 darwin/arm64",
+				"stage": "COMPLETE", "producer_source_sha": lock.CompilerRevision, "go_version": "go version go1.27.3 darwin/arm64",
 				"generated_sha256": generatedSHA, "model_calls": 0, "finite_passed": len(rows), "finite_total": len(rows),
 				"projection_replayed": true, "runtime_replayed": true, "traces": traces,
 			},

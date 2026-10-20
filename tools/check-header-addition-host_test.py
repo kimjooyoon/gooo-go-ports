@@ -748,7 +748,7 @@ class AdditionEvidenceBoundaryTests(unittest.TestCase):
 
     def read(self,fixture):
         pins={};read=lambda p:CHECK.frozen_read(p,pins)
-        return CHECK.read_addition_evidence(ROOT,read,pins,fixture['source_set'],fixture['source_set_sha256'],fixture['batches'],'go version go1.27.2 linux/amd64',{'bytes':1,'sha256':'a'*64},82)
+        return CHECK.read_addition_evidence(ROOT,read,pins,fixture['source_set'],fixture['source_set_sha256'],fixture['batches'],'go version go1.27.3 linux/amd64',{'bytes':1,'sha256':'a'*64},82)
 
     def observed(self,*args):
         return {'source':'package main\n// boundary fixture only\n','plan':{'fixture':'independent-current-plan'},'tool_selection':'explicit'}
@@ -797,11 +797,11 @@ class AdditionEvidenceBoundaryTests(unittest.TestCase):
         # Execute the real early binding guard, before any synthetic result body.
         raw=json.dumps({'schema':'gooo/workspace-body-execution-receipt/v1','decision':'PASS','manifest':'/producer/gooo.workspace.json','manifest_digest':CHECK.digest(b'{}'),'cases_digest':CHECK.digest(b'{}')}).encode()
         with self.assertRaisesRegex(RuntimeError,'exact manifest/case bytes'):
-            CHECK.receipt(raw,[],b'{}',b'{}',[],'go version go1.27.2 linux/amd64','a'*64,{CHECK.ENTRY:{}},{},'/local/blob/gooo.workspace.json')
+            CHECK.receipt(raw,[],b'{}',b'{}',[],'go version go1.27.3 linux/amd64','a'*64,{CHECK.ENTRY:{}},{},'/local/blob/gooo.workspace.json')
         # With the original producer path this guard passes to the next required
         # field; this is a guard test, not a complete native receipt fixture.
         with self.assertRaises(KeyError) as failure:
-            CHECK.receipt(raw,[],b'{}',b'{}',[],'go version go1.27.2 linux/amd64','a'*64,{CHECK.ENTRY:{}},{},'/producer/gooo.workspace.json')
+            CHECK.receipt(raw,[],b'{}',b'{}',[],'go version go1.27.3 linux/amd64','a'*64,{CHECK.ENTRY:{}},{},'/producer/gooo.workspace.json')
         self.assertEqual(failure.exception.args,('result',))
 
 

@@ -30,7 +30,7 @@ Strict fixture validation is separate from bare CLI Unicode decoding.
 
 Complete the [repository setup](../../README.md#run-and-edit-locally), then run
 these commands from the repository root in the same shell with the pinned
-compiler and Go 1.27.2. Stop if a command fails. The new output directory keeps
+compiler and Go 1.27.3. Stop if a command fails. The new output directory keeps
 these receipts separate from earlier runs:
 
 ```sh

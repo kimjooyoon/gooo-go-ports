@@ -14,7 +14,7 @@ without cleaning or normalization and does not access or authorize a filesystem.
 Arbitrary invalid-UTF-8 Go strings and longer inputs are outside this adaptation.
 
 After following the [repository setup](../../README.md), use its pinned compiler
-and Go 1.27.2 to run the example from the repository root:
+and Go 1.27.3 to run the example from the repository root:
 
 ```sh
 ./.gooo package execute --json --go "$(go env GOROOT)/bin/go" \

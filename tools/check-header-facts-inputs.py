@@ -2,7 +2,7 @@
 """Check the actual strict-helper -> input-only Gooo CLI route. Stdlib only."""
 import argparse, hashlib, json, os, pathlib, re, signal, subprocess, sys, time
 
-REV = '83928fa4538245abe33b08549da47f8cbdc50ed2'
+REV = '205896a413e5dea92366309c35ae85e542d055f6'
 BASE, PACKAGE = 'app/header-field-facts:Report', 'go/golang.org/x/net/http/httpguts'
 PREFIX = 'gooo://go-ports/examples/header-field-facts/'
 FIELDS = ['name','value','name_valid','value_valid','name_empty','name_has_uppercase','value_has_obs_text','value_edge_whitespace','name_invalid_offset','name_invalid_octet','value_invalid_offset','value_invalid_octet']
@@ -88,11 +88,11 @@ def main():
     env = os.environ.copy(); env.update(GOTOOLCHAIN='local',GOWORK='off',GOENV='off',GOPROXY='off',GOSUMDB='off',GOOO_LAYA_URL='',GOOO_LAYA_API_KEY='',TMPDIR=str(out/'tmp'))
     try:
         for p,h in FIXED.items(): need(pins[str(root/p)]['sha256'] == h,'current fixed source/request pin: '+p)
-        lock = load((root/'upstream.json').read_bytes()); need(lock['compiler_revision'] == REV and lock['go_version'] == 'go1.27.2','upstream compiler/Go pins')
+        lock = load((root/'upstream.json').read_bytes()); need(lock['compiler_revision'] == REV and lock['go_version'] == 'go1.27.3','upstream compiler/Go pins')
         save(out/'source-tool-pins.json',pins)
-        rc,raw = call('go-version',[str(go),'version'],20); go_version = raw.decode().strip(); need(rc == 0 and re.fullmatch(r'go version go1\.27\.2 [a-z0-9_]+/[a-z0-9_]+',go_version),'Go identity')
+        rc,raw = call('go-version',[str(go),'version'],20); go_version = raw.decode().strip(); need(rc == 0 and re.fullmatch(r'go version go1\.27\.3 [a-z0-9_]+/[a-z0-9_]+',go_version),'Go identity')
         rc,raw = call('compiler-version',[str(compiler),'version','--build','--json'],20); identity = load(raw)
-        need(rc == 0 and all(equal(identity[k],v) for k,v in {'schema':'gooo/build-identity/v1','version':'0.6.32-dev','compiler_source_sha':REV,'vcs_revision':REV,'source_status':'CLEAN_VCS','vcs_modified':'false','go_version':'go1.27.2','native_go_required':'go1.27.2','build_info_observed':True}.items()),'compiler build identity')
+        need(rc == 0 and all(equal(identity[k],v) for k,v in {'schema':'gooo/build-identity/v1','version':'0.6.37-dev','compiler_source_sha':REV,'vcs_revision':REV,'source_status':'CLEAN_VCS','vcs_modified':'false','go_version':'go1.27.3','native_go_required':'go1.27.3','build_info_observed':True}.items()),'compiler build identity')
         manifest = root/'header-field-facts.workspace.json'; manifest_raw = manifest.read_bytes()
         # Both fixed sources are ASCII. Match pinned Go's JSON string digest, including HTML escaping.
         source_images = []

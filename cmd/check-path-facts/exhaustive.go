@@ -389,7 +389,7 @@ func runPathNativeTest(ctx context.Context, goTool, native, tmp, cache, gopath, 
 
 func checkGeneratedCorpus(ctx context.Context, root, outputDir string, executionRaw, replayRaw []byte, expectedGenerated string, id identity) (map[string]any, error) {
 	if runtime.Version() != goVersion || (runtime.GOOS != "linux" && runtime.GOOS != "darwin") {
-		return nil, fmt.Errorf("native corpus requires pinned Go1.27.2 on linux/darwin")
+		return nil, fmt.Errorf("native corpus requires pinned Go1.27.3 on linux/darwin")
 	}
 	source, abi, err := inspectPathGenerated(executionRaw, replayRaw, expectedGenerated, id)
 	if err != nil {
@@ -426,7 +426,7 @@ func checkGeneratedCorpus(ctx context.Context, root, outputDir string, execution
 	if err := os.Mkdir(native, 0700); err != nil {
 		return nil, err
 	}
-	for name, content := range map[string][]byte{"generated.go": []byte(source), "exhaustive_test.go": harness, "go.mod": []byte("module gooo-path-native\n\ngo 1.27.2\n")} {
+	for name, content := range map[string][]byte{"generated.go": []byte(source), "exhaustive_test.go": harness, "go.mod": []byte("module gooo-path-native\n\ngo 1.27.3\n")} {
 		if err := pathExclusive(filepath.Join(native, name), content); err != nil {
 			return nil, err
 		}

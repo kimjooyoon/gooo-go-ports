@@ -60,8 +60,8 @@ func (f frozenVerificationCatalog) headerAdditionWorkspace(s suite) (suiteWorksp
 	return w, err
 }
 func headerAdditionBatchPolicy(s suite, w suiteWorkspace, lock upstream) (nativeCaseBatchPolicy, error) {
-	if !isHeaderAdditionSuite(s) || lock.CompilerRevision != uuidCompactCompilerRevision || lock.GoVersion != "go1.27.2" || len(s.Cases) != 50 {
-		return nativeCaseBatchPolicy{}, fmt.Errorf("addition requires exact50 and pinned compiler839/Go1.27.2")
+	if !isHeaderAdditionSuite(s) || lock.CompilerRevision != uuidCompactCompilerRevision || lock.GoVersion != "go1.27.3" || len(s.Cases) != 50 {
+		return nativeCaseBatchPolicy{}, fmt.Errorf("addition requires exact50 and pinned compiler839/Go1.27.3")
 	}
 	if w.Manifest.Schema != "gooo/package-workspace-manifest/v1" || w.Manifest.Entry.Package != s.Package || w.Manifest.Entry.Activity != s.Activity || !reflect.DeepEqual(w.Manifest.Packages, headerAdditionPackages()) || len(w.Names) != 5 || len(w.Sources) != 5 {
 		return nativeCaseBatchPolicy{}, fmt.Errorf("addition exact selected closure")

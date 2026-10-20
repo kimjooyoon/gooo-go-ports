@@ -68,7 +68,7 @@ class ConsumerControls(unittest.TestCase):
 
     def test_tampered_producer_identity(self):
         rt = {'producer_source_sha': R.H.REV, 'go_tool_selection': 'explicit',
-              'go_tool_sha256': 'sha256:tool', 'go_version': 'go version go1.27.2 test/arch'}
+              'go_tool_sha256': 'sha256:tool', 'go_version': 'go version go1.27.3 test/arch'}
         R.producer(rt, rt['go_version'], rt['go_tool_sha256'])
         for key, bad in [('producer_source_sha', 'other'), ('go_tool_selection', 'ambient'),
                          ('go_tool_sha256', 'sha256:other'), ('go_version', 'go version go1.27.1 test/arch')]:
@@ -76,19 +76,19 @@ class ConsumerControls(unittest.TestCase):
                 R.producer(dict(rt, **{key: bad}), rt['go_version'], rt['go_tool_sha256'])
 
     def inspection_profile(self):
-        lock = {'compiler_revision': R.H.REV, 'compiler_version': '0.6.32-dev', 'go_version': 'go1.27.2',
-                'consumer_compiler_profiles': {'source_inspection036': dict(R.SOURCE_INSPECTION036)}}
-        return lock, R.compiler_profile(lock, 'source-inspection036')
+        lock = {'compiler_revision': R.H.REV, 'compiler_version': '0.6.37-dev', 'go_version': 'go1.27.3',
+                'consumer_compiler_profiles': {'source_inspection037': dict(R.SOURCE_INSPECTION037)}}
+        return lock, R.compiler_profile(lock, 'source-inspection037')
 
     def test_explicit_profile_contract_and_producer_are_separate(self):
         lock, profile = self.inspection_profile()
         self.assertEqual(R.compiler_profile(lock)['compiler_revision'], R.H.REV)
-        for key in R.SOURCE_INSPECTION036:
-            changed = copy.deepcopy(lock); changed['consumer_compiler_profiles']['source_inspection036'][key] = 'other'
+        for key in R.SOURCE_INSPECTION037:
+            changed = copy.deepcopy(lock); changed['consumer_compiler_profiles']['source_inspection037'][key] = 'other'
             with self.subTest(key=key), self.assertRaises(RuntimeError):
-                R.compiler_profile(changed, 'source-inspection036')
+                R.compiler_profile(changed, 'source-inspection037')
         rt = {'producer_source_sha': profile['compiler_revision'], 'go_tool_selection': 'explicit',
-              'go_tool_sha256': 'sha256:tool', 'go_version': 'go version go1.27.2 test/arch'}
+              'go_tool_sha256': 'sha256:tool', 'go_version': 'go version go1.27.3 test/arch'}
         R.producer(rt, rt['go_version'], rt['go_tool_sha256'], profile)
         with self.assertRaises(RuntimeError): R.producer(rt, rt['go_version'], rt['go_tool_sha256'])
         with self.assertRaises(RuntimeError):

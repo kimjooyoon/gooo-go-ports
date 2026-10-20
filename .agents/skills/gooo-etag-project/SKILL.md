@@ -37,9 +37,12 @@ or write into the installed skill.
 ## Run and edit
 
 Read the exported `README.md` and `NOTICE`. Reuse absolute, non-symlink paths to
-Go **1.27.2** and a clean Gooo compiler at
+Go **1.27.3** and a clean Gooo compiler at
 `83928fa4538245abe33b08549da47f8cbdc50ed2`; the checker checks their actual
-identities. The pinned Go dependencies must already be cached. When setup is
+identities. For a current-source export, compiler/checker pins must agree with
+the Go 1.27.3 target before execution. The immutable export guide above retains
+its Go 1.27.2 profile; do not relabel that export or its old receipts.
+The pinned Go dependencies must already be cached. When setup is
 needed, explain it and perform it within the user's requested setup scope, in a
 separate workspace. Do not bootstrap or build tools in the plugin bundle.
 

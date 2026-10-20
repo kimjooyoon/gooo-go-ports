@@ -293,7 +293,7 @@ class ContainerSession(WIRE.Session):
 def many_proofs(session):
     folder = ROOT / "examples/service-grant-many"
     raw = (folder / "generation.json").read_bytes()
-    assert sha(raw) == "3c49d16a549bc961c1712c122383e1c4d2dd232361a526d146f1a5347108918c"
+    assert sha(raw) == "86d714e4793f04d7d45d53e824cd7066ddee5f7d1e987697f26f4216a6b4e164"
     generation = json.loads(raw)
     bindings = {"compiler_source_sha": generation["compiler_source_sha"],
         "generation_sha256": "sha256:" + sha(raw), "sources": generation["public_sources"], "assets": generation["assets"]}

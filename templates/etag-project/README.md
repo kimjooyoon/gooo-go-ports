@@ -15,15 +15,17 @@ without the original checkout or repository-wide verifier.
 
 ## Prepare and run
 
-Use existing absolute, non-symlink paths to Go **1.27.2** and a clean Gooo compiler
-at `83928fa4538245abe33b08549da47f8cbdc50ed2`. On macOS or Linux, set `GO_EXE`
-and `GOOO_EXE` below to those paths. The pinned x/net/x/text dependencies must be
+Use existing absolute, non-symlink paths to Go **1.27.3** and a clean Gooo compiler
+at `205896a413e5dea92366309c35ae85e542d055f6` with matching build/native-Go
+identity. This is the current-source Go 1.27.3 migration target, not a claim
+that an older compiler binary or exported project has been upgraded. On macOS
+or Linux, set `GO_EXE` and `GOOO_EXE` below to those paths. The pinned x/net/x/text dependencies must be
 in the local Go module cache. If they are missing, prepare them once with network
 access before the offline check, using the same selected Go executable:
 
 ```sh
 set -eu
-GO_EXE=/absolute/path/to/go1.27.2/bin/go
+GO_EXE=/absolute/path/to/go1.27.3/bin/go
 GOTOOLCHAIN=local GOWORK=off GOENV=off "$GO_EXE" mod download
 GOTOOLCHAIN=local GOWORK=off GOENV=off "$GO_EXE" mod verify
 ```
@@ -34,7 +36,7 @@ how to build it outside a clean pinned engine checkout.
 
 ```sh
 set -eu
-GO_EXE=/absolute/path/to/go1.27.2/bin/go
+GO_EXE=/absolute/path/to/go1.27.3/bin/go
 GOOO_EXE=/absolute/path/to/gooo
 NEW_OUT=/absolute/existing/parent/new-etag-run
 GOTOOLCHAIN=local GOWORK=off GOENV=off GOPROXY=off GOSUMDB=off \
@@ -51,11 +53,12 @@ identity, and the two internal native executions in each fresh CLI call. It
 never substitutes the Go oracle for a Gooo result. No saved-receipt replay or
 engine canonical hash implementation is included.
 
-Local validation of the starting source observed those247 comparisons passing
-with the pinned compiler/Go, plus the optional19-row CRLF mutation witness.
-These are finite local observations. The exported CI has not yet been run;
-future edits, other platforms, production safety and execution speed are not
-established by that observation.
+Historical local validation of the starting source observed those247 comparisons
+passing with compiler `83928fa4538245abe33b08549da47f8cbdc50ed2` and Go 1.27.2, plus the optional19-row CRLF
+mutation witness. These finite observations predate this Go 1.27.3 target and
+are not new validation of it. The updated checker/exported CI has not been run
+here; future edits, other platforms, production safety and execution speed are
+not established by the historical observation.
 
 ## Edit the Gooo bodies
 

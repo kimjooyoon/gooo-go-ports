@@ -24,12 +24,12 @@ def module(name,path):
 R=module('shared_ipv4_protocol',HERE/'ipv4_receipts.py')
 Q=module('record_ipv4_protocol',HERE/'prefix_rule_pair_receipts.py');Q.configure(R)
 H=module('owned_lifecycle_spans',HERE/'check-path-facts.py')
-VERSION='go version go1.27.2 linux/amd64';GO='sha256:'+'8'*64
+VERSION='go version go1.27.3 linux/amd64';GO='sha256:'+'8'*64
 
 def wire(value):return (json.dumps(value,separators=(',',':'))+'\n').encode()
 
 def oracle_fixture():
-    result={'schema':'gooo/ipv4-prefix-rule-pair-independent-oracle/v1','go_version':'go1.27.2'}
+    result={'schema':'gooo/ipv4-prefix-rule-pair-independent-oracle/v1','go_version':'go1.27.3'}
     for key,path in (('pair_cases','examples/ipv4-rule-pair/corpus-112.json'),('prefix_cases','examples/ipv4-prefix-probe/corpus-18.json')):
         rows=R.strict_json((HERE.parent/path).read_bytes())['cases'];result[key]=[]
         for i,row in enumerate(rows):
@@ -78,7 +78,7 @@ def fixture(checker,entry,inputs):
         actual=Q.expected_value(oracle,entry);d={'activity_id':Q.IDS[root['activity']],'inputs':ports,'actual':actual}
         if report:d['actual_fields']=[{'id':Q.RESULT+'/'+f,'name':f,'value':actual[f]} for f in Q.FACTS]
         traces.append({'case_index':i,'deliveries':[d]})
-    runtime={'schema':'gooo/body-composition-runtime/v1','stage':'COMPLETE','producer_source_sha':R.REV,'go_version':VERSION,'go_tool_sha256':GO,'go_tool_selection':'explicit','producer_module':{'path':'github.com/kimjooyoon/meta-ontology-go','version':'v0.0.0-20261011201109-83928fa45382'},'generated_sha256':gs,'driver_sha256':ds,'original_source_sha256':source,'selected_source_sha256':source,'typed_plan_sha256':plan['typed_plan_sha256'],'executable_sha256':'sha256:'+'4'*64,'runtime_suite_sha256':'sha256:'+'5'*64,'model_calls':0,'finite_total':0,'finite_passed':0,'projection_replayed':True,'runtime_replayed':True,'toolchain':process,'build':process,'runs':[process,process],'traces':traces}
+    runtime={'schema':'gooo/body-composition-runtime/v1','stage':'COMPLETE','producer_source_sha':R.REV,'go_version':VERSION,'go_tool_sha256':GO,'go_tool_selection':'explicit','producer_module':{'path':'github.com/kimjooyoon/meta-ontology-go','version':'v0.6.37-dev.0.20261020180505-205896a413e5'},'generated_sha256':gs,'driver_sha256':ds,'original_source_sha256':source,'selected_source_sha256':source,'typed_plan_sha256':plan['typed_plan_sha256'],'executable_sha256':'sha256:'+'4'*64,'runtime_suite_sha256':'sha256:'+'5'*64,'model_calls':0,'finite_total':0,'finite_passed':0,'projection_replayed':True,'runtime_replayed':True,'toolchain':process,'build':process,'runs':[process,process],'traces':traces}
     expression='input / input';start=generated.index(expression)
     site={'expression_id':'','root_activity_id':Q.IDS[root['activity']],'activity_id':Q.IDS[root['activity']],'operator':'/','expression':expression,'projection_sha256':gs,'start':start,'end':start+len(expression)}
     site['expression_id']=R.digest(R.go_string(site))

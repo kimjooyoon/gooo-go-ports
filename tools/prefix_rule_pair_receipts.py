@@ -112,8 +112,8 @@ def check_arithmetic(rt,composition,activity,callees):
 class Evidence:
     def __init__(self,repository,oracle,selected_go_version,shared):
         configure(shared);self.repo=Path(repository).resolve();self.version=selected_go_version
-        need(re.fullmatch(r'go version go1\.27\.2 [a-z0-9]+/[a-z0-9]+',selected_go_version) is not None,'SELECTED_GO_VERSION')
-        need(oracle.get('schema')=='gooo/ipv4-prefix-rule-pair-independent-oracle/v1' and oracle.get('go_version')=='go1.27.2','PAIR_ORACLE_SCHEMA')
+        need(re.fullmatch(r'go version go1\.27\.3 [a-z0-9]+/[a-z0-9]+',selected_go_version) is not None,'SELECTED_GO_VERSION')
+        need(oracle.get('schema')=='gooo/ipv4-prefix-rule-pair-independent-oracle/v1' and oracle.get('go_version')=='go1.27.3','PAIR_ORACLE_SCHEMA')
         self.rows={REPORT:oracle['pair_cases'],CONTAINS:oracle['prefix_cases'],OVERLAPS:oracle['prefix_cases']}
         for entry,filename,n in ((REPORT,'examples/ipv4-rule-pair/corpus-112.json',112),(CONTAINS,'examples/ipv4-prefix-probe/corpus-18.json',18)):
             corpus=S.strict_json(S._read_regular(self.repo/filename,128<<10));rows=self.rows[entry]
@@ -227,7 +227,7 @@ class Evidence:
             return sum(1+budget(s['callee'],stack+(k,)) for s in sites if s['caller']==k)
         need(S.integer(call['max_calls_per_invocation'],budget(entry)),'PAIR_CALL_BUDGET')
         need(c['generated_sha256']==S.digest(c['source'].encode()) and c['driver_sha256']==S.digest(c['driver_source'].encode()),'PAIR_GENERATED_SOURCE')
-        need(rt['schema']=='gooo/body-composition-runtime/v1' and rt['stage']=='COMPLETE' and rt.get('failure') is None and rt['producer_source_sha']==S.REV and rt['go_version']==self.version and rt['go_tool_sha256']==go_digest and rt['go_tool_selection']=='explicit' and S.exact(rt['producer_module'],{'path':'github.com/kimjooyoon/meta-ontology-go','version':'v0.0.0-20261011201109-83928fa45382'}),'PAIR_PRODUCER')
+        need(rt['schema']=='gooo/body-composition-runtime/v1' and rt['stage']=='COMPLETE' and rt.get('failure') is None and rt['producer_source_sha']==S.REV and rt['go_version']==self.version and rt['go_tool_sha256']==go_digest and rt['go_tool_selection']=='explicit' and S.exact(rt['producer_module'],{'path':'github.com/kimjooyoon/meta-ontology-go','version':'v0.6.37-dev.0.20261020180505-205896a413e5'}),'PAIR_PRODUCER')
         need(rt['generated_sha256']==c['generated_sha256'] and rt['driver_sha256']==c['driver_sha256'] and rt['original_source_sha256']==rt['selected_source_sha256']==source and rt['typed_plan_sha256']==plan['typed_plan_sha256'] and S.is_digest(rt['executable_sha256']) and S.is_digest(rt['runtime_suite_sha256']) and all(S.integer(rt[k],0) for k in ('model_calls','finite_total','finite_passed')) and rt['projection_replayed'] is True and rt['runtime_replayed'] is True,'PAIR_RUNTIME_BINDING')
         arithmetic=check_arithmetic(rt,c,IDS[root['activity']],[self.bodies[k]['id'] for k in closure if k!=entry])
         S.Evidence.process(self,rt['toolchain']);S.Evidence.process(self,rt['build']);need(len(rt['runs'])==2,'PAIR_NATIVE_RUNS')

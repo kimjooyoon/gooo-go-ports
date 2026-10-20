@@ -37,8 +37,8 @@ func reference(text string) facts {
 }
 
 func originalGoIdentity() error {
-	if runtime.Version() != "go1.27.2" {
-		return fmt.Errorf("URL component oracle requires go1.27.2, got %s", runtime.Version())
+	if runtime.Version() != "go1.27.3" {
+		return fmt.Errorf("URL component oracle requires go1.27.3, got %s", runtime.Version())
 	}
 	for _, source := range []struct{ path, sha string }{
 		{"url.go", "44c33f88526abf3b5955d6c97297be5c9d228e741b33e52c940dcac5a496e091"},

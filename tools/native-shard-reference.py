@@ -224,7 +224,7 @@ def ordered_run(run):
     integer(run['attempt'],1,1000000)
     for key in ('tested_commit','tested_tree','compiler_revision'):
         need(type(run[key]) is str and re.fullmatch(r'[0-9a-f]{40}',run[key]) is not None, 'run revision shape')
-    need(run['go_version'] == 'go1.27.2' and equal(run['workers'],3), 'pinned Go and three-worker run')
+    need(run['go_version'] == 'go1.27.3' and equal(run['workers'],3), 'pinned Go and three-worker run')
     return run
 
 
@@ -454,15 +454,15 @@ def exhaustive_expected(kind,generated):
     outside=[-2147483648,-2147483647,-65536,-65461,-1,1114112,1114187,2147483646,2147483647]
     extension=[-9223372036854775808,-9007199254740993,-4294967371,-4294967221,-2147483649,2147483648,4294967296,4294967371,9007199254740993,9223372036854775806,9223372036854775807]
     if kind == 'simple-fold':
-        return {'schema':'gooo/simple-fold-exhaustive-native/v1','go_version':'go1.27.2','unicode_version':'17.0.0','generated_sha256':generated,'unicode_range_inputs':1114112,'unicode_range_comparisons':1114112,'outside_unicode_int32_inputs':outside,'outside_unicode_int32_comparisons':len(outside),'outside_int32_extension_inputs':extension,'outside_int32_extension_comparisons':len(extension),'mismatches':0}
+        return {'schema':'gooo/simple-fold-exhaustive-native/v1','go_version':'go1.27.3','unicode_version':'17.0.0','generated_sha256':generated,'unicode_range_inputs':1114112,'unicode_range_comparisons':1114112,'outside_unicode_int32_inputs':outside,'outside_unicode_int32_comparisons':len(outside),'outside_int32_extension_inputs':extension,'outside_int32_extension_comparisons':len(extension),'mismatches':0}
     operation=kind.split('/')[1]
     if kind.startswith('ycbcr/'):
         entity,oracle=('ycbcr','sha256:c7a38f2fd3b7dccee233499f58c95ca122dd4b833fe4e2908f4681386e643098') if operation == 'RGBToYCbCr' else ('rgb','sha256:ad0d598e5b003c424acbc9e5d8a3cc8fe965d7f22ecc3903c425a929ba742682')
-        return {'schema':'gooo/ycbcr-exhaustive-native/v1','go_version':'go1.27.2','operation':operation,'activity_id':'gooo://go/image/color/'+operation,'output_entity_id':'gooo://go/image/color/'+entity,'generated_sha256':generated,'input_min':0,'input_max':255,'input_arity':3,'input_order':'input0-major,input1-middle,input2-minor','input_count':16777216,'comparison_count':16777216,'component_comparison_count':50331648,'output_sha256':oracle,'oracle_sha256':oracle,'mismatches':0}
+        return {'schema':'gooo/ycbcr-exhaustive-native/v1','go_version':'go1.27.3','operation':operation,'activity_id':'gooo://go/image/color/'+operation,'output_entity_id':'gooo://go/image/color/'+entity,'generated_sha256':generated,'input_min':0,'input_max':255,'input_arity':3,'input_order':'input0-major,input1-middle,input2-minor','input_count':16777216,'comparison_count':16777216,'component_comparison_count':50331648,'output_sha256':oracle,'oracle_sha256':oracle,'mismatches':0}
     cases={'To':[0,1,2],'ToUpper':[0],'ToLower':[1],'ToTitle':[2]}[operation]
     invalid=[-9223372036854775808,-9007199254740993,-4294967296,-2147483649,-1,3,4,2147483648,4294967296,9007199254740993,9223372036854775807] if operation == 'To' else []
     runes=[-2147483648,-1,0,65,97,453,55296,1114111,1114112,2147483647] if operation == 'To' else []
-    return {'schema':'gooo/case-mapping-exhaustive-native/v1','go_version':'go1.27.2','unicode_version':'17.0.0','operation':operation,'activity_id':'gooo://go/unicode/'+operation,'input_entity_ids':['gooo://std/integer']*(2 if operation == 'To' else 1),'output_entity_id':'gooo://std/integer','generated_sha256':generated,'valid_cases':cases,'unicode_range_inputs':1114112,'unicode_range_comparisons':1114112*len(cases),'outside_unicode_int32_inputs':outside,'outside_unicode_int32_comparisons':len(outside)*len(cases),'outside_int32_extension_inputs':extension,'outside_int32_extension_comparisons':len(extension)*len(cases),'invalid_cases':invalid,'invalid_case_original_rune_inputs':runes,'invalid_case_original_rune_comparisons':len(invalid)*len(runes),'invalid_case_extension_comparisons':len(invalid)*len(extension),'mismatches':0}
+    return {'schema':'gooo/case-mapping-exhaustive-native/v1','go_version':'go1.27.3','unicode_version':'17.0.0','operation':operation,'activity_id':'gooo://go/unicode/'+operation,'input_entity_ids':['gooo://std/integer']*(2 if operation == 'To' else 1),'output_entity_id':'gooo://std/integer','generated_sha256':generated,'valid_cases':cases,'unicode_range_inputs':1114112,'unicode_range_comparisons':1114112*len(cases),'outside_unicode_int32_inputs':outside,'outside_unicode_int32_comparisons':len(outside)*len(cases),'outside_int32_extension_inputs':extension,'outside_int32_extension_comparisons':len(extension)*len(cases),'invalid_cases':invalid,'invalid_case_original_rune_inputs':runes,'invalid_case_original_rune_comparisons':len(invalid)*len(runes),'invalid_case_extension_comparisons':len(invalid)*len(extension),'mismatches':0}
 
 
 def inspect_exhaustive(reader,evidence_root,suite,shard,saved,references,generated):
@@ -482,7 +482,7 @@ def inspect_exhaustive(reader,evidence_root,suite,shard,saved,references,generat
         _,raw[name]=reader.file(evidence_root,file,prefix+name,1<<20 if name in ('native-test.txt','exhaustive.json') else MAX_FILE)
     need(digest(raw['native/generated.go']) == generated,'exhaustive actual generated source bytes')
     module,test=('gooo-simple-fold-exhaustive','TestSimpleFoldExhaustive') if kind == 'simple-fold' else (('gooo-ycbcr-exhaustive','TestYCbCrExhaustive') if kind.startswith('ycbcr/') else ('gooo-case-mapping-exhaustive','TestCaseMappingExhaustive'))
-    need(raw['native/go.mod'] == ('module '+module+'\n\ngo 1.27.2\n').encode(),'exhaustive pinned module bytes')
+    need(raw['native/go.mod'] == ('module '+module+'\n\ngo 1.27.3\n').encode(),'exhaustive pinned module bytes')
     need(('func '+test+'(').encode() in raw['native/exhaustive_test.go'] and generated.encode() in raw['native/exhaustive_test.go'],'exhaustive harness source/generated binding')
     log=raw['native-test.txt'];need(('--- PASS: '+test+' ').encode() in log and b'\nPASS\n' in log and b'--- FAIL:' not in log and b'panic:' not in log,'exhaustive actual diagnostic')
     need(equal(load(raw['exhaustive.json']),expected),'actual exhaustive JSON must equal preserved partial report')

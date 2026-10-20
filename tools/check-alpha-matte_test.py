@@ -49,7 +49,7 @@ class AlphaMatteReceiptTest(unittest.TestCase):
         a = {"schema": "gooo/workspace-body-execution-receipt/v1", "decision": "OBSERVED", "manifest_digest": CHECK.digest(manifest_raw), "inputs_digest": CHECK.digest(input_raw), "result": {
             "program": {"entry": manifest["entry"], "workspace_image": {"packages": packages}},
             "composition": {"stage": "COMPLETE", "source": source, "generated_sha256": digest, "steps": [{"generation": {"report": {"activity_id": CHECK.ACTIVITY, "compiler_source_sha": lock["compiler_revision"]}}}]},
-            "runtime": {"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "producer_source_sha": lock["compiler_revision"], "go_version": "go version go1.27.2 linux/amd64", "generated_sha256": digest, "finite_total": 0, "finite_passed": 0, "model_calls": 0, "projection_replayed": True, "runtime_replayed": True, "traces": traces}}}
+            "runtime": {"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "producer_source_sha": lock["compiler_revision"], "go_version": "go version go1.27.3 linux/amd64", "generated_sha256": digest, "finite_total": 0, "finite_passed": 0, "model_calls": 0, "projection_replayed": True, "runtime_replayed": True, "traces": traces}}}
         b = copy.deepcopy(a)
         b["result"]["replay"] = {"model_calls": 0}
         return a, b
@@ -102,7 +102,7 @@ class AlphaMatteReceiptTest(unittest.TestCase):
             "source hash": lambda r: r["result"]["program"]["workspace_image"]["packages"][0]["sources"][0].update(source_digest="wrong"),
             "compiler": lambda r: r["result"]["runtime"].update(producer_source_sha="wrong"),
             "wrong Go version": lambda r: r["result"]["runtime"].update(go_version="go version go1.26.5 linux/amd64"),
-            "32-bit Go": lambda r: r["result"]["runtime"].update(go_version="go version go1.27.2 linux/386"),
+            "32-bit Go": lambda r: r["result"]["runtime"].update(go_version="go version go1.27.3 linux/386"),
             "generation compiler": lambda r: r["result"]["composition"]["steps"][0]["generation"]["report"].update(compiler_source_sha="wrong"),
             "generation activity": lambda r: r["result"]["composition"]["steps"][0]["generation"]["report"].update(activity_id="wrong"),
             "entry": lambda r: r["result"]["program"]["entry"].update(activity="Other"),

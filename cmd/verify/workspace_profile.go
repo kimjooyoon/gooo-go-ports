@@ -39,8 +39,8 @@ func (p nativeWorkspaceProfile) validateCompiler(lock upstream) error {
 	if err := p.validate(); err != nil {
 		return err
 	}
-	if p != "" && (lock.CompilerRevision != "83928fa4538245abe33b08549da47f8cbdc50ed2" || lock.CompilerVersion != "0.6.32-dev" || lock.GoVersion != "go1.27.2") {
-		return fmt.Errorf("dependency-closure-v1 requires pinned compiler839/0.6.32-dev and Go1.27.2")
+	if p != "" && (lock.CompilerRevision != "205896a413e5dea92366309c35ae85e542d055f6" || lock.CompilerVersion != "0.6.37-dev" || lock.GoVersion != "go1.27.3") {
+		return fmt.Errorf("dependency-closure-v1 requires pinned current compiler205896a/0.6.37-dev and Go1.27.3")
 	}
 	return nil
 }
@@ -195,7 +195,7 @@ func (p nativeWorkspaceProfile) identity() map[string]any {
 		"schema": "gooo/native-workspace-profile/v1", "name": string(p),
 		"basis":             "legacy-selected-workspace",
 		"selection":         "entry import closure over whole already-selected packages; original package/source order",
-		"compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2", "go_version": "go1.27.2",
+		"compiler_revision": "205896a413e5dea92366309c35ae85e542d055f6", "go_version": "go1.27.3",
 	}
 }
 

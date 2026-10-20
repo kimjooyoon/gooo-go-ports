@@ -11,8 +11,9 @@ import { Worker, isMainThread, parentPort, workerData } from 'node:worker_thread
 import { execFileSync } from 'node:child_process';
 
 const ORIGINAL = 'sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46';
-const REVISION = 'sha256:a78b95c6f563450e0aacb2356594b270f9a6c42910f3995cec2577076139956e';
-const COMPILER = '83928fa4538245abe33b08549da47f8cbdc50ed2';
+const REVISION = 'sha256:1904100e57ff22b00f4db1597c4f12ebb3c6893063d6deac69e2eb516452a2ca';
+const ORIGINAL_COMPILER = '83928fa4538245abe33b08549da47f8cbdc50ed2';
+const CURRENT_COMPILER = '205896a413e5dea92366309c35ae85e542d055f6';
 const FACTS = ['group_present', 'group_value', 'principal_present', 'principal_value', 'authenticated', 'caller_tenant', 'resource_tenant', 'requested_action', 'allowed_action'];
 const TEXTS = ['group_value', 'principal_value', 'caller_tenant', 'resource_tenant', 'requested_action', 'allowed_action'];
 const DECISIONS = ['allowed', 'reason', 'authenticated', 'tenant_present', 'tenant_matched', 'action_present', 'action_matched', 'access_allowed', 'access_error', 'access_result', 'group_matched', 'principal_matched', 'group_missing', 'principal_defaulted', 'effective_principal'];
@@ -63,7 +64,8 @@ function decodeBytes(bytes) {
 
 function bindings(value, generation, count) {
   keys(value, ['compiler_source_sha', 'assets', 'generation_sha256']);
-  assert.equal(value.compiler_source_sha, COMPILER);
+  assert.ok(count === 28 || count === 38, 'unknown compiler binding profile');
+  assert.equal(value.compiler_source_sha, count === 28 ? ORIGINAL_COMPILER : CURRENT_COMPILER);
   assert.equal(value.generation_sha256, generation);
   assert.equal(Object.keys(value.assets).length, count);
   for (const [name, digest] of Object.entries(value.assets)) {
@@ -544,7 +546,7 @@ function readPackage(options) {
   keys(receipt.source, ['head', 'tree', 'dirty', 'native_sources_sha256', 'original_generation', 'revision_generation']);
   assert.deepEqual(receipt.source, { head: source.head, tree: source.tree, dirty: source.dirty,
     native_sources_sha256: hash(jsonBytes(source.native_sources)), original_generation: ORIGINAL, revision_generation: REVISION });
-  keys(receipt.go, ['version', 'executable', 'runtime']); assert.equal(receipt.go.version, 'go1.27.2');
+  keys(receipt.go, ['version', 'executable', 'runtime']); assert.equal(receipt.go.version, 'go1.27.3');
   descriptor(receipt.go.executable); assert.ok(receipt.go.executable.bytes > 0);
   assert.deepEqual(receipt.go.runtime, { bytes: manifest.files['wasm_exec.js'].bytes, sha256: manifest.files['wasm_exec.js'].sha256 });
   assert.deepEqual(receipt.fixture, source.native_fixtures);

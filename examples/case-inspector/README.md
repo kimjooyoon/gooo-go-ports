@@ -30,7 +30,7 @@ Run from this repository's root with Git, a POSIX shell and Go toolchain
 selection enabled:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 ./tools/bootstrap.sh
 go run ./cmd/gen-case-mapping --check

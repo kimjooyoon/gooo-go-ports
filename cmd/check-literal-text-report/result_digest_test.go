@@ -80,7 +80,7 @@ func reverseObjectKeys(v any) []byte {
 
 func TestPinnedOriginalTypedResultDigest(t *testing.T) {
 	raw := goldenReceipt(t)
-	encoded, err := pinnedResultBytes(raw)
+	encoded, err := legacy839ResultBytes(raw)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,13 +103,13 @@ func TestPinnedOriginalTypedResultDigest(t *testing.T) {
 				t.Fatal(err)
 			}
 			reordered := bytes.Replace(raw, originalMap, reverseObjectKeys(value), 1)
-			got, err := pinnedResultDigest(reordered)
+			got, err := legacy839ResultDigest(reordered)
 			if err != nil || got != goldenPriorResult {
 				t.Fatal("generic key order changed typed digest", got, err)
 			}
 			object(value)["different_value"] = json.Number("9007199254740993")
 			changed := bytes.Replace(raw, originalMap, reverseObjectKeys(value), 1)
-			got, err = pinnedResultDigest(changed)
+			got, err = legacy839ResultDigest(changed)
 			if err != nil || got == goldenPriorResult {
 				t.Fatal("generic value change did not change digest", got, err)
 			}
@@ -244,7 +244,7 @@ func TestPinnedResultRejectsUnsupportedFormats(t *testing.T) {
 			if bytes.Equal(raw, changed) {
 				t.Fatal("mutation did not alter fixture")
 			}
-			if _, err := pinnedResultDigest(changed); err == nil {
+			if _, err := legacy839ResultDigest(changed); err == nil {
 				t.Fatal("unsupported format accepted")
 			}
 		})
@@ -256,7 +256,7 @@ func TestPinnedResultRejectsUnsupportedFormats(t *testing.T) {
 		nested := strings.Repeat("[", 66) + "0" + strings.Repeat("]", 66)
 		original := rawAt(t, raw, keys...)
 		changed := bytes.Replace(raw, original, []byte(`{"deep":`+nested+`}`), 1)
-		if _, err := pinnedResultDigest(changed); err == nil {
+		if _, err := legacy839ResultDigest(changed); err == nil {
 			t.Fatal("deep opaque data accepted", keys)
 		}
 	}

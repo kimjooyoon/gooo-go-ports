@@ -38,7 +38,7 @@ func pathCorpusFileDigest(t *testing.T,name string) string { t.Helper(); raw,err
 func pathCorpusSum(h hash.Hash) string { return fmt.Sprintf("sha256:%x",h.Sum(nil)) }
 
 func TestPathGeneratedCorpus(t *testing.T) {
-	if runtime.Version()!="go1.27.2" { t.Fatal("pinned Go version differs") }
+	if runtime.Version()!="go1.27.3" { t.Fatal("pinned Go version differs") }
 	generated:=pathCorpusFileDigest(t,"generated.go")
 	if generated!={{printf "%q" .Generated}} { t.Fatal("byte-identical generated source differs") }
 	goSource:=pathCorpusFileDigest(t,filepath.Join(runtime.GOROOT(),"src/path/path.go"))

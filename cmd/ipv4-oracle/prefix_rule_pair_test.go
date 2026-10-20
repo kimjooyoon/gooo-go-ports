@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"net/netip"
@@ -408,6 +409,36 @@ func TestProfileFilePinsAliasesAndChangedBytes(t *testing.T) {
 		t.Fatal("symlink alias accepted", err)
 	}
 }
+
+// This is a source-metadata projection, not old native execution evidence.
+// Keep the original raw-byte pin: only the exact approved Go/compiler lines may
+// differ, and the resulting bytes must recover the historical contract SHA.
+func TestPrefixPairContractOnlyReviewedGoPatchMetadataChanged(t *testing.T) {
+	raw := profileRaw(t, "ipv4-rule-pair", "contract.json")
+	if len(raw) != 6091 || fmt.Sprintf("%x", sha256.Sum256(raw)) != profileContractSHA {
+		t.Fatal("current raw contract identity differs")
+	}
+	historical := bytes.Clone(raw)
+	for _, line := range []struct{ current, historical string }{
+		{"    \"calculation\": \"Independent pinned Go1.27.3 net/netip PrefixFrom/Overlaps/Masked/Contains; int64 guards before byte/int conversion; do not reproduce Gooo arithmetic formula\",\n", "    \"calculation\": \"Independent pinned Go1.27.2 net/netip PrefixFrom/Overlaps/Masked/Contains; int64 guards before byte/int conversion; do not reproduce Gooo arithmetic formula\",\n"},
+		{"    \"go_version\": \"go1.27.3\",\n", "    \"go_version\": \"go1.27.2\",\n"},
+	} {
+		if bytes.Count(historical, []byte(line.current)) != 1 || bytes.Contains(historical, []byte(line.historical)) {
+			t.Fatal("approved current contract metadata line missing, repeated or historical")
+		}
+		historical = bytes.Replace(historical, []byte(line.current), []byte(line.historical), 1)
+	}
+	currentCompilerLine := []byte("    \"compiler_revision\": \"205896a413e5dea92366309c35ae85e542d055f6\",\n")
+	historicalCompilerLine := []byte("    \"compiler_revision\": \"83928fa4538245abe33b08549da47f8cbdc50ed2\",\n")
+	if bytes.Count(historical, currentCompilerLine) != 2 || bytes.Contains(historical, historicalCompilerLine) {
+		t.Fatal("approved current compiler lines missing, repeated or historical")
+	}
+	historical = bytes.ReplaceAll(historical, currentCompilerLine, historicalCompilerLine)
+	if fmt.Sprintf("%x", sha256.Sum256(historical)) != "864c62caa16e4b900cad4bc7579e35cd56473f618a9b8be9151109ed7d218891" {
+		t.Fatal("contract changed beyond the reviewed Go patch and compiler metadata lines")
+	}
+}
+
 func TestCombinedProfileCLIAndOldDefaultBytes(t *testing.T) {
 	args := []string{"--profile", "prefix-rule-pair", "--prefix-corpus", profileFixture(t, "ipv4-prefix-probe", "corpus-18.json"), "--corpus", profileFixture(t, "ipv4-rule-pair", "corpus-112.json"), "--contract", profileFixture(t, "ipv4-rule-pair", "contract.json")}
 	var out bytes.Buffer
