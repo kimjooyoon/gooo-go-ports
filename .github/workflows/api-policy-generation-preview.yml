@@ -17,8 +17,8 @@ jobs:
       GOTOOLCHAIN: local
       GOWORK: 'off'
       EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
-      PREVIEW_BASE: ecfa6d862527bb5564ccc6eccc74061b3440876f
-      PREVIEW_TREE: ef92c3467b684fe728acc12cbdc2103929d50b77
+      PREVIEW_BASE: 48115d69c853db6e314a4fed9296132b7ff3daf4
+      PREVIEW_TREE: 2c6f253c9db78a68d13a5eaac8f944364db2d30d
     defaults:
       run:
         shell: bash
