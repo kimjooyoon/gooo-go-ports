@@ -165,7 +165,7 @@ class Evidence:
             need(p['name']==pname and p['namespace']==namespace and S.exact(p['imports'],None if path==PORT else [PORT]),'PAIR_PACKAGE_IDENTITY')
             need(type(p['sources']) is list and len(p['sources'])==len(packages[path]) and
                  S.exact([{k:v[k] for k in ('filename','source_digest')} for v in p['sources']],
-                         [{'filename':f,'source_digest':S.digest(S.go_string((self.repo/f).read_text()))} for f in packages[path]]),'PAIR_SOURCE_IMAGE')
+                         [{'filename':f,'source_digest':S.digest(S.go_string((self.repo/f).read_bytes().decode('utf-8','strict')))} for f in packages[path]]),'PAIR_SOURCE_IMAGE')
             expected={}
             if path==PORT:
                 expected.update({'Integer':('entity',INTEGER),'Boolean':('entity',BOOLEAN)})

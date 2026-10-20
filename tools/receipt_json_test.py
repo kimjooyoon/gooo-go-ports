@@ -4,6 +4,7 @@ import copy
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -23,6 +24,7 @@ def script(name):
 
 
 CROP = script("check-crop-example")
+YCBCR = script("check-ycbcr-example")
 RECTANGLE = script("check-rectangle-inputs")
 
 
@@ -38,11 +40,10 @@ class ReceiptConsumersTest(unittest.TestCase):
     def setUp(self):
         self.cwd = Path.cwd()
         # Production tools run at the repository root, including in CI.
-        import os
         os.chdir(ROOT)
         self.addCleanup(os.chdir, self.cwd)
 
-    def crop_receipts(self):
+    def crop_receipts(self, source_json=None):
         manifest_raw = Path("crop-planner.workspace.json").read_bytes()
         inputs_raw = Path("examples/crop-planner/inputs.json").read_bytes()
         manifest, inputs = json.loads(manifest_raw), json.loads(inputs_raw)["inputs"]
@@ -55,12 +56,16 @@ class ReceiptConsumersTest(unittest.TestCase):
         names = coordinates + ["has_pixels"]
         for p in manifest["packages"]:
             filename = p["sources"][0]
-            text = json.dumps(Path(filename).read_text(), ensure_ascii=False)
-            for a, b in [("&", "\\u0026"), ("<", "\\u003c"), (">", "\\u003e"),
-                         ("\u2028", "\\u2028"), ("\u2029", "\\u2029")]:
-                text = text.replace(a, b)
+            if source_json is None:
+                text = json.dumps(Path(filename).read_bytes().decode("utf-8"), ensure_ascii=False)
+                for a, b in [("&", "\\u0026"), ("<", "\\u003c"), (">", "\\u003e"),
+                             ("\u2028", "\\u2028"), ("\u2029", "\\u2029")]:
+                    text = text.replace(a, b)
+                encoded = text.encode("utf-8")
+            else:
+                encoded = source_json[filename]
             package = {"path": p["path"], "sources": [{"filename": filename,
-                       "source_digest": CROP.digest(text.encode())}]}
+                       "source_digest": CROP.digest(encoded)}]}
             if p["path"] == "example/crop-planner":
                 package["exports"] = [{"name": "CropPlan", "id": activity,
                                        "input_types": [rectangle, rectangle], "output_type": result}]
@@ -99,18 +104,145 @@ class ReceiptConsumersTest(unittest.TestCase):
         replay["result"]["replay"] = {"model_calls": 0}
         return receipt, replay
 
-    def run_crop(self, execution, replay):
+    def run_example(self, checker, execution, replay):
         with tempfile.TemporaryDirectory() as tmp:
             a, b = Path(tmp) / "execution.json", Path(tmp) / "replay.json"
             a.write_bytes(execution)
             b.write_bytes(replay)
             try:
-                with mock.patch.object(sys, "argv", ["check-crop-example.py", str(a), str(b)]), \
+                with mock.patch.object(sys, "argv", [checker.__file__, str(a), str(b)]), \
                         contextlib.redirect_stdout(io.StringIO()):
-                    CROP.main()
+                    checker.main()
             finally:
                 self.assertEqual(a.read_bytes(), execution)
                 self.assertEqual(b.read_bytes(), replay)
+
+    def run_crop(self, execution, replay):
+        self.run_example(CROP, execution, replay)
+
+    def ycbcr_receipts(self, source_json):
+        manifest_raw = Path("ycbcr-inspector.workspace.json").read_bytes()
+        inputs_raw = Path("examples/ycbcr-inspector/inputs.json").read_bytes()
+        manifest, inputs = json.loads(manifest_raw), json.loads(inputs_raw)["inputs"]
+        lock = json.loads(Path("upstream.json").read_bytes())
+        activity = "gooo://go-ports/examples/ycbcr-inspector/inspect-rgb"
+        entity = "gooo://go-ports/examples/ycbcr-inspector/inspection"
+        entry = "app/ycbcr-inspector:InspectRGB"
+        names = ["in_byte_domain", "y", "cb", "cr", "red", "green", "blue",
+                 "red_delta", "green_delta", "blue_delta", "exact"]
+        # The documented finite outputs make a complete synthetic receipt;
+        # these fixtures never launch the compiler or evaluate color policy.
+        outputs = [
+            [True, 0, 128, 128, 0, 0, 0, 0, 0, 0, True],
+            [True, 255, 128, 128, 255, 255, 255, 0, 0, 0, True],
+            [True, 76, 85, 255, 254, 0, 0, -1, 0, 0, False],
+            [True, 150, 44, 21, 0, 255, 1, 0, 0, 1, False],
+            [True, 29, 255, 107, 0, 0, 254, 0, 0, -1, False],
+            [True, 128, 128, 128, 128, 128, 128, 0, 0, 0, True],
+            [True, 79, 101, 163, 128, 63, 31, 0, -1, -1, False],
+            [True, 114, 178, 148, 142, 82, 203, 0, -1, 1, False],
+            [True, 153, 88, 163, 202, 142, 82, 0, 0, -1, False],
+            *[[False, -1, -1, -1, -1, -1, -1, -1, -1, -1, False] for _ in range(3)],
+        ]
+        packages = []
+        for package in manifest["packages"]:
+            value = {"path": package["path"], "sources": [
+                {"filename": name, "source_digest": YCBCR.digest(source_json[name])}
+                for name in package["sources"]]}
+            if package["path"] == "app/ycbcr-inspector":
+                value["exports"] = [{"name": "InspectRGB", "id": activity,
+                                     "input_types": ["gooo://std/integer"] * 3, "output_type": entity}]
+            packages.append(value)
+        traces = []
+        for i, (row, values) in enumerate(zip(inputs, outputs)):
+            actual = dict(zip(names, values))
+            traces.append({"case_index": i, "deliveries": [{"activity_id": activity,
+                "inputs": [{"port": "input" + str(n), "entity_id": "gooo://std/integer",
+                            "value": row[entry + ".input" + str(n)]} for n in range(3)],
+                "actual": actual, "actual_fields": [{"id": entity + "/" + n.replace("_", "-"),
+                                                     "name": n, "value": actual[n]} for n in names]}]})
+        source = "package main\n// Synthetic parser fixture, never executed.\n"
+        generated = YCBCR.digest(source.encode())
+        receipt = {"schema": "gooo/workspace-body-execution-receipt/v1", "decision": "OBSERVED",
+            "manifest_digest": YCBCR.digest(manifest_raw), "inputs_digest": YCBCR.digest(inputs_raw),
+            "result": {"program": {"entry": manifest["entry"], "workspace_image": {"packages": packages}},
+                "composition": {"stage": "COMPLETE", "source": source, "generated_sha256": generated,
+                    "steps": [{"generation": {"report": {"activity_id": activity,
+                               "compiler_source_sha": lock["compiler_revision"]}}}]},
+                "runtime": {"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE",
+                    "producer_source_sha": lock["compiler_revision"],
+                    "go_version": "go version " + lock["go_version"] + " linux/amd64",
+                    "generated_sha256": generated, "finite_total": 0, "finite_passed": 0,
+                    "model_calls": 0, "projection_replayed": True, "runtime_replayed": True,
+                    "traces": traces}}}
+        replay = copy.deepcopy(receipt)
+        replay["result"]["replay"] = {"model_calls": 0}
+        return receipt, replay
+
+    @contextlib.contextmanager
+    def source_workspace(self, example, source_raw, source_json):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            manifest_name = {"crop-planner": "crop-planner.workspace.json",
+                             "ycbcr-inspector": "ycbcr-inspector.workspace.json"}[example]
+            manifest_raw = (ROOT / manifest_name).read_bytes()
+            inputs_name = "examples/" + example + "/inputs.json"
+            for name in [manifest_name, inputs_name, "upstream.json"]:
+                path = directory / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes((ROOT / name).read_bytes())
+            expected = {}
+            for package in json.loads(manifest_raw)["packages"]:
+                for name in package["sources"]:
+                    path = directory / name
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(source_raw)
+                    expected[name] = source_json
+            before = Path.cwd()
+            os.chdir(directory)
+            try:
+                yield expected
+            finally:
+                os.chdir(before)
+
+    def test_example_source_digests_preserve_line_endings(self):
+        # Literal Go JSON-string bytes are independent of either checker or
+        # fixture encoder. In particular, CRLF and CR must not collapse to LF.
+        samples = [
+            (b"alpha\nbeta\n", b'"alpha\\nbeta\\n"'),
+            (b"alpha\r\nbeta\r\n", b'"alpha\\r\\nbeta\\r\\n"'),
+            (b"alpha\rbeta\r", b'"alpha\\rbeta\\r"'),
+            ("<&>\u2028\u2029é\n".encode("utf-8"),
+             b'"\\u003c\\u0026\\u003e\\u2028\\u2029\xc3\xa9\\n"'),
+        ]
+        self.assertEqual(len({CROP.digest(encoded) for _, encoded in samples}), len(samples))
+        for example, checker, fixture in [("crop-planner", CROP, self.crop_receipts),
+                                          ("ycbcr-inspector", YCBCR, self.ycbcr_receipts)]:
+            for index, (source_raw, expected_json) in enumerate(samples):
+                with self.subTest(example=example, source=source_raw), \
+                        self.source_workspace(example, source_raw, expected_json) as expected:
+                    execution, replay = fixture(expected)
+                    replay["replayed_from_sha256"] = checker.digest(encode(execution))
+                    self.run_example(checker, encode(execution), encode(replay))
+                    for side in ["execution", "replay"]:
+                        changed, repeated = copy.deepcopy(execution), copy.deepcopy(replay)
+                        target = changed if side == "execution" else repeated
+                        target["result"]["program"]["workspace_image"]["packages"][0]["sources"][0]["source_digest"] = checker.digest(samples[(index + 1) % len(samples)][1])
+                        # Rebind the exact parent so the source digest check,
+                        # rather than replay hash validation, rejects the edit.
+                        repeated["replayed_from_sha256"] = checker.digest(encode(changed))
+                        with self.subTest(side=side), self.assertRaises(AssertionError):
+                            self.run_example(checker, encode(changed), encode(repeated))
+
+    def test_example_source_digests_reject_invalid_utf8(self):
+        for example, checker, fixture in [("crop-planner", CROP, self.crop_receipts),
+                                          ("ycbcr-inspector", YCBCR, self.ycbcr_receipts)]:
+            with self.subTest(example=example), \
+                    self.source_workspace(example, b"invalid\xff\n", b'"placeholder"') as expected:
+                execution, replay = fixture(expected)
+                replay["replayed_from_sha256"] = checker.digest(encode(execution))
+                with self.assertRaises(UnicodeDecodeError):
+                    self.run_example(checker, encode(execution), encode(replay))
 
     def test_crop_normal_receipts_keep_precision_and_binding(self):
         a, b = self.crop_receipts()

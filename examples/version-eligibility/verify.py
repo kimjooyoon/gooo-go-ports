@@ -112,6 +112,14 @@ def read(path, limit=MAX_OUTPUT):
     return raw
 
 
+def source_digest(path):
+    text = json.dumps(read(path).decode(), ensure_ascii=False)
+    for original, escaped in (("<", "\\u003c"), (">", "\\u003e"), ("&", "\\u0026"),
+                              ("\u2028", "\\u2028"), ("\u2029", "\\u2029")):
+        text = text.replace(original, escaped)
+    return sha(text.encode())
+
+
 def identity(path):
     raw = read(path, 64 << 20)
     return {"bytes": len(raw), "sha256": sha(raw)}
@@ -405,7 +413,7 @@ def main():
             lower = "GoooPackage" + str(originals[SOURCES[0]]["bytes"]) + "Activity" + selected["entry"].split(":")[1]
             need(len(lower) <= len(selected["entry"]) and cases.stat().st_size <= 30000 and
                  cases.stat().st_size <= 32768, "boundary case raw/translated byte caps")
-        source_ids = {name: sha(json.dumps(read(ROOT / name).decode(), ensure_ascii=False).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026").encode()) for name in selected["sources"]}
+        source_ids = {name: source_digest(ROOT / name) for name in selected["sources"]}
         before = runner.run("execute", [compiler, "package", "execute", "--json", "--cases", cases, manifest], ROOT)
         check_args = (expected, rows, source_ids, originals[manifest]["sha256"], identity(cases)["sha256"], tools["go"], version, selected)
         original = receipt(before, *check_args)

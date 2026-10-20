@@ -65,7 +65,7 @@ def main():
             assert len(package["sources"]) == len(expected_sources)
             assert {s["filename"] for s in package["sources"]} == set(expected_sources)
             for source in package["sources"]:
-                text = Path(source["filename"]).read_text()
+                text = Path(source["filename"]).read_bytes().decode("utf-8")
                 encoded = (json.dumps(text, ensure_ascii=False).replace("&", "\\u0026")
                            .replace("<", "\\u003c").replace(">", "\\u003e")
                            .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029").encode())

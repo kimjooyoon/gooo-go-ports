@@ -66,7 +66,7 @@ def main():
         assert len(packages) == 2 and {p["path"] for p in packages} == set(source_names)
         for package in packages:
             filename = source_names[package["path"]]
-            text = Path(filename).read_text()
+            text = Path(filename).read_bytes().decode("utf-8")
             encoded = (json.dumps(text, ensure_ascii=False).replace("&", "\\u0026")
                        .replace("<", "\\u003c").replace(">", "\\u003e")
                        .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029").encode())
