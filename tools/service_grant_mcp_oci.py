@@ -115,6 +115,28 @@ def verify_runtime(bundle, sha256, source_commit, version, runtime, out):
     return report
 
 
+def verify_embedded_go_inventory(embedded_go, components, packages):
+    """Check exact toolchain inventory across two already parsed scanner rosters.
+
+    Trivy 0.76 reports the fixed binary's go1.27.3 as stdlib v1.27.3.
+    Only explicit representations of this same pinned version are accepted.
+    This checks inventory presence, not vulnerabilities or image execution.
+    """
+    CONTEXT.require(embedded_go == CONTEXT.GO_VERSION,
+                    "unreviewed embedded Go toolchain")
+    bare = embedded_go.removeprefix("go")
+    aliases = {embedded_go, bare, "v" + bare}
+    matches = {}
+    for roster, label in ((components, "SBOM"), (packages, "scan")):
+        found = sorted((name, version) for name, version in roster
+                       if name in ("stdlib", "go") and version in aliases)
+        CONTEXT.require(bool(found), label + " missing embedded Go toolchain")
+        matches[label] = [{"name": name, "version": version} for name, version in found]
+    return {"status": "PINNED_EMBEDDED_GO_PRESENT_IN_BOTH_INVENTORIES",
+            "embedded_go": embedded_go, "observed": matches,
+            "vulnerability_or_image_execution_checked": False}
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)

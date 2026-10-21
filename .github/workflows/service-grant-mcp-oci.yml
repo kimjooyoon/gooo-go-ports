@@ -163,12 +163,12 @@ jobs:
           assert version['Version'] == '0.76.0'
           database = version['VulnerabilityDB']
           assert all(database.get(key) for key in ('UpdatedAt', 'NextUpdate', 'DownloadedAt'))
-          embedded_go = build['GoVersion']
-          assert embedded_go == 'go1.27.3', 'unreviewed embedded Go toolchain'
-          go_versions = {embedded_go, embedded_go.removeprefix('go')}
-          for roster, label in ((components, 'SBOM'), (packages, 'scan')):
-              assert any(name in ('stdlib', 'go') and version in go_versions
-                         for name, version in roster), label + ' missing embedded Go toolchain'
+          import importlib.util
+          spec = importlib.util.spec_from_file_location('fixed_oci_inventory', 'tools/service_grant_mcp_oci.py')
+          oci = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(oci)
+          inventory = oci.verify_embedded_go_inventory(build['GoVersion'], components, packages)
+          (root / 'evidence/embedded-go-inventory.json').write_text(json.dumps(inventory, indent=2) + '\n')
           assert (root / 'delivery/sbom.cdx.json').stat().st_size <= 16777216
           files = {}
           for name in ('image.tar', 'sbom.cdx.json', 'scan.json', 'trivy-db-version.json'):

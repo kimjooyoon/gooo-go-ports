@@ -228,5 +228,44 @@ class PublicReleaseIdentity(unittest.TestCase):
         self.assertFalse((runtime / "comparison").exists())
 
 
+class EmbeddedGoInventory(unittest.TestCase):
+    # Actual Trivy 0.76 SBOM and gobinary scan in run39656457715/a1
+    # both recorded stdlib v1.27.3 for BUILD-INFO GoVersion go1.27.3.
+    def test_actual_trivy_version_representation_is_preserved(self):
+        rows = {("stdlib", "v1.27.3")}
+        result = P.verify_embedded_go_inventory("go1.27.3", rows, rows)
+        self.assertEqual(result["embedded_go"], "go1.27.3")
+        self.assertEqual(result["observed"], {
+            "SBOM": [{"name": "stdlib", "version": "v1.27.3"}],
+            "scan": [{"name": "stdlib", "version": "v1.27.3"}]})
+        self.assertFalse(result["vulnerability_or_image_execution_checked"])
+
+    def test_missing_either_inventory_is_refused(self):
+        valid = {("stdlib", "v1.27.3")}
+        for sbom, scan, label in ((set(), valid, "SBOM"), (valid, set(), "scan")):
+            with self.subTest(label=label), self.assertRaisesRegex(P.CONTEXT.Refusal, label):
+                P.verify_embedded_go_inventory("go1.27.3", sbom, scan)
+
+    def test_wrong_version_or_package_cannot_satisfy_inventory(self):
+        valid = {("stdlib", "v1.27.3")}
+        for row in [("stdlib", "v1.27.30"), ("stdlib", "v1.27.2"),
+                    ("stdlib", None), ("stdlib", True), ("other", "v1.27.3")]:
+            for side in ("SBOM", "scan"):
+                with self.subTest(row=row, side=side), self.assertRaisesRegex(P.CONTEXT.Refusal, side):
+                    P.verify_embedded_go_inventory("go1.27.3",
+                        {row} if side == "SBOM" else valid,
+                        {row} if side == "scan" else valid)
+
+    def test_unreviewed_embedded_go_refused_even_if_scanner_matches(self):
+        for version in ("go1.27.2", "v1.27.3", "1.27.3", True, None):
+            with self.subTest(version=version), self.assertRaisesRegex(P.CONTEXT.Refusal, "unreviewed"):
+                P.verify_embedded_go_inventory(version, {("stdlib", version)}, {("stdlib", version)})
+
+    def test_previously_accepted_exact_representations_remain_supported(self):
+        result = P.verify_embedded_go_inventory("go1.27.3",
+            {("stdlib", "go1.27.3")}, {("go", "1.27.3")})
+        self.assertEqual(result["observed"]["scan"], [{"name": "go", "version": "1.27.3"}])
+
+
 if __name__ == "__main__":
     unittest.main()
