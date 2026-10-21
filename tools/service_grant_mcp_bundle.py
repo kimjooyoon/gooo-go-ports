@@ -1022,7 +1022,7 @@ def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
                  "Preserve complete facts, decision and 89 asset bindings. Report first diagnostics with synthetic public facts.\n"
                  "Optional: args [--many-required] additionally exposes assess_service_grant_change.\n"
                  "Its OBJECT arguments use before, after and required_requests [{type,name},...]; order and duplicates survive.\n"
-                 "Optional results retain ordered-column facts, 12 decision fields and separate de99/30-asset/5-source bindings.\n"
+                 f"Optional results retain ordered-column facts, 12 decision fields, compiler {MANY_PIN}, generation {MANY_GENERATION}, and 30-asset/5-source bindings.\n"
                  "No authority is authenticated and no grant is applied in either mode.\n"
                  "Some included Go toolchain notices concern compiler/test components; inventory scope is explicit.\n")
         files["START-HERE.txt"] = (guide.encode(), 0o644)
