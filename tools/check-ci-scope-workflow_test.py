@@ -1334,7 +1334,33 @@ ROOT_GO_REFERENCE_LINE = '          go-version-file: go.mod\n'
 ROOT_GO_LITERAL_LINE = "          go-version: '1.27.3'\n"
 
 
+DOC_FACT_STEP = """      - name: Check current generation toolchain documentation
+        run: |
+          python3 -I -B tools/current-toolchain-docs_test.py -v
+          python3 -I -B tools/current-toolchain-docs.py --check
+"""
+DOC_FACT_PRIOR_WORKFLOW_SHA = "c107d638db6604e166082077eef8a22e47ad0bcfa204bc85919f6a60ed568c7b"
+
+
+def project_current_doc_fact_check(text):
+    # Only this exact early observer step is new. Every historical workflow
+    # contract below still receives its byte-exact previous source.
+    jobs = workflow_jobs(text)
+    require(text.count(DOC_FACT_STEP) == 1
+            and DOC_FACT_STEP in jobs['observer-checks'],
+            'current toolchain docs require their exact observer step once')
+    first_go = text.index('      - uses: actions/setup-go@')
+    require(text.index(DOC_FACT_STEP) + len(DOC_FACT_STEP) == first_go,
+            'documentation facts must fail before the first Go setup and tests')
+    prior = text.replace(DOC_FACT_STEP, '', 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == DOC_FACT_PRIOR_WORKFLOW_SHA,
+            'doc-fact check changed unrelated workflow bytes')
+    return prior
+
+
 def project_root_go_reference(text, module_text=None, path='.github/workflows/ci.yml'):
+    if path == '.github/workflows/ci.yml':
+        text = project_current_doc_fact_check(text)
     if module_text is None:
         module_text = (WORKFLOW.parent.parent.parent / 'go.mod').read_text()
     require(re.findall(r'^go ([^\s]+)[ \t]*$', module_text, re.M) == ['1.27.3'],
@@ -3596,6 +3622,41 @@ class CurrentGo1273SelectionTests(unittest.TestCase):
                         go1273 + '# unreviewed Go1.27.3 occurrence\n'):
             with self.subTest(current_selection=mutated[:80]), self.assertRaises(ValueError):
                 project_go1273_toolchain(mutated)
+
+
+class CurrentDocFactCheckTests(unittest.TestCase):
+    def test_exact_step_recovers_all_previous_workflow_bytes(self):
+        prior = project_current_doc_fact_check(WORKFLOW.read_text())
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), DOC_FACT_PRIOR_WORKFLOW_SHA)
+        self.assertNotIn(DOC_FACT_STEP, prior)
+
+    def test_checks_cannot_be_removed_skipped_duplicated_or_failure_masked(self):
+        raw = WORKFLOW.read_text()
+        for changed in (raw.replace(DOC_FACT_STEP, '', 1),
+                        raw.replace(DOC_FACT_STEP, DOC_FACT_STEP * 2, 1),
+                        raw.replace('current-toolchain-docs_test.py -v', 'current-toolchain-docs_test.py -v || true', 1),
+                        raw.replace('current-toolchain-docs.py --check', 'current-toolchain-docs.py --check || true', 1),
+                        raw.replace('        run: |\n          python3 -I -B tools/current-toolchain-docs_test.py',
+                                    '        if: false\n        run: |\n          python3 -I -B tools/current-toolchain-docs_test.py', 1)):
+            with self.subTest(changed=len(changed)), self.assertRaises(ValueError):
+                project_current_doc_fact_check(changed)
+
+    def test_later_or_different_owner_is_refused(self):
+        raw = WORKFLOW.read_text()
+        without = raw.replace(DOC_FACT_STEP, '', 1)
+        for anchor in ('      - name: Check the Go observer\n',
+                       '  native-execution:\n'):
+            changed = without.replace(anchor, DOC_FACT_STEP + anchor, 1)
+            self.assertNotEqual(changed, raw)
+            with self.subTest(anchor=anchor), self.assertRaises(ValueError):
+                project_current_doc_fact_check(changed)
+
+    def test_other_native_or_action_changes_are_not_hidden(self):
+        raw = WORKFLOW.read_text()
+        changed = raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1)
+        self.assertNotEqual(changed, raw)
+        with self.assertRaises(ValueError):
+            project_current_doc_fact_check(changed)
 
 
 class RootGoReferenceTests(unittest.TestCase):
