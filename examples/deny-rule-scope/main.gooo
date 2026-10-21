@@ -1,0 +1,64 @@
+// Copyright 2026 Gooo Go Ports contributors. BSD-3-Clause.
+// Original diagnostic policy over host-established scoped facts; no matcher or enforcement.
+package deny_rule_scope
+namespace gooo_original_deny_rule_scope_v1
+entity DenyRuleFacts id "gooo://deny-rule-scope/DenyRuleFacts/v1" fields {
+ field surface_id id "gooo://deny-rule-scope/DenyRuleFacts/v1/surface_id" type string required one
+ field rule_id id "gooo://deny-rule-scope/DenyRuleFacts/v1/rule_id" type string required one
+ field inventory_complete id "gooo://deny-rule-scope/DenyRuleFacts/v1/inventory_complete" type boolean required one
+ field backend_known id "gooo://deny-rule-scope/DenyRuleFacts/v1/backend_known" type boolean required one
+ field backend_can_enforce id "gooo://deny-rule-scope/DenyRuleFacts/v1/backend_can_enforce" type boolean required one
+ field prepolicy_matches id "gooo://deny-rule-scope/DenyRuleFacts/v1/prepolicy_matches" type integer required one
+ field remaining_matches id "gooo://deny-rule-scope/DenyRuleFacts/v1/remaining_matches" type integer required one
+ field earlier_denied_matches id "gooo://deny-rule-scope/DenyRuleFacts/v1/earlier_denied_matches" type integer required one
+ field construction_denied_matches id "gooo://deny-rule-scope/DenyRuleFacts/v1/construction_denied_matches" type integer required one
+}
+entity DenyRuleDiagnosis id "gooo://deny-rule-scope/DenyRuleDiagnosis/v1" fields {
+ field surface_id id "gooo://deny-rule-scope/DenyRuleDiagnosis/v1/surface_id" type string required one
+ field rule_id id "gooo://deny-rule-scope/DenyRuleDiagnosis/v1/rule_id" type string required one
+ field inventory_complete id "gooo://deny-rule-scope/DenyRuleDiagnosis/v1/inventory_complete" type boolean required one
+ field backend_known id "gooo://deny-rule-scope/DenyRuleDiagnosis/v1/backend_known" type boolean required one
+ field backend_can_enforce id "gooo://deny-rule-scope/DenyRuleDiagnosis/v1/backend_can_enforce" type boolean required one
+ field prepolicy_matches id "gooo://deny-rule-scope/DenyRuleDiagnosis/v1/prepolicy_matches" type integer required one
+ field remaining_matches id "gooo://deny-rule-scope/DenyRuleDiagnosis/v1/remaining_matches" type integer required one
+ field earlier_denied_matches id "gooo://deny-rule-scope/DenyRuleDiagnosis/v1/earlier_denied_matches" type integer required one
+ field construction_denied_matches id "gooo://deny-rule-scope/DenyRuleDiagnosis/v1/construction_denied_matches" type integer required one
+ field status id "gooo://deny-rule-scope/DenyRuleDiagnosis/v1/status" type string required one
+ field reason id "gooo://deny-rule-scope/DenyRuleDiagnosis/v1/reason" type string required one
+ field warn_unmatched id "gooo://deny-rule-scope/DenyRuleDiagnosis/v1/warn_unmatched" type boolean required one
+}
+activity DiagnoseDenyRule(DenyRuleFacts) -> DenyRuleDiagnosis id "gooo://deny-rule-scope/diagnose/v1" computes `
+let countsValid = input.prepolicy_matches >= 0 && input.prepolicy_matches <= 4096 && input.remaining_matches >= 0 && input.remaining_matches <= 4096 && input.earlier_denied_matches >= 0 && input.earlier_denied_matches <= 4096 && input.construction_denied_matches >= 0 && input.construction_denied_matches <= 4096
+let valid = len(input.surface_id) > 0 && len(input.rule_id) > 0 && countsValid
+if !input.backend_known && input.backend_can_enforce { valid = false }
+if countsValid { if input.remaining_matches + input.earlier_denied_matches + input.construction_denied_matches != input.prepolicy_matches { valid = false } }
+let status = "INVALID_FACTS"
+let reason = "SCOPE_OR_MATCH_PARTITION_INVALID"
+let warn = false
+if valid {
+ status = "UNRESOLVED_BACKEND"
+ reason = "BACKEND_ENFORCEMENT_CONTRACT_UNKNOWN"
+ if input.backend_known {
+  status = "OUTSIDE_ENFORCEABLE_SURFACE"
+  reason = "BACKEND_CANNOT_ENFORCE_THIS_RULE"
+  if input.backend_can_enforce {
+   status = "UNRESOLVED_INVENTORY"
+   reason = "COMPLETE_PREPOLICY_INVENTORY_REQUIRED"
+   if input.inventory_complete {
+    status = "MATCHES_PRIOR_DENIALS"
+    reason = "MATCHES_ALREADY_ACCOUNTED_BY_PRIOR_DENIALS"
+    if input.remaining_matches > 0 {
+     status = "MATCHES_CURRENT_SURFACE"
+     reason = "RULE_MATCHES_AVAILABLE_TOOLS_NO_EFFECT_CLAIMED"
+    }
+    if input.prepolicy_matches == 0 {
+     status = "UNMATCHED_DENY"
+     reason = "NO_MATCH_IN_COMPLETE_ENFORCEABLE_SURFACE"
+     warn = true
+    }
+   }
+  }
+ }
+}
+return DenyRuleDiagnosis{surface_id: input.surface_id, rule_id: input.rule_id, inventory_complete: input.inventory_complete, backend_known: input.backend_known, backend_can_enforce: input.backend_can_enforce, prepolicy_matches: input.prepolicy_matches, remaining_matches: input.remaining_matches, earlier_denied_matches: input.earlier_denied_matches, construction_denied_matches: input.construction_denied_matches, status: status, reason: reason, warn_unmatched: warn}
+`

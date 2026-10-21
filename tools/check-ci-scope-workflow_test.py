@@ -1334,6 +1334,40 @@ ROOT_GO_REFERENCE_LINE = '          go-version-file: go.mod\n'
 ROOT_GO_LITERAL_LINE = "          go-version: '1.27.3'\n"
 
 
+DENY_SCOPE_BLOCK = """      - name: Verify the original scoped deny-rule diagnostic
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 5
+        run: |
+          bash examples/deny-rule-scope/verify.sh "$PWD/.gooo" "$(go env GOROOT)/bin/go" "$RUNNER_TEMP/deny-rule-scope"
+          jq --slurpfile pins upstream.json -e '.status == "FINITE_ORIGINAL_GOOO_SCOPE_POLICY_NATIVE_AND_REPLAY_MATCHED_GO_REFERENCE" and .native_cases == 87 and .saved_replay_cases == 87 and .fields_per_result == 12 and (.receipt_mutation_refusals | length) == 9 and .compiler == $pins[0].compiler_revision and .go == $pins[0].go_version and .model_calls == 0' "$RUNNER_TEMP/deny-rule-scope/verification.json"
+      - name: Preserve scoped deny-rule evidence
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: deny-rule-scope-evidence
+          path: ${{ runner.temp }}/deny-rule-scope
+          if-no-files-found: warn
+          retention-days: 14
+"""
+DENY_SCOPE_DECL = '          ./.gooo check examples/deny-rule-scope/main.gooo\n'
+DENY_SCOPE_PRIOR_WORKFLOW_SHA = '82868e888670937a8070c0423a9703331b58f4d941dd66c5233469b7679099a8'
+
+
+def project_deny_rule_scope_integration(text):
+    jobs = workflow_jobs(text)
+    require(text.count(DENY_SCOPE_BLOCK) == 1 and DENY_SCOPE_BLOCK in jobs['policy-native-checks'],
+            'scoped deny checks and evidence require their exact policy steps once')
+    require(text.count(DENY_SCOPE_DECL) == 1 and DENY_SCOPE_DECL in jobs['native-execution'],
+            'scoped deny declaration requires its original native owner once')
+    anchor = '      - name: Upload offline policy experiment evidence\n'
+    require(text.index(DENY_SCOPE_BLOCK) + len(DENY_SCOPE_BLOCK) == text.index(anchor),
+            'scoped deny checks must precede offline evidence upload')
+    prior = text.replace(DENY_SCOPE_BLOCK, '', 1).replace(DENY_SCOPE_DECL, '', 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == DENY_SCOPE_PRIOR_WORKFLOW_SHA,
+            'scoped deny integration changed unrelated workflow bytes')
+    return prior
+
+
 TOOL_CATALOG_BLOCK = """      - name: Verify original Gooo tool-catalog change
         if: steps.change-scope.outputs.docs_only != 'true'
         timeout-minutes: 5
@@ -1355,6 +1389,7 @@ TOOL_CATALOG_PRIOR_WORKFLOW_SHA = '7ff5a75a4adb70852bb6b0c4882db87d22ee48f2737d5
 
 
 def project_tool_catalog_integration(text):
+    text = project_deny_rule_scope_integration(text)
     jobs = workflow_jobs(text)
     require(text.count(TOOL_CATALOG_BLOCK) == 1
             and TOOL_CATALOG_BLOCK in jobs['policy-native-checks'],
@@ -3657,6 +3692,68 @@ class CurrentGo1273SelectionTests(unittest.TestCase):
                         go1273 + '# unreviewed Go1.27.3 occurrence\n'):
             with self.subTest(current_selection=mutated[:80]), self.assertRaises(ValueError):
                 project_go1273_toolchain(mutated)
+
+
+class DenyRuleScopeIntegrationTests(unittest.TestCase):
+    def test_exact_changes_recover_the_whole_prior_workflow(self):
+        prior = project_deny_rule_scope_integration(WORKFLOW.read_text())
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), DENY_SCOPE_PRIOR_WORKFLOW_SHA)
+        self.assertNotIn(DENY_SCOPE_BLOCK, prior)
+        self.assertNotIn(DENY_SCOPE_DECL, prior)
+        project_tool_catalog_integration(WORKFLOW.read_text())
+
+    def test_each_step_line_cannot_be_omitted_duplicated_or_changed(self):
+        raw = WORKFLOW.read_text()
+        for line in DENY_SCOPE_BLOCK.splitlines(True):
+            for replacement in ('', line * 2, ' ' + line):
+                changed = raw.replace(DENY_SCOPE_BLOCK, DENY_SCOPE_BLOCK.replace(line, replacement, 1), 1)
+                self.assertNotEqual(changed, raw)
+                with self.subTest(line=line.strip(), replacement=replacement[:40]), self.assertRaises(ValueError):
+                    project_deny_rule_scope_integration(changed)
+
+    def test_skip_failure_mask_wrong_counts_and_missing_artifact_are_refused(self):
+        raw = WORKFLOW.read_text()
+        replacements = [
+            ('timeout-minutes: 5', 'timeout-minutes: 50'),
+            ('steps.change-scope.outputs.docs_only != \'true\'', 'false'),
+            ('(.receipt_mutation_refusals | length) == 9', '(.receipt_mutation_refusals | length) == 0'),
+            ('and .native_cases == 87', 'and .native_cases == 0'),
+            ('and .saved_replay_cases == 87', 'and .saved_replay_cases == 0'),
+            ('name: deny-rule-scope-evidence', 'name: unrelated-evidence'),
+        ]
+        # Mutate the declared block, not an earlier step with a shared line.
+        for before, after in replacements:
+            self.assertIn(before, DENY_SCOPE_BLOCK)
+            changed_block = DENY_SCOPE_BLOCK.replace(before, after, 1)
+            self.assertNotEqual(changed_block, DENY_SCOPE_BLOCK)
+            with self.subTest(before=before), self.assertRaises(ValueError):
+                project_deny_rule_scope_integration(raw.replace(DENY_SCOPE_BLOCK, changed_block, 1))
+        command = next(line for line in DENY_SCOPE_BLOCK.splitlines(True) if 'bash examples/deny-rule-scope/verify.sh' in line)
+        changed_block = DENY_SCOPE_BLOCK.replace(command, command.rstrip('\n') + ' || true\n', 1)
+        with self.assertRaises(ValueError):
+            project_deny_rule_scope_integration(raw.replace(DENY_SCOPE_BLOCK, changed_block, 1))
+
+    def test_declaration_omission_duplication_and_wrong_owner_are_refused(self):
+        raw = WORKFLOW.read_text()
+        for replacement in ('', DENY_SCOPE_DECL * 2, ' ' + DENY_SCOPE_DECL):
+            with self.subTest(replacement=replacement), self.assertRaises(ValueError):
+                project_deny_rule_scope_integration(raw.replace(DENY_SCOPE_DECL, replacement, 1))
+        moved = raw.replace(DENY_SCOPE_DECL, '', 1).replace('      - name: Upload offline policy experiment evidence\n', DENY_SCOPE_DECL + '      - name: Upload offline policy experiment evidence\n', 1)
+        with self.assertRaises(ValueError):
+            project_deny_rule_scope_integration(moved)
+
+    def test_moved_step_and_unrelated_native_changes_are_refused(self):
+        raw = WORKFLOW.read_text()
+        without = raw.replace(DENY_SCOPE_BLOCK, '', 1)
+        for anchor in ('      - name: Verify the Agent Mesh service-pattern adaptation\n', '  native-execution:\n'):
+            moved = without.replace(anchor, DENY_SCOPE_BLOCK + anchor, 1)
+            self.assertNotEqual(moved, raw)
+            with self.subTest(anchor=anchor), self.assertRaises(ValueError):
+                project_deny_rule_scope_integration(moved)
+        changed = raw.replace('--fail-fast --timeout 60m', '--fail-fast --timeout 90m', 1)
+        self.assertNotEqual(changed, raw)
+        with self.assertRaises(ValueError):
+            project_deny_rule_scope_integration(changed)
 
 
 class ToolCatalogIntegrationTests(unittest.TestCase):
