@@ -1,0 +1,57 @@
+// Copyright 2026 Gooo Go Ports contributors. BSD-3-Clause; see LICENSE.
+// Original composition of ported Gooo selection with source-catalog presence.
+package catalog_change
+namespace gooo_original_tool_catalog_change_v1
+import gogcli "go/openclaw/gogcli/mcp"
+entity CatalogChange id "urn:gooo:gogcli-catalog:CatalogChange" fields {
+ field name id "urn:gooo:gogcli-catalog:CatalogChange:name" type string required one
+ field before_present id "urn:gooo:gogcli-catalog:CatalogChange:before_present" type boolean required one
+ field before_service id "urn:gooo:gogcli-catalog:CatalogChange:before_service" type string required one
+ field before_risk id "urn:gooo:gogcli-catalog:CatalogChange:before_risk" type string required one
+ field before_capability id "urn:gooo:gogcli-catalog:CatalogChange:before_capability" type string required one
+ field before_allow_write id "urn:gooo:gogcli-catalog:CatalogChange:before_allow_write" type boolean required one
+ field before_allow_gmail_send id "urn:gooo:gogcli-catalog:CatalogChange:before_allow_gmail_send" type boolean required one
+ field before_allow_gmail_delete id "urn:gooo:gogcli-catalog:CatalogChange:before_allow_gmail_delete" type boolean required one
+ field before_readonly id "urn:gooo:gogcli-catalog:CatalogChange:before_readonly" type boolean required one
+ field before_policy_selectors id "urn:gooo:gogcli-catalog:CatalogChange:before_policy_selectors" type string required many
+ field before_runtime_selectors id "urn:gooo:gogcli-catalog:CatalogChange:before_runtime_selectors" type string required many
+ field after_present id "urn:gooo:gogcli-catalog:CatalogChange:after_present" type boolean required one
+ field after_service id "urn:gooo:gogcli-catalog:CatalogChange:after_service" type string required one
+ field after_risk id "urn:gooo:gogcli-catalog:CatalogChange:after_risk" type string required one
+ field after_capability id "urn:gooo:gogcli-catalog:CatalogChange:after_capability" type string required one
+ field after_allow_write id "urn:gooo:gogcli-catalog:CatalogChange:after_allow_write" type boolean required one
+ field after_allow_gmail_send id "urn:gooo:gogcli-catalog:CatalogChange:after_allow_gmail_send" type boolean required one
+ field after_allow_gmail_delete id "urn:gooo:gogcli-catalog:CatalogChange:after_allow_gmail_delete" type boolean required one
+ field after_readonly id "urn:gooo:gogcli-catalog:CatalogChange:after_readonly" type boolean required one
+ field after_policy_selectors id "urn:gooo:gogcli-catalog:CatalogChange:after_policy_selectors" type string required many
+ field after_runtime_selectors id "urn:gooo:gogcli-catalog:CatalogChange:after_runtime_selectors" type string required many
+}
+entity CatalogDelta id "urn:gooo:gogcli-catalog:CatalogDelta" fields {
+ field name id "urn:gooo:gogcli-catalog:CatalogDelta:name" type string required one
+ field before_present id "urn:gooo:gogcli-catalog:CatalogDelta:before_present" type boolean required one
+ field after_present id "urn:gooo:gogcli-catalog:CatalogDelta:after_present" type boolean required one
+ field before_selected id "urn:gooo:gogcli-catalog:CatalogDelta:before_selected" type boolean required one
+ field after_selected id "urn:gooo:gogcli-catalog:CatalogDelta:after_selected" type boolean required one
+ field added id "urn:gooo:gogcli-catalog:CatalogDelta:added" type boolean required one
+ field removed id "urn:gooo:gogcli-catalog:CatalogDelta:removed" type boolean required one
+ field classification id "urn:gooo:gogcli-catalog:CatalogDelta:classification" type string required one
+ field before_service id "urn:gooo:gogcli-catalog:CatalogDelta:before_service" type string required one
+ field before_risk id "urn:gooo:gogcli-catalog:CatalogDelta:before_risk" type string required one
+ field before_capability id "urn:gooo:gogcli-catalog:CatalogDelta:before_capability" type string required one
+ field after_service id "urn:gooo:gogcli-catalog:CatalogDelta:after_service" type string required one
+ field after_risk id "urn:gooo:gogcli-catalog:CatalogDelta:after_risk" type string required one
+ field after_capability id "urn:gooo:gogcli-catalog:CatalogDelta:after_capability" type string required one
+}
+activity CompareCatalogEntry(CatalogChange) -> CatalogDelta id "gooo://tool-catalog-change/compare-entry/v1" computes `
+let before = false
+let after = false
+if input.before_present { before = gogcli.ToolSelected(GogSelectionFacts{name: input.name, service: input.before_service, risk: input.before_risk, capability: input.before_capability, allow_write: input.before_allow_write, allow_gmail_send: input.before_allow_gmail_send, allow_gmail_delete: input.before_allow_gmail_delete, readonly: input.before_readonly, policy_selectors: input.before_policy_selectors, runtime_selectors: input.before_runtime_selectors}) }
+if input.after_present { after = gogcli.ToolSelected(GogSelectionFacts{name: input.name, service: input.after_service, risk: input.after_risk, capability: input.after_capability, allow_write: input.after_allow_write, allow_gmail_send: input.after_allow_gmail_send, allow_gmail_delete: input.after_allow_gmail_delete, readonly: input.after_readonly, policy_selectors: input.after_policy_selectors, runtime_selectors: input.after_runtime_selectors}) }
+let added = !before && after
+let removed = before && !after
+let classification = "REMAINS_UNSELECTED"
+if before && after { classification = "REMAINS_SELECTED" }
+if added { classification = "ADDED_TO_SELECTED_CATALOG" }
+if removed { classification = "REMOVED_FROM_SELECTED_CATALOG" }
+return CatalogDelta{name: input.name, before_present: input.before_present, after_present: input.after_present, before_selected: before, after_selected: after, added: added, removed: removed, classification: classification, before_service: input.before_service, before_risk: input.before_risk, before_capability: input.before_capability, after_service: input.after_service, after_risk: input.after_risk, after_capability: input.after_capability}
+`

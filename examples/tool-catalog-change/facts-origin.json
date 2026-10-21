@@ -1,0 +1,14 @@
+{
+  "schema": "gooo/tool-catalog-facts-origin/v1",
+  "source_pins": "source-pin.json",
+  "source_catalogs": "source-catalogs.json",
+  "projection": "reference/catalog-source/main.go",
+  "before_revision": "578440918818e24aec6291cfe78cbb915091d7ae",
+  "after_revision": "ec34fedc23dd9d3e90f0401144cec42e06a50783",
+  "source_counts": {
+    "before": 10,
+    "after": 27
+  },
+  "policy": "Unchanged selected policy: allow_write=true, allow_tools=[gmail.*], send/delete=false, readonly=false, no runtime selectors.",
+  "scope": "Complete metadata of the two reviewed mcpAllTools source expressions under the current extracted selection kernel. This is not historical full-binary execution or live account/tool registration."
+}

@@ -1,0 +1,1298 @@
+{
+  "schema": "gooo/tool-catalog-case-facts/v1",
+  "catalog": [
+    {
+      "name": "gmail_search",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "read",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "read",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_get_message",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "read",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "read",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_get_thread",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "read",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "read",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "drive_search",
+      "before_present": true,
+      "before_service": "drive",
+      "before_risk": "read",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "drive",
+      "after_risk": "read",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "drive_get",
+      "before_present": true,
+      "before_service": "drive",
+      "before_risk": "read",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "drive",
+      "after_risk": "read",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "docs_get",
+      "before_present": true,
+      "before_service": "docs",
+      "before_risk": "read",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "docs",
+      "after_risk": "read",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "sheets_read_range",
+      "before_present": true,
+      "before_service": "sheets",
+      "before_risk": "read",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "sheets",
+      "after_risk": "read",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "calendar_events",
+      "before_present": true,
+      "before_service": "calendar",
+      "before_risk": "read",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "calendar",
+      "after_risk": "read",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "docs_write",
+      "before_present": true,
+      "before_service": "docs",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "docs",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "sheets_update_range",
+      "before_present": true,
+      "before_service": "sheets",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "sheets",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_list_drafts",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "read",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_get_draft",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "read",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_list_labels",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "read",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_create_draft",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_update_draft",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_create_label",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_modify_messages",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_modify_thread",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_mark_read",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_mark_unread",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_archive_messages",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_trash_messages",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_restore_messages",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_send_message",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "gmail_send",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_send_draft",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "gmail_send",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_delete_draft",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "gmail_delete",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_delete_messages",
+      "before_present": false,
+      "before_service": "",
+      "before_risk": "",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "gmail_delete",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    }
+  ],
+  "controls": [
+    {
+      "name": "gmail_create_draft",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_create_draft",
+      "before_present": false,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_send_message",
+      "before_present": false,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "gmail_send",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_send_message",
+      "before_present": false,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "gmail_send",
+      "after_allow_write": true,
+      "after_allow_gmail_send": true,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_create_draft",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": true,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_create_draft",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": false,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_create_draft",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": [
+        "docs.*"
+      ]
+    },
+    {
+      "name": "gmail_create_draft",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": [
+        "gmail_create_draft"
+      ]
+    },
+    {
+      "name": "gmail_create_draft",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "docs.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_create_draft",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": false,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_create_draft",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "future_unknown",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_create_draft",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "gmail_send",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_delete_messages",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "gmail_delete",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_delete_messages",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "gmail_delete",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": true,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "gmail_delete",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": true,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_send_message",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "gmail_send",
+      "before_allow_write": true,
+      "before_allow_gmail_send": true,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "gmail_send",
+      "after_allow_write": true,
+      "after_allow_gmail_send": true,
+      "after_allow_gmail_delete": false,
+      "after_readonly": true,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_search",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "read",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "read"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "read"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_create_draft",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "docs",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_create_draft",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "GMAIL.*"
+      ],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_create_draft",
+      "before_present": true,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [],
+      "before_runtime_selectors": [],
+      "after_present": true,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [],
+      "after_runtime_selectors": []
+    },
+    {
+      "name": "gmail_create_draft",
+      "before_present": false,
+      "before_service": "gmail",
+      "before_risk": "write",
+      "before_capability": "",
+      "before_allow_write": true,
+      "before_allow_gmail_send": false,
+      "before_allow_gmail_delete": false,
+      "before_readonly": false,
+      "before_policy_selectors": [
+        "gmail.*"
+      ],
+      "before_runtime_selectors": [],
+      "after_present": false,
+      "after_service": "gmail",
+      "after_risk": "write",
+      "after_capability": "",
+      "after_allow_write": true,
+      "after_allow_gmail_send": false,
+      "after_allow_gmail_delete": false,
+      "after_readonly": false,
+      "after_policy_selectors": [
+        "gmail.*"
+      ],
+      "after_runtime_selectors": []
+    }
+  ],
+  "control_labels": [
+    "unchanged existing write",
+    "unchanged selector exposes new ordinary write",
+    "unchanged selector does not expose gated send",
+    "explicit send grant exposes new send",
+    "read-only ceiling removes ordinary write",
+    "disabled write ceiling removes ordinary write",
+    "runtime intersection removes selected write",
+    "matching runtime selector preserves write",
+    "policy selector removes ordinary write",
+    "catalog removal",
+    "unknown capability is closed",
+    "new explicit capability closes former ordinary write",
+    "delete needs its own flag",
+    "delete flag retains selected delete",
+    "send flag cannot bypass readonly",
+    "risk change with read selector removes entry",
+    "service change removes selection",
+    "case-sensitive selector",
+    "empty kernel selector list is no filter",
+    "absent on both sides"
+  ]
+}

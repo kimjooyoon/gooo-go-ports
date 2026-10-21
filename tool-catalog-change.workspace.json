@@ -1,0 +1,21 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "app/tool-catalog-change",
+    "activity": "CompareCatalogEntry"
+  },
+  "packages": [
+    {
+      "path": "go/openclaw/gogcli/mcp",
+      "sources": [
+        "ports/gogcli/tool_selection.gooo"
+      ]
+    },
+    {
+      "path": "app/tool-catalog-change",
+      "sources": [
+        "examples/tool-catalog-change/main.gooo"
+      ]
+    }
+  ]
+}
