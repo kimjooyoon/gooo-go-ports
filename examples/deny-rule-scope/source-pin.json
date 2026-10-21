@@ -1,0 +1,29 @@
+{
+  "schema": "gooo/deny-rule-scope-source-observations/v1",
+  "purpose": "Requirements context only; no upstream implementation is ported by this original policy.",
+  "repository": "https://github.com/openclaw/openclaw",
+  "revision": "870549c6fdd21c0a466da465916625740f16331f",
+  "issue": "https://github.com/openclaw/openclaw/issues/137470",
+  "files": [
+    {
+      "url": "https://github.com/openclaw/openclaw/blob/870549c6fdd21c0a466da465916625740f16331f/src/agents/tool-policy-match.ts",
+      "bytes": 4813,
+      "sha256": "5bf399e0ab63969ce901bd588e0a0015e088d445b31057eed6fc58f9234c4b61"
+    },
+    {
+      "url": "https://github.com/openclaw/openclaw/blob/870549c6fdd21c0a466da465916625740f16331f/src/agents/tool-policy-pipeline.ts",
+      "bytes": 8977,
+      "sha256": "3fa404134c64df6b1d9560003aa826f7c65f96197a0be38d066562e6f670012a"
+    },
+    {
+      "url": "https://github.com/openclaw/openclaw/blob/870549c6fdd21c0a466da465916625740f16331f/src/agents/tool-policy-declared-context.ts",
+      "bytes": 4307,
+      "sha256": "2dceb8ddeda529a95362f4e231c3020ab5f8f77a2b33fd41125a8cb50cc5082c"
+    },
+    {
+      "url": "https://github.com/openclaw/openclaw/blob/870549c6fdd21c0a466da465916625740f16331f/src/agents/cli-backends.ts",
+      "bytes": 11069,
+      "sha256": "9975f9e5388f18ab8e84e7091e72720328a50aef3ce5f493340a6cdf74e9addd"
+    }
+  ]
+}
