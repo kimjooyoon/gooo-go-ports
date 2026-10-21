@@ -1327,6 +1327,37 @@ def validate_ordered_service_workflow(text):
     return prior
 
 
+# Recover the exact literal preimage before applying historical projections.
+# Compiler/ABI assertions and all native execution gates remain required.
+ROOT_GO_REFERENCES = {'.github/workflows/api-policy-action.yml': (1, 'ed61e1af452ec581162556f1eca5a5f491b0203daf95d7f21191b01dc5c7789e'), '.github/workflows/api-policy-generation-preview.yml': (1, '470236c8748cd1b58cca4218727d1ea464039850b183e0d0b6150bc0224ccac2'), '.github/workflows/ci.yml': (4, 'b9005468d94a1d136a441ae5ffa7de4737e207bdd5c57091cb7f0633b419196c'), '.github/workflows/manual-native-shards.yml': (3, '269f030bf3e2ba584406f31ef518386f1233943641a47b0c8b01dba255741d49'), '.github/workflows/service-grant-cli-bundle.yml': (1, 'dd0d68917c9851babf89b0a81cdfb20f9fab0f0cc548ae1d920e5c3ce885e49b'), '.github/workflows/service-grant-mcp.yml': (1, 'c283a8e81d2c34d8701cfd175d1da478ce0cd336e9a4a1f00085a8a61ef6c2ee')}
+ROOT_GO_REFERENCE_LINE = '          go-version-file: go.mod\n'
+ROOT_GO_LITERAL_LINE = "          go-version: '1.27.3'\n"
+
+
+def project_root_go_reference(text, module_text=None, path='.github/workflows/ci.yml'):
+    if module_text is None:
+        module_text = (WORKFLOW.parent.parent.parent / 'go.mod').read_text()
+    require(re.findall(r'^go ([^\s]+)[ \t]*$', module_text, re.M) == ['1.27.3'],
+            'root module must select the reviewed Go version')
+    require(not re.search(r'^toolchain\b', module_text, re.M),
+            'toolchain directive requires explicit precedence review')
+    count, historical_sha = ROOT_GO_REFERENCES[path]
+    require(text.splitlines(keepends=True).count(ROOT_GO_REFERENCE_LINE) == count,
+            'root Go reference selector count or path changed')
+    require(len(re.findall(r'^\s*go-version(?:-file)?:', text, re.M)) == count,
+            'mixed or unclassified Go selectors')
+    require(len(re.findall(r'uses:[ \t]+actions/setup-go@', text)) == count,
+            'setup-go family coverage changed')
+    prior = text.replace(ROOT_GO_REFERENCE_LINE, ROOT_GO_LITERAL_LINE, count)
+    require(hashlib.sha256(prior.encode()).hexdigest() == historical_sha,
+            'root reference projection changed unrelated workflow bytes')
+    return prior
+
+
+def read_current_workflow():
+    return project_root_go_reference(WORKFLOW.read_text())
+
+
 # The current runner changes only the reviewed Go patch selection/expectation
 # lines. Validate those exact full lines before recovering historical bytes.
 # This does not replace any prior workflow hash, compiler pin or native gate.
@@ -1775,7 +1806,7 @@ class WorkflowScopeTests(unittest.TestCase):
     def setUp(self):
         # First bind the complete current74 workflow; unchanged historical tests
         # then exercise exactly the reviewed73-byte projection.
-        self.text = validate_ordered_service_workflow(project_go1273_toolchain(project_current_compiler_profile(WORKFLOW.read_text())))
+        self.text = validate_ordered_service_workflow(project_go1273_toolchain(project_current_compiler_profile(read_current_workflow())))
 
     def test_summary_preflight_is_exact_full_only_and_precedes_go_setup(self):
         named, unnamed = named_steps(self.text)
@@ -2017,7 +2048,7 @@ class WorkflowScopeTests(unittest.TestCase):
     def test_full_native_ci_binds_three_workers_and_timing(self):
         # Exact opt-in flags, recorded outcome policy and finite budgets are
         # bound before the historical inverse projection runs.
-        current = WORKFLOW.read_text()
+        current = read_current_workflow()
         for before, after in (
                 (" --fail-fast --timeout 60m", ""),
                 (" --fail-fast --timeout 60m", " --fail-fast=false --timeout 60m"),
@@ -3381,7 +3412,7 @@ class WorkflowScopeTests(unittest.TestCase):
 
 class OrderedServiceIntegrationTests(unittest.TestCase):
     def setUp(self):
-        self.text = project_go1273_toolchain(project_current_compiler_profile(WORKFLOW.read_text()))
+        self.text = project_go1273_toolchain(project_current_compiler_profile(read_current_workflow()))
 
     def test_named_facts_runs_the_same_demo_and_preserves_every_previous_gate(self):
         prior = project_named_facts_input(self.text)
@@ -3525,7 +3556,7 @@ class OrderedServiceIntegrationTests(unittest.TestCase):
 
 class CurrentGo1273SelectionTests(unittest.TestCase):
     def test_exact_current_patch_delta_projects_to_all_historical_guards(self):
-        current = WORKFLOW.read_text()
+        current = read_current_workflow()
         go1273 = project_current_compiler_profile(current)
         projected = project_go1273_toolchain(go1273)
         self.assertEqual(projected.replace('1.27.2', '1.27.3'), go1273)
@@ -3565,6 +3596,48 @@ class CurrentGo1273SelectionTests(unittest.TestCase):
                         go1273 + '# unreviewed Go1.27.3 occurrence\n'):
             with self.subTest(current_selection=mutated[:80]), self.assertRaises(ValueError):
                 project_go1273_toolchain(mutated)
+
+
+class RootGoReferenceTests(unittest.TestCase):
+    def test_every_workflow_projects_to_its_unchanged_literal_preimage(self):
+        root = WORKFLOW.parent.parent.parent
+        self.assertEqual(sum(count for count, _ in ROOT_GO_REFERENCES.values()), 11)
+        observed = {str(path.relative_to(root)) for path in WORKFLOW.parent.iterdir()
+                    if path.suffix in ('.yml', '.yaml') and
+                    re.search(r'uses:[ \t]+actions/setup-go@', path.read_text())}
+        self.assertEqual(observed, set(ROOT_GO_REFERENCES))
+        for path, (count, digest) in ROOT_GO_REFERENCES.items():
+            with self.subTest(path=path):
+                prior = project_root_go_reference((root / path).read_text(), path=path)
+                self.assertEqual(prior.count(ROOT_GO_LITERAL_LINE), count)
+                self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), digest)
+
+    def test_mixed_wrong_missing_and_duplicate_selectors_are_refused(self):
+        raw = WORKFLOW.read_bytes().decode()
+        for replacement in ('', ROOT_GO_REFERENCE_LINE * 2, ROOT_GO_LITERAL_LINE,
+                            ROOT_GO_REFERENCE_LINE + ROOT_GO_LITERAL_LINE,
+                            ROOT_GO_REFERENCE_LINE.replace('go.mod', 'other/go.mod'),
+                            ROOT_GO_REFERENCE_LINE.replace('go.mod', '${{ matrix.module }}')):
+            with self.subTest(selector=replacement), self.assertRaises(ValueError):
+                project_root_go_reference(raw.replace(ROOT_GO_REFERENCE_LINE, replacement, 1))
+
+    def test_root_module_precedence_and_version_require_explicit_review(self):
+        raw = WORKFLOW.read_bytes().decode()
+        module = (WORKFLOW.parent.parent.parent / 'go.mod').read_text()
+        for altered in (module + '\ntoolchain go1.27.4\n', module + '\ntoolchain default\n',
+                        module.replace('go 1.27.3', 'go 1.27.2', 1),
+                        module.replace('go 1.27.3', 'go 1.27.4', 1), module + '\ngo 1.27.3\n'):
+            with self.subTest(module=altered), self.assertRaises(ValueError):
+                project_root_go_reference(raw, module_text=altered)
+
+    def test_reference_transition_cannot_hide_execution_or_action_changes(self):
+        raw = WORKFLOW.read_bytes().decode()
+        for before, after in (('--workers 3', '--workers 1'),
+                              ('--fail-fast --timeout 60m', '--timeout 60m'),
+                              ('actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e', 'actions/setup-go@main')):
+            self.assertIn(before, raw)
+            with self.subTest(change=before), self.assertRaises(ValueError):
+                project_root_go_reference(raw.replace(before, after, 1))
 
 
 if __name__ == "__main__":

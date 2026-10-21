@@ -319,8 +319,10 @@ refuses a workflow that also requires calculator; `first_counterexample: 1`
 points to the second original request. Gooo validates all supplied items, owns
 the 256-request policy budget and returns the subset rule plus 12 decision
 fields. Generated Go provides an ordered-pair API and strict JSON CLI. This
-separate `de99b770` consumer profile keeps the default compiler and 82-suite
-catalog unchanged. It assesses supplied facts and does not apply a grant.
+separate composition now uses the pinned `205896a4` compiler and Go 1.27.3;
+the linked module README retains the earlier `de99b770` reproduction separately.
+It keeps the 82-suite catalog unchanged, assesses supplied facts and does not
+apply a grant.
 
 
 The appended selected If-Match core retains all284 original input occurrences

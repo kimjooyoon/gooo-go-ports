@@ -414,7 +414,8 @@ compiler issue before passing a minimal case to the language repository.
   Supply `before`, `after` and ordered `required_requests` pairs. Inspect the first
   failing original index and all 12 decision fields; preserve duplicates and input
   order. The generated Go API and JSON CLI need Go 1.27.3, while source editing
-  uses the separate pinned `de99b770` compiler profile. To call this assessment
+  uses the current pinned `205896a4` compiler profile. The module README retains
+  the earlier `de99b770` reproduction separately. To call this assessment
   from an MCP host, use the explicit
   [ordered-request mode](#preserve-several-required-requests-through-mcp).
   The default MCP tool still assesses one required request.
@@ -562,8 +563,10 @@ Discover `assess_service_grant_change`, then give the agent this finite task:
 The first candidate is `ELIGIBLE`; the second is `REFUSED` with
 `REQUIRED_REQUEST_REMOVED` at `first_counterexample: 1` (calculator). These are
 argument **objects**, not CLI batch arrays. Preserve the ordered-column facts,
-all 12 typed decision fields and full bindings: this mode uses the separate
-`de99b770` generation with 30 asset and five source hashes. Neither outcome
+all 12 typed decision fields and full bindings, including 30 asset and five
+source hashes. The archived preview.14 executable retains its `de99b770`
+generation; the current Go 1.27.3 source build uses `205896a4`. Preserve the
+actual compiler and generation identities returned by the executable. Neither outcome
 authenticates supplied facts or applies a change; the
 [host application boundary](../examples/agentmesh-service-policy/conditional-apply.md)
 still applies.
