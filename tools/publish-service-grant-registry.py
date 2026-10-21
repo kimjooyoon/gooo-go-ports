@@ -30,15 +30,15 @@ import urllib.error
 import urllib.request
 
 REPOSITORY = 'kimjooyoon/gooo-go-ports'
-SOURCE = 'fb968299749caba1ee05f7a7ecd726d769a53ec0'
-TREE = 'fe2afca6c5d1925a2590e5c06d4a19806fb59b45'
-TAG = 'v0.1.0-preview.15'
-TAG_OBJECT = '1504d0dda7851e46260cc71b0454509d3d656787'
-RELEASE_ID = 419159464
+SOURCE = 'fceb89f8b53eabd6687d16258d7cee89853c2cfe'
+TREE = '8c70f6cb7807a67232ba5f871618f516b4616095'
+TAG = 'v0.1.0-preview.16'
+TAG_OBJECT = '0221132eae836549b0b560f7ad45fca0fc8f43f4'
+RELEASE_ID = 419800618
 NAME = 'io.github.kimjooyoon/gooo-service-grant'
-VERSION = '0.1.0-preview.15'
+VERSION = '0.1.0-preview.16'
 METADATA_BYTES = 586
-METADATA_SHA = '823ca95e3e57d05c89ba68704915e36aa5ebf873f4d7557586e4fde8bbd19f15'
+METADATA_SHA = 'f2eda392c4bd9cb3dcc570b60d71a65ed5194647dbf6c19b710ad7b031d5eb4d'
 REGISTRY = 'https://registry.modelcontextprotocol.io'
 PUBLISHER_VERSION = 'v1.8.1'
 PUBLISHER_RELEASE_ID = 366432047
@@ -54,25 +54,25 @@ PUBLISHER_MEMBERS = {
 }
 ASSETS = {
     'gooo-service-grant-mcp-darwin-arm64.tar.gz':
-        (6974913, '25728134252498ee635f322a49c48b9c8d6e5aca48df64228f7dd8e7cf3c1e42'),
+        (6976309, 'a9f90f21fd10db3c6bfa0fae1372681131a4e84934acb4bb335cc26022fc47d8'),
     'gooo-service-grant-mcp-darwin-arm64.tar.gz.sha256':
-        (109, 'a22c026c2c86e50ccd3829f019d3da994f4c3cf241a195f21b60921deb2671c8'),
+        (109, '37efd1d268158d26622cf58b6c1ff2f1d940c904ecf9f40c9efdab8144f2d632'),
     'gooo-service-grant-mcp-linux-amd64.tar.gz':
-        (7215154, '0af8f0323f42a67ad7da01d256754ef358f2ea42b98f8993d371fe2ed1197a4e'),
+        (7217754, '0ae9bc25eef2ad73535642a66b8b7602e9f64a148b3e60696e36048a3b4a0524'),
     'gooo-service-grant-mcp-linux-amd64.tar.gz.sha256':
-        (108, '04fed052d3329fa05874f95a65c36a2abe4567eb153b8954d8d41dba313f6ff5'),
+        (108, 'a34c6dab0f10f52aefecf74f37c9839fd7a7b5c3e8c8fd4fe36794271f0ddce9'),
 }
 ASSET_IDS = {
-    'gooo-service-grant-mcp-darwin-arm64.tar.gz': 661344198,
-    'gooo-service-grant-mcp-darwin-arm64.tar.gz.sha256': 661344199,
-    'gooo-service-grant-mcp-linux-amd64.tar.gz': 661344202,
-    'gooo-service-grant-mcp-linux-amd64.tar.gz.sha256': 661344200,
+    'gooo-service-grant-mcp-darwin-arm64.tar.gz': 663141475,
+    'gooo-service-grant-mcp-darwin-arm64.tar.gz.sha256': 663141471,
+    'gooo-service-grant-mcp-linux-amd64.tar.gz': 663141470,
+    'gooo-service-grant-mcp-linux-amd64.tar.gz.sha256': 663141473,
 }
 BUNDLE_IDENTITIES = {
     'gooo-service-grant-mcp-darwin-arm64.tar.gz':
-        (32188, '19454e659f86e44b660fdbdaa53a5bf4b860fd06e569e0f4e8479824e4803aa2'),
+        (32188, '9be70f707aba8485924153b4f891928ac2d5d88b14e6c3589143b1caeba71251'),
     'gooo-service-grant-mcp-linux-amd64.tar.gz':
-        (32183, 'cd1b27cadf241f16288ff86c343d3408b48b697b26331e146bd4d8c3a08643db'),
+        (32183, '4068058aa2b52d8a09deb70f68b72d43de2b3d721548b5b31acd2f06d41a9f6d'),
 }
 HTTP_CAP = 32 * 1024 * 1024
 PUBLIC_READ_TIMEOUT = 20
@@ -543,7 +543,7 @@ def preview_bundle_identity(raw, name):
 
 def public_preview(runtime):
     api = 'https://api.github.com/repos/' + REPOSITORY
-    release = runtime.public_json('public-release15', api + '/releases/' + str(RELEASE_ID))
+    release = runtime.public_json('public-release16', api + '/releases/' + str(RELEASE_ID))
     rows = release_assets(release)  # A draft/404 stops before download or OIDC.
     tag = runtime.public_json('tag-ref', api + '/git/ref/tags/' + TAG)
     require(tag['object']['type'] == 'tag' and tag['object']['sha'] == TAG_OBJECT,
@@ -618,7 +618,7 @@ def main():
             'publisher requires Linux amd64')
     require(threading.current_thread() is threading.main_thread()
             and threading.active_count() == 1, 'single main thread required')
-    metadata_path = Path(__file__).resolve().parent.parent / 'registry/service-grant-preview15.server.json'
+    metadata_path = Path(__file__).resolve().parent.parent / 'registry/service-grant-preview16.server.json'
     require(stat.S_ISREG(metadata_path.lstat().st_mode), 'metadata must be a regular file')
     metadata_raw = metadata_path.read_bytes()
     require(len(metadata_raw) == METADATA_BYTES and sha(metadata_raw) == METADATA_SHA, 'metadata bytes changed')

@@ -1,0 +1,484 @@
+name: Fixed public preview16 MCP OCI delivery
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/service-grant-mcp-oci.yml'
+      - 'tools/service_grant_mcp_oci*'
+      - 'tools/service_grant_mcp_container*'
+      - 'tools/verify-service-grant-container*'
+      - 'containers/service-grant-mcp/**'
+      - 'examples/service-grant-mcp/**'
+      - 'examples/service-grant-many/**'
+      - 'docs/service-grant-oci-publisher.md'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Verify only by default; publish is restricted to this repository main
+        type: choice
+        options: [verify, publish, verify-public]
+        default: verify
+        required: true
+      public_digest:
+        description: Existing exact sha256 digest for verify-public only; never a tag
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+concurrency:
+  group: gooo-preview16-oci-${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'publish' && 'publisher' || github.ref }}
+  cancel-in-progress: false
+defaults:
+  run:
+    shell: bash
+env:
+  IMAGE: ghcr.io/kimjooyoon/gooo-service-grant-mcp
+  NATIVE_VERSION: v0.1.0-preview.16
+  NATIVE_SOURCE: fceb89f8b53eabd6687d16258d7cee89853c2cfe
+  ARCHIVE_SHA256: 0ae9bc25eef2ad73535642a66b8b7602e9f64a148b3e60696e36048a3b4a0524
+  BINARY_SHA256: a848a8747669e46e9afef6c0f1ed8b2014df4838cc370416f60ab9c6acccfc0a
+
+jobs:
+  verify:
+    if: github.event_name == 'pull_request' || inputs.mode != 'verify-public'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    outputs:
+      artifact-id: ${{ steps.delivery.outputs.artifact-id }}
+      source-sha: ${{ steps.identity.outputs.source-sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Check the existing refusal and lifecycle controls
+        run: |
+          set -euo pipefail
+          timeout -k 5s 30s python3 -I -B tools/service_grant_mcp_container_test.py
+          timeout -k 5s 30s python3 -I -B tools/verify-service-grant-container_test.py
+          timeout -k 5s 30s python3 -I -B tools/service_grant_mcp_oci_test.py
+      - name: Acquire and prepare only the fixed public native bundle
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p out/oci/evidence out/oci/delivery
+          curl --fail --location --proto '=https' --proto-redir '=https' \
+            --connect-timeout 15 --max-time 120 --max-filesize 7217754 \
+            --output out/oci/native.tar.gz \
+            https://github.com/kimjooyoon/gooo-go-ports/releases/download/v0.1.0-preview.16/gooo-service-grant-mcp-linux-amd64.tar.gz
+          python3 -I -B tools/service_grant_mcp_oci.py prepare \
+            --bundle out/oci/native.tar.gz --sha256 "$ARCHIVE_SHA256" \
+            --source-commit "$NATIVE_SOURCE" --version "$NATIVE_VERSION" \
+            --out out/oci/context > out/oci/evidence/preparation.json
+      - name: Build once and verify the actual image with default and optional tools
+        timeout-minutes: 4
+        run: |
+          set -euo pipefail
+          timeout -k 10s 150s docker build --network=none --pull=false --platform=linux/amd64 \
+            --label org.opencontainers.image.source=https://github.com/kimjooyoon/gooo-go-ports \
+            --label io.modelcontextprotocol.server.name=io.github.kimjooyoon/gooo-service-grant \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+            --label "org.opencontainers.image.version=$NATIVE_VERSION" \
+            --label "io.gooo.native.source=$NATIVE_SOURCE" \
+            --label "io.gooo.native.archive.sha256=$ARCHIVE_SHA256" \
+            --iidfile out/oci/image.id out/oci/context \
+            > out/oci/evidence/build.stdout 2> out/oci/evidence/build.stderr
+          timeout -k 10s 75s python3 -I -B tools/verify-service-grant-container.py \
+            --docker "$(command -v docker)" --image "$(cat out/oci/image.id)" \
+            --context "$PWD/out/oci/context" --out "$PWD/out/oci/evidence/wire" \
+            --label "io.gooo.oci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-verify"
+          timeout -k 10s 60s docker image save --output out/oci/delivery/image.tar "$(cat out/oci/image.id)"
+          test "$(stat -c %s out/oci/delivery/image.tar)" -le 67108864
+      - name: Acquire the checksum-pinned Trivy CLI
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/gooo-trivy/bin" "$RUNNER_TEMP/gooo-trivy/cache"
+          curl --fail --location --proto '=https' --proto-redir '=https' \
+            --connect-timeout 15 --max-time 180 --max-filesize 52253735 \
+            --output "$RUNNER_TEMP/gooo-trivy/trivy.tar.gz" \
+            https://github.com/aquasecurity/trivy/releases/download/v0.76.0/trivy_0.76.0_Linux-64bit.tar.gz
+          python3 -I -B - <<'PY'
+          import hashlib, os, pathlib, tarfile
+          base = pathlib.Path(os.environ['RUNNER_TEMP']) / 'gooo-trivy'
+          raw = (base / 'trivy.tar.gz').read_bytes()
+          assert len(raw) == 52253735
+          assert hashlib.sha256(raw).hexdigest() == 'e24b1c51293c1b15e4ba8d45bbc7891ba053f90278ec2698f3562c993e145fe7'
+          with tarfile.open(base / 'trivy.tar.gz', 'r:gz') as archive:
+              members = [m for m in archive.getmembers() if m.name == 'trivy']
+              assert len(members) == 1 and members[0].isfile() and 0 < members[0].size <= 209715200
+              with archive.extractfile(members[0]) as stream:
+                  binary = stream.read(209715201)
+              assert len(binary) == members[0].size
+          path = base / 'bin/trivy'
+          with path.open('xb') as stream:
+              stream.write(binary)
+          path.chmod(0o755)
+          PY
+      - name: Retain CycloneDX and reject HIGH or CRITICAL findings without exclusions
+        timeout-minutes: 8
+        run: |
+          set -euo pipefail
+          trivy="$RUNNER_TEMP/gooo-trivy/bin/trivy"
+          # A fresh explicit cache, clean environment and empty config/ignore inputs prevent inherited exclusions.
+          common=(env -i "PATH=$PATH" "$trivy"
+            --cache-dir "$RUNNER_TEMP/gooo-trivy/cache" --config '' --timeout 5m)
+          timeout -k 10s 150s "${common[@]}" image --disable-telemetry --input out/oci/delivery/image.tar \
+            --format cyclonedx --output out/oci/delivery/sbom.cdx.json \
+            --ignorefile '' --offline-scan \
+            > out/oci/evidence/sbom.stdout 2> out/oci/evidence/sbom.stderr
+          set +e
+          timeout -k 10s 330s "${common[@]}" image --disable-telemetry \
+            --input out/oci/delivery/image.tar --scanners vuln --format json \
+            --output out/oci/delivery/scan.json --list-all-pkgs \
+            --severity HIGH,CRITICAL --exit-code 1 --ignorefile '' --offline-scan \
+            > out/oci/evidence/scan.stdout 2> out/oci/evidence/scan.stderr
+          scan_exit=$?
+          set -e
+          "${common[@]}" version --format json > out/oci/delivery/trivy-db-version.json
+          printf '%s\n' "$scan_exit" > out/oci/evidence/scan.exit
+          test "$scan_exit" -eq 0
+      - name: Bind the tested image, native input and security artifacts
+        id: identity
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PY'
+          import hashlib, json, os, pathlib, re
+          root = pathlib.Path('out/oci')
+          image = (root / 'image.id').read_text().strip()
+          assert re.fullmatch(r'sha256:[0-9a-f]{64}', image)
+          scan = json.loads((root / 'delivery/scan.json').read_bytes())
+          assert scan['Metadata']['ImageID'] == image
+          assert not [v for row in scan.get('Results', []) for v in row.get('Vulnerabilities', [])
+                      if v.get('Severity') in ('HIGH', 'CRITICAL')]
+          sbom = json.loads((root / 'delivery/sbom.cdx.json').read_bytes())
+          assert sbom['bomFormat'] == 'CycloneDX' and isinstance(sbom['components'], list)
+          components = {(('/'.join(filter(None, (c.get('group'), c.get('name'))))), c.get('version'))
+                        for c in sbom['components']}
+          build = json.loads((root / 'context/runtime/BUILD-INFO.json').read_bytes())
+          packages = {(p['Name'], p['Version']) for row in scan['Results'] for p in row.get('Packages', [])}
+          for dep in build['Deps']:
+              assert (dep['Path'], dep['Version']) in components, ('SBOM missing dependency', dep['Path'])
+              assert (dep['Path'], dep['Version']) in packages, ('scan missing dependency', dep['Path'])
+          version = json.loads((root / 'delivery/trivy-db-version.json').read_bytes())
+          assert version['Version'] == '0.76.0'
+          database = version['VulnerabilityDB']
+          assert all(database.get(key) for key in ('UpdatedAt', 'NextUpdate', 'DownloadedAt'))
+          import importlib.util
+          spec = importlib.util.spec_from_file_location('fixed_oci_inventory', 'tools/service_grant_mcp_oci.py')
+          oci = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(oci)
+          inventory = oci.verify_embedded_go_inventory(build['GoVersion'], components, packages)
+          (root / 'evidence/embedded-go-inventory.json').write_text(json.dumps(inventory, indent=2) + '\n')
+          assert (root / 'delivery/sbom.cdx.json').stat().st_size <= 16777216
+          files = {}
+          for name in ('image.tar', 'sbom.cdx.json', 'scan.json', 'trivy-db-version.json'):
+              data = (root / 'delivery' / name).read_bytes()
+              files[name] = {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()}
+          manifest = {'schema': 'gooo/fixed-preview16-oci-delivery/v1',
+              'repository': os.environ['GITHUB_REPOSITORY'], 'workflow_commit': os.environ['GITHUB_SHA'],
+              'run_id': os.environ['GITHUB_RUN_ID'], 'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'],
+              'native_version': os.environ['NATIVE_VERSION'], 'native_source': os.environ['NATIVE_SOURCE'],
+              'archive_sha256': os.environ['ARCHIVE_SHA256'], 'binary_sha256': os.environ['BINARY_SHA256'],
+              'platform': 'linux/amd64', 'local_image_id': image, 'files': files,
+              'security_gate': 'TRIVY_0_76_0_NO_HIGH_OR_CRITICAL_WITHOUT_EXCLUSIONS',
+              'published': False, 'external_adoption': False}
+          (root / 'delivery/build-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
+              stream.write('source-sha=' + os.environ['GITHUB_SHA'] + '\n')
+          PY
+      - name: Save this exact verified image for the publisher; no later rebuild
+        id: delivery
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: gooo-oci-delivery-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          path: out/oci/delivery/
+      - name: Remove only this job's smoke containers and image
+        if: always()
+        timeout-minutes: 1
+        run: |
+          set -euo pipefail
+          ids="$(timeout -k 5s 15s docker container ls --all --quiet --no-trunc --filter "label=io.gooo.oci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-verify")"
+          if test -n "$ids"; then timeout -k 5s 15s docker container rm --force $ids; fi
+          if test -f out/oci/image.id; then timeout -k 5s 15s docker image rm "$(cat out/oci/image.id)"; fi
+      - name: Preserve bounded preparation, wire, scan and closure diagnostics on failure
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: gooo-oci-verification-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: ignore
+          path: |
+            out/oci/evidence/
+            out/oci/context/context.json
+            out/oci/image.id
+            out/oci/delivery/*.json
+
+  publish:
+    needs: verify
+    if: >-
+      github.event_name == 'workflow_dispatch' && inputs.mode == 'publish' &&
+      github.repository == 'kimjooyoon/gooo-go-ports' && github.ref == 'refs/heads/main' &&
+      github.event.repository.default_branch == 'main' && github.run_attempt == '1' &&
+      needs.verify.outputs.source-sha == github.sha
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    outputs:
+      digest: ${{ steps.push.outputs.digest }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ needs.verify.outputs.artifact-id }}
+          path: out/input
+          merge-multiple: true
+          digest-mismatch: error
+      - name: Rehash the current-run artifact and load the same verified image
+        run: |
+          set -euo pipefail
+          mkdir -p out/publish "$RUNNER_TEMP/gooo-push-config"
+          python3 -I -B - <<'PY'
+          import hashlib, json, os, pathlib, re
+          root = pathlib.Path('out/input')
+          m = json.loads((root / 'build-manifest.json').read_bytes())
+          expected = {'image.tar', 'sbom.cdx.json', 'scan.json', 'trivy-db-version.json'}
+          assert set(m['files']) == expected
+          assert set(p.name for p in root.iterdir()) == {'build-manifest.json', *expected}
+          assert m['repository'] == 'kimjooyoon/gooo-go-ports' == os.environ['GITHUB_REPOSITORY']
+          assert m['workflow_commit'] == os.environ['GITHUB_SHA']
+          assert m['run_id'] == os.environ['GITHUB_RUN_ID'] and m['run_attempt'] == '1'
+          assert m['native_version'] == os.environ['NATIVE_VERSION'] and m['native_source'] == os.environ['NATIVE_SOURCE']
+          assert m['archive_sha256'] == os.environ['ARCHIVE_SHA256'] and m['binary_sha256'] == os.environ['BINARY_SHA256']
+          assert m['platform'] == 'linux/amd64' and m['published'] is False
+          assert m['security_gate'] == 'TRIVY_0_76_0_NO_HIGH_OR_CRITICAL_WITHOUT_EXCLUSIONS'
+          assert re.fullmatch(r'sha256:[0-9a-f]{64}', m['local_image_id'])
+          for name, ref in m['files'].items():
+              assert type(ref['bytes']) is int and 0 < ref['bytes'] <= (67108864 if name == 'image.tar' else 16777216)
+              data = (root / name).read_bytes()
+              assert len(data) == ref['bytes'] and hashlib.sha256(data).hexdigest() == ref['sha256']
+          pathlib.Path('out/publish/expected-image.id').write_text(m['local_image_id'] + '\n')
+          PY
+          timeout -k 10s 90s docker image load --input out/input/image.tar > out/publish/load.stdout 2> out/publish/load.stderr
+          timeout -k 5s 15s docker image inspect "$(cat out/publish/expected-image.id)" > out/publish/loaded-image.json
+          python3 -I -B - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('out/publish')
+          rows = json.loads((p / 'loaded-image.json').read_bytes())
+          assert len(rows) == 1 and rows[0]['Id'] == (p / 'expected-image.id').read_text().strip()
+          assert rows[0]['Os'] == 'linux' and rows[0]['Architecture'] == 'amd64'
+          PY
+      - name: Authenticate only the publisher with this workflow token
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$GHCR_TOKEN" | timeout -k 5s 30s docker --config "$RUNNER_TEMP/gooo-push-config" login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Push exactly once under a unique run tag and capture the manifest digest
+        id: push
+        env:
+          DOCKER_CONFIG: ${{ runner.temp }}/gooo-push-config
+        run: |
+          set -euo pipefail
+          tag="$IMAGE:$NATIVE_VERSION-$GITHUB_RUN_ID-a$GITHUB_RUN_ATTEMPT"
+          printf '%s\n' "$tag" > out/publish/tag.txt
+          timeout -k 5s 15s docker image tag "$(cat out/publish/expected-image.id)" "$tag"
+          # Persist intent before the sole push. A timeout or later failure must not trigger another publish run.
+          printf '%s\n' '{"push_attempts":1,"automatic_retry":false}' > out/publish/push-intent.json
+          timeout -k 10s 180s docker image push "$tag" > out/publish/push.stdout 2> out/publish/push.stderr
+          timeout -k 5s 15s docker image inspect "$tag" > out/publish/pushed-image.json
+          python3 -I -B - <<'PY'
+          import json, os, pathlib, re
+          p = pathlib.Path('out/publish')
+          rows = json.loads((p / 'pushed-image.json').read_bytes())
+          assert len(rows) == 1 and rows[0]['Id'] == (p / 'expected-image.id').read_text().strip()
+          wanted = os.environ['IMAGE'] + '@'
+          digests = {x.removeprefix(wanted) for x in rows[0].get('RepoDigests', []) if x.startswith(wanted)}
+          assert len(digests) == 1
+          digest = digests.pop()
+          assert re.fullmatch(r'sha256:[0-9a-f]{64}', digest)
+          log = (p / 'push.stdout').read_text() + (p / 'push.stderr').read_text()
+          assert digest in log, 'push receipt and RepoDigest differ'
+          (p / 'manifest-digest.txt').write_text(digest + '\n')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as stream: stream.write('digest=' + digest + '\n')
+          PY
+      - name: Attest the actual pushed image provenance
+        id: provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # immutable reviewed source
+        env:
+          DOCKER_CONFIG: ${{ runner.temp }}/gooo-push-config
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+          create-storage-record: false
+      - name: Attest the same digest's retained CycloneDX SBOM
+        id: sbom
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        env:
+          DOCKER_CONFIG: ${{ runner.temp }}/gooo-push-config
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          sbom-path: out/input/sbom.cdx.json
+          push-to-registry: true
+          create-storage-record: false
+      - name: Retain both actual attestation bundles and material bindings
+        env:
+          PROVENANCE_BUNDLE: ${{ steps.provenance.outputs.bundle-path }}
+          SBOM_BUNDLE: ${{ steps.sbom.outputs.bundle-path }}
+          PROVENANCE_ID: ${{ steps.provenance.outputs.attestation-id }}
+          SBOM_ID: ${{ steps.sbom.outputs.attestation-id }}
+        run: |
+          set -euo pipefail
+          cp -- "$PROVENANCE_BUNDLE" out/publish/provenance.bundle.json
+          cp -- "$SBOM_BUNDLE" out/publish/sbom.bundle.json
+          cp out/input/build-manifest.json out/publish/native-and-build-materials.json
+          cp out/input/{sbom.cdx.json,scan.json,trivy-db-version.json} out/publish/
+          printf '%s\n%s\n' "$PROVENANCE_ID" "$SBOM_ID" > out/publish/attestation-ids.txt
+      - name: Remove only publication credentials and this loaded image
+        if: always()
+        run: |
+          set -euo pipefail
+          rm -rf -- "$RUNNER_TEMP/gooo-push-config"
+          if test -f out/publish/expected-image.id; then
+            timeout -k 5s 20s docker image rm --force "$(cat out/publish/expected-image.id)"
+          fi
+      - name: Retain publication receipts even after an ambiguous push or attestation failure
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: gooo-oci-publication-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: ignore
+          path: out/publish/
+
+  public-readback:
+    needs: [verify, publish]
+    if: >-
+      always() && github.event_name == 'workflow_dispatch' &&
+      github.repository == 'kimjooyoon/gooo-go-ports' && github.ref == 'refs/heads/main' &&
+      github.event.repository.default_branch == 'main' &&
+      ((inputs.mode == 'publish' && needs.publish.result == 'success') || inputs.mode == 'verify-public')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Validate the exact digest and use a fresh anonymous Docker configuration
+        env:
+          EXPECTED_DIGEST: ${{ inputs.mode == 'verify-public' && inputs.public_digest || needs.publish.outputs.digest }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p out/readback "$RUNNER_TEMP/gooo-anonymous-config"
+          python3 -I -B - <<'PY'
+          import os, pathlib, re
+          digest = os.environ['EXPECTED_DIGEST']
+          assert re.fullmatch(r'sha256:[0-9a-f]{64}', digest), 'exact sha256 digest required'
+          pathlib.Path('out/readback/digest.txt').write_text(digest + '\n')
+          PY
+          env -u GH_TOKEN -u GITHUB_TOKEN -u DOCKER_AUTH_CONFIG \
+            DOCKER_CONFIG="$RUNNER_TEMP/gooo-anonymous-config" \
+            timeout -k 10s 120s docker image pull --platform=linux/amd64 "$IMAGE@$EXPECTED_DIGEST" \
+            > out/readback/anonymous-pull.stdout 2> out/readback/anonymous-pull.stderr
+          timeout -k 5s 15s docker image inspect "$IMAGE@$EXPECTED_DIGEST" > out/readback/pulled-image.json
+          python3 -I -B - <<'PY'
+          import json, os, pathlib, re
+          p = pathlib.Path('out/readback'); rows = json.loads((p / 'pulled-image.json').read_bytes())
+          assert len(rows) == 1 and rows[0]['Os'] == 'linux' and rows[0]['Architecture'] == 'amd64'
+          assert os.environ['IMAGE'] + '@' + os.environ['EXPECTED_DIGEST'] in rows[0]['RepoDigests']
+          assert re.fullmatch(r'sha256:[0-9a-f]{64}', rows[0]['Id'])
+          (p / 'image.id').write_text(rows[0]['Id'] + '\n')
+          PY
+      - name: Compare pulled runtime bytes to the fixed native archive before running it
+        run: |
+          set -euo pipefail
+          curl --fail --location --proto '=https' --proto-redir '=https' \
+            --connect-timeout 15 --max-time 120 --max-filesize 7217754 \
+            --output out/readback/native.tar.gz \
+            https://github.com/kimjooyoon/gooo-go-ports/releases/download/v0.1.0-preview.16/gooo-service-grant-mcp-linux-amd64.tar.gz
+          name="gooo-oci-readback-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          printf '%s\n' "$name" > out/readback/copy-container-name.txt
+          cleanup_copy() {
+            first=$?
+            trap - EXIT
+            set +e
+            timeout -k 5s 20s docker container rm --force "$name" > out/readback/copy-cleanup.stdout 2> out/readback/copy-cleanup.stderr
+            cleanup=$?
+            timeout -k 5s 15s docker container ls --all --quiet --no-trunc --filter "name=^/$name$" > out/readback/copy-remaining.txt
+            absent=$?
+            test ! -s out/readback/copy-remaining.txt || absent=1
+            printf '%s\n' "first=$first cleanup=$cleanup absence=$absent" > out/readback/copy-cleanup-status.txt
+            if test "$first" -ne 0; then exit "$first"; fi
+            test "$cleanup" -eq 0 && test "$absent" -eq 0
+          }
+          trap cleanup_copy EXIT
+          timeout -k 5s 20s docker container create --name "$name" --pull=never --network=none \
+            --read-only --user=65532:65532 --cap-drop=ALL --security-opt=no-new-privileges \
+            --label "io.gooo.oci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-readback" \
+            "$(cat out/readback/image.id)" > out/readback/copy-container.id
+          mkdir out/readback/runtime
+          timeout -k 5s 20s docker container cp "$name:/opt/gooo/." out/readback/runtime
+          python3 -I -B tools/service_grant_mcp_oci.py verify-runtime \
+            --bundle out/readback/native.tar.gz --sha256 "$ARCHIVE_SHA256" \
+            --source-commit "$NATIVE_SOURCE" --version "$NATIVE_VERSION" \
+            --runtime out/readback/runtime --out out/readback/identity > out/readback/runtime-identity.stdout
+          python3 -I -B - <<'PY'
+          import json, os, pathlib
+          p = pathlib.Path('out/readback/identity')
+          report = json.loads((p / 'runtime-identity.json').read_bytes())
+          assert report['schema'] == 'gooo/public-preview16-oci-runtime-identity/v1'
+          assert report['status'] == 'EXACT_FIXED_PUBLIC_RUNTIME_BYTES_AND_MODES_MATCH'
+          assert report['checked_members'] == len(report['checked_files']) == 63
+          assert report['context']['archive_sha256'] == os.environ['ARCHIVE_SHA256']
+          assert report['context']['binary_sha256'] == os.environ['BINARY_SHA256']
+          assert report['context']['source_commit'] == os.environ['NATIVE_SOURCE']
+          assert report['context']['notice_texts'] == 58
+          PY
+          timeout -k 5s 20s docker container rm "$name" > out/readback/copy-removal.stdout
+          timeout -k 5s 15s docker container ls --all --quiet --no-trunc --filter "name=^/$name$" > out/readback/copy-remaining.txt
+          test ! -s out/readback/copy-remaining.txt
+          trap - EXIT
+      - name: Run the existing full-proof and refusal smoke on that pulled image
+        timeout-minutes: 2
+        run: |
+          set -euo pipefail
+          timeout -k 10s 75s python3 -I -B tools/verify-service-grant-container.py \
+            --docker "$(command -v docker)" --image "$(cat out/readback/image.id)" \
+            --context "$PWD/out/readback/identity" --out "$PWD/out/readback/wire" \
+            --label "io.gooo.oci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-readback"
+          printf '%s\n' 'ANONYMOUS_EXACT_DIGEST_RUNTIME63_AND_FINITE_WIRE_ACCEPTED_CLEANUP_PENDING' > out/readback/status.txt
+      - name: Remove only this readback's containers and image
+        if: always()
+        timeout-minutes: 1
+        run: |
+          set -euo pipefail
+          ids="$(timeout -k 5s 15s docker container ls --all --quiet --no-trunc --filter "label=io.gooo.oci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-readback")"
+          if test -n "$ids"; then timeout -k 5s 15s docker container rm --force $ids; fi
+          timeout -k 5s 15s docker container ls --all --quiet --no-trunc --filter "label=io.gooo.oci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-readback" > out/readback/remaining-containers.txt
+          test ! -s out/readback/remaining-containers.txt
+          if test -f out/readback/image.id; then timeout -k 5s 15s docker image rm "$(cat out/readback/image.id)"; fi
+          rm -rf -- "$RUNNER_TEMP/gooo-anonymous-config"
+      - name: Record finite public readback acceptance only after cleanup succeeds
+        run: |
+          set -euo pipefail
+          printf '%s\n' 'ANONYMOUS_EXACT_DIGEST_RUNTIME63_AND_FINITE_WIRE_ACCEPTED' > out/readback/status.txt
+      - name: Retain public readback identity, raw wire and separate closure records
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: gooo-oci-anonymous-readback-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: ignore
+          path: |
+            out/readback/*.txt
+            out/readback/*.json
+            out/readback/*.stdout
+            out/readback/*.stderr
+            out/readback/identity/context.json
+            out/readback/identity/runtime-identity.json
+            out/readback/wire/

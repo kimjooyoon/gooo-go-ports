@@ -6,18 +6,18 @@ filesystem. It keeps all 58 license/notice texts and the native build identity.
 Docker and Python 3.9 or later are needed to prepare and build the image. The image is built
 locally; no hosted container image or automatic MCP client install is provided.
 
-From a checkout containing the container tools, download the public preview14
+From a checkout containing the container tools, download the public preview16
 bundle and prepare a fresh build context:
 
 ```sh
 mkdir -p out
 curl --fail --location --max-time 120 --max-filesize 16777216 \
   --output out/gooo-service-grant-mcp-linux-amd64.tar.gz \
-  https://github.com/kimjooyoon/gooo-go-ports/releases/download/v0.1.0-preview.14/gooo-service-grant-mcp-linux-amd64.tar.gz
+  https://github.com/kimjooyoon/gooo-go-ports/releases/download/v0.1.0-preview.16/gooo-service-grant-mcp-linux-amd64.tar.gz
 python3 -I -B tools/service_grant_mcp_container.py \
   --bundle out/gooo-service-grant-mcp-linux-amd64.tar.gz \
-  --sha256 c088232e9bab197ed3021fcc68476e486455df92d8950b7cb9a40c7f2351e6ea \
-  --source-commit 694d485217c7ec9afac0437453038a66a0db0a33 \
+  --sha256 0ae9bc25eef2ad73535642a66b8b7602e9f64a148b3e60696e36048a3b4a0524 \
+  --source-commit fceb89f8b53eabd6687d16258d7cee89853c2cfe \
   --out out/service-grant-container-context
 docker build --network=none --pull=false --platform=linux/amd64 \
   --iidfile out/service-grant-container.image \
@@ -28,7 +28,7 @@ Preparation checks the **whole archive against the supplied expected hash**,
 its Linux/source identity and every included file before creating the context.
 The expected hash must come from a source you trust; a matching manifest alone
 does not authenticate a publisher. Fresh contexts avoid stale or mixed files.
-This is the existing preview14 executable, not a rebuild from the current tree.
+This is the existing preview16 executable, not a rebuild from the current tree.
 
 An MCP host can start it with the following command and argument array, using
 the actual absolute Docker path and the image ID saved above:

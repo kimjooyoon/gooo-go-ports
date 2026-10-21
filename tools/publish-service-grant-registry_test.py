@@ -127,7 +127,7 @@ class PreviewReleaseIdentityGate(unittest.TestCase):
         self.assertEqual(M.sha(raw),
                          '891529d92ac784ed5068f33da8297402a77b5389a86b710d81e6192e02c97f6f')
         self.assertEqual(M.load(raw)['version'], '0.1.0-preview.13')
-        self.assertEqual(M.VERSION, '0.1.0-preview.15')
+        self.assertEqual(M.VERSION, '0.1.0-preview.16')
 
     def test_published_preview14_metadata_bytes_remain_unchanged(self):
         raw = (SOURCE.parent.parent / 'registry/service-grant-preview14.server.json').read_bytes()
@@ -485,6 +485,7 @@ class ValidationOnlySafety(unittest.TestCase):
             'registry/service-grant-preview13.server.json',
             'registry/service-grant-preview14.server.json',
             'registry/service-grant-preview15.server.json',
+            'registry/service-grant-preview16.server.json',
         ])
         self.assertIn("      - 'registry/service-grant-preview13.server.json'\n", raw)
         self.assertIn("      - 'registry/service-grant-preview14.server.json'\n", raw)
