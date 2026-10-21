@@ -1,10 +1,48 @@
 # Run the Gooo service-grant MCP tool in Docker
 
-This packages the native Linux amd64 command in a `scratch` image. The runtime
-needs no Go, Gooo compiler, Python, API key, application network or writable root
-filesystem. It keeps all 58 license/notice texts and the native build identity.
-Docker and Python 3.9 or later are needed to prepare and build the image. The image is built
-locally; no hosted container image or automatic MCP client install is provided.
+The public Linux amd64 image packages the existing preview16 native command.
+Running it needs Docker, but no Go, Gooo compiler, Python or API key.
+The application runs as a nonroot user with a read-only root filesystem and no
+application network. Docker needs network access for the initial image pull.
+
+## Use the public immutable image
+
+Pull this exact digest before connecting an MCP host:
+
+```sh
+docker image pull ghcr.io/kimjooyoon/gooo-service-grant-mcp@sha256:a83d8fa57657bb877453cce7ed11f1ff1000a84b1e80c65a4e1c0b20196d3ee4
+```
+
+Use your actual Docker executable path and this command/argument array in the
+host's stdio MCP settings. Keep stdin interactive without allocating a TTY:
+
+```json
+{
+  "command": "/usr/bin/docker",
+  "args": ["run", "--rm", "--interactive", "--pull=never",
+    "--platform=linux/amd64", "--network=none", "--read-only",
+    "--cap-drop=ALL", "--security-opt=no-new-privileges",
+    "--pids-limit=32", "--memory=128m",
+    "ghcr.io/kimjooyoon/gooo-service-grant-mcp@sha256:a83d8fa57657bb877453cce7ed11f1ff1000a84b1e80c65a4e1c0b20196d3ee4"]
+}
+```
+
+Append `--many-required` after the image reference to expose the optional
+multi-request tool. Both modes calculate supplied policy facts; they do not
+apply grants or invoke a service. Hosted Linux checks pulled this digest and
+compared its 63 runtime files and complete protocol results with the original
+native archive. This does not prove activation in every agent host or support
+for native arm64 execution. Other architectures require Docker emulation.
+See [native onboarding](../examples/service-grant-mcp/README.md) for the
+represented service-pattern domain and a concrete first call.
+
+Keep the image digest when reporting the first failed step or actual task
+result in the [feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml).
+
+## Build the same native input locally
+
+The local build below keeps all 58 license/notice texts and the native build
+identity in a `scratch` image. Preparation needs Docker and Python 3.9 or later.
 
 From a checkout containing the container tools, download the public preview16
 bundle and prepare a fresh build context:
