@@ -440,7 +440,7 @@ compiler issue before passing a minimal case to the language repository.
 
 ## Connect the service-grant MCP tool
 
-Download the [native MCP preview.14](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.14)
+Download the [native MCP preview.15](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.15)
 archive and matching `.sha256` file for **Linux amd64** or **macOS arm64**.
 In the download directory, verify the checksum with `sha256sum -c FILE.sha256`
 (Linux) or `shasum -a 256 -c FILE.sha256` (macOS), then extract the verified
@@ -526,7 +526,9 @@ not express? The command contacts no service and uploads no feedback itself.
 
 ## Preserve several required requests through MCP
 
-Use the same [preview.14 native executable](#connect-the-service-grant-mcp-tool)
+For reusable agent instructions, use the [service-grant review skill](../.agents/skills/gooo-review-service-grants/SKILL.md). It preserves the required-request list and complete results while comparing the user's proposals.
+
+Use the same [preview.15 native executable](#connect-the-service-grant-mcp-tool)
 with the [optional ordered-request mode](../examples/service-grant-mcp/README.md#optional-ordered-required-requests).
 For a source-build fallback, use a reviewed checkout containing that mode and
 [build the server with Go 1.27.3](../examples/service-grant-mcp/README.md#build-and-connect).
@@ -564,8 +566,8 @@ The first candidate is `ELIGIBLE`; the second is `REFUSED` with
 `REQUIRED_REQUEST_REMOVED` at `first_counterexample: 1` (calculator). These are
 argument **objects**, not CLI batch arrays. Preserve the ordered-column facts,
 all 12 typed decision fields and full bindings, including 30 asset and five
-source hashes. The archived preview.14 executable retains its `de99b770`
-generation; the current Go 1.27.3 source build uses `205896a4`. Preserve the
+source hashes. The preview.15 executable and current Go 1.27.3 source build use
+`205896a4`; the archived preview.14 executable retains its `de99b770` generation. Preserve the
 actual compiler and generation identities returned by the executable. Neither outcome
 authenticates supplied facts or applies a change; the
 [host application boundary](../examples/agentmesh-service-policy/conditional-apply.md)
