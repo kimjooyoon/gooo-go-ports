@@ -87,8 +87,10 @@ existing [two-file tutorial](../examples/learn-gooo/README.md), its four supplie
 inputs, and the repository's pinned compiler and Go toolchain. Setup needs Git,
 a POSIX shell and Go toolchain selection on macOS or Linux.
 
-Current-source setup targets Go **1.27.3** with the checkout's matching compiler
-and validator identities; this is not evidence that the migration has run.
+Current-source setup uses Go **1.27.3** with the checkout's matching compiler
+and validator identities. The [full main CI at `b0e6715`](https://github.com/kimjooyoon/gooo-go-ports/actions/runs/39544747815)
+passed native comparison and saved replay with compiler `205896a`; follow the
+setup below for your own platform and preserve the actual result or first error.
 The [pinned 0.6.32 release](https://github.com/kimjooyoon/meta-ontology-go/releases/tag/v0.6.32-dev)
 and the [pre-migration source snapshot](https://github.com/kimjooyoon/gooo-go-ports/tree/cc946350de37c48d509b1d383b8ce7e8a0062483)
 retain Go **1.27.2**. For that reproduction only, verify SHA256SUMS, extract fresh
@@ -129,6 +131,28 @@ every changed and unchanged field, and the edited replay parent in one JSON
 summary. Run it after saving all three records. It checks the tutorial's bounded
 record profile; it does not execute an agent or authorize effects. The older
 immutable installation snapshots below retain their original manual workflow.
+
+### Read source identities after a policy edit
+
+The [editable API policy workflow](../examples/editable-api-policy/README.md)
+creates `source-comparison.json` after validating the execution and replay
+records. Inspect the complete field path before comparing hashes:
+
+| Document and field | Bytes identified |
+| --- | --- |
+| `source-comparison.json`: `variants.before.policy_source.raw_sha256` (or `after`) | Original policy file bytes, including its line endings. This field is unprefixed hex. |
+| `source-comparison.json`: `variants.before.policy_source.receipt_json_string_digest` (or `after`) | SHA-256 of the source string encoded with Go JSON rules, with a `sha256:` prefix. This is the value checked against the matching package/source entry in the receipt. |
+| Execution or replay receipt: `result.program.workspace_image.packages[].sources[].source_digest` | The Go JSON-encoded source string for that entry's package and filename; use both to select the entry. |
+| Execution or replay receipt: `manifest_digest` | Exact workspace manifest JSON file bytes; not a reserialized object. |
+| Execution or replay receipt: `inputs_digest` | Exact input JSON file bytes; not the source-string encoding or a reserialized object. |
+| Replay receipt: `replayed_from_sha256` | Exact saved execution receipt bytes, including whitespace; not policy source bytes. |
+
+Two digests of the same source can differ because they identify different byte
+representations. Removing a `sha256:` prefix does not make those representations
+equivalent. Keep the original source and receipt bytes; use the workflow's
+existing checks rather than reserializing a receipt or normalizing source before
+hashing. A matching hash identifies bytes, not the trustworthiness of supplied
+facts or authority to apply a live change.
 
 ### Use the instructions with Gemini CLI
 
@@ -440,7 +464,7 @@ compiler issue before passing a minimal case to the language repository.
 
 ## Connect the service-grant MCP tool
 
-Download the [native MCP preview.14](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.14)
+Download the [native MCP preview.15](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.15)
 archive and matching `.sha256` file for **Linux amd64** or **macOS arm64**.
 In the download directory, verify the checksum with `sha256sum -c FILE.sha256`
 (Linux) or `shasum -a 256 -c FILE.sha256` (macOS), then extract the verified
@@ -526,7 +550,9 @@ not express? The command contacts no service and uploads no feedback itself.
 
 ## Preserve several required requests through MCP
 
-Use the same [preview.14 native executable](#connect-the-service-grant-mcp-tool)
+For reusable agent instructions, use the [service-grant review skill](../.agents/skills/gooo-review-service-grants/SKILL.md). It preserves the required-request list and complete results while comparing the user's proposals.
+
+Use the same [preview.15 native executable](#connect-the-service-grant-mcp-tool)
 with the [optional ordered-request mode](../examples/service-grant-mcp/README.md#optional-ordered-required-requests).
 For a source-build fallback, use a reviewed checkout containing that mode and
 [build the server with Go 1.27.3](../examples/service-grant-mcp/README.md#build-and-connect).
@@ -564,8 +590,8 @@ The first candidate is `ELIGIBLE`; the second is `REFUSED` with
 `REQUIRED_REQUEST_REMOVED` at `first_counterexample: 1` (calculator). These are
 argument **objects**, not CLI batch arrays. Preserve the ordered-column facts,
 all 12 typed decision fields and full bindings, including 30 asset and five
-source hashes. The archived preview.14 executable retains its `de99b770`
-generation; the current Go 1.27.3 source build uses `205896a4`. Preserve the
+source hashes. The preview.15 executable and current Go 1.27.3 source build use
+`205896a4`; the archived preview.14 executable retains its `de99b770` generation. Preserve the
 actual compiler and generation identities returned by the executable. Neither outcome
 authenticates supplied facts or applies a change; the
 [host application boundary](../examples/agentmesh-service-policy/conditional-apply.md)

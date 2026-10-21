@@ -9,6 +9,7 @@ on:
       - 'tools/publish-service-grant-registry_test.py'
       - 'registry/service-grant-preview13.server.json'
       - 'registry/service-grant-preview14.server.json'
+      - 'registry/service-grant-preview15.server.json'
 
 permissions:
   contents: read
@@ -42,7 +43,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          name: gooo-registry-check-preview14-${{ github.run_id }}-${{ github.run_attempt }}
+          name: gooo-registry-check-preview15-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/gooo-registry-check-${{ github.run_id }}-${{ github.run_attempt }}/proof
           if-no-files-found: error
           retention-days: 7

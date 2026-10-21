@@ -78,7 +78,7 @@ class PublicReleaseGate(unittest.TestCase):
         runtime = FakeRuntime()
         with self.assertRaisesRegex(M.Refused, 'public prerelease'):
             M.public_preview(runtime)
-        self.assertEqual(runtime.calls, ['public-release14'])
+        self.assertEqual(runtime.calls, ['public-release' + M.VERSION.rsplit('.', 1)[1]])
 
     def test_unpublished_release_refused(self):
         value = release()
@@ -120,14 +120,20 @@ class PublicReleaseGate(unittest.TestCase):
                 M.release_assets(value)
 
 
-class Preview14IdentityGate(unittest.TestCase):
+class PreviewReleaseIdentityGate(unittest.TestCase):
     def test_published_preview13_metadata_bytes_remain_unchanged(self):
         raw = (SOURCE.parent.parent / 'registry/service-grant-preview13.server.json').read_bytes()
         self.assertEqual(len(raw), 581)
         self.assertEqual(M.sha(raw),
                          '891529d92ac784ed5068f33da8297402a77b5389a86b710d81e6192e02c97f6f')
         self.assertEqual(M.load(raw)['version'], '0.1.0-preview.13')
-        self.assertEqual(M.VERSION, '0.1.0-preview.14')
+        self.assertEqual(M.VERSION, '0.1.0-preview.15')
+
+    def test_published_preview14_metadata_bytes_remain_unchanged(self):
+        raw = (SOURCE.parent.parent / 'registry/service-grant-preview14.server.json').read_bytes()
+        self.assertEqual(len(raw), 586)
+        self.assertEqual(M.sha(raw), 'db666341355d94a18779259e0296d74a570a44160b38de8b18fb94a2c1360fd3')
+        self.assertEqual(M.load(raw)['version'], '0.1.0-preview.14')
 
     def test_native_asset_id_mismatch_and_bool_refused(self):
         for identity in (M.ASSET_IDS[next(iter(M.ASSETS))] + 1, True):
@@ -144,7 +150,10 @@ class Preview14IdentityGate(unittest.TestCase):
             self.assertEqual(M.preview_bundle_identity(data, name),
                              {'bytes': len(body), 'sha256': M.sha(body),
                               'source_commit': M.SOURCE})
-            changed = archive([('BUNDLE.json', tarfile.REGTYPE, body.replace(b'694', b'693', 1))])
+            altered_source = ('0' if M.SOURCE[0] != '0' else '1') + M.SOURCE[1:]
+            changed_body = body.replace(M.SOURCE.encode(), altered_source.encode(), 1)
+            self.assertNotEqual(changed_body, body)
+            changed = archive([('BUNDLE.json', tarfile.REGTYPE, changed_body)])
             with self.assertRaisesRegex(M.Refused, 'BUNDLE bytes'):
                 M.preview_bundle_identity(changed, name)
         wrong = M.json.dumps({'source_commit': 'c87d924747b894f1fdb0f74b513fc504129e4de0'}).encode()
@@ -171,7 +180,7 @@ class PublisherArchiveGate(unittest.TestCase):
 
 class MetadataGate(unittest.TestCase):
     def test_fixed_metadata_hash_and_shape(self):
-        path = SOURCE.parent.parent / 'registry/service-grant-preview14.server.json'
+        path = SOURCE.parent.parent / ('registry/service-grant-preview' + M.VERSION.rsplit('.', 1)[1] + '.server.json')
         raw = path.read_bytes()
         self.assertEqual(len(raw), M.METADATA_BYTES)
         self.assertEqual(M.sha(raw), M.METADATA_SHA)
@@ -350,7 +359,7 @@ class ValidationOnlySafety(unittest.TestCase):
         self.addCleanup(temp.cleanup)
         out = Path(temp.name) / 'out'
         instances, trace = [], []
-        metadata = M.load((SOURCE.parent.parent / 'registry/service-grant-preview14.server.json').read_bytes())
+        metadata = M.load((SOURCE.parent.parent / ('registry/service-grant-preview' + M.VERSION.rsplit('.', 1)[1] + '.server.json')).read_bytes())
         actual_runtime = M.Runtime
 
         class FakeRuntime(actual_runtime):
@@ -442,7 +451,7 @@ class ValidationOnlySafety(unittest.TestCase):
         self.assertFalse(runtime.home.exists())
 
     def test_namespace_still_refused_after_hash_gate_before_any_runtime(self):
-        path = SOURCE.parent.parent / 'registry/service-grant-preview14.server.json'
+        path = SOURCE.parent.parent / ('registry/service-grant-preview' + M.VERSION.rsplit('.', 1)[1] + '.server.json')
         raw = path.read_bytes().replace(b'io.github.kimjooyoon/', b'io.github.wrongowner/')
         self.assertEqual(len(raw), M.METADATA_BYTES)
         with mock.patch.dict(M.os.environ, self.context(), clear=True), \
@@ -467,7 +476,16 @@ class ValidationOnlySafety(unittest.TestCase):
         self.assertNotIn('secrets.', raw)
         self.assertNotIn('--allow-publish', raw)
         self.assertEqual(raw.count('      contents: read\n'), 1)
-        self.assertEqual(raw.count('      - \'', raw.index('    paths:\n'), raw.index('\npermissions:')), 6)
+        trigger_paths = M.re.findall(r"^      - '([^']+)'$", raw[raw.index('    paths:\n'):raw.index('\npermissions:')], M.re.MULTILINE)
+        self.assertEqual(trigger_paths, [
+            '.github/workflows/check-service-grant-registry.yml',
+            '.github/workflows/publish-service-grant-registry.yml',
+            'tools/publish-service-grant-registry.py',
+            'tools/publish-service-grant-registry_test.py',
+            'registry/service-grant-preview13.server.json',
+            'registry/service-grant-preview14.server.json',
+            'registry/service-grant-preview15.server.json',
+        ])
         self.assertIn("      - 'registry/service-grant-preview13.server.json'\n", raw)
         self.assertIn("      - 'registry/service-grant-preview14.server.json'\n", raw)
         self.assertIn('    timeout-minutes: 10\n', raw)
