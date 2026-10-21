@@ -6,7 +6,10 @@ on:
       - '.github/workflows/service-grant-mcp-oci.yml'
       - 'tools/service_grant_mcp_oci*'
       - 'tools/registry_action_auth*'
-      - 'registry/oci-recovery/contract.json'
+      - 'tools/oci_action_contract*'
+      - 'tools/oci-proof-transport/**'
+      - 'registry/oci-recovery/**'
+      - '.github/workflows/service-grant-oci-proof-recovery.yml'
       - 'tools/service_grant_mcp_container*'
       - 'tools/verify-service-grant-container*'
       - 'containers/service-grant-mcp/**'
@@ -59,6 +62,8 @@ jobs:
           timeout -k 5s 30s python3 -I -B tools/service_grant_mcp_container_test.py
           timeout -k 5s 30s python3 -I -B tools/verify-service-grant-container_test.py
           timeout -k 5s 30s python3 -I -B tools/service_grant_mcp_oci_test.py
+          timeout -k 5s 30s python3 -I -B -m unittest discover -s tools -p oci_action_contract_test.py -v
+          python3 -I -B tools/oci_action_contract.py
       - name: Acquire and prepare only the fixed public native bundle
         run: |
           set -euo pipefail
