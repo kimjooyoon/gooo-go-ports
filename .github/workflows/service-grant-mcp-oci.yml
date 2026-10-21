@@ -10,6 +10,7 @@ on:
       - 'tools/oci-proof-transport/**'
       - 'registry/oci-recovery/**'
       - '.github/workflows/service-grant-oci-proof-recovery.yml'
+      - '.github/workflows/registry-install-smoke.yml'
       - 'tools/service_grant_mcp_container*'
       - 'tools/verify-service-grant-container*'
       - 'containers/service-grant-mcp/**'
@@ -506,3 +507,9 @@ jobs:
             out/readback/identity/context.json
             out/readback/identity/runtime-identity.json
             out/readback/wire/
+
+  registry-install-candidate:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'verify'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/registry-install-smoke.yml

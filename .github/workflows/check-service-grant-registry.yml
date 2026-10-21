@@ -4,9 +4,14 @@ on:
   pull_request:
     paths:
       - '.github/workflows/check-service-grant-registry.yml'
+      - '.github/workflows/registry-install-smoke.yml'
       - '.github/workflows/publish-service-grant-registry.yml'
       - 'tools/publish-service-grant-registry.py'
       - 'tools/publish-service-grant-registry_test.py'
+      - 'tools/verify-service-grant-container.py'
+      - 'tools/verify-service-grant-container_test.py'
+      - 'tools/service_grant_mcp_oci.py'
+      - 'containers/service-grant-mcp/**'
       - 'registry/service-grant-preview13.server.json'
       - 'registry/service-grant-preview14.server.json'
       - 'registry/service-grant-preview15.server.json'
@@ -48,3 +53,9 @@ jobs:
           path: ${{ runner.temp }}/gooo-registry-check-${{ github.run_id }}-${{ github.run_attempt }}/proof
           if-no-files-found: error
           retention-days: 7
+
+  install-candidate:
+    needs: validate
+    permissions:
+      contents: read
+    uses: ./.github/workflows/registry-install-smoke.yml
