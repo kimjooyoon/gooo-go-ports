@@ -193,9 +193,16 @@ Historical receipts keep their original identities and do not establish checked 
 
 ## Regenerate and independently verify
 
-From this example directory, use an already-installed clean compiler at
-`83928fa4538245abe33b08549da47f8cbdc50ed2` and Go 1.27.3. Setup is separate;
-generation and verification disable automatic dependency/toolchain downloads.
+<!-- gooo-current-toolchain:start -->
+Use an already-installed clean Gooo **0.6.37-dev** compiler at
+`205896a413e5dea92366309c35ae85e542d055f6` and **Go 1.27.3**. These current
+identities come from [compiler.json](compiler.json), are bound by
+[generation.json](generation.json), and agree with the generator and
+verifier profiles. Setup is separate; verification does not install a
+compiler or download a toolchain.
+
+Run these commands from this example directory:
+<!-- gooo-current-toolchain:end -->
 
 ```sh
 go_tool="$(go env GOROOT)/bin/go"
@@ -266,3 +273,16 @@ source hashes are recorded in [`source-pin.json`](source-pin.json) and
 `generate.py --check` compares every mirror with the actual oracle source. It
 executes the copied upstream functions; it is not imported by the native library.
 See [NOTICE.md](NOTICE.md) and the original [Apache license](LICENSE-APACHE-2.0).
+
+## Keep current toolchain instructions in sync
+
+From the repository root, `python3 -I -B tools/current-toolchain-docs.py --check`
+checks the marked current-toolchain blocks against each module's bound compiler
+identity, generation manifest, Go module and generator/verifier profiles.
+To prepare an update, use `--out /absolute/new/doc-candidates` instead. It
+creates both README candidates and an actual PROV-O generation record, without
+editing source or running a compiler. Compare the recorded preimage hashes before
+applying the candidates together in one reviewed Git change. Normal CI remains
+required. Historical profiles and material outside the marked blocks are preserved.
+This documentation check does not authorize a dependency migration or establish
+that every consumer outside this two-guide family has been found.

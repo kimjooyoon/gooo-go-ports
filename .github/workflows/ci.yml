@@ -30,6 +30,10 @@ jobs:
             --event-name "$GITHUB_EVENT_NAME" --event-path "$GITHUB_EVENT_PATH" \
             --expected-head "$GITHUB_SHA" --summary out/ci-scope.json \
             --github-output "$GITHUB_OUTPUT"
+      - name: Check current generation toolchain documentation
+        run: |
+          python3 -I -B tools/current-toolchain-docs_test.py -v
+          python3 -I -B tools/current-toolchain-docs.py --check
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
           go-version-file: go.mod

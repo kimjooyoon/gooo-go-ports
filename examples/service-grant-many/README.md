@@ -50,22 +50,21 @@ Gooo decisions, not valid grants. The complete 12 fields are `status`, `reason`,
 
 ## Reproduce source generation and verification
 
-This separately pinned de99 generation profile retains Go 1.27.2 and its
-original receipt identities. The current generated-Go consumer above targets
-Go 1.27.3; rebuilding it does not regenerate or rebind the old Gooo observations.
-Use the [pre-migration source snapshot](https://github.com/kimjooyoon/gooo-go-ports/tree/cc946350de37c48d509b1d383b8ce7e8a0062483)
-in a separate checkout for this historical generation procedure.
+<!-- gooo-current-toolchain:start -->
+Use an already-installed clean Gooo **0.6.37-dev** compiler at
+`205896a413e5dea92366309c35ae85e542d055f6` and **Go 1.27.3**. These current
+identities come from [compiler.json](compiler.json), are bound by
+[generation.json](generation.json), and agree with the generator and
+verifier profiles. Setup is separate; verification does not install a
+compiler or download a toolchain.
 
-Only this maintainer procedure needs the separately pinned development compiler
-`de99b770b8b5adea608233c3c0664902336e3310` (v0.6.35-dev) and Go 1.27.2. Check
-`compiler-pin.json` and the matching released archive SHA; root `.gooo` and the
-repository's 839 default pin/catalog remain separate. No language-engine build or
-model call is needed. Download/bootstrap is not performed by the verifier.
+From this example directory, choose a fresh output directory:
 
 ```sh
-python3 -I -B verify.py --compiler /absolute/path/to/pinned-de99-gooo \
-  --go /absolute/path/to/go1.27.2/bin/go --out /absolute/new/owned/verification
+python3 -I -B verify.py --compiler /absolute/path/to/pinned-gooo \
+  --go /absolute/path/to/go1.27.3/bin/go --out /absolute/new/owned/verification
 ```
+<!-- gooo-current-toolchain:end -->
 
 The verifier genuinely executes and saved-replays the original 1+15 batches,
 checks every four-fact input and 12 typed output plus source/entry/producer/plan
@@ -95,16 +94,17 @@ After verification, the pinned compiler can inspect static value connections in
 one retained execution record:
 
 ```sh
-/absolute/path/to/pinned-de99-gooo package origins \
+/absolute/path/to/pinned-gooo package origins \
   --receipt /absolute/new/owned/verification/normal-execute/stdout \
   --activity gooo://service-policy/multi-required/assess/v1 \
   --follow --limit 128 --json
 ```
 
 This reads the saved selected program; it does not execute the policy or call a
-model. Inspect `report.value_flow.analysis_status` and `truncated`: the finite
-128-row observation is `PARTIAL`. These are static connections, not complete
-runtime causality. To bind the full selected source, compare
+model. Inspect `report.value_flow.analysis_status` and `truncated`. The earlier
+de99 receipt reported `PARTIAL` for its finite 128-row observation. Read both
+fields from your actual current receipt. These are static connections, not
+complete runtime causality. To bind the full selected source, compare
 `result.composition.gooo_source` with its `selected_source_sha256` in the original
 record. Graph `body_sha256` values identify compiler-normalized bodies, and path
 positions refer to the decoded activity body, not original file offsets.
@@ -113,8 +113,8 @@ The independent reference is a separate nested module and is never imported by
 production. Its original matcher bytes, upstream pin, adaptation and licenses
 are retained under `reference/` and `NOTICE.md`.
 
-Function results and observation completeness are separate. The full 15-case batch
-currently reaches local recording caps: `PARTIAL`, with 314433 writes and 865219
+Function results and observation completeness are separate. An earlier de99
+15-case batch reached local recording caps: `PARTIAL`, with 314433 writes and 865219
 uses dropped, while collection reads are 2100/drop 0 and field summaries COMPLETE.
 Preserve actual statuses/counters from each new run; do not shrink the original
 16-case corpus or interpret these other COMPLETE summaries as complete causal
@@ -124,3 +124,25 @@ Required source CI runs this verifier with the pinned Linux amd64 compiler.
 Local Darwin checks alone do not establish Linux execution. These finite checks
 do not establish external adoption, full AgentMesh/CEL compatibility or current
 authority to apply a grant.
+
+## Historical generation profile
+
+The original `compiler-pin.json` retains the de99 compiler
+`de99b770b8b5adea608233c3c0664902336e3310` (v0.6.35-dev), Go 1.27.2 and its
+original observation identities. To reproduce that history, use the
+[pre-migration source snapshot](https://github.com/kimjooyoon/gooo-go-ports/tree/cc946350de37c48d509b1d383b8ce7e8a0062483)
+in a separate checkout and follow its own instructions. Those pins and counters
+do not describe the current generator and verifier above.
+
+## Keep current toolchain instructions in sync
+
+From the repository root, `python3 -I -B tools/current-toolchain-docs.py --check`
+checks the marked current-toolchain blocks against each module's bound compiler
+identity, generation manifest, Go module and generator/verifier profiles.
+To prepare an update, use `--out /absolute/new/doc-candidates` instead. It
+creates both README candidates and an actual PROV-O generation record, without
+editing source or running a compiler. Compare the recorded preimage hashes before
+applying the candidates together in one reviewed Git change. Normal CI remains
+required. Historical profiles and material outside the marked blocks are preserved.
+This documentation check does not authorize a dependency migration or establish
+that every consumer outside this two-guide family has been found.
