@@ -10,7 +10,7 @@ import (
 
 // This source/corpus check keeps the original62 catalog, factories and cases.
 // Its legacy roster uses current sources, with only the exact reviewed UUID
-// quote rewrite and three Go patch generator headers allowed. Historical pins
+// quote and parser-loop rewrites and three Go patch generator headers allowed. Historical pins
 // are checked by exact projection, while the selected source bytes/hashes stay
 // current. This does not claim a historical original62 source image or native PASS.
 func TestLiteralCutPreservesOriginal62CasesWorkspacesAndBatchBoundaries(t *testing.T) {
@@ -27,12 +27,6 @@ func TestLiteralCutPreservesOriginal62CasesWorkspacesAndBatchBoundaries(t *testi
 	if err := json.Unmarshal(raw, &base); err != nil || base.Schema != "gooo/literal-cut-original62-source-freeze/v1" || len(base.Sources) != 49 || len(base.Factories) != 21 {
 		t.Fatal("original source freeze", err)
 	}
-	const quotePath = "ports/google/uuid/quote.gooo"
-	const historicalQuoteSHA = "b9b0a9d642a91e2baba25b7636e875f6e5de9713bb7c4913368cd564cf34e339"
-	const reviewedCurrentQuoteSHA = "3a14a762ceed11df29b698ab3eb298655a6737bbba76fe5dbb38dbc81baeb7de"
-	if base.Sources[quotePath] != historicalQuoteSHA {
-		t.Fatal("historical UUID quote source pin changed")
-	}
 	unicodeOriginals := map[string]legacy445Source{}
 	for _, original := range loadLegacy445Fixture(t).Sources {
 		switch original.Name {
@@ -44,11 +38,16 @@ func TestLiteralCutPreservesOriginal62CasesWorkspacesAndBatchBoundaries(t *testi
 		t.Fatal("historical Unicode source roster differs")
 	}
 	unicodeSources := 0
+	reviewedSources := 0
 	legacyRosterCurrentSources := frozenVerificationCatalog{Catalog: base.Catalog, Sources: map[string][]byte{}, Hashes: map[string]string{}}
 	for name, historicalSHA := range base.Sources {
 		wantCurrentSHA := historicalSHA
-		if name == quotePath {
-			wantCurrentSHA = reviewedCurrentQuoteSHA
+		if rewrite, approved := legacyReviewedRewrites[name]; approved {
+			if historicalSHA != rewrite.HistoricalRawSHA {
+				t.Fatal("historical source pin changed", name)
+			}
+			wantCurrentSHA = rewrite.CurrentRawSHA
+			reviewedSources++
 		}
 		actual, err := os.ReadFile("../../" + name)
 		if err != nil {
@@ -70,6 +69,9 @@ func TestLiteralCutPreservesOriginal62CasesWorkspacesAndBatchBoundaries(t *testi
 			t.Fatal("legacy roster current Gooo source differs from reviewed pin", name)
 		}
 		legacyRosterCurrentSources.Sources[name], legacyRosterCurrentSources.Hashes[name] = actual, wantCurrentSHA
+	}
+	if reviewedSources != len(legacyReviewedRewrites) {
+		t.Fatal("original62 reviewed rewrite roster differs")
 	}
 	if unicodeSources != 3 {
 		t.Fatal("original62 Unicode projection roster differs")

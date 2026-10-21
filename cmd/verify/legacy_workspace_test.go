@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -177,20 +178,32 @@ func legacy445ProjectUnicodeSource(current []byte, original legacy445Source) ([]
 	return bytes.Clone(original.Bytes), nil
 }
 
-// Recheck the historical selector against its original source bytes. The
-// current snapshot must contain the exact reviewed quote revision and the three
-// approved Go patch headers; the owned historical projection restores only these
-// immutable fixture bytes.
+// Reviewed rewrites carry raw-file SHA256 roles. Workspace JSON-source-text
+// and semantic digests are different identities and are never substituted here.
+// Immutable fixtures retain their original bytes; these are current-source pins.
+type legacyReviewedRewrite struct{ HistoricalRawSHA, CurrentRawSHA string }
+
+var legacyReviewedRewrites = map[string]legacyReviewedRewrite{
+	"ports/google/uuid/quote.gooo":                {"b9b0a9d642a91e2baba25b7636e875f6e5de9713bb7c4913368cd564cf34e339", "3a14a762ceed11df29b698ab3eb298655a6737bbba76fe5dbb38dbc81baeb7de"},
+	"ports/google/uuid/text/parse_canonical.gooo": {"2821bec26211d473b25722317aaa7756cc30f077d620cb99d1b9f4ea7e3d557a", "798356642b43b8d2947de30c248e6d8ddb84a724313cfee66acbd0a18e7a55ec"},
+}
+
+func legacy445ProjectReviewedSource(current []byte, original legacy445Source) ([]byte, error) {
+	rewrite, ok := legacyReviewedRewrites[original.Name]
+	if !ok || contentDigest(current) != "sha256:"+rewrite.CurrentRawSHA {
+		return nil, fmt.Errorf("source is not an exact reviewed current rewrite")
+	}
+	if original.SHA256 != "sha256:"+rewrite.HistoricalRawSHA || contentDigest(original.Bytes) != original.SHA256 {
+		return nil, fmt.Errorf("immutable original rewrite source differs")
+	}
+	return bytes.Clone(original.Bytes), nil
+}
+
+// Recheck historical selectors against immutable original bytes. Current
+// sources must match every exact reviewed UUID rewrite and Go patch header.
 // This does not establish current-source native equivalence or rewrite history.
 func legacy445HistoricalSnapshot(t *testing.T, current frozenVerificationCatalog, fixture legacy445Fixture) frozenVerificationCatalog {
 	t.Helper()
-	const quote = "ports/google/uuid/quote.gooo"
-	const historicalQuote = "b9b0a9d642a91e2baba25b7636e875f6e5de9713bb7c4913368cd564cf34e339"
-	const reviewedCurrentQuote = "3a14a762ceed11df29b698ab3eb298655a6737bbba76fe5dbb38dbc81baeb7de"
-	if contentDigest(current.Sources[quote]) != "sha256:"+reviewedCurrentQuote || current.Hashes[quote] != reviewedCurrentQuote {
-		t.Fatal("current quote differs from the exact reviewed revision")
-	}
-	currentQuote := bytes.Clone(current.Sources[quote])
 	historical := current
 	historical.Sources = make(map[string][]byte, len(current.Sources))
 	historical.Hashes = make(map[string]string, len(current.Hashes))
@@ -200,20 +213,25 @@ func legacy445HistoricalSnapshot(t *testing.T, current frozenVerificationCatalog
 	for name, digest := range current.Hashes {
 		historical.Hashes[name] = digest
 	}
-	found := false
+	seen := map[string]bool{}
 	for _, original := range fixture.Sources {
-		if original.Name != quote {
+		rewrite, approved := legacyReviewedRewrites[original.Name]
+		if !approved {
 			continue
 		}
-		if found || original.SHA256 != "sha256:"+historicalQuote || contentDigest(original.Bytes) != original.SHA256 {
-			t.Fatal("immutable fixture quote differs from its original revision")
+		if seen[original.Name] || current.Hashes[original.Name] != rewrite.CurrentRawSHA {
+			t.Fatal("duplicate rewrite or current snapshot hash differs", original.Name)
 		}
-		found = true
-		historical.Sources[quote] = bytes.Clone(original.Bytes)
-		historical.Hashes[quote] = historicalQuote
+		projected, err := legacy445ProjectReviewedSource(current.Sources[original.Name], original)
+		if err != nil {
+			t.Fatal(original.Name, err)
+		}
+		historical.Sources[original.Name] = projected
+		historical.Hashes[original.Name] = rewrite.HistoricalRawSHA
+		seen[original.Name] = true
 	}
-	if !found || !bytes.Equal(current.Sources[quote], currentQuote) || current.Hashes[quote] != reviewedCurrentQuote {
-		t.Fatal("missing historical quote or projection mutated the current snapshot")
+	if len(seen) != len(legacyReviewedRewrites) {
+		t.Fatal("missing reviewed historical rewrite")
 	}
 	unicodeSources := 0
 	for _, original := range fixture.Sources {
@@ -438,5 +456,52 @@ func TestLegacy445UnicodeProjectionRejectsUnreviewedBytes(t *testing.T) {
 	}
 	if checked != 3 {
 		t.Fatal("Unicode projection test roster differs")
+	}
+}
+
+func TestLegacy445ReviewedSourceProjectionRejectsUnreviewedBytes(t *testing.T) {
+	fixture := loadLegacy445Fixture(t)
+	current, err := freezeVerificationCatalog("../../verification-catalog.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	checked := 0
+	for _, original := range fixture.Sources {
+		if _, ok := legacyReviewedRewrites[original.Name]; !ok {
+			continue
+		}
+		raw := current.Sources[original.Name]
+		before := bytes.Clone(raw)
+		projected, err := legacy445ProjectReviewedSource(raw, original)
+		if err != nil || !bytes.Equal(projected, original.Bytes) {
+			t.Fatal(original.Name, err)
+		}
+		for _, changed := range [][]byte{original.Bytes, append(bytes.Clone(raw), '\n'), bytes.Replace(raw, []byte("activity "), []byte("activitX "), 1)} {
+			if bytes.Equal(changed, raw) {
+				t.Fatal("negative control did not mutate current bytes")
+			}
+			if _, err := legacy445ProjectReviewedSource(changed, original); err == nil {
+				t.Fatal("accepted unreviewed rewrite", original.Name)
+			}
+		}
+		for _, change := range []func(*legacy445Source){
+			func(s *legacy445Source) { s.Name = "unreviewed.gooo" },
+			func(s *legacy445Source) { s.SHA256 = "sha256:" + strings.Repeat("0", 64) },
+			func(s *legacy445Source) { s.Bytes = append(bytes.Clone(s.Bytes), '\n') },
+		} {
+			altered := original
+			change(&altered)
+			if _, err := legacy445ProjectReviewedSource(raw, altered); err == nil {
+				t.Fatal("accepted changed immutable original", original.Name)
+			}
+		}
+		projected[0] ^= 1
+		if !bytes.Equal(raw, before) || contentDigest(original.Bytes) != original.SHA256 {
+			t.Fatal("projection aliases current or immutable source")
+		}
+		checked++
+	}
+	if checked != len(legacyReviewedRewrites) {
+		t.Fatal("reviewed rewrite roster differs")
 	}
 }
