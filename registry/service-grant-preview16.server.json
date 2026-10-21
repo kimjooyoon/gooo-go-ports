@@ -1,0 +1,13 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.kimjooyoon/gooo-service-grant",
+  "title": "Gooo service-grant assessment",
+  "description": "Gooo-generated, read-only grant assessment: one request by default; optional ordered requests.",
+  "repository": {
+    "url": "https://github.com/kimjooyoon/gooo-go-ports",
+    "source": "github",
+    "subfolder": "examples/service-grant-mcp"
+  },
+  "version": "0.1.0-preview.16",
+  "websiteUrl": "https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.16"
+}
