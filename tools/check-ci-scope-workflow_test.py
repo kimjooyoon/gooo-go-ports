@@ -1334,6 +1334,40 @@ ROOT_GO_REFERENCE_LINE = '          go-version-file: go.mod\n'
 ROOT_GO_LITERAL_LINE = "          go-version: '1.27.3'\n"
 
 
+TOOL_CATALOG_BLOCK = """      - name: Verify original Gooo tool-catalog change
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 5
+        run: |
+          bash examples/tool-catalog-change/verify.sh "$PWD/.gooo" "$(go env GOROOT)/bin/go" "$RUNNER_TEMP/tool-catalog-change"
+          python3 -I -B examples/tool-catalog-change/check_test.py --records "$RUNNER_TEMP/tool-catalog-change" -v
+          jq --slurpfile pins upstream.json -e '.status == "FINITE_SOURCE_CATALOG_MATCHED" and .native_cases == 27 and .replay_cases == 27 and .typed_fields_per_layer == 378 and .selected == {before:3,after:16} and (.added | length) == 13 and .compiler_source_sha == $pins[0].compiler_revision' "$RUNNER_TEMP/tool-catalog-change/catalog-check.json"
+          jq --slurpfile pins upstream.json -e '.status == "FINITE_SELECTION_CONTROLS_MATCHED" and .native_cases == 20 and .replay_cases == 20 and .typed_fields_per_layer == 280 and .compiler_source_sha == $pins[0].compiler_revision' "$RUNNER_TEMP/tool-catalog-change/controls-check.json"
+      - name: Preserve tool-catalog change evidence
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: tool-catalog-change-evidence
+          path: ${{ runner.temp }}/tool-catalog-change
+          if-no-files-found: warn
+          retention-days: 14
+"""
+TOOL_CATALOG_PRIOR_WORKFLOW_SHA = '7ff5a75a4adb70852bb6b0c4882db87d22ee48f2737d522e951bd083a397b66e'
+
+
+def project_tool_catalog_integration(text):
+    jobs = workflow_jobs(text)
+    require(text.count(TOOL_CATALOG_BLOCK) == 1
+            and TOOL_CATALOG_BLOCK in jobs['policy-native-checks'],
+            'tool-catalog verification and evidence require their exact policy steps once')
+    anchor = '      - name: Upload offline policy experiment evidence\n'
+    require(text.index(TOOL_CATALOG_BLOCK) + len(TOOL_CATALOG_BLOCK) == text.index(anchor),
+            'tool-catalog checks must follow existing policy execution before evidence upload')
+    prior = text.replace(TOOL_CATALOG_BLOCK, '', 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == TOOL_CATALOG_PRIOR_WORKFLOW_SHA,
+            'tool-catalog integration changed unrelated workflow bytes')
+    return prior
+
+
 DOC_FACT_STEP = """      - name: Check current generation toolchain documentation
         run: |
           python3 -I -B tools/current-toolchain-docs_test.py -v
@@ -1343,6 +1377,7 @@ DOC_FACT_PRIOR_WORKFLOW_SHA = "c107d638db6604e166082077eef8a22e47ad0bcfa204bc859
 
 
 def project_current_doc_fact_check(text):
+    text = project_tool_catalog_integration(text)
     # Only this exact early observer step is new. Every historical workflow
     # contract below still receives its byte-exact previous source.
     jobs = workflow_jobs(text)
@@ -3622,6 +3657,45 @@ class CurrentGo1273SelectionTests(unittest.TestCase):
                         go1273 + '# unreviewed Go1.27.3 occurrence\n'):
             with self.subTest(current_selection=mutated[:80]), self.assertRaises(ValueError):
                 project_go1273_toolchain(mutated)
+
+
+class ToolCatalogIntegrationTests(unittest.TestCase):
+    def test_exact_block_recovers_all_prior_workflow_bytes(self):
+        prior = project_tool_catalog_integration(WORKFLOW.read_text())
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), TOOL_CATALOG_PRIOR_WORKFLOW_SHA)
+
+    def test_omission_duplication_skip_or_mask_is_refused(self):
+        raw = WORKFLOW.read_text()
+        changed_commands = [
+            raw.replace(TOOL_CATALOG_BLOCK, '', 1),
+            raw.replace(TOOL_CATALOG_BLOCK, TOOL_CATALOG_BLOCK * 2, 1),
+            raw.replace('      - name: Verify original Gooo tool-catalog change\n        if: ' + FULL,
+                        '      - name: Verify original Gooo tool-catalog change\n        if: false', 1),
+            raw.replace('check_test.py --records "$RUNNER_TEMP/tool-catalog-change" -v',
+                        'check_test.py --records "$RUNNER_TEMP/tool-catalog-change" -v || true', 1),
+            raw.replace('name: tool-catalog-change-evidence', 'name: missing-catalog-evidence', 1),
+        ]
+        for changed in changed_commands:
+            self.assertNotEqual(changed, raw)
+            with self.subTest(length=len(changed)), self.assertRaises(ValueError):
+                project_tool_catalog_integration(changed)
+
+    def test_moved_block_is_refused(self):
+        raw = WORKFLOW.read_text()
+        prior = raw.replace(TOOL_CATALOG_BLOCK, '', 1)
+        for anchor in ('      - name: Verify the Agent Mesh service-pattern adaptation\n',
+                       '  native-execution:\n'):
+            changed = prior.replace(anchor, TOOL_CATALOG_BLOCK + anchor, 1)
+            self.assertNotEqual(changed, raw)
+            with self.subTest(anchor=anchor), self.assertRaises(ValueError):
+                project_tool_catalog_integration(changed)
+
+    def test_unrelated_native_gate_cannot_change(self):
+        raw = WORKFLOW.read_text()
+        changed = raw.replace('--fail-fast --timeout 60m', '--fail-fast --timeout 90m', 1)
+        self.assertNotEqual(changed, raw)
+        with self.assertRaises(ValueError):
+            project_tool_catalog_integration(changed)
 
 
 class CurrentDocFactCheckTests(unittest.TestCase):

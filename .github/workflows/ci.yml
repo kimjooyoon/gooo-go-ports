@@ -1694,6 +1694,22 @@ jobs:
             all(.commands[]; .exit_code == 0 and .failure == null and .observed_owned_processes_remaining == []) and
             .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6"
           ' out/autobot-resolver/summary.json
+      - name: Verify original Gooo tool-catalog change
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 5
+        run: |
+          bash examples/tool-catalog-change/verify.sh "$PWD/.gooo" "$(go env GOROOT)/bin/go" "$RUNNER_TEMP/tool-catalog-change"
+          python3 -I -B examples/tool-catalog-change/check_test.py --records "$RUNNER_TEMP/tool-catalog-change" -v
+          jq --slurpfile pins upstream.json -e '.status == "FINITE_SOURCE_CATALOG_MATCHED" and .native_cases == 27 and .replay_cases == 27 and .typed_fields_per_layer == 378 and .selected == {before:3,after:16} and (.added | length) == 13 and .compiler_source_sha == $pins[0].compiler_revision' "$RUNNER_TEMP/tool-catalog-change/catalog-check.json"
+          jq --slurpfile pins upstream.json -e '.status == "FINITE_SELECTION_CONTROLS_MATCHED" and .native_cases == 20 and .replay_cases == 20 and .typed_fields_per_layer == 280 and .compiler_source_sha == $pins[0].compiler_revision' "$RUNNER_TEMP/tool-catalog-change/controls-check.json"
+      - name: Preserve tool-catalog change evidence
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: tool-catalog-change-evidence
+          path: ${{ runner.temp }}/tool-catalog-change
+          if-no-files-found: warn
+          retention-days: 14
       - name: Upload offline policy experiment evidence
         if: always() && steps.change-scope.outputs.docs_only != 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
