@@ -259,29 +259,33 @@ explicit preview and install commands above.
 ### Optional project-local installation with npm
 
 To start outside a repository checkout, review the
-[pinned skill](https://github.com/kimjooyoon/gooo-go-ports/tree/c4d0c54ffc51cd2cc015d81a828bb1e96fbe1b79/.agents/skills/gooo-first-program)
+[pinned skill](https://github.com/kimjooyoon/gooo-go-ports/tree/fceb89f8b53eabd6687d16258d7cee89853c2cfe/.agents/skills/gooo-first-program)
 and use a fresh project directory with no existing copy of this skill. Prepare
 Node.js **22.20 or later**, npm and Git, then run from that directory:
 
 ```sh
 DISABLE_TELEMETRY=1 npm exec --yes --ignore-scripts \
-  --package=skills@1.7.2 -- \
-  skills add https://github.com/kimjooyoon/gooo-go-ports/tree/c4d0c54ffc51cd2cc015d81a828bb1e96fbe1b79/.agents/skills/gooo-first-program \
-  --skill gooo-first-program --agent codex --copy --yes
+  --package=skills@1.7.4 -- \
+  skills add https://github.com/kimjooyoon/gooo-go-ports/tree/fceb89f8b53eabd6687d16258d7cee89853c2cfe/.agents/skills/gooo-first-program \
+  --skill gooo-first-program --agent codex --agent claude-code --agent cursor --copy --yes
 ```
 
-This selects a project-local copy for Codex. It writes the skill under
-`.agents/skills/gooo-first-program` and records the source commit in
-`skills-lock.json`. Review those files, then use the explicit first-program task
-above. The skill guides a separate checkout, tool setup and actual Gooo run;
-installing its instructions does not install the compiler.
+This selects project-local copies. Codex and Cursor share
+`.agents/skills/gooo-first-program`; Claude Code uses
+`.claude/skills/gooo-first-program`. Remove agent selections you do not need.
+Review those files and the source revision in `skills-lock.json`, then use the
+explicit first-program task above. Installing instructions does not install
+the compiler or execute a Gooo program.
 
-One macOS sandbox installation used the SRI-verified `skills` **1.7.2** tarball
-with `npm exec` and the exact source URL and flags above. Both installed files
-matched the pinned public Git blobs. The command above obtains that CLI version
-from npm instead of the local tarball used in the test. Client activation and
-independent adoption remain unverified. See the
-[official CLI](https://github.com/vercel-labs/skills/tree/671e8c320810d36fed80fac5f1a2c1bf7e82d812)
+A macOS trial used Node **24.19.0**, a private npm installation of `skills`
+**1.7.4** checked against its published integrity value, and the exact source URL
+and CLI arguments above. Both installed directories matched all three source
+files byte-for-byte; the lock's source revision and folder hash were checked
+independently. The command above obtains the CLI from npm rather than using the
+private installation used in the trial. A separate prompt-only `skills use`
+trial returned the exact instructions and supporting files without launching a
+client. Client activation, task completion and independent adoption remain
+unverified. See the [official CLI](https://github.com/vercel-labs/skills)
 for installation scope and the
 [telemetry opt-out](https://www.skills.sh/docs/cli#telemetry).
 
