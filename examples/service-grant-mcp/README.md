@@ -38,6 +38,14 @@ particular agent application.
 
 ## Call the tool
 
+Choose `assess_service_grant` for one required service request, or start the
+server with `--many-required` and choose `assess_service_grant_change` for an
+ordered list. Discovery includes descriptions and examples for every input
+field, including each list item's `type` and `name`. These identify a service
+such as `mcp://weather`, rather than an individual tool or a URL path.
+Use `before` for the previous grant and `after` for the proposed replacement;
+preserve supplied text instead of repairing an unsupported identifier.
+
 Supply exactly four JSON strings as the tool arguments object:
 
 ```json

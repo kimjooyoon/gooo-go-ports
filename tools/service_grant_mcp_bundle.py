@@ -28,7 +28,7 @@ import zipfile
 REFERENCE_SOURCE = '9c29602f77492be0e60c0ef91afd6d3968890b24'
 
 SOURCE_FILES = {'examples/service-grant-mcp/LICENSE': '099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48',
- 'examples/service-grant-mcp/README.md': 'ae0252d054bba2eb625526e026dde09e6a81946209d47b86037e2ebead121754',
+ 'examples/service-grant-mcp/README.md': '8ff5048ec7140f260af7c2289ed42fa6605cae0a781a260143ad29dc89e89c24',
  'examples/service-grant-mcp/fixtures/control-1.input': 'eaa120445bed9038ab6d9a4e71949344f6d92c44bad73fc7d713b8fc17c0dcb4',
  'examples/service-grant-mcp/fixtures/control-1.stdout': 'd16eee837f400c55fa49f6bbdef280d4747976efa8e4a00e1eb8b71a8a8e95c3',
  'examples/service-grant-mcp/fixtures/control-2.input': '947f10f40652f17eb97c9f7d7a372a493a9eca5e24976ab7dbbe9c1863bac34e',
@@ -40,11 +40,11 @@ SOURCE_FILES = {'examples/service-grant-mcp/LICENSE': '099e1adf9145f6fe45357f004
  'examples/service-grant-mcp/fixtures/origin.json': '40915248a7743baaaf307bdf620fa2386d46790b255b1e90a58cc17d6142423c',
  'examples/service-grant-mcp/go.mod': '2dd303dce968a4c2b7fa8d1dc820b94c3bc53bcd8535fc7e14d3847179a306d4',
  'examples/service-grant-mcp/go.sum': 'a85b704ac364c538f41594af4a1e8bcb2850a5769376072f7c59d92a5fdf7678',
- 'examples/service-grant-mcp/main.go': '94c3a842be2e9bbcb74b534a143d9a0bd96ef123ee0bc1d67779cc3e22605b31',
+ 'examples/service-grant-mcp/main.go': '57474ebcacd51849adbcdbf9b9a47b77392748a96a2cf90cade28a69640b4674',
  'examples/service-grant-mcp/main_test.go': 'bfd6a2b45c6ffeb293e0b68b0a9afa08a02e16409ba8b9e0ff7aa9e1e5e9f6d6',
- 'examples/service-grant-mcp/verify.py': '70b88f9ebdcbefd8b94cda63308bf909bc4eb450acf4d3af3f4164d696ff7a55',
+ 'examples/service-grant-mcp/verify.py': '0fd5a5f80748551cd177d05d2913c11c158d409d61464109c27da0bc21d98612',
  'examples/service-grant-mcp/verify_close_test.py': '63076fe685edbed02e8d6ebb821b1660f6c6504ca110ac44dcf5a01e5b523375',
- 'examples/service-grant-mcp/verify_many.py': '79af6eab169bee03173bd552b3be765d91f452e48d2928af7d7b7315c2108444'}
+ 'examples/service-grant-mcp/verify_many.py': '2fb1602cc76f17b0c9ed8e8e3187560e9673d5db33bbc600b503ed905ded56cf'}
 
 DEPENDENCIES = [{'dependency': {'Path': 'github.com/google/jsonschema-go',
                  'Sum': 'h1:/DBOLZTfDow7pe2GmaJNhltueGTtDKICi8V8p+DQPd0=',
@@ -463,6 +463,29 @@ def source_contract(root, modcache):
     return generation, many_generation
 
 
+def structural_schema(schema):
+    """Project descriptive annotations; retain every validation keyword.
+
+    The source-pinned wire verifier separately checks descriptions/examples
+    and executes the discovery example. Original structural contracts remain
+    unchanged; unknown or altered constraints cannot disappear here.
+    """
+    if isinstance(schema, dict):
+        result = {}
+        for key, value in schema.items():
+            if key == "description":
+                need(type(value) is str and bool(value.strip()), "empty schema description")
+            elif key == "examples":
+                need(schema.get("type") == "string" and type(value) is list and bool(value)
+                     and all(type(x) is str for x in value), "invalid string examples")
+            else:
+                result[key] = structural_schema(value)
+        return result
+    if isinstance(schema, list):
+        return [structural_schema(value) for value in schema]
+    return schema
+
+
 def checked_report(report, build, binary_sha, root, generation):
     need(type(report) is dict and set(report) == {"status", "observations", "binary_sha256", "build_identity", "sdk_client_calls", "model_calls", "external_adoption", "scope"}, "wire report fields differ")
     need(report["status"] == "INDEPENDENT_WIRE_TRIAL_PASS" and report["binary_sha256"] == binary_sha, "wire binary/acceptance differs")
@@ -482,8 +505,15 @@ def checked_report(report, build, binary_sha, root, generation):
         proofs.append({"fixture": index, "status": proof["decision"]["status"], "proof_sha256": sha(compact)})
     errors = ["duplicate-key", "missing-field", "extra-field", "null", "wrong-type", "unpaired-surrogate", "array", "missing-arguments"]
     want = [{"protocol": p, "native_CLI_equal": proofs, "strict_tool_errors": errors,
+             "discovery_example_native_CLI_equal": True,
              "unknown_tool_error": -32602, **SCHEMAS} for p in ("2025-11-25", "2026-07-28")]
-    exact(report["observations"], want)
+    observations = []
+    for observed in report["observations"]:
+        row = dict(observed)
+        for key in ("input_schema", "output_schema"):
+            row[key] = structural_schema(row[key])
+        observations.append(row)
+    exact(observations, want)
 
 
 def many_module_source(modcache, root):

@@ -34,6 +34,22 @@ def build():
 
 
 class BundleRefusals(unittest.TestCase):
+    def test_schema_annotations_cannot_hide_validation_changes(self):
+        annotated = copy.deepcopy(M.SCHEMAS["input_schema"])
+        field = annotated["properties"]["before"]
+        field.update(description="Previous grant pattern", examples=["*"])
+        M.exact(M.structural_schema(annotated), M.SCHEMAS["input_schema"])
+        for key, value in [("maxLength", 128), ("enum", ["*"]), ("type", "number")]:
+            changed = copy.deepcopy(annotated)
+            changed["properties"]["after"][key] = value
+            with self.assertRaises(ValueError):
+                M.exact(M.structural_schema(changed), M.SCHEMAS["input_schema"])
+        for value in [[], [False], "*"]:
+            changed = copy.deepcopy(annotated)
+            changed["properties"]["before"]["examples"] = value
+            with self.assertRaises(ValueError):
+                M.structural_schema(changed)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(dir=os.environ.get("MCP_BUNDLE_TEST_TMP"))
         self.root = Path(self.temp.name)
@@ -49,7 +65,13 @@ class BundleRefusals(unittest.TestCase):
         archive_path.parent.mkdir(parents=True)
         with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
             for relative, digest in M.MANY_FILES.items():
-                data = (repo/"examples/service-grant-many"/relative).read_bytes()
+                # Current documentation is generated from current toolchain
+                # facts; the installed historical module retains its own bytes.
+                if relative == "README.md":
+                    data = (Path(__file__).with_name("testdata") /
+                            "service-grant-many-7180a4a0-README.md.txt").read_bytes()
+                else:
+                    data = (repo/"examples/service-grant-many"/relative).read_bytes()
                 self.assertEqual(M.sha(data), digest)
                 if relative == omit:
                     continue

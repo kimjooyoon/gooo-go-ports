@@ -246,10 +246,15 @@ def main():
             schema = tool["inputSchema"]
             assert schema["additionalProperties"] is False
             assert set(schema["required"]) == set(schema["properties"]) == {"before", "after", "required_requests"}
+            for name in ["before", "after"]:
+                legacy.described_text(schema["properties"][name])
             requests = schema["properties"]["required_requests"]
             assert requests["type"] == "array" and "minItems" not in requests and "maxItems" not in requests
             assert requests["items"]["additionalProperties"] is False
             assert set(requests["items"]["required"]) == set(requests["items"]["properties"]) == {"type", "name"}
+            assert type(requests['description']) is str and requests['description'].strip()
+            for field in requests['items']['properties'].values():
+                legacy.described_text(field)
             assert tool["annotations"]["readOnlyHint"] is True and tool["annotations"]["openWorldHint"] is False
             decision_schema = tool["outputSchema"]["properties"]["decision"]
             assert len(decision_schema["properties"]) == 12
