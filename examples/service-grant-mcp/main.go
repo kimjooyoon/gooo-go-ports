@@ -32,11 +32,29 @@ func closedObject(properties map[string]any, required []string) map[string]any {
 		"required": required, "additionalProperties": false}
 }
 
-func factsSchema() map[string]any {
-	properties := map[string]any{}
-	for _, name := range []string{"before", "after", "required_type", "required_name"} {
-		properties[name] = map[string]any{"type": "string"}
+func describedText(description, example string) map[string]any {
+	return map[string]any{"type": "string", "description": description, "examples": []string{example}}
+}
+
+func grantPatternFields() map[string]any {
+	return map[string]any{
+		"before": describedText("Previous service-grant pattern, preserved exactly. Examples: * (all services), mcp://* (all MCP services), or mcp://weather (one service). Supported patterns use ASCII text of at most 128 bytes; paths, queries and fragments are outside this domain.", "*"),
+		"after":  describedText("Proposed replacement service-grant pattern, using the same syntax as before. It must be a supported subset and preserve the supplied required request(s) for ELIGIBLE. Do not normalize or repair an unsupported pattern to force eligibility.", "mcp://*"),
 	}
+}
+
+func requestTypeSchema() map[string]any {
+	return describedText("Exact required service type, for example mcp or http; not a full URI. The supported domain is ASCII, at most 128 bytes, starting with a letter when nonempty, followed by letters, digits, +, - or .; Gooo decides domain validity.", "mcp")
+}
+
+func requestNameSchema() map[string]any {
+	return describedText("Exact required service name, for example weather, not an individual tool name or a path such as weather/forecast. Supported nonempty names contain ASCII letters, digits, - and _ in nonempty dot-separated labels, at most 128 bytes. Preserve the supplied spelling; Gooo decides domain validity.", "weather")
+}
+
+func factsSchema() map[string]any {
+	properties := grantPatternFields()
+	properties["required_type"] = requestTypeSchema()
+	properties["required_name"] = requestNameSchema()
 	return closedObject(properties, []string{"before", "after", "required_type", "required_name"})
 }
 
@@ -96,14 +114,13 @@ func assess(ctx context.Context, request *mcp.CallToolRequest) (*mcp.CallToolRes
 }
 
 func manyFactsSchema() map[string]any {
-	text := map[string]any{"type": "string"}
-	request := closedObject(map[string]any{"type": text, "name": text}, []string{"type", "name"})
+	request := closedObject(map[string]any{"type": requestTypeSchema(), "name": requestNameSchema()}, []string{"type", "name"})
 	// No maxItems/minItems/domain restrictions: Gooo owns the256/257 and
 	// empty-list decisions. DecodeInput owns the separate JSON byte limit.
-	return closedObject(map[string]any{
-		"before": text, "after": text,
-		"required_requests": map[string]any{"type": "array", "items": request},
-	}, []string{"before", "after", "required_requests"})
+	properties := grantPatternFields()
+	properties["required_requests"] = map[string]any{"type": "array", "items": request,
+		"description": "Required service requests to preserve in their original order, including duplicates. Each item has exact type and name fields. Do not sort or deduplicate. Empty lists and lists above the supported 256-request policy limit return Gooo decisions; malformed JSON or an arguments object exceeding 1 MiB is a tool error."}
+	return closedObject(properties, []string{"before", "after", "required_requests"})
 }
 
 func manyProofSchema() map[string]any {
@@ -197,7 +214,7 @@ func frameMax(enableMany bool) int {
 func newServer(enableMany bool) *mcp.Server {
 	instructions := "Assess supplied facts with the pinned Gooo generation. One required request per change. ELIGIBLE, REFUSED and INVALID_INPUT are decisions; isError indicates a tool failure. This server applies no grant, authenticates no authority and contacts no service."
 	if enableMany {
-		instructions += " The optional assess_service_grant_change tool checks one change against an ordered list of required requests using a separate de99 generation. Its full facts are ordered columns, with12 typed decision fields and separate30-asset source bindings. It applies no change."
+		instructions += " Use assess_service_grant for one required service request, or assess_service_grant_change for an ordered list. Preserve the complete returned facts, decision and source bindings. Neither tool applies a change."
 	}
 	server := mcp.NewServer(&mcp.Implementation{Name: "gooo-service-grant", Version: "0.1.0-dev"},
 		&mcp.ServerOptions{Capabilities: &mcp.ServerCapabilities{},
@@ -206,7 +223,7 @@ func newServer(enableMany bool) *mcp.Server {
 	server.AddTool(&mcp.Tool{
 		Name:        toolName,
 		Title:       "Check a service-grant narrowing",
-		Description: "Assess whether a candidate service pattern is a supported subset of the previous pattern while preserving one required request. Returns the supplied facts, seven typed decision fields and immutable Gooo source/generation bindings. Supplied facts are not authenticated and no grant or API operation is applied.",
+		Description: "Use when considering a narrower service grant that must preserve one required service request. Assesses whether after is a supported subset of before and still matches required_type and required_name. For an ordered request list, use assess_service_grant_change when available. Domain-invalid facts return INVALID_INPUT; malformed arguments return a tool error with no decision. Supplied facts are not authenticated; no grant or API operation is applied.",
 		InputSchema: factsSchema(), OutputSchema: proofSchema(),
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true, IdempotentHint: true, OpenWorldHint: &closed},
 	}, assess)
@@ -214,7 +231,7 @@ func newServer(enableMany bool) *mcp.Server {
 		server.AddTool(&mcp.Tool{
 			Name:        manyToolName,
 			Title:       "Preserve an ordered service-request list",
-			Description: "Assess one grant change while preserving every supplied required request in original order, including duplicates. Input has before, after and a required_requests array of exact type/name pairs. The separate Gooo many-required generation returns complete ordered-column facts,12 typed decision fields and its own30-asset bindings. Domain invalidity and the Gooo257-request refusal are decisions, not tool errors. Supplied facts are not authenticated and no grant or service operation is applied.",
+			Description: "Use when one proposed service-grant narrowing must preserve an ordered list of required service requests, including duplicates. For one request with flat required_type/required_name fields, use assess_service_grant. Domain-invalid facts and request-limit excess return INVALID_INPUT decisions; malformed arguments return a tool error with no decision. Supplied facts are not authenticated; no grant or service operation is applied.",
 			InputSchema: manyFactsSchema(), OutputSchema: manyProofSchema(),
 			Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true, IdempotentHint: true, OpenWorldHint: &closed},
 		}, assessMany)

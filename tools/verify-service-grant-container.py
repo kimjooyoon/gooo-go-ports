@@ -307,13 +307,14 @@ def many_proofs(session):
     assert schema["additionalProperties"] is False
     assert set(schema["required"]) == set(schema["properties"]) == {"before", "after", "required_requests"}
     for key in ("before", "after"):
-        WIRE.exact(schema["properties"][key], {"type": "string"})
+        WIRE.described_text(schema["properties"][key])
     requests = schema["properties"]["required_requests"]
     assert requests["type"] == "array" and "minItems" not in requests and "maxItems" not in requests
+    assert type(requests['description']) is str and requests['description'].strip()
     assert requests["items"]["additionalProperties"] is False
     assert set(requests["items"]["required"]) == set(requests["items"]["properties"]) == {"type", "name"}
     for key in ("type", "name"):
-        WIRE.exact(requests["items"]["properties"][key], {"type": "string"})
+        WIRE.described_text(requests["items"]["properties"][key])
     assert tool["annotations"]["readOnlyHint"] is True and tool["annotations"]["openWorldHint"] is False
     decision = tool["outputSchema"]["properties"]["decision"]
     assert len(decision["properties"]) == 12 and decision["additionalProperties"] is False

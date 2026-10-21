@@ -179,6 +179,14 @@ class Session:
             assert self.process.returncode == 0 and absent and drained and not self.linebuf and not self.buffers['stderr'] and not runtime_files, record
 
 
+def described_text(schema):
+    assert set(schema) == {'type', 'description', 'examples'}
+    assert schema['type'] == 'string'
+    assert type(schema['description']) is str and schema['description'].strip()
+    assert type(schema['examples']) is list and schema['examples']
+    assert all(type(example) is str for example in schema['examples'])
+
+
 def listed(session):
     result = session.request('tools/list')['result']
     assert len(result['tools']) == 1
@@ -187,7 +195,8 @@ def listed(session):
     schema = tool['inputSchema']
     assert set(schema['required']) == set(schema['properties']) == {'before','after','required_type','required_name'}
     assert schema['additionalProperties'] is False
-    assert all(x == {'type': 'string'} for x in schema['properties'].values())
+    for field in schema['properties'].values():
+        described_text(field)
     assert tool['annotations']['readOnlyHint'] is True and tool['annotations']['openWorldHint'] is False
     assert tool['outputSchema']['additionalProperties'] is False
     output = tool['outputSchema']
@@ -258,6 +267,16 @@ def main():
                 assert protocol in discovered['supportedVersions']
                 exact(discovered['_meta']['io.modelcontextprotocol/serverInfo'], {'name':'gooo-service-grant','version':'0.1.0-dev'})
             tool = listed(session)
+            # Construct an actual call from discovery metadata, not a second
+            # handwritten example. It must equal the retained native fixture.
+            example = {name: field['examples'][0]
+                       for name, field in tool['inputSchema']['properties'].items()}
+            expected_example = json.loads((FIXTURES/'control-1.input').read_bytes())[0]
+            exact(example, expected_example)
+            example_result = session.request('tools/call', {'name': TOOL}, encoded(example))['result']
+            expected_proof = json.loads((FIXTURES/'control-1.stdout').read_bytes())[0]
+            assert not example_result.get('isError', False)
+            exact(example_result['structuredContent'], expected_proof)
             cases = [proof(session, i) for i in [1,2,3,1]]
             assert cases[0] == cases[3]
             invalid = [
@@ -279,6 +298,7 @@ def main():
             unknown = session.request('tools/call', {'name': 'unknown_tool'}, b'{}')
             assert unknown['error']['code'] == -32602
             observations.append({'protocol': protocol, 'native_CLI_equal': cases,
+                                 'discovery_example_native_CLI_equal': True,
                                  'strict_tool_errors': refused, 'unknown_tool_error': -32602,
                                  'input_schema': tool['inputSchema'], 'output_schema': tool['outputSchema']})
         except BaseException as error:
