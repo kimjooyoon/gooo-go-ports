@@ -132,6 +132,26 @@ summary. Run it after saving all three records. It checks the tutorial's bounded
 record profile; it does not execute an agent or authorize effects. The older
 immutable installation snapshots below retain their original manual workflow.
 
+### Read source identities after a policy edit
+
+The [editable API policy workflow](../examples/editable-api-policy/README.md)
+creates `source-comparison.json` after validating the execution and replay
+records. Inspect the complete field path before comparing hashes:
+
+| Document and field | Bytes identified |
+| --- | --- |
+| `source-comparison.json`: `variants.before.policy_source.raw_sha256` (or `after`) | Original policy file bytes, including its line endings. This field is unprefixed hex. |
+| `source-comparison.json`: `variants.before.policy_source.receipt_json_string_digest` (or `after`) | SHA-256 of the source string encoded with Go JSON rules, with a `sha256:` prefix. This is the value checked against the matching package/source entry in the receipt. |
+| Execution or replay receipt: `result.program.workspace_image.packages[].sources[].source_digest` | The Go JSON-encoded source string for that entry's package and filename; use both to select the entry. |
+| Replay receipt: `replayed_from_sha256` | Exact saved execution receipt bytes, including whitespace; not policy source bytes. |
+
+Two digests of the same source can differ because they identify different byte
+representations. Removing a `sha256:` prefix does not make those representations
+equivalent. Keep the original source and receipt bytes; use the workflow's
+existing checks rather than reserializing a receipt or normalizing source before
+hashing. A matching hash identifies bytes, not the trustworthiness of supplied
+facts or authority to apply a live change.
+
 ### Use the instructions with Gemini CLI
 
 The root [extension manifest](../gemini-extension.json) points directly to the
