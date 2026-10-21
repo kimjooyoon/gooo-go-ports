@@ -87,8 +87,10 @@ existing [two-file tutorial](../examples/learn-gooo/README.md), its four supplie
 inputs, and the repository's pinned compiler and Go toolchain. Setup needs Git,
 a POSIX shell and Go toolchain selection on macOS or Linux.
 
-Current-source setup targets Go **1.27.3** with the checkout's matching compiler
-and validator identities; this is not evidence that the migration has run.
+Current-source setup uses Go **1.27.3** with the checkout's matching compiler
+and validator identities. The [full main CI at `b0e6715`](https://github.com/kimjooyoon/gooo-go-ports/actions/runs/39544747815)
+passed native comparison and saved replay with compiler `205896a`; follow the
+setup below for your own platform and preserve the actual result or first error.
 The [pinned 0.6.32 release](https://github.com/kimjooyoon/meta-ontology-go/releases/tag/v0.6.32-dev)
 and the [pre-migration source snapshot](https://github.com/kimjooyoon/gooo-go-ports/tree/cc946350de37c48d509b1d383b8ce7e8a0062483)
 retain Go **1.27.2**. For that reproduction only, verify SHA256SUMS, extract fresh

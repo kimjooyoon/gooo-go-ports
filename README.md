@@ -19,9 +19,10 @@ With the supplied inputs, score `75` changes from `sensor: high` to
 [setup guide](docs/ai-agents.md) target Go **1.27.3** on macOS or Linux with
 the compiler identity pinned by the checkout. Reuse tools only after identity
 validation; [source setup](#run-and-edit-locally) may download and build them.
-This toolchain migration target is not a claim of a completed run or a new native
-release. Published preview bundles and fixed older walkthroughs retain their
-recorded Go 1.27.2 identities; changing a version string does not upgrade them.
+The [full main CI at `b0e6715`](https://github.com/kimjooyoon/gooo-go-ports/actions/runs/39544747815)
+passed with Go 1.27.3 and the pinned compiler, including native comparison and
+saved replay. Older immutable bundles and walkthroughs retain the toolchain
+identities recorded in their own release instructions.
 A source edit needs native execution. Saving generated Go alone is not a run.
 For an existing Tessl setup, use the [project-local source installation](docs/ai-agents.md#install-the-skill-with-tessl)
 to give the same first-program task to your coding agent.
