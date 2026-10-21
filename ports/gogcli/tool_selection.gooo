@@ -1,0 +1,56 @@
+// Adapted from openclaw/gogcli mcpToolAllowed and mcpFilterTools.
+// Source ec34fedc23dd9d3e90f0401144cec42e06a50783; MIT, see LICENSE.
+// Selection kernel only; config normalization, account selection and action
+// enforcement stay in the host. UTF-8 Text <=1024 bytes, selectors <=256.
+package gogcli
+namespace gooo_ports_gogcli_selection_v1
+entity Boolean id "gooo://std/boolean"
+entity GogSelectorInput id "urn:gooo:gogcli-selector:request" fields {
+ field name id "urn:gooo:gogcli-selector:name" type string required one
+ field service id "urn:gooo:gogcli-selector:service" type string required one
+ field risk id "urn:gooo:gogcli-selector:risk" type string required one
+ field selectors id "urn:gooo:gogcli-selector:selectors" type string required many
+}
+activity ToolAllowed(GogSelectorInput) -> Boolean id "urn:gooo:gogcli-selector:matches" computes `
+for pattern in input.selectors {
+ if pattern == "*" || pattern == "all" || pattern == input.risk || pattern == input.name || pattern == input.service { return true }
+ let n = int64(len(pattern))
+ if n >= 2 {
+  let prefixEnd = n - 2
+  if pattern[prefixEnd:n] == ".*" && pattern[0:prefixEnd] == input.service { return true }
+ }
+}
+return false
+`
+entity GogSelectionFacts id "urn:gooo:gogcli-catalog:GogSelectionFacts" fields {
+ field name id "urn:gooo:gogcli-catalog:GogSelectionFacts:name" type string required one
+ field service id "urn:gooo:gogcli-catalog:GogSelectionFacts:service" type string required one
+ field risk id "urn:gooo:gogcli-catalog:GogSelectionFacts:risk" type string required one
+ field capability id "urn:gooo:gogcli-catalog:GogSelectionFacts:capability" type string required one
+ field allow_write id "urn:gooo:gogcli-catalog:GogSelectionFacts:allow_write" type boolean required one
+ field allow_gmail_send id "urn:gooo:gogcli-catalog:GogSelectionFacts:allow_gmail_send" type boolean required one
+ field allow_gmail_delete id "urn:gooo:gogcli-catalog:GogSelectionFacts:allow_gmail_delete" type boolean required one
+ field readonly id "urn:gooo:gogcli-catalog:GogSelectionFacts:readonly" type boolean required one
+ field policy_selectors id "urn:gooo:gogcli-catalog:GogSelectionFacts:policy_selectors" type string required many
+ field runtime_selectors id "urn:gooo:gogcli-catalog:GogSelectionFacts:runtime_selectors" type string required many
+}
+activity ToolSelected(GogSelectionFacts) -> Boolean id "urn:gooo:gogcli-catalog:selected" computes `
+let allowWrite = input.allow_write && !input.readonly
+if input.risk != "read" && !allowWrite { return false }
+if input.capability != "" {
+ if input.capability == "gmail_send" {
+  if !allowWrite || !input.allow_gmail_send { return false }
+ } else {
+  if input.capability == "gmail_delete" {
+   if !allowWrite || !input.allow_gmail_delete { return false }
+  } else { return false }
+ }
+}
+if int64(len(input.policy_selectors)) > 0 {
+ if !ToolAllowed(GogSelectorInput{name: input.name, service: input.service, risk: input.risk, selectors: input.policy_selectors}) { return false }
+}
+if int64(len(input.runtime_selectors)) > 0 {
+ if !ToolAllowed(GogSelectorInput{name: input.name, service: input.service, risk: input.risk, selectors: input.runtime_selectors}) { return false }
+}
+return true
+`

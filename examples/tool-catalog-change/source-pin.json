@@ -1,0 +1,86 @@
+{
+  "schema": "gooo/tool-catalog-source-pins/v1",
+  "files": [
+    {
+      "side": "before",
+      "revision": "578440918818e24aec6291cfe78cbb915091d7ae",
+      "path": "internal/cmd/mcp_tools.go",
+      "blob_sha1": "691644f484f58aa4c8fd1623c5c83025ecfa7291",
+      "raw_sha256": "73c75450a1917f4a9a748a1a7f5ae7494fa728f3bab6819638261fc42af97a2b",
+      "bytes": 14191,
+      "local_path": "examples/tool-catalog-change/reference/upstream/before/internal/cmd/mcp_tools.go.txt"
+    },
+    {
+      "side": "before",
+      "revision": "578440918818e24aec6291cfe78cbb915091d7ae",
+      "path": "internal/cmd/mcp.go",
+      "blob_sha1": "3778ceb35643032e6f1095cafdef5d8b5f31fc1d",
+      "raw_sha256": "34aedb3dce9f93404d4968ee912341e1da6335e23377905105168a821056f496",
+      "bytes": 9518,
+      "local_path": "examples/tool-catalog-change/reference/upstream/before/internal/cmd/mcp.go.txt"
+    },
+    {
+      "side": "before",
+      "revision": "578440918818e24aec6291cfe78cbb915091d7ae",
+      "path": "LICENSE",
+      "blob_sha1": "0ae0cb57d8c6c1417f796b39fc0d6a7f2f7c5c39",
+      "raw_sha256": "14293556b79940745123d0160c71d27ed0e9fe9b8a848093f3ed78f4853caafe",
+      "bytes": 1074,
+      "local_path": "examples/tool-catalog-change/reference/upstream/before/LICENSE.txt"
+    },
+    {
+      "side": "after",
+      "revision": "ec34fedc23dd9d3e90f0401144cec42e06a50783",
+      "path": "internal/cmd/mcp_tools.go",
+      "blob_sha1": "40c7fc12c90b8ac625ac3aefe7a35945c4671825",
+      "raw_sha256": "9c573d9b2984e8be282e91528181a791ec92135a60895e3666f1346e1533c97c",
+      "bytes": 14747,
+      "local_path": "examples/tool-catalog-change/reference/upstream/after/internal/cmd/mcp_tools.go.txt"
+    },
+    {
+      "side": "after",
+      "revision": "ec34fedc23dd9d3e90f0401144cec42e06a50783",
+      "path": "internal/cmd/mcp_gmail.go",
+      "blob_sha1": "7f690015d85132c66d52dab422c843a6298e83a9",
+      "raw_sha256": "62364368efb4a30630b64c9988643a844a52e5ad76d39354718fe929dfbd9f02",
+      "bytes": 10897,
+      "local_path": "examples/tool-catalog-change/reference/upstream/after/internal/cmd/mcp_gmail.go.txt"
+    },
+    {
+      "side": "after",
+      "revision": "ec34fedc23dd9d3e90f0401144cec42e06a50783",
+      "path": "LICENSE",
+      "blob_sha1": "0ae0cb57d8c6c1417f796b39fc0d6a7f2f7c5c39",
+      "raw_sha256": "14293556b79940745123d0160c71d27ed0e9fe9b8a848093f3ed78f4853caafe",
+      "bytes": 1074,
+      "local_path": "examples/tool-catalog-change/reference/upstream/after/LICENSE.txt"
+    },
+    {
+      "side": "after",
+      "revision": "ec34fedc23dd9d3e90f0401144cec42e06a50783",
+      "path": "internal/cmd/mcp.go",
+      "local_path": "examples/tool-catalog-change/reference/upstream/after/internal/cmd/mcp.go.txt",
+      "blob_sha1": "7b5827c573f82f73c1b9d08fc129b082c51179e3",
+      "raw_sha256": "b2380772446b7e5ee5da7622830711b891ddfe2a077edd048300a2ce4473440c",
+      "bytes": 10156
+    },
+    {
+      "side": "after",
+      "revision": "ec34fedc23dd9d3e90f0401144cec42e06a50783",
+      "path": "internal/cmd/mcp_policy.go",
+      "local_path": "examples/tool-catalog-change/reference/upstream/after/internal/cmd/mcp_policy.go.txt",
+      "blob_sha1": "3fa1183d9cb29977ce1b468a3480768402787594",
+      "raw_sha256": "2cfa9abc1eae27bf1d9866fe42d4eb2f6e2f08b7c046084d270fee8803f42058",
+      "bytes": 5650
+    },
+    {
+      "side": "after",
+      "revision": "ec34fedc23dd9d3e90f0401144cec42e06a50783",
+      "path": "internal/cmd/literals.go",
+      "local_path": "examples/tool-catalog-change/reference/upstream/after/internal/cmd/literals.go.txt",
+      "blob_sha1": "fe69f8a10da97b24d9a6fba7e7c9a38c7afe6c7b",
+      "raw_sha256": "7d631fbc1e096e86e1c893dd933f68fc36d3b5c1774e4a194310b90db1c3c19e",
+      "bytes": 641
+    }
+  ]
+}
