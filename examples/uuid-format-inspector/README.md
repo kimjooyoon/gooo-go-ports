@@ -33,11 +33,11 @@ For an empty input:
 ## Execute and replay
 
 Use Git, a POSIX shell and a Go installation with toolchain selection support.
-From this repository's root, bootstrap builds the pinned Gooo 0.6.32-dev compiler
-`83928fa4538245abe33b08549da47f8cbdc50ed2` using Go 1.27.2:
+From this repository's root, bootstrap builds the pinned Gooo 0.6.37-dev compiler
+`205896a413e5dea92366309c35ae85e542d055f6` using Go 1.27.3:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 ./tools/bootstrap.sh
 mkdir -p out/uuid-format-inspector
@@ -48,7 +48,7 @@ mkdir -p out/uuid-format-inspector
   > out/uuid-format-inspector/replay.json
 ```
 
-Leave `--go` unset so native commands can select an installed matching Go 1.27.2
+Leave `--go` unset so native commands can select an installed matching Go 1.27.3
 executable, including the toolchain cache populated during setup. A PATH launcher
 for a different Go version is not necessarily that executable. Bootstrap keeps
 an older compiler checkout intact; follow the repository's upgrade guidance

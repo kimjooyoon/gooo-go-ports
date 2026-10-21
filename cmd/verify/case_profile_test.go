@@ -12,7 +12,7 @@ import (
 )
 
 func caseProfileTestLock() upstream {
-	return upstream{CompilerRevision: uuidCompactCompilerRevision, GoVersion: "go1.27.2"}
+	return upstream{CompilerRevision: uuidCompactCompilerRevision, GoVersion: "go1.27.3"}
 }
 
 func caseProfileTestWorkspace(s suite) suiteWorkspace {

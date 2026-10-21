@@ -21,7 +21,7 @@ import (
 	original "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
 )
 
-const revisionVersion = "v0.0.0-20261014171906-e723f9af6dc3"
+const revisionVersion = "v0.0.0-20261020182808-7180a4a0f36a"
 const originalVersion = "v0.0.0-20261014100709-8cddcc4e65af"
 
 type moduleIdentity struct {
@@ -42,11 +42,11 @@ func main() {
 
 func compiledModules() ([]moduleIdentity, error) {
 	info, ok := debug.ReadBuildInfo()
-	if !ok || info.GoVersion != "go1.27.2" {
+	if !ok || info.GoVersion != "go1.27.3" {
 		return nil, errors.New("compiled toolchain mismatch")
 	}
 	want := map[string]moduleIdentity{
-		"github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision": {Path: "github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision", Version: revisionVersion, Sum: "h1:0KwF9VosVIxM3+aodSheEPbv++9eHfVMSB7OErfiwf8="},
+		"github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision": {Path: "github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision", Version: revisionVersion, Sum: "h1:2W/fIUaBsBzSCyWFMb0IKzItYZ4fnHVdyKEBVcXOeqE="},
 		"github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy":      {Path: "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy", Version: originalVersion, Sum: "h1:fvrka7xThFrx1JkbTEp+lZ7hjcUsK4csF/XbpmF4VuM="},
 	}
 	actual := make(map[string]moduleIdentity)

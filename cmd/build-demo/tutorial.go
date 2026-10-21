@@ -84,15 +84,17 @@ func tutorialFixtureSet(lock lockfile) tutorialFixtures {
 		add(fmt.Sprintf("text-boundary-%d", i), 42, label)
 	}
 	add("high-text-1018", 60, strings.Repeat("a", 1018))
-	// The original JSON spellings are executed natively. The UTF-16 units are
-	// supplied to the real Wasm callback, so replacement is checked at both ends.
+	// Browser UTF-16 units are supplied to the real Wasm callback unchanged.
+	// Its bound scalar Text is separately encoded for native comparison: the
+	// compiler rejects raw unpaired JSON surrogate escapes before execution.
 	for _, x := range []struct {
 		name, raw string
 		units     []uint16
 	}{{"lone-high", `"\ud800"`, []uint16{0xd800}}, {"lone-low", `"\udfff"`, []uint16{0xdfff}}, {"pair", `"\ud83d\ude00"`, []uint16{0xd83d, 0xde00}}, {"mixed-surrogates", `"\ud800x\udfff"`, []uint16{0xd800, 'x', 0xdfff}}, {"high-high-low", `"\ud800\ud83d\ude00"`, []uint16{0xd800, 0xd83d, 0xde00}}} {
 		var label string
 		_ = json.Unmarshal([]byte(x.raw), &label)
-		f.Cases = append(f.Cases, tutorialCase{x.name, [2]string{"60", label}, x.units, tutorialExpected(60, label), json.RawMessage(x.raw)})
+		bound, _ := json.Marshal(label)
+		f.Cases = append(f.Cases, tutorialCase{x.name, [2]string{"60", label}, x.units, tutorialExpected(60, label), bound})
 	}
 	reject := func(name, score, label string, native bool) {
 		raw, _ := json.Marshal(label)

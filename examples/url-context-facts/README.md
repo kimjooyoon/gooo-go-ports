@@ -21,13 +21,13 @@ These are workload examples, without implying that either project uses Gooo.
 ## Run one input and save replay
 
 Complete the [repository setup](../../README.md#run-and-edit-locally) with Go
-**1.27.2** and the pinned Gooo compiler revision
-`83928fa4538245abe33b08549da47f8cbdc50ed2`. From the repository root:
+**1.27.3** and the pinned Gooo compiler revision
+`205896a413e5dea92366309c35ae85e542d055f6`. From the repository root:
 
 ```sh
 set -eu
 umask 077
-export GOTOOLCHAIN=go1.27.2 GOWORK=off
+export GOTOOLCHAIN=go1.27.3 GOWORK=off
 GOOO_COMPILER="${GOOO_COMPILER:-$PWD/.gooo}"
 GOOO_GO="$(go env GOROOT)/bin/go"
 run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gooo-url-context.XXXXXX")"

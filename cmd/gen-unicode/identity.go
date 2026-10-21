@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-const pinnedGo = "go1.27.2"
+const pinnedGo = "go1.27.3"
 const pinnedUnicode = "17.0.0"
 const pinnedGoRevision = "022c8636110ebac86a9b88724cda168ed713c21f"
 

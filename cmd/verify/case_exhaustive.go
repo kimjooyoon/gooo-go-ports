@@ -77,7 +77,7 @@ func expectedCaseMappingExhaustive(generated, operation string) (caseMappingExha
 	// independent SimpleFold check, without conflating its different semantics.
 	outside, extensions := simpleFoldOutsideUnicodeInputs(), simpleFoldExtensionInputs()
 	want := caseMappingExhaustiveReport{
-		Schema: "gooo/case-mapping-exhaustive-native/v1", GoVersion: "go1.27.2", UnicodeVersion: "17.0.0",
+		Schema: "gooo/case-mapping-exhaustive-native/v1", GoVersion: "go1.27.3", UnicodeVersion: "17.0.0",
 		Operation: operation, ActivityID: "gooo://go/unicode/" + operation,
 		InputEntityIDs: []string{integerEntity}, OutputEntityID: integerEntity, GeneratedSHA256: generated,
 		ValidCases: cases, UnicodeRangeInputs: 1114112, UnicodeRangeComparisons: 1114112 * len(cases),
@@ -101,8 +101,8 @@ func expectedCaseMappingExhaustive(generated, operation string) (caseMappingExha
 // observations, int64 extensions and invalid case values are finite samples.
 func checkCaseMappingExhaustive(ctx context.Context, dir string, raw []byte, expectedGenerated, operation string, cache *nativeBuildCache) (caseMappingExhaustiveReport, error) {
 	var zero caseMappingExhaustiveReport
-	if runtime.Version() != "go1.27.2" || unicode.Version != "17.0.0" || strconv.IntSize != 64 {
-		return zero, fmt.Errorf("case mapping exhaustive check requires 64-bit Go 1.27.2 / Unicode 17.0.0")
+	if runtime.Version() != "go1.27.3" || unicode.Version != "17.0.0" || strconv.IntSize != 64 {
+		return zero, fmt.Errorf("case mapping exhaustive check requires 64-bit Go 1.27.3 / Unicode 17.0.0")
 	}
 	source, function, err := inspectCaseMappingGenerated(raw, expectedGenerated, operation)
 	if err != nil {
@@ -134,7 +134,7 @@ func checkCaseMappingExhaustive(ctx context.Context, dir string, raw []byte, exp
 		}
 	}
 	for name, content := range map[string][]byte{
-		"go.mod":       []byte("module gooo-case-mapping-exhaustive\n\ngo 1.27.2\n"),
+		"go.mod":       []byte("module gooo-case-mapping-exhaustive\n\ngo 1.27.3\n"),
 		"generated.go": []byte(source), "exhaustive_test.go": harness,
 	} {
 		if err := os.WriteFile(filepath.Join(native, name), content, 0644); err != nil {

@@ -95,7 +95,7 @@ async function runSmoke(directory) {
    for(const key of ['model_calls','finite_total','finite_passed'])assert.equal(runtime[key],0);assert.equal(runtime.projection_replayed,true);assert.equal(runtime.runtime_replayed,true);assert.equal(runtime.traces.length,rows.length);
    for(let i=0;i<rows.length;i++){
     const row=rows[i],supplied=inputs.inputs[i],trace=runtime.traces[i];keys(supplied,['app/literal-text-report:Report.input0','app/literal-text-report:Report.input1']);
-    assert.deepEqual([supplied['app/literal-text-report:Report.input0'],supplied['app/literal-text-report:Report.input1']],[unitsText(row.text_utf16),unitsText(row.needle_utf16)]);
+    assert.deepEqual([supplied['app/literal-text-report:Report.input0'],supplied['app/literal-text-report:Report.input1']],row.inputs);
     assert.deepEqual(protocol.bindInputs([unitsText(row.text_utf16),unitsText(row.needle_utf16)]),row.inputs);
     assert.equal(trace.case_index,i);assert.equal(trace.deliveries.length,1);const d=trace.deliveries[0];keys(d,['activity_id','inputs','actual','actual_fields']);assert.equal(d.activity_id,entry);
     assert.deepEqual(d.inputs,row.inputs.map((value,index)=>({port:'input'+index,entity_id:'gooo://std/text',value})));assert.deepEqual(nativeOutput(d.actual),row.expected);

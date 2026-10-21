@@ -21,7 +21,10 @@ const decision = { allowed: true, reason: 'ALLOW', authenticated: true, tenant_p
   group_missing: false, principal_defaulted: false, effective_principal: 'synthetic:user' };
 function binding(root) {
   const raw = fs.readFileSync(path.join(root, 'generation.json')), generation = JSON.parse(raw);
-  return { compiler_source_sha: '83928fa4538245abe33b08549da47f8cbdc50ed2', generation_sha256: 'sha256:' + sha(raw), assets: generation.assets };
+  const count = Object.keys(generation.assets).length;
+  assert.ok(count === 28 || count === 38, 'unknown synthetic binding profile');
+  return { compiler_source_sha: count === 28 ? '83928fa4538245abe33b08549da47f8cbdc50ed2' :
+    '205896a413e5dea92366309c35ae85e542d055f6', generation_sha256: 'sha256:' + sha(raw), assets: generation.assets };
 }
 function metadata() {
   const module = path.join(ROOT, 'examples/api-policy-revision');
@@ -185,6 +188,21 @@ test('current sealed package is accepted but prior generation or missing checksu
     revision => { delete revision.assets['go.sum']; },
   ]) {
     const h = app(); mutate(h.manifest.expected_info.bindings.revision); await h.run(); h.save();
+    assert.equal(h.workers.length, 0); assert.equal(h.downloads.length, 0);
+    assert.equal(h.get('save').disabled, true); assert.equal(h.get('result').hidden, true);
+    assert.match(h.get('status').textContent, /fixed native profiles, complete bindings or limits/);
+  }
+});
+test('historical original and current revision compiler roles cannot be interchanged', async () => {
+  const current = app(), bindings = current.manifest.expected_info.bindings;
+  assert.equal(Object.keys(bindings.original.assets).length, 28);
+  assert.equal(Object.keys(bindings.revision.assets).length, 38);
+  assert.equal(bindings.original.compiler_source_sha, '83928fa4538245abe33b08549da47f8cbdc50ed2');
+  assert.equal(bindings.revision.compiler_source_sha, '205896a413e5dea92366309c35ae85e542d055f6');
+  assert.ok(await current.run());
+  for (const [side, compiler] of [['original', '205896a413e5dea92366309c35ae85e542d055f6'], ['revision', '83928fa4538245abe33b08549da47f8cbdc50ed2']]) {
+    const h = app(); h.manifest.expected_info.bindings[side].compiler_source_sha = compiler;
+    await h.run(); h.save();
     assert.equal(h.workers.length, 0); assert.equal(h.downloads.length, 0);
     assert.equal(h.get('save').disabled, true); assert.equal(h.get('result').hidden, true);
     assert.match(h.get('status').textContent, /fixed native profiles, complete bindings or limits/);

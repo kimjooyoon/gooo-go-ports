@@ -10,8 +10,9 @@ import (
 
 // This source/corpus check keeps the original62 catalog, factories and cases.
 // Its legacy roster uses current sources, with only the exact reviewed UUID
-// quote rewrite below allowed. It does not claim those bytes or a native PASS
-// are the historical original62 source image.
+// quote rewrite and three Go patch generator headers allowed. Historical pins
+// are checked by exact projection, while the selected source bytes/hashes stay
+// current. This does not claim a historical original62 source image or native PASS.
 func TestLiteralCutPreservesOriginal62CasesWorkspacesAndBatchBoundaries(t *testing.T) {
 	var base struct {
 		Schema    string              `json:"schema"`
@@ -32,6 +33,17 @@ func TestLiteralCutPreservesOriginal62CasesWorkspacesAndBatchBoundaries(t *testi
 	if base.Sources[quotePath] != historicalQuoteSHA {
 		t.Fatal("historical UUID quote source pin changed")
 	}
+	unicodeOriginals := map[string]legacy445Source{}
+	for _, original := range loadLegacy445Fixture(t).Sources {
+		switch original.Name {
+		case "ports/unicode/classification.gooo", "ports/unicode/simple_fold.gooo", "ports/unicode/case_mapping.gooo":
+			unicodeOriginals[original.Name] = original
+		}
+	}
+	if len(unicodeOriginals) != 3 {
+		t.Fatal("historical Unicode source roster differs")
+	}
+	unicodeSources := 0
 	legacyRosterCurrentSources := frozenVerificationCatalog{Catalog: base.Catalog, Sources: map[string][]byte{}, Hashes: map[string]string{}}
 	for name, historicalSHA := range base.Sources {
 		wantCurrentSHA := historicalSHA
@@ -39,10 +51,28 @@ func TestLiteralCutPreservesOriginal62CasesWorkspacesAndBatchBoundaries(t *testi
 			wantCurrentSHA = reviewedCurrentQuoteSHA
 		}
 		actual, err := os.ReadFile("../../" + name)
-		if err != nil || contentDigest(actual) != "sha256:"+wantCurrentSHA {
-			t.Fatal("legacy roster current Gooo source differs from reviewed pin", name, err)
+		if err != nil {
+			t.Fatal("legacy roster Gooo source read failed", name, err)
+		}
+		if original, exists := unicodeOriginals[name]; exists {
+			if original.SHA256 != "sha256:"+historicalSHA {
+				t.Fatal("original62 Unicode pin differs from immutable main445", name)
+			}
+			if _, err := legacy445ProjectUnicodeSource(actual, original); err != nil {
+				t.Fatal("legacy roster Unicode source differs beyond reviewed header", name, err)
+			}
+			// Only the historical-pin check projects bytes. Workspace equality
+			// below must still compare current Go 1.27.3 bytes and actual hashes.
+			wantCurrentSHA = strings.TrimPrefix(contentDigest(actual), "sha256:")
+			unicodeSources++
+		}
+		if contentDigest(actual) != "sha256:"+wantCurrentSHA {
+			t.Fatal("legacy roster current Gooo source differs from reviewed pin", name)
 		}
 		legacyRosterCurrentSources.Sources[name], legacyRosterCurrentSources.Hashes[name] = actual, wantCurrentSHA
+	}
+	if unicodeSources != 3 {
+		t.Fatal("original62 Unicode projection roster differs")
 	}
 	for name, want := range base.Factories {
 		actual, err := os.ReadFile("../../" + name)

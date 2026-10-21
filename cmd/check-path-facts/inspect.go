@@ -64,7 +64,7 @@ func inspect(raw []byte, rows []string, id identity, prior replayBinding) (check
 		return fail("native producer or toolchain")
 	}
 	module := object(rt["producer_module"])
-	if module["path"] != "github.com/kimjooyoon/meta-ontology-go" || module["version"] != "v0.0.0-20261011201109-83928fa45382" {
+	if module["path"] != "github.com/kimjooyoon/meta-ontology-go" || module["version"] != "v0.6.37-dev.0.20261020180505-205896a413e5" {
 		return fail("native producer module")
 	}
 	if rt["generated_sha256"] != c["generated_sha256"] || rt["driver_sha256"] != c["driver_sha256"] || rt["original_source_sha256"] != sourceDigest || rt["selected_source_sha256"] != sourceDigest || !validDigest(rt["executable_sha256"]) || !validDigest(rt["runtime_suite_sha256"]) {

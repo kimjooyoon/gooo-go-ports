@@ -261,7 +261,7 @@ function claimDifferentProgram(saved) {
   program.compiler_revision = 'c'.repeat(40); program.bindings.compiler_source_sha = program.compiler_revision;
   program.generation_sha256 = 'sha256:' + 'd'.repeat(64); program.bindings.generation_sha256 = program.generation_sha256;
   program.files['source/generation.json'].sha256 = 'd'.repeat(64);
-  program.go_version = 'go1.27.3'; program.source_revision = 'e'.repeat(40); program.source_dirty = true;
+  program.go_version = 'go1.27.2'; program.source_revision = 'e'.repeat(40); program.source_dirty = true;
   for (const [file, prefix, character] of [['program.wasm', 'wasm', 'a'], ['wasm_exec.js', 'wasm_exec', 'b']]) {
     program[prefix + '_sha256'] = character.repeat(64); program[prefix + '_bytes']++;
     program.files[file] = { sha256: program[prefix + '_sha256'], bytes: program[prefix + '_bytes'] };
@@ -397,7 +397,7 @@ async function runSmoke(directory) {
   assert.deepEqual(manifest.bindings, bindings);
   assert.equal(manifest.generation_sha256, bindings.generation_sha256);
   assert.equal(manifest.compiler_revision, bindings.compiler_source_sha);
-  assert.equal(manifest.go_version, 'go1.27.2');
+  assert.equal(manifest.go_version, 'go1.27.3');
   assert.equal(Object.keys(manifest.files).length, 34);
   keys(manifest.files, protocol.FILE_NAMES);
   for (const [name, expected] of Object.entries(manifest.files)) {

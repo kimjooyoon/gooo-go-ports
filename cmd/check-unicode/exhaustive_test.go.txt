@@ -11,7 +11,7 @@ import (
 // This separate test calls the unchanged composition's functions. Go owns only
 // the independent oracle and observation counters, never the ported behavior.
 func TestExhaustiveUnicode(t *testing.T) {
-    if runtime.Version() != "go1.27.2" || unicode.Version != "17.0.0" {
+    if runtime.Version() != "go1.27.3" || unicode.Version != "17.0.0" {
         t.Fatal("wrong oracle identity")
     }
     check := func(x int64) {

@@ -35,7 +35,7 @@ production decision rules. The existing port-compatibility counts are unchanged.
 Use Git, a POSIX shell and Go toolchain selection, from the repository root:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 ./tools/bootstrap.sh
 ./.gooo package execute --inputs examples/learn-gooo/inputs.json \
@@ -62,12 +62,12 @@ example and build it. Run the commands in order in the same shell, and stop if
 a command fails. Start without an existing `compiler` directory:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 mkdir compiler
 git -C compiler init
 git -C compiler remote add origin https://github.com/kimjooyoon/meta-ontology-go.git
-git -C compiler fetch --depth=1 origin 83928fa4538245abe33b08549da47f8cbdc50ed2
+git -C compiler fetch --depth=1 origin 205896a413e5dea92366309c35ae85e542d055f6
 git -C compiler checkout --detach FETCH_HEAD
 cd compiler
 go build -o ../gooo ./cmd/gooo
@@ -82,7 +82,7 @@ cd ..
   --inputs inputs.json gooo.workspace.json > replay.json
 ```
 
-The build record should report the pinned compiler revision, Go 1.27.2 and
+The build record should report the pinned compiler revision, Go 1.27.3 and
 `vcs_modified: "false"`. A successful `check` alone validates declarations;
 the `execute` command is what compiles and runs the bodies.
 
@@ -143,7 +143,7 @@ For an automated fresh run without editing repository sources, use
 `python3 tools/verify-tutorial-change.py --out out/tutorial-change-new` from the
 repository root after setup. This optional runner also needs Python 3, keeps the
 three records and summary, and removes its own temporary workspace and Go cache.
-Select an installed Go 1.27.2 executable on `PATH` or with `--go /path/to/go`;
+Select an installed Go 1.27.3 executable on `PATH` or with `--go /path/to/go`;
 the runner disables toolchain switching and module downloads. Choose a new
 output directory each time. CI reuses the already checked original
 tutorial record from the same job, then executes and replays the copied edit.
@@ -161,8 +161,10 @@ fits as an input can still make execution fail when its output exceeds that
 limit. The browser follows these same limits.
 
 JSON string mode can represent CR, LF, NUL and explicit surrogate escapes.
-Go's JSON input binding turns an isolated surrogate escape into U+FFFD; the
-browser shows the bound label explicitly. A valid surrogate pair retains its
+The browser UTF-8 binding turns isolated UTF-16 surrogates into U+FFFD and
+shows the bound label explicitly. Native comparison inputs encode that bound
+scalar Text; the compiler rejects raw unpaired JSON surrogate escapes. A valid
+surrogate pair retains its
 Unicode scalar value. No trimming, case conversion or Unicode normalization is
 part of this example.
 

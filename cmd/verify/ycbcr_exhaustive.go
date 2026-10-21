@@ -66,7 +66,7 @@ func expectedYCbCrExhaustive(generated, operation string) (ycbcrExhaustiveReport
 		return ycbcrExhaustiveReport{}, err
 	}
 	return ycbcrExhaustiveReport{
-		Schema: "gooo/ycbcr-exhaustive-native/v1", GoVersion: "go1.27.2", Operation: operation,
+		Schema: "gooo/ycbcr-exhaustive-native/v1", GoVersion: "go1.27.3", Operation: operation,
 		ActivityID: "gooo://go/image/color/" + operation, OutputEntityID: c.Entity,
 		GeneratedSHA256: generated, InputMin: 0, InputMax: 255, InputArity: 3,
 		InputOrder: "input0-major,input1-middle,input2-minor",
@@ -87,8 +87,8 @@ type ycbcrGeneratedABI struct {
 // out-of-domain int64 inputs, browser execution or lossless round trips.
 func checkYCbCrExhaustive(ctx context.Context, dir string, raw []byte, expectedGenerated, operation string, cache *nativeBuildCache) (ycbcrExhaustiveReport, error) {
 	var zero ycbcrExhaustiveReport
-	if runtime.Version() != "go1.27.2" {
-		return zero, fmt.Errorf("YCbCr exhaustive check requires Go 1.27.2")
+	if runtime.Version() != "go1.27.3" {
+		return zero, fmt.Errorf("YCbCr exhaustive check requires Go 1.27.3")
 	}
 	source, abi, err := inspectYCbCrGenerated(raw, expectedGenerated, operation)
 	if err != nil {
@@ -120,7 +120,7 @@ func checkYCbCrExhaustive(ctx context.Context, dir string, raw []byte, expectedG
 		}
 	}
 	for name, content := range map[string][]byte{
-		"go.mod":       []byte("module gooo-ycbcr-exhaustive\n\ngo 1.27.2\n"),
+		"go.mod":       []byte("module gooo-ycbcr-exhaustive\n\ngo 1.27.3\n"),
 		"generated.go": []byte(source), "exhaustive_test.go": harness,
 	} {
 		if err := os.WriteFile(filepath.Join(native, name), content, 0644); err != nil {

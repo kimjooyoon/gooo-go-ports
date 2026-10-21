@@ -13,7 +13,7 @@ import (
 func ciShardReferenceFixture(t *testing.T) (ciShardPlan, ciShardNativeInventory, string, ciShardPartial) {
 	t.Helper()
 	plan, inventory, root, old := ciShardNativeEvidenceFixture(t, 1)
-	inventory.Lock.CompilerVersion = "0.6.32-dev"
+	inventory.Lock.CompilerVersion = "0.6.37-dev"
 	namespace := ciShardBatchNamespace(0, 0, 0)
 	dir := filepath.Join(root, filepath.FromSlash(namespace))
 	var execution map[string]any
@@ -243,7 +243,7 @@ func TestCIShardReferenceReinspectsExhaustiveSemanticFiles(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			files := map[string][]byte{"native/generated.go": []byte(simpleFoldFixtureSource), "native/exhaustive_test.go": harness, "native/go.mod": []byte("module gooo-simple-fold-exhaustive\n\ngo 1.27.2\n"), "native-test.txt": []byte("--- PASS: TestSimpleFoldExhaustive (0.00s)\nPASS\n"), "exhaustive.json": mustJSON(t, expectedSimpleFoldExhaustive(generated))}
+			files := map[string][]byte{"native/generated.go": []byte(simpleFoldFixtureSource), "native/exhaustive_test.go": harness, "native/go.mod": []byte("module gooo-simple-fold-exhaustive\n\ngo 1.27.3\n"), "native-test.txt": []byte("--- PASS: TestSimpleFoldExhaustive (0.00s)\nPASS\n"), "exhaustive.json": mustJSON(t, expectedSimpleFoldExhaustive(generated))}
 			for name, raw := range files {
 				if err := os.WriteFile(filepath.Join(root, dir, name), raw, 0600); err != nil {
 					t.Fatal(err)

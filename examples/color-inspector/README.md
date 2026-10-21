@@ -10,8 +10,8 @@ differences, so a successful conversion is not mistaken for a lossless round tri
 
 ## 실행과 입력 편집
 
-Go 1.27.2, Git, POSIX shell을 사용하며 저장소 루트에서 실행합니다.
-컴파일러는 `upstream.json`의 Gooo 0.6.32-dev 리비전으로 고정합니다.
+Go 1.27.3, Git, POSIX shell을 사용하며 저장소 루트에서 실행합니다.
+컴파일러는 `upstream.json`의 Gooo 0.6.37-dev 리비전으로 고정합니다.
 모델이나 외부 추론 서비스는 필요하지 않습니다.
 
 ```sh

@@ -17,14 +17,15 @@ import (
 )
 
 const (
-	apiPolicyModule             = "examples/api-policy-revision"
-	apiPolicyOriginalModule     = "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
-	apiPolicyCandidateProfile   = "cel-api-readonly-principal-v1"
-	apiPolicyRevisionModule     = "github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision"
-	apiPolicyOriginalVersion    = "v0.0.0-20261014100709-8cddcc4e65af"
-	apiPolicyOriginalGeneration = "79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
-	apiPolicyRevisionGeneration = "a78b95c6f563450e0aacb2356594b270f9a6c42910f3995cec2577076139956e"
-	apiPolicyCompilerRevision   = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+	apiPolicyModule                   = "examples/api-policy-revision"
+	apiPolicyOriginalModule           = "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
+	apiPolicyCandidateProfile         = "cel-api-readonly-principal-v1"
+	apiPolicyRevisionModule           = "github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision"
+	apiPolicyOriginalVersion          = "v0.0.0-20261014100709-8cddcc4e65af"
+	apiPolicyOriginalGeneration       = "79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46"
+	apiPolicyRevisionGeneration       = "1904100e57ff22b00f4db1597c4f12ebb3c6893063d6deac69e2eb516452a2ca"
+	apiPolicyCompilerRevision         = "205896a413e5dea92366309c35ae85e542d055f6"
+	apiPolicyOriginalCompilerRevision = "83928fa4538245abe33b08549da47f8cbdc50ed2"
 )
 
 var apiPolicyOriginalPackaging = map[string]string{
@@ -239,7 +240,7 @@ func apiPolicyCheckDocuments(documents map[string][]byte, lock lockfile) (apiPol
 	bad := func(message string) (apiPolicySource, error) {
 		return apiPolicySource{}, fmt.Errorf("API policy source refused: %s", message)
 	}
-	if lock.CompilerRevision != apiPolicyCompilerRevision || lock.CompilerVersion != "0.6.32-dev" || lock.GoVersion != "go1.27.2" || len(documents) != apiPolicyCurrentSourceFiles {
+	if lock.CompilerRevision != apiPolicyCompilerRevision || lock.CompilerVersion != "0.6.37-dev" || lock.GoVersion != "go1.27.3" || len(documents) != apiPolicyCurrentSourceFiles {
 		return bad("pinned toolchain or complete source roster changed")
 	}
 	files := map[string]apiPolicyFile{}
@@ -285,8 +286,12 @@ func apiPolicyCheckDocuments(documents map[string][]byte, lock lockfile) (apiPol
 		return bad(reason)
 	}
 	for _, prefix := range []string{apiPolicyModule + "/", originalRoot} {
+		expectedRevision, expectedVersion, expectedGo := lock.CompilerRevision, lock.CompilerVersion, lock.GoVersion
+		if prefix == originalRoot {
+			expectedRevision, expectedVersion, expectedGo = apiPolicyOriginalCompilerRevision, "0.6.32-dev", "go1.27.2"
+		}
 		var compiler map[string]any
-		if apiPolicyDecode(documents[prefix+"compiler.json"], &compiler) != nil || compiler["schema"] != "gooo/build-identity/v1" || compiler["compiler_source_sha"] != lock.CompilerRevision || compiler["vcs_revision"] != lock.CompilerRevision || compiler["source_status"] != "CLEAN_VCS" || compiler["vcs_modified"] != "false" || compiler["version"] != lock.CompilerVersion || compiler["go_version"] != lock.GoVersion || compiler["native_go_required"] != lock.GoVersion || compiler["build_info_observed"] != true {
+		if apiPolicyDecode(documents[prefix+"compiler.json"], &compiler) != nil || compiler["schema"] != "gooo/build-identity/v1" || compiler["compiler_source_sha"] != expectedRevision || compiler["vcs_revision"] != expectedRevision || compiler["source_status"] != "CLEAN_VCS" || compiler["vcs_modified"] != "false" || compiler["version"] != expectedVersion || compiler["go_version"] != expectedGo || compiler["native_go_required"] != expectedGo || compiler["build_info_observed"] != true {
 			return bad("sealed compiler identity changed")
 		}
 	}
@@ -295,7 +300,7 @@ func apiPolicyCheckDocuments(documents map[string][]byte, lock lockfile) (apiPol
 			return bad("canonical original source changed")
 		}
 	}
-	return apiPolicySource{Original: apiPolicyBindings{lock.CompilerRevision, "sha256:" + apiPolicyOriginalGeneration, original.Assets}, Revision: apiPolicyBindings{lock.CompilerRevision, "sha256:" + apiPolicyRevisionGeneration, revision.Assets}, Files: files}, nil
+	return apiPolicySource{Original: apiPolicyBindings{apiPolicyOriginalCompilerRevision, "sha256:" + apiPolicyOriginalGeneration, original.Assets}, Revision: apiPolicyBindings{lock.CompilerRevision, "sha256:" + apiPolicyRevisionGeneration, revision.Assets}, Files: files}, nil
 }
 
 type apiPolicyCheckout struct {

@@ -28,38 +28,38 @@ import zipfile
 REFERENCE_SOURCE = '9c29602f77492be0e60c0ef91afd6d3968890b24'
 
 SOURCE_FILES = {'examples/service-grant-mcp/LICENSE': '099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48',
- 'examples/service-grant-mcp/README.md': '67c2f9955b868eaf926ef8ce215b6ae0144be3e987c9b2f4176fd317018cfd79',
+ 'examples/service-grant-mcp/README.md': 'ae0252d054bba2eb625526e026dde09e6a81946209d47b86037e2ebead121754',
  'examples/service-grant-mcp/fixtures/control-1.input': 'eaa120445bed9038ab6d9a4e71949344f6d92c44bad73fc7d713b8fc17c0dcb4',
- 'examples/service-grant-mcp/fixtures/control-1.stdout': '0617f412a5a00e9ad3e76c9c1ecca6acbef76b366f5f838a607dbdb9ed0944f9',
+ 'examples/service-grant-mcp/fixtures/control-1.stdout': 'd16eee837f400c55fa49f6bbdef280d4747976efa8e4a00e1eb8b71a8a8e95c3',
  'examples/service-grant-mcp/fixtures/control-2.input': '947f10f40652f17eb97c9f7d7a372a493a9eca5e24976ab7dbbe9c1863bac34e',
- 'examples/service-grant-mcp/fixtures/control-2.stdout': '15060c44af10f8e8e02078557240332d7198ceb4faad9550d1d21439209231c0',
+ 'examples/service-grant-mcp/fixtures/control-2.stdout': '351f9f89715a05e8a9f2b3374c2a581c01aa2dfcdc0274f44f1870003a48fb5c',
  'examples/service-grant-mcp/fixtures/control-3.input': 'a9f4c61b9e64f46c6c81b94610ed3d5181b735d3532eb10417b6e52da01c2bbc',
- 'examples/service-grant-mcp/fixtures/control-3.stdout': '8a3832df10d53c674d2f15c51d5b275876307396fb451283cd8cf6499a98b4f3',
+ 'examples/service-grant-mcp/fixtures/control-3.stdout': '0b26cef07c173b573b3423720840b762ab6a35480029f716b55de56bb27bfb40',
  'examples/service-grant-mcp/fixtures/control-4.input': 'd744fc59eceac73a8cc68430047424c5b065137f4807daea9a411318a220cc0a',
  'examples/service-grant-mcp/fixtures/control-4.stdout': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
- 'examples/service-grant-mcp/fixtures/origin.json': '192814d54805c802cad17c6038a13daf12a3460bc4853922923ba10c016a75a7',
- 'examples/service-grant-mcp/go.mod': 'aa1b03d77f17e066f81919033193126693e6e43558e2419cc91485d8b2829f86',
- 'examples/service-grant-mcp/go.sum': 'aff5d12a9b61e0b132d3aa4a2b1021a56ef6f2779516b4a371e57aae9ab33e5e',
- 'examples/service-grant-mcp/main.go': '2cfc7be9bb79df4a89eeda8d4b5ee8e59fc069d13a3956b85589ef83f95adc3c',
+ 'examples/service-grant-mcp/fixtures/origin.json': '40915248a7743baaaf307bdf620fa2386d46790b255b1e90a58cc17d6142423c',
+ 'examples/service-grant-mcp/go.mod': '2dd303dce968a4c2b7fa8d1dc820b94c3bc53bcd8535fc7e14d3847179a306d4',
+ 'examples/service-grant-mcp/go.sum': 'a85b704ac364c538f41594af4a1e8bcb2850a5769376072f7c59d92a5fdf7678',
+ 'examples/service-grant-mcp/main.go': '94c3a842be2e9bbcb74b534a143d9a0bd96ef123ee0bc1d67779cc3e22605b31',
  'examples/service-grant-mcp/main_test.go': 'bfd6a2b45c6ffeb293e0b68b0a9afa08a02e16409ba8b9e0ff7aa9e1e5e9f6d6',
- 'examples/service-grant-mcp/verify.py': 'a55b628f0b6d2bd2d7f490685449b571edd379382d4124675eb83200c8df6c46',
+ 'examples/service-grant-mcp/verify.py': '70b88f9ebdcbefd8b94cda63308bf909bc4eb450acf4d3af3f4164d696ff7a55',
  'examples/service-grant-mcp/verify_close_test.py': '63076fe685edbed02e8d6ebb821b1660f6c6504ca110ac44dcf5a01e5b523375',
- 'examples/service-grant-mcp/verify_many.py': '4f81d2e8b23fe0d264b840892e823a8569de6d2d130fd996ceab121bcec34228'}
+ 'examples/service-grant-mcp/verify_many.py': '79af6eab169bee03173bd552b3be765d91f452e48d2928af7d7b7315c2108444'}
 
 DEPENDENCIES = [{'dependency': {'Path': 'github.com/google/jsonschema-go',
                  'Sum': 'h1:/DBOLZTfDow7pe2GmaJNhltueGTtDKICi8V8p+DQPd0=',
                  'Version': 'v0.4.3'},
   'notices': {'LICENSE': '2d56c53449691d85d9aea245eb8dac12713e9075d70d5557b82ae1e94805b357'}},
  {'dependency': {'Path': 'github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy',
-                 'Sum': 'h1:up4zblnjEjgePzF/8OZb3qd0tgSJ33J/WvMZY3IHl8A=',
-                 'Version': 'v0.0.0-20261018191951-2aa0f96805f1'},
+                 'Sum': 'h1:wiJUz5Om53/Ng69iQj/43qBKD7DSuqlqrdGLr6HgZDA=',
+                 'Version': 'v0.0.0-20261020182808-7180a4a0f36a'},
   'notices': {'LICENSE': '099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48',
               'LICENSE-APACHE-2.0': 'c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4',
               'NOTICE.md': '90163940130087486fa104d9db6e9c56da1c7de37c2e32364340c0cdc367bc30',
               'upstream/LICENSE': 'c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4'}},
  {'dependency': {'Path': 'github.com/kimjooyoon/gooo-go-ports/examples/service-grant-many',
-                 'Sum': 'h1:VGOxGwZDHGMk8p4GvkmBN6xlXactcKMHvYSUKoQFZ3Q=',
-                 'Version': 'v0.0.0-20261019032231-f4f89b814b42'},
+                 'Sum': 'h1:p3zs2m5zxSwlgn0Z3Wq1rl+cfcBN4JN2JhrmjhARgkk=',
+                 'Version': 'v0.0.0-20261020182808-7180a4a0f36a'},
   'notices': {'LICENSE': '099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48',
               'LICENSE-APACHE-2.0': 'c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4',
               'NOTICE.md': 'abd202e771c34e66987ee4b9bc006acb0841ea6321abf21f7dd819e36915779d'}},
@@ -104,53 +104,57 @@ GO_NOTICES = {'LICENSE': {'scope': 'toolchain root text; runtime distribution re
              'sha256': '911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad'},
  'PATENTS': {'scope': 'toolchain root text; runtime distribution reference',
              'sha256': '96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc'},
- 'src/cmd/compile/internal/ssa/_gen/vendor/golang.org/x/tools/LICENSE': {'scope': 'compiler/tooling distribution '
-                                                                                  'only; not claimed included in '
-                                                                                  'MCP executable',
+ 'src/cmd/compile/internal/ssa/_gen/vendor/golang.org/x/tools/LICENSE': {'scope': 'compiler/tooling '
+                                                                                  'distribution only; not '
+                                                                                  'claimed included in MCP '
+                                                                                  'executable',
                                                                          'sha256': '911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad'},
- 'src/cmd/compile/internal/ssa/_gen/vendor/golang.org/x/tools/PATENTS': {'scope': 'compiler/tooling distribution '
-                                                                                  'only; not claimed included in '
-                                                                                  'MCP executable',
+ 'src/cmd/compile/internal/ssa/_gen/vendor/golang.org/x/tools/PATENTS': {'scope': 'compiler/tooling '
+                                                                                  'distribution only; not '
+                                                                                  'claimed included in MCP '
+                                                                                  'executable',
                                                                          'sha256': '96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc'},
- 'src/cmd/vendor/github.com/google/pprof/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed '
-                                                             'included in MCP executable',
+ 'src/cmd/vendor/github.com/google/pprof/LICENSE': {'scope': 'compiler/tooling distribution only; not '
+                                                             'claimed included in MCP executable',
                                                     'sha256': 'cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30'},
- 'src/cmd/vendor/github.com/google/pprof/third_party/svgpan/LICENSE': {'scope': 'compiler/tooling distribution '
-                                                                                'only; not claimed included in '
-                                                                                'MCP executable',
+ 'src/cmd/vendor/github.com/google/pprof/third_party/svgpan/LICENSE': {'scope': 'compiler/tooling '
+                                                                                'distribution only; not '
+                                                                                'claimed included in MCP '
+                                                                                'executable',
                                                                        'sha256': '154c946c17de61ca71d28e13673d76a5798e6e25995a7397fbae157afc8f62b4'},
- 'src/cmd/vendor/github.com/ianlancetaylor/demangle/LICENSE': {'scope': 'compiler/tooling distribution only; not '
-                                                                        'claimed included in MCP executable',
+ 'src/cmd/vendor/github.com/ianlancetaylor/demangle/LICENSE': {'scope': 'compiler/tooling distribution only; '
+                                                                        'not claimed included in MCP '
+                                                                        'executable',
                                                                'sha256': 'b73277f7730993ef8e7f80aed83e5309762fed4d77eced982abb2c00657c074d'},
- 'src/cmd/vendor/golang.org/x/arch/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed included '
-                                                       'in MCP executable',
+ 'src/cmd/vendor/golang.org/x/arch/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                       'included in MCP executable',
                                               'sha256': '8cda009bd927676a95ee7ce2dae921442ac4d9584d041b56ecfcba6839032f0b'},
- 'src/cmd/vendor/golang.org/x/arch/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed included '
-                                                       'in MCP executable',
+ 'src/cmd/vendor/golang.org/x/arch/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                       'included in MCP executable',
                                               'sha256': '96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc'},
- 'src/cmd/vendor/golang.org/x/build/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed included '
-                                                        'in MCP executable',
+ 'src/cmd/vendor/golang.org/x/build/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                        'included in MCP executable',
                                                'sha256': '911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad'},
- 'src/cmd/vendor/golang.org/x/build/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed included '
-                                                        'in MCP executable',
+ 'src/cmd/vendor/golang.org/x/build/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                        'included in MCP executable',
                                                'sha256': '96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc'},
- 'src/cmd/vendor/golang.org/x/mod/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed included '
-                                                      'in MCP executable',
+ 'src/cmd/vendor/golang.org/x/mod/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                      'included in MCP executable',
                                              'sha256': '911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad'},
- 'src/cmd/vendor/golang.org/x/mod/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed included '
-                                                      'in MCP executable',
+ 'src/cmd/vendor/golang.org/x/mod/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                      'included in MCP executable',
                                              'sha256': '96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc'},
- 'src/cmd/vendor/golang.org/x/sync/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed included '
-                                                       'in MCP executable',
+ 'src/cmd/vendor/golang.org/x/sync/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                       'included in MCP executable',
                                               'sha256': '911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad'},
- 'src/cmd/vendor/golang.org/x/sync/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed included '
-                                                       'in MCP executable',
+ 'src/cmd/vendor/golang.org/x/sync/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                       'included in MCP executable',
                                               'sha256': '96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc'},
- 'src/cmd/vendor/golang.org/x/sys/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed included '
-                                                      'in MCP executable',
+ 'src/cmd/vendor/golang.org/x/sys/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                      'included in MCP executable',
                                              'sha256': '911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad'},
- 'src/cmd/vendor/golang.org/x/sys/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed included '
-                                                      'in MCP executable',
+ 'src/cmd/vendor/golang.org/x/sys/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                      'included in MCP executable',
                                              'sha256': '96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc'},
  'src/cmd/vendor/golang.org/x/telemetry/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed '
                                                             'included in MCP executable',
@@ -158,32 +162,33 @@ GO_NOTICES = {'LICENSE': {'scope': 'toolchain root text; runtime distribution re
  'src/cmd/vendor/golang.org/x/telemetry/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed '
                                                             'included in MCP executable',
                                                    'sha256': '96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc'},
- 'src/cmd/vendor/golang.org/x/term/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed included '
-                                                       'in MCP executable',
+ 'src/cmd/vendor/golang.org/x/term/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                       'included in MCP executable',
                                               'sha256': '911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad'},
- 'src/cmd/vendor/golang.org/x/term/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed included '
-                                                       'in MCP executable',
+ 'src/cmd/vendor/golang.org/x/term/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                       'included in MCP executable',
                                               'sha256': '96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc'},
- 'src/cmd/vendor/golang.org/x/text/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed included '
-                                                       'in MCP executable',
+ 'src/cmd/vendor/golang.org/x/text/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                       'included in MCP executable',
                                               'sha256': '911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad'},
- 'src/cmd/vendor/golang.org/x/text/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed included '
-                                                       'in MCP executable',
+ 'src/cmd/vendor/golang.org/x/text/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                       'included in MCP executable',
                                               'sha256': '96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc'},
- 'src/cmd/vendor/golang.org/x/tools/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed included '
-                                                        'in MCP executable',
+ 'src/cmd/vendor/golang.org/x/tools/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                        'included in MCP executable',
                                                'sha256': '911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad'},
- 'src/cmd/vendor/golang.org/x/tools/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed included '
-                                                        'in MCP executable',
+ 'src/cmd/vendor/golang.org/x/tools/PATENTS': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                        'included in MCP executable',
                                                'sha256': '96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc'},
- 'src/cmd/vendor/rsc.io/markdown/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed included in '
-                                                     'MCP executable',
+ 'src/cmd/vendor/rsc.io/markdown/LICENSE': {'scope': 'compiler/tooling distribution only; not claimed '
+                                                     'included in MCP executable',
                                             'sha256': '2d36597f7117c38b006835ae7f537487207d8ec407aa9d9980794b2030cbc067'},
- 'src/crypto/internal/boring/LICENSE': {'scope': 'toolchain component text; inclusion in this MCP executable not '
-                                                 'established',
+ 'src/crypto/internal/boring/LICENSE': {'scope': 'toolchain component text; inclusion in this MCP executable '
+                                                 'not established',
                                         'sha256': '56210f826b8f0fbac3160dfe55c97f4019eb6cdda3963b5a0eab8a8bdb62360e'},
- 'src/runtime/testdata/testgoroutineleakprofile/goker/LICENSE': {'scope': 'toolchain testdata only; not claimed '
-                                                                          'included in MCP executable',
+ 'src/runtime/testdata/testgoroutineleakprofile/goker/LICENSE': {'scope': 'toolchain testdata only; not '
+                                                                          'claimed included in MCP '
+                                                                          'executable',
                                                                  'sha256': 'f99df8ae6da6de047ed002d9dbe8682d9a19c88e9a7473abdadf3ac206621a85'},
  'src/vendor/golang.org/x/crypto/LICENSE': {'scope': 'Go standard-library vendored component text; specific '
                                                      'linked packages not derived in this task',
@@ -191,27 +196,27 @@ GO_NOTICES = {'LICENSE': {'scope': 'toolchain root text; runtime distribution re
  'src/vendor/golang.org/x/crypto/PATENTS': {'scope': 'Go standard-library vendored component text; specific '
                                                      'linked packages not derived in this task',
                                             'sha256': '96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc'},
- 'src/vendor/golang.org/x/net/LICENSE': {'scope': 'Go standard-library vendored component text; specific linked '
-                                                  'packages not derived in this task',
+ 'src/vendor/golang.org/x/net/LICENSE': {'scope': 'Go standard-library vendored component text; specific '
+                                                  'linked packages not derived in this task',
                                          'sha256': '911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad'},
- 'src/vendor/golang.org/x/net/PATENTS': {'scope': 'Go standard-library vendored component text; specific linked '
-                                                  'packages not derived in this task',
+ 'src/vendor/golang.org/x/net/PATENTS': {'scope': 'Go standard-library vendored component text; specific '
+                                                  'linked packages not derived in this task',
                                          'sha256': '96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc'},
- 'src/vendor/golang.org/x/sys/LICENSE': {'scope': 'Go standard-library vendored component text; specific linked '
-                                                  'packages not derived in this task',
+ 'src/vendor/golang.org/x/sys/LICENSE': {'scope': 'Go standard-library vendored component text; specific '
+                                                  'linked packages not derived in this task',
                                          'sha256': '911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad'},
- 'src/vendor/golang.org/x/sys/PATENTS': {'scope': 'Go standard-library vendored component text; specific linked '
-                                                  'packages not derived in this task',
+ 'src/vendor/golang.org/x/sys/PATENTS': {'scope': 'Go standard-library vendored component text; specific '
+                                                  'linked packages not derived in this task',
                                          'sha256': '96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc'},
- 'src/vendor/golang.org/x/text/LICENSE': {'scope': 'Go standard-library vendored component text; specific linked '
-                                                   'packages not derived in this task',
+ 'src/vendor/golang.org/x/text/LICENSE': {'scope': 'Go standard-library vendored component text; specific '
+                                                   'linked packages not derived in this task',
                                           'sha256': '911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad'},
- 'src/vendor/golang.org/x/text/PATENTS': {'scope': 'Go standard-library vendored component text; specific linked '
-                                                   'packages not derived in this task',
+ 'src/vendor/golang.org/x/text/PATENTS': {'scope': 'Go standard-library vendored component text; specific '
+                                                   'linked packages not derived in this task',
                                           'sha256': '96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc'}}
 
-SUPPORT_HASHES = {'api_policy_cli_bundle.py': 'd67ad930f9a8405d945e9831f61c47291ce17985ea264167b8a309271560000b',
- 'service_policy_cli_bundle.py': '568a6ec152c988fbdc68b3408b48b635d53007e545792de26e48d9a5eb7f1900'}
+SUPPORT_HASHES = {'api_policy_cli_bundle.py': '2efcaa9a75148cd189748468e50d25e8abe4db5c46637253ad66ac5ac1a0f9ad',
+ 'service_policy_cli_bundle.py': '3431cdcdacb194fad52e5efe77c5a188ab6a41bce0fc28fe781d075f148c2c20'}
 
 SCHEMAS = {'input_schema': {'additionalProperties': False,
                   'properties': {'after': {'type': 'string'},
@@ -267,20 +272,20 @@ MAX_STREAM = 64 << 10
 NATIVE_STDOUT_CAP = 512 << 10
 NATIVE_STDOUT_TOTAL_CAP = 1 << 20
 MAX_SOURCE = 2 << 20
-GENERATION = "40ae704abbf2cae1974d2eec51cec2564c8d72dd44536b31c9c4f55f71fc0f85"
-PIN = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+GENERATION = '3c86dd9273168f1fe4e0712aa7cfdfc075a211d05b64ff2fbd0b8c9135315a3b'
+PIN = '205896a413e5dea92366309c35ae85e542d055f6'
 
 
 MANY_MODULE = 'github.com/kimjooyoon/gooo-go-ports/examples/service-grant-many'
-MANY_VERSION = 'v0.0.0-20261019032231-f4f89b814b42'
-MANY_SUM = 'h1:VGOxGwZDHGMk8p4GvkmBN6xlXactcKMHvYSUKoQFZ3Q='
-MANY_MOD_SUM = 'h1:0m4ggbjuqLpP4nfiiCNvnxPPakbu8QuZ5aBoPI7o2vE='
-MANY_PIN = 'de99b770b8b5adea608233c3c0664902336e3310'
-MANY_GENERATION = '3c49d16a549bc961c1712c122383e1c4d2dd232361a526d146f1a5347108918c'
+MANY_VERSION = 'v0.0.0-20261020182808-7180a4a0f36a'
+MANY_SUM = 'h1:p3zs2m5zxSwlgn0Z3Wq1rl+cfcBN4JN2JhrmjhARgkk='
+MANY_MOD_SUM = 'h1:E0cBwR8ybR1+jlHM6zdepav8UP3gwHQuFPpw35R5C6k='
+MANY_PIN = '205896a413e5dea92366309c35ae85e542d055f6'
+MANY_GENERATION = '86d714e4793f04d7d45d53e824cd7066ddee5f7d1e987697f26f4216a6b4e164'
 MANY_FILES = {'LICENSE': '099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48',
  'LICENSE-APACHE-2.0': 'c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4',
  'NOTICE.md': 'abd202e771c34e66987ee4b9bc006acb0841ea6321abf21f7dd819e36915779d',
- 'README.md': '478fdf2b54af03f4d848ac61a76e11f144ec2d4e9b9d41275fee0341c7cb4bee',
+ 'README.md': 'ba027040f55031a430190b16f10635940ce927c33e475991bfe8e6e179c3eb0b',
  'all-cases.json': '0bd2386252984cb2e1aaf7297e9263e71d221b03b3a55e05788aa8bad2abc165',
  'bindings.go': '560045a704dea6fd85c7a33a97bdfc4f4f8ef70500ef10da17432127a28cdc8a',
  'bridge_generated.go': 'e4b88a9db690bec6077ec5d0d26c605149e4946ad121781b4ca7e44b7d4a2cd9',
@@ -288,10 +293,10 @@ MANY_FILES = {'LICENSE': '099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d
  'cmd/evaluate/main.go': 'e43dd9533b14d9b85a7da4916aa71dff7ee92ad78d1cc74c4aa811920766c2f5',
  'cmd/evaluate/main_test.go': '5c6f5aac865e8c9e17aaee20bc313b6c2d39d4393ff40e4e12f07ad5d5f883ca',
  'compiler-pin.json': 'd25ca85cb16b4b89664838eccdc896439d62400766f997b9dca6a43d69f2b5d8',
- 'compiler.json': 'c9d06f19f7fe1a101f88765f6c3d2edb19fd568ffb37d07580d7373c808a0486',
- 'generate.py': '2e504c85164f07f940a53baa16834d0e753d4c273b5a6bd6ae940a511b823a05',
- 'generation.json': '3c49d16a549bc961c1712c122383e1c4d2dd232361a526d146f1a5347108918c',
- 'go.mod': '85fb0e71d323ef58d09297ef959176a6046c4c4bcdb363a93ff408723f4bdfc0',
+ 'compiler.json': '503d1daed25690a552b207f0f8b3a19ebff309cfe8127f72d43be50059a4c428',
+ 'generate.py': '9a4c54cef5788acd296cfd7d1860b9ffa94a349eb9306d6eaa934985dfa1880f',
+ 'generation.json': '86d714e4793f04d7d45d53e824cd7066ddee5f7d1e987697f26f4216a6b4e164',
+ 'go.mod': '1ce2c12582bbbffdf68fdf75568ca571ffaf7334b03c8e376a32944d12fb406e',
  'input.go': '1c24ea415bd88ea9c50370df3de4f735a29910fae0dd83ac76ae4cccdce9b451',
  'model.go': 'f3f296ffa4d93244b19261af3c1436e948b6ab333d7f16c0a13459b8b31b51bd',
  'normal-cases.json': 'a88fb3846ea66dfb3e81d808f1f390cdcbbafeea7aef49fbc94bed8420feeea5',
@@ -301,10 +306,10 @@ MANY_FILES = {'LICENSE': '099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d
  'reference-expected.json': '5c4a1cc34a0b8c3b94d694a295149be15cfa05c17189bf82eb4a1be8b12af895',
  'remaining-cases.json': '711253c360d8244173dc180da40abc7e801654b59c5c34d5a84cf114a51a9760',
  'source-provenance.json': 'ca5e4401702346b91ef420f58df5229af900b29b7b8d843e68de2895a6e94896',
- 'verify.py': 'd84e30a9872db4b5a12aa0bbf3b980dc0c85451a3b86ac7e6e9f59192ff93a24',
- 'verify_saved.py': '931122026b8fa1ad243a3091e9f253d681d9326508f14e57feefc2ec34a2af9e'}
+ 'verify.py': 'ff3d94c39782619e06f64d5fbcfc3218733013332293f07b14368e5e939d3f0f',
+ 'verify_saved.py': '36d41d580d75353ac2027cd46f54a106f0a7cc467ad248a8190a4cb97f067974'}
 MANY_REFERENCE_ASSETS = {'reference/LICENSE': '099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48',
- 'reference/go.mod': 'd59c5def2449a039feb11d38a86b4303c170306d84ca8ccc167a5790c5cf2884',
+ 'reference/go.mod': '8b3744d0552c31de216c0766457bbbea1de2c4c55b702e9f82ce3490d0b21329',
  'reference/main.go': 'f21b3ea164c8df4b201cfc1de14b1b416247a343d720d0125b6d0fd71223c58f',
  'reference/source-pin.json': '4196b726d4f596363131994d637960d8750ec27ca0b0b5165e7d6e634bd3d25a',
  'reference/upstream/LICENSE': 'c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4',
@@ -423,7 +428,7 @@ def embedded_info(raw):
 def build_identity(build, target, commit):
     need(re.fullmatch(r"[0-9a-f]{40}", commit), "exact source commit required")
     need(type(build) is dict and set(build) == {"GoVersion", "Path", "Main", "Deps", "Settings"}, "BuildInfo fields differ")
-    need(build["GoVersion"] == "go1.27.2" and build["Path"] == MODULE, "Go version/main package differs")
+    need(build["GoVersion"] == "go1.27.3" and build["Path"] == MODULE, "Go version/main package differs")
     need(type(build["Main"]) is dict and set(build["Main"]) == {"Path", "Version"}
          and build["Main"]["Path"] == MODULE
          and re.fullmatch(r"v0\.0\.0-\d{14}-"+commit[:12], build["Main"]["Version"]), "main version/replacement differs")
@@ -489,7 +494,7 @@ def many_module_source(modcache, root):
     files = {}
     with zipfile.ZipFile(io.BytesIO(read(archive_path, 1 << 20))) as archive:
         rows = archive.infolist()
-        need(len(rows) == 26 and sum(row.file_size for row in rows) == 258704,
+        need(len(rows) == 26 and sum(row.file_size for row in rows) == 261017,
              "complete many module roster/size differs")
         for row in rows:
             name = row.filename
@@ -804,7 +809,7 @@ def notice_files(modcache, go_root, root):
         need(sha(raw) == row["sha256"], "Go toolchain notice bytes differ")
         name = f"NOTICE-Go-{index:02d}-"+relative.replace("/", "__")
         files[name] = (raw, 0o644)
-        inventory.append({"file": name, "GoVersion": "go1.27.2", "source_relative_path": relative,
+        inventory.append({"file": name, "GoVersion": "go1.27.3", "source_relative_path": relative,
                           "sha256": row["sha256"], "scope": row["scope"]})
     for name, relative, digest in [
         ("LICENSE-transport-BSD", "examples/service-grant-mcp/LICENSE", "099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48"),

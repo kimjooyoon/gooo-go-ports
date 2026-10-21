@@ -24,7 +24,7 @@ MANIFEST = 'autobot-resolver.workspace.json'
 EXAMPLE = 'examples/autobot-resolver'
 FIELDS = ['key', 'line', 'source', 'stored_present', 'stored_value', 'floor_present', 'floor_value', 'reason']
 TYPES = ['Text' if i in (0, 2, 5) else 'Boolean' for i in range(9)]
-REV = '83928fa4538245abe33b08549da47f8cbdc50ed2'
+REV = '205896a413e5dea92366309c35ae85e542d055f6'
 FIXED = {
     'corpus.json': 'bf622cf3171cd9bab4baf25561fe84f9a464f2e1c9a5c24c54021df850e4ed50',
     'oracle.go': 'ee13bf8d87ef0cf724c8025443df0bf36fcb719ad8afbc230ff3aa51c67f8864',
@@ -290,7 +290,7 @@ def main(argv=None):
              'entry': {'package_path': PACKAGE, 'activity': 'ResolveLine'},
              'packages': [{'path': PACKAGE, 'sources': [SOURCE]}]}), 'one current source manifest')
         upstream = load(read(root / 'upstream.json'), 'compiler lock')
-        need(upstream['compiler_revision'] == REV and upstream['go_version'] == 'go1.27.2', 'repository compiler/Go pins')
+        need(upstream['compiler_revision'] == REV and upstream['go_version'] == 'go1.27.3', 'repository compiler/Go pins')
         rows = validate_rows(load(raw_files['corpus.json'], 'original corpus'))
         stage = 'original_python_ast'
         original = original_reference(raw_files['upstream/ai_lines.py.txt'].decode('utf-8'), rows)
@@ -310,9 +310,9 @@ def main(argv=None):
         stage = 'tool_identity'
         identity = load(runner.call('compiler-identity', [compiler, 'version', '--build', '--json'], 10), 'compiler identity')
         need(identity['compiler_source_sha'] == identity['vcs_revision'] == REV and identity['source_status'] == 'CLEAN_VCS' and
-             identity['vcs_modified'] == 'false' and identity['go_version'] == 'go1.27.2', 'existing clean pinned compiler')
+             identity['vcs_modified'] == 'false' and identity['go_version'] == 'go1.27.3', 'existing clean pinned compiler')
         version = runner.call('go-version', [go, 'version'], 10).decode().strip()
-        need(len(version.split()) == 4 and version.split()[:3] == ['go', 'version', 'go1.27.2'], 'actual explicit Go1.27.2')
+        need(len(version.split()) == 4 and version.split()[:3] == ['go', 'version', 'go1.27.3'], 'actual explicit Go1.27.3')
         stage = 'independent_go_oracle'
         H.save(out / 'oracle-input.json', rows)
         expected = load(runner.call('go-oracle', [go, 'run', example / 'oracle.go'], 90,

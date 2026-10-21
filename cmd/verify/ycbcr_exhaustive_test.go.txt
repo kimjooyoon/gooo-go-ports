@@ -14,7 +14,7 @@ import (
 // generated composition is compiled unchanged, and each int64 output component
 // is compared before converting to bytes for the reproducible stream digest.
 func TestYCbCrExhaustive(t *testing.T) {
-    if runtime.Version() != "go1.27.2" { t.Fatal("wrong pinned Go oracle") }
+    if runtime.Version() != "go1.27.3" { t.Fatal("wrong pinned Go oracle") }
     actual, oracle := sha256.New(), sha256.New()
     inputs, comparisons, components := 0, 0, 0
     for n := 0; n < 16777216; n++ {

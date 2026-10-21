@@ -23,7 +23,7 @@ const MaxContractBytes = 1 << 20
 const maxContractInt64 int64 = 1<<63 - 1
 
 const nativeVerificationContractPath = "cmd/verify/testdata/native-verification-contract-v1.json"
-const nativeVerificationContractVersionSHA256 = "sha256:b15cb329b36da4c0e19ef26cbb3f3c72f3e639701bc790cbd873cf75c0a24c13"
+const nativeVerificationContractVersionSHA256 = "sha256:f9549c87045a92db2b21215263021797badf3a655327b7d6b286acced4884d78"
 
 // The whole version hash binds the current suffix and every declared reader,
 // in addition to the independently frozen historical prefix/source baseline.

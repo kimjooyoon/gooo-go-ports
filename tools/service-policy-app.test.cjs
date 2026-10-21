@@ -18,7 +18,7 @@ function metadata() {
     const raw = name.startsWith('source/') ? fs.readFileSync(path.join(__dirname, '../examples/agentmesh-service-policy', name.slice(7))) : Buffer.from('synthetic schema fixture');
     files[name] = { sha256: createHash('sha256').update(raw).digest('hex'), bytes: raw.length };
   }
-  return { schema: 'gooo/browser-service-policy/v1', compiler_revision: bindings.compiler_source_sha, go_version: 'go1.27.2',
+  return { schema: 'gooo/browser-service-policy/v1', compiler_revision: bindings.compiler_source_sha, go_version: 'go1.27.3',
     source_revision: 'a'.repeat(40), source_dirty: true, generation_sha256: bindings.generation_sha256, bindings,
     wasm_sha256: files['program.wasm'].sha256, wasm_bytes: files['program.wasm'].bytes,
     wasm_exec_sha256: files['wasm_exec.js'].sha256, wasm_exec_bytes: files['wasm_exec.js'].bytes, files };

@@ -10,7 +10,7 @@ import tarfile
 
 PARENT = "github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision"
 ORIGINAL = "github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy"
-PIN = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+PIN = "205896a413e5dea92366309c35ae85e542d055f6"
 MAX_BINARY, MAX_ARCHIVE = 16 << 20, 32 << 20
 BOOLS = {"group_present", "principal_present", "authenticated"}
 TEXTS = {"group_value", "principal_value", "caller_tenant", "resource_tenant",
@@ -139,8 +139,8 @@ def make_bundle(binary: Path, out: Path, report: dict, go: Path, root: Path) -> 
     settings = unique((item["Key"], item["Value"]) for item in build["Settings"])
     platform = settings["GOOS"] + "/" + settings["GOARCH"]
     need(platform in {"linux/amd64", "darwin/arm64"} and settings.get("CGO_ENABLED") == "0"
-         and report["go_toolchain"]["version"] == "go version go1.27.2 " + platform
-         and build["GoVersion"] == "go1.27.2" and build["Path"] == PARENT + "/cmd/compare",
+         and report["go_toolchain"]["version"] == "go version go1.27.3 " + platform
+         and build["GoVersion"] == "go1.27.3" and build["Path"] == PARENT + "/cmd/compare",
          "native toolchain/platform differs")
     need(go == Path(report["go_toolchain"]["executable"]["path"]), "Go license root differs")
     main, deps = build["Main"], build["Deps"]

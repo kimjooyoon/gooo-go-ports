@@ -16,7 +16,7 @@ import time
 
 ROOT = Path(__file__).resolve().parent
 MODULE = 'github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision'
-PIN = '83928fa4538245abe33b08549da47f8cbdc50ed2'
+PIN = '205896a413e5dea92366309c35ae85e542d055f6'
 OLD_GENERATION = 'sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46'
 OLD_PROFILE = 'cel-api-original-v1'
 NEW_PROFILE = 'cel-api-readonly-principal-v1'
@@ -135,7 +135,7 @@ def check_bindings():
         need(source.is_file() and not source.is_symlink(), 'nonregular test fixture source')
         paths[relative.as_posix()] = source
     before = {name: digest(path.read_bytes()) for name, path in sorted(paths.items())}
-    expected_old = {'compiler_source_sha': PIN, 'assets': old['assets'], 'generation_sha256': OLD_GENERATION}
+    expected_old = {'compiler_source_sha': '83928fa4538245abe33b08549da47f8cbdc50ed2', 'assets': old['assets'], 'generation_sha256': OLD_GENERATION}
     expected_new = {'compiler_source_sha': PIN, 'assets': current['assets'], 'generation_sha256': digest(current_raw)}
     return paths, before, expected_old, expected_new
 
@@ -260,7 +260,7 @@ def main():
               'decision_fields': 15, 'fresh_process_pairs': 0, 'classifier_cases': 0,
               'altered_report_refused': False, 'original_generation_preserved': False,
               'first_user_time_measured': False, 'independent_adoption_observed': False,
-              'setup_prerequisites': ['Python 3 standard library', 'installed Go 1.27.2 and race C toolchain',
+              'setup_prerequisites': ['Python 3 standard library', 'installed Go 1.27.3 and race C toolchain',
                                       'existing exact Gooo compiler source ' + PIN,
                                       'previously downloaded exact original module with sealed Go checksums'],
               'limits': ['Synthetic readonly policy observations are distinct from the 23 synthetic classifier pairs.',
@@ -280,7 +280,7 @@ def main():
         record['source_snapshot_before'] = before
         declared = required_tests()
         version = run(record, out, 'go-version', [go, 'version'], ROOT, environment, timeout=30)
-        need(version.decode().split()[:3] == ['go', 'version', 'go1.27.2'], 'Go 1.27.2 is required')
+        need(version.decode().split()[:3] == ['go', 'version', 'go1.27.3'], 'Go 1.27.3 is required')
         generation_started = time.monotonic()
         run(record, out, 'generation-check', [sys.executable, ROOT / 'generate.py', '--check', '--compiler', compiler, '--go', go], ROOT, environment)
         record['generation_check_seconds'] = time.monotonic() - generation_started

@@ -22,14 +22,20 @@ ENTRIES = [('ext','go/path:Ext','path-ext.workspace.json'),
            ('isabs','go/path:IsAbs','path-isabs.workspace.json'),
            ('report','app/path-facts:Report','path-facts.workspace.json')]
 WORK_CAP, PRE_CAP, FREE_MIN = 384<<20, 320<<20, 5<<30
-STDOUT_CAP, STDERR_CAP, ROWS_CAP, PROOF_CAP = 8<<20, 1<<20, 8<<20, 16<<20
+# Current205 adds finite trace diagnostics: the fixed24-row Ext/Report receipts
+# are2.18/2.75MB. Retain all six originals and18 byte-preserving tamper copies.
+# Per-command, generated rows, work, time and free-space limits stay unchanged.
+STDOUT_CAP, STDERR_CAP, ROWS_CAP, PROOF_CAP = 8<<20, 1<<20, 8<<20, 64<<20
 SOURCE_NAMES = ['LICENSE','go.mod','upstream.json','internal/jsonkeys/keys.go',
  'ports/path/path.gooo','examples/path-facts/main.gooo','examples/path-facts/inputs.json',
  'examples/path-facts/README.md','third_party/GO-LICENSE','third_party/go/path.go.txt',
  'path-ext.workspace.json','path-isabs.workspace.json','path-facts.workspace.json',
  'cmd/check-path-facts/main.go','cmd/check-path-facts/inspect.go',
  'cmd/check-path-facts/result_digest.go','cmd/check-path-facts/platform.go',
- 'cmd/check-path-facts/result-profile-83928fa.json',
+ 'cmd/check-path-facts/result-profile-83928fa.json','cmd/check-path-facts/result-profile-go1273.json',
+ 'cmd/check-path-facts/current_result_profile_test.go',
+ 'cmd/check-path-facts/testdata/current-go1273-execution.json',
+ 'cmd/check-path-facts/testdata/current-go1273-execution.provenance.json',
  'cmd/check-path-facts/generated_binding.go','cmd/check-path-facts/exhaustive.go',
  'cmd/check-path-facts/exhaustive_test.go.txt','cmd/check-path-facts/generated_binding_test.go',
  'cmd/check-path-facts/testdata/manual-contract.json',
@@ -481,7 +487,7 @@ class Attempt:
         if len(tampers)!=18:raise ValueError('Tamper roster changed')
         self.frozen();self.budget();self.audit_retained(records)
         summary={'schema':'gooo/path-facts-two-layer-CI/v1','status':'VERIFIED_VALUES_PENDING_OWNED_WORK_CLEANUP',
-             'compiler_revision':'83928fa4538245abe33b08549da47f8cbdc50ed2','go_version':'go1.27.2',
+             'compiler_revision':'205896a413e5dea92366309c35ae85e542d055f6','go_version':'go1.27.3',
              'manual_input_count_per_entry':24,'manual_entry_count':3,'manual_execute_outputs':72,'manual_saved_replay_outputs':72,
              'generated_native_input_count_per_entry':9841,'generated_native_entry_outputs':29523,'generated_native_scalar_comparisons':78728,
              'full_CLI_outputs':0,'full_saved_replay_outputs':0,'strict_transport_refusals':15,'receipt_tamper_refusals':18,

@@ -15,9 +15,9 @@ import sys
 
 from receipt_json import loads_receipt
 
-COMPILER = "83928fa4538245abe33b08549da47f8cbdc50ed2"
-VERSION = "0.6.32-dev"
-GO = "go1.27.2"
+COMPILER = "205896a413e5dea92366309c35ae85e542d055f6"
+VERSION = "0.6.37-dev"
+GO = "go1.27.3"
 SCHEMA = "gooo/body-composition-inputs/v1"
 ENTRIES = ("go/strings:Index", "go/strings:Count", "app/literal-text-report:Report")
 CUT_ENTRIES = ("go/strings:Cut", "go/strings:CutPrefix", "go/strings:CutSuffix", "app/literal-cut-report:Report")
@@ -134,6 +134,35 @@ def validate_identity(build, lock):
             "clean pinned compiler identity")
 
 
+def inspect_extra_caller_port(case, receipt, error):
+    # Exact generated extra-input2 fixtures only. The LastIndex observer reuses
+    # this inspector with its separately pinned two-entry source closure.
+    entries = (*ALL_ENTRIES, "go/strings:LastIndex", "app/literal-final-marker-report:Report")
+    require(case["entry"] in entries and case["position"] is None
+            and case["expected_rejection_stage"] == "INPUT_DOMAIN"
+            and case["expected_diagnostic"] == "inputs and nonempty expectations must name declared activities",
+            "declared extra caller-port fixture")
+    entry = case["entry"]
+    expected_raw = encode({"schema": SCHEMA, "inputs": [{entry + ".input0": "diagnostic",
+                               entry + ".input1": "tic", entry + ".input2": "extra"}]}) + b"\n"
+    require(case["raw"] == expected_raw, "exact declared extra caller-port input bytes")
+    diagnostic = receipt.get("input_diagnostic")
+    require(type(diagnostic) is dict and set(diagnostic) == {
+        "stage", "code", "case_index", "key", "available_keys", "message"}, "structured caller-port diagnostic fields")
+    require(diagnostic["stage"] == "INPUT_VALIDATION" and diagnostic["code"] == "UNKNOWN_CALLER_PORT",
+            "structured caller-port diagnostic stage/code")
+    require(type(diagnostic["case_index"]) is int and diagnostic["case_index"] == 0,
+            "structured caller-port case index")
+    require(diagnostic["key"] == entry + ".input2"
+            and diagnostic["available_keys"] == [entry + ".input0", entry + ".input1"],
+            "structured authored key and exact sorted available caller ports")
+    message = diagnostic["message"]
+    require(type(message) is str and bool(message.strip())
+            and error == "generate workspace activity bodies: " + message,
+            "structured diagnostic message and outer error binding")
+    return diagnostic
+
+
 def inspect_rejection(case, stdout, exit_code, timed_out, manifest_path, manifest_raw):
     require(not timed_out, "actual CLI timed out")
     receipt = loads_receipt(stdout)
@@ -143,12 +172,17 @@ def inspect_rejection(case, stdout, exit_code, timed_out, manifest_path, manifes
     require(receipt.get("manifest_digest") == digest(manifest_raw), "original manifest binding")
     require(receipt.get("inputs_digest") == digest(case["raw"]), "original malformed input binding")
     error = receipt.get("error")
-    require(type(error) is str and case["expected_diagnostic"] in error, "actual input diagnostic")
-    if case["expected_rejection_stage"] == "INPUT_DOMAIN":
+    require(type(error) is str, "actual input diagnostic type")
+    structured = None
+    if case["name"].endswith("-extra-input2"):
+        structured = inspect_extra_caller_port(case, receipt, error)
+    else:
+        require(case["expected_diagnostic"] in error, "actual input diagnostic")
+    if case["expected_rejection_stage"] == "INPUT_DOMAIN" and structured is None:
         require(error.startswith("generate workspace activity bodies: case 0:"), "input-domain rejection route")
         if case["position"] is not None:
             require('.input' + str(case["position"]) + '"' in error, "actual rejected input position")
-    else:
+    elif structured is None:
         require(not error.startswith("generate workspace activity bodies:"), "JSON rejection must precede body generation")
     # The pinned input decoder/domain route returns no Result. An unexpected
     # Result is rejected, rather than guessed safe from selected counter fields.
@@ -159,6 +193,7 @@ def inspect_rejection(case, stdout, exit_code, timed_out, manifest_path, manifes
             "actual_runtime_stage": "NOT_REPORTED", "observed_counters": "NOT_REPORTED",
             "observed_build": "NOT_REPORTED", "observed_runs": "NOT_REPORTED",
             "rejection_verified": True,
+            "structured_input_diagnostic_verified": structured is not None,
             "native_execution_claim": "NOT_REPORTED: no zero-counter or native-execution claim inferred from absent runtime"}
 
 

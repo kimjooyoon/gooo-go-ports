@@ -140,7 +140,7 @@ func inspectCalls(calls map[string]any, id identity) error {
 		ref := object(item["activity"])
 		key := str(ref["package_path"]) + ":" + str(ref["activity"])
 		d, ok := id.Declarations[key]
-		if !ok || !participants[key] || seen[key] || ref["lowered_name"] != d.Lowered || item["source"] != d.Source || item["source_body_sha256"] != digest([]byte(d.Body)) || item["activity_id"] != namespaceID(d.Namespace, d.Name) || item["lowered_activity_id"] != namespaceID("gooo_workspace", d.Lowered) {
+		if !ok || !participants[key] || seen[key] || ref["lowered_name"] != d.Lowered || item["source"] != d.Source || item["source_body_sha256"] != digest([]byte(d.Body)) || item["activity_id"] != d.ID || item["lowered_activity_id"] != d.ID {
 			return fmt.Errorf("pure call source/identity binding")
 		}
 		seen[key] = true
@@ -180,8 +180,8 @@ func inspectCalls(calls map[string]any, id identity) error {
 	return nil
 }
 
-// Same source-declared identity rule as pinned bidir.slug; these alias IDs are
-// distinct from the explicit exported activity IDs in the Gooo declarations.
+// Historical namespace-derived aliases are retained for rejection controls.
+// The current compiler preserves the explicit source ID across lowering.
 func namespaceID(namespace, name string) string {
 	var out strings.Builder
 	dash := false

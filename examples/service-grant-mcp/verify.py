@@ -231,7 +231,7 @@ def main():
     build_identity = None
     if BUILD_INFO is not None:
         build_identity = json.loads(BUILD_INFO.read_bytes())
-        assert build_identity['GoVersion'] == 'go1.27.2'
+        assert build_identity['GoVersion'] == 'go1.27.3'
         assert build_identity['Main']['Path'] == 'github.com/kimjooyoon/gooo-go-ports/examples/service-grant-mcp'
         assert 'Replace' not in build_identity['Main']
         deps = {row['Path']:row for row in build_identity['Deps']}

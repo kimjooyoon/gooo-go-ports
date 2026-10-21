@@ -326,9 +326,18 @@ class PublicConsumerIdentityTests(unittest.TestCase):
                 "original_generation_sha256": "sha256:" + HELPER.sha(original),
                 "revision_generation_sha256": "sha256:" + HELPER.sha(current)}
 
+    def historical_source(self):
+        # Exact immutable source from cc946350de37c48d509b1d383b8ce7e8a0062483:
+        # testdata/api-policy-consumer/main.go.txt. It predates the205 role split;
+        # current source must never be projected back into historical evidence.
+        raw = (self.root() / "testdata/api-policy-consumer/historical-compiler839.go.txt").read_bytes()
+        self.assertEqual(HELPER.sha(raw),
+                         "3ec2b0619ddbbd9e99bbdcbdbb14f135903b47d0dbae6fa3c32afb7c610dc72b")
+        return raw
+
     def prior_source(self, generation, asset_count=37):
-        raw = self.source()
-        current = self.wanted()["revision_generation_sha256"].encode()
+        raw = self.historical_source()
+        current = b"sha256:a78b95c6f563450e0aacb2356594b270f9a6c42910f3995cec2577076139956e"
         self.assertEqual(raw.count(current), 1)
         old = raw.replace(current, generation.encode(), 1)
         # Historical callers retain their own original asset roster.
@@ -339,6 +348,7 @@ class PublicConsumerIdentityTests(unittest.TestCase):
 
     def test_current_known_fixture_matches_independent_source_manifests(self):
         self.assertEqual(set(HELPER.KNOWN_CONSUMER_FIXTURES), {
+            "426105c94717957ea6e09f8459e5c251a9685adc965035b3082c8c2542e7036d",
             "8c9f27b3993d0810431cf33817ad6cb1ed726738eb90a68dfc52c4876c99713f",
             "ed24455944545110d0aae02209845086b5a8aafc9ea408a07240ee576cd59617",
             "ca4fc8ab3a120898ae43dd5f46bf1d4273502a77563211871ccaaa5b71662bd2",
@@ -365,7 +375,8 @@ class PublicConsumerIdentityTests(unittest.TestCase):
                 self.assertEqual(HELPER.sha(old), source_hash)
                 with self.assertRaisesRegex(HELPER.Refused, "identity tuple"):
                     HELPER.verify_fixture_identities(old, self.wanted())
-                wanted = dict(self.wanted(), revision_generation_sha256=generation)
+                wanted = dict(self.wanted(), compiler_source_sha=HELPER.HISTORICAL_COMPILER,
+                              revision_generation_sha256=generation)
                 self.assertIsNone(HELPER.verify_fixture_identities(old, wanted))
 
     def test_unregistered_source_edits_are_refused(self):
@@ -437,7 +448,7 @@ class PublicConsumerInstallBuildInfoTests(unittest.TestCase):
     ORIGINAL_SUM = "h1:" + "B" * 43 + "="
 
     def info(self):
-        return {"GoVersion": "go1.27.2", "Path": HELPER.PARENT + "/cmd/compare",
+        return {"GoVersion": "go1.27.3", "Path": HELPER.PARENT + "/cmd/compare",
                 "Main": {"Path": HELPER.PARENT, "Version": self.PARENT_VERSION, "Sum": self.PARENT_SUM},
                 "Deps": [{"Path": HELPER.ORIGINAL, "Version": HELPER.ORIGINAL_VERSION,
                           "Sum": self.ORIGINAL_SUM}], "Settings": [{"Key": "CGO_ENABLED", "Value": "0"}]}
@@ -450,11 +461,24 @@ class PublicConsumerInstallBuildInfoTests(unittest.TestCase):
     def test_exact_installed_command_binds_both_authenticated_module_checksums(self):
         value = self.info()
         observed = self.checked(value)
-        self.assertEqual(observed["go_version"], "go1.27.2")
+        self.assertEqual(observed["go_version"], "go1.27.3")
         self.assertEqual(observed["package"], HELPER.PARENT + "/cmd/compare")
         self.assertEqual(observed["main"], value["Main"])
         self.assertEqual(observed["dependencies"], value["Deps"])
         self.assertTrue(observed["no_replacements"])
+
+    def test_current_and_immutable_original_module_go_versions_stay_distinct(self):
+        for path, revision, version, selected_go in (
+                (HELPER.PARENT, "a" * 40, self.PARENT_VERSION, "1.27.3"),
+                (HELPER.ORIGINAL, HELPER.ORIGINAL_COMMIT, HELPER.ORIGINAL_VERSION, "1.27.2")):
+            value = {"Path": path, "GoVersion": selected_go, "Version": version,
+                     "Origin": {"VCS": "git", "URL": HELPER.REPOSITORY, "Hash": revision,
+                                "Subdir": path.split("gooo-go-ports/", 1)[1]}}
+            kwargs = {} if path == HELPER.PARENT else {"expected_go": "1.27.2"}
+            self.assertEqual(HELPER.module_identity(value, path, revision, version, **kwargs), version)
+            value["GoVersion"] = "1.27.2" if selected_go == "1.27.3" else "1.27.3"
+            with self.subTest(module=path), self.assertRaises(HELPER.Refused):
+                HELPER.module_identity(value, path, revision, version, **kwargs)
 
     def test_other_command_toolchain_or_module_identity_is_refused_even_with_valid_sums(self):
         for field, wrong in (("GoVersion", "go1.27.1"), ("Path", HELPER.PARENT + "/cmd/other")):

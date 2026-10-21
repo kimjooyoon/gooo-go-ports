@@ -87,5 +87,54 @@ func Entry(input0 string) RecordB {
                 self.assert_record_refusal(changed, names, records)
 
 
+class ReceiptTransportAndProducerTests(unittest.TestCase):
+    def identity(self, version):
+        return {'schema': 'gooo/build-identity/v1', 'compiler_source_sha': R.REV,
+                'vcs_revision': R.REV, 'source_status': 'CLEAN_VCS', 'vcs_modified': 'false',
+                'go_version': 'go1.27.3', 'native_go_required': 'go1.27.3',
+                'build_info_observed': True, 'version': '0.6.37-dev',
+                'module_version': version, 'module': {'path': R.PRODUCER_PATH, 'version': version},
+                'decision_runtime': {'module_path': 'github.com/kimjooyoon/gooo-decision-runtime',
+                                     'version': 'v0.2.51-experimental', 'replaced': False}}
+
+    def test_clean_bootstrap_and_installed_module_keep_exact_observed_identity(self):
+        for version in R.PRODUCER_VERSIONS:
+            identity = self.identity(version)
+            selected = R.producer_module(identity)
+            self.assertEqual(selected, identity['module'])
+            selected['version'] = 'foreign'
+            self.assertEqual(identity['module']['version'], version)
+
+    def test_old_dirty_replaced_or_cross_bound_producer_is_refused(self):
+        original = self.identity(R.PRODUCER_VERSIONS[0])
+        mutations = [
+            lambda x: x.update(compiler_source_sha='0'*40),
+            lambda x: x.update(vcs_revision='0'*40),
+            lambda x: x.update(vcs_modified='true'),
+            lambda x: x.update(source_status='DIRTY_VCS'),
+            lambda x: x.update(go_version='go1.27.2'),
+            lambda x: x.update(native_go_required='go1.27.2'),
+            lambda x: x.update(build_info_observed=False),
+            lambda x: x.update(version='0.6.32-dev'),
+            lambda x: x['decision_runtime'].update(replaced=True),
+            lambda x: x['decision_runtime'].update(version='v0.2.50-experimental'),
+            lambda x: x['module'].update(path='github.com/foreign/compiler'),
+            lambda x: x['module'].update(version='v0.0.0-20261020180505-000000000000'),
+            lambda x: x.update(module_version=R.PRODUCER_VERSIONS[1]),
+        ]
+        for mutate in mutations:
+            changed = copy.deepcopy(original)
+            mutate(changed)
+            with self.subTest(identity=changed), self.assertRaises(R.ReceiptError):
+                R.producer_module(changed)
+
+    def test_receipt_budget_accepts_full_bound_and_refuses_one_byte_over(self):
+        self.assertEqual(R.load(b'{}' + b' ' * ((8 << 20) - 2)), {})
+        for raw in (b'', b'{}' + b' ' * ((8 << 20) - 1)):
+            with self.assertRaises(R.ReceiptError) as raised:
+                R.load(raw)
+            self.assertEqual(raised.exception.boundary, 'json')
+
+
 if __name__ == '__main__':
     unittest.main()

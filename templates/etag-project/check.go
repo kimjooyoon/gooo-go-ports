@@ -37,7 +37,7 @@ import (
 )
 
 const (
-	revision   = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+	revision   = "205896a413e5dea92366309c35ae85e542d055f6"
 	corpusSHA  = "sha256:ce9015cc12bc37e785761f4ee6907a77603082cd69b4d8edc80a634ff4478345"
 	core       = "go/net/http/etag"
 	header     = "go/golang.org/x/net/http/httpguts"
@@ -398,6 +398,21 @@ func cases(b batch, rows []inputRow, sources map[string][]byte) ([]byte, []any, 
 
 // Each direct child owns a new process group. Cancellation/cap/Wait failure
 // kills only that group. Bounded original streams and dispositions are retained.
+const maxCommandStdout = 1 << 20
+
+// The current seven baseline receipts plus one mutation receipt peak at
+// 7,628,750 bytes. This finite 8 MiB budget is not a promise for arbitrary edits.
+const maxReceiptStdout = 8 << 20
+const maxCommandStderr = 256 << 10
+
+// Only the explicit compiler package-execute JSON path receives a receipt budget.
+func commandStdoutLimit(binary, compiler string, args []string) int {
+	if binary == compiler && len(args) >= 3 && args[0] == "package" && args[1] == "execute" && args[2] == "--json" {
+		return maxReceiptStdout
+	}
+	return maxCommandStdout
+}
+
 type stream struct {
 	file   *os.File
 	data   bytes.Buffer
@@ -466,8 +481,8 @@ func (r *runner) run(name, binary, cwd string, args ...string) process {
 	}
 	ctx, cancel := context.WithTimeout(r.ctx, 90*time.Second)
 	defer cancel()
-	out := &stream{file: stdout, limit: 1 << 20, cancel: cancel}
-	diag := &stream{file: stderr, limit: 256 << 10, cancel: cancel}
+	out := &stream{file: stdout, limit: commandStdoutLimit(binary, r.compiler, args), cancel: cancel}
+	diag := &stream{file: stderr, limit: maxCommandStderr, cancel: cancel}
 	cmd := exec.CommandContext(ctx, binary, args...)
 	cmd.Dir = cwd
 	cmd.Env = cleanEnv()
@@ -538,7 +553,7 @@ func success(p process, name string) []byte {
 
 func preflight(r *runner, snapshots map[string][]byte) {
 	need(runtime.GOOS == "darwin" || runtime.GOOS == "linux", "supported platforms: macOS/Linux")
-	same(runtime.Version(), "go1.27.2", "oracle itself must be built with Go1.27.2")
+	same(runtime.Version(), "go1.27.3", "oracle itself must be built with Go1.27.3")
 	info, ok := debug.ReadBuildInfo()
 	need(ok, "oracle build metadata required")
 	found := false
@@ -551,13 +566,13 @@ func preflight(r *runner, snapshots map[string][]byte) {
 	}
 	need(found, "actual pinned httpguts dependency metadata required")
 	identity := object(decode(success(r.run("compiler-identity", r.compiler, r.root, "version", "--build", "--json"), "compiler-identity")))
-	for k, v := range map[string]any{"schema": "gooo/build-identity/v1", "language": "gooo", "version": "0.6.32-dev", "compiler_source_sha": revision, "source_status": "CLEAN_VCS", "vcs_revision": revision, "vcs_modified": "false", "native_go_required": "go1.27.2", "go_version": "go1.27.2", "build_info_observed": true} {
+	for k, v := range map[string]any{"schema": "gooo/build-identity/v1", "language": "gooo", "version": "0.6.37-dev", "compiler_source_sha": revision, "source_status": "CLEAN_VCS", "vcs_revision": revision, "vcs_modified": "false", "native_go_required": "go1.27.3", "go_version": "go1.27.3", "build_info_observed": true} {
 		same(identity[k], v, "compiler identity: "+k)
 	}
 	mod := object(identity["module"])
 	same(mod["path"], "github.com/kimjooyoon/meta-ontology-go", "compiler module")
 	version := strings.TrimSpace(string(success(r.run("go-version", r.goTool, r.root, "version"), "go-version")))
-	need(version == "go version go1.27.2 "+runtime.GOOS+"/"+runtime.GOARCH, "explicit Go tool must match oracle platform/version")
+	need(version == "go version go1.27.3 "+runtime.GOOS+"/"+runtime.GOARCH, "explicit Go tool must match oracle platform/version")
 	r.goVersion = version
 	goroot := strings.TrimSpace(string(success(r.run("go-root", r.goTool, r.root, "env", "GOROOT"), "go-root")))
 	for name, hash := range map[string]string{"src/net/http/fs.go": "sha256:21660cb61d17c258de99172683f9b41aca37d45c0af0556723f2a11179bdc45e", "src/net/textproto/textproto.go": "sha256:e4f0d94752345b5dec4fe7f4805531e8036a9cd44131d807cafa700dd5323901"} {
@@ -936,8 +951,8 @@ func execute(r *runner, index int, b batch, workspace string, rows []inputRow, s
 }
 
 func work() (code int) {
-	compiler := flag.String("compiler", "", "absolute existing clean839 Gooo compiler")
-	goTool := flag.String("go", "", "absolute existing Go1.27.2 binary")
+	compiler := flag.String("compiler", "", "absolute existing clean205896a Gooo compiler")
+	goTool := flag.String("go", "", "absolute existing Go1.27.3 binary")
 	out := flag.String("out", "", "new absolute output directory; existing paths refused")
 	mutation := flag.Bool("mutation-check", false, "after247 pass, require CRLF mismatch in Report first19 only")
 	flag.Parse()

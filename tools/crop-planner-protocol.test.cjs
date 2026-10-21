@@ -5,7 +5,7 @@ const normal = [...protocol.presets.partial];
 const output = { min_x: '0', min_y: '40', max_x: '200', max_y: '480', has_pixels: true };
 const reply = (inputs = normal, value = output) => JSON.stringify({ ok: true, inputs, output: value });
 const metadata = { schema: 'gooo/browser-crop-planner/v1', entry_id: protocol.modes.ordered.entryId, wasm_sha256: 'a'.repeat(64), wasm_bytes: 100,
-  source_revision: 'b'.repeat(40), source_dirty: false, compiler_revision: 'c'.repeat(40), go_version: 'go1.27.2',
+  source_revision: 'b'.repeat(40), source_dirty: false, compiler_revision: 'c'.repeat(40), go_version: 'go1.27.3',
   generated_sha256: 'd'.repeat(64), execution_sha256: 'e'.repeat(64), replay_sha256: 'f'.repeat(64), fixture_cases: 486 };
 
 test('all presets preserve eight original int64 strings, including reversed and extreme rectangles', () => {

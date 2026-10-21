@@ -32,7 +32,7 @@ remove accents or check confusable characters. It is not identifier validation.
 From this repository's root, with Git, a POSIX shell and Go toolchain selection:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 ./tools/bootstrap.sh
 go run ./cmd/gen-simple-fold --check

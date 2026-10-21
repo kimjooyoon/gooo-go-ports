@@ -114,7 +114,7 @@ async function runSmoke(directory) {
       assert.equal(runtime.projection_replayed, true); assert.equal(runtime.runtime_replayed, true); assert.equal(runtime.traces.length, rows.length);
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i], supplied = inputs.inputs[i], trace = runtime.traces[i]; keys(supplied, [inputKey]);
-        assert.equal(supplied[inputKey], unitsText(row.input_utf16)); assert.deepEqual(protocol.bindInputs([supplied[inputKey]]), [row.input]);
+        assert.equal(supplied[inputKey], row.input); assert.deepEqual(protocol.bindInputs([unitsText(row.input_utf16)]), [row.input]);
         assert.equal(trace.case_index, i); assert.equal(trace.deliveries.length, 1); const delivery = trace.deliveries[0]; keys(delivery, ['activity_id', 'input', 'actual', 'actual_fields']);
         assert.equal(delivery.activity_id, entry); assert.equal(delivery.input, row.input);
         keys(delivery.actual, fields); assert.deepEqual(protocol.validateOutput(delivery.actual, [row.input]), row.expected);

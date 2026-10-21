@@ -173,11 +173,18 @@ func headerAdditionLowerBody(index int, defs []headerAdditionDefinition) string 
 	}
 	return body
 }
+
+// Preserve the historical839 synthetic fixture expectation. Current inspection
+// supplies an independently selected compiler profile to WithIdentity.
 func headerAdditionPureCalls(defs []headerAdditionDefinition) (map[string]any, error) {
+	return headerAdditionPureCallsWithIdentity(defs, legacyPureCallIdentityProfile)
+}
+
+func headerAdditionPureCallsWithIdentity(defs []headerAdditionDefinition, ids pureCallIdentityProfile) (map[string]any, error) {
 	activities, sites := []any{}, []any{}
 	for _, i := range []int{5, 2, 4, 0, 1, 3} {
 		d := defs[i]
-		activities = append(activities, map[string]any{"activity": map[string]any{"package_path": d.Package, "activity": d.Declaration.Name, "lowered_name": d.Lowered}, "activity_id": decimalPayloadDerivedID(d.Namespace, d.Declaration.Name), "lowered_activity_id": decimalPayloadDerivedID("gooo_workspace", d.Lowered), "source": d.Source, "source_body_sha256": contentDigest([]byte(d.Declaration.Body))})
+		activities = append(activities, map[string]any{"activity": map[string]any{"package_path": d.Package, "activity": d.Declaration.Name, "lowered_name": d.Lowered}, "activity_id": ids.original(d.Namespace, d.Declaration.Name, d.Declaration.ID), "lowered_activity_id": ids.lowered(d.Lowered, d.Declaration.ID), "source": d.Source, "source_body_sha256": contentDigest([]byte(d.Declaration.Body))})
 	}
 	for _, e := range headerAdditionEdges {
 		caller, callee := defs[e.caller], defs[e.callee]
@@ -378,7 +385,11 @@ func inspectHeaderAdditionABI(raw []byte, s suite, identity expectedIdentity) er
 			return fmt.Errorf("addition exact source-derived lowered body/signature")
 		}
 	}
-	calls, err := headerAdditionPureCalls(defs)
+	ids, err := selectPureCallIdentityProfile(identity.CompilerRevision)
+	if err != nil {
+		return err
+	}
+	calls, err := headerAdditionPureCallsWithIdentity(defs, ids)
 	if err != nil || !decimalPayloadSame(p["pure_calls"], calls) {
 		return fmt.Errorf("addition six pure identities/five source call sites")
 	}

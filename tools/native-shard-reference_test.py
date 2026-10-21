@@ -35,7 +35,7 @@ class SyntheticFixture:
         self.index_path=self.root/'index.json';self.entries=[];self.source_bytes={};self.owners={}
         self.compiler=b'fake compiler bytes; never executed\n';(self.root/'.gooo').write_bytes(self.compiler)
         self.go={'bytes':15,'sha256':'a'*64};self.generated='package main\nfunc Fixture() int64 { return 1 }\n'
-        run={'repository':'fixture/unsigned','run_id':'1','attempt':1,'tested_commit':'1'*40,'tested_tree':'2'*40,'compiler_revision':H.REV,'go_version':'go1.27.2','workers':3}
+        run={'repository':'fixture/unsigned','run_id':'1','attempt':1,'tested_commit':'1'*40,'tested_tree':'2'*40,'compiler_revision':H.REV,'go_version':'go1.27.3','workers':3}
         pairs=[(R.ADDITION_PACKAGE,R.ADDITION_ACTIVITY),('go/unicode','SimpleFold'),('go/image/color','RGBToYCbCr'),('go/image/color','YCbCrToRGB'),*[( 'go/unicode',name) for name in ('To','ToUpper','ToLower','ToTitle')]]
         suites=[];workspaces=[];sources={}
         for original,(package,activity) in enumerate(pairs):
@@ -53,7 +53,7 @@ class SyntheticFixture:
             self.entries.append({'source':name,'id':entry_id,'inputs':['gooo://std/integer']*arity,'output':'gooo://std/integer'})
         self.plan={'schema':'gooo/native-ci-shard-plan/v1','plan_sha256':'sha256:'+'b'*64,'contract_sha256':'sha256:'+'c'*64,'run':run,'profiles':{'case':'fixture','workspace':'fixture'},'sources':sources,'suites':suites,'workspaces':workspaces,'shards':R.assignments(suites,1),'cases':8,'batches':8}
         self.partial={'schema':'gooo/native-ci-shard-partial/v1','plan_sha256':self.plan['plan_sha256'],'run':run,'index':0,'namespace':R.namespace(0),'sources':sources,'joined':True,'state':'SUCCEEDED','suites':[]}
-        self.tools={'schema':'gooo/native-shard-tool-observations/v1','plan_sha256':self.plan['plan_sha256'],'run':run,'index':0,'goos':'linux','goarch':'amd64','go_version':'go1.27.2','before':{'compiler':{'bytes':len(self.compiler),'sha256':R.digest(self.compiler)[7:]},'go':self.go,'verifier':{'bytes':11,'sha256':'d'*64}},'joined':True,'cache_close_succeeded':True,'scope':'Invented fixture observations; not actual waited native work.'}
+        self.tools={'schema':'gooo/native-shard-tool-observations/v1','plan_sha256':self.plan['plan_sha256'],'run':run,'index':0,'goos':'linux','goarch':'amd64','go_version':'go1.27.3','before':{'compiler':{'bytes':len(self.compiler),'sha256':R.digest(self.compiler)[7:]},'go':self.go,'verifier':{'bytes':11,'sha256':'d'*64}},'joined':True,'cache_close_succeeded':True,'scope':'Invented fixture observations; not actual waited native work.'}
         self.tools['after']=copy.deepcopy(self.tools['before'])
         accounting={'status':'OBSERVED','goos':'linux','scope':'waited-command-accounting','user_cpu_ns':1,'system_cpu_ns':0,'maxrss_raw':2,'maxrss_unit':'KiB','maxrss_bytes':2048}
         self.commands={'schema':'gooo/native-shard-command-observations/v1','plan_sha256':self.plan['plan_sha256'],'run':run,'index':0,'namespace':R.namespace(0),'sources':sources,'goos':'linux','command_resources_schema':'gooo/native-command-resources/v1','joined':True,'complete':True,'state':'WAIT_ACCOUNTING_COMPLETE_NATIVE_UNACCEPTED','failure':'','native_acceptance':False,'producer_authenticated':False,'suites':[],'scope':'Invented synthetic wait records only.'}
@@ -68,21 +68,21 @@ class SyntheticFixture:
             delivery={'activity_id':entry['id'],'passed':True,'actual':1,'expected':1}
             if len(entry['inputs']) == 1:delivery['input']=0
             else:delivery['inputs']=[{'port':'input'+str(i),'entity_id':'gooo://std/integer','value':i} for i in range(len(entry['inputs']))]
-            receipt={'schema':'gooo/workspace-body-execution-receipt/v1','decision':'PASS','manifest':producer,'manifest_digest':metadata['manifest_sha256'],'cases_digest':metadata['cases_sha256'],'result':{'program':{'entry':manifest['entry'],'workspace_image':{'packages':[{'path':suite['package'],'sources':[{'filename':suite['source_paths'][0],'source_digest':workspace['sources'][0]['identity']['Digest']}],'exports':[{'name':suite['activity'],'kind':'activity','id':entry['id'],'input_types':entry['inputs']}]}]}},'runtime':{'schema':'gooo/body-composition-runtime/v1','stage':'COMPLETE','producer_source_sha':H.REV,'go_version':'go version go1.27.2 linux/amd64','go_tool_sha256':'sha256:'+self.go['sha256'],'go_tool_selection':'explicit','model_calls':0,'finite_total':1,'finite_passed':1,'projection_replayed':True,'runtime_replayed':True,'generated_sha256':metadata['generated_sha256'],'traces':[{'case_index':0,'deliveries':[delivery]}]},'composition':{'source':self.generated,'generated_sha256':metadata['generated_sha256'],'steps':[{'generation':{'report':{'activity_id':entry['id']}}}]}}}
+            receipt={'schema':'gooo/workspace-body-execution-receipt/v1','decision':'PASS','manifest':producer,'manifest_digest':metadata['manifest_sha256'],'cases_digest':metadata['cases_sha256'],'result':{'program':{'entry':manifest['entry'],'workspace_image':{'packages':[{'path':suite['package'],'sources':[{'filename':suite['source_paths'][0],'source_digest':workspace['sources'][0]['identity']['Digest']}],'exports':[{'name':suite['activity'],'kind':'activity','id':entry['id'],'input_types':entry['inputs']}]}]}},'runtime':{'schema':'gooo/body-composition-runtime/v1','stage':'COMPLETE','producer_source_sha':H.REV,'go_version':'go version go1.27.3 linux/amd64','go_tool_sha256':'sha256:'+self.go['sha256'],'go_tool_selection':'explicit','model_calls':0,'finite_total':1,'finite_passed':1,'projection_replayed':True,'runtime_replayed':True,'generated_sha256':metadata['generated_sha256'],'traces':[{'case_index':0,'deliveries':[delivery]}]},'composition':{'source':self.generated,'generated_sha256':metadata['generated_sha256'],'steps':[{'generation':{'report':{'activity_id':entry['id']}}}]}}}
             execution=raw_json(receipt);replay=copy.deepcopy(receipt);replay['replayed_from_sha256']=R.digest(execution);replay['result']['replay']={'schema':'gooo/workspace-body-replay/v1','model_calls':0};replay=raw_json(replay)
             metadata.update(execution_sha256=R.digest(execution),replay_sha256=R.digest(replay),replayed_from=R.digest(execution))
-            reference={'batch':metadata,'workspace':self.file(base+'/gooo.workspace.json',raw_json(manifest)),'cases':self.file(base+'/cases.json',case_raw),'execution':self.file(base+'/execution.json',execution),'replay':self.file(base+'/replay.json',replay),'sources':[{'name':suite['source_paths'][0],'file':self.file(base+'/'+suite['source_paths'][0],self.source_bytes[suite['source_paths'][0]])}],'producer_manifest_path':producer,'go_version':'go version go1.27.2 linux/amd64','go_binary':self.go}
+            reference={'batch':metadata,'workspace':self.file(base+'/gooo.workspace.json',raw_json(manifest)),'cases':self.file(base+'/cases.json',case_raw),'execution':self.file(base+'/execution.json',execution),'replay':self.file(base+'/replay.json',replay),'sources':[{'name':suite['source_paths'][0],'file':self.file(base+'/'+suite['source_paths'][0],self.source_bytes[suite['source_paths'][0]])}],'producer_manifest_path':producer,'go_version':'go version go1.27.3 linux/amd64','go_binary':self.go}
             report_refs=[];reports=[];kind=R.exhaustive_kind(suite)
             if kind:
                 report=R.exhaustive_expected(kind,metadata['generated_sha256']);report_sha=R.digest(R.go_json(report,sorted_map=True));reports=[{'kind':kind,'report':report,'sha256':report_sha}]
                 directory='simple-fold-exhaustive' if kind == 'simple-fold' else kind.replace('/','-exhaustive-');prefix=R.namespace(0)+'/suite-%04d/'%original+directory+'/'
                 module,test=('gooo-simple-fold-exhaustive','TestSimpleFoldExhaustive') if kind == 'simple-fold' else (('gooo-ycbcr-exhaustive','TestYCbCrExhaustive') if kind.startswith('ycbcr/') else ('gooo-case-mapping-exhaustive','TestCaseMappingExhaustive'))
-                files=[('native/generated.go',self.generated.encode()),('native/exhaustive_test.go',('func '+test+'(t *testing.T) { /* '+metadata['generated_sha256']+' */ }\n').encode()),('native/go.mod',('module '+module+'\n\ngo 1.27.2\n').encode()),('native-test.txt',('--- PASS: '+test+' (0.00s)\nPASS\n').encode()),('exhaustive.json',raw_json(report))]
+                files=[('native/generated.go',self.generated.encode()),('native/exhaustive_test.go',('func '+test+'(t *testing.T) { /* '+metadata['generated_sha256']+' */ }\n').encode()),('native/go.mod',('module '+module+'\n\ngo 1.27.3\n').encode()),('native-test.txt',('--- PASS: '+test+' (0.00s)\nPASS\n').encode()),('exhaustive.json',raw_json(report))]
                 report_refs=[{'kind':kind,'report_sha256':report_sha,'files':[self.file(prefix+name,raw) for name,raw in files]}]
             self.partial['suites'].append({'original_index':original,'package':suite['package'],'activity':suite['activity'],'state':'VERIFIED','error':'','batches':[metadata],'exhaustive':reports})
             self.commands['suites'].append({'original_index':original,'state':'VERIFIED','batches':[{'index':0,'namespace':base,'verified_prefix':True,'command_resources':{'execute':copy.deepcopy(accounting),'replay':copy.deepcopy(accounting)}}]})
             self.index['suites'].append({'original_index':original,'shard_index':0,'package':suite['package'],'activity':suite['activity'],'batches':[reference],'exhaustive':report_refs})
-        self.compiler_identity={'schema':'gooo/build-identity/v1','version':'fixture-version','compiler_source_sha':H.REV,'vcs_revision':H.REV,'source_status':'CLEAN_VCS','vcs_modified':'false','go_version':'go1.27.2','native_go_required':'go1.27.2'}
+        self.compiler_identity={'schema':'gooo/build-identity/v1','version':'fixture-version','compiler_source_sha':H.REV,'vcs_revision':H.REV,'source_status':'CLEAN_VCS','vcs_modified':'false','go_version':'go1.27.3','native_go_required':'go1.27.3'}
         self.sync()
 
     def file(self,name,raw):
@@ -94,11 +94,11 @@ class SyntheticFixture:
         self.index['shards']=[shard];self.index_path.write_bytes(raw_json(self.index))
 
     def validate_fixture_plan(self,root,reader,host,plan):
-        # Deliberately replace ONLY the current full305-source/82-suite loading.
+        # Deliberately replace ONLY the current full310-source/82-suite loading.
         # The real production validate_plan remains mandatory outside this test.
         R.need(R.equal(plan,self.plan),'fixture plan identity')
         for name,raw in self.source_bytes.items():R.need(reader.read(root/name) == raw,'synthetic original source drift')
-        return plan,self.owners,self.source_bytes,self.entries,{'compiler_version':'fixture-version','compiler_revision':H.REV,'go_version':'go1.27.2'}
+        return plan,self.owners,self.source_bytes,self.entries,{'compiler_version':'fixture-version','compiler_revision':H.REV,'go_version':'go1.27.3'}
 
     def read(self):
         with mock.patch.object(R,'load_host',return_value=H),mock.patch.object(R,'validate_plan',side_effect=self.validate_fixture_plan):

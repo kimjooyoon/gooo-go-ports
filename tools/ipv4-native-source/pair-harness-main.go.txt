@@ -97,7 +97,7 @@ func checkBoundary(b boundary) error {
 	if err != nil {
 		return err
 	}
-	if executable != b.Binary.Path || b.GoTool.Path != filepath.Join(runtime.GOROOT(), "bin", "go") || runtime.Version() != "go1.27.2" {
+	if executable != b.Binary.Path || b.GoTool.Path != filepath.Join(runtime.GOROOT(), "bin", "go") || runtime.Version() != "go1.27.3" {
 		return fmt.Errorf("actual executable/toolchain binding")
 	}
 	names := []string{"go.mod", "main.go", "support.go", "harness_test.go", "generated.go"}

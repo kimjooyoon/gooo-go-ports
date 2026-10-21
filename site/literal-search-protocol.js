@@ -8,7 +8,7 @@
   'use strict';
   const MAX_BYTES = 1024;
   const MAX_JSON_SOURCE = 8192;
-  const compilerRevision = '83928fa4538245abe33b08549da47f8cbdc50ed2';
+  const compilerRevision = '205896a413e5dea92366309c35ae85e542d055f6';
   const fields = Object.freeze(['text', 'needle', 'first_byte_offset', 'found', 'non_overlapping_count', 'text_byte_length', 'needle_byte_length']);
   const sha = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
   const revision = value => typeof value === 'string' && /^[a-f0-9]{40}$/.test(value);
@@ -128,7 +128,7 @@
         metadata.entry_id !== 'gooo://go-ports/examples/literal-text-report/report' ||
         metadata.result_entity_id !== 'gooo://go-ports/examples/literal-text-report/result' ||
         JSON.stringify(metadata.input_entity_ids) !== JSON.stringify(['gooo://std/text', 'gooo://std/text']) ||
-        metadata.compiler_revision !== compilerRevision || metadata.compiler_version !== '0.6.32-dev' || metadata.go_version !== 'go1.27.2' ||
+        metadata.compiler_revision !== compilerRevision || metadata.compiler_version !== '0.6.37-dev' || metadata.go_version !== 'go1.27.3' ||
         !revision(metadata.source_revision) || typeof metadata.source_dirty !== 'boolean' ||
         !Number.isSafeInteger(metadata.wasm_bytes) || metadata.wasm_bytes < 1 || metadata.wasm_bytes > 32 * 1024 * 1024 ||
         ['native_cases', 'fixture_cases', 'fixture_rejections'].some(key => !Number.isSafeInteger(metadata[key]) || metadata[key] < 1) ||

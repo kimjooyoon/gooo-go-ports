@@ -17,8 +17,8 @@ jobs:
       GOTOOLCHAIN: local
       GOWORK: 'off'
       EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
-      PREVIEW_BASE: b19b5517f8e9716affb0f75fd07045b8217cdaf1
-      PREVIEW_TREE: 097a39e64abc0f159c55cdc8dce1d12025af9b54
+      PREVIEW_BASE: 48115d69c853db6e314a4fed9296132b7ff3daf4
+      PREVIEW_TREE: 2c6f253c9db78a68d13a5eaac8f944364db2d30d
     defaults:
       run:
         shell: bash
@@ -30,7 +30,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
-          go-version: '1.27.2'
+          go-version: '1.27.3'
           cache: false
       - name: Prepare a source-bound inactive proposal
         run: |
@@ -267,8 +267,8 @@ jobs:
           if [ "$generator_state" = SUCCEEDED ]; then
             test "$baseline_generation" != "$observed_generation"
             jq -e '.schema == "gooo/api-policy-revision-generation/v1" and
-              .compiler_source_sha == "83928fa4538245abe33b08549da47f8cbdc50ed2" and
-              (.assets | length) == 37' observed-generation.json
+              .compiler_source_sha == "205896a413e5dea92366309c35ae85e542d055f6" and
+              (.assets | length) == 38' observed-generation.json
             jq -S '.assets | keys' baseline-generation.json > baseline-asset-paths.json
             jq -S '.assets | keys' observed-generation.json > observed-asset-paths.json
             cmp baseline-asset-paths.json observed-asset-paths.json

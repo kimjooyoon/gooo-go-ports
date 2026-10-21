@@ -24,7 +24,8 @@ func main() {
 			return literalFailure("Expected a text string and a phrase string.")
 		}
 		// syscall/js uses TextEncoder: unpaired UTF-16 surrogates become U+FFFD,
-		// matching the native JSON decoder. The app retains original code units.
+		// an explicit browser transport rule. Native comparisons encode that bound
+		// scalar Text; raw unpaired JSON escapes are refused by the compiler.
 		text, needle := args[0].String(), args[1].String()
 		if !utf8.ValidString(text) || !utf8.ValidString(needle) || len(text) > 1024 || len(needle) > 1024 {
 			return literalFailure("Each decoded input must fit in 1,024 UTF-8 bytes.")

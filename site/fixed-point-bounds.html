@@ -139,7 +139,7 @@
       <p class="eyebrow">TECHNICAL NOTE / NATIVE EXAMPLE</p>
       <h1 id="note-title">Rounding subpixel bounds with <code>fixed.Int26_6</code></h1>
       <p class="lede">A raw <code>Int26_6</code> value of 32 represents half a pixel. Converting its bounds to integer pixels requires both an arithmetic contract and an empty-selection rule.</p>
-      <p>This note uses <a href="https://github.com/golang/image/blob/b06f1de3f4900ff828b8f114c37eb9ea10dfed90/math/fixed/fixed.go#L19-L52">x/image revision <code>b06f1de3…</code></a> and Go 1.27.2. The original source defines <code>Int26_6</code> as signed int32, with 64 raw units per pixel. Its <code>Ceil</code> adds 63 in that type, then shifts right by six.</p>
+      <p>This note uses <a href="https://github.com/golang/image/blob/b06f1de3f4900ff828b8f114c37eb9ea10dfed90/math/fixed/fixed.go#L19-L52">x/image revision <code>b06f1de3…</code></a> and a recorded Go 1.27.2 reference table. Current source builds use Go 1.27.3. The original source defines <code>Int26_6</code> as signed int32, with 64 raw units per pixel. Its <code>Ceil</code> adds 63 in that type, then shifts right by six.</p>
       <h2>The upper 63 raw values wrap</h2>
       <p>At raw 2147483584, <code>Ceil</code> returns 33554431. At 2147483585, adding 63 wraps to −2147483648 before the shift, producing −33554432. Every raw value through 2147483647 has that same ceiling result. Replacing the addition with unrestricted int64 arithmetic would change the API's behavior.</p>
       <div class="table-scroll" role="region" aria-label="Fixed-point reference results" tabindex="0"><table>

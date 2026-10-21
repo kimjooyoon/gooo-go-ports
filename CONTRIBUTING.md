@@ -186,19 +186,19 @@ executable changes.
 포트와 실행 동작 변경에 대한 전체 검증 목록으로 유지합니다.
 
 Run these commands from the repository root on macOS or Linux in the same shell,
-with Python 3 and Go toolchain selection support or Go 1.27.2. The selected Go
+with Python 3 and Go toolchain selection support or Go 1.27.3. The selected Go
 toolchain and pinned compiler may be downloaded on the first run. Stop if a
 command fails. Repeat the exports when continuing in a new shell.
 
 macOS 또는 Linux의 저장소 루트에서 Python 3와 도구 체인 선택을 지원하는 Go
-또는 Go 1.27.2를 사용해 같은 셸에서 순서대로 실행합니다. 첫 실행은 선택한 Go
+또는 Go 1.27.3를 사용해 같은 셸에서 순서대로 실행합니다. 첫 실행은 선택한 Go
 도구 체인과 고정 컴파일러를 다운로드할 수 있습니다. 명령이 실패하면 중단하고,
 새 셸에서 이어갈 때는 두 환경변수를 다시 설정합니다.
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
-test "$(go env GOVERSION)" = go1.27.2
+test "$(go env GOVERSION)" = go1.27.3
 ./tools/bootstrap.sh
 test -z "$(gofmt -l cmd)"
 go vet ./...

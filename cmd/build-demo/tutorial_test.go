@@ -55,8 +55,13 @@ func TestTutorialManualAndTransportBoundaries(t *testing.T) {
 			t.Fatal("missing integer", score)
 		}
 	}
-	if !strings.Contains(string(raw), `\ud800`) {
-		t.Fatal("raw escaped native surrogate lost")
+	if strings.Contains(string(raw), `\ud800`) || strings.Contains(string(raw), `\udfff`) {
+		t.Fatal("native comparison must encode bound scalar Text, not raw malformed escapes")
+	}
+	for _, row := range f.Cases {
+		if row.Name == "lone-high" && (row.Inputs[1] != "\ufffd" || !reflect.DeepEqual(row.LabelUTF16, []uint16{0xd800})) {
+			t.Fatal("original browser units and bound native Text must remain separate")
+		}
 	}
 	documented, err := tutorialRows(cropTestRead(t, tutorialInputs))
 	if err != nil || len(documented) != 4 {
@@ -87,7 +92,7 @@ func TestTutorialRowsRejectMalformedBindings(t *testing.T) {
 // smoke.cjs additionally checks the actual native receipts and shipped Wasm.
 func tutorialEvidenceFixture(t *testing.T) ([]byte, lockfile, []byte, []byte, map[string][]byte) {
 	t.Helper()
-	lock := lockfile{CompilerRevision: strings.Repeat("a", 40), GoVersion: "go1.27.2"}
+	lock := lockfile{CompilerRevision: strings.Repeat("a", 40), GoVersion: "go1.27.3"}
 	manifest, inputs := cropTestRead(t, tutorialManifest), cropTestRead(t, tutorialInputs)
 	rows, err := tutorialRows(inputs)
 	if err != nil {
@@ -124,7 +129,7 @@ func tutorialEvidenceFixture(t *testing.T) ([]byte, lockfile, []byte, []byte, ma
 	raw := testJSON(t, map[string]any{"schema": "gooo/workspace-body-execution-receipt/v1", "decision": "OBSERVED", "manifest_digest": "sha256:" + digest(manifest), "inputs_digest": "sha256:" + digest(inputs), "result": map[string]any{
 		"program":     map[string]any{"entry": map[string]any{"package_path": "app/report", "activity": "Describe", "lowered_name": lowered}, "workspace_image": map[string]any{"packages": packages}, "lowered_gooo_source": "fixture lowered source"},
 		"composition": map[string]any{"stage": "COMPLETE", "gooo_source": "fixture lowered source", "original_source_sha256": "sha256:" + digest([]byte("fixture lowered source")), "selected_source_sha256": "sha256:" + digest([]byte("fixture lowered source")), "source": source, "generated_sha256": sha, "plan": map[string]any{"entry_activity": lowered, "record_types": []any{layout}, "activities": []any{map[string]any{"name": lowered, "id": tutorialActivity, "go_function": "GoooComposedActivity0", "output_entity_id": tutorialResult, "inputs": []any{map[string]any{"port": "input0", "type": "Integer", "entity_id": "urn:gooo:type:integer", "from": -1}, map[string]any{"port": "input1", "type": "Text", "entity_id": "urn:gooo:type:string", "from": -1}}}}}, "steps": []any{map[string]any{"generation": map[string]any{"report": map[string]any{"activity_id": tutorialActivity, "compiler_source_sha": lock.CompilerRevision}}}}},
-		"runtime":     map[string]any{"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "original_source_sha256": "sha256:" + digest([]byte("fixture lowered source")), "selected_source_sha256": "sha256:" + digest([]byte("fixture lowered source")), "producer_source_sha": lock.CompilerRevision, "go_version": "go version go1.27.2 darwin/arm64", "generated_sha256": sha, "model_calls": 0, "finite_total": 0, "finite_passed": 0, "projection_replayed": true, "runtime_replayed": true, "traces": traces},
+		"runtime":     map[string]any{"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "original_source_sha256": "sha256:" + digest([]byte("fixture lowered source")), "selected_source_sha256": "sha256:" + digest([]byte("fixture lowered source")), "producer_source_sha": lock.CompilerRevision, "go_version": "go version go1.27.3 darwin/arm64", "generated_sha256": sha, "model_calls": 0, "finite_total": 0, "finite_passed": 0, "projection_replayed": true, "runtime_replayed": true, "traces": traces},
 	}})
 	return raw, lock, manifest, inputs, sources
 }

@@ -18,8 +18,8 @@ This deterministic heuristic is not a runtime estimate.
 An independently trusted context file supplies `repository`, `run_id`,
 `attempt`, `tested_commit`, `tested_tree`, `compiler_revision`, `go_version`
 and `workers`. The checkout must be clean and match that commit and tree.
-Current pins require `go1.27.2`, compiler revision
-`83928fa4538245abe33b08549da47f8cbdc50ed2`, and three workers per planned runner.
+Current pins require `go1.27.3`, compiler revision
+`205896a413e5dea92366309c35ae85e542d055f6`, and three workers per planned runner.
 Run ID, attempt and repository are caller assertions: reading a JSON file does
 not authenticate GitHub or an artifact's producer. A future CI integration
 must obtain and cross-check those values from trusted run/job metadata.
@@ -154,7 +154,7 @@ lower indices within a failed shard must have completed first.
 ## Explicit native execution and raw receipt inspection
 
 These experimental commands require the same clean, reviewed source and plan.
-Use Go1.27.2 and the pinned compiler. Each output directory must be fresh, and
+Use Go1.27.3 and the pinned compiler. Each output directory must be fresh, and
 its parent must already exist. For each planned index, run separately:
 
 ```sh

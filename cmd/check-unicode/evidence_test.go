@@ -7,8 +7,8 @@ import (
 )
 
 func TestCompilerIdentityRejections(t *testing.T) {
-	lock := lockfile{GoVersion: "go1.27.2", CompilerRevision: "pinned", CompilerVersion: "0.6.24-dev"}
-	valid := buildIdentity{"gooo/build-identity/v1", "pinned", "0.6.24-dev", "go1.27.2", "go1.27.2", "false", "CLEAN_VCS"}
+	lock := lockfile{GoVersion: "go1.27.3", CompilerRevision: "pinned", CompilerVersion: "0.6.24-dev"}
+	valid := buildIdentity{"gooo/build-identity/v1", "pinned", "0.6.24-dev", "go1.27.3", "go1.27.3", "false", "CLEAN_VCS"}
 	if err := checkCompiler(marshal(t, valid), lock); err != nil {
 		t.Fatal(err)
 	}
@@ -130,7 +130,7 @@ func TestGeneratedASTRejectsWrongEntry(t *testing.T) {
 }
 
 func TestExhaustiveReportMustMatchObservedScope(t *testing.T) {
-	r := exhaustiveReport{"gooo/unicode-exhaustive-native/v1", "go1.27.2", "17.0.0", 1114112, 2228224, 4456448, 8, 16, 32, 8, 16, 32, 0}
+	r := exhaustiveReport{"gooo/unicode-exhaustive-native/v1", "go1.27.3", "17.0.0", 1114112, 2228224, 4456448, 8, 16, 32, 8, 16, 32, 0}
 	if err := validateExhaustive(r); err != nil {
 		t.Fatal(err)
 	}
@@ -161,7 +161,7 @@ func marshal(t *testing.T, v any) []byte {
 func fixture(t *testing.T) (receipt, evidenceBinding) {
 	t.Helper()
 	source := "package main\ntype Reply struct { Domain bool `json:\"in_rune_domain\"`; Start bool `json:\"can_start\"`; Continue bool `json:\"can_continue\"`; Digit bool `json:\"is_decimal_digit\"` }\nfunc Entry(input int64) Reply { letter := EntryCall0(input); digit := EntryCall1(input); return Reply{true,letter,letter||digit,digit} }\nfunc EntryCall0(input int64) bool { return false }\nfunc EntryCall1(input int64) bool { return false }\n"
-	b := evidenceBinding{Lock: lockfile{GoVersion: "go1.27.2", CompilerRevision: "pinned"}, ManifestDigest: "sha256:manifest", CasesDigest: "sha256:cases", Sources: map[string]sourceBinding{"port.gooo": {"go/unicode", "sha256:port"}, "app.gooo": {"app/identifier-rune", "sha256:app"}}, Packages: map[string]bool{"go/unicode": true, "app/identifier-rune": true}, Cases: []finiteCase{{map[string]int64{entryKey: 4294967361}, map[string]classification{entryKey: {}}}}}
+	b := evidenceBinding{Lock: lockfile{GoVersion: "go1.27.3", CompilerRevision: "pinned"}, ManifestDigest: "sha256:manifest", CasesDigest: "sha256:cases", Sources: map[string]sourceBinding{"port.gooo": {"go/unicode", "sha256:port"}, "app.gooo": {"app/identifier-rune", "sha256:app"}}, Packages: map[string]bool{"go/unicode": true, "app/identifier-rune": true}, Cases: []finiteCase{{map[string]int64{entryKey: 4294967361}, map[string]classification{entryKey: {}}}}}
 	export := func(name, id, output string) map[string]any {
 		return map[string]any{"name": name, "kind": "activity", "id": id, "input_types": []string{"gooo://std/integer"}, "output_type": output}
 	}
@@ -177,7 +177,7 @@ func fixture(t *testing.T) (receipt, evidenceBinding) {
 			map[string]any{"path": "app/identifier-rune", "exports": []any{export("Classify", entryID, replyID)}, "sources": []any{map[string]string{"filename": "app.gooo", "source_digest": "sha256:app"}}},
 		}}},
 		"composition": map[string]any{"stage": "COMPLETE", "source": source, "generated_sha256": sha([]byte(source)), "plan": map[string]any{"activities": []any{map[string]string{"id": entryID, "go_function": "Entry", "input_entity_id": "gooo://std/integer", "output_entity_id": replyID}}, "record_types": []any{map[string]any{"id": replyID, "go_name": "Reply", "fields": fields}}}, "steps": []any{map[string]any{"generation": map[string]any{"report": map[string]any{"activity_id": entryID, "compiler_source_sha": "pinned", "call_closure": map[string]any{"activities": []any{map[string]string{"activity_id": letterID}, map[string]string{"activity_id": digitID}}, "edges": []any{map[string]any{"caller_id": entryID, "callee_id": letterID, "ordinal": 0}, map[string]any{"caller_id": entryID, "callee_id": digitID, "ordinal": 1}}}}}}}},
-		"runtime":     map[string]any{"stage": "COMPLETE", "producer_source_sha": "pinned", "go_version": "go version go1.27.2 darwin/arm64", "generated_sha256": sha([]byte(source)), "model_calls": 0, "finite_passed": 1, "finite_total": 1, "projection_replayed": true, "runtime_replayed": true, "traces": []any{map[string]any{"case_index": 0, "deliveries": []any{map[string]any{"activity_id": entryID, "input": int64(4294967361), "actual": classification{}, "expected": classification{}, "actual_fields": actual, "passed": true}}}}},
+		"runtime":     map[string]any{"stage": "COMPLETE", "producer_source_sha": "pinned", "go_version": "go version go1.27.3 darwin/arm64", "generated_sha256": sha([]byte(source)), "model_calls": 0, "finite_passed": 1, "finite_total": 1, "projection_replayed": true, "runtime_replayed": true, "traces": []any{map[string]any{"case_index": 0, "deliveries": []any{map[string]any{"activity_id": entryID, "input": int64(4294967361), "actual": classification{}, "expected": classification{}, "actual_fields": actual, "passed": true}}}}},
 	}}
 	var e receipt
 	if err := json.Unmarshal(marshal(t, m), &e); err != nil {

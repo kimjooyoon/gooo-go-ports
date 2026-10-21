@@ -1,11 +1,11 @@
 {
   "schema": "gooo/go-ports-upstream/v1",
-  "go_version": "go1.27.2",
+  "go_version": "go1.27.3",
   "go_repository": "https://github.com/golang/go",
   "go_revision": "022c8636110ebac86a9b88724cda168ed713c21f",
   "compiler_repository": "https://github.com/kimjooyoon/meta-ontology-go",
-  "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
-  "compiler_version": "0.6.32-dev",
+  "compiler_revision": "205896a413e5dea92366309c35ae85e542d055f6",
+  "compiler_version": "0.6.37-dev",
   "source_sha256": {
     "src/image/color/color.go": "03511ed250d0b4dd20605d5dc3465164e559033a6ff7e5cd8ac89d2e19c3ab6c",
     "src/image/draw/draw.go": "24f42de1373014deefce87d4dd02856010ac8d385c4e61eb0c52a1a1273b0207",
@@ -749,7 +749,7 @@
       "source": "examples/ipv4-rule-pair/main.gooo",
       "source_sha256": "f895b5bb458bfcd28fb4c46b2da529ee60bf81b0cff737634d259afa56c852c6",
       "contract": "examples/ipv4-rule-pair/contract.json",
-      "contract_sha256": "864c62caa16e4b900cad4bc7579e35cd56473f618a9b8be9151109ed7d218891",
+      "contract_sha256": "7ea9cf058641000710c4dfe1f00b3fcf40939cb4a99360c2781a95d719adb515",
       "workspace": "ipv4-rule-pair.workspace.json",
       "entry": "app/ipv4-rule-pair:Report",
       "license": "LICENSE",
@@ -780,7 +780,7 @@
       "source": "examples/payload-admission/main.gooo",
       "source_sha256": "0efa9428ac4d2ddb7e20ec6234a14a9570b215df38bee1afe770ebeb4a52f772",
       "contract": "examples/payload-admission/contract.json",
-      "contract_sha256": "1649d05fc5a4346c8066d41190f854bceeb42a82e8ab8ec72c71ea71bee4743b",
+      "contract_sha256": "668b4d1012b3a59aa58788f26559c95c1fe8f45298d5bf0fee1c0bd9ad62dfd0",
       "workspace": "payload-admission.workspace.json",
       "entry": "app/payload-admission:Report",
       "license": "LICENSE",
@@ -818,7 +818,7 @@
       "activity_id": "gooo://diagnostic-header-addition/assess/v1",
       "workspace": "diagnostic-header-addition.workspace.json",
       "contract": "examples/diagnostic-header-addition/contract.json",
-      "contract_sha256": "a933b51114c2df888cfc52db4ae4243556bbd0eeeeca7af7d83b080a0ad89101",
+      "contract_sha256": "b9fc9f6bcdbb72f3ed69463ce38282ef3176eabe18219f9463e5bf1a85588f6a",
       "input_corpus": "examples/diagnostic-header-addition/corpus.json",
       "input_corpus_sha256": "6a2c688b2af7fb2d032d794b6a2cbab4d42aae3969a054001965ef559c1b970f",
       "reference_cases": 50,
@@ -917,7 +917,7 @@
       "activity_id": "gooo://go-ports/examples/path-alias-facts/report/v1",
       "workspace": "path-alias-facts.workspace.json",
       "contract": "examples/path-alias-facts/contract.json",
-      "contract_sha256": "54e31e485d1fb0ac9efe8d0eca81aa2db5709f4fe871b018ca9c4afd51430c19",
+      "contract_sha256": "7d6010c18c4d2bc743c5e4a6390a7dd85873493f7f0714a05db22b72a4017caa",
       "input_corpus": "examples/path-alias-facts/corpus-120.json",
       "input_corpus_sha256": "31999e8ce4fa75665f21180dd5cbb2ede3bf51179fefb1fc23c2eba59610029e",
       "reference_cases": 120,
@@ -945,7 +945,7 @@
       "activity_id": "gooo://go-ports/examples/header-field-facts/report/v1",
       "workspace": "header-field-facts.workspace.json",
       "contract": "examples/header-field-facts/contract.json",
-      "contract_sha256": "2c217e71bab3dd8682a3b0d8ddf311af7495af5e336ea51617e303458a5cc999",
+      "contract_sha256": "fc41f181b076fca165a478bbd6367926572a66cea368962484bc67bdfbf884fd",
       "input_corpus": "examples/header-field-facts/corpus.json",
       "input_corpus_sha256": "16d88045a78fe43f239f7b22ad12635a852529abb74733aa82b5073fdd892053",
       "reference_cases": 476,
@@ -974,7 +974,7 @@
       "activity_id": "gooo://canonical-header-key/report/v1",
       "workspace": "canonical-header-key-report.workspace.json",
       "contract": "examples/canonical-header-key/contract.json",
-      "contract_sha256": "d4753ff7fee5d0dd33a438bd9463f6152478c9097ff9ce3093c84107b12931b8",
+      "contract_sha256": "672daf5d2e9608c60fcf4a108e13805f9336d774bb576bc439b93f0397a0d57f",
       "input_corpus": "examples/canonical-header-key/corpus.json",
       "input_corpus_sha256": "e5deb0c69d9b7ae99cfb6ed91ed6a57449d616e45cb04fb38f5ed3dbbe128aa1",
       "reference_cases": 1059,
@@ -1028,6 +1028,12 @@
       "compiler_version": "0.6.36-dev",
       "decision_runtime_version": "v0.2.51-experimental",
       "go_version": "go1.27.2"
+    },
+    "source_inspection037": {
+      "compiler_revision": "205896a413e5dea92366309c35ae85e542d055f6",
+      "compiler_version": "0.6.37-dev",
+      "decision_runtime_version": "v0.2.51-experimental",
+      "go_version": "go1.27.3"
     }
   }
 }

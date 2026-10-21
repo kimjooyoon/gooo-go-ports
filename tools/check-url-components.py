@@ -27,7 +27,7 @@ def sibling(name, path):
 
 
 H = sibling("url_component_owned_commands", Path(__file__).with_name("check-header-addition-host.py"))
-REV = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+REV = "205896a413e5dea92366309c35ae85e542d055f6"
 PACKAGE = "app/url-context-facts"
 ENTRY = PACKAGE + ":Report"
 AID = "gooo://url-context-facts/report/v1"
@@ -363,10 +363,10 @@ def main(argv=None):
                    GOOO_LAYA_URL="", GOOO_LAYA_API_KEY="")
         runner = H.OwnedCommands(out, work, root, pins, env)
         go_version = runner.call("go-version", [go, "version"], 15).decode().strip()
-        H.need(re.fullmatch(r"go version go1\.27\.2 (darwin/arm64|linux/amd64)", go_version) is not None, "pinned supported Go version")
+        H.need(re.fullmatch(r"go version go1\.27\.3 (darwin/arm64|linux/amd64)", go_version) is not None, "pinned supported Go version")
         build = H.load(runner.call("compiler-identity", [compiler, "version", "--build", "--json"], 15))
-        H.need(all(build[k] == v for k, v in {"version": "0.6.32-dev", "compiler_source_sha": REV,
-            "source_status": "CLEAN_VCS", "vcs_modified": "false", "go_version": "go1.27.2", "native_go_required": "go1.27.2"}.items()), "clean pinned compiler build")
+        H.need(all(build[k] == v for k, v in {"version": "0.6.37-dev", "compiler_source_sha": REV,
+            "source_status": "CLEAN_VCS", "vcs_modified": "false", "go_version": "go1.27.3", "native_go_required": "go1.27.3"}.items()), "clean pinned compiler build")
         expected = H.load(runner.call("independent-go-oracle", [go, "run", "./cmd/url-component-oracle", "--inputs", snapshot], 90))
         original = runner.call("execute", [compiler, "package", "execute", "--json", "--inputs", snapshot, "--go", go, workspace], 90)
         program = validate(original, rows, expected, manifest, raw_inputs, sources, go_version, go_sha, workspace)

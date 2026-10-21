@@ -54,7 +54,8 @@ To edit Gooo source, use the first-program compiler workflow below.
 For a review of the supplied API policy profiles, start with the
 [immutable command quickstart](../examples/api-policy-revision/README.md#install-the-command-without-cloning).
 It installs into a private bin directory without cloning or installing Gooo.
-Go 1.27.2 is required; installation uses the public Go proxy and checksum service.
+This immutable installation recipe retains its Go 1.27.2 profile; installation
+uses the public Go proxy and checksum service. Current-source builds below target Go 1.27.3.
 After installation, the same command creates a baseline, compares the same nine
 supplied facts, and checks the complete saved report with `-mode replay`.
 
@@ -86,11 +87,13 @@ existing [two-file tutorial](../examples/learn-gooo/README.md), its four supplie
 inputs, and the repository's pinned compiler and Go toolchain. Setup needs Git,
 a POSIX shell and Go toolchain selection on macOS or Linux.
 
-To avoid building the pinned compiler, use the [pinned 0.6.32 release](https://github.com/kimjooyoon/meta-ontology-go/releases/tag/v0.6.32-dev)
-archive and its SHA256SUMS: verify first, extract into a fresh directory, then
-check `version --build --json` with the checkout's `tools/bootstrap-check.go`.
-Keep existing compiler files untouched and use the checked executable by absolute
-path, skipping bootstrap only after validation. Host Go **1.27.2** is still required.
+Current-source setup targets Go **1.27.3** with the checkout's matching compiler
+and validator identities; this is not evidence that the migration has run.
+The [pinned 0.6.32 release](https://github.com/kimjooyoon/meta-ontology-go/releases/tag/v0.6.32-dev)
+and the [pre-migration source snapshot](https://github.com/kimjooyoon/gooo-go-ports/tree/cc946350de37c48d509b1d383b8ce7e8a0062483)
+retain Go **1.27.2**. For that reproduction only, verify SHA256SUMS, extract fresh
+and use that snapshot's identity validator before skipping bootstrap. Keep
+existing files and receipts; the old archive is not a Go 1.27.3 compiler build.
 
 After opening a checkout in your agent, ask:
 
@@ -289,8 +292,9 @@ compiler issue before passing a minimal case to the language repository.
 - **Write a Gooo program:** use the first-program skill, then the existing
   [local edit-and-replay guide](../examples/learn-gooo/README.md#make-one-visible-change).
 - **Edit an API policy rule:** use the [editable source comparison](../examples/editable-api-policy/README.md).
-  To extract a same-file helper, follow its explicit `source-inspection036`
-  compiler profile. Keep the default839 path for the original demo. The selected
+  To extract a same-file helper, follow its explicit `source-inspection037`
+  compiler profile. Keep the `default` profile (compiler `205896a`) for the
+  original demo. The selected
   compiler prepares each current call plan before execution; every native
   execution and saved replay must contain that same full program. This checks
   source/result binding for the supplied facts, not live authorization or full
@@ -317,10 +321,10 @@ compiler issue before passing a minimal case to the language repository.
   Tell us whether a successful run helps your real task, or share the first
   failure, through the [existing feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml).
   Select **Native setup, verification, or replay** and use public synthetic inputs.
-- **Edit a patch-line update rule with newer Gooo:** the separate
+- **Edit a patch-line update rule in a separate checkout:** the separate
   [same-minor source example](https://gist.github.com/kimjooyoon/9ca55091bd18ddb6f06a563e99f68348#file-00-readme-md)
-  uses released **0.6.36-dev**, compiler `31497af3` and Go 1.27.2. Follow its
-  isolated setup; this checkout still uses compiler `83928fa`. The program
+  preserves the released **0.6.36-dev**, compiler `31497af3` and Go 1.27.2 profile. Follow its
+  isolated setup; this checkout uses compiler `205896a`. The program
   adapts Go `semver.MajorMinor` to a result record whose `value` field explicitly
   permits 1,026 UTF-8 bytes, preserving the longest supported shorthand input.
   An importing Gooo rule requires a newer stable candidate in the same
@@ -342,7 +346,7 @@ compiler issue before passing a minimal case to the language repository.
   requested failure. The Action cannot load arbitrary policies or authorize
   live API effects.
 - **Compare API policies without a checkout:** use the [Go CLI quickstart](https://gist.github.com/kimjooyoon/a46e67c4830fdfb67a9b75e45aaceee8).
-  With Go **1.27.2** and initial network downloads, build a pinned CLI for two fixed
+  This frozen Go **1.27.2** recipe uses initial network downloads to build a pinned CLI for two fixed
   profiles, then compare and replay supplied facts. Its local trial used macOS arm64.
   Report the first failed command, exit status and diagnostic in the [feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml); choose **Native setup, verification, or replay**.
 - **Read a policy-comparison failure from an agent:** the repository's
@@ -363,7 +367,7 @@ compiler issue before passing a minimal case to the language repository.
   fields. `READY_TO_REASSESS` does not grant a retry or refresh supplied facts;
   current request binding, guidance and a host-owned atomic claim remain separate.
 
-  For one public-input trial, give your agent this task:
+  For reproduction of the frozen Go 1.27.2 public-input trial, give your agent this task:
 
   > Reuse a `kimjooyoon/gooo-go-ports` checkout matching
   > `2b2d972f40057b1c9339c89afcb8b3be161a60c9`, or use a separate task directory
@@ -409,7 +413,7 @@ compiler issue before passing a minimal case to the language repository.
   [multi-request Gooo composition](../examples/service-grant-many/README.md).
   Supply `before`, `after` and ordered `required_requests` pairs. Inspect the first
   failing original index and all 12 decision fields; preserve duplicates and input
-  order. The generated Go API and JSON CLI need Go 1.27.2, while source editing
+  order. The generated Go API and JSON CLI need Go 1.27.3, while source editing
   uses the separate pinned `de99b770` compiler profile. To call this assessment
   from an MCP host, use the explicit
   [ordered-request mode](#preserve-several-required-requests-through-mcp).
@@ -444,7 +448,7 @@ Running this executable needs no Go, Gooo compiler or Python installation.
 Replace `/ABSOLUTE/PATH/gooo-service-grant-mcp` below with its absolute path;
 pass no command arguments.
 
-To build from source instead, use **Go 1.27.2** and the
+To build from source instead, use **Go 1.27.3** and the
 [MCP module's build command](../examples/service-grant-mcp/README.md#build-and-connect).
 Initial source setup downloads pinned modules. The preview.12
 `gooo-service-grant-evaluate` CLI is **not an MCP server**.
@@ -524,7 +528,7 @@ not express? The command contacts no service and uploads no feedback itself.
 Use the same [preview.14 native executable](#connect-the-service-grant-mcp-tool)
 with the [optional ordered-request mode](../examples/service-grant-mcp/README.md#optional-ordered-required-requests).
 For a source-build fallback, use a reviewed checkout containing that mode and
-[build the server with Go 1.27.2](../examples/service-grant-mcp/README.md#build-and-connect).
+[build the server with Go 1.27.3](../examples/service-grant-mcp/README.md#build-and-connect).
 Older preview.13 bundles expose only `assess_service_grant` and cannot serve this
 mode. The extracted or source-built executable needs no Go or Gooo at runtime.
 
@@ -596,8 +600,8 @@ marketplace and install the adapter:
 Review the source and choose an installation scope in the
 [official install flow](https://code.claude.com/docs/en/plugins/install#add-a-marketplace-and-install-in-one-command).
 
-On macOS or Linux, prepare Git, Python 3, a POSIX shell, Go **1.27.2**, and a
-clean Gooo compiler at `83928fa4538245abe33b08549da47f8cbdc50ed2`.
+On macOS or Linux, prepare Git, Python 3, a POSIX shell, Go **1.27.3**, and a
+clean Gooo compiler at `205896a413e5dea92366309c35ae85e542d055f6`.
 Reuse matching tools and prepare the pinned Go modules once using the
 [project setup guide](../templates/etag-project/README.md#prepare-and-run).
 Keep setup and exported projects outside the installed plugin bundle.
@@ -627,14 +631,14 @@ From the repository root, select the pinned toolchain and inspect an existing
 compiler before reuse:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 go version
 ./.gooo version --build --json
 ```
 
-Require compiler revision `83928fa4538245abe33b08549da47f8cbdc50ed2`, Go
-`go1.27.2` and build identity `vcs_modified: "false"`, as pinned in
+Require compiler revision `205896a413e5dea92366309c35ae85e542d055f6`, Go
+`go1.27.3` and build identity `vcs_modified: "false"`, as pinned in
 `upstream.json`. If this fresh checkout has no matching compiler, run
 `./tools/bootstrap.sh` and inspect the build identity again. Bootstrap downloads
 and builds the pinned compiler and may download Go; reuse a matching installation

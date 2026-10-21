@@ -10,7 +10,7 @@ import json
 import re
 import stat
 
-REV = '83928fa4538245abe33b08549da47f8cbdc50ed2'
+REV = '205896a413e5dea92366309c35ae85e542d055f6'
 PORT = 'go/net/netip'
 APP = 'app/ipv4-address-facts'
 REPORT_ENTRY = APP + ':Report'
@@ -266,7 +266,7 @@ class Evidence:
     def __init__(self, repository, oracle, selected_go_version):
         self.repository = Path(repository).resolve()
         self.go_version = selected_go_version
-        need(type(selected_go_version) is str and re.fullmatch(r'go version go1\.27\.2 [a-z0-9]+/[a-z0-9]+', selected_go_version) is not None,
+        need(type(selected_go_version) is str and re.fullmatch(r'go version go1\.27\.3 [a-z0-9]+/[a-z0-9]+', selected_go_version) is not None,
              'SELECTED_GO_VERSION')
         corpus = strict_json(_read_regular(self.repository / 'examples/ipv4-address-facts/corpus-202.json', 128 << 10))
         original = strict_json(_read_regular(self.repository / 'examples/ipv4-address-facts/corpus.json', 32 << 10))
@@ -479,7 +479,7 @@ class Evidence:
              rt['producer_source_sha'] == REV and rt['go_version'] == self.go_version and
              rt['go_tool_sha256'] == go_tool_digest and rt['go_tool_selection'] == 'explicit' and
              rt['producer_module']['path'] == 'github.com/kimjooyoon/meta-ontology-go' and
-             rt['producer_module']['version'] == 'v0.0.0-20261011201109-83928fa45382', 'Fresh pinned producer/tool identity')
+             rt['producer_module']['version'] == 'v0.6.37-dev.0.20261020180505-205896a413e5', 'Fresh pinned producer/tool identity')
         need(rt['typed_plan_sha256'] == plan['typed_plan_sha256'], 'TYPED_PLAN_BINDING')
         need(rt['generated_sha256'] == c['generated_sha256'] and rt['driver_sha256'] == c['driver_sha256'] and
              rt['original_source_sha256'] == rt['selected_source_sha256'] == source_digest and rt['typed_plan_sha256'] == plan['typed_plan_sha256'] and

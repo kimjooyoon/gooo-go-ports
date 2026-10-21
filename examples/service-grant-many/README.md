@@ -5,7 +5,7 @@ requirement list. Gooo owns the domain checks, the 256-request policy limit, all
 preservation, first counterexample, and supported-subset decision. Nothing here
 authenticates live permissions or applies a grant.
 
-From a checkout with Go 1.27.2, run this JSON **array** (no compiler installation is
+From a checkout with Go 1.27.3, run this JSON **array** (no compiler installation is
 needed to build or run the committed generated-Go consumer):
 
 ```sh
@@ -49,6 +49,12 @@ Gooo decisions, not valid grants. The complete 12 fields are `status`, `reason`,
 `counterexample_before_match`, `counterexample_after_match`.
 
 ## Reproduce source generation and verification
+
+This separately pinned de99 generation profile retains Go 1.27.2 and its
+original receipt identities. The current generated-Go consumer above targets
+Go 1.27.3; rebuilding it does not regenerate or rebind the old Gooo observations.
+Use the [pre-migration source snapshot](https://github.com/kimjooyoon/gooo-go-ports/tree/cc946350de37c48d509b1d383b8ce7e8a0062483)
+in a separate checkout for this historical generation procedure.
 
 Only this maintainer procedure needs the separately pinned development compiler
 `de99b770b8b5adea608233c3c0664902336e3310` (v0.6.35-dev) and Go 1.27.2. Check

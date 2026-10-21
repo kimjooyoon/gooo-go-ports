@@ -11,7 +11,7 @@ Evaluation is automatic; no per-evaluation human approval step is added.
 
 ## Run the minimum-version rule
 
-Use the repository's [pinned compiler and Go 1.27.2 setup](../../docs/ai-agents.md).
+Use the repository's [pinned compiler and Go 1.27.3 setup](../../docs/ai-agents.md).
 From the repository root, run the supplied nine inputs and save a replay:
 
 ```sh
@@ -168,6 +168,10 @@ produce finite `PASS` results and a fresh saved replay. It checks typed inputs,
 outputs, source identities and the original receipt link. An existing output
 directory is refused; raw results and diagnostics are retained, while private
 work and caches are removed. Go module access uses offline settings after setup.
+Each execute or replay receipt is capped at 16 MiB because current provenance
+includes detailed execution traces. Ordinary command output, diagnostics and
+source/module inputs keep their separate 2 MiB bound; the larger receipt budget
+does not increase the Text input domain or the fixed case counts.
 
 The boundary profile compares `candidate` as the left operand and `current` as
 the right operand from `boundary-reference-inputs.json`. It covers the 509th

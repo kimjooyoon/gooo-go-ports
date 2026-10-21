@@ -9,7 +9,7 @@ both decoded strings and performs no trimming, normalization or HTTP operation.
 ## Run one external JSON request
 
 After the [repository setup](../../README.md#run-and-edit-locally), use the pinned
-Gooo `83928fa` compiler and Go 1.27.2 from the repository root:
+Gooo `83928fa` compiler and Go 1.27.3 from the repository root:
 
 ```sh
 set -eu

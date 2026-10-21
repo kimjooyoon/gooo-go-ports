@@ -18,30 +18,36 @@ its `AGENTS.md`, `examples/learn-gooo/README.md`, the two `.gooo` files in that
 directory and `learn-gooo.workspace.json` before editing. Follow that checkout's
 toolchain pins. Keep the user's existing changes and branch.
 
-For a new workspace, the documented starting point is the immutable
-[example guide](https://github.com/kimjooyoon/gooo-go-ports/blob/e1e279a25094f55a2ebd926a5e8393448eae418c/examples/learn-gooo/README.md).
-Obtain that repository snapshot in a new task directory. The snapshot uses
-compiler `83928fa4538245abe33b08549da47f8cbdc50ed2` and Go `1.27.2`.
-Its `tools/bootstrap.sh` downloads and builds the pinned compiler; Go toolchain
-selection may download Go too. Reuse a compatible installation where available.
+For a new workspace, obtain a reviewed `kimjooyoon/gooo-go-ports` checkout
+in a new task directory and read its example guide and toolchain pins. This
+current-source workflow targets Go **1.27.3** with matching compiler and validator
+identities; selecting Go alone does not establish a completed migration.
+`tools/bootstrap.sh` downloads and builds the pinned compiler; Go selection may
+download Go too. Reuse a compatible installation only after identity validation.
 
-Alternatively, use the matching [v0.6.32-dev archive and SHA256SUMS](https://github.com/kimjooyoon/meta-ontology-go/releases/tag/v0.6.32-dev).
+The immutable [older example guide](https://github.com/kimjooyoon/gooo-go-ports/blob/e1e279a25094f55a2ebd926a5e8393448eae418c/examples/learn-gooo/README.md)
+remains a separate reproduction at compiler `83928fa4538245abe33b08549da47f8cbdc50ed2`
+and Go `1.27.2`; use its own commands and validators when reproducing it.
+
+For that older snapshot only, use its matching [v0.6.32-dev archive and SHA256SUMS](https://github.com/kimjooyoon/meta-ontology-go/releases/tag/v0.6.32-dev).
 Verify the matching archive checksum before extracting to a fresh directory.
 From the example checkout, run the unpacked executable's `version --build --json`
 into a new identity file, then `go run ./tools/bootstrap-check.go /absolute/path/to/identity.json`
 with Go **1.27.2** selected. Preserve existing `.gooo`, `.compiler` and receipts.
 Only after validation, use that executable's absolute path instead of `./.gooo`
-and skip bootstrap below; native execution still needs Go **1.27.2**. Do not use latest
-as a replacement for the exact compiler pin. The source-build route stays available.
+and skip that snapshot's bootstrap; its native execution still needs Go **1.27.2**.
+Do not relabel this archive as a Go 1.27.3 build or use latest in place of an
+exact compiler pin. The current-source commands below require matching new pins.
 
 Do not change the user's global agent configuration to run this example.
 
 ## Execute and edit
 
-From the repository root, use the guide's setup and execution commands:
+From the current-source repository root, use its setup and execution commands
+after the compiler and validators agree with the Go 1.27.3 target:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 ./tools/bootstrap.sh
 ./.gooo package execute --inputs examples/learn-gooo/inputs.json \

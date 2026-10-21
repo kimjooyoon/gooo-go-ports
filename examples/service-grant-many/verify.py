@@ -5,6 +5,8 @@ import argparse,datetime,hashlib,importlib.util,json,os,selectors,signal,stat,su
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[1]
 CAP=32<<20;LIMIT=512<<20
+# Active private Go1.27.3 compatibility profile; historical release JSON stays unchanged.
+ACTIVE_COMPILER_PROFILE = {'name': 'current-private-037', 'compiler_revision': '205896a413e5dea92366309c35ae85e542d055f6', 'compiler_version': '0.6.37-dev', 'go_version': 'go1.27.3', 'module': {'path': 'github.com/kimjooyoon/meta-ontology-go', 'version': 'v0.6.37-dev.0.20261020180505-205896a413e5'}, 'decision_runtime': {'module_path': 'github.com/kimjooyoon/gooo-decision-runtime', 'version': 'v0.2.51-experimental', 'replaced': False}}
 R=None;records=[];diagnostics=[]
 _cancellation_state=None
 
@@ -218,12 +220,14 @@ def main():
   source_before={str(p.relative_to(ROOT)):ref(p) for p in source_paths}
   save(R/'source-before.json',source_before)
   goversion=owned('go-identity',[go,'version'],env,15,ROOT).decode().strip()
-  assert goversion in ['go version go1.27.2 darwin/arm64','go version go1.27.2 linux/amd64']
+  assert goversion in ['go version go1.27.3 darwin/arm64','go version go1.27.3 linux/amd64']
   go_identity={'version':goversion,'sha256':'sha256:'+ref(go)['sha256']}
   identity=strict(owned('compiler-identity',[compiler,'version','--build','--json'],env,15,ROOT))
-  pin=strict((HERE/'compiler-pin.json').read_bytes())
-  for key,want in {'compiler_source_sha':pin['compiler_revision'],'vcs_revision':pin['compiler_revision'],'source_status':'CLEAN_VCS','vcs_modified':'false','go_version':'go1.27.2','native_go_required':'go1.27.2'}.items():assert identity[key]==want,key
-  exact(identity['decision_runtime'],pin['decision_runtime']);assert identity['build_info_observed'] is True
+  historical_pin=strict((HERE/'compiler-pin.json').read_bytes())
+  assert historical_pin['compiler_revision']=='de99b770b8b5adea608233c3c0664902336e3310'
+  pin=ACTIVE_COMPILER_PROFILE
+  for key,want in {'compiler_source_sha':pin['compiler_revision'],'vcs_revision':pin['compiler_revision'],'version':pin['compiler_version'],'source_status':'CLEAN_VCS','vcs_modified':'false','go_version':'go1.27.3','native_go_required':'go1.27.3'}.items():assert identity[key]==want,key
+  exact(identity['decision_runtime'],pin['decision_runtime']);exact(identity['module'],pin['module']);assert identity['build_info_observed'] is True
   for stem in ['normal','remaining']:
    cases=HERE/(stem+'-cases.json')
    owned(stem+'-execute',[compiler,'package','execute','--json','--cases',cases,'--go',go,ROOT/'service-grant-many.workspace.json'],env,180,ROOT)
@@ -238,7 +242,7 @@ def main():
   race=dict(env,CGO_ENABLED='1');owned('module-race',[go,'-C',HERE,'test','-race','-count=1','./...'],race,90,HERE)
   binary=R/'bin/evaluate';owned('consumer-build',[go,'-C',HERE,'build','-trimpath','-buildvcs=false','-o',binary,'./cmd/evaluate'],env,90,HERE)
   buildraw=owned('consumer-BuildInfo',[go,'version','-m',binary],env,15,HERE).decode()
-  assert buildraw.splitlines()[0].endswith(': go1.27.2')
+  assert buildraw.splitlines()[0].endswith(': go1.27.3')
   lines=[line.strip().split('\t') for line in buildraw.splitlines()[1:]]
   assert ['path','github.com/kimjooyoon/gooo-go-ports/examples/service-grant-many/cmd/evaluate'] in lines
   assert ['mod','github.com/kimjooyoon/gooo-go-ports/examples/service-grant-many','(devel)'] in lines
@@ -246,7 +250,7 @@ def main():
   settings={row[1].split('=',1)[0]:row[1].split('=',1)[1] for row in lines if len(row)==2 and row[0]=='build' and '=' in row[1]}
   goos,goarch=goversion.split()[-1].split('/')
   for k,v in {'-buildmode':'exe','-compiler':'gc','-trimpath':'true','CGO_ENABLED':'0','GOARCH':goarch,'GOOS':goos}.items():assert settings[k]==v,(k,settings)
-  binary_metadata={'version':'go1.27.2','module':'github.com/kimjooyoon/gooo-go-ports/examples/service-grant-many','dependencies':0,'settings':settings,'binary':ref(binary)};save(R/'consumer-metadata.json',binary_metadata)
+  binary_metadata={'version':'go1.27.3','module':'github.com/kimjooyoon/gooo-go-ports/examples/service-grant-many','dependencies':0,'settings':settings,'binary':ref(binary)};save(R/'consumer-metadata.json',binary_metadata)
   facts=strict((HERE/'reference-cases.json').read_bytes());wire=R/'columns17.json';wire.write_text(json.dumps([c['facts'] for c in facts],ensure_ascii=False)+'\n')
   runtime={'PATH':'','HOME':str(R/'home'),'TMPDIR':str(R/'tmp'),'LANG':'C','LC_ALL':'C','GOMAXPROCS':'2'}
   api_result=strict(owned('columns17',[binary,'-columns'],runtime,15,R,wire))
@@ -265,8 +269,9 @@ def main():
   f=R/'lossy-surrogate.json';f.write_bytes(b'['+json.dumps(facts[0]['facts']).encode()+b',{"before":"*","after":"mcp://*","required_types":["mcp"],"required_names":["\\ud800"]}]');assert owned('lossy-surrogate',[binary,'-columns'],runtime,5,R,f,expected_exit=1)==b''
   after={str(p.relative_to(ROOT)):ref(p) for p in source_paths}
   if args.write_generated:
+   assert (HERE/'compiler.json').read_bytes()==(R/'compiler-identity'/'stdout').read_bytes()
    for key in source_before:
-    if key not in ['examples/service-grant-many/generation.json','examples/service-grant-many/projection_generated.go','examples/service-grant-many/bridge_generated.go']:exact(after[key],source_before[key])
+    if key not in ['examples/service-grant-many/compiler.json','examples/service-grant-many/generation.json','examples/service-grant-many/projection_generated.go','examples/service-grant-many/bridge_generated.go']:exact(after[key],source_before[key])
   else:exact(after,source_before)
   save(R/'source-after.json',after)
   check_cancelled()
@@ -279,7 +284,7 @@ def main():
    try:check_cancelled()
    except BaseException as error:first={'type':type(error).__name__,'message':str(error),'traceback':traceback.format_exc()}
   closed=bool(records) and all(x['waited'] and x['streams_EOF'] and x['PG_ESRCH'] for x in records)
-  summary={'schema':'gooo/service-grant-many-verification/v1','status':'PUBLIC_SOURCE_REFERENCE17_AND_NATIVE_TRANSPORT_PASS' if first is None else 'FIRST_FAILURE_NO_RETRY','first_failure':first,'compiler_revision':'de99b770b8b5adea608233c3c0664902336e3310','fresh_genuine_commands':4 if observations else None,'genuine_cases':16,'genuine_split':[1,15],'typed_decision_fields':12,'fresh_reference_cases':len(fresh_oracle) if fresh_oracle else 0,'actual_compiled_columns_cases':len(api_result) if api_result else 0,'actual_compiled_friendly_cases':len(friendly_result) if friendly_result else 0,'binary_metadata':binary_metadata,'sampled_combined_resource_limit_bytes':LIMIT,'no_cold_cache_claim':True,'observations':observations,'records':records,'all_direct_wait_EOF_PG_ESRCH':closed,'remaining_owned_groups':0 if closed else 'NOT_ESTABLISHED','model_calls':0,'engine_builds':0,'external_adoption':False,'local_lineage_complete_claim':False,'native257_semantic_decision':'Gooo-owned INVALID_INPUT, not a transport count refusal','scope':'Finite current-source function/transport comparison; no authority or grant application.'}
+  summary={'schema':'gooo/service-grant-many-verification/v1','status':'PUBLIC_SOURCE_REFERENCE17_AND_NATIVE_TRANSPORT_PASS' if first is None else 'FIRST_FAILURE_NO_RETRY','first_failure':first,'compiler_revision':ACTIVE_COMPILER_PROFILE['compiler_revision'],'fresh_genuine_commands':4 if observations else None,'genuine_cases':16,'genuine_split':[1,15],'typed_decision_fields':12,'fresh_reference_cases':len(fresh_oracle) if fresh_oracle else 0,'actual_compiled_columns_cases':len(api_result) if api_result else 0,'actual_compiled_friendly_cases':len(friendly_result) if friendly_result else 0,'binary_metadata':binary_metadata,'sampled_combined_resource_limit_bytes':LIMIT,'no_cold_cache_claim':True,'observations':observations,'records':records,'all_direct_wait_EOF_PG_ESRCH':closed,'remaining_owned_groups':0 if closed else 'NOT_ESTABLISHED','model_calls':0,'engine_builds':0,'external_adoption':False,'local_lineage_complete_claim':False,'native257_semantic_decision':'Gooo-owned INVALID_INPUT, not a transport count refusal','scope':'Finite current-source function/transport comparison; no authority or grant application.'}
   try:save(R/'summary.json',summary)
   except BaseException as diagnostic:
    if first is None:first={'type':type(diagnostic).__name__,'message':str(diagnostic),'traceback':traceback.format_exc()}

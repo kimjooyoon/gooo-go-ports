@@ -53,7 +53,7 @@ def check_native_refinement(actual, cases, expected_bindings):
 
 def check_witness_oracle(actual, requests, source_revision):
     assert type(actual) is dict and set(actual) == {'schema', 'go_version', 'source_revision', 'observations', 'impact_matches'}
-    assert actual['schema'] == 'gooo/agentmesh-matcher-oracle/v1' and actual['go_version'] == 'go1.27.2'
+    assert actual['schema'] == 'gooo/agentmesh-matcher-oracle/v1' and actual['go_version'] == 'go1.27.3'
     assert actual['source_revision'] == source_revision
     assert type(actual['observations']) is list and len(actual['observations']) == len(requests) == 126
     for result, request in zip(actual['observations'], requests):
@@ -93,6 +93,93 @@ def check_native_rows(matcher, impact, rows, impacts, expected_bindings):
         assert actual['bindings'] == expected_bindings
 
 
+# Source: final205 CompositionTrace and its bridge/field/local/condition/call
+# declarations (byte-identical relevant types to2a). These are diagnostic shapes,
+# not an independent origin/lineage/completeness or authorization assertion.
+# The65536 container bound is a finite consumer guard (also the engine's condition
+# and read observation limit), not a claim every engine diagnostic shares a cap.
+_TRACE_META_LIMIT = 65536
+_TRACE_META_BOOLEANS = {'called_inputs_observed', 'conditions_observed', 'reads_observed'}
+_TRACE_META_COUNTERS = {'field_frames', 'field_frame_dropped', 'field_write_dropped', 'field_use_dropped',
+    'conditions_dropped', 'constructions_dropped', 'local_frames', 'local_frame_dropped',
+    'local_write_dropped', 'local_use_dropped', 'reads_dropped', 'read_registration_dropped'}
+_TRACE_META_LISTS = {'field_writes', 'field_uses', 'calls', 'conditions', 'constructions',
+                     'local_writes', 'local_uses', 'local_elements', 'reads'}
+
+
+def _trace_meta_int(value):
+    assert type(value) is int and -(1 << 63) <= value < (1 << 63)
+
+
+def _trace_meta_text(value):
+    assert type(value) is str
+    try:
+        raw = value.encode('utf-8')
+    except UnicodeEncodeError:
+        assert False, 'diagnostic Text must be Unicode scalar UTF8'
+    assert len(raw) <= 1024
+
+
+def _trace_meta_list(value):
+    assert value is None or type(value) is list and len(value) <= _TRACE_META_LIMIT
+    return () if value is None else value
+
+
+def _trace_meta_record(value, integers=(), booleans=(), optional_text=()):
+    assert type(value) is dict
+    assert set(integers) | set(booleans) <= set(value) <= set(integers) | set(booleans) | set(optional_text)
+    for key in integers:
+        _trace_meta_int(value[key])
+    for key in booleans:
+        assert type(value[key]) is bool
+    for key in set(value) & set(optional_text):
+        _trace_meta_text(value[key])
+
+
+def check_trace_envelope(trace, index):
+    assert type(trace) is dict
+    optional = _TRACE_META_BOOLEANS | _TRACE_META_COUNTERS | _TRACE_META_LISTS | {'field_local_bridge'}
+    assert {'case_index', 'deliveries'} <= set(trace) <= {'case_index', 'deliveries'} | optional
+    assert type(index) is int and type(trace['case_index']) is int and trace['case_index'] == index
+    assert type(trace['deliveries']) is list and len(trace['deliveries']) == 1
+    for key in set(trace) & _TRACE_META_BOOLEANS:
+        assert type(trace[key]) is bool
+    for key in set(trace) & _TRACE_META_COUNTERS:
+        _trace_meta_int(trace[key]); assert trace[key] >= 0
+    if 'field_local_bridge' in trace and trace['field_local_bridge'] is not None:
+        bridge = trace['field_local_bridge']
+        assert type(bridge) is dict and set(bridge) == {'locals', 'fields', 'local_clocks', 'field_clocks', 'completions'}
+        _trace_meta_int(bridge['completions'])
+        for key in ('locals', 'fields'):
+            for window in _trace_meta_list(bridge[key]):
+                _trace_meta_record(window, ('other_start', 'other_end', 'other_drops', 'start_clock', 'completion'))
+        for key in ('local_clocks', 'field_clocks'):
+            for clock in _trace_meta_list(bridge[key]):
+                _trace_meta_int(clock)
+    for key in set(trace) & _TRACE_META_LISTS:
+        rows = _trace_meta_list(trace[key])
+        # This module has only scalar Text inputs and no collection construction
+        # or indexed-read contract. Do not invent a generic diagnostic fallback.
+        if key in {'constructions', 'local_elements', 'reads'}:
+            assert not rows, 'populated collection diagnostic is outside this finite Text-only reader'
+        for row in rows:
+            if key == 'conditions':
+                _trace_meta_record(row, ('site_index',), ('value',))
+            elif key == 'field_writes':
+                _trace_meta_record(row, ('site_index', 'frame', 'use_start', 'use_end', 'uses_dropped', 'parent_assignment', 'completion'), ('completed',))
+            elif key == 'field_uses':
+                _trace_meta_record(row, ('site_index', 'frame', 'assignment', 'completion_clock'), optional_text=('reason',))
+            elif key == 'local_writes':
+                _trace_meta_record(row, ('site_index', 'frame', 'read_start', 'read_end', 'use_start', 'use_end', 'reads_dropped', 'uses_dropped'), ('completed',))
+            elif key == 'local_uses':
+                _trace_meta_record(row, ('site_index', 'frame', 'assignment'), optional_text=('reason',))
+            elif key == 'calls':
+                assert type(row) is dict and set(row) == {'root_activity_id', 'activity_id', 'inputs'}
+                _trace_meta_text(row['root_activity_id']); _trace_meta_text(row['activity_id'])
+                for value in _trace_meta_list(row['inputs']):
+                    _trace_meta_text(value)
+
+
 def check_workspace_trace(prefix, trace, index, case, program, body_report):
     if prefix.startswith('checked-'):
         return check_typed_workspace_trace(CHECKED[prefix.removeprefix('checked-')],trace,index,case,program,body_report)
@@ -107,9 +194,7 @@ def check_workspace_trace(prefix, trace, index, case, program, body_report):
     assert exported['input_types'] == ['gooo://std/text'] * len(fields)
     assert body_report['activity_id'] == exported['id']
     assert body_report['activity'] == program['entry']['lowered_name']
-    assert type(trace) is dict and set(trace) == {'case_index', 'deliveries'}
-    assert type(trace['case_index']) is int and trace['case_index'] == index
-    assert type(trace['deliveries']) is list and len(trace['deliveries']) == 1
+    check_trace_envelope(trace, index)
     delivery = trace['deliveries'][0]
     names = {'activity_id', 'inputs', 'actual', 'expected', 'passed'}
     assert type(delivery) is dict and set(delivery) == names | ({'actual_fields'} if prefix != 'matcher' else set())
@@ -197,8 +282,7 @@ def check_typed_workspace_trace(config,trace,index,case,program,body_report):
     exported=exports[0];assert exported['id']==config['activity_id'] and exported['input_types']==['gooo://std/text']*len(config['inputs'])
     assert exported['output_type']==config['record_id'] and body_report['output_type']==config['record']
     assert body_report['activity']==program['entry']['lowered_name'] and body_report['activity_id']==config['activity_id']
-    assert type(trace)is dict and set(trace)=={'case_index','deliveries'} and type(trace['case_index'])is int and trace['case_index']==index
-    assert type(trace['deliveries'])is list and len(trace['deliveries'])==1
+    check_trace_envelope(trace, index)
     delivery=trace['deliveries'][0];scalar=config['record']=='bool'
     assert type(delivery)is dict and set(delivery)=={'activity_id','inputs','actual','expected','passed'}| (set()if scalar else{'actual_fields'})
     assert delivery['activity_id']==config['activity_id'] and delivery['passed']is True
@@ -237,8 +321,7 @@ def check_domain_trace(activity,trace,index,case,program,body_report):
     assert body_report['activity']==program['entry']['lowered_name'] and body_report['activity_id']==aid
     assert body_report['input_type']=='string' and body_report['output_type']=='bool'
     assert set(case['inputs'])=={entry} and set(case['expected'])=={entry}
-    assert type(trace)is dict and set(trace)=={'case_index','deliveries'} and type(trace['case_index'])is int and trace['case_index']==index
-    assert type(trace['deliveries'])is list and len(trace['deliveries'])==1
+    check_trace_envelope(trace, index)
     delivery=trace['deliveries'][0]
     assert type(delivery)is dict and set(delivery)=={'activity_id','input','actual','expected','passed'}
     assert delivery['activity_id']==aid and delivery['passed']is True

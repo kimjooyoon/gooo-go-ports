@@ -1,3 +1,3 @@
 module github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy/oracle
 
-go 1.27.2
+go 1.27.3

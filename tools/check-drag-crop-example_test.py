@@ -139,7 +139,7 @@ class DragCropReceiptTest(unittest.TestCase):
             "counter bool": lambda r: r["result"]["runtime"].update(finite_total=False),
             "case bool": lambda r: r["result"]["runtime"]["traces"][0].update(case_index=False),
             "generated source": lambda r: r["result"]["composition"].update(source="changed"),
-            "32-bit Go": lambda r: r["result"]["runtime"].update(go_version="go version go1.27.2 linux/386"),
+            "32-bit Go": lambda r: r["result"]["runtime"].update(go_version="go version go1.27.3 linux/386"),
             "missing trace": lambda r: r["result"]["runtime"]["traces"].pop(),
             "export ID": lambda r: r["result"]["program"]["workspace_image"]["packages"][1]["exports"][0].update(id="wrong"),
         }

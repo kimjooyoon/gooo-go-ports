@@ -23,7 +23,7 @@ func decimalPayloadReceiptFixture(t *testing.T, original suite, row int) (map[st
 	if err != nil {
 		t.Fatal(err)
 	}
-	identity := expectedIdentity{CompilerRevision: "83928fa4538245abe33b08549da47f8cbdc50ed2", GoVersion: "go1.27.2", ManifestDigest: contentDigest(mustJSON(t, selected.Manifest)), CasesDigest: contentDigest(mustJSON(t, s.Cases)), Sources: selected.Identities, SourceBytes: selected.Sources}
+	identity := expectedIdentity{CompilerRevision: "83928fa4538245abe33b08549da47f8cbdc50ed2", GoVersion: "go1.27.3", ManifestDigest: contentDigest(mustJSON(t, selected.Manifest)), CasesDigest: contentDigest(mustJSON(t, s.Cases)), Sources: selected.Identities, SourceBytes: selected.Sources}
 	consumer := s.Package == payloadAdmissionPackage
 	contract, _ := contractFor(s)
 	parserSuite := suite{Package: decimalPackage, Activity: decimalActivity}
@@ -117,7 +117,7 @@ func decimalPayloadReceiptFixture(t *testing.T, original suite, row int) (map[st
 		"execution_source_sha256": sourceSHA,
 		"program":                 map[string]any{"workspace_image": image, "entry": root, "activities": []any{root}, "lowered_gooo_source": loweredSource, "pure_calls": pure},
 		"composition":             map[string]any{"schema": "gooo/body-composition/v1", "stage": "COMPLETE", "gooo_source": loweredSource, "original_source_sha256": sourceSHA, "selected_source_sha256": sourceSHA, "generated_sha256": generatedSHA, "source": generated, "driver_source": driver, "driver_sha256": contentDigest([]byte(driver)), "plan": plan, "steps": []any{map[string]any{"input_source_sha256": sourceSHA, "generation": map[string]any{"source": generated, "report": generation}}}},
-		"runtime":                 map[string]any{"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "producer_source_sha": identity.CompilerRevision, "go_version": "go version go1.27.2 linux/amd64", "generated_sha256": generatedSHA, "driver_sha256": contentDigest([]byte(driver)), "typed_plan_sha256": plan["typed_plan_sha256"], "original_source_sha256": sourceSHA, "selected_source_sha256": sourceSHA, "model_calls": 0, "finite_passed": 1, "finite_total": 1, "projection_replayed": true, "runtime_replayed": true, "traces": []any{map[string]any{"case_index": 0, "deliveries": []any{delivery}}}},
+		"runtime":                 map[string]any{"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "producer_source_sha": identity.CompilerRevision, "go_version": "go version go1.27.3 linux/amd64", "generated_sha256": generatedSHA, "driver_sha256": contentDigest([]byte(driver)), "typed_plan_sha256": plan["typed_plan_sha256"], "original_source_sha256": sourceSHA, "selected_source_sha256": sourceSHA, "model_calls": 0, "finite_passed": 1, "finite_total": 1, "projection_replayed": true, "runtime_replayed": true, "traces": []any{map[string]any{"case_index": 0, "deliveries": []any{delivery}}}},
 	}}
 	// Normalize fixture integers to the same exact json.Number domain as raw
 	// receipt inspection; retain the independently computed suite as the oracle.

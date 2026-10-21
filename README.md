@@ -16,9 +16,12 @@ Open this checkout in Codex, Cursor or Claude Code and ask:
 With the supplied inputs, score `75` changes from `sensor: high` to
 `sensor: low`; its other three returned fields stay unchanged. The
 [first-program skill](.agents/skills/gooo-first-program/SKILL.md) and
-[setup guide](docs/ai-agents.md) use compiler `83928fa` and Go **1.27.2** on
-macOS or Linux. Reuse matching tools or follow the [optional prebuilt setup](#run-and-edit-locally).
-Initial source setup may download and build them.
+[setup guide](docs/ai-agents.md) target Go **1.27.3** on macOS or Linux with
+the compiler identity pinned by the checkout. Reuse tools only after identity
+validation; [source setup](#run-and-edit-locally) may download and build them.
+This toolchain migration target is not a claim of a completed run or a new native
+release. Published preview bundles and fixed older walkthroughs retain their
+recorded Go 1.27.2 identities; changing a version string does not upgrade them.
 A source edit needs native execution. Saving generated Go alone is not a run.
 For an existing Tessl setup, use the [project-local source installation](docs/ai-agents.md#install-the-skill-with-tessl)
 to give the same first-program task to your coding agent.
@@ -39,10 +42,10 @@ An incomplete attempt is useful feedback. Share public source and inputs only.
 | Edit an API policy in Gooo | [Editable policy comparison](examples/editable-api-policy/README.md) | Compare edited rules on the same facts and replay each policy. A separate opt-in compiler profile supports extracting helpers. |
 | Check an API policy change in CI | [Existing policy Action](examples/api-policy-ci/README.md) | Compare the same nine facts under two sealed profiles; inspect newly denied requests and optionally fail CI. |
 | Inspect fixed API decisions without a toolchain (optional) | [Native preview.11 bundles](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.11) | Run the supplied read/write batch on Linux amd64 or macOS arm64, try synthetic copies and replay the saved comparison. This does not edit Gooo source. |
-| Use Gooo from an existing Go program | [Four-file Go quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726) | Run generated Go with Go 1.27.2; inspect input refusal, policy differences and a widening witness. |
+| Use Gooo from an existing Go program | [Four-file Go quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726) | Follow the frozen Go 1.27.2 quickstart; inspect input refusal, policy differences and a widening witness. |
 | Edit an importing Gooo project | [Separate ETag project](templates/etag-project/README.md) | Export three source files, edit supported bodies and compare 247 supplied inputs with Go. |
 | Explain a version upgrade decision | [Version eligibility](examples/version-eligibility/README.md) | Use Gooo to explain minimum-version or stable same-major update eligibility, with replayable inputs and refusal reasons. |
-| Edit a patch-line update rule with Gooo 0.6.36-dev | [Experimental same-minor source example](https://gist.github.com/kimjooyoon/9ca55091bd18ddb6f06a563e99f68348#file-00-readme-md) | Compare 27 supplied cases with the original Go package and replay the Gooo results, including a 1,026-byte result declared in source. This separate example requires compiler `31497af3`; the checkout keeps its `83928fa` pin. |
+| Edit a patch-line update rule with Gooo 0.6.36-dev | [Experimental same-minor source example](https://gist.github.com/kimjooyoon/9ca55091bd18ddb6f06a563e99f68348#file-00-readme-md) | Compare 27 supplied cases with the original Go package and replay the Gooo results, including a 1,026-byte result declared in source. This separate example requires compiler `31497af3`; the checkout keeps its `205896a` pin. |
 | Find a Go API to migrate | [Ported API table](#이식한-함수) | Check available functions, input domains and Go-to-Gooo result differences before choosing a port. |
 
 These examples calculate bounded facts and policy decisions. Live effects still
@@ -60,11 +63,11 @@ examples and their independent Go references.
 
 **Use Gooo with a coding agent:** follow the [first-program skill](.agents/skills/gooo-first-program/SKILL.md) to edit actual Gooo source, execute it and save a replay. The [agent setup guide](docs/ai-agents.md) covers repository discovery in Codex and Cursor, explicit use in Claude Code, and the limits of the existing policy examples.
 
-**Install the policy comparison command:** [run the immutable CLI without cloning](examples/api-policy-revision/README.md#install-the-command-without-cloning). It compares the same nine supplied facts under two fixed profiles and rechecks saved reports; Go 1.27.2 is required.
+**Install the policy comparison command:** [run the immutable CLI without cloning](examples/api-policy-revision/README.md#install-the-command-without-cloning). It compares the same nine supplied facts under two fixed profiles and rechecks saved reports; this immutable installation recipe retains its Go 1.27.2 profile.
 
 **Compare API policy decisions in CI:** [run the existing policy review](examples/api-policy-ci/README.md), whose Action pins module revision `e723f9af6dc3` and compares nine supplied facts using the [fixed original and `cel-api-readonly-v1` profiles](https://github.com/kimjooyoon/gooo-go-ports/blob/e723f9af6dc33ecfff002a951e4b09a310439338/examples/api-policy-revision/README.md). In that pinned revision, an otherwise allowed `write` changes from `ALLOW` to `ACTION_NOT_READ_ONLY`, while an allowed `read` stays unchanged; optionally fail CI on `NEWLY_DENIED`. The [current `cel-api-readonly-principal-v1` profile](examples/api-policy-revision/README.md) preserves original base denials and also requires `principal_present == true` and a nonempty raw `principal_value` for an otherwise allowed `read`. For that otherwise allowed `read`, a false presence flag or empty raw value returns `EXPLICIT_PRINCIPAL_REQUIRED`; a whitespace-only raw value is nonempty because whitespace is not trimmed. These profiles cannot load arbitrary policies, and comparison results do not authorize live API actions.
 
-**Try service-policy checks from Go:** open the [four-file service-policy quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726). With Go 1.27.2 already installed, follow its README to run Go generated from Gooo without a runtime Gooo compiler. Distinguish invalid input from denial, compare the same request before and after a rule change, and inspect a returned widening witness. These calls compare supplied policy facts; they do not apply a grant or call a service.
+**Try service-policy checks from Go:** open the [four-file service-policy quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726). For this frozen Go 1.27.2 example, follow its README to run Go generated from Gooo without a runtime Gooo compiler. Distinguish invalid input from denial, compare the same request before and after a rule change, and inspect a returned widening witness. These calls compare supplied policy facts; they do not apply a grant or call a service.
 
 **Try a Gooo path diagnostic:** [compare two path spellings](examples/path-alias-facts/README.md#run-and-inspect-three-pairs), keep both originals, and see whether slash cleaning makes them equal. Run the supplied inputs, inspect three results and save a replay; these lexical facts do not grant access or establish router/filesystem identity.
 
@@ -333,7 +336,7 @@ unchanged. See the [domain, strict input route and reference mapping](ports/net/
 
 | What would you like to do? | Start with | What you can change |
 | --- | --- | --- |
-| Compare service-policy facts from a Go program | [Four-file Go quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726) | Use Go 1.27.2 to inspect input refusal, a request-specific policy change, and a returned widening witness; no grant is applied |
+| Compare service-policy facts from a Go program | [Four-file Go quickstart](https://gist.github.com/kimjooyoon/af3d75e04ac625e0e08652b8b6a07726) | Use the frozen Go 1.27.2 example to inspect input refusal, a request-specific policy change, and a returned widening witness; no grant is applied |
 | Edit service-policy inputs in the browser | [Checked service-policy tool](https://kimjooyoon.github.io/gooo-go-ports/service-policy.html) | Distinguish malformed input from a valid refusal, compare one request, or inspect a whole-pattern widening witness from the existing Gooo APIs; inputs stay in the browser |
 | Compare an API policy change and recheck saved results | [API policy comparison](https://kimjooyoon.github.io/gooo-go-ports/api-policy.html) | Supply nine facts to two fixed profiles, inspect all fifteen changed fields, and recheck an imported report; unsigned results do not authorize a live action |
 | Try Gooo without installing anything | [Interactive tutorial](https://kimjooyoon.github.io/gooo-go-ports/tutorial.html) | Change a score and label, see the returned record, and read the two Gooo source files |
@@ -357,9 +360,9 @@ unchanged. See the [domain, strict input route and reference mapping](ports/net/
 | Classify four IPv4 octets in Gooo | [IPv4 address facts](examples/ipv4-address-facts/README.md) | Preserve all four supplied integers, distinguish invalid input from valid addresses, and inspect six overlapping classification flags |
 | Compare two IPv4 rule scopes | [IPv4 rule-pair facts](examples/ipv4-rule-pair/README.md) | Preserve typed inputs, distinguish invalid/non-comparable rules and inspect a conflict witness |
 | Detect different spellings with the same cleaned slash path | [Path alias quickstart](examples/path-alias-facts/README.md#run-and-inspect-three-pairs) | Inspect three original pairs, change a copied input and save a new execution/replay; no filesystem or authorization action |
-| Use current ports in another Gooo project | [Current path import walkthrough](docs/use-current-path-in-your-project.md) | Copy a separate Gooo workspace, run `path.Ext` / `path.IsAbs` through its six-field report and save a replayable record |
+| Use current ports in another Gooo project | [Pinned path import walkthrough](docs/use-current-path-in-your-project.md) | Copy a separate Gooo workspace, run `path.Ext` / `path.IsAbs` through its six-field report and save a replayable record |
 
-The [older ValidRune import walkthrough](docs/use-in-your-project.md) remains fixed to preview.2 and its own compiler. Use the current path walkthrough above for the `83928fa` compiler and Go 1.27.2.
+The [older ValidRune import walkthrough](docs/use-in-your-project.md) remains fixed to preview.2 and its own compiler. The path walkthrough is also a frozen source snapshot using compiler `83928fa` and Go 1.27.2; it is separate from this checkout's Go 1.27.3 migration target.
 
 You can also [try 21 library functions in the browser](https://kimjooyoon.github.io/gooo-go-ports/).
 The library tools and tutorial run fixed, precompiled programs. The experimental
@@ -392,11 +395,17 @@ edit against Go using the pinned tools.
 
 Start by running and editing the small [Gooo tutorial](examples/learn-gooo/README.md).
 Use Git, a POSIX shell and a Go installation that supports toolchain selection
-on macOS or Linux. Choose either the prebuilt or source-build setup below.
+on macOS or Linux. Current-source setup targets Go **1.27.3** with matching
+compiler and validator pins. The source-build commands follow the historical
+release recipe below; do not use that old binary as a Go 1.27.3 build.
 
-Optional prebuilt setup: the [v0.6.32-dev release](https://github.com/kimjooyoon/meta-ontology-go/releases/tag/v0.6.32-dev)
-matches this checkout's compiler pin. Choose its macOS amd64/arm64 or Linux amd64
-archive. Host Go **1.27.2** is still required for native execution.
+<details>
+<summary>Reproduce the historical Go 1.27.2 prebuilt profile</summary>
+
+The [v0.6.32-dev release](https://github.com/kimjooyoon/meta-ontology-go/releases/tag/v0.6.32-dev)
+belongs to the [pre-migration source snapshot](https://github.com/kimjooyoon/gooo-go-ports/tree/cc946350de37c48d509b1d383b8ce7e8a0062483),
+not this checkout's Go 1.27.3 target. Choose its macOS amd64/arm64 or Linux amd64
+archive. That historical profile requires host Go **1.27.2** for native execution.
 Download the archive and [SHA256SUMS](https://github.com/kimjooyoon/meta-ontology-go/releases/download/v0.6.32-dev/SHA256SUMS)
 to a new empty directory. For macOS arm64, confirm this hash also appears in
 `SHA256SUMS`. In that directory, verify before extracting:
@@ -408,7 +417,7 @@ mkdir extracted
 tar -xzf gooo-darwin-arm64.tar.gz -C extracted
 ```
 
-From the repository root, set these paths to the unpacked executable and a
+From that fixed snapshot's repository root, set these paths to the unpacked executable and a
 new identity file in that download directory. Stop if either check fails:
 
 ```sh
@@ -426,10 +435,13 @@ Keep existing `.gooo`, `.compiler` and receipts untouched. After validation, use
 `"$compiler_executable"` instead of `./.gooo` in the run/replay commands and skip
 bootstrap. A checksum or identity failure must be reported before continuing.
 
-To build the pinned compiler from source instead, run from the repository root:
+</details>
+
+For current-source setup, build the pinned compiler from the repository root.
+The checkout's compiler identity and validators must match the Go 1.27.3 target:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 ./tools/bootstrap.sh
 ./.gooo package execute --inputs examples/learn-gooo/inputs.json \
@@ -442,7 +454,7 @@ The four examples include score `75` returning `sensor: high`. In
 score `75` now returns `sensor: low`; its other three fields stay unchanged.
 Follow the [edit-and-replay steps](examples/learn-gooo/README.md#make-one-visible-change)
 to save a new execution record and replay it. Setup downloads the pinned compiler
-and may also download Go 1.27.2, depending on the installed toolchain.
+and may also download Go 1.27.3, depending on the installed toolchain.
 [Full native port verification](#full-native-port-verification) is a separate check.
 
 Upgrading an existing checkout: bootstrap preserves an older `.compiler` and
@@ -792,7 +804,7 @@ README만 바뀌어도 Wasm이 같으면 실행할 수 있습니다. 잘못된 �
 색상 링크는 모든 채널을 담는 `v=2` 형식입니다. 이전 프로그램에서 만든 링크도 입력을 복원하지만,
 Wasm 해시가 달라졌으면 자동 실행하지 않습니다.
 
-데모를 소스부터 재현하려면 Git으로 받은 저장소에서 Go 1.27.2와 Node.js 22 이상을
+데모를 소스부터 재현하려면 Git으로 받은 저장소에서 Go 1.27.3와 Node.js 22 이상을
 사용합니다. 브라우저 빌드는 Git 리비전을 기록하므로 `.git`이 없는 소스 압축본은
 이 절차에 사용할 수 없습니다. 배포된 browser-demo 압축본은 안의 README에 따라
 `site/`를 HTTP로 제공하면 되며 컴파일러 설치는 필요하지 않습니다.
@@ -821,7 +833,7 @@ UUID 파싱 화면만 빌드하려면 `--uuid-parse-only`와 새 출력 경로�
 파일을 교체했다면 캐시를 무시하고 새로고침해 HTML과 스크립트를 다시 받습니다.
 실행 파일·메타데이터·비교 입력은 브라우저 캐시를 재사용하지 않고 요청합니다.
 
-API 정책 비교 화면만 재현하려면 Go 1.27.2와 Node.js 22를 선택한 뒤 새 출력
+API 정책 비교 화면만 재현하려면 Go 1.27.3와 Node.js 22를 선택한 뒤 새 출력
 경로를 사용합니다. 이 전용 모드는 기존 Gooo 생성 Go와 두 고정 정책을 사용하며,
 Gooo 컴파일러를 실행하지 않습니다. 다른 전용 빌드 옵션과 함께 사용할 수 없습니다.
 
@@ -888,7 +900,7 @@ The default local command below
 uses the legacy profiles and has different batch boundaries. The 66- and
 68-suite counts below describe historical prefixes, not the current full roster.
 
-Go 1.27.2, Git, POSIX shell이 필요합니다. `go.mod`를 인식하는 Go 설치는 필요한
+Go 1.27.3, Git, POSIX shell이 필요합니다. `go.mod`를 인식하는 Go 설치는 필요한
 도구 체인을 자동 선택할 수 있습니다. 저장소 루트에서 실행합니다.
 
 ```sh
@@ -988,7 +1000,7 @@ child commands have stopped. Inspect the directory, then **move it aside** to a
 new backup path before retrying. The script does not automatically delete an
 existing lock or unknown files. Do not move a lock while an install is running.
 
-If the selected Go version differs, use `export GOTOOLCHAIN=go1.27.2` in your
+If the selected Go version differs, use `export GOTOOLCHAIN=go1.27.3` in your
 shell before retrying. Bootstrap disables an enclosing Go workspace for its own
 commands. Its temporary-directory utility, `mktemp`, is supplied by macOS and
 Linux; the recovery regression suite additionally uses Python 3 in CI.
@@ -1382,8 +1394,8 @@ literal Report만281→235배치이며 Cut 네 suite와 Index·Count 경계는 �
 
 [upstream.json](upstream.json)에 Go **1.27.2**의 커밋
 `022c8636110ebac86a9b88724cda168ed713c21f`, 파일 SHA-256,
-Gooo **0.6.32-dev** 컴파일러 커밋
-`83928fa4538245abe33b08549da47f8cbdc50ed2`을 고정했습니다.
+현재 Gooo **0.6.37-dev** 컴파일러 커밋
+`205896a413e5dea92366309c35ae85e542d055f6`과 실행 도구 체인 Go **1.27.3**을 고정했습니다.
 테스트의 Go 도구 체인에서도 원본 파일 해시가 일치해야 합니다.
 
 기존 Go 이식 부분은 BSD 3-Clause 라이선스입니다. Go 원본 저작권과

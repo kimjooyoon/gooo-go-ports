@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Exercise installer failures with real local Git and a controlled build tool.
 
-Only this temporary copy's repository URL and commit pin are changed. The build
+Only this temporary copy's repository URL, commit/tag pins and module version
+are replaced by local fixture identities. The build
 stub injects failures; the shipped Go identity validator runs with real Go.
 No public network, engine checkout, or existing user installation is modified.
 """
@@ -59,16 +60,25 @@ class Bootstrap(unittest.TestCase):
         (self.repo / ".gitignore").write_text("ignored.txt\n")
         git("add", ".", cwd=self.repo)
         git("commit", "-m", "fixture", cwd=self.repo)
+        self.tag_commit = git("rev-parse", "HEAD", cwd=self.repo)
+        git("tag", "-a", "v0.6.37-dev", "-m", "local annotated version base", cwd=self.repo)
+        self.tag_object = git("rev-parse", "refs/tags/v0.6.37-dev", cwd=self.repo)
+        (self.repo / "source.txt").write_text("pinned source after the version base\n")
+        git("commit", "-am", "pinned fixture", cwd=self.repo)
         self.revision = git("rev-parse", "HEAD", cwd=self.repo)
+        self.module_version = "v0.6.37-dev.0.20260101000000-" + self.revision[:12]
         self.origin = self.repo.as_uri()
         script = (ROOT / "tools/bootstrap.sh").read_text().replace(PIN["compiler_revision"], self.revision).replace("https://github.com/kimjooyoon/meta-ontology-go.git", self.origin)
+        script = script.replace("5fe4540544066fc4ea7ce81b36eb3e70ac440c27", self.tag_object).replace("a483100e5c35d3638ac8e444888a193135b337d5", self.tag_commit)
         (self.app / "tools/bootstrap.sh").write_text(script)
-        shutil.copyfile(ROOT / "tools/bootstrap-check.go", self.app / "tools/bootstrap-check.go")
+        validator = (ROOT / "tools/bootstrap-check.go").read_text().replace(
+            "v0.6.37-dev.0.20261020180505-205896a413e5", self.module_version)
+        (self.app / "tools/bootstrap-check.go").write_text(validator)
         pin = dict(PIN, compiler_revision=self.revision)
         (self.app / "upstream.json").write_text(json.dumps(pin))
         self.env = dict(os.environ, PATH=str(self.base / "bin") + os.pathsep + os.environ["PATH"],
                         REAL_GIT=REAL_GIT, REAL_GO=REAL_GO, STATE_DIR=str(self.state),
-                        TEST_REVISION=self.revision, TEST_COMPILER_VERSION=PIN["compiler_version"], GOTOOLCHAIN="local", GOWORK="off")
+                        TEST_REVISION=self.revision, TEST_COMPILER_VERSION=PIN["compiler_version"], TEST_COMPILER_MODULE=self.module_version, GOTOOLCHAIN="local", GOWORK="off")
         self.executable("git", '''import os,sys
 from pathlib import Path
 args=sys.argv[1:]
@@ -83,7 +93,7 @@ os.execv(os.environ['REAL_GIT'],[os.environ['REAL_GIT'],*args])
 from pathlib import Path
 args=sys.argv[1:]; state=Path(os.environ['STATE_DIR'])
 if args==['env','GOVERSION']:
- print(os.environ.get('TEST_GOVERSION','go1.27.2')); sys.exit(0)
+ print(os.environ.get('TEST_GOVERSION','go1.27.3')); sys.exit(0)
 if args and args[0]=='build':
  with open(state/'build.log','a') as log: log.write('build\\n')
  if os.environ.get('WAIT_BUILD'):
@@ -92,7 +102,10 @@ if args and args[0]=='build':
  output=Path(args[args.index('-o')+1])
  if os.environ.get('FAIL_BUILD'):
   output.write_text('partial failed build'); sys.exit(72)
- identity={'compiler_source_sha':os.environ['TEST_REVISION'],'version':os.environ['TEST_COMPILER_VERSION'],'go_version':'go1.27.2','native_go_required':'go1.27.2','source_status':'CLEAN_VCS','vcs_modified':'false'}
+ identity={'compiler_source_sha':os.environ['TEST_REVISION'],'version':os.environ['TEST_COMPILER_VERSION'],'go_version':'go1.27.3','native_go_required':'go1.27.3','source_status':'CLEAN_VCS','vcs_modified':'false'}
+ identity.update(module_version=os.environ['TEST_COMPILER_MODULE'],module={'path':'github.com/kimjooyoon/meta-ontology-go','version':os.environ['TEST_COMPILER_MODULE']},decision_runtime={'module_path':'github.com/kimjooyoon/gooo-decision-runtime','version':'v0.2.51-experimental','replaced':False})
+ if os.environ.get('BAD_MODULE'): identity['module'][os.environ['BAD_MODULE']]='wrong'
+ if os.environ.get('BAD_RUNTIME'): identity['decision_runtime'][os.environ['BAD_RUNTIME']]='wrong'
  if os.environ.get('BAD_IDENTITY'): identity[os.environ['BAD_IDENTITY']]='wrong'
  output.write_text("#!/bin/sh\\ncat <<'IDENTITY'\\n"+json.dumps(identity)+"\\nIDENTITY\\n")
  output.chmod(0o755); sys.exit(0)
@@ -112,7 +125,9 @@ os.execv(os.environ['REAL_GO'],[os.environ['REAL_GO'],*args])
         self.assertEqual(git("rev-parse", "HEAD", cwd=self.app / ".compiler"), self.revision)
         identity = json.loads(subprocess.check_output([str(self.app / ".gooo")], text=True))
         self.assertEqual(identity["compiler_source_sha"], self.revision)
-        self.assertEqual(identity["go_version"], "go1.27.2")
+        self.assertEqual(identity["go_version"], "go1.27.3")
+        self.assertEqual(identity["module"]["version"], self.module_version)
+        self.assertEqual(identity["decision_runtime"]["version"], "v0.2.51-experimental")
         self.assertFalse((self.app / ".bootstrap.lock").exists())
 
     def incomplete(self, origin=None):
@@ -163,6 +178,36 @@ os.execv(os.environ['REAL_GO'],[os.environ['REAL_GO'],*args])
                 result = self.run_bootstrap(BAD_IDENTITY=field)
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn("identity differs", result.stderr)
+                self.assertEqual((self.app / ".gooo").read_bytes(), before)
+                self.assertFalse((self.app / ".compiler").exists())
+        self.assert_success(self.run_bootstrap())
+
+    def test_missing_version_tag_in_existing_shallow_checkout_refuses_before_build(self):
+        git("clone", "--depth=1", "--no-tags", self.origin, str(self.app / ".compiler"))
+        compiler = self.app / ".compiler"
+        before = snapshot(compiler)
+        result = self.run_bootstrap()
+        self.assert_rejected_preserving(result, compiler, before, "version tag is missing or differs")
+        self.assertFalse((self.state / "build.log").exists())
+
+    def test_unrecognized_version_tag_does_not_replace_existing_checkout(self):
+        git("clone", self.origin, str(self.app / ".compiler"))
+        compiler = self.app / ".compiler"
+        git("tag", "-d", "v0.6.37-dev", cwd=compiler)
+        git("tag", "v0.6.37-dev", self.revision, cwd=compiler)
+        before = snapshot(compiler)
+        self.assert_rejected_preserving(self.run_bootstrap(), compiler, before, "version tag is missing or differs")
+        self.assertFalse((self.state / "build.log").exists())
+
+    def test_module_and_runtime_identity_failures_preserve_old_binary(self):
+        before = self.old_binary()
+        for env in [{"BAD_IDENTITY": "module_version"}, {"BAD_MODULE": "path"},
+                    {"BAD_MODULE": "version"}, {"BAD_MODULE": "replacement"},
+                    {"BAD_RUNTIME": "module_path"}, {"BAD_RUNTIME": "version"}, {"BAD_RUNTIME": "replaced"}]:
+            with self.subTest(env=env):
+                result = self.run_bootstrap(**env)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("identity", result.stderr)
                 self.assertEqual((self.app / ".gooo").read_bytes(), before)
                 self.assertFalse((self.app / ".compiler").exists())
         self.assert_success(self.run_bootstrap())
@@ -255,7 +300,7 @@ os.execv(os.environ['REAL_GO'],[os.environ['REAL_GO'],*args])
     def test_wrong_go_fails_before_creating_install_state(self):
         result = self.run_bootstrap(TEST_GOVERSION="go1.28.0")
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("GOTOOLCHAIN=go1.27.2", result.stderr)
+        self.assertIn("GOTOOLCHAIN=go1.27.3", result.stderr)
         self.assertFalse((self.app / ".compiler").exists())
         self.assertFalse((self.app / ".bootstrap.lock").exists())
         self.assertFalse((self.state / "git.log").exists())
@@ -318,6 +363,20 @@ os.execv(os.environ['REAL_GO'],[os.environ['REAL_GO'],*args])
         self.assertIn("changed while building", stderr)
         self.assertEqual(source.read_text(), "edit during build")
         self.assertEqual((self.app / ".gooo").read_bytes(), binary)
+        self.assertFalse((self.app / ".bootstrap.lock").exists())
+
+    def test_version_tag_change_during_build_preserves_existing_binary(self):
+        self.assert_success(self.run_bootstrap())
+        before = (self.app / ".gooo").read_bytes()
+        process = self.start_waiting()
+        compiler = self.app / ".compiler"
+        git("tag", "-d", "v0.6.37-dev", cwd=compiler)
+        git("tag", "v0.6.37-dev", self.revision, cwd=compiler)
+        (self.state / "release").touch()
+        stdout, stderr = process.communicate(timeout=40)
+        self.assertNotEqual(process.returncode, 0, stdout + stderr)
+        self.assertIn("version tag is missing or differs", stderr)
+        self.assertEqual((self.app / ".gooo").read_bytes(), before)
         self.assertFalse((self.app / ".bootstrap.lock").exists())
 
     def test_user_file_added_during_legacy_recovery_stays_in_place(self):

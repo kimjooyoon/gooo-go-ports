@@ -15,7 +15,7 @@ type nativeCaseProfile string
 
 const uuidCompactCaseProfile nativeCaseProfile = "uuid-compact-v1"
 const uuidLiteralReportCompactCaseProfile nativeCaseProfile = "uuid-and-literal-report-compact-v1"
-const uuidCompactCompilerRevision = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+const uuidCompactCompilerRevision = "205896a413e5dea92366309c35ae85e542d055f6"
 const uuidCompactMaxSourceBytes = 10 << 20
 const uuidCompactMaxRows = 128
 const uuidCompactMaxRawBytes = 30000
@@ -52,11 +52,11 @@ func (p nativeCaseProfile) validateCompiler(lock upstream) error {
 	if err := p.validate(); err != nil {
 		return err
 	}
-	if p != "" && (lock.CompilerRevision != uuidCompactCompilerRevision || lock.GoVersion != "go1.27.2") {
+	if p != "" && (lock.CompilerRevision != uuidCompactCompilerRevision || lock.GoVersion != "go1.27.3") {
 		if p == uuidLiteralReportCompactCaseProfile {
-			return fmt.Errorf("uuid-and-literal-report-compact-v1 requires pinned compiler839 and Go1.27.2 for its source-derived lowering bound")
+			return fmt.Errorf("uuid-and-literal-report-compact-v1 requires pinned current compiler205896a and Go1.27.3 for its source-derived lowering bound")
 		}
-		return fmt.Errorf("uuid-compact-v1 requires pinned compiler839 and Go1.27.2 for its source-derived lowering bound")
+		return fmt.Errorf("uuid-compact-v1 requires pinned current compiler205896a and Go1.27.3 for its source-derived lowering bound")
 	}
 	return nil
 }
@@ -298,9 +298,9 @@ func (p nativeCaseProfile) identity() map[string]any {
 	}
 	return map[string]any{
 		"schema": "gooo/native-case-profile/v1", "name": string(p),
-		"compiler_revision": uuidCompactCompilerRevision, "go_version": "go1.27.2",
+		"compiler_revision": uuidCompactCompilerRevision, "go_version": "go1.27.3",
 		"entries":      []string{"go/github.com/google/uuid:Validate", "app/uuid-format-inspector:Inspect", "go/github.com/google/uuid/text:ParseCanonical"},
-		"serializer":   "Go1.27.2 json.Marshal(caseDocument(batch)) plus exactly one LF",
+		"serializer":   "Go1.27.3 json.Marshal(caseDocument(batch)) plus exactly one LF",
 		"maximum_rows": uuidCompactMaxRows, "raw_bytes_including_LF": uuidCompactMaxRawBytes,
 		"translated_compact_engine_bytes": uuidCompactTranslatedBytes, "maximum_selected_source_bytes": uuidCompactMaxSourceBytes,
 		"lowering_guard": "Pinned839 source-derived nonexpansion upper bound; not measured translated bytes or an actual LoweredName.",

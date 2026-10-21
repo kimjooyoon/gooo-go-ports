@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
-          go-version: '1.27.2'
+          go-version: '1.27.3'
           cache: false
       - name: Check packaging refusal controls
         run: python3 -I -B tools/api_policy_cli_bundle_test.py -v
@@ -73,7 +73,7 @@ jobs:
           export GOPATH="$bundle_work/gopath" GOBIN="$bundle_work/bin" TMPDIR="$bundle_work/tmp"
           mkdir -p "$GOBIN" "$TMPDIR"
           module=github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy
-          version=v0.0.0-20261018191951-2aa0f96805f1
+          version=v0.0.0-20261020182808-7180a4a0f36a
           timeout 180s go install "$module/cmd/evaluate@$version"
           python3 -I -B tools/service_policy_cli_bundle.py \
             --binary "$GOBIN/evaluate" --go "$(go env GOROOT)/bin/go" --root "$PWD" \

@@ -7,7 +7,7 @@ result together in memory. No human confirmation is part of this runtime path.
 
 ## Run the example
 
-Use an installed Go 1.27.2 toolchain. From the parent
+Use an installed Go 1.27.3 toolchain. From the parent
 `examples/agentmesh-service-policy` module directory, run:
 
 ```sh

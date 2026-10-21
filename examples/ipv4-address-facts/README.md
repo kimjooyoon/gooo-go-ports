@@ -23,7 +23,7 @@ Parsing, IPv6, mapped addresses, zones, DNS, redirects and network effects are
 outside this adaptation.
 
 After the [repository setup](../../README.md), run the one-row starter from the
-repository root with the pinned compiler and explicit Go 1.27.2 executable:
+repository root with the pinned compiler and explicit Go 1.27.3 executable:
 
 ```sh
 ./.gooo package execute --json --go "$(go env GOROOT)/bin/go" \

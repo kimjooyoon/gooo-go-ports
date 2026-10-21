@@ -182,7 +182,14 @@ func canonicalHeaderLowerBody(index int, defs []canonicalHeaderDefinition, consu
 	}
 	return body
 }
+
+// Preserve the historical839 synthetic fixture expectation. Current inspection
+// supplies an independently selected compiler profile to WithIdentity.
 func canonicalHeaderPureCalls(defs []canonicalHeaderDefinition, consumer bool) (map[string]any, error) {
+	return canonicalHeaderPureCallsWithIdentity(defs, consumer, legacyPureCallIdentityProfile)
+}
+
+func canonicalHeaderPureCallsWithIdentity(defs []canonicalHeaderDefinition, consumer bool, ids pureCallIdentityProfile) (map[string]any, error) {
 	activities, sites := []any{}, []any{}
 	order := make([]int, len(defs))
 	for i := range order {
@@ -194,7 +201,7 @@ func canonicalHeaderPureCalls(defs []canonicalHeaderDefinition, consumer bool) (
 	})
 	for _, i := range order {
 		d := defs[i]
-		activities = append(activities, map[string]any{"activity": map[string]any{"package_path": d.Package, "activity": d.Declaration.Name, "lowered_name": d.Lowered}, "activity_id": decimalPayloadDerivedID(d.Namespace, d.Declaration.Name), "lowered_activity_id": decimalPayloadDerivedID("gooo_workspace", d.Lowered), "source": d.Source, "source_body_sha256": contentDigest([]byte(d.Declaration.Body))})
+		activities = append(activities, map[string]any{"activity": map[string]any{"package_path": d.Package, "activity": d.Declaration.Name, "lowered_name": d.Lowered}, "activity_id": ids.original(d.Namespace, d.Declaration.Name, d.Declaration.ID), "lowered_activity_id": ids.lowered(d.Lowered, d.Declaration.ID), "source": d.Source, "source_body_sha256": contentDigest([]byte(d.Declaration.Body))})
 	}
 	for _, edge := range canonicalHeaderEdges(consumer) {
 		caller, callee := defs[edge.caller], defs[edge.callee]
@@ -403,7 +410,11 @@ func inspectCanonicalHeaderABI(raw []byte, s suite, identity expectedIdentity) e
 			return fmt.Errorf("canonical header source-derived lowered body/signature")
 		}
 	}
-	calls, err := canonicalHeaderPureCalls(defs, consumer)
+	ids, err := selectPureCallIdentityProfile(identity.CompilerRevision)
+	if err != nil {
+		return err
+	}
+	calls, err := canonicalHeaderPureCallsWithIdentity(defs, consumer, ids)
 	if err != nil || !decimalPayloadSame(program["pure_calls"], calls) {
 		return fmt.Errorf("canonical header source pure participants/call sites")
 	}

@@ -96,7 +96,7 @@ def observe(root, out, compiler, go_tool):
     LEGACY.validate_identity(loads_receipt(version.stdout), loads_receipt(frozen["upstream.json"]))
     go_version = subprocess.run([str(go_tool), "version"], capture_output=True, timeout=30, env=env)
     (out / "go-version.txt").write_bytes(go_version.stdout)
-    require(go_version.returncode == 0 and go_version.stdout.decode().startswith("go version go1.27.2 "), "explicit Go1.27.2 executable")
+    require(go_version.returncode == 0 and go_version.stdout.decode().startswith("go version go1.27.3 "), "explicit Go1.27.3 executable")
     cases = list(negative_inputs())
     require(len(cases) == 56 and len({case["name"] for case in cases}) == 56
             and all(sum(case["entry"] == entry for case in cases) == 28 for entry in ENTRIES), "exact two-entry56request roster")

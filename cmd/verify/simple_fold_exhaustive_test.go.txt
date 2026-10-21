@@ -11,7 +11,7 @@ import (
 // Only the oracle and reporting live here. The function under test is called
 // directly from the byte-for-byte copy of the checked generated composition.
 func TestSimpleFoldExhaustive(t *testing.T) {
-    if runtime.Version() != "go1.27.2" || unicode.Version != "17.0.0" {
+    if runtime.Version() != "go1.27.3" || unicode.Version != "17.0.0" {
         t.Fatal("wrong pinned Go / Unicode oracle")
     }
     unicodeInputs := 0

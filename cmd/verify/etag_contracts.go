@@ -617,6 +617,10 @@ func inspectETagABI(raw []byte, s suite, identity expectedIdentity) error {
 	// Generic inspectWorkspace already checks complete source-image raw bindings.
 	pure := p["pure_calls"]
 	if pure != nil || etagReportConsumer(s) {
+		ids, err := selectPureCallIdentityProfile(identity.CompilerRevision)
+		if err != nil {
+			return err
+		}
 		pc, ok := pure.(map[string]any)
 		if !ok || pc["schema"] != "gooo/workspace-pure-calls/v1" {
 			return fmt.Errorf("etag pure source metadata")
@@ -637,7 +641,7 @@ func inspectETagABI(raw []byte, s suite, identity expectedIdentity) error {
 			}
 			key := fmt.Sprint(ref["package_path"]) + ":" + fmt.Sprint(ref["activity"])
 			d, ok := defs[key]
-			if !ok || seen[key] || !decimalPayloadSame(ref, map[string]any{"package_path": d.Package, "activity": d.Declaration.Name, "lowered_name": d.Lowered}) || a["source"] != d.Source || a["source_body_sha256"] != contentDigest([]byte(d.Declaration.Body)) || a["activity_id"] != decimalPayloadDerivedID(d.Namespace, d.Declaration.Name) || a["lowered_activity_id"] != decimalPayloadDerivedID("gooo_workspace", d.Lowered) {
+			if !ok || seen[key] || !decimalPayloadSame(ref, map[string]any{"package_path": d.Package, "activity": d.Declaration.Name, "lowered_name": d.Lowered}) || a["source"] != d.Source || a["source_body_sha256"] != contentDigest([]byte(d.Declaration.Body)) || a["activity_id"] != ids.original(d.Namespace, d.Declaration.Name, d.Declaration.ID) || a["lowered_activity_id"] != ids.lowered(d.Lowered, d.Declaration.ID) {
 				return fmt.Errorf("etag pure exact body/ID")
 			}
 			seen[key] = true

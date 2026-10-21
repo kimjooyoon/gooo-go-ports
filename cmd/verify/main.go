@@ -14,7 +14,6 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type upstream struct {
@@ -46,6 +45,9 @@ func run() error {
 	browser := flag.String("browser-fixtures", "", "write independent browser oracle fixtures to a new JSON file")
 	workers := flag.Int("workers", 1, "native suites to verify concurrently (1..4; default serial)")
 	suiteOrderFlag := flag.String("suite-order", "catalog", "native suite dispatch order: catalog or largest-corpus-first")
+	failFast := flag.Bool("fail-fast", false, "stop dispatch after the first completed uncanceled native suite failure; join active batches")
+	nativeTimeout := flag.Duration("timeout", defaultNativeSuiteTimeout, "native verification timeout (1s..60m; default 30m)")
+	nativeExecutionRequested := false
 	timingOut := flag.String("timing-out", "", "optional new timing JSONL directly under --out (observation only)")
 	caseProfileFlag := flag.String("case-profile", "", "optional case wire profile: legacy, uuid-compact-v1 or uuid-and-literal-report-compact-v1")
 	workspaceProfileFlag := flag.String("workspace-profile", "", "optional workspace source profile: legacy or dependency-closure-v1")
@@ -68,6 +70,9 @@ func run() error {
 		return err
 	}
 	flag.Visit(func(f *flag.Flag) {
+		if f.Name == "fail-fast" || f.Name == "timeout" {
+			nativeExecutionRequested = true
+		}
 		if strings.HasPrefix(f.Name, "ci-shard-") {
 			shard.Requested = true
 		}
@@ -79,11 +84,14 @@ func run() error {
 			nativeShard.CompilerRequested = true
 		}
 	})
+	if err := validateNativeSuiteTimeout(*nativeTimeout); err != nil {
+		return err
+	}
 	if shard.enabled() {
 		if flag.NArg() != 0 {
 			return fmt.Errorf("CI shard metadata mode does not accept positional arguments")
 		}
-		conflicts := *compiler != "./.gooo" || *out != "" || *browser != "" || *workers != 1 || *suiteOrderFlag != "catalog" || *timingOut != "" || *caseProfileFlag != "" || *workspaceProfileFlag != ""
+		conflicts := *compiler != "./.gooo" || *out != "" || *browser != "" || *workers != 1 || *suiteOrderFlag != "catalog" || *timingOut != "" || *caseProfileFlag != "" || *workspaceProfileFlag != "" || nativeExecutionRequested
 		if nativeShard.Requested {
 			if err := nativeShard.validate(shard, conflicts); err != nil {
 				return err
@@ -94,6 +102,9 @@ func run() error {
 			return err
 		}
 		return runCIShardMetadata(shard, ".")
+	}
+	if nativeExecutionRequested && (*out == "" || *browser != "") {
+		return fmt.Errorf("--fail-fast and --timeout require --out and cannot be used with --browser-fixtures")
 	}
 	caseProfile, err := parseNativeCaseProfile(*caseProfileFlag, *browser != "")
 	if err != nil {
@@ -318,7 +329,7 @@ func run() error {
 			return err
 		}
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), *nativeTimeout)
 	defer cancel()
 	raw, err := execute(ctx, *compiler, filepath.Join(root, "compiler.json"), "version", "--build", "--json")
 	if err != nil {
@@ -393,7 +404,7 @@ func run() error {
 	verifier := newNativeSuiteVerifier(ctx, *compiler, root, lock, cache)
 	verifier.timing = timing
 	verifier.caseProfile = caseProfile
-	results, err := runNativeSuitesOrdered(ctx, suites, *workers, dispatchOrder, func(ctx context.Context, index int, s suite) (nativeSuiteResult, error) {
+	results, err := runNativeSuitesOrderedPolicy(ctx, suites, *workers, dispatchOrder, *failFast, func(ctx context.Context, index int, s suite) (nativeSuiteResult, error) {
 		suiteTiming := timing.beginSuite(index, s)
 		result, err := verifier.verify(ctx, s, workspaces[index])
 		suiteTiming.finish(result, err, ctx.Err())
@@ -404,7 +415,7 @@ func run() error {
 		return result, err
 	})
 	if err != nil {
-		// Preserve the original earliest-index verification error as the primary result.
+		// Preserve the selected verification error as the primary result.
 		if timingErr := timing.close(err, ctx.Err()); timingErr != nil {
 			fmt.Fprintln(os.Stderr, "native timing:", timingErr)
 		}
@@ -469,7 +480,7 @@ func run() error {
 		"canonical_header_report_fields":               len(canonicalHeaderResultNames),
 		"canonical_header_port_source_count":           2,
 		"canonical_header_report_source_count":         4,
-		"canonical_header_scope":                       "Decoded validUTF8 Text0..1024bytes, including empty and invalid header names. Actual Go1.27.2 net/textproto.CanonicalMIMEHeaderKey supplies canonical Text; the importing original8-field Report retains exact original/canonical Text, changed/validity, byte lengths and first invalid offset/octet. All1059 ordered occurrences,1054 unique keys,zero within-partition and five cross-partition duplicates are retained per entry. No arbitrary-byte/unbounded Go string, HTTP parsing, authorization, effect, production or performance claim.",
+		"canonical_header_scope":                       "Decoded validUTF8 Text0..1024bytes, including empty and invalid header names. Actual Go1.27.3 net/textproto.CanonicalMIMEHeaderKey supplies canonical Text; the importing original8-field Report retains exact original/canonical Text, changed/validity, byte lengths and first invalid offset/octet. All1059 ordered occurrences,1054 unique keys,zero within-partition and five cross-partition duplicates are retained per entry. No arbitrary-byte/unbounded Go string, HTTP parsing, authorization, effect, production or performance claim.",
 		"canonical_header_provenance_scope":            "Fresh native execution and saved replay bind original Text, exact typed8 result fields and order, current2/4-source closures, lowered source/record/callee ABI, producer identities and raw outer saved parents. The scalar expectation is the actual pinned Go standard library; Report diagnostics reuse the independent existing header reference. Independent inner typed canonical prior_result_sha256 remains NOT_CHECKED; private pilot receipts are not fresh public acceptance.",
 		"header_addition_reference_cases":              len(addition[0].Cases),
 		"header_addition_fixed_batch_rows":             8,
@@ -558,6 +569,7 @@ func run() error {
 		"cases":                         total, "passed": passed, "runs": reports,
 		"scope": "Finite differential observations against pinned Go source, plus identical saved replay. The prior 56 suites, 108,835 cases, source rosters and 1,416 batch boundaries are unchanged. A separate ParseCanonical Text API adds original Google UUID Parse and returned String observations, preserving partial values on errors. Google UUID Validate and its importing consumer add finite original-source references, exact error/classification records and isolated package workspaces. Strings.IndexByte adds independent byte-search references and separately counted original int64 needle extensions; its two Text suites and all UUID suites use a serialized-byte batch bound. NRGBA adds finite record-input conversion and opaque matte references with original int64 domain rejection, independent color and draw oracles and separate counters. Case mapping adds independent Go references, separately counted outside-int32 extensions, and a three-mapping diagnostic consumer. Invalid To case selectors return U+FFFD before rune-domain handling; valid selectors and unary wrappers preserve outside-int32 inputs as an explicit identity extension. Fixed-point Floor/Ceil add finite comparisons with byte-preserved golang.org/x/image source, including original int32 overflow; outside-int32 rejection is separate. PixelBounds rejects invalid raw coordinates first, returns original empty/reversed selections as empty before quantization, and rejects nonempty max coordinates that overflow Ceil; it clips the rounded rectangle against unnormalized int64 bounds. No 2^32 exhaustive check or font/image rendering claim. YCbCr adds finite Go-reference tuples and separately counted out-of-byte rejection cases; original int64 inputs are checked before conversion. Its importing RGB round-trip consumer reports signed restored-minus-original deltas and does not promise a lossless conversion. SimpleFold preserves the pinned ASCII, special-orbit and case-range rules over original signed int32 runes; its outside-int32 identity extension is counted separately. The importing two-rune consumer compares simple folding classes with a maximum orbit length verified from the complete pinned Unicode graph; it is not whole-string folding or locale-aware matching. The separate simple_fold_exhaustive report covers the unchanged generated SimpleFold function on every input 0..0x10FFFF, plus separately counted finite int32 and int64 extension samples, not every int32 value or rune pair. The original four geometry methods preserve four original signed int64 coordinates in each Rectangle record on 64-bit Go, including empty and noncanonical rectangles; named boundaries, a small grid and fixed samples are finite Go method comparisons, with no coordinate normalization or domain-rejection extension. Both-empty Union preserves the second original record; empty Intersect returns the zero record. RectangleCanon separately compares and swaps inverted axes; its finite corpus includes canonical outputs again to observe idempotence. DragCropPlan canonicalizes only the original second record (drag corners) before intersection; original bounds and the existing CropPlan semantics are unchanged. These activities introduce no coordinate arithmetic or domain extension. CropPlan computes bounds only and does not process image pixels or calculate possibly overflowing widths/areas. Classification adds complete pinned Letter and Digit table semantics over original signed int32 rune inputs, observed here only through finite range boundaries, stride holes, Latin-1 and deterministic samples. A separate check-unicode command exhaustively checks 0..0x10FFFF using the unmodified generated Go; its counts are not included in these receipt batches. Whitespace uses pinned Unicode 17.0.0 White_Space semantics over original signed int32 rune inputs; all 256 Latin-1 values and all 25 true property members are included, with other domains observed finitely. Outside-int32 false/-1 extensions are counted separately from Go-reference observations. Duration ports and their consumer preserve both signed int64 nanosecond inputs, including nonpositive quanta, and add finite Go-reference observations without domain-rejection extensions. Color and rotation port/consumer Go-reference cases and explicit out-of-byte rejection cases are counted separately. RuneStart and the five original unary math/bits functions each cover all 256 byte values exactly once, excluding out-of-domain inputs. RotateLeft8 covers all 2,048 byte/rotation pairs only for x=0..255 and k=0..7; other signed int64 rotations have finite boundary/sample observations with original inputs preserved. No claim of exhaustive equivalence for all rotations or other domains, input-independent execution time, whole-package compatibility, ICC color management, or printed appearance.",
 	}
+	addNativeExecutionSummary(summaryDocument, nativeExecutionRequested, *failFast, *nativeTimeout)
 	caseProfile.decorateSummary(summaryDocument)
 	workspaceProfile.decorateSummary(summaryDocument)
 	summaryErr := save(filepath.Join(root, "summary.json"), summaryDocument)

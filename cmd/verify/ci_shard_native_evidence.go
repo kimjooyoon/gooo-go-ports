@@ -679,7 +679,7 @@ func inspectCIShardNativeExhaustive(reader *ciShardEvidenceReader, dir string, s
 	if err != nil {
 		return zero, err
 	}
-	for name, wanted := range map[string][]byte{"native/generated.go": []byte(source), "native/exhaustive_test.go": harness, "native/go.mod": []byte("module " + module + "\n\ngo 1.27.2\n")} {
+	for name, wanted := range map[string][]byte{"native/generated.go": []byte(source), "native/exhaustive_test.go": harness, "native/go.mod": []byte("module " + module + "\n\ngo 1.27.3\n")} {
 		got, err := reader.read(filepath.Join(dir, filepath.FromSlash(name)), 64<<20)
 		if err != nil || !bytes.Equal(got, wanted) {
 			return zero, fmt.Errorf("native exhaustive generated source/harness/module differs: %s: %v", name, err)

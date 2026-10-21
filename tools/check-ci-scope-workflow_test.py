@@ -1327,6 +1327,106 @@ def validate_ordered_service_workflow(text):
     return prior
 
 
+# The current runner changes only the reviewed Go patch selection/expectation
+# lines. Validate those exact full lines before recovering historical bytes.
+# This does not replace any prior workflow hash, compiler pin or native gate.
+GO1273_APPROVED_LINES = (
+    ("          go-version: '1.27.3'\n", 4),
+    ('            .go_version == "go1.27.3" and .native_go_required == "go1.27.3"\n', 2),
+    ('            .go_version == "go1.27.3" and\n', 1),
+    ('              compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.3",\n', 1),
+    ('              serializer: "Go1.27.3 json.Marshal(caseDocument(batch)) plus exactly one LF",\n', 1),
+    ('              compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.3"\n', 1),
+    ('              .schema == "gooo/ycbcr-exhaustive-native/v1" and .go_version == "go1.27.3" and\n', 1),
+    ('              .value.go_version == "go1.27.3" and .value.unicode_version == "17.0.0" and\n', 1),
+    ('            .canonical_header_scope == "Decoded validUTF8 Text0..1024bytes, including empty and invalid header names. Actual Go1.27.3 net/textproto.CanonicalMIMEHeaderKey supplies canonical Text; the importing original8-field Report retains exact original/canonical Text, changed/validity, byte lengths and first invalid offset/octet. All1059 ordered occurrences,1054 unique keys,zero within-partition and five cross-partition duplicates are retained per entry. No arbitrary-byte/unbounded Go string, HTTP parsing, authorization, effect, production or performance claim." and\n', 1),
+    ('            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.3" and\n', 3),
+    ('            .compiler_version == "0.6.32-dev" and .go_version == "go1.27.3" and\n', 3),
+    ('          assert s["compiler_revision"] == "83928fa4538245abe33b08549da47f8cbdc50ed2" and s["go_version"] == "go1.27.3"\n', 1),
+    ('            .binary_metadata.version == "go1.27.3" and .binary_metadata.dependencies == 0 and\n', 1),
+    ('              .compiler_build.vcs_modified == "false" and .compiler_build.go_version == "go1.27.3" and\n', 1),
+)
+
+
+def project_go1273_toolchain(text):
+    require('1.27.2' not in text, 'current workflow must use only the approved Go1.27.3 selection')
+    require(text.count('1.27.3') == sum(line.count('1.27.3') * count
+            for line, count in GO1273_APPROVED_LINES),
+            'unexpected Go1.27.3 occurrence in the current workflow')
+    for line, count in GO1273_APPROVED_LINES:
+        require(text.splitlines(keepends=True).count(line) == count,
+                'current Go1.27.3 selection/expectation line changed')
+    for line, count in GO1273_APPROVED_LINES:
+        text = text.replace(line, line.replace('1.27.3', '1.27.2'), count)
+    return text
+
+
+# Exact current compiler delta over the retained Go1.27.3 workflow.
+# Each full line and both installer replacements are independently counted;
+# historical workflow hashes and the existing Go patch projection stay intact.
+CURRENT_COMPILER_REVISION = '205896a413e5dea92366309c35ae85e542d055f6'
+CURRENT_COMPILER_PRIOR_GO1273_SHA = '9bf3e319103708bd7739cbb82237e2ee0b0ac54383ac70a528d5d291691cbde7'
+CURRENT_COMPILER_LINE_PAIRS = (('            .version == "0.6.32-dev" and\n', '            .version == "0.6.37-dev" and\n', 2), ('            .compiler_source_sha == "83928fa4538245abe33b08549da47f8cbdc50ed2" and\n', '            .compiler_source_sha == "205896a413e5dea92366309c35ae85e542d055f6" and\n', 2), ('            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and\n', '            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and\n', 6), ('              compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.3",\n', '              compiler_revision: "205896a413e5dea92366309c35ae85e542d055f6", go_version: "go1.27.3",\n', 1), ('              compiler_revision: "83928fa4538245abe33b08549da47f8cbdc50ed2", go_version: "go1.27.3"\n', '              compiler_revision: "205896a413e5dea92366309c35ae85e542d055f6", go_version: "go1.27.3"\n', 1), ('            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and .go_version == "go1.27.3" and\n', '            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and .go_version == "go1.27.3" and\n', 3), ('            .compiler_version == "0.6.32-dev" and .go_version == "go1.27.3" and\n', '            .compiler_version == "0.6.37-dev" and .go_version == "go1.27.3" and\n', 3), ('          assert s["compiler_revision"] == "83928fa4538245abe33b08549da47f8cbdc50ed2" and s["go_version"] == "go1.27.3"\n', '          assert s["compiler_revision"] == "205896a413e5dea92366309c35ae85e542d055f6" and s["go_version"] == "go1.27.3"\n', 1), ('            .compiler_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2"\n', '            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6"\n', 3), ('            .model_calls == 0 and .compiler_revision == "31497af3beaef210b5a075867b0de76cf55ee3ca"\n', '            .model_calls == 0 and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6"\n', 1), ('            .first_failure == null and .compiler_revision == "de99b770b8b5adea608233c3c0664902336e3310" and\n', '            .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and\n', 1), ('            .compiler_pin == "83928fa4538245abe33b08549da47f8cbdc50ed2" and\n', '            .compiler_pin == "205896a413e5dea92366309c35ae85e542d055f6" and\n', 1), ('            .receipt_compiler.source_revision == "83928fa4538245abe33b08549da47f8cbdc50ed2" and\n', '            .receipt_compiler.source_revision == "205896a413e5dea92366309c35ae85e542d055f6" and\n', 1), ('              .compiler_build.compiler_source_sha == "83928fa4538245abe33b08549da47f8cbdc50ed2" and\n', '              .compiler_build.compiler_source_sha == "205896a413e5dea92366309c35ae85e542d055f6" and\n', 1))
+CURRENT_COMPILER_BLOCK_PAIRS = (('          # The default pinned839 check above remains independent of this opt-in compiler.\n          test ! -e out/source-inspection036\n          mkdir out/source-inspection036\n          curl --fail --location --silent --show-error --connect-timeout 15 --max-time 120 --output out/source-inspection036/gooo-linux-amd64.tar.gz https://github.com/kimjooyoon/meta-ontology-go/releases/download/v0.6.36-dev/gooo-linux-amd64.tar.gz\n          printf \'%s  %s\\n\' \'9dbd1c08b855a3c27ae43a8050531afaba724d90b24d4f72041db3a8a4a285b0\' \'out/source-inspection036/gooo-linux-amd64.tar.gz\' | sha256sum --check --strict\n          test "$(tar -tzf out/source-inspection036/gooo-linux-amd64.tar.gz)" = gooo\n          tar --no-same-owner --no-same-permissions -xzf out/source-inspection036/gooo-linux-amd64.tar.gz -C out/source-inspection036 gooo\n          python3 -I -B tools/check-editable-policy-helpers.py --root "$PWD" --compiler "$PWD/out/source-inspection036/gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/editable-api-policy-helpers"\n', '          # Explicit037 source-inspection profile reuses the already identified current compiler.\n          python3 -I -B tools/check-editable-policy-helpers.py --root "$PWD" --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/editable-api-policy-helpers"\n'), ('          # This consumer profile does not replace .gooo/default839 or its82 suites.\n          test ! -e out/service-grant-many-compiler\n          mkdir out/service-grant-many-compiler\n          curl --fail --location --silent --show-error --connect-timeout 15 --max-time 120 --max-filesize 16777216 --output out/service-grant-many-compiler/gooo-linux-amd64.tar.gz https://github.com/kimjooyoon/meta-ontology-go/releases/download/v0.6.35-dev/gooo-linux-amd64.tar.gz\n          printf \'%s  %s\\n\' \'e68a43a1937c327b1240a5fd7a2ee5ed427f32c7564415891fa808958421bb76\' \'out/service-grant-many-compiler/gooo-linux-amd64.tar.gz\' | sha256sum --check --strict\n          python3 -I -B - <<\'PY_MANY_COMPILER\'\n          import pathlib, tarfile\n          folder = pathlib.Path(\'out/service-grant-many-compiler\')\n          archive = folder / \'gooo-linux-amd64.tar.gz\'\n          assert archive.stat().st_size == 15646044\n          with tarfile.open(archive, \'r:gz\') as tf:\n              members = tf.getmembers()\n              assert len(members) == 1\n              item = members[0]\n              assert item.name == \'gooo\' and item.isfile() and not item.issym() and not item.islnk()\n              assert 0 < item.size <= 64 * 1024 * 1024\n              raw = tf.extractfile(item).read(item.size + 1)\n              assert len(raw) == item.size\n              binary = folder / \'gooo\'\n              with binary.open(\'xb\') as f:\n                  f.write(raw)\n              binary.chmod(0o700)\n          PY_MANY_COMPILER\n          python3 -I -B examples/service-grant-many/verify.py --compiler "$PWD/out/service-grant-many-compiler/gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/service-grant-many"\n', '          # Current many profile reuses the already identified current compiler; oldde99 release evidence is historical.\n          python3 -I -B examples/service-grant-many/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --out "$PWD/out/service-grant-many"\n'))
+
+# Current205's finite redelivery receipts retain more trace diagnostics. Allow
+# only the reviewed aggregate byte cap; restore the old exact line before all
+# historical workflow hashes and semantic guards are checked.
+CURRENT_COMPILER_LINE_PAIRS += ((
+    '          assert sum(p.stat().st_size for p in root.rglob("*") if p.is_file()) <= 8 << 20\n',
+    '          assert sum(p.stat().st_size for p in root.rglob("*") if p.is_file()) <= 32 << 20\n',
+    1,
+),)
+
+# Require the new stream/cleanup controls in the existing export step; retain
+# the complete original step and workflow contract after the inverse mapping.
+CURRENT_COMPILER_BLOCK_PAIRS += ((
+    '          export GOENV=off\n'
+    '          python3 -B tools/export-etag-project.py --out "$PWD/out/etag-project"\n',
+    '          export GOENV=off\n'
+    '          go test -race -count=1 templates/etag-project/check.go templates/etag-project/check_test.go\n'
+    '          python3 -B tools/export-etag-project.py --out "$PWD/out/etag-project"\n',
+),)
+
+# The current205 full native run explicitly selects safe first-failure joining
+# and a finite60-minute verifier budget. The job keeps15 minutes for setup,
+# later native gates and failure artifacts. All82 suites/cases remain required.
+CURRENT_COMPILER_BLOCK_PAIRS += (
+    ('  native-execution:\n    runs-on: ubuntu-24.04\n    timeout-minutes: 40\n', '  native-execution:\n    runs-on: ubuntu-24.04\n    timeout-minutes: 75\n'),
+    ('          go run -mod=readonly ./cmd/verify --workers 3 --case-profile uuid-and-literal-report-compact-v1 --workspace-profile dependency-closure-v1 --suite-order largest-corpus-first --out out/ci --timing-out out/ci/timing.jsonl\n', '          go run -mod=readonly ./cmd/verify --workers 3 --case-profile uuid-and-literal-report-compact-v1 --workspace-profile dependency-closure-v1 --suite-order largest-corpus-first --fail-fast --timeout 60m --out out/ci --timing-out out/ci/timing.jsonl\n'),
+    ('            .native_suite_workers == 3 and\n            .suite_order == "largest-corpus-first" and\n', '            .native_suite_workers == 3 and\n            .native_fail_fast == true and\n            .native_timeout_ns == 3600000000000 and\n            .native_failure_selection == "first-completed-uncanceled" and\n            .suite_order == "largest-corpus-first" and\n'),
+)
+
+def project_current_compiler_profile(text):
+    lines = text.splitlines(keepends=True)
+    expected_revision_count = sum(new.count(CURRENT_COMPILER_REVISION) * count
+                                  for old, new, count in CURRENT_COMPILER_LINE_PAIRS)
+    expected_revision_count += sum(new.count(CURRENT_COMPILER_REVISION)
+                                   for old, new in CURRENT_COMPILER_BLOCK_PAIRS)
+    require(text.count(CURRENT_COMPILER_REVISION) == expected_revision_count,
+            'unexpected current compiler revision occurrence')
+    expected_version_count = sum(new.count('0.6.37-dev') * count
+                                 for old, new, count in CURRENT_COMPILER_LINE_PAIRS)
+    expected_version_count += sum(new.count('0.6.37-dev')
+                                  for old, new in CURRENT_COMPILER_BLOCK_PAIRS)
+    require(text.count('0.6.37-dev') == expected_version_count,
+            'unexpected current compiler version occurrence')
+    for old, new, count in CURRENT_COMPILER_LINE_PAIRS:
+        require(lines.count(new) == count,
+                'current compiler expectation full line changed')
+    for old, new in CURRENT_COMPILER_BLOCK_PAIRS:
+        require(text.count(new) == 1 and text.count(old) == 0,
+                'current compiler reuse installer block changed')
+    prior = text
+    for old, new in CURRENT_COMPILER_BLOCK_PAIRS:
+        prior = prior.replace(new, old, 1)
+    for old, new, count in CURRENT_COMPILER_LINE_PAIRS:
+        prior = prior.replace(new, old, count)
+    require(hashlib.sha256(prior.encode()).hexdigest() == CURRENT_COMPILER_PRIOR_GO1273_SHA,
+            'current compiler delta changed unrelated workflow bytes')
+    return prior
+
+
 class WorkflowScopeTests(unittest.TestCase):
     def test_retry_after_additions_preserve_the_entire_prior_workflow_and_required_order(self):
         validate(self.text)
@@ -1675,7 +1775,7 @@ class WorkflowScopeTests(unittest.TestCase):
     def setUp(self):
         # First bind the complete current74 workflow; unchanged historical tests
         # then exercise exactly the reviewed73-byte projection.
-        self.text = validate_ordered_service_workflow(WORKFLOW.read_text())
+        self.text = validate_ordered_service_workflow(project_go1273_toolchain(project_current_compiler_profile(WORKFLOW.read_text())))
 
     def test_summary_preflight_is_exact_full_only_and_precedes_go_setup(self):
         named, unnamed = named_steps(self.text)
@@ -1915,6 +2015,23 @@ class WorkflowScopeTests(unittest.TestCase):
                 validate(self.text.replace(line, "", 1))
 
     def test_full_native_ci_binds_three_workers_and_timing(self):
+        # Exact opt-in flags, recorded outcome policy and finite budgets are
+        # bound before the historical inverse projection runs.
+        current = WORKFLOW.read_text()
+        for before, after in (
+                (" --fail-fast --timeout 60m", ""),
+                (" --fail-fast --timeout 60m", " --fail-fast=false --timeout 60m"),
+                (" --fail-fast --timeout 60m", " --fail-fast --timeout 30m"),
+                (" --fail-fast --timeout 60m", " --fail-fast --timeout 60m --timeout 30m"),
+                ('.native_fail_fast == true and', '.native_fail_fast == false and'),
+                ('.native_timeout_ns == 3600000000000 and', '.native_timeout_ns == 1800000000000 and'),
+                ('.native_failure_selection == "first-completed-uncanceled" and',
+                 '.native_failure_selection == "earliest-catalog-index" and'),
+                ('  native-execution:\n    runs-on: ubuntu-24.04\n    timeout-minutes: 75\n',
+                 '  native-execution:\n    runs-on: ubuntu-24.04\n    timeout-minutes: 150\n')):
+            self.assertEqual(current.count(before), 1)
+            with self.subTest(native_budget=after), self.assertRaises(ValueError):
+                project_current_compiler_profile(current.replace(before, after, 1))
         for workers in (1, 2, 4, 5):
             for before, after in (("--workers 3 --case-profile", f"--workers {workers} --case-profile"),
                                   (".native_suite_workers == 3 and", f".native_suite_workers == {workers} and"),
@@ -3264,7 +3381,7 @@ class WorkflowScopeTests(unittest.TestCase):
 
 class OrderedServiceIntegrationTests(unittest.TestCase):
     def setUp(self):
-        self.text = WORKFLOW.read_text()
+        self.text = project_go1273_toolchain(project_current_compiler_profile(WORKFLOW.read_text()))
 
     def test_named_facts_runs_the_same_demo_and_preserves_every_previous_gate(self):
         prior = project_named_facts_input(self.text)
@@ -3404,6 +3521,50 @@ class OrderedServiceIntegrationTests(unittest.TestCase):
             self.assertIn(before, self.text)
             with self.subTest(prior_boundary=before), self.assertRaises(ValueError):
                 validate_ordered_service_workflow(self.text.replace(before, after, 1))
+
+
+class CurrentGo1273SelectionTests(unittest.TestCase):
+    def test_exact_current_patch_delta_projects_to_all_historical_guards(self):
+        current = WORKFLOW.read_text()
+        go1273 = project_current_compiler_profile(current)
+        projected = project_go1273_toolchain(go1273)
+        self.assertEqual(projected.replace('1.27.2', '1.27.3'), go1273)
+        restored = go1273
+        for old, new, count in CURRENT_COMPILER_LINE_PAIRS:
+            self.assertEqual(restored.splitlines(keepends=True).count(old), count)
+            restored = restored.replace(old, new, count)
+        for old, new in CURRENT_COMPILER_BLOCK_PAIRS:
+            self.assertEqual(restored.count(old), 1)
+            restored = restored.replace(old, new, 1)
+        self.assertEqual(restored, current)
+        metadata = lambda text: re.findall(r'^.*(?:- name:|- uses:|if:|needs:).*$|^  [a-z][a-z-]+:$', text, re.M)
+        self.assertEqual(metadata(current), metadata(go1273))
+        self.assertEqual(len(re.findall(r'^      - (?:name|uses):', current, re.M)), 74)
+        validate_ordered_service_workflow(projected)
+        for old, new, count in CURRENT_COMPILER_LINE_PAIRS:
+            for replacement in ('', new + new, new.replace('205896a413e5dea92366309c35ae85e542d055f6', '0' * 40),
+                                new.replace('0.6.37-dev', '0.6.38-dev'), ' ' + new):
+                if replacement == new:
+                    continue
+                with self.subTest(current_line=new[:80], replacement=replacement[:80]), self.assertRaises(ValueError):
+                    project_current_compiler_profile(current.replace(new, replacement, 1))
+        for old, new in CURRENT_COMPILER_BLOCK_PAIRS:
+            for replacement in ('', new + new, old, new.replace('"$PWD/.gooo"', '"$PWD/unchecked"', 1),
+                                new.replace('go test -race -count=1', 'go test -count=1', 1)):
+                if replacement == new:
+                    continue
+                with self.subTest(current_block=new[:80], replacement=replacement[:80]), self.assertRaises(ValueError):
+                    project_current_compiler_profile(current.replace(new, replacement, 1))
+        for mutated in (current + '# unreviewed compiler205896a413e5dea92366309c35ae85e542d055f6\n',
+                        current.replace('timeout-minutes: 20', 'timeout-minutes: 200', 1), go1273):
+            with self.subTest(current_profile=mutated[:80]), self.assertRaises(ValueError):
+                project_current_compiler_profile(mutated)
+        for mutated in (go1273.replace('1.27.3', '1.27.2'),
+                        go1273.replace('1.27.3', '1.27.2', 1),
+                        go1273.replace('1.27.3', '1.27.4', 1),
+                        go1273 + '# unreviewed Go1.27.3 occurrence\n'):
+            with self.subTest(current_selection=mutated[:80]), self.assertRaises(ValueError):
+                project_go1273_toolchain(mutated)
 
 
 if __name__ == "__main__":

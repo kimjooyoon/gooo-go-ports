@@ -8,8 +8,8 @@
   "namespace": "gooo_ports_examples_payload_admission",
   "activity_id": "gooo://go-ports/examples/payload-admission/report/v1",
   "pins": {
-    "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
-    "Go_version": "go1.27.2",
+    "compiler_revision": "205896a413e5dea92366309c35ae85e542d055f6",
+    "Go_version": "go1.27.3",
     "parser_entry": "go/strconv:ParseIntDecimal64",
     "parser_activity_id": "gooo://go/strconv/parse-int-decimal64/v1",
     "parser_source": {

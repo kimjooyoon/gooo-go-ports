@@ -235,7 +235,7 @@ func TestETagBatchesRefuseWrongDomainPinsClosureAndOversizedRows(t *testing.T) {
 		if _, err := policy.prepareETag(changed, 0); err == nil {
 			t.Fatal("ETag oversized one-row case accepted or dropped")
 		}
-		for _, lock := range []upstream{{CompilerRevision: "wrong", GoVersion: "go1.27.2"}, {CompilerRevision: uuidCompactCompilerRevision, GoVersion: "go1.27.1"}} {
+		for _, lock := range []upstream{{CompilerRevision: "wrong", GoVersion: "go1.27.3"}, {CompilerRevision: uuidCompactCompilerRevision, GoVersion: "go1.27.1"}} {
 			if _, err := etagBatchPolicy(s, w, lock); err == nil {
 				t.Fatal("ETag changed tool pin accepted")
 			}

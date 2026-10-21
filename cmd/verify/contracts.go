@@ -418,12 +418,16 @@ func inspectDecimalPayloadABI(raw []byte, s suite, identity expectedIdentity) er
 		}
 		rootBody = strings.Replace(body, token, "GoooPackage0ActivityParseIntDecimal64", 1)
 		expectedBodies[lowered] = rootBody
+		ids, err := selectPureCallIdentityProfile(identity.CompilerRevision)
+		if err != nil {
+			return err
+		}
 		identities := []any{}
-		for _, value := range []struct{ pkg, name, lowered, source, namespace, body string }{
-			{payloadAdmissionPackage, payloadAdmissionActivity, lowered, contract.Source, "gooo_ports_examples_payload_admission", body},
-			{decimalPackage, decimalActivity, "GoooPackage0ActivityParseIntDecimal64", parserContract.Source, "gooo_ports_strconv", parserBody.Body},
+		for _, value := range []struct{ pkg, name, lowered, source, namespace, body, authoredID string }{
+			{payloadAdmissionPackage, payloadAdmissionActivity, lowered, contract.Source, "gooo_ports_examples_payload_admission", body, bodies[payloadAdmissionActivity].ID},
+			{decimalPackage, decimalActivity, "GoooPackage0ActivityParseIntDecimal64", parserContract.Source, "gooo_ports_strconv", parserBody.Body, parserBody.ID},
 		} {
-			identities = append(identities, map[string]any{"activity": map[string]any{"package_path": value.pkg, "activity": value.name, "lowered_name": value.lowered}, "activity_id": decimalPayloadDerivedID(value.namespace, value.name), "lowered_activity_id": decimalPayloadDerivedID("gooo_workspace", value.lowered), "source": value.source, "source_body_sha256": contentDigest([]byte(value.body))})
+			identities = append(identities, map[string]any{"activity": map[string]any{"package_path": value.pkg, "activity": value.name, "lowered_name": value.lowered}, "activity_id": ids.original(value.namespace, value.name, value.authoredID), "lowered_activity_id": ids.lowered(value.lowered, value.authoredID), "source": value.source, "source_body_sha256": contentDigest([]byte(value.body))})
 		}
 		want := map[string]any{"schema": "gooo/workspace-pure-calls/v1", "activities": identities, "sites": []any{map[string]any{"caller": s.Package + ":" + s.Activity, "callee": decimalPackage + ":" + decimalActivity, "surface": "computes", "start_byte": at, "end_byte": at + len(token)}}}
 		if !decimalPayloadSame(p["pure_calls"], want) {

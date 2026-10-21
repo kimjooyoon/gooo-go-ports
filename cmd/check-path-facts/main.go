@@ -24,9 +24,9 @@ import (
 	"github.com/kimjooyoon/gooo-go-ports/internal/jsonkeys"
 )
 
-const compilerRevision = "83928fa4538245abe33b08549da47f8cbdc50ed2"
-const compilerVersion = "0.6.32-dev"
-const goVersion = "go1.27.2"
+const compilerRevision = "205896a413e5dea92366309c35ae85e542d055f6"
+const compilerVersion = "0.6.37-dev"
+const goVersion = "go1.27.3"
 const reportPackage = "app/path-facts"
 const resultEntity = "gooo://go-ports/examples/path-facts/result"
 const textEntity = "gooo://std/text"

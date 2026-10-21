@@ -110,13 +110,13 @@ def main():
         manifest=(root/MANIFEST).read_bytes()
         H.need(H.equal(H.load(manifest),{'schema':'gooo/package-workspace-manifest/v1','entry':{'package_path':PACKAGE,'activity':ACTIVITY},'packages':[{'path':PACKAGE,'sources':[SOURCE]}]}), 'exact current workspace')
         lock=H.load((root/'upstream.json').read_bytes())
-        H.need(lock['compiler_revision']==H.REV and lock['go_version']=='go1.27.2', 'current upstream pins')
+        H.need(lock['compiler_revision']==H.REV and lock['go_version']=='go1.27.3', 'current upstream pins')
         runner=H.OwnedCommands(out,work,root,pins,env)
         version=H.load(runner.call('compiler-identity',[compiler,'version','--build','--json'],20))
-        wanted={'schema':'gooo/build-identity/v1','version':'0.6.32-dev','compiler_source_sha':H.REV,'vcs_revision':H.REV,'source_status':'CLEAN_VCS','vcs_modified':'false','go_version':'go1.27.2','native_go_required':'go1.27.2','build_info_observed':True}
+        wanted={'schema':'gooo/build-identity/v1','version':'0.6.37-dev','compiler_source_sha':H.REV,'vcs_revision':H.REV,'source_status':'CLEAN_VCS','vcs_modified':'false','go_version':'go1.27.3','native_go_required':'go1.27.3','build_info_observed':True}
         H.need(all(H.equal(version[k],v) for k,v in wanted.items()), 'clean compiler identity')
         go_version=runner.call('go-identity',[go,'version'],20).decode().strip()
-        H.need(H.re.fullmatch(r'go version go1\.27\.2 [a-z0-9_]+/[a-z0-9_]+',go_version), 'actual Go1.27.2 identity')
+        H.need(H.re.fullmatch(r'go version go1\.27\.3 [a-z0-9_]+/[a-z0-9_]+',go_version), 'actual Go1.27.3 identity')
         negatives=list(negative_requests());H.need(len(negatives)==len({n for n,_ in negatives})==35, 'complete35 strict refusal roster')
         for name,raw in negatives:
             request=out/(name+'.request.json');request.write_bytes(raw)

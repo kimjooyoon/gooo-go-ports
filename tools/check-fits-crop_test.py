@@ -111,7 +111,7 @@ class FitsCropActualReceiptTests(unittest.TestCase):
             "case score": (lambda r: delivery(r).update(passed=True), "input-only case score"),
             "case expectation": (lambda r: delivery(r).update(expected=True), "input-only case score"),
             "PASS receipt": (lambda r: r.update(decision="PASS"), "observed execution"),
-            "32-bit Go": (lambda r: r["result"]["runtime"].update(go_version="go version go1.27.2 linux/386"), "64-bit Go"),
+            "32-bit Go": (lambda r: r["result"]["runtime"].update(go_version="go version go1.27.3 linux/386"), "64-bit Go"),
         }
         for side in (0, 1):
             for name, (mutate, reason) in mutations.items():

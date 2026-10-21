@@ -17,15 +17,18 @@ import tempfile
 import time
 import types
 
-REV = '83928fa4538245abe33b08549da47f8cbdc50ed2'
-GO_VERSION = 'go1.27.2'
-LIFECYCLE_SHA = '9dfd7c2c365b2bca4edc8659a5044b7aff499474012407749da81a2327ff7a94'
-PROFILE_SHA = '9eafadab81a6c7fe33a4f59777e3776cc27f31c7962e472f3828e77867142d44'
-CODEC_SHA = '601cee4a4a9fc22c0e3ff41ed0cc1a5652be2438bf3300f4bf7d89686bc31ce6'
-RECORD_PROFILE_SHA = 'sha256:631d6c3bff8101efef78d9bd0d60c9de4ee8949067c280a573f39a4354288483'
+REV = '205896a413e5dea92366309c35ae85e542d055f6'
+GO_VERSION = 'go1.27.3'
+LIFECYCLE_SHA ='363a85df7012cb3af26da99e1593cff350ba44d24a7e9bb598207cb9d5b1bcb1'
+PROFILE_SHA = '46862aabf1934c1d2a39ad830c4a6cd05d2369c5014fea231d87b7861f4d3862'
+CODEC_SHA = '82a01a92ac7e36af2ace8ac2a8270c5b31b14e57b122308e2dca344c7403a49c'
+RECORD_PROFILE_SHA = 'sha256:b0bb85f0c35ebfdef38bcaccb7e3e549e2eec5c42e4abebf8f5babce5ec1931e'
 NETIP_SHA = '32295f4761825d8c6fdade4dad093b08683bdd1945010bee8a90a298e18cf208'
 CORPUS_SHA = '7fb8c9d44e8fa77807e9b5580ab8aa975a8775486d5dfb6daaef9be2472b4b08'
 WORK_CAP, PRE_CAP, PROOF_CAP, FREE_MIN = 384 << 20, 320 << 20, 16 << 20, 5 << 30
+# Keep the per-file16MiB limit. Current205's unchanged IPv4/prefix/pair batches
+# and36 retained tamper copies total36,045,315 bytes before final ledgers.
+TOTAL_PROOF_CAP = 64 << 20
 STDOUT_CAP, STDERR_CAP = 8 << 20, 1 << 20
 COUNTS = {'top_level_stages': 54, 'manual_execute_outputs': 352,
           'manual_saved_replay_outputs': 352, 'typed_scalar_fields_each_phase': 992,
@@ -49,6 +52,7 @@ BASE_SOURCES = ('LICENSE', 'third_party/GO-LICENSE', 'third_party/go/netip.go.tx
                 'examples/ipv4-address-facts/inputs.json', 'examples/ipv4-address-facts/README.md',
                 'cmd/ipv4-oracle/main.go', 'cmd/ipv4-oracle/main_test.go',
                 'cmd/check-path-facts/result_digest.go', 'cmd/check-path-facts/result-profile-83928fa.json',
+                'cmd/check-path-facts/result-profile-go1273.json',
                 'tools/check-path-facts.py', 'tools/check-ipv4.py', 'tools/check-ipv4_test.py',
                 'tools/ipv4_receipts.py', 'tools/ipv4_receipts_test.py',
                 'tools/check-ci-scope-workflow_test.py')
@@ -281,7 +285,7 @@ class Attempt:
         require(self.tools[3]['sha256'] == NETIP_SHA and
                 ref(self.repo / 'third_party/go/netip.go.txt')['sha256'] == NETIP_SHA, 'Pinned/current netip source differs')
         require(ref(self.repo / 'cmd/check-path-facts/result_digest.go')['sha256'] == CODEC_SHA and
-                ref(self.repo / 'cmd/check-path-facts/result-profile-83928fa.json')['sha256'] == PROFILE_SHA,
+                ref(self.repo / 'cmd/check-path-facts/result-profile-go1273.json')['sha256'] == PROFILE_SHA,
                 'Unchanged public Result codec/profile required')
 
     def prepare(self):
@@ -322,7 +326,7 @@ class Attempt:
     def budget(self, active=False):
         require(time.monotonic()-self.started < self.overall, 'Overall IPv4 verification timeout')
         require(H.logical(self.work, active=active) <= WORK_CAP, 'Owned work exceeds384MiB')
-        require(H.logical(self.out) <= PROOF_CAP, 'Retained proof exceeds16MiB')
+        require(H.logical(self.out) <= TOTAL_PROOF_CAP, 'Retained proof exceeds64MiB')
         require(shutil.disk_usage(self.work).free >= FREE_MIN, 'Require5GiB free')
 
     def invoke(self, name, argv, seconds=60):
@@ -365,15 +369,15 @@ class Attempt:
         self.selected_version = 'go version '+GO_VERSION+' '+selected['GOOS']+'/'+selected['GOARCH']
         build_path = self.invoke('compiler-build',[self.compiler,'version','--build','--json'])
         build = load(build_path)
-        for key,want in {'schema':'gooo/build-identity/v1','version':'0.6.32-dev','compiler_source_sha':REV,
+        for key,want in {'schema':'gooo/build-identity/v1','version':'0.6.37-dev','compiler_source_sha':REV,
                          'vcs_revision':REV,'vcs_modified':'false','source_status':'CLEAN_VCS',
                          'go_version':GO_VERSION,'native_go_required':GO_VERSION}.items():
             require(build.get(key)==want, 'Pinned compiler build identity differs: '+key)
-        module_text = b'module gooo.local/ipv4-sidecar\n\ngo 1.27.2\n'
+        module_text = b'module gooo.local/ipv4-sidecar\n\ngo 1.27.3\n'
         oracle_module = self.make_module('oracle',[('main.go',self.repo/'cmd/ipv4-oracle/main.go'),('prefix_rule_pair.go',self.repo/'cmd/ipv4-oracle/prefix_rule_pair.go')],{'go.mod':module_text})
         bridge = self.make_module('bridge',[(n,self.repo/p) for n,p in (
             ('main.go','tools/ipv4-native-source/bridge-main.go.txt'),('support.go','tools/ipv4-native-source/support.go.txt'),
-            ('result_digest.go','cmd/check-path-facts/result_digest.go'),('result-profile-83928fa.json','cmd/check-path-facts/result-profile-83928fa.json'))],{'go.mod':module_text})
+            ('result_digest.go','cmd/check-path-facts/result_digest.go'),('result-profile-83928fa.json','cmd/check-path-facts/result-profile-83928fa.json'),('result-profile-go1273.json','cmd/check-path-facts/result-profile-go1273.json'))],{'go.mod':module_text})
         self.oracle_binary=self.work/'bin/oracle';self.bridge_binary=self.work/'bin/bridge'
         self.invoke('build-oracle',[self.go,'-C',oracle_module,'build','-trimpath','-o',self.oracle_binary,'.']); self.producers.append(ref(self.oracle_binary))
         self.invoke('build-bridge',[self.go,'-C',bridge,'build','-trimpath','-o',self.bridge_binary,'.']); self.producers.append(ref(self.bridge_binary))
@@ -438,7 +442,7 @@ class Attempt:
         require(abi=={'schema':'gooo/ipv4-generated-ABI/v1','generated_source':ref(generated_path),'functions':8,'record_fields':11,'input_ports':4},'Generated exact ABI report')
         module=self.make_module('harness',[(n,self.repo/'tools/ipv4-native-source'/src) for n,src in (
             ('main.go','harness-main.go.txt'),('support.go','support.go.txt'),('harness_test.go','harness-test.go.txt'))]+[('generated.go',generated_path)],
-            {'go.mod':b'module gooo.local/ipv4-sidecar\n\ngo 1.27.2\n'})
+            {'go.mod':b'module gooo.local/ipv4-sidecar\n\ngo 1.27.3\n'})
         self.invoke('harness-tests',[self.go,'-C',module,'test','-count=1','-timeout=45s','.'],seconds=60)
         binary=self.work/'bin/harness'
         self.invoke('build-harness',[self.go,'-C',module,'build','-trimpath','-o',binary,'.']);self.producers.append(ref(binary))
@@ -487,7 +491,7 @@ class Attempt:
         self.runtime_refs.append(ref(gp))
         abi=self.invoke('pair-generated-abi',[self.bridge_binary,'--abi-profile','prefix-rule-pair','--check-generated',gp])
         require(load(abi)=={'schema':'gooo/ipv4-rule-pair-generated-ABI/v1','generated_source':ref(gp),'functions':5,'records':4,'record_fields':28,'root_fields':11,'input_ports':2},'Pair exact generated ABI')
-        module=self.make_module('pair-harness',[(n,self.repo/'tools/ipv4-native-source'/src) for n,src in (('main.go','pair-harness-main.go.txt'),('support.go','support.go.txt'),('harness_test.go','pair-harness-test.go.txt'))]+[('generated.go',gp)],{'go.mod':b'module gooo.local/ipv4-sidecar\n\ngo 1.27.2\n'})
+        module=self.make_module('pair-harness',[(n,self.repo/'tools/ipv4-native-source'/src) for n,src in (('main.go','pair-harness-main.go.txt'),('support.go','support.go.txt'),('harness_test.go','pair-harness-test.go.txt'))]+[('generated.go',gp)],{'go.mod':b'module gooo.local/ipv4-sidecar\n\ngo 1.27.3\n'})
         self.invoke('pair-harness-tests',[self.go,'-C',module,'test','-count=1','-timeout=45s','.'])
         binary=self.work/'bin/pair-harness';self.invoke('build-pair-harness',[self.go,'-C',module,'build','-trimpath','-o',binary,'.']);self.producers.append(ref(binary))
         boundary={'schema':'gooo/ipv4-rule-pair-generated-boundary/v1','source_freeze':self.freeze,'generated_source':ref(module/'generated.go'),'corpus':ref(self.repo/'examples/ipv4-rule-pair/corpus-112.json'),'oracle':ref(op),'abi':ref(abi),'go_tool':self.tools[0],'binary':ref(binary),'module_sources':[ref(module/n) for n in ('go.mod','main.go','support.go','harness_test.go','generated.go')],'report_receipts':[batch[k] for k in ('execution','replay')],'report_checked':[batch['checked']]}
@@ -663,16 +667,20 @@ def verify_summary(path):
     work=Path(clean['owned_path'])
     require([v['path'] for v in lifetime['before_cleanup']]==[str(work/'bin'/n) for n in (('oracle','bridge','harness','pair-harness') if include_pair else ('oracle','bridge','harness'))],
             'Exact three producer binary lifetime roster')
-    module_names={'oracle':{'go.mod','main.go','prefix_rule_pair.go'},'bridge':{'go.mod','main.go','support.go','result_digest.go','result-profile-83928fa.json'},
+    module_names={'oracle':{'go.mod','main.go','prefix_rule_pair.go'},'bridge':{'go.mod','main.go','support.go','result_digest.go','result-profile-83928fa.json','result-profile-go1273.json'},
                   'harness':{'go.mod','main.go','support.go','harness_test.go','generated.go'}}
     if include_pair:module_names['pair-harness']={'go.mod','main.go','support.go','harness_test.go','generated.go'}
+    # Include both archival and current profiles in the bridge's exact roster.
+    # Bind paths as well as counts so a same-count substituted copy is refused.
+    expected_copies={str(work/'public-path-lifecycle.py'),str(work/'telemetry/mode')}
+    expected_copies.update(str(work/module/name) for module,names in module_names.items() for name in names)
     require(len(lifetime['owned_modules'])==(4 if include_pair else 3),'Exact owned module roots')
     for module in lifetime['owned_modules']:
         root=Path(module['root']);require(root.parent==work and root.name in module_names and
                 set(module['names'])==module_names.pop(root.name),'Owned module source roster binding')
     require(not module_names,'Missing owned module source roster')
     copies=lifetime['owned_module_copies']
-    require(len(copies)==(20 if include_pair else 15) and len({v['copy']['path'] for v in copies})==(20 if include_pair else 15),'Owned-copy exact inventory')
+    require(len(copies)==len(expected_copies) and {v['copy']['path'] for v in copies}==expected_copies,'Owned-copy exact inventory')
     for item in copies:
         if item['source'] is not None:
             check_ref(item['source'])
@@ -687,7 +695,7 @@ def verify_summary(path):
     if include_pair:audit_pair(summary,repository,path.parent,work,frozen,copies)
     for item in lifetime['before_cleanup']+[v['copy'] for v in lifetime['owned_module_copies']]:
         require(work in Path(item['path']).parents and not Path(item['path']).exists(),'Producer/module lifetime boundary')
-    require(H.logical(path.parent)<=PROOF_CAP and shutil.disk_usage(path.parent).free>=FREE_MIN,'Final proof/free-space bound')
+    require(H.logical(path.parent)<=TOTAL_PROOF_CAP and shutil.disk_usage(path.parent).free>=FREE_MIN,'Final proof/free-space bound')
     return {'schema':'gooo/ipv4-summary-readback/v2' if include_pair else 'gooo/ipv4-summary-readback/v1','status':'CURRENT_SOURCE_AND_EVIDENCE_RECHECKED','summary':ref(path),
             'source_freeze':freeze,'retained_runtime_ref_count':len(summary['retained_runtime_refs']),'top_level_stages':68 if include_pair else 54,**({'prefix_rule_pair':PAIR_COUNTS} if include_pair else {}),
             'manual_execute_outputs':352,'manual_saved_replay_outputs':352,'generated_Report_calls':202,'generated_typed_fields':2222,

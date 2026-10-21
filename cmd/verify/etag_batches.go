@@ -90,8 +90,8 @@ func validateETagBatchInputs(s suite, values []any) error {
 }
 
 func etagBatchPolicy(s suite, w suiteWorkspace, lock upstream) (nativeCaseBatchPolicy, error) {
-	if !isHTTPConditionalSuite(s) || len(s.Cases) == 0 || lock.CompilerRevision != uuidCompactCompilerRevision || lock.GoVersion != "go1.27.2" {
-		return nativeCaseBatchPolicy{}, fmt.Errorf("ETag nonempty original suite and pinned839/Go1.27.2 required")
+	if !isHTTPConditionalSuite(s) || len(s.Cases) == 0 || lock.CompilerRevision != uuidCompactCompilerRevision || lock.GoVersion != "go1.27.3" {
+		return nativeCaseBatchPolicy{}, fmt.Errorf("ETag nonempty original suite and pinned839/Go1.27.3 required")
 	}
 	if w.Manifest.Schema != "gooo/package-workspace-manifest/v1" || w.Manifest.Entry.Package != s.Package || w.Manifest.Entry.Activity != s.Activity || !reflect.DeepEqual(w.Manifest.Packages, etagPackages(s)) || len(w.Names) != len(w.Manifest.Packages) || len(w.Sources) != len(w.Names) {
 		return nativeCaseBatchPolicy{}, fmt.Errorf("ETag exact selected source closure required")

@@ -44,7 +44,7 @@
       $('tutorial-label-bytes').textContent = `${new TextEncoder().encode(bound).length} / 1,024 UTF-8 bytes passed to Gooo.`;
       if (inputs[1] !== bound) {
         $('tutorial-label-warning').hidden = false;
-        $('tutorial-label-warning').textContent = 'This label contains an unpaired UTF-16 surrogate. Native JSON decoding replaces it with U+FFFD (�). The label preview shows exactly what Gooo will receive.';
+        $('tutorial-label-warning').textContent = 'This label contains an unpaired UTF-16 surrogate. The browser UTF-8 binding replaces it with U+FFFD (�). The label preview shows exactly what Gooo will receive.';
       }
       $('tutorial-input-status').textContent = 'Ready for your next run. Inputs stay in this browser.';
       valid = true;

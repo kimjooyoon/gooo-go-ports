@@ -1,10 +1,10 @@
 module github.com/kimjooyoon/gooo-go-ports/examples/service-grant-mcp
 
-go 1.27.2
+go 1.27.3
 
 require (
-	github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy v0.0.0-20261018191951-2aa0f96805f1
-	github.com/kimjooyoon/gooo-go-ports/examples/service-grant-many v0.0.0-20261019032231-f4f89b814b42
+	github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy v0.0.0-20261020182808-7180a4a0f36a
+	github.com/kimjooyoon/gooo-go-ports/examples/service-grant-many v0.0.0-20261020182808-7180a4a0f36a
 	github.com/modelcontextprotocol/go-sdk v1.8.0
 )
 

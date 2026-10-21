@@ -79,7 +79,7 @@ func inspect(raw []byte, rows []row, id identity, priorReceipt string) (checked,
 		return fail("native producer or explicit toolchain")
 	}
 	module := object(rt["producer_module"])
-	if module["path"] != "github.com/kimjooyoon/meta-ontology-go" || module["version"] != "v0.0.0-20261011201109-83928fa45382" {
+	if module["path"] != "github.com/kimjooyoon/meta-ontology-go" || module["version"] != "v0.6.37-dev.0.20261020180505-205896a413e5" {
 		return fail("native producer module")
 	}
 	if rt["generated_sha256"] != c["generated_sha256"] || rt["driver_sha256"] != c["driver_sha256"] || rt["original_source_sha256"] != sourceDigest || rt["selected_source_sha256"] != sourceDigest || !validDigest(rt["executable_sha256"]) || !validDigest(rt["runtime_suite_sha256"]) || rt["typed_plan_sha256"] != plan["typed_plan_sha256"] {
@@ -115,7 +115,10 @@ func inspect(raw []byte, rows []row, id identity, priorReceipt string) (checked,
 	for i, item := range traces {
 		trace := object(item)
 		deliveries := array(trace["deliveries"])
-		if !keys(trace, "case_index", "deliveries") || !isInt(trace["case_index"], i) || len(deliveries) != 1 {
+		if err := inspectTraceMetadata(trace); err != nil {
+			return fail(err.Error())
+		}
+		if !isInt(trace["case_index"], i) || len(deliveries) != 1 {
 			return fail("case index or delivery roster")
 		}
 		delivery := object(deliveries[0])

@@ -1,0 +1,11 @@
+{
+  "schema": "gooo/current-go1273-codec-fixture-source/v1",
+  "actual_source_revision": "205896a413e5dea92366309c35ae85e542d055f6",
+  "actual_go_version": "go1.27.3",
+  "raw_receipt_sha256": "8eb0e7c0c7eac774423ef2b74d4d8228478ba659748d98f3c5e83c6cd58ae277",
+  "raw_receipt_bytes": 85986,
+  "replay_raw_sha256": "06aae6c2e416c54f554cc814cbfe04a7e1d9342243851b33aa7632857869fb3a",
+  "typed_result_bytes": 85954,
+  "typed_result_sha256": "abd836ff53ff153e779c706f27d4b4350260c20b85a9d69bfd7bc9f09cdebe41",
+  "scope": "Actual accepted-dev205 compiler before/after/own-replay run; independent source-backed Go codec matches its typed replay parent. Raw outer receipt and typed Result hashes are distinct. Original839 and private prototype2a records are preserved separately. Finite tutorial observation; not hosted ports CI, released bundle or external adoption acceptance."
+}

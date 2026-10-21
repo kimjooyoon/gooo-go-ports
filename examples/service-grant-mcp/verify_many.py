@@ -62,8 +62,8 @@ def main():
     legacy.BINARY, legacy.OUTPUT = args.binary, args.out
     generation_raw = (args.many_module / "generation.json").read_bytes()
     generation = json.loads(generation_raw)
-    assert generation["compiler_source_sha"] == "de99b770b8b5adea608233c3c0664902336e3310"
-    assert sha(generation_raw) == "3c49d16a549bc961c1712c122383e1c4d2dd232361a526d146f1a5347108918c"
+    assert generation["compiler_source_sha"] == "205896a413e5dea92366309c35ae85e542d055f6"
+    assert sha(generation_raw) == "86d714e4793f04d7d45d53e824cd7066ddee5f7d1e987697f26f4216a6b4e164"
     bindings = {"compiler_source_sha": generation["compiler_source_sha"],
                 "generation_sha256": "sha256:" + sha(generation_raw),
                 "sources": generation["public_sources"], "assets": generation["assets"]}

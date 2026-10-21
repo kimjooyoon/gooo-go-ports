@@ -17,7 +17,7 @@ import (
 	"unicode/utf8"
 )
 
-const goVersion = "go1.27.2"
+const goVersion = "go1.27.3"
 const pathSourceSHA = "0a5024c364387eeea9ab5fe0b285f0d62355e8cd181cdbddfdfa227f6916d94c"
 
 type facts struct {

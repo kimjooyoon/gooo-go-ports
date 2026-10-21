@@ -14,7 +14,7 @@ const bytes = Buffer.from('fixture program bytes for app scheduling tests');
 const wasm = createHash('sha256').update(bytes).digest('hex');
 const revision = '2'.repeat(40);
 const metadata = { wasm_sha256: wasm, source_revision: revision, source_dirty: false,
-  compiler_revision: '1'.repeat(40), compiler_version: '0.6.24-dev', go_version: 'go1.27.2' };
+  compiler_revision: '1'.repeat(40), compiler_version: '0.6.24-dev', go_version: 'go1.27.3' };
 const link = (options = {}) => share.format({ operation: 'http.StatusText',
   inputs: ['9223372036854775807', '0'], wasm, revision, ...options });
 const deferred = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b; }); return { promise, resolve, reject }; };

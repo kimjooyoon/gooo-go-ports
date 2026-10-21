@@ -454,7 +454,7 @@ func regressionInput(index int) string { if index>=len(regressionInputs) { panic
 			t.Fatal(err)
 		}
 	}
-	files := map[string][]byte{"generated.go": []byte(fixture), "exhaustive_test.go": harness, "go.mod": []byte("module gooo-path-harness-regression\n\ngo 1.27.2\n"), "regression_test.go": []byte(pathHarnessRegressionDriver)}
+	files := map[string][]byte{"generated.go": []byte(fixture), "exhaustive_test.go": harness, "go.mod": []byte("module gooo-path-harness-regression\n\ngo 1.27.3\n"), "regression_test.go": []byte(pathHarnessRegressionDriver)}
 	for name, raw := range files {
 		if err := pathExclusive(filepath.Join(native, name), raw); err != nil {
 			t.Fatal(err)

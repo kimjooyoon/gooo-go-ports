@@ -29,11 +29,11 @@ BASE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(BASE)
 need, sha, read, encoded, unique = BASE.need, BASE.sha, BASE.read, BASE.encoded, BASE.unique
 MODULE = "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy"
-VERSION = "v0.0.0-20261018191951-2aa0f96805f1"
-REVISION = "2aa0f96805f116c6e5ec2a20c22f62bb284a5abc"
-MODULE_SUM = "h1:up4zblnjEjgePzF/8OZb3qd0tgSJ33J/WvMZY3IHl8A="
-MOD_SUM = "h1:aEFFWumPpadrR0onX8impgjTr3WfhNNA+jNkg7Vv4hI="
-GENERATION = "40ae704abbf2cae1974d2eec51cec2564c8d72dd44536b31c9c4f55f71fc0f85"
+VERSION = 'v0.0.0-20261020182808-7180a4a0f36a'
+REVISION = '7180a4a0f36a1b0d89470100d6ccf6efdb5fd38d'
+MODULE_SUM = 'h1:wiJUz5Om53/Ng69iQj/43qBKD7DSuqlqrdGLr6HgZDA='
+MOD_SUM = 'h1:vK0nyI5FZr9LCKe42lsier/OajQhOgiZXExeW5Hlhzk='
+GENERATION = '3c86dd9273168f1fe4e0712aa7cfdfc075a211d05b64ff2fbd0b8c9135315a3b'
 PIN = BASE.PIN
 COMMAND = "gooo-service-grant-evaluate"
 MAX_STREAM = 128 << 10
@@ -62,7 +62,7 @@ def native_platform():
 def build_identity(build, target):
     need(type(build) is dict, "BuildInfo object required")
     settings = unique((row["Key"], row["Value"]) for row in build["Settings"])
-    need(build["GoVersion"] == "go1.27.2" and build["Path"] == MODULE + "/cmd/evaluate"
+    need(build["GoVersion"] == "go1.27.3" and build["Path"] == MODULE + "/cmd/evaluate"
          and settings.get("CGO_ENABLED") == "0"
          and settings.get("GOOS", "") + "/" + settings.get("GOARCH", "") == target,
          "native package, Go version or CGO differs")

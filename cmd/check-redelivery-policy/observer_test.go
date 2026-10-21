@@ -565,7 +565,7 @@ func TestCurrentReferenceTamperingAndDuplicates(t *testing.T) {
 	}
 }
 func TestPinnedProfileIntegerAndRawScalarPreservation(t *testing.T) {
-	if err := loadResultProfile(filepath.Join("..", "check-path-facts", "result-profile-83928fa.json")); err != nil {
+	if err := loadResultProfile(filepath.Join("..", "check-path-facts", "result-profile-go1273.json")); err != nil {
 		t.Fatal(err)
 	}
 	var profile resultProfile
@@ -624,7 +624,7 @@ func fixtureReceipt(t *testing.T) (map[string]any, []map[string]any, []oracleRow
 	gr := map[string]any{"schema": "gooo/body-codegen-report/v3", "decision": "PASS", "activity": loweredName, "activity_id": activityID, "compiler_source_sha": compilerRevision, "source_digest": srcDigest, "program_digest": id.Body, "generated_digest": digest([]byte(step)), "replay_digest": digest([]byte(step)), "typecheck_passed": true, "deterministic_replay": true, "repository_writes": 0, "input_type": "(string,string,bool,bool,bool,bool,bool,int64,string)", "output_type": "RedeliveryDecision", "input_parameters": parameters, "record_types": fixtureRecordABI()}
 	composition := map[string]any{"schema": "gooo/body-composition/v1", "stage": "COMPLETE", "original_source_sha256": srcDigest, "selected_source_sha256": srcDigest, "gooo_source": src, "source": source, "generated_sha256": generated, "driver_source": "synthetic-driver", "driver_sha256": driver, "plan": plan, "steps": []any{map[string]any{"input_source_sha256": srcDigest, "generation": map[string]any{"report": gr, "source": step}}}}
 	process := map[string]any{"started": true, "completed": true, "canceled": false, "timed_out": false, "output_truncated": false, "diagnostics_bytes": 0, "exit_code": 0, "stdout_sha256": digest([]byte("synthetic-output")), "stderr_sha256": digest(nil)}
-	rt := map[string]any{"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "producer_source_sha": compilerRevision, "go_version": "go version " + goVersion + " " + runtimePlatform(), "go_tool_sha256": id.GoTool, "go_tool_selection": "explicit", "producer_module": map[string]any{"path": "github.com/kimjooyoon/meta-ontology-go", "version": "v0.0.0-20261011201109-83928fa45382"}, "generated_sha256": generated, "driver_sha256": driver, "original_source_sha256": srcDigest, "selected_source_sha256": srcDigest, "executable_sha256": digest([]byte("synthetic-binary")), "runtime_suite_sha256": digest([]byte("synthetic-suite")), "typed_plan_sha256": plan["typed_plan_sha256"], "model_calls": 0, "finite_total": 0, "finite_passed": 0, "projection_replayed": true, "runtime_replayed": true, "toolchain": process, "build": process, "runs": []any{process, process}, "traces": traces}
+	rt := map[string]any{"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "producer_source_sha": compilerRevision, "go_version": "go version " + goVersion + " " + runtimePlatform(), "go_tool_sha256": id.GoTool, "go_tool_selection": "explicit", "producer_module": map[string]any{"path": "github.com/kimjooyoon/meta-ontology-go", "version": "v0.6.37-dev.0.20261020180505-205896a413e5"}, "generated_sha256": generated, "driver_sha256": driver, "original_source_sha256": srcDigest, "selected_source_sha256": srcDigest, "executable_sha256": digest([]byte("synthetic-binary")), "runtime_suite_sha256": digest([]byte("synthetic-suite")), "typed_plan_sha256": plan["typed_plan_sha256"], "model_calls": 0, "finite_total": 0, "finite_passed": 0, "projection_replayed": true, "runtime_replayed": true, "toolchain": process, "build": process, "runs": []any{process, process}, "traces": traces}
 	e := map[string]any{"schema": "gooo/workspace-body-execution-receipt/v1", "decision": "OBSERVED", "manifest": "synthetic-manifest", "manifest_digest": id.Manifest, "inputs_digest": id.Inputs, "result": map[string]any{"schema": "gooo/workspace-body-execution/v1", "program": program, "composition": composition, "runtime": rt, "execution_source_sha256": srcDigest}}
 	return e, rows, oracle, id
 }
@@ -707,4 +707,77 @@ func canonicalTestTempDir(t *testing.T) string {
 		t.Fatal(err)
 	}
 	return root
+}
+
+// Structural fixtures exercise the same gate as actual source205 receipts.
+// They do not evaluate or replace the original Gooo policy.
+func TestCurrent205TraceMetadataRetainsFullRedeliveryChecks(t *testing.T) {
+	base, rows, oracle := fixtureTraces()
+	metadata, err := decode([]byte(`{
+      "field_local_bridge":{"locals":[{"other_start":0,"other_end":1,"other_drops":0,"start_clock":0,"completion":1}],"fields":[],"local_clocks":[1],"field_clocks":null,"completions":1},
+      "field_writes":[{"site_index":0,"frame":0,"use_start":0,"use_end":1,"uses_dropped":0,"completed":true,"parent_assignment":-1,"completion":1}],
+      "field_uses":[{"site_index":0,"frame":0,"assignment":-1,"completion_clock":0,"reason":"UNINITIALIZED"}],
+      "field_frames":1,"conditions_observed":true,"conditions":[{"site_index":0,"value":true}],
+      "local_writes":[{"site_index":0,"frame":0,"read_start":0,"read_end":0,"use_start":0,"use_end":1,"reads_dropped":0,"uses_dropped":0,"completed":true}],
+      "local_uses":[{"site_index":0,"frame":0,"assignment":0}],"local_frames":1,"reads_observed":true
+    }`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	trace := object(base[0])
+	for name, value := range object(metadata) {
+		trace[name] = value
+	}
+	if _, err := inspectTraces(base, rows, oracle); err != nil {
+		t.Fatal(err)
+	}
+	mutations := map[string]func(map[string]any){
+		"unknown top field":               func(v map[string]any) { v["untrusted"] = true },
+		"unsupported read payload":        func(v map[string]any) { v["reads"] = []any{} },
+		"count Boolean":                   func(v map[string]any) { v["field_frames"] = true },
+		"negative count":                  func(v map[string]any) { v["local_frames"] = json.Number("-1") },
+		"decimal count":                   func(v map[string]any) { v["local_frames"] = json.Number("1.0") },
+		"counter overflow":                func(v map[string]any) { v["local_frames"] = json.Number("65537") },
+		"Boolean number":                  func(v map[string]any) { v["reads_observed"] = json.Number("1") },
+		"record array replaced by object": func(v map[string]any) { v["conditions"] = map[string]any{} },
+		"array overflow":                  func(v map[string]any) { v["conditions"] = make([]any, traceMetadataLimit+1) },
+		"condition Boolean number":        func(v map[string]any) { object(array(v["conditions"])[0])["value"] = json.Number("1") },
+		"unknown local write field":       func(v map[string]any) { object(array(v["local_writes"])[0])["extra"] = false },
+		"field write decimal index":       func(v map[string]any) { object(array(v["field_writes"])[0])["site_index"] = json.Number("0.0") },
+		"missing field write completion":  func(v map[string]any) { delete(object(array(v["field_writes"])[0]), "completion") },
+		"integer reason":                  func(v map[string]any) { object(array(v["local_uses"])[0])["reason"] = json.Number("0") },
+		"oversized reason":                func(v map[string]any) { object(array(v["field_uses"])[0])["reason"] = strings.Repeat("x", 1025) },
+		"unknown bridge field":            func(v map[string]any) { object(v["field_local_bridge"])["extra"] = nil },
+		"bridge decimal clock":            func(v map[string]any) { object(v["field_local_bridge"])["local_clocks"] = []any{json.Number("1.0")} },
+		"bridge missing window field": func(v map[string]any) {
+			delete(object(array(object(v["field_local_bridge"])["locals"])[0]), "other_end")
+		},
+	}
+	for name, mutate := range mutations {
+		t.Run(name, func(t *testing.T) {
+			changed := array(clone(t, base))
+			mutate(object(changed[0]))
+			if _, err := inspectTraces(changed, rows, oracle); err == nil {
+				t.Fatal("unsupported diagnostic accepted")
+			}
+		})
+	}
+	for name, mutate := range map[string]func(map[string]any){
+		"changed original input": func(v map[string]any) {
+			object(array(object(array(v["deliveries"])[0])["inputs"])[0])["value"] = "POST"
+		},
+		"changed original output": func(v map[string]any) { object(object(array(v["deliveries"])[0])["actual"])["reason"] = "changed" },
+		"missing ordered field": func(v map[string]any) {
+			d := object(array(v["deliveries"])[0])
+			d["actual_fields"] = array(d["actual_fields"])[:14]
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			changed := array(clone(t, base))
+			mutate(object(changed[0]))
+			if _, err := inspectTraces(changed, rows, oracle); err == nil {
+				t.Fatal("metadata bypassed original typed input/output checks")
+			}
+		})
+	}
 }

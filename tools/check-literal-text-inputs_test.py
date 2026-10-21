@@ -24,6 +24,15 @@ def receipt_fixture(case):
         error = "generate workspace activity bodies: case 0: " + ('input "' + key + '": ' if case["position"] is not None else "") + error
     receipt = {"schema": PROBE.RECEIPT_SCHEMA, "decision": "FAIL_CLOSED", "manifest": path.as_posix(),
                "manifest_digest": PROBE.digest(manifest_raw), "inputs_digest": PROBE.digest(case["raw"]), "error": error}
+    if case["name"].endswith("-extra-input2"):
+        entry = case["entry"]
+        # Independently stated current source contract; no production helper is
+        # called to construct the expected typed diagnostic.
+        message = 'case 0: input "' + entry + '.input2" is not a caller port; available ports: ["' + entry + '.input0" "' + entry + '.input1"]'
+        receipt["input_diagnostic"] = {"stage": "INPUT_VALIDATION", "code": "UNKNOWN_CALLER_PORT",
+            "case_index": 0, "key": entry + ".input2",
+            "available_keys": [entry + ".input0", entry + ".input1"], "message": message}
+        receipt["error"] = "generate workspace activity bodies: " + message
     return receipt, path, manifest_raw
 
 
@@ -97,6 +106,46 @@ class LiteralRejectionReceiptTests(unittest.TestCase):
                 self.assertFalse(observed["runtime_present"])
                 for key in ("actual_runtime_stage", "observed_counters", "observed_build", "observed_runs"):
                     self.assertEqual(observed[key], "NOT_REPORTED")
+
+    def test_extra_caller_ports_require_exact_typed_diagnostic_and_request_binding(self):
+        cases = [case for case in PROBE.negative_inputs() if case["name"].endswith("-extra-input2")]
+        self.assertEqual(len(cases), 8)
+        mutations = {
+            "missing diagnostic": lambda r: r.pop("input_diagnostic"),
+            "legacy prose only": lambda r: (r.pop("input_diagnostic"), r.update(error="generate workspace activity bodies: case 0: inputs and nonempty expectations must name declared activities")),
+            "wrong code": lambda r: r["input_diagnostic"].update(code="INVALID_INPUT_VALUE"),
+            "wrong stage": lambda r: r["input_diagnostic"].update(stage="INPUT_RESOLUTION"),
+            "wrong index": lambda r: r["input_diagnostic"].update(case_index=1),
+            "bool index": lambda r: r["input_diagnostic"].update(case_index=False),
+            "wrong authored key": lambda r: r["input_diagnostic"].update(key="other:Entry.input2"),
+            "reordered caller ports": lambda r: r["input_diagnostic"]["available_keys"].reverse(),
+            "missing caller port": lambda r: r["input_diagnostic"]["available_keys"].pop(),
+            "duplicate caller port": lambda r: r["input_diagnostic"].update(available_keys=[r["input_diagnostic"]["available_keys"][0]] * 2),
+            "single port alias": lambda r: r["input_diagnostic"].update(declared_key="other"),
+            "unknown diagnostic field": lambda r: r["input_diagnostic"].update(untrusted=True),
+            "empty diagnostic message": lambda r: r["input_diagnostic"].update(message=" "),
+            "nontext diagnostic message": lambda r: r["input_diagnostic"].update(message=0),
+            "unbound outer error": lambda r: r.update(error="unrelated failure"),
+            "wrong source manifest": lambda r: r.update(manifest_digest=PROBE.digest(b"other")),
+            "wrong input": lambda r: r.update(inputs_digest=PROBE.digest(b"other")),
+            "even null result": lambda r: r.update(result=None),
+            "native result": lambda r: r.update(result={"runtime": {"stage": "COMPLETE", "model_calls": 0}}),
+        }
+        for case in cases:
+            receipt, path, raw = receipt_fixture(case)
+            accepted = PROBE.inspect_rejection(case, PROBE.encode(receipt), 1, False, path, raw)
+            self.assertTrue(accepted["structured_input_diagnostic_verified"])
+            for name, mutate in mutations.items():
+                changed = copy.deepcopy(receipt)
+                mutate(changed)
+                with self.subTest(case=case["name"], mutation=name), self.assertRaises(ValueError):
+                    PROBE.inspect_rejection(case, PROBE.encode(changed), 1, False, path, raw)
+            # Human prose is deliberately not a versioned parser contract. Its
+            # typed nonempty value must still be bound to the outer error.
+            changed = copy.deepcopy(receipt)
+            changed["input_diagnostic"]["message"] = "A differently worded source-facing port diagnostic"
+            changed["error"] = "generate workspace activity bodies: " + changed["input_diagnostic"]["message"]
+            self.assertTrue(PROBE.inspect_rejection(case, PROBE.encode(changed), 1, False, path, raw)["rejection_verified"])
 
     def test_valid_rejection_label_cannot_hide_wrong_request_route_or_runtime(self):
         case = next(iter(PROBE.negative_inputs()))

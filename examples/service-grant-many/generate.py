@@ -3,7 +3,7 @@ from pathlib import Path
 import argparse,hashlib,importlib.util,json,re
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[1]
-PIN='de99b770b8b5adea608233c3c0664902336e3310'
+PIN='205896a413e5dea92366309c35ae85e542d055f6'
 ENTRY='gooo/service-policy/multi-required:AssessRequiredRequests'
 AID='gooo://service-policy/multi-required/assess/v1'
 
@@ -70,13 +70,17 @@ def render(receipts,check=False,gofmt=None,go_identity=None):
   # Saved rendering may use the already formatted identical compiler-owned map.
   current=(HERE/'bridge_generated.go').read_bytes()
   assert re.sub(rb'\s+',b'',current)==re.sub(rb'\s+',b'',adapter);adapter=current
- produced={'projection_generated.go':projection,'bridge_generated.go':adapter}
+ compiler_raw=(receipts/'compiler-identity'/'stdout').read_bytes()
+ compiler=strict(compiler_raw)
+ assert compiler['compiler_source_sha']==compiler['vcs_revision']==PIN and compiler['version']=='0.6.37-dev'
+ assert compiler['go_version']==compiler['native_go_required']=='go1.27.3' and compiler['source_status']=='CLEAN_VCS' and compiler['vcs_modified']=='false'
+ produced={'compiler.json':compiler_raw,'projection_generated.go':projection,'bridge_generated.go':adapter}
  for name,b in produced.items():
   if check:assert (HERE/name).read_bytes()==b,name
   else:(HERE/name).write_bytes(b)
  public_sources={s['filename']:digest((ROOT/s['filename']).read_bytes()) for p in program['workspace_image']['packages'] for s in p['sources']}
  assets={name:digest(produced.get(name,(HERE/name).read_bytes())) for name in ASSETS}
- metadata={'schema':'gooo/service-grant-many-generation/v1','origin':'fresh_pinned_generation','compiler_source_sha':PIN,'go_version':'go1.27.2','workspace_digest':digest((ROOT/'service-grant-many.workspace.json').read_bytes()),'public_sources':public_sources,'assets':assets,'raw_projection_sha256':digest(raw.encode()),'raw_driver_sha256':digest(driver.encode()),'typed_plan_sha256':plan['typed_plan_sha256'],'projection_sha256':digest(projection),'projection_transform':'Replace the first package token main with servicegrantmany; every other raw projection byte unchanged.','bridge_origin':'Compiler plan record/field/go_function identities; transport mapping only.','lowered_source_sha256':digest(program['lowered_gooo_source'].encode()),'source_and_proof_scope':'Finite four-command execute/replay16 cases. Generated artifacts are source-bound, not authenticated authority. Local observation completeness is reported separately.'}
+ metadata={'schema':'gooo/service-grant-many-generation/v1','origin':'fresh_pinned_generation','compiler_source_sha':PIN,'go_version':'go1.27.3','workspace_digest':digest((ROOT/'service-grant-many.workspace.json').read_bytes()),'public_sources':public_sources,'assets':assets,'raw_projection_sha256':digest(raw.encode()),'raw_driver_sha256':digest(driver.encode()),'typed_plan_sha256':plan['typed_plan_sha256'],'projection_sha256':digest(projection),'projection_transform':'Replace the first package token main with servicegrantmany; every other raw projection byte unchanged.','bridge_origin':'Compiler plan record/field/go_function identities; transport mapping only.','lowered_source_sha256':digest(program['lowered_gooo_source'].encode()),'source_and_proof_scope':'Finite four-command execute/replay16 cases. Generated artifacts are source-bound, not authenticated authority. Local observation completeness is reported separately.'}
  target=encoded(metadata)
  if check:assert (HERE/'generation.json').read_bytes()==target,'generation bindings'
  else:(HERE/'generation.json').write_bytes(target)

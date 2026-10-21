@@ -22,9 +22,9 @@ import (
 )
 
 const (
-	compilerRevision = "83928fa4538245abe33b08549da47f8cbdc50ed2"
-	compilerVersion  = "0.6.32-dev"
-	goVersion        = "go1.27.2"
+	compilerRevision = "205896a413e5dea92366309c35ae85e542d055f6"
+	compilerVersion  = "0.6.37-dev"
+	goVersion        = "go1.27.3"
 	manifestName     = "uuid-parse-canonical.workspace.json"
 	appPackage       = "go/github.com/google/uuid/text"
 	uuidPackage      = "go/github.com/google/uuid"

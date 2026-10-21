@@ -103,7 +103,7 @@ func TestCLIDescribeWithoutInputOrExternalTools(t *testing.T) {
 			t.Fatal("description is not bound to the actual embedded profiles")
 		}
 		var compiler map[string]any
-		if json.Unmarshal(got.Profiles.Compiler, &compiler) != nil || compiler["compiler_source_sha"] != revision.CompilerPin || compiler["native_go_required"] != "go1.27.2" {
+		if json.Unmarshal(got.Profiles.Compiler, &compiler) != nil || compiler["compiler_source_sha"] != revision.CompilerPin || compiler["native_go_required"] != "go1.27.3" {
 			t.Fatal("description changed the embedded generation compiler pin")
 		}
 	}

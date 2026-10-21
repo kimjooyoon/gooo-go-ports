@@ -10,9 +10,9 @@ the independent, pinned `strings.Index` and `strings.Count` references and check
 the native receipts; it does not provide the consumer's implementation.
 
 Each decoded input is valid UTF-8 Text of at most **1,024 bytes**. The native
-input route rejects larger arguments. JSON decoding may replace malformed byte
-or surrogate sequences, so the observed domain is decoded Text, not arbitrary
-Go byte strings or preservation of malformed JSON transport. The search is
+input route rejects larger arguments, malformed UTF-8 and unpaired JSON
+surrogate escapes. The observed domain is scalar Text, not arbitrary Go byte
+strings or preservation of malformed JSON transport. The search is
 literal and case-sensitive, with no normalization, regex or grapheme handling.
 
 Go's empty-phrase behavior is preserved: `Index(text, "")` is `0`, while
@@ -22,15 +22,15 @@ for `"ababa"` and `"aba"`, it is `1`, because occurrences do not overlap.
 
 ## Run supplied inputs and export a checked report
 
-Use the existing clean Gooo **0.6.32-dev** compiler at source
-`83928fa4538245abe33b08549da47f8cbdc50ed2`, built with Go **1.27.2**. The
-repository's [setup guide](../../README.md#run-and-edit-locally) explains how to
+Use the clean Gooo **0.6.37-dev** compiler at source
+`205896a413e5dea92366309c35ae85e542d055f6`, with the Go **1.27.3** build identity
+required by the current checkout. The repository's [setup guide](../../README.md#run-and-edit-locally) explains how to
 obtain that pin. These commands assume `./.gooo` is already installed and the
 matching Go toolchain is available. Run from the repository root and keep the
 source files unchanged through execution, replay and checking.
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 NATIVE_GO="$(go env GOROOT)/bin/go"
 mkdir -p out/literal-text-report
@@ -98,8 +98,9 @@ module. Supply a text and phrase in Text mode, or enter each as one JSON string.
 Pasting or dropping text captures its value before the textarea can normalize
 CR or CRLF. The escaped previews show the exact captured strings.
 
-The input binding matches native Go JSON string decoding: unpaired UTF-16
-surrogates become U+FFFD. Both the captured and bound strings remain visible and
+The browser UTF-8 binding turns unpaired UTF-16 surrogates into U+FFFD. Native
+comparison inputs encode this bound scalar Text; the compiler rejects raw
+unpaired JSON escapes. Both the captured and bound strings remain visible and
 are preserved in the downloaded observation. BOM, NUL, CR/LF, combining marks
 and composed/decomposed Unicode remain distinct; no trimming or normalization
 occurs. Each bound argument must fit in 1,024 UTF-8 bytes. Larger inputs are

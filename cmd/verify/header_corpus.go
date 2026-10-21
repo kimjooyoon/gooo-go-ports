@@ -184,8 +184,8 @@ func (f frozenVerificationCatalog) headerWorkspace(s suite) (suiteWorkspace, err
 }
 
 func headerBatchPolicy(s suite, selected suiteWorkspace, lock upstream) (nativeCaseBatchPolicy, error) {
-	if !isHeaderSuite(s) || lock.CompilerRevision != uuidCompactCompilerRevision || lock.GoVersion != "go1.27.2" {
-		return nativeCaseBatchPolicy{}, fmt.Errorf("header requires compiler839 and Go1.27.2")
+	if !isHeaderSuite(s) || lock.CompilerRevision != uuidCompactCompilerRevision || lock.GoVersion != "go1.27.3" {
+		return nativeCaseBatchPolicy{}, fmt.Errorf("header requires compiler839 and Go1.27.3")
 	}
 	if selected.Manifest.Schema != "gooo/package-workspace-manifest/v1" || selected.Manifest.Entry.Package != s.Package || selected.Manifest.Entry.Activity != s.Activity || len(selected.Names) == 0 || len(selected.Names) != len(selected.Sources) {
 		return nativeCaseBatchPolicy{}, fmt.Errorf("header selected source closure")

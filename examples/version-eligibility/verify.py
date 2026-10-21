@@ -22,7 +22,7 @@ import time
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
-PIN = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+PIN = "205896a413e5dea92366309c35ae85e542d055f6"
 MODULE = "golang.org/x/mod"
 VERSION = "v0.29.0"
 SUM = "h1:HV8lRxZC4l2cr3Zq1LvtOsi/ThTgWnUk/y64QSs8GwA="
@@ -38,6 +38,11 @@ SOURCES = ("ports/xmod/semver.gooo", "examples/version-eligibility/main.gooo")
 MANIFEST = "version-eligibility.workspace.json"
 EXAMPLE = "examples/version-eligibility"
 MAX_OUTPUT = 2 << 20
+# Current compiler provenance expands finite receipts beyond ordinary command output.
+# All six fixed profiles retain <=12 cases and <=2 source files; the measured
+# 12 execute/replay receipts peak at 10,428,916 bytes. Keep a finite 16 MiB receipt
+# budget with margin, below the compiler's 32 MiB saved-receipt JSON ceiling.
+MAX_RECEIPT = 16 << 20
 MAX_WORK = 150 << 20
 
 
@@ -94,8 +99,10 @@ def pairs(items):
     return result
 
 
-def load(raw):
-    need(len(raw) <= MAX_OUTPUT, "JSON exceeds bounded profile")
+def load(raw, limit=None):
+    if limit is None:
+        limit = MAX_OUTPUT
+    need(len(raw) <= limit, "JSON exceeds bounded profile")
     return json.loads(raw.decode("utf-8"), object_pairs_hook=pairs,
                       parse_constant=lambda _: need(False, "nonfinite JSON"))
 
@@ -197,7 +204,7 @@ def seed_module(cache, destination):
 
 
 def build_info(value):
-    need(value["GoVersion"] == "go1.27.2" and value["Path"] == ORACLE and
+    need(value["GoVersion"] == "go1.27.3" and value["Path"] == ORACLE and
          value["Main"]["Path"] == ORACLE and not value["Main"].get("Replace") and
          same(value["Deps"], [{"Path": MODULE, "Version": VERSION, "Sum": SUM}]),
          "oracle BuildInfo module/version/h1/replacement differs")
@@ -215,7 +222,9 @@ class Runner:
 
     def run(self, label, argv, cwd, stdin=None):
         need(not self.signals, "interrupted")
-        record = {"label": label, "argv": list(map(str, argv))}
+        output_limits = {"stdout": MAX_RECEIPT if label in ("execute", "replay") else MAX_OUTPUT,
+                         "stderr": MAX_OUTPUT}
+        record = {"label": label, "argv": list(map(str, argv)), "output_limits": output_limits}
         self.commands.append(record)
         started = time.monotonic()
         input_file = stdin.open("rb") if stdin else None
@@ -252,7 +261,7 @@ class Runner:
                             selector.unregister(key.fileobj)
                             continue
                         sizes[key.data] += len(chunk)
-                        need(sizes[key.data] <= MAX_OUTPUT, "bounded command output: " + label)
+                        need(sizes[key.data] <= output_limits[key.data], "bounded command output: " + label)
                         streams[key.data].write(chunk)
                 record["exit"] = proc.wait(timeout=max(1, min(self.deadline, started + 90) - time.monotonic()))
                 need(record["exit"] == 0, "command failed: " + label)
@@ -274,13 +283,13 @@ class Runner:
         cached = b"go: downloading golang.org/x/mod v0.29.0\n"
         need(not diagnostics or label == "oracle-build" and diagnostics == cached,
              "unexpected command diagnostics: " + label)
-        return read(self.out / (label + ".stdout"))
+        return read(self.out / (label + ".stdout"), output_limits["stdout"])
 
 
 def receipt(raw, expected, rows, source_ids, manifest, cases, go_identity, version, selected=None):
     selected = selected or policy("upgrade")
     scalar, count = selected.get("scalar", False), selected["count"]
-    e = load(raw)
+    e = load(raw, MAX_RECEIPT)
     need(e["schema"] == "gooo/workspace-body-execution-receipt/v1" and e["decision"] == "PASS" and
          e.get("error", "") == "" and e["manifest_digest"] == manifest and e["cases_digest"] == cases,
          "finite receipt/manifest/cases binding")
@@ -289,7 +298,7 @@ def receipt(raw, expected, rows, source_ids, manifest, cases, go_identity, versi
     need(rt["stage"] == "COMPLETE" and rt.get("failure") is None and rt["producer_source_sha"] == PIN and
          rt["go_version"] == version and rt["go_tool_sha256"] == go_identity["sha256"] and
          same(rt["producer_module"], {"path": "github.com/kimjooyoon/meta-ontology-go",
-              "version": "v0.0.0-20261011201109-83928fa45382"}) and
+              "version": "v0.6.37-dev.0.20261020180505-205896a413e5"}) and
          same([rt["finite_total"], rt["finite_passed"], rt["model_calls"]], [count, count, 0]) and
          rt["projection_replayed"] is True and rt["runtime_replayed"] is True, "native producer/counters/replay")
     image = result["program"]["workspace_image"]
@@ -381,15 +390,15 @@ def main():
         reference_path = ROOT / reference_name
         rows = synchronized(load(read(reference_path)), load(read(ROOT / inputs_name)) if inputs_name else None, selected)
         version = runner.run("go-version", [go, "version"], work).decode().strip()
-        need(version.startswith("go version go1.27.2 "), "Go 1.27.2 required")
+        need(version.startswith("go version go1.27.3 "), "Go 1.27.3 required")
         build = load(runner.run("compiler-build", [compiler, "version", "--build", "--json"], work))
         need(build["compiler_source_sha"] == build["vcs_revision"] == PIN and
              build["vcs_modified"] == "false" and build["source_status"] == "CLEAN_VCS" and
-             build["go_version"] == build["native_go_required"] == "go1.27.2" and
+             build["go_version"] == build["native_go_required"] == "go1.27.3" and
              same(build["module"], {"path": "github.com/kimjooyoon/meta-ontology-go",
-                  "version": "v0.0.0-20261011201109-83928fa45382"}) and
+                  "version": "v0.6.37-dev.0.20261020180505-205896a413e5"}) and
              same(build["decision_runtime"], {"module_path": "github.com/kimjooyoon/gooo-decision-runtime",
-                  "version": "v0.2.41-experimental", "replaced": False}), "clean pinned compiler required")
+                  "version": "v0.2.51-experimental", "replaced": False}), "clean pinned compiler required")
         binary = work / "oracle-bin"
         runner.run("oracle-build", [go, "build", "-buildvcs=false", "-trimpath", "-o", binary, "."], oracle)
         build_info(load(runner.run("oracle-buildinfo", [go, "version", "-m", "-json", binary], work)))

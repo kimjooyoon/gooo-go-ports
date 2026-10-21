@@ -37,7 +37,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
         with:
-          go-version: '1.27.2'
+          go-version: '1.27.3'
           cache: false
       - name: Check orchestration refusal controls
         run: python3 -I -B tools/manual-native-shard_test.py -v
@@ -78,7 +78,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
         with:
-          go-version: '1.27.2'
+          go-version: '1.27.3'
           cache: false
       - name: Execute original full-plan shard and retain its raw evidence
         env:
@@ -114,7 +114,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
         with:
-          go-version: '1.27.2'
+          go-version: '1.27.3'
           cache: false
       - name: Reconcile official jobs and inspect all original receipts and consumers
         env:

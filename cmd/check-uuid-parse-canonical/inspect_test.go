@@ -45,7 +45,7 @@ func fixture(t *testing.T, rows []row) ([]byte, identity) {
 	var activities []any
 	for key := range participants {
 		d := id.Declarations[key]
-		activities = append(activities, map[string]any{"activity": map[string]string{"package_path": d.Package, "activity": d.Name, "lowered_name": d.Lowered}, "activity_id": namespaceID(d.Namespace, d.Name), "lowered_activity_id": namespaceID("gooo_workspace", d.Lowered), "source": d.Source, "source_body_sha256": digest([]byte(d.Body))})
+		activities = append(activities, map[string]any{"activity": map[string]string{"package_path": d.Package, "activity": d.Name, "lowered_name": d.Lowered}, "activity_id": d.ID, "lowered_activity_id": d.ID, "source": d.Source, "source_body_sha256": digest([]byte(d.Body))})
 	}
 	entry := map[string]string{"package_path": appPackage, "activity": "ParseCanonical", "lowered_name": id.Declarations[appPackage+":ParseCanonical"].Lowered}
 	source, generated, driver, step := "synthetic lowered source", syntheticABI(), "synthetic driver", "synthetic generated step"
@@ -70,7 +70,7 @@ func fixture(t *testing.T, rows []row) ([]byte, identity) {
 				"pure_calls":      map[string]any{"schema": "gooo/workspace-pure-calls/v1", "activities": activities, "sites": id.Calls}},
 			"composition": map[string]any{"schema": "gooo/body-composition/v1", "stage": "COMPLETE", "original_source_sha256": digest([]byte(source)), "selected_source_sha256": digest([]byte(source)), "gooo_source": source, "source": generated, "driver_source": driver, "generated_sha256": digest([]byte(generated)), "driver_sha256": digest([]byte(driver)), "plan": plan,
 				"steps": []any{map[string]any{"input_source_sha256": digest([]byte(source)), "generation": map[string]any{"source": step, "report": map[string]any{"schema": "gooo/body-codegen-report/v3", "decision": "PASS", "activity": entry["lowered_name"], "activity_id": activityID, "input_type": "string", "output_type": "ParseCanonicalResult", "compiler_source_sha": compilerRevision, "source_digest": digest([]byte(source)), "generated_digest": digest([]byte(step)), "replay_digest": digest([]byte(step)), "typecheck_passed": true, "deterministic_replay": true, "repository_writes": 0}}}}},
-			"runtime": map[string]any{"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "producer_source_sha": compilerRevision, "producer_module": map[string]string{"path": "github.com/kimjooyoon/meta-ontology-go", "version": "v0.0.0-20261011201109-83928fa45382"}, "go_version": "go version " + goVersion + " " + runtime.GOOS + "/" + runtime.GOARCH, "go_tool_sha256": id.GoTool, "go_tool_selection": "explicit", "generated_sha256": digest([]byte(generated)), "driver_sha256": digest([]byte(driver)), "original_source_sha256": digest([]byte(source)), "selected_source_sha256": digest([]byte(source)), "executable_sha256": digest([]byte("synthetic executable")), "runtime_suite_sha256": digest([]byte("synthetic suite")), "typed_plan_sha256": plan["typed_plan_sha256"], "model_calls": 0, "finite_total": 0, "finite_passed": 0, "projection_replayed": true, "runtime_replayed": true, "toolchain": process, "build": process, "runs": []any{process, process}, "traces": traces},
+			"runtime": map[string]any{"schema": "gooo/body-composition-runtime/v1", "stage": "COMPLETE", "producer_source_sha": compilerRevision, "producer_module": map[string]string{"path": "github.com/kimjooyoon/meta-ontology-go", "version": "v0.6.37-dev.0.20261020180505-205896a413e5"}, "go_version": "go version " + goVersion + " " + runtime.GOOS + "/" + runtime.GOARCH, "go_tool_sha256": id.GoTool, "go_tool_selection": "explicit", "generated_sha256": digest([]byte(generated)), "driver_sha256": digest([]byte(driver)), "original_source_sha256": digest([]byte(source)), "selected_source_sha256": digest([]byte(source)), "executable_sha256": digest([]byte("synthetic executable")), "runtime_suite_sha256": digest([]byte("synthetic suite")), "typed_plan_sha256": plan["typed_plan_sha256"], "model_calls": 0, "finite_total": 0, "finite_passed": 0, "projection_replayed": true, "runtime_replayed": true, "toolchain": process, "build": process, "runs": []any{process, process}, "traces": traces},
 		},
 	}
 	return mustJSON(t, receipt), id
@@ -178,6 +178,28 @@ func TestReceiptRejectsCoordinatedOracleAndProvenanceTampering(t *testing.T) {
 		"call offset": func(e map[string]any) {
 			calls := object(object(object(e["result"])["program"])["pure_calls"])
 			object(array(calls["sites"])[0])["start_byte"] = 0
+		},
+		"historical original namespace alias": func(e map[string]any) {
+			calls := object(object(object(e["result"])["program"])["pure_calls"])
+			item := object(array(calls["activities"])[0])
+			ref := object(item["activity"])
+			d := id.Declarations[str(ref["package_path"])+":"+str(ref["activity"])]
+			alias := namespaceID(d.Namespace, d.Name)
+			if alias == d.ID {
+				t.Fatal("ineffective original ID mutation")
+			}
+			item["activity_id"] = alias
+		},
+		"historical lowered namespace alias": func(e map[string]any) {
+			calls := object(object(object(e["result"])["program"])["pure_calls"])
+			item := object(array(calls["activities"])[0])
+			ref := object(item["activity"])
+			d := id.Declarations[str(ref["package_path"])+":"+str(ref["activity"])]
+			alias := namespaceID("gooo_workspace", d.Lowered)
+			if alias == d.ID {
+				t.Fatal("ineffective lowered ID mutation")
+			}
+			item["lowered_activity_id"] = alias
 		},
 		"helper source body": func(e map[string]any) {
 			calls := object(object(object(e["result"])["program"])["pure_calls"])

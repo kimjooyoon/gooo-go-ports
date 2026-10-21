@@ -169,7 +169,7 @@ class FreshHostTests(unittest.TestCase):
         self.assertIn('examples/diagnostic-header-addition/main.gooo',roster)
         self.assertIn('cmd/verify/header_addition_corpus.go',roster)
         self.assertIn('ports/autobot/ai_lines.gooo',roster)
-        self.assertEqual(len(roster),288)
+        self.assertEqual(len(roster),293)
         self.assertEqual(len(catalog['packages']),56)
         self.assertEqual(sum(len(p['sources']) for p in catalog['packages']),67)
         for name in ('ports/net/textproto/canonical.gooo','examples/canonical-header-key/main.gooo','cmd/verify/canonical_header_contracts.go','cmd/verify/canonical_header_corpus_test.go','examples/canonical-header-key/manual20.json','third_party/go/net/textproto/reader.go.txt','cmd/verify/etag_contracts.go','cmd/verify/etag_native_test.go','ports/net/http/etag.gooo','examples/strong-validator-facts/main.gooo','examples/strong-validator-facts/manual247.json','third_party/go/net/http/fs.go.txt','etag-scan.workspace.json','etag-strong-match.workspace.json','strong-validator-facts.workspace.json'):
@@ -239,7 +239,7 @@ class FreshHostTests(unittest.TestCase):
         qualified=[row['path'] for row in expected.document['sources'] if 'catalog-source' in row['roles']]
         catalog={'packages':[{'path':'synthetic/membership-only','sources':qualified}]}
         roster=CHECK.source_roster(ROOT,catalog)
-        self.assertEqual(len(roster),288)
+        self.assertEqual(len(roster),293)
         self.assertTrue(set(CHECK.OWN_FILES).issubset(roster))
         self.assertTrue(set(CHECK.CONTRACT.CONTRACT_FILES).issubset(roster))
         self.assertEqual(sum('catalog-source' in row['roles'] for row in expected.document['sources']),67)
@@ -748,7 +748,7 @@ class AdditionEvidenceBoundaryTests(unittest.TestCase):
 
     def read(self,fixture):
         pins={};read=lambda p:CHECK.frozen_read(p,pins)
-        return CHECK.read_addition_evidence(ROOT,read,pins,fixture['source_set'],fixture['source_set_sha256'],fixture['batches'],'go version go1.27.2 linux/amd64',{'bytes':1,'sha256':'a'*64},82)
+        return CHECK.read_addition_evidence(ROOT,read,pins,fixture['source_set'],fixture['source_set_sha256'],fixture['batches'],'go version go1.27.3 linux/amd64',{'bytes':1,'sha256':'a'*64},82)
 
     def observed(self,*args):
         return {'source':'package main\n// boundary fixture only\n','plan':{'fixture':'independent-current-plan'},'tool_selection':'explicit'}
@@ -797,11 +797,11 @@ class AdditionEvidenceBoundaryTests(unittest.TestCase):
         # Execute the real early binding guard, before any synthetic result body.
         raw=json.dumps({'schema':'gooo/workspace-body-execution-receipt/v1','decision':'PASS','manifest':'/producer/gooo.workspace.json','manifest_digest':CHECK.digest(b'{}'),'cases_digest':CHECK.digest(b'{}')}).encode()
         with self.assertRaisesRegex(RuntimeError,'exact manifest/case bytes'):
-            CHECK.receipt(raw,[],b'{}',b'{}',[],'go version go1.27.2 linux/amd64','a'*64,{CHECK.ENTRY:{}},{},'/local/blob/gooo.workspace.json')
+            CHECK.receipt(raw,[],b'{}',b'{}',[],'go version go1.27.3 linux/amd64','a'*64,{CHECK.ENTRY:{}},{},'/local/blob/gooo.workspace.json')
         # With the original producer path this guard passes to the next required
         # field; this is a guard test, not a complete native receipt fixture.
         with self.assertRaises(KeyError) as failure:
-            CHECK.receipt(raw,[],b'{}',b'{}',[],'go version go1.27.2 linux/amd64','a'*64,{CHECK.ENTRY:{}},{},'/producer/gooo.workspace.json')
+            CHECK.receipt(raw,[],b'{}',b'{}',[],'go version go1.27.3 linux/amd64','a'*64,{CHECK.ENTRY:{}},{},'/producer/gooo.workspace.json')
         self.assertEqual(failure.exception.args,('result',))
 
 

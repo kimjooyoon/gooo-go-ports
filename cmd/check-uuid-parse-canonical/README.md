@@ -1,6 +1,6 @@
 # Saved UUID canonical parsing checker
 
-Run from the repository root with the pinned Go 1.27.2 toolchain:
+Run from the repository root with the pinned Go 1.27.3 toolchain:
 
 ```sh
 go run ./cmd/check-uuid-parse-canonical --snapshot . \

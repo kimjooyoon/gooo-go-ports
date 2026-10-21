@@ -51,7 +51,11 @@ var genericResultMaps = map[string]bool{
 // json.Compact, marshaling the whole result as a map, or hashing the envelope
 // cannot substitute for the pinned typed-result digest.
 func pinnedResultDigest(receipt []byte) (string, error) {
-	encoded, err := pinnedResultBytes(receipt)
+	return pinnedResultDigestForProfile(receipt, resultProfileJSON, compilerRevision)
+}
+
+func pinnedResultDigestForProfile(receipt, profileJSON []byte, compiler string) (string, error) {
+	encoded, err := pinnedResultBytesForProfile(receipt, profileJSON, compiler)
 	if err != nil {
 		return "", err
 	}
@@ -59,6 +63,10 @@ func pinnedResultDigest(receipt []byte) (string, error) {
 }
 
 func pinnedResultBytes(receipt []byte) ([]byte, error) {
+	return pinnedResultBytesForProfile(receipt, resultProfileJSON, compilerRevision)
+}
+
+func pinnedResultBytesForProfile(receipt, profileJSON []byte, compiler string) ([]byte, error) {
 	if len(receipt) == 0 || len(receipt) > 32<<20 || !utf8.Valid(receipt) {
 		return nil, fmt.Errorf("invalid pinned receipt size or UTF-8")
 	}
@@ -89,7 +97,7 @@ func pinnedResultBytes(receipt []byte) ([]byte, error) {
 		}
 	}
 	var profile resultProfile
-	if err := json.Unmarshal(resultProfileJSON, &profile); err != nil || profile.Compiler != compilerRevision {
+	if err := json.Unmarshal(profileJSON, &profile); err != nil || profile.Compiler != compiler {
 		return nil, fmt.Errorf("invalid pinned result format profile")
 	}
 	raw, ok := envelope["result"]

@@ -3,7 +3,7 @@ import hashlib,json,re
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
 OUT=None
-PIN='de99b770b8b5adea608233c3c0664902336e3310'
+PIN='205896a413e5dea92366309c35ae85e542d055f6'
 ENTRY='gooo/service-policy/multi-required:AssessRequiredRequests'
 ACTIVITY='gooo://service-policy/multi-required/assess/v1'
 OUT_FIELDS=[('status','status',str),('reason','reason',str),('invalid_field','invalid_field',str),('invalid_index','invalid_index',int),('first_counterexample','first_counterexample',int),('request_count','request_count',int),('checked_count','checked_count',int),('all_preserved','all_preserved',bool),('supported_subset','supported_subset',bool),('subset_rule_id','subset_rule_id',str),('counterexample_before','counterexample_before_match',bool),('counterexample_after','counterexample_after_match',bool)]
@@ -38,7 +38,8 @@ def validate(x,casefile,expected,parent=None,go_identity=None):
  assert rt['driver_sha256']==composition['driver_sha256']==sha(composition['driver_source'].encode())
  assert rt['typed_plan_sha256']==composition['plan']['typed_plan_sha256']
  assert rt['producer_source_sha']==PIN
- assert re.fullmatch(r'go version go1\.27\.2 (darwin/arm64|linux/amd64)',rt['go_version'])
+ assert rt['producer_module']=={'path':'github.com/kimjooyoon/meta-ontology-go','version':'v0.6.37-dev.0.20261020180505-205896a413e5'}
+ assert re.fullmatch(r'go version go1\.27\.3 (darwin/arm64|linux/amd64)',rt['go_version'])
  assert rt['go_tool_selection']=='explicit' and re.fullmatch(r'sha256:[0-9a-f]{64}',rt['go_tool_sha256'])
  if go_identity is not None:
   exact({'version':rt['go_version'],'sha256':rt['go_tool_sha256']},go_identity)

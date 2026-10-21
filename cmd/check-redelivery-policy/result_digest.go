@@ -13,8 +13,8 @@ import (
 
 var resultProfileJSON []byte
 
-const expectedResultProfileBytes = 58326
-const expectedResultProfileSHA256 = "9eafadab81a6c7fe33a4f59777e3776cc27f31c7962e472f3828e77867142d44"
+const expectedResultProfileBytes = 202475
+const expectedResultProfileSHA256 = "46862aabf1934c1d2a39ad830c4a6cd05d2369c5014fea231d87b7861f4d3862"
 
 // Main loads the shared public profile once before observing receipts. Failed
 // loads clear prior state; concurrent reloads are outside this single-run CLI.
@@ -39,7 +39,7 @@ func loadResultProfile(path string) error {
 	if len(raw) != expectedResultProfileBytes || fmt.Sprintf("%x", sha256.Sum256(raw)) != expectedResultProfileSHA256 {
 		return fmt.Errorf("pinned result profile bytes/hash differ")
 	}
-	if compilerRevision != "83928fa4538245abe33b08549da47f8cbdc50ed2" {
+	if compilerRevision != "205896a413e5dea92366309c35ae85e542d055f6" {
 		return fmt.Errorf("invalid pinned result format profile")
 	}
 	var profile resultProfile
@@ -76,7 +76,7 @@ var genericResultMaps = map[string]bool{
 	"$.composition.steps.*.generation.report.completeness_receipt.status_counts": true,
 }
 
-// At compiler 83928fa, ReplayWorkspace hashes json.Marshal(prior typed Result).
+// The explicitly selected compiler source hashes json.Marshal(prior typed Result).
 // This deliberately supports only the canonical native CLI result profile for
 // this frozen workflow. Typed field order, scalar spelling, optional fields and
 // shapes must match the pinned profile; unsupported reserializations fail closed.
@@ -97,6 +97,29 @@ func pinnedResultBytes(receipt []byte) ([]byte, error) {
 	if len(resultProfileJSON) == 0 {
 		return nil, fmt.Errorf("pinned result profile is not loaded")
 	}
+	if len(resultProfileJSON) != 202475 || digest(resultProfileJSON) != "sha256:46862aabf1934c1d2a39ad830c4a6cd05d2369c5014fea231d87b7861f4d3862" || compilerRevision != "205896a413e5dea92366309c35ae85e542d055f6" {
+		return nil, fmt.Errorf("current result profile raw identity differs")
+	}
+	return pinnedResultBytesWithProfile(receipt, resultProfileJSON, compilerRevision)
+}
+
+// Explicit archival fixture entry; no input-based fallback or global reload.
+func legacy839ResultBytes(receipt, legacyProfile []byte) ([]byte, error) {
+	if len(legacyProfile) != 58326 || digest(legacyProfile) != "sha256:9eafadab81a6c7fe33a4f59777e3776cc27f31c7962e472f3828e77867142d44" {
+		return nil, fmt.Errorf("historical result profile raw identity differs")
+	}
+	return pinnedResultBytesWithProfile(receipt, legacyProfile, "83928fa4538245abe33b08549da47f8cbdc50ed2")
+}
+
+func legacy839ResultDigest(receipt, legacyProfile []byte) (string, error) {
+	encoded, err := legacy839ResultBytes(receipt, legacyProfile)
+	if err != nil {
+		return "", err
+	}
+	return digest(encoded), nil
+}
+
+func pinnedResultBytesWithProfile(receipt, profileJSON []byte, profileCompiler string) ([]byte, error) {
 	if len(receipt) == 0 || len(receipt) > 32<<20 || !utf8.Valid(receipt) {
 		return nil, fmt.Errorf("invalid pinned receipt size or UTF-8")
 	}
@@ -127,8 +150,16 @@ func pinnedResultBytes(receipt []byte) ([]byte, error) {
 		}
 	}
 	var profile resultProfile
-	if err := json.Unmarshal(resultProfileJSON, &profile); err != nil || profile.Compiler != compilerRevision {
+	if err := json.Unmarshal(profileJSON, &profile); err != nil || profile.Compiler != profileCompiler {
 		return nil, fmt.Errorf("invalid pinned result format profile")
+	}
+	var producer struct {
+		Runtime struct {
+			Source string `json:"producer_source_sha"`
+		} `json:"runtime"`
+	}
+	if json.Unmarshal(envelope["result"], &producer) != nil || producer.Runtime.Source != profileCompiler {
+		return nil, fmt.Errorf("receipt producer differs from explicitly selected result profile")
 	}
 	raw, ok := envelope["result"]
 	if !ok {
@@ -136,7 +167,7 @@ func pinnedResultBytes(receipt []byte) ([]byte, error) {
 	}
 	d := json.NewDecoder(bytes.NewReader(raw))
 	d.UseNumber()
-	normalized, err := normalizeResultValue(d, raw, "$", profile.Nodes, 0)
+	normalized, err := normalizeResultValueForProfile(d, raw, "$", profile.Nodes, 0, profileCompiler == "205896a413e5dea92366309c35ae85e542d055f6")
 	if err != nil {
 		return nil, err
 	}
@@ -147,6 +178,14 @@ func pinnedResultBytes(receipt []byte) ([]byte, error) {
 }
 
 func normalizeResultValue(d *json.Decoder, input []byte, path string, profile map[string]profileShape, depth int) ([]byte, error) {
+	// Preserve the explicitly archival/default normalization behavior.
+	return normalizeResultValueForProfile(d, input, path, profile, depth, false)
+}
+
+// Current205 RawMessage omitempty tests encoded byte length, not the decoded
+// JSON zero value. Only the existing exact RawMessage path roster gets this
+// rule; pointer/scalar/slice omissions and all historical839 paths stay strict.
+func normalizeResultValueForProfile(d *json.Decoder, input []byte, path string, profile map[string]profileShape, depth int, current205 bool) ([]byte, error) {
 	if depth > 64 {
 		return nil, fmt.Errorf("original result exceeds pinned depth limit")
 	}
@@ -235,11 +274,12 @@ func normalizeResultValue(d *json.Decoder, input []byte, path string, profile ma
 				keyRaw, _ := json.Marshal(name)
 				out.Write(keyRaw)
 				out.WriteByte(':')
-				value, err := normalizeResultValue(d, input, path+"."+name, profile, depth+1)
+				value, err := normalizeResultValueForProfile(d, input, path+"."+name, profile, depth+1, current205)
 				if err != nil {
 					return nil, err
 				}
-				if field.Optional && (bytes.Equal(value, []byte("null")) || field.OmitZero && canonicalEmpty(value)) {
+				rawMessage := current205 && rawResultValues[path+"."+name]
+				if field.Optional && !rawMessage && (bytes.Equal(value, []byte("null")) || field.OmitZero && canonicalEmpty(value)) {
 					return nil, fmt.Errorf("noncanonical omitempty value at %s.%s", path, name)
 				}
 				out.Write(value)
@@ -259,7 +299,7 @@ func normalizeResultValue(d *json.Decoder, input []byte, path string, profile ma
 					out.WriteByte(',')
 				}
 				first = false
-				value, err := normalizeResultValue(d, input, path+".*", profile, depth+1)
+				value, err := normalizeResultValueForProfile(d, input, path+".*", profile, depth+1, current205)
 				if err != nil {
 					return nil, err
 				}

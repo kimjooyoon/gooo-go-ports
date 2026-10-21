@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fresh, bounded native/oracle/saved-replay check for Retry-After facts.
 
-Run from a checkout with its pinned compiler and Go1.27.2. This is a finite
+Run from a checkout with its pinned compiler and Go1.27.3. This is a finite
 profile check, not producer authentication or permission to dispatch a retry.
 """
 import argparse
@@ -20,7 +20,7 @@ import tempfile
 import time
 
 EXAMPLE = 'examples/retry-after-facts'
-REV = '83928fa4538245abe33b08549da47f8cbdc50ed2'
+REV = '205896a413e5dea92366309c35ae85e542d055f6'
 PROFILE = [EXAMPLE + '/' + name for name in (
     'main.gooo', 'contract.json', 'reference/main.go', 'witnesses.json',
     'inputs.json', 'request_inputs.py', 'request_inputs_test.py', 'request.json',
@@ -139,20 +139,16 @@ def run(args):
              'owned_byte_cap': 1 << 30, 'cache': 'existing Go cache; no downloads',
              'cleanup': 'exact owned inode only, after observed child closure'})
         version = runner.call('go-version', [go, 'version'], 15).decode('utf-8').strip()
-        need(re.fullmatch(r'go version go1\.27\.2 (?:linux/amd64|darwin/arm64)', version),
-             'pinned Go1.27.2 and supported platform required')
+        need(re.fullmatch(r'go version go1\.27\.3 (?:linux/amd64|darwin/arm64)', version),
+             'pinned Go1.27.3 and supported platform required')
         identity = R.load(runner.call('compiler-identity', [compiler, 'version', '--build', '--json'], 15))
-        need(identity.get('schema') == 'gooo/build-identity/v1' and
-             identity.get('compiler_source_sha') == identity.get('vcs_revision') == REV and
-             identity.get('source_status') == 'CLEAN_VCS' and identity.get('vcs_modified') == 'false' and
-             identity.get('go_version') == identity.get('native_go_required') == 'go1.27.2' and
-             identity.get('build_info_observed') is True, 'clean pinned compiler build identity')
+        producer = R.producer_module(identity)
         starter_raw = runner.call('request-input-gate',
             [python, '-I', '-B', root / EXAMPLE / 'request_inputs.py', root / EXAMPLE / 'request.json'], 15)
         starter = R.load(starter_raw)
         oracle_raw = runner.call('independent-go-reference',
             [go, 'run', './' + EXAMPLE + '/reference', root / EXAMPLE / 'witnesses.json'], 60)
-        ctx = R.prepare(root, oracle_raw, version, 'sha256:' + frozen.pins[str(go)]['sha256'], frozen.read)
+        ctx = R.prepare(root, oracle_raw, version, 'sha256:' + frozen.pins[str(go)]['sha256'], frozen.read, producer)
         parts = R.batches(ctx)
         need(R.equal(starter, {'schema': 'gooo/body-composition-inputs/v1', 'inputs': [ctx['inputs'][4]]}),
              'actual transport gate is the original header-04 input')
@@ -176,12 +172,12 @@ def run(args):
                 [compiler, 'package', 'execute', '--json', '--go', go, '--inputs', input_path, manifest], 90)
             program = R.validate(execute, ctx, part)
             execution_path = out / execute_label / 'stdout'
-            frozen.read(execution_path, 4 << 20)
+            frozen.read(execution_path, R.RECEIPT_CAP)
             replay = runner.call(replay_label,
                 [compiler, 'package', 'replay', '--json', '--go', go, '--receipt', execution_path,
                  '--inputs', input_path, manifest], 90)
             R.validate(replay, ctx, part, parent_raw=execute, parent_program=program)
-            frozen.read(out / replay_label / 'stdout', 4 << 20)
+            frozen.read(out / replay_label / 'stdout', R.RECEIPT_CAP)
             if index == 0:
                 controls = R.negative_controls(execute, replay, ctx, part)
             results.append({'index': index, 'start': part['start'], 'end': part['end'],

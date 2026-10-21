@@ -16,7 +16,7 @@ import textwrap
 import unittest
 
 
-WRITE_FIXTURE_SHA = 'f556006a57ff9dedef37e610efd1219170d81dba2792b7861273b231b18156df'
+WRITE_FIXTURE_SHA = '49df4793058fcdf06906f0123ff1da3f2b538b3c78d4a8973f4c4c50a7b8db32'
 PREFIX = b'An existing synthetic job section.\n'
 MUTATION = b'A controlled late transport mutation.\n'
 EXPECTED = (

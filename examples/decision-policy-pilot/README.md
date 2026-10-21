@@ -10,7 +10,7 @@ The policy is an original demonstration, not a port of a provider SDK.
 
 ## Run
 
-From the repository root, with Git and Go 1.27.2 installed on `PATH`:
+From the repository root, with Git and Go 1.27.3 installed on `PATH`:
 
 ```sh
 ./tools/bootstrap.sh
@@ -19,14 +19,14 @@ From the repository root, with Git and Go 1.27.2 installed on `PATH`:
 
 Bootstrap fetches and builds the repository's pinned compiler. The pilot then
 uses that existing `../../.gooo` binary read-only, relative to its own directory.
-It checks revision `83928fa4538245abe33b08549da47f8cbdc50ed2`, version
-`0.6.32-dev`, clean VCS state, and Go `1.27.2` against actual build information.
+It checks revision `205896a413e5dea92366309c35ae85e542d055f6`, version
+`0.6.37-dev`, clean VCS state, and Go `1.27.3` against actual build information.
 
 If your `go` launcher uses automatic toolchain selection, select the toolchain
 for setup and pass its installed executable to the offline pilot:
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 ./tools/bootstrap.sh
 PILOT_GO_BIN="$(go env GOROOT)/bin/go" ./examples/decision-policy-pilot/run.sh
 ```
@@ -34,7 +34,7 @@ PILOT_GO_BIN="$(go env GOROOT)/bin/go" ./examples/decision-policy-pilot/run.sh
 Setup may download the toolchain and compiler dependencies. The pilot itself
 sets `GOTOOLCHAIN=local`, `GOPROXY=off`, `GOSUMDB=off`, `GOENV=off`, and
 `GOWORK=off`; it does not download dependencies or call a provider. You may set
-`PILOT_GO_BIN` to another installed Go 1.27.2 executable or pass `--compiler` with
+`PILOT_GO_BIN` to another installed Go 1.27.3 executable or pass `--compiler` with
 another build of the exact pinned compiler. Other versions are rejected.
 
 Each run creates a new `examples/decision-policy-pilot/out/run-*` directory and
@@ -128,7 +128,7 @@ observation, not evidence of an external system's behavior.
 
 ## Tests
 
-Run from this directory with an installed Go 1.27.2 executable. Use the actual
+Run from this directory with an installed Go 1.27.3 executable. Use the actual
 successful output directory for `PILOT_EVIDENCE` so receipt-tampering tests run:
 
 ```sh
@@ -139,7 +139,7 @@ go vet ./...
 PILOT_EVIDENCE="$PWD/out/run-YOUR_RUN_NUMBER" go test -race ./...
 ```
 
-If Go 1.27.2 is not on `PATH`, replace `go` above with `"$PILOT_GO_BIN"`. Tests
+If Go 1.27.3 is not on `PATH`, replace `go` above with `"$PILOT_GO_BIN"`. Tests
 cover surrogate handling, inconsistent dispatch results, missing/null model-call
 counts and changes to input values/order, field identities, outputs, sources,
 compiler identity, generated code, cases and replay origin. The receipt tests

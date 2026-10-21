@@ -54,7 +54,7 @@ func ciShardTestInputs(t *testing.T, entries []string) (*NativeVerificationContr
 		}
 		workspaces = append(workspaces, ciShardWorkspace{OriginalIndex: i, ManifestSHA256: contentDigest([]byte("manifest" + name)), SourceSetSHA256: digest, EntryProducer: "gooo://synthetic/" + parts[1], Sources: anchors})
 	}
-	run := ciShardRun{Repository: "example/project", RunID: "12345", Attempt: 1, TestedCommit: strings.Repeat("a", 40), TestedTree: strings.Repeat("b", 40), CompilerRevision: strings.Repeat("c", 40), GoVersion: "go1.27.2", Workers: 3}
+	run := ciShardRun{Repository: "example/project", RunID: "12345", Attempt: 1, TestedCommit: strings.Repeat("a", 40), TestedTree: strings.Repeat("b", 40), CompilerRevision: strings.Repeat("c", 40), GoVersion: "go1.27.3", Workers: 3}
 	return c, run, sources, workspaces
 }
 

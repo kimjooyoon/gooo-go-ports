@@ -13,7 +13,7 @@ const clone = value => JSON.parse(JSON.stringify(value));
 function manifest() {
   return { schema: 'gooo/browser-literal-search/v1', entry_id: 'gooo://go-ports/examples/literal-text-report/report',
     result_entity_id: 'gooo://go-ports/examples/literal-text-report/result', input_entity_ids: ['gooo://std/text', 'gooo://std/text'],
-    compiler_revision: '83928fa4538245abe33b08549da47f8cbdc50ed2', compiler_version: '0.6.32-dev', go_version: 'go1.27.2',
+    compiler_revision: '205896a413e5dea92366309c35ae85e542d055f6', compiler_version: '0.6.37-dev', go_version: 'go1.27.3',
     source_revision: 'b'.repeat(40), source_dirty: false, wasm_bytes: 8, native_cases: 11, fixture_cases: 11, fixture_rejections: 8,
     native_receipt_expectation_cases: 0, wasm_sha256: 'a'.repeat(64), generated_sha256: 'c'.repeat(64),
     execution_sha256: 'd'.repeat(64), replay_sha256: 'e'.repeat(64), fixtures_sha256: 'f'.repeat(64),
@@ -111,7 +111,8 @@ test('all metadata pins, hashes, counters and input/entry/result identities are 
   assert.deepEqual(clone(protocol.validateMetadata(valid)), valid);
   const mutations = [m => { m.schema = 'v2'; }, m => { m.entry_id = 'other'; }, m => { m.result_entity_id = 'other'; },
     m => { m.input_entity_ids[0] = 'urn:gooo:type:string'; }, m => { m.input_entity_ids.push('gooo://std/text'); },
-    m => { m.compiler_revision = 'c'.repeat(40); }, m => { m.compiler_version = 'v0.6.32-dev'; }, m => { m.go_version = 'go1.27.1'; },
+    m => { m.compiler_revision = 'c'.repeat(40); }, m => { m.compiler_version = 'v0.6.32-dev'; },
+    m => { m.compiler_revision = '83928fa4538245abe33b08549da47f8cbdc50ed2'; }, m => { m.compiler_version = '0.6.32-dev'; }, m => { m.go_version = 'go1.27.1'; },
     m => { m.source_revision = 'x'; }, m => { m.source_dirty = 'false'; }, m => { m.wasm_bytes = 0; },
     m => { m.wasm_bytes = 32 * 1024 * 1024 + 1; }, m => { m.native_receipt_expectation_cases = 1; },
     m => { m.files_sha256 = {}; }, m => { m.source_sha256 = { '../source.gooo': 'a'.repeat(64) }; },

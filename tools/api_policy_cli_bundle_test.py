@@ -37,7 +37,7 @@ class BundleTests(unittest.TestCase):
         out.mkdir()
         main = {"Path": BUNDLE.PARENT, "Version": "v0.0.0-20261018000000-111111111111", "Sum": "h1:" + "A" * 43 + "="}
         dep = {"Path": BUNDLE.ORIGINAL, "Version": "v0.0.0-20261014100709-8cddcc4e65af", "Sum": "h1:" + "B" * 43 + "="}
-        build = {"GoVersion": "go1.27.2", "Path": BUNDLE.PARENT + "/cmd/compare", "Main": main, "Deps": [dep],
+        build = {"GoVersion": "go1.27.3", "Path": BUNDLE.PARENT + "/cmd/compare", "Main": main, "Deps": [dep],
                  "Settings": [{"Key": key, "Value": value} for key, value in
                               (("CGO_ENABLED", "0"), ("GOOS", "darwin"), ("GOARCH", "arm64"))]}
         build_path = out / "build-info.json"
@@ -47,7 +47,7 @@ class BundleTests(unittest.TestCase):
                       "revision_generation_sha256": "sha256:" + "b" * 64}
         report = {"status": "PUBLIC_API_POLICY_CONSUMER_PASS", "temporary_sources_binaries_build_cache_removed": True,
                   "requested_revision": "1" * 40, "resolved": {"parent": {"Origin": {"Hash": "1" * 40}, "Version": main["Version"]}},
-                  "go_toolchain": {"version": "go version go1.27.2 darwin/arm64", "executable": ref(go)},
+                  "go_toolchain": {"version": "go version go1.27.3 darwin/arm64", "executable": ref(go)},
                   "source": {"current_original_generation": identities["original_generation_sha256"],
                              "current_parent_generation": identities["revision_generation_sha256"]},
                   "consumer_fixture_source_contract": {"identities": identities},
@@ -175,7 +175,7 @@ class BundleTests(unittest.TestCase):
                 path = Path(ref["path"])
                 build = json.loads(path.read_bytes())
                 if kind == "platform": build["Settings"][1]["Value"] = "windows"
-                if kind == "cross-build": args[2]["go_toolchain"]["version"] = "go version go1.27.2 linux/amd64"
+                if kind == "cross-build": args[2]["go_toolchain"]["version"] = "go version go1.27.3 linux/amd64"
                 if kind == "cgo": build["Settings"][0]["Value"] = "1"
                 if kind == "replace": build["Main"]["Replace"] = {"Path": "local"}
                 if kind == "summary": args[2]["direct_install"]["build_info"]["main"]["Sum"] = "h1:" + "C" * 43 + "="
@@ -263,7 +263,7 @@ SERVICE_SPEC.loader.exec_module(SERVICE)
 
 class ServiceBundleTests(unittest.TestCase):
     def build(self):
-        return {"GoVersion": "go1.27.2", "Path": SERVICE.MODULE + "/cmd/evaluate",
+        return {"GoVersion": "go1.27.3", "Path": SERVICE.MODULE + "/cmd/evaluate",
                 "Main": {"Path": SERVICE.MODULE, "Version": SERVICE.VERSION, "Sum": SERVICE.MODULE_SUM},
                 "Settings": [{"Key": key, "Value": value} for key, value in
                              (("CGO_ENABLED", "0"), ("GOOS", "darwin"), ("GOARCH", "arm64"))]}

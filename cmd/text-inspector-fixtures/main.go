@@ -108,8 +108,8 @@ func run() error {
 // In particular, the White_Space table and both encoding-length implementations
 // must be identified before any reference output is generated.
 func checkOracleIdentity(lock upstream, version, goroot string) error {
-	if lock.GoVersion != "go1.27.2" || version != lock.GoVersion {
-		return fmt.Errorf("oracle toolchain %s, require pinned go1.27.2", version)
+	if lock.GoVersion != "go1.27.3" || version != lock.GoVersion {
+		return fmt.Errorf("oracle toolchain %s, require pinned go1.27.3", version)
 	}
 	if unicode.Version != "17.0.0" {
 		return fmt.Errorf("unexpected Unicode version %s", unicode.Version)

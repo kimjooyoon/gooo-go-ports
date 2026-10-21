@@ -17,7 +17,7 @@ func canonicalHeaderTestIdentity(t *testing.T, s suite) expectedIdentity {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return expectedIdentity{CompilerRevision: uuidCompactCompilerRevision, GoVersion: "go1.27.2", Sources: w.Identities, SourceBytes: w.Sources}
+	return expectedIdentity{CompilerRevision: uuidCompactCompilerRevision, GoVersion: "go1.27.3", Sources: w.Identities, SourceBytes: w.Sources}
 }
 func canonicalHeaderTestSuites() []suite {
 	return []suite{{Package: canonicalHeaderPackage, Activity: canonicalHeaderActivity}, {Package: canonicalHeaderReportPackage, Activity: canonicalHeaderReportActivity}}

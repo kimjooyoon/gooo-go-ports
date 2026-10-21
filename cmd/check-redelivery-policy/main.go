@@ -21,9 +21,9 @@ import (
 	"github.com/kimjooyoon/gooo-go-ports/internal/jsonkeys"
 )
 
-const compilerRevision = "83928fa4538245abe33b08549da47f8cbdc50ed2"
-const compilerVersion = "0.6.32-dev"
-const goVersion = "go1.27.2"
+const compilerRevision = "205896a413e5dea92366309c35ae85e542d055f6"
+const compilerVersion = "0.6.37-dev"
+const goVersion = "go1.27.3"
 const appPackage = "app/automatic-redelivery"
 const activityName = "AssessRedelivery"
 const activityID = "gooo://automatic-redelivery/assess/v1"
@@ -78,7 +78,7 @@ func run() error {
 	replay := flag.String("replay", "", "fresh saved-replay receipt")
 	build := flag.String("compiler-build", "", "pinned compiler build identity")
 	goTool := flag.String("go-tool", "", "explicit pinned Go executable")
-	profile := flag.String("result-profile", "", "shared pinned839 Result profile")
+	profile := flag.String("result-profile", "", "shared source-pinned current Result profile")
 	checkInput := flag.String("check-input", "", "strict native wire preflight only")
 	format := flag.String("format", "", "native preflight format")
 	out := flag.String("out", "", "new checked JSON file")

@@ -19,7 +19,7 @@ import sys
 import tempfile
 import unittest
 
-COMPILER = '83928fa4538245abe33b08549da47f8cbdc50ed2'
+COMPILER = '205896a413e5dea92366309c35ae85e542d055f6'
 ORIGINAL_BINDINGS = {'assets': {'adapter_generated.go': 'sha256:db23ed9739db691f80aedde15096eca0e36a8b3ecdc6cadf8c2b86414cec40ec',
             'bindings.go': 'sha256:a0836884bf4d0d25af5aa0c0265c859f09f4187950f72e859684a6f3bf1866e1',
             'bridge.go': 'sha256:bc6081d796f6084f628e59b9d3ed24bee799acaa96f72e522dcdc3ce823bd99b',
@@ -51,47 +51,49 @@ ORIGINAL_BINDINGS = {'assets': {'adapter_generated.go': 'sha256:db23ed9739db691f
  'compiler_source_sha': '83928fa4538245abe33b08549da47f8cbdc50ed2',
  'generation_sha256': 'sha256:79b76bda704cb63b9390802766a66ac72ba02c04ae135600cb05de6797c97d46'}
 REVISION_BINDINGS = {'assets': {'adapter_generated.go': 'sha256:df5f55e3179042b916b6d7a2a995e67b9596646689994573c24b241c3458c32f',
-            'bindings.go': 'sha256:8169345b974e19ae458ffd179064cde7ec6758a437d9ef91d35c49914ce5badf',
+            'bindings.go': 'sha256:e558886594e8f8a73c503a420671dce6c6556915eed1be255ed390fb9b4cfb63',
             'candidate.workspace.json': 'sha256:6e074357fe49fc0cf1f00b6087ada7ab06a77dfc0910d6d227c85a26d53c81d4',
             'canonical/main.gooo': 'sha256:72d5f8542c35bb610d094648befa98bbd4c215cbbaac138e18cbb88f58932f53',
             'canonical/scalar_access.gooo': 'sha256:86a237641bd7b4de2722a00e1dd89e9f28d17ea953663e9ef1e2a435959c2b83',
-            'cmd/compare/main.go': 'sha256:f990ea72762e1baeb2e16db56dcde1dbae9387eec2ba6ae60aa4c06c8312700b',
+            'cmd/compare/diagnostics.go': 'sha256:b92014b24cf1fbb302374f483772151d409ceab756067b95fd7059939f127b2e',
+            'cmd/compare/main.go': 'sha256:301776cba828e1c79d39aae1864820a2f248386155bcbc6c90ed65503d1e5c3e',
             'compare.go': 'sha256:f019ba56fc40ba9ac0ffa9d35abf9ecda20534ede38a3efba5db0981d8ec8833',
             'compare.gooo': 'sha256:5f040d255508ea42250d24a4b79cbbdacd8a4f11286b8110a2e0cbc9df89646a',
-            'compiler.json': 'sha256:9e61c23a1302e7390ba03af0606066a8cca1b13d5bd96864dc3c27a85c00dd5c',
+            'compiler.json': 'sha256:503d1daed25690a552b207f0f8b3a19ebff309cfe8127f72d43be50059a4c428',
             'differences.workspace.json': 'sha256:ba83133424c08ed42c66e6096355661dab596349e45f990c1bdc2fcefc827a12',
-            'generate.py': 'sha256:3fd4daa5f914adb763d1968ababba4b1a82a9824c1ffef230368afaaefb4c9d3',
-            'go.mod': 'sha256:4d29f224cf2b8bc07133b17d74673e2f9c257987f024a82679cc7676a4d934a9',
+            'generate.py': 'sha256:ace2eb2eabf4c5e1748565bf9876e73b5e07e2c1ac073f53b807c519ee3bb7bc',
+            'go.mod': 'sha256:728ec08e68827e0425913aeed5e392b59a24ef5b67011fe3e8469e0424d8d9e4',
+            'go.sum': 'sha256:8d8a5521a600a18b71783559af58cd9d6b9970dcc8b71c425fd3ba6e4f46dc82',
             'input.go': 'sha256:4099d8be17ef64edacf21e8473165fbc8cf25383e6b9f8645bdeb04e78f09b07',
-            'internal/candidate/generated.go': 'sha256:3738725928d3b2a7712d23963e5db210ecefeef02781b2283be66a163839a56a',
+            'internal/candidate/generated.go': 'sha256:1b242047e9e9b8669eee2f21b381c428d88b5418cb083e03ba9c5d74b68f25a5',
             'internal/flags/generated.go': 'sha256:475c9d9286514a0ea1cff53617c584b17f547b1cee27463775dfbfc9b9dc9b11',
             'internal/summary/generated.go': 'sha256:e8baa03e737b34764a12748d2b1b9b7bc80f3b82fea67c861238fc77fb879f0f',
-            'model.go': 'sha256:6917916da7b00b95a00511f2b02d46c08944e9b8283c7b5954da51db589f57e0',
-            'profiles.json': 'sha256:8e9fce534d84582d413c36774d3912e360646d503bf706c11f023984e50e84e1',
-            'readonly.gooo': 'sha256:c49cb9014ff6fecee3c5222471d423dec0616b0ea4921f80d86482d85cafe117',
-            'receipts/candidate-body-codegen.json': 'sha256:463b641098f97666740d9e3eeead79dbb240506f89dc2ddf0f1eb584fba6dc26',
-            'receipts/candidate-execution.json': 'sha256:30758432a06f465a72ea232492b3da9d2eb5ab46e2a819eb380844154f88d7bc',
-            'receipts/candidate-lowered.gooo': 'sha256:e1fdd19df4a0d0772deee1d7936076f4c381634f52c90313bc64ab4035a575cf',
-            'receipts/candidate-replay.json': 'sha256:d35fb6a70891e9c84c9788029a10ffca2793864d58337abeee3c6629c3d7eea5',
+            'model.go': 'sha256:30d890bed9db04e8eeaa36925c7ed91ae2a46dd00567cd81859908ee2be6eb5e',
+            'profiles.json': 'sha256:64f45692d67d627715e092bec76ec244249fe05169463b64836530be39af48bb',
+            'readonly.gooo': 'sha256:5e84daa87bf0458982ea863eec7fb5d583b3c42de73402fc0fe2748afdc18fb8',
+            'receipts/candidate-body-codegen.json': 'sha256:e298b5e9f7eba89cb7abddcc0566fdb638eea68094a885b2732a78c5f135f784',
+            'receipts/candidate-execution.json': 'sha256:83d1dc12e4606b674597335478a58f68166b4b7086ae2d7ab906601aee51a236',
+            'receipts/candidate-lowered.gooo': 'sha256:4523dc1474219ba2389ea9c9642da31e02fea77bc464e4d1cb53f656ae2fb24c',
+            'receipts/candidate-replay.json': 'sha256:4913eb6c23cd25a8ad3bb7cb2ec8d593f28c44cea348c2fdb9f1a098e61e89be',
             'receipts/candidate-seed-inputs.json': 'sha256:8b326457ad404e4ba07f5da188afcbe9dd186dc78fc7a74a6d9833bcf7c6b324',
-            'receipts/flags-body-codegen.json': 'sha256:c14052a035ef375c4f20528519cc060f4fb9442dec66e85129395cfd9b43a3f2',
-            'receipts/flags-execution.json': 'sha256:fb5818c90a0cbc03954a8d9835a7a6b8573e35a70a1b98f05ab4d6a01159c964',
+            'receipts/flags-body-codegen.json': 'sha256:b6ed2e1c800cd6ff4ef2cfeb7af7c24924feb7a020f68ac9fdbaeed6a0a7ca04',
+            'receipts/flags-execution.json': 'sha256:74b4979834da42c6aef980517fba9bda01aa523cb3310d7bfbff6d400b9c3da8',
             'receipts/flags-lowered.gooo': 'sha256:22c33ac8aebbf31a3fb1312a1b9d090002df53c2f4cd8e29cf0248ba5eddc003',
-            'receipts/flags-replay.json': 'sha256:a61ab3f3c7ed1532c09fe39f35c1833cc0715acec22074b37305d57c26082bd3',
+            'receipts/flags-replay.json': 'sha256:ac36e2d9298ac1a7c17e02e2708a4a991a521dc2d12cdbadf8c1c63b1b5beb65',
             'receipts/flags-seed-inputs.json': 'sha256:85e99923d2182829c8c1ecd602eac70d478e5eaa1efe1a1e201805e5ee3129b5',
-            'receipts/summary-body-codegen.json': 'sha256:babbc5254cf66898109fa97c584b58327a3d82e8287eafd3d5648b1c99222956',
-            'receipts/summary-execution.json': 'sha256:f837563c867f9146bb47c4ff6a6db03f4924450c3e342a9a0b6b1c5543b9784e',
+            'receipts/summary-body-codegen.json': 'sha256:09203ccf28633d137717e1c6e718bfbcd22eebaa83e8fa57de073b7d48d8faa4',
+            'receipts/summary-execution.json': 'sha256:fa3dab41fc3aaf9adff0fff32e5c689a744a788590ae856bb37b8491700f6003',
             'receipts/summary-lowered.gooo': 'sha256:0fe068fd6cca2672142b9fd8a6f9702be76af82ad10113ab5387ec8521dbde33',
-            'receipts/summary-replay.json': 'sha256:ac8a88064f03b661655e224c6195856fed538171f26815cb69e7cd8632b6940c',
+            'receipts/summary-replay.json': 'sha256:f3848a8ca737510fd8b3d88178290365134764d33cff84514fd37e377cb1be06',
             'receipts/summary-seed-inputs.json': 'sha256:fb8bab4cf3b0ff769a4e32c8696fb6eaa15ce663006228dee5a8642948200041',
             'summary.workspace.json': 'sha256:049e9c2283f3ee9c5bfe527dc38cee971c274ba72e2d6913c4b7ffb7f790c5d4',
             'testdata/classifier-expected.json': 'sha256:88feb8298c9eccd790810d0a7df646ded6028403a7485eb1743934745a09be2d'},
- 'compiler_source_sha': '83928fa4538245abe33b08549da47f8cbdc50ed2',
- 'generation_sha256': 'sha256:5ce3d883db76b9b2cca6f53602eff6b7b3dff1870b3e19a882281dcff91bdda6'}
+ 'compiler_source_sha': '205896a413e5dea92366309c35ae85e542d055f6',
+ 'generation_sha256': 'sha256:1904100e57ff22b00f4db1597c4f12ebb3c6893063d6deac69e2eb516452a2ca'}
 MODULES = [
     {'path': 'github.com/kimjooyoon/gooo-go-ports/examples/api-policy-revision',
-     'version': 'v0.0.0-20261014171906-e723f9af6dc3',
-     'sum': 'h1:0KwF9VosVIxM3+aodSheEPbv++9eHfVMSB7OErfiwf8='},
+     'version': 'v0.0.0-20261020182808-7180a4a0f36a',
+     'sum': 'h1:2W/fIUaBsBzSCyWFMb0IKzItYZ4fnHVdyKEBVcXOeqE='},
     {'path': 'github.com/kimjooyoon/gooo-go-ports/examples/cel-api-policy',
      'version': 'v0.0.0-20261014100709-8cddcc4e65af',
      'sum': 'h1:fvrka7xThFrx1JkbTEp+lZ7hjcUsK4csF/XbpmF4VuM='},
@@ -135,7 +137,7 @@ def literal_report(input_facts, *, action='read', authenticated=True):
         summary = {'classification': 'NEWLY_DENIED', 'changed_count': 2}
     return {'schema': 'gooo/api-policy-revision-comparison/v1', 'status': 'COMPARED',
             'scope': 'same_saved_facts_two_sealed_profiles',
-            'before_profile': 'cel-api-original-v1', 'candidate_profile': 'cel-api-readonly-v1',
+            'before_profile': 'cel-api-original-v1', 'candidate_profile': 'cel-api-readonly-principal-v1',
             'before': {'facts': input_facts, 'decision': before, 'bindings': copy.deepcopy(ORIGINAL_BINDINGS)},
             'after': {'facts': input_facts, 'decision': after, 'bindings': copy.deepcopy(REVISION_BINDINGS)},
             'differences': differences, 'summary': summary, 'classifier_bindings': copy.deepcopy(REVISION_BINDINGS)}
@@ -239,7 +241,7 @@ class CLITests(unittest.TestCase):
         self.assertEqual(receipt['report_sha256'], sha(report_raw))
         self.assertEqual(receipt['report_bytes'], len(report_raw))
         self.assertTrue(exact_types(receipt['compiled_modules'], MODULES))
-        self.assertEqual(receipt['compiled_go'], 'go1.27.2')
+        self.assertEqual(receipt['compiled_go'], 'go1.27.3')
         self.assertEqual(receipt['compiled_os'], 'linux')
         self.assertRegex(receipt['compiled_arch'], r'^[a-z0-9]+$')
         self.assertEqual(receipt['saved_replay'], 'COMPLETE_TYPED_REPORT_RECOMPUTED')

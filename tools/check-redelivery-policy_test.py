@@ -9,6 +9,7 @@ import io
 import itertools
 import json
 import os
+import shutil
 import sys
 import tempfile
 import time
@@ -116,6 +117,96 @@ class LifecycleControls(unittest.TestCase):
             a.frozen(False)
             tamper.write_text('{"changed":false}')
             with self.assertRaisesRegex(ValueError,'Frozen public source/tool/evidence changed'):a.frozen(False)
+
+
+    def source_repository(self,root):
+        # Copy only the public preflight inputs. These bytes are never built or
+        # executed; the two tool files below are deliberately inert placeholders.
+        names=set(m.CORE)|{'cmd/check-redelivery-policy/'+n for n in m.CHECKER}|{
+            'tools/redelivery-native-source/'+n+'.txt' for n in m.TEMPLATES}|{
+            'tools/check-redelivery-policy.py','tools/check-redelivery-policy_test.py',
+            'tools/check-path-facts.py','cmd/check-path-facts/result-profile-83928fa.json',
+            'cmd/check-path-facts/result-profile-go1273.json',
+            'cmd/check-path-facts/testdata/current-go1273-execution.json',
+            'cmd/check-path-facts/testdata/current-go1273-execution.provenance.json',
+            'cmd/check-literal-text-report/testdata/pinned-original-execution.json',
+            'internal/jsonkeys/keys.go','internal/jsonkeys/keys_test.go',
+            'internal/jsonkeys/keys_byte_walker_test.go','LICENSE','go.mod','upstream.json',
+            'cmd/check-redelivery-policy/testdata/wire/manifest.json'}
+        if (REPO/'go.sum').exists():names.add('go.sum')
+        wire=m.load(REPO/'cmd/check-redelivery-policy/testdata/wire/manifest.json')
+        names.update('cmd/check-redelivery-policy/testdata/wire/'+x['file'] for x in wire['cases'])
+        for name in names:
+            target=root/name;target.parent.mkdir(parents=True,exist_ok=True)
+            shutil.copyfile(REPO/name,target)
+        go,compiler=root/'inert-go',root/'inert-compiler'
+        go.write_bytes(b'not an executable; preflight may only hash this file')
+        compiler.write_bytes(b'not an executable; preflight may only hash this file')
+        return SimpleNamespace(repository=root,out=root/'out',go=go,compiler=compiler,timeout=300)
+
+    def prepared_source_attempt(self,root):
+        args=self.source_repository(root)
+        work=root/'owned-work';work.mkdir()
+        with patch.object(m.H.subprocess,'Popen',side_effect=AssertionError('preflight must not launch')):
+            attempt=m.Attempt(args)
+            with patch.object(m.tempfile,'mkdtemp',return_value=str(work)):
+                attempt.prepare()
+        return attempt
+
+    def test_source_preflight_freezes_all_three_jsonkey_files(self):
+        try:
+            with tempfile.TemporaryDirectory() as d:
+                root=Path(d).resolve();attempt=self.prepared_source_attempt(root)
+                freeze=m.load(attempt.out/'source-freeze.json')
+                want={'keys.go','keys_test.go','keys_byte_walker_test.go'}
+                files=[x for x in freeze['files'] if Path(x['path']).parent==root/'internal/jsonkeys']
+                self.assertEqual({Path(x['path']).name for x in files},want)
+                self.assertEqual(len(files),3)
+                for item in files:self.assertEqual(item,m.ref(Path(item['path'])))
+                attempt.frozen(False)
+                self.assertEqual(attempt.stages,[]);self.assertEqual(attempt.children,{})
+        finally:m.bind_helper(REPO)
+
+    def test_source_preflight_missing_or_extra_jsonkey_file_refused(self):
+        try:
+            for mutation in ('missing','extra'):
+                with self.subTest(mutation=mutation),tempfile.TemporaryDirectory() as d:
+                    root=Path(d).resolve();args=self.source_repository(root)
+                    if mutation=='missing':(root/'internal/jsonkeys/keys_byte_walker_test.go').unlink()
+                    else:(root/'internal/jsonkeys/unlisted.go').write_text('package jsonkeys\n')
+                    expected='Public source must be canonical regular file' if mutation=='missing' else 'Public code source roster differs'
+                    with patch.object(m.H.subprocess,'Popen',side_effect=AssertionError('preflight must not launch')):
+                        with self.assertRaisesRegex(ValueError,expected):m.Attempt(args)
+                    self.assertFalse(args.out.exists())
+        finally:m.bind_helper(REPO)
+
+    def test_source_preflight_file_or_directory_symlink_refused(self):
+        try:
+            for mutation in ('file','directory'):
+                with self.subTest(mutation=mutation),tempfile.TemporaryDirectory() as d:
+                    root=Path(d).resolve();args=self.source_repository(root)
+                    if mutation=='file':
+                        source=root/'internal/jsonkeys/keys_byte_walker_test.go'
+                        target=root/'original-walker';source.rename(target);source.symlink_to(target)
+                    else:
+                        source=root/'internal/jsonkeys';target=root/'original-jsonkeys'
+                        source.rename(target);source.symlink_to(target,target_is_directory=True)
+                    with patch.object(m.H.subprocess,'Popen',side_effect=AssertionError('preflight must not launch')):
+                        with self.assertRaisesRegex(ValueError,'Public source must be canonical regular file'):m.Attempt(args)
+                    self.assertFalse(args.out.exists())
+        finally:m.bind_helper(REPO)
+
+    def test_source_freeze_rejects_replaced_jsonkey_file(self):
+        try:
+            with tempfile.TemporaryDirectory() as d:
+                root=Path(d).resolve();attempt=self.prepared_source_attempt(root)
+                source=root/'internal/jsonkeys/keys_byte_walker_test.go'
+                replacement=root/'replacement';replacement.write_bytes(source.read_bytes()+b'\n// changed after freeze\n')
+                replacement.replace(source)
+                self.assertEqual({p.name for p in source.parent.iterdir()},{'keys.go','keys_test.go','keys_byte_walker_test.go'})
+                with self.assertRaisesRegex(ValueError,'Frozen public source/tool/evidence changed'):attempt.frozen(False)
+                self.assertEqual(attempt.stages,[]);self.assertEqual(attempt.children,{})
+        finally:m.bind_helper(REPO)
 
 
 class RowsControls(unittest.TestCase):

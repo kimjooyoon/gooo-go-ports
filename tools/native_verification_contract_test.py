@@ -175,7 +175,7 @@ class ReviewedProductionWrapperTests(unittest.TestCase):
         projected=C.expected_projection(result)
         self.assertEqual(set(projected),{'schema','profiles','totals','prefix','suites','source_paths'})
         self.assertEqual(projected['schema'],'gooo/native-verification-expected/v1')
-        self.assertEqual(projected['totals'],dict(suites=82,cases=175649,batches=2305,timing_records=2471,source_paths=288))
+        self.assertEqual(projected['totals'],dict(suites=82,cases=175649,batches=2305,timing_records=2471,source_paths=293))
         self.assertEqual(projected['prefix'],dict(count=80,cases=173866,batches=2252))
         self.assertEqual(projected['suites'],result.document['suites'])
         self.assertEqual(projected['suites'][73]['source_paths'],[
@@ -184,6 +184,16 @@ class ReviewedProductionWrapperTests(unittest.TestCase):
             'examples/diagnostic-header-addition/main.gooo'])
         self.assertEqual(projected['source_paths'],sorted(projected['source_paths']))
         self.assertTrue(set(C.CONTRACT_FILES).issubset(projected['source_paths']))
+        observers={
+            'cmd/verify/pure_call_identity.go','cmd/verify/pure_call_identity_test.go',
+            'internal/jsonkeys/keys.go','internal/jsonkeys/keys_test.go',
+            'internal/jsonkeys/keys_byte_walker_test.go'}
+        observed={row['path']:row for row in result.document['sources']
+                  if not row['baseline'] and row['roles']==['explicit-observer-input']}
+        self.assertEqual(set(observed),observers)
+        self.assertTrue(all(row['mode']=='100644' and row['owner']=='native-ci'
+                            for row in observed.values()))
+        self.assertEqual(sum(row['baseline'] for row in result.document['sources']),283)
 
     def test_reviewed_raw_guard_rejects_valid_generic_rollback_and_lost_readers(self):
         original=C.load_reviewed_contract(self.ROOT)
@@ -192,6 +202,12 @@ class ReviewedProductionWrapperTests(unittest.TestCase):
             'remove-new-reader-paths':lambda d:d.update(sources=[r for r in d['sources'] if r['baseline']]),
             'suffix-same-total-rebalance':lambda d:(d['suites'][80].update(cases=1693),d['suites'][81].update(cases=90)),
         }
+        for path in (
+                'cmd/verify/pure_call_identity.go','cmd/verify/pure_call_identity_test.go',
+                'internal/jsonkeys/keys.go','internal/jsonkeys/keys_test.go',
+                'internal/jsonkeys/keys_byte_walker_test.go'):
+            mutations['remove-observer:'+path]=lambda d,path=path:d.update(
+                sources=[row for row in d['sources'] if row['path']!=path])
         for name,mutate in mutations.items():
             doc=copy.deepcopy(original.document);mutate(doc)
             # These are intentionally valid under the generic historical guards;

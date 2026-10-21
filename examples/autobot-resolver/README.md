@@ -13,9 +13,9 @@ is not an execution fallback. Source, license and modification details are in
 
 ## Supply facts and inspect one result
 
-Prepare Git, a POSIX shell, Python 3, Go **1.27.2**, and the repository's pinned
-Gooo compiler **0.6.32-dev**, revision
-`83928fa4538245abe33b08549da47f8cbdc50ed2`, using the
+Prepare Git, a POSIX shell, Python 3, Go **1.27.3**, and the repository's pinned
+Gooo compiler **0.6.37-dev**, revision
+`205896a413e5dea92366309c35ae85e542d055f6`, using the
 [existing setup instructions](../../README.md#run-and-edit-locally).
 Reuse matching tools; the optional prebuilt compiler still requires identity
 validation and host Go. Run the following from the repository root:

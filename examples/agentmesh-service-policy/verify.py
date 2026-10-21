@@ -11,7 +11,7 @@ from verification_checks import check_native_rows, check_workspace_trace, check_
 from verify_grant_update import verify_grant_update, case_facts, check_native as check_grant_native, load_json
 ROOT=Path(__file__).resolve().parent
 REPO=ROOT.parents[1]
-PIN='83928fa4538245abe33b08549da47f8cbdc50ed2'
+PIN='205896a413e5dea92366309c35ae85e542d055f6'
 def sha(raw):return hashlib.sha256(raw).hexdigest()
 def encoded(x):return (json.dumps(x,indent=2,sort_keys=True)+'\n').encode()
 def ident(p):r=p.read_bytes();return {'path':str(p),'bytes':len(r),'sha256':sha(r)}
@@ -29,7 +29,7 @@ def verify_domain_checked(args,out,run,bindings,old_rows,impacts,refinements):
     assert {k:sum(r['api']==k for r in checked)for k in CHECKED}=={'matcher':32,'impact':113,'refinement':105}
     reference=json.loads((ROOT/'domain-reference.json').read_bytes())
     check_domain_reference(reference)
-    oracle=out/'domain-oracle';oracle.mkdir();(oracle/'go.mod').write_text('module private.invalid/gooo-domain-oracle\n\ngo 1.27.2\n')
+    oracle=out/'domain-oracle';oracle.mkdir();(oracle/'go.mod').write_text('module private.invalid/gooo-domain-oracle\n\ngo 1.27.3\n')
     (oracle/'domain.go').write_text('package main\nimport("regexp";"strings")\n'+reference['declarations']+'\n'+'\n\n'.join(reference['functions'].values())+'\n')
     (oracle/'main.go').write_text('''package main
 import("encoding/json";"os";"runtime")
@@ -38,7 +38,7 @@ type Checked struct{Name string `json:"name"`;API string `json:"api"`;Facts map[
 func main(){var in struct{Domain []Domain `json:"domain"`;Checked []Checked `json:"checked"`};if err:=json.NewDecoder(os.Stdin).Decode(&in);err!=nil{panic(err)};d:=make([]map[string]any,0,len(in.Domain));for _,r:=range in.Domain{var v bool;switch r.Activity{case "ValidateServiceType":v=validType(r.Input);case "ValidateServiceName":v=validName(r.Input);case "ValidateServicePattern":v=validPattern(r.Input);default:panic("unknown activity")};d=append(d,map[string]any{"name":r.Name,"activity":r.Activity,"input":r.Input,"valid":v})};c:=make([]map[string]any,0,len(in.Checked));for _,r:=range in.Checked{keys:=map[string][]string{"matcher":{"pattern","req_type","req_name"},"impact":{"before","after","req_type","req_name"},"refinement":{"before","after"}}[r.API];if len(keys)==0{panic("unknown API")};invalid:="";for _,k:=range keys{v:=validPattern(r.Facts[k]);if k=="req_type"{v=validType(r.Facts[k])};if k=="req_name"{v=validName(r.Facts[k])};if !v&&invalid==""{invalid=k}};c=append(c,map[string]any{"name":r.Name,"api":r.API,"facts":r.Facts,"invalid_field":invalid})};json.NewEncoder(os.Stdout).Encode(map[string]any{"go_version":runtime.Version(),"domain":d,"checked":c})}
 ''')
     classified=json.loads(run('frozen-domain-oracle',[args.go,'run','.'],encoded({'domain':domain,'checked':checked}),cwd=oracle))
-    assert classified['go_version']=='go1.27.2' and len(classified['domain'])==662 and len(classified['checked'])==250
+    assert classified['go_version']=='go1.27.3' and len(classified['domain'])==662 and len(classified['checked'])==250
     for actual,expected in zip(classified['domain'],domain):
         assert set(actual)=={'name','activity','input','valid'} and all(actual[k]==expected[k]for k in ['name','activity','input'])
         assert type(actual['valid'])is bool and actual['valid']==expected['want']
@@ -50,7 +50,7 @@ func main(){var in struct{Domain []Domain `json:"domain"`;Checked []Checked `jso
     # stands between the malformed input and the generated checked activity.
     native_cases=[checked_case(k,r)for k,rs in [('matcher',old_rows),('impact',impacts),('refinement',refinements)]for r in rs]+checked
     host=out/'checked-native-host';host.mkdir();module='github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy'
-    (host/'go.mod').write_text('module private.invalid/gooo-checked-host\n\ngo 1.27.2\n\nrequire '+module+' v0.0.0\nreplace '+module+' => '+json.dumps(str(ROOT))+'\n')
+    (host/'go.mod').write_text('module private.invalid/gooo-checked-host\n\ngo 1.27.3\n\nrequire '+module+' v0.0.0\nreplace '+module+' => '+json.dumps(str(ROOT))+'\n')
     (host/'main.go').write_text('''package main
 import("encoding/json";"os";p "github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy")
 func main(){var in struct{Checked []struct{API string `json:"api"`;Facts json.RawMessage `json:"facts"`} `json:"checked"`;Domain []struct{Name string `json:"name"`;Activity string `json:"activity"`;Input string `json:"input"`} `json:"domain"`};if err:=json.NewDecoder(os.Stdin).Decode(&in);err!=nil{panic(err)};results:=make([]any,0,len(in.Checked));for _,r:=range in.Checked{switch r.API{case "matcher":var f p.MatcherFacts;if json.Unmarshal(r.Facts,&f)!=nil{panic("facts")};v,e:=p.EvaluateMatcherChecked(f);if e!=nil{panic(e)};results=append(results,v);case "impact":var f p.ImpactFacts;if json.Unmarshal(r.Facts,&f)!=nil{panic("facts")};v,e:=p.EvaluateImpactChecked(f);if e!=nil{panic(e)};results=append(results,v);case "refinement":var f p.RefinementFacts;if json.Unmarshal(r.Facts,&f)!=nil{panic("facts")};v,e:=p.EvaluateRefinementChecked(f);if e!=nil{panic(e)};results=append(results,v);default:panic("API")}};ds:=make([]map[string]any,0,len(in.Domain));for _,r:=range in.Domain{f:=p.MatcherFacts{Pattern:"*",ReqType:"mcp",ReqName:"x"};switch r.Activity{case "ValidateServiceType":f.ReqType=r.Input;case "ValidateServiceName":f.ReqName=r.Input;case "ValidateServicePattern":f.Pattern=r.Input;default:panic("activity")};ds=append(ds,map[string]any{"name":r.Name,"activity":r.Activity,"input":r.Input,"valid":p.ValidateMatcher(f)==nil})};json.NewEncoder(os.Stdout).Encode(map[string]any{"checked":results,"domain":ds})}
@@ -105,7 +105,7 @@ def source_digest(raw):
 def audit_runtime(result,corpus,casefile,workspace):
     assert result['schema']=='gooo/workspace-body-execution-receipt/v1' and result['decision']=='PASS'
     assert result['manifest_digest']=='sha256:'+sha(workspace.read_bytes()) and result['cases_digest']=='sha256:'+sha(casefile.read_bytes())
-    rt=result['result']['runtime'];assert rt['producer_source_sha']==PIN and rt['go_version'].split()[:3]==['go','version','go1.27.2'] and rt['projection_replayed'] and rt['runtime_replayed'] and rt['model_calls']==0
+    rt=result['result']['runtime'];assert rt['producer_source_sha']==PIN and rt['go_version'].split()[:3]==['go','version','go1.27.3'] and rt['projection_replayed'] and rt['runtime_replayed'] and rt['model_calls']==0
     assert rt['finite_passed']==rt['finite_total']==len(corpus['cases']) and len(rt['traces'])==len(corpus['cases'])
     assert rt['runs'] and all(r['started']and r['completed']and r['exit_code']==0 and not r['timed_out']and not r['output_truncated']for r in rt['runs'])
 
@@ -151,9 +151,9 @@ def main():
     tests=(ROOT/'upstream/api/tar_test.go.txt').read_text();start=tests.index('func TestMatchServicePattern(');end=tests.index('\nfunc ',start+1);body=tests[start:end]
     official=[(a,b,c,d=='true') for a,b,c,d in re.findall(r'\{"([^"\n]*)", "([^"\n]*)", "([^"\n]*)", (true|false)\}',body)]
     assert len(official)==12 and [(r['pattern'],r['req_type'],r['req_name'],r['want']) for r in cases[:12]]==official and all(r['upstream'] for r in cases[:12])
-    go_version=run('go-version',[args.go,'version']).decode().strip();assert go_version.split()[:3]==['go','version','go1.27.2']
+    go_version=run('go-version',[args.go,'version']).decode().strip();assert go_version.split()[:3]==['go','version','go1.27.3']
     fresh=json.loads(run('fresh-extracted-upstream-oracle',[args.go,'run','./cmd/oracle','-cases',ROOT/'matcher-cases.json','-impact-cases',ROOT/'impact-cases.json'],cwd=ROOT/'oracle'))
-    assert fresh['schema']=='gooo/agentmesh-matcher-oracle/v1' and fresh['go_version']=='go1.27.2' and fresh['source_revision']==source['revision']
+    assert fresh['schema']=='gooo/agentmesh-matcher-oracle/v1' and fresh['go_version']=='go1.27.3' and fresh['source_revision']==source['revision']
     rows=fresh['observations'];assert len(rows)==63 and rows==json.loads((ROOT/'oracle/observations.json').read_bytes())
     assert len(fresh['impact_matches'])==16
     for r,c in zip(fresh['impact_matches'],impacts):assert r['name']==c['name'] and r['before_match']==c['want']['before_match'] and r['after_match']==c['want']['after_match']

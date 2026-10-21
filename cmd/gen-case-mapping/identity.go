@@ -9,10 +9,10 @@ import (
 	"strconv"
 )
 
-const pinnedGo = "go1.27.2"
+const pinnedGo = "go1.27.3"
 const pinnedUnicode = "17.0.0"
 const pinnedGoRevision = "022c8636110ebac86a9b88724cda168ed713c21f"
-const pinnedCompiler = "83928fa4538245abe33b08549da47f8cbdc50ed2"
+const pinnedCompiler = "205896a413e5dea92366309c35ae85e542d055f6"
 
 var requiredSources = []string{"src/unicode/letter.go", "src/unicode/tables.go", "LICENSE"}
 

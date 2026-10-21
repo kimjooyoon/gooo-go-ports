@@ -94,7 +94,7 @@ var workspaceProfileReviewed70 = []struct {
 }
 
 func workspaceProfilePinnedLock() upstream {
-	return upstream{CompilerRevision: "83928fa4538245abe33b08549da47f8cbdc50ed2", CompilerVersion: "0.6.32-dev", GoVersion: "go1.27.2"}
+	return upstream{CompilerRevision: "205896a413e5dea92366309c35ae85e542d055f6", CompilerVersion: "0.6.37-dev", GoVersion: "go1.27.3"}
 }
 
 func TestNativeWorkspaceProfileParserPinsAndEarlyRefusal(t *testing.T) {
@@ -178,7 +178,7 @@ func TestWorkspaceProfileMetadataIsIndependentAndLegacyBytesStayAbsent(t *testin
 	}
 	want := map[string]any{
 		"schema": "gooo/native-workspace-profile/v1", "name": "dependency-closure-v1",
-		"basis": "legacy-selected-workspace", "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2", "go_version": "go1.27.2",
+		"basis": "legacy-selected-workspace", "compiler_revision": "205896a413e5dea92366309c35ae85e542d055f6", "go_version": "go1.27.3",
 		"selection": "entry import closure over whole already-selected packages; original package/source order",
 	}
 	if !reflect.DeepEqual(dependencyClosureWorkspaceProfile.identity(), want) {
@@ -781,7 +781,7 @@ func TestWorkspaceProfileTimingRejectsCatalogSubsetBroadMapAndLaterDrift(t *test
 					}
 					sources = broad.Identities
 				}
-				bt.bind(expectedIdentity{CompilerRevision: workspaceProfilePinnedLock().CompilerRevision, GoVersion: "go1.27.2", ManifestDigest: contentDigest([]byte("selected manifest")), CasesDigest: contentDigest([]byte("original cases")), Sources: sources}, contentDigest([]byte("raw execution receipt")))
+				bt.bind(expectedIdentity{CompilerRevision: workspaceProfilePinnedLock().CompilerRevision, GoVersion: "go1.27.3", ManifestDigest: contentDigest([]byte("selected manifest")), CasesDigest: contentDigest([]byte("original cases")), Sources: sources}, contentDigest([]byte("raw execution receipt")))
 				bt.finish(nil, nil, true)
 			}
 			span.finish(nativeTimingTestObservation(s, 2), nil, nil)

@@ -37,22 +37,24 @@ DEPENDENCIES = [('go/cel.dev/cel-go/codelab', 'ports/cel/scalar_access.gooo'),
 SOURCE_INSPECTION036 = {'compiler_revision': '31497af3beaef210b5a075867b0de76cf55ee3ca',
                         'compiler_version': '0.6.36-dev',
                         'decision_runtime_version': 'v0.2.51-experimental', 'go_version': 'go1.27.2'}
+# Active current profile; the036 release record above is historical.
+SOURCE_INSPECTION037 = {'compiler_revision': '205896a413e5dea92366309c35ae85e542d055f6', 'compiler_version': '0.6.37-dev', 'decision_runtime_version': 'v0.2.51-experimental', 'go_version': 'go1.27.3'}
 DIFF_MAX_BYTES, DIFF_MAX_LINES = 128 << 10, 2000
 
 
 def compiler_profile(lock, name='default'):
-    H.need(lock['compiler_revision'] == H.REV and lock['go_version'] == 'go1.27.2', 'repository tool pins')
+    H.need(lock['compiler_revision'] == H.REV and lock['go_version'] == 'go1.27.3', 'repository tool pins')
     if name == 'default':
         return {'name': name, 'compiler_revision': H.REV, 'compiler_version': lock['compiler_version'],
                 'go_version': lock['go_version']}
-    H.need(name == 'source-inspection036' and
-           H.equal(lock.get('consumer_compiler_profiles', {}).get('source_inspection036'), SOURCE_INSPECTION036),
-           'explicit source-inspection036 compiler/SDK/Go contract')
-    return {'name': name, **SOURCE_INSPECTION036}
+    H.need(name == 'source-inspection037' and
+           H.equal(lock.get('consumer_compiler_profiles', {}).get('source_inspection037'), SOURCE_INSPECTION037),
+           'explicit source-inspection037 compiler/SDK/Go contract')
+    return {'name': name, **SOURCE_INSPECTION037}
 
 
 def uses_inspection(profile):
-    return profile is not None and profile['name'] == 'source-inspection036'
+    return profile is not None and profile['name'] == 'source-inspection037'
 
 
 def compiler_identity(identity, profile):
@@ -65,7 +67,7 @@ def compiler_identity(identity, profile):
         H.need(identity.get('schema') == 'gooo/build-identity/v1' and identity.get('language') == 'gooo' and
                H.equal(identity.get('decision_runtime'), {'module_path': 'github.com/kimjooyoon/gooo-decision-runtime',
                        'version': profile['decision_runtime_version'], 'replaced': False}),
-               'source-inspection036 exact unreplaced decision runtime SDK')
+               'source-inspection037 exact unreplaced decision runtime SDK')
 
 
 def decoded(raw):
@@ -313,16 +315,19 @@ def inspect_receipt(raw, rows, inputs, ctx, go_version, go_sha, parent=None, pro
 def check_refusal(raw, parent, ctx, profile=None):
     r = decoded(raw)
     keys = {'schema', 'decision', 'manifest', 'manifest_digest', 'error', 'replayed_from_sha256'}
-    if uses_inspection(profile): keys.add('failure')
+    # Exact205 emits the structured manifest refusal for both current profiles.
+    # The absent profile preserves the explicitly archival six-field reader.
+    structured = profile is not None and profile['compiler_revision'] == SOURCE_INSPECTION037['compiler_revision']
+    if structured: keys.add('failure')
     H.need(set(r) == keys and
            r['schema'] == 'gooo/workspace-body-execution-receipt/v1' and r['decision'] == 'FAIL_CLOSED' and
            r['error'] == 'saved execution envelope or workspace manifest differs' and
            r['replayed_from_sha256'] == H.digest(parent) and r['manifest'] == str(ctx['workspace']) and
            r['manifest_digest'] == H.digest(ctx['raw']), 'exact current manifest-stage cross-workspace refusal')
-    if uses_inspection(profile):
+    if structured:
         H.need(H.equal(r['failure'], {'code': 'REPLAY_MANIFEST_MISMATCH',
                                      'detail': 'saved execution envelope or workspace manifest differs'}),
-               'exact source-inspection036 manifest-stage failure code and detail')
+               'exact current205 manifest-stage failure code and detail')
 
 
 def check_demo(inputs, comparisons, root, read):
@@ -418,8 +423,8 @@ def arguments(argv=None):
     source = parser.add_mutually_exclusive_group()
     source.add_argument('--inputs', help='one to three complete native scalar rows; defaults to demo-inputs.json')
     source.add_argument('--facts', help='JSON array of one to three exact nine-field named API facts objects')
-    parser.add_argument('--compiler-profile', choices=('default', 'source-inspection036'), default='default',
-                        help='explicit separate compiler contract; default retains the repository 839 pin')
+    parser.add_argument('--compiler-profile', choices=('default', 'source-inspection037'), default='default',
+                        help='explicit separate compiler contract; default retains the repository compiler pin')
     parser.add_argument('--check-demo', action='store_true', help='also check the original three-row literals; omit after editing policy')
     args = parser.parse_args(argv)
     if args.facts == '': parser.error('--facts requires a nonempty path')
@@ -470,7 +475,7 @@ def main():
         identity = decoded(call('compiler-identity', [compiler, 'version', '--build', '--json']))
         compiler_identity(identity, profile)
         go_version = call('go-version', [go, 'version']).decode('utf-8').strip()
-        H.need(go_version.startswith('go version go1.27.2 '), 'Go1.27.2 required')
+        H.need(go_version.startswith('go version go1.27.3 '), 'Go1.27.3 required')
         observed = {}; initial = {}
         for variant in ('before', 'after'):
             ctx = contexts[variant]; parent = None

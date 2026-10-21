@@ -17,7 +17,7 @@ func headerAdditionTestIdentity(t *testing.T) expectedIdentity {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return expectedIdentity{CompilerRevision: uuidCompactCompilerRevision, GoVersion: "go1.27.2", Sources: w.Identities, SourceBytes: w.Sources}
+	return expectedIdentity{CompilerRevision: uuidCompactCompilerRevision, GoVersion: "go1.27.3", Sources: w.Identities, SourceBytes: w.Sources}
 }
 func TestHeaderAdditionCurrentFiveSourcesSixActivitiesAndRecordFields(t *testing.T) {
 	id := headerAdditionTestIdentity(t)

@@ -29,12 +29,12 @@ while pressing **Plan crop** creates a new local browser observation.
 
 ## 실행과 입력 편집
 
-Git, POSIX shell과 Go 1.27.2를 사용하며 저장소 루트에서 실행합니다.
-컴파일러는 `83928fa4538245abe33b08549da47f8cbdc50ed2`로 고정합니다.
+Git, POSIX shell과 Go 1.27.3를 사용하며 저장소 루트에서 실행합니다.
+컴파일러는 `205896a413e5dea92366309c35ae85e542d055f6`로 고정합니다.
 모델이나 외부 추론 서비스는 필요하지 않습니다.
 
 ```sh
-export GOTOOLCHAIN=go1.27.2
+export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
 ./tools/bootstrap.sh
 mkdir -p out/crop-planner

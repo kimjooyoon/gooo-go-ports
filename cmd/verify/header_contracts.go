@@ -152,12 +152,18 @@ func headerLowerBody(d headerBody, definitions map[string]headerBody) string {
 	return body
 }
 
+// Preserve the historical839 synthetic fixture expectation. Current inspection
+// supplies an independently selected compiler profile to WithIdentity.
 func headerPureCalls(definitions map[string]headerBody) (map[string]any, error) {
+	return headerPureCallsWithIdentity(definitions, legacyPureCallIdentityProfile)
+}
+
+func headerPureCallsWithIdentity(definitions map[string]headerBody, ids pureCallIdentityProfile) (map[string]any, error) {
 	activities, sites := []any{}, []any{}
 	root := definitions[headerReportActivity]
 	for _, name := range []string{headerReportActivity, headerNameActivity, headerValueActivity} {
 		d := definitions[name]
-		activities = append(activities, map[string]any{"activity": map[string]any{"package_path": d.Package, "activity": name, "lowered_name": d.Lowered}, "activity_id": decimalPayloadDerivedID(d.Namespace, name), "lowered_activity_id": decimalPayloadDerivedID("gooo_workspace", d.Lowered), "source": d.Source, "source_body_sha256": contentDigest([]byte(d.Declaration.Body))})
+		activities = append(activities, map[string]any{"activity": map[string]any{"package_path": d.Package, "activity": name, "lowered_name": d.Lowered}, "activity_id": ids.original(d.Namespace, name, d.Declaration.ID), "lowered_activity_id": ids.lowered(d.Lowered, d.Declaration.ID), "source": d.Source, "source_body_sha256": contentDigest([]byte(d.Declaration.Body))})
 	}
 	for _, name := range []string{headerNameActivity, headerValueActivity} {
 		token := "headers." + name
@@ -366,7 +372,11 @@ func inspectHeaderABI(raw []byte, s suite, identity expectedIdentity) error {
 		if err := headerSourceRecord([]byte(text)); err != nil {
 			return err
 		}
-		calls, err := headerPureCalls(definitions)
+		ids, err := selectPureCallIdentityProfile(identity.CompilerRevision)
+		if err != nil {
+			return err
+		}
+		calls, err := headerPureCallsWithIdentity(definitions, ids)
 		if err != nil || !decimalPayloadSame(p["pure_calls"], calls) {
 			return fmt.Errorf("header original pure-call identities/sites")
 		}

@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
         with:
-          go-version: '1.27.2'
+          go-version: '1.27.3'
           cache: true
       - name: Prepare a clean pinned compiler outside the project
         shell: bash
@@ -26,9 +26,9 @@ jobs:
           test ! -e "$compiler_binary"
           git init "$compiler_checkout"
           git -C "$compiler_checkout" remote add origin https://github.com/kimjooyoon/meta-ontology-go.git
-          git -C "$compiler_checkout" fetch --depth=1 origin 83928fa4538245abe33b08549da47f8cbdc50ed2
+          git -C "$compiler_checkout" fetch --depth=1 origin 205896a413e5dea92366309c35ae85e542d055f6
           git -C "$compiler_checkout" checkout --detach FETCH_HEAD
-          test "$(git -C "$compiler_checkout" rev-parse HEAD)" = 83928fa4538245abe33b08549da47f8cbdc50ed2
+          test "$(git -C "$compiler_checkout" rev-parse HEAD)" = 205896a413e5dea92366309c35ae85e542d055f6
           test -z "$(git -C "$compiler_checkout" status --porcelain --untracked-files=all --ignored)"
           (
             cd "$compiler_checkout"
