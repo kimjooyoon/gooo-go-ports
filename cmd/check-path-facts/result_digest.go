@@ -65,7 +65,7 @@ func pinnedResultBytes(receipt []byte) ([]byte, error) {
 	if len(resultProfileJSON) == 0 {
 		return nil, fmt.Errorf("pinned result profile is not loaded")
 	}
-	if len(resultProfileJSON) != 197573 || digest(resultProfileJSON) != "sha256:295ec33a2b0c9aecb60da52e5907950c3652d39d9a30aaebe927febdc36afb4c" || compilerRevision != "205896a413e5dea92366309c35ae85e542d055f6" {
+	if len(resultProfileJSON) != 202475 || digest(resultProfileJSON) != "sha256:46862aabf1934c1d2a39ad830c4a6cd05d2369c5014fea231d87b7861f4d3862" || compilerRevision != "205896a413e5dea92366309c35ae85e542d055f6" {
 		return nil, fmt.Errorf("current result profile raw identity differs")
 	}
 	return pinnedResultBytesWithProfile(receipt, resultProfileJSON, compilerRevision)
@@ -135,7 +135,7 @@ func pinnedResultBytesWithProfile(receipt, profileJSON []byte, profileCompiler s
 	}
 	d := json.NewDecoder(bytes.NewReader(raw))
 	d.UseNumber()
-	normalized, err := normalizeResultValue(d, raw, "$", profile.Nodes, 0)
+	normalized, err := normalizeResultValueForProfile(d, raw, "$", profile.Nodes, 0, profileCompiler == "205896a413e5dea92366309c35ae85e542d055f6")
 	if err != nil {
 		return nil, err
 	}
@@ -146,6 +146,14 @@ func pinnedResultBytesWithProfile(receipt, profileJSON []byte, profileCompiler s
 }
 
 func normalizeResultValue(d *json.Decoder, input []byte, path string, profile map[string]profileShape, depth int) ([]byte, error) {
+	// Preserve the explicitly archival/default normalization behavior.
+	return normalizeResultValueForProfile(d, input, path, profile, depth, false)
+}
+
+// Current205 RawMessage omitempty tests encoded byte length, not the decoded
+// JSON zero value. Only the existing exact RawMessage path roster gets this
+// rule; pointer/scalar/slice omissions and all historical839 paths stay strict.
+func normalizeResultValueForProfile(d *json.Decoder, input []byte, path string, profile map[string]profileShape, depth int, current205 bool) ([]byte, error) {
 	if depth > 64 {
 		return nil, fmt.Errorf("original result exceeds pinned depth limit")
 	}
@@ -234,11 +242,12 @@ func normalizeResultValue(d *json.Decoder, input []byte, path string, profile ma
 				keyRaw, _ := json.Marshal(name)
 				out.Write(keyRaw)
 				out.WriteByte(':')
-				value, err := normalizeResultValue(d, input, path+"."+name, profile, depth+1)
+				value, err := normalizeResultValueForProfile(d, input, path+"."+name, profile, depth+1, current205)
 				if err != nil {
 					return nil, err
 				}
-				if field.Optional && (bytes.Equal(value, []byte("null")) || field.OmitZero && canonicalEmpty(value)) {
+				rawMessage := current205 && rawResultValues[path+"."+name]
+				if field.Optional && !rawMessage && (bytes.Equal(value, []byte("null")) || field.OmitZero && canonicalEmpty(value)) {
 					return nil, fmt.Errorf("noncanonical omitempty value at %s.%s", path, name)
 				}
 				out.Write(value)
@@ -258,7 +267,7 @@ func normalizeResultValue(d *json.Decoder, input []byte, path string, profile ma
 					out.WriteByte(',')
 				}
 				first = false
-				value, err := normalizeResultValue(d, input, path+".*", profile, depth+1)
+				value, err := normalizeResultValueForProfile(d, input, path+".*", profile, depth+1, current205)
 				if err != nil {
 					return nil, err
 				}

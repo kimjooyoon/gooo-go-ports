@@ -62,7 +62,7 @@ func includes(refs []rawRef,want rawRef)bool{for _,r:=range refs{if r==want{retu
 const manifestSHA = "e2a93a075c41fc8212b03ac5c14f2ad4256a929df3c9e4a9054c85a5b8443d65"
 const nativeSHA = "042e71cd5a7635999f8d6c56da27cf26beb2f57739c7ec0238cfd995cad20e39"
 const witnessSHA = "29e4e321caaaf6a2c17e1ab899c8268aa8912de16a9896c1b3770a78c3c14e16"
-const profileSHA = "295ec33a2b0c9aecb60da52e5907950c3652d39d9a30aaebe927febdc36afb4c"
+const profileSHA = "46862aabf1934c1d2a39ad830c4a6cd05d2369c5014fea231d87b7861f4d3862"
 
 func digestValue(v any)bool{s:=text(v);if len(s)!=71||!strings.HasPrefix(s,"sha256:")||strings.ToLower(s)!=s{return false};_,err:=hex.DecodeString(s[7:]);return err==nil}
 func equalValue(a,b any)bool{raw,err:=json.Marshal(b);if err!=nil{return false};v,err:=strictJSON(raw);return err==nil&&reflect.DeepEqual(a,v)}

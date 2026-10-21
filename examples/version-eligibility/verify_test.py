@@ -222,6 +222,52 @@ class Boundaries(unittest.TestCase):
             self.assertTrue(all(p.poll() is not None for p in runner.processes))
             self.assertTrue(all(r["waited"] for r in runner.commands))
 
+    def test_receipt_json_budget_does_not_expand_ordinary_json(self):
+        large = b'{}' + b' ' * ((2 << 20) - 1)
+        with self.assertRaisesRegex(ValueError, "JSON exceeds"):
+            verify.load(large)
+        self.assertEqual(verify.load(large, verify.MAX_RECEIPT), {})
+        self.assertEqual(verify.load(b'{}' + b' ' * ((16 << 20) - 2), verify.MAX_RECEIPT), {})
+        with self.assertRaisesRegex(ValueError, "JSON exceeds"):
+            verify.load(b'{}' + b' ' * ((16 << 20) - 1), verify.MAX_RECEIPT)
+
+    def test_only_execute_and_replay_stdout_use_receipt_budget(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for index, (label, stream, accepted) in enumerate((
+                ("execute", "stdout", True), ("replay", "stdout", True),
+                ("oracle", "stdout", False), ("compiler-build", "stdout", False),
+                ("execute", "stderr", False), ("replay", "stderr", False))):
+                with self.subTest(label=label, stream=stream):
+                    out = root / str(index)
+                    work = out / "work"
+                    work.mkdir(parents=True)
+                    runner = verify.Runner(out, work, {})
+                    command = [sys.executable, "-c", "import sys; sys." + stream + ".buffer.write(b'x'*96)"]
+                    with mock.patch.object(verify, "MAX_OUTPUT", 64), mock.patch.object(verify, "MAX_RECEIPT", 128):
+                        if accepted:
+                            self.assertEqual(runner.run(label, command, work), b'x' * 96)
+                        else:
+                            with self.assertRaisesRegex(ValueError, "bounded command output"):
+                                runner.run(label, command, work)
+                    self.assertTrue(all(p.poll() is not None for p in runner.processes))
+                    self.assertTrue(all(r["waited"] for r in runner.commands))
+
+    def test_receipt_stdout_one_byte_over_stops_and_waits(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for index, label in enumerate(("execute", "replay")):
+                out = root / str(index)
+                work = out / "work"
+                work.mkdir(parents=True)
+                runner = verify.Runner(out, work, {})
+                with mock.patch.object(verify, "MAX_OUTPUT", 64), mock.patch.object(verify, "MAX_RECEIPT", 128):
+                    with self.assertRaisesRegex(ValueError, "bounded command output"):
+                        runner.run(label, [sys.executable, "-c", "import sys; sys.stdout.buffer.write(b'x'*129)"], work)
+                self.assertLessEqual((out / (label + ".stdout")).stat().st_size, 128)
+                self.assertTrue(all(p.poll() is not None for p in runner.processes))
+                self.assertTrue(all(r["waited"] for r in runner.commands))
+
     def test_only_fixed_oracle_cache_diagnostic_is_supported(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

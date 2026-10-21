@@ -39,6 +39,12 @@ FIELDS = [('status', 'string'), ('reason', 'string'),
           ('subset_rule_id', 'string')]
 KINDS = {'string': str, 'boolean': bool, 'integer': int}
 CORPUS_SHA = 'cd8faa4f6493d1ca63ca3124473ec369f4979d5836ac1ae9c695aa1f34fafc09'
+# Current205 retains source diagnostics in every trace. The first original
+# eight-case receipt is 10,334,410 bytes. Keep the same six batches and all48
+# cases; only this verifier opts into the bounded16MiB command output profile.
+STDOUT_CAP = 16 << 20
+# Twelve execute/replay receipts plus8MiB for the fixed reference/control files.
+RETAINED_CAP = 12 * STDOUT_CAP + (8 << 20)
 
 
 def decoded(raw):
@@ -350,7 +356,7 @@ def main():
         H.save(out / 'owned-work.json', {'work': str(work), 'device': owner[0], 'inode': owner[1],
             'cwd': str(root), 'argv': sys.argv, 'environment': env,
             'limits': {'whole_seconds': 300, 'command_seconds': 90, 'owned_bytes': 1 << 30,
-                       'retained_bytes': 64 << 20, 'minimum_free_bytes': 2 << 30, 'stdout_bytes': 8 << 20, 'stderr_bytes': 2 << 20},
+                       'retained_bytes': RETAINED_CAP, 'minimum_free_bytes': 2 << 30, 'stdout_bytes': STDOUT_CAP, 'stderr_bytes': 2 << 20},
             'cleanup': 'Only this newly owned inode after all observed owned processes close; retain evidence and unknown-closure work.',
             'network_scope': 'Offline Go settings and copied modules, not an OS network sandbox.'})
         # Prepare only existing dependency bytes in private owned space; never write shared caches.
@@ -371,12 +377,12 @@ def main():
                     dst = work / 'modules/cache/download' / path / '@v' / src_meta.name
                     dst.parent.mkdir(parents=True, exist_ok=True); dst.write_bytes(read(src_meta))
             H.need(H.owned_bytes(work) <= 1 << 30, 'owned1GiB preparation cap')
-        runner = H.OwnedCommands(out, work, root, pins, env); runner.started = started
+        runner = H.OwnedCommands(out, work, root, pins, env, stdout_cap=STDOUT_CAP); runner.started = started
         def call(label, argv, cwd=None):
-            H.need(shutil.disk_usage(out).free >= 2 << 30 and H.owned_bytes(out) - H.owned_bytes(work) <= 64 << 20, 'free/evidence bounds')
+            H.need(shutil.disk_usage(out).free >= 2 << 30 and H.owned_bytes(out) - H.owned_bytes(work) <= RETAINED_CAP, 'free/evidence bounds')
             runner.cwd = cwd or root
             raw = runner.call(label, argv, 90)
-            H.need(H.owned_bytes(out) - H.owned_bytes(work) <= 64 << 20, 'retained64MiB bound')
+            H.need(H.owned_bytes(out) - H.owned_bytes(work) <= RETAINED_CAP, 'retained200MiB bound')
             return raw
         identity = decoded(call('compiler-identity', [compiler, 'version', '--build', '--json']))
         for k, v in {'compiler_source_sha': H.REV, 'vcs_revision': H.REV, 'source_status': 'CLEAN_VCS',

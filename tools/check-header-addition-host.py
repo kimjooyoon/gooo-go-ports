@@ -546,8 +546,10 @@ def owned_bytes(work):
 
 class OwnedCommands:
     """Bounded polling guard for this unique owned work path, not global cleanup."""
-    def __init__(self,out,work,cwd,pins,env,pin_scans=None):
+    def __init__(self,out,work,cwd,pins,env,pin_scans=None,stdout_cap=8<<20):
+        need(type(stdout_cap) is int and 0 < stdout_cap <= 16<<20,'finite command stdout cap')
         self.out,self.work,self.cwd,self.pins,self.env=out,work,cwd,pins,env
+        self.stdout_cap=stdout_cap
         self.pin_scans=pin_scans if pin_scans is not None else PinScanObservations()
         self.started=time.monotonic();self.observations=[];self.closed=True
     def call(self,label,args,seconds,extra_env=None,stdin_path=None,allowed_exit=(0,)):
@@ -571,7 +573,7 @@ class OwnedCommands:
                 save(directory/'started.json',{'argv':list(map(str,args)),'pid':child.pid,'pgid':child.pid,'timeout_s':seconds,'environment_overrides':extra_env or {}})
                 while child.poll() is None:
                     live();need(time.monotonic()<min(self.started+300,begin+seconds),'command/whole timeout')
-                    need(stdout.tell()<=8<<20 and stderr.tell()<=2<<20,'command output cap')
+                    need(stdout.tell()<=self.stdout_cap and stderr.tell()<=2<<20,'command output cap')
                     need(owned_bytes(self.work)<=1<<30,'owned work1GiB bound');time.sleep(0.05)
             except BaseException as error:why=str(error)
             finally:
@@ -601,7 +603,7 @@ class OwnedCommands:
                 observation={'label':label,'exit_code':None if child is None else child.returncode,'failure':why,'wall_seconds':time.monotonic()-begin,'observed_owned_processes_remaining':[{k:row[k] for k in ['pid','pgid','birth']} for row in remaining],'scope':'Polling ancestry and unique owned work command paths; not a kernel fork trace.'}
                 save(directory/'process.json',observation);self.observations.append(observation)
         need(child is not None and child.returncode in allowed_exit and why is None and not remaining,'command failure: '+label+' '+str(why))
-        need((directory/'stdout').stat().st_size<=8<<20 and (directory/'stderr').stat().st_size<=2<<20,'final output cap')
+        need((directory/'stdout').stat().st_size<=self.stdout_cap and (directory/'stderr').stat().st_size<=2<<20,'final output cap')
         self.pin_scans.observe(label,'post',lambda:unchanged(self.pins),self.pins);return (directory/'stdout').read_bytes()
 
 def parse_args(argv=None):

@@ -86,8 +86,12 @@ edge trimming is separate from raw header validation. The thirteen facts do
 not implement full If-Match, resource authenticity, permission to write, HTTP
 effects or an atomic conditional update.
 
-Each child command has90 seconds, stdout1MiB and stderr256KiB limits; the checker
-has240 seconds overall. Handled signals, timeout and overflow terminate its own
+Each child command has 90 seconds. JSON receipts from the explicit Gooo compiler
+package-execute command have an 8 MiB stdout budget; other stdout remains 1 MiB
+and stderr remains 256 KiB. The checker has 240 seconds overall. This covers the
+current seven baseline receipts and one optional mutation receipt; edited
+sources that produce larger provenance are refused rather than truncated into
+a usable result. Handled signals, timeout and overflow terminate its own
 child process group and wait. Raw streams, process records, fresh cases and the
 first failure remain in a newly created output directory. Current source/tool
 bytes and actual pinned Go/x/net oracle source files are checked before/after.

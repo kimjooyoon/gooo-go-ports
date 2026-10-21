@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"os"
 	"testing"
 )
@@ -49,5 +50,54 @@ func TestCurrentGo1273TypedResultMatchesSavedOwnReplayParent(t *testing.T) {
 	}
 	if _, err := legacy839ResultBytes(raw, legacyProfile); err == nil {
 		t.Fatal("archival caller accepted a current producer")
+	}
+}
+
+// The encoder is an independent ordinary Go struct with the source205
+// CompositionDelivery Input json.RawMessage tag. These literals do not share
+// omission logic with the codec under test.
+func TestCurrent205RawMessageOmitemptyPreservesEncodedZero(t *testing.T) {
+	const path = "$.runtime.traces.*.deliveries.*"
+	shape := map[string]profileShape{path: {Kinds: []string{"object"}, Fields: []profileField{
+		{Name: "activity_id"}, {Name: "producer_id", Optional: true, OmitZero: true},
+		{Name: "input", Optional: true, OmitZero: true}, {Name: "actual"},
+	}}, path + ".activity_id": {Kinds: []string{"string"}}, path + ".producer_id": {Kinds: []string{"string"}}}
+	type sourceDelivery struct {
+		ActivityID string          `json:"activity_id"`
+		ProducerID string          `json:"producer_id,omitempty"`
+		Input      json.RawMessage `json:"input,omitempty"`
+		Actual     json.RawMessage `json:"actual"`
+	}
+	normalize := func(raw []byte, current bool) ([]byte, error) {
+		d := json.NewDecoder(bytes.NewReader(raw))
+		d.UseNumber()
+		return normalizeResultValueForProfile(d, raw, path, shape, 0, current)
+	}
+	for _, literal := range []string{`""`, `false`, `0`, `null`, `[]`, `{}`} {
+		t.Run(literal, func(t *testing.T) {
+			want, err := json.Marshal(sourceDelivery{ActivityID: "source-id", Input: json.RawMessage(literal), Actual: json.RawMessage(`false`)})
+			if err != nil {
+				t.Fatal(err)
+			}
+			got, err := normalize(want, true)
+			if err != nil || !bytes.Equal(got, want) {
+				t.Fatalf("encoded RawMessage changed: %s %v", got, err)
+			}
+			if _, err := normalize(want, false); err == nil {
+				t.Fatal("archival omission behavior unexpectedly changed")
+			}
+		})
+	}
+	for name, raw := range map[string]string{
+		"ordinary empty scalar": `{"activity_id":"source-id","producer_id":"","input":"","actual":false}`,
+		"ordinary null scalar":  `{"activity_id":"source-id","producer_id":null,"input":"","actual":false}`,
+		"unknown field":         `{"activity_id":"source-id","input":"","extra":false,"actual":false}`,
+		"wrong field order":     `{"input":"","activity_id":"source-id","actual":false}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			if _, err := normalize([]byte(raw), true); err == nil {
+				t.Fatal("accepted unsupported ordinary omission or field")
+			}
+		})
 	}
 }

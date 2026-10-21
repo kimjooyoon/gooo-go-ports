@@ -185,15 +185,19 @@ class ConsumerControls(unittest.TestCase):
                    'replayed_from_sha256': R.H.digest(parent), 'manifest_digest': R.H.digest(ctx['raw']),
                    'manifest': str(ctx['workspace']), 'failure': {'code': 'REPLAY_MANIFEST_MISMATCH',
                        'detail': 'saved execution envelope or workspace manifest differs'}}
-        R.check_refusal(R.H.go_json(refusal), parent, ctx, profile)
         with self.assertRaises(RuntimeError): R.check_refusal(R.H.go_json(refusal), parent, ctx)
-        for failure in ({'code': 'REPLAY_SOURCE_MISMATCH', 'detail': refusal['error']},
-                        {'code': 'REPLAY_MANIFEST_MISMATCH', 'detail': 'other stage'},
-                        {**refusal['failure'], 'unknown': True}):
-            with self.subTest(failure=failure), self.assertRaises(RuntimeError):
-                R.check_refusal(R.H.go_json(dict(refusal, failure=failure)), parent, ctx, profile)
-        for changed in ({k: v for k, v in refusal.items() if k != 'failure'}, {**refusal, 'unknown': True}):
-            with self.assertRaises(RuntimeError): R.check_refusal(R.H.go_json(changed), parent, ctx, profile)
+        current_default = R.compiler_profile(R.decoded((R.REPO / 'upstream.json').read_bytes()))
+        for selected in (profile, current_default):
+            with self.subTest(profile=selected['name']):
+                R.check_refusal(R.H.go_json(refusal), parent, ctx, selected)
+            for failure in ({'code': 'REPLAY_SOURCE_MISMATCH', 'detail': refusal['error']},
+                            {'code': 'REPLAY_MANIFEST_MISMATCH', 'detail': 'other stage'},
+                            {**refusal['failure'], 'unknown': True}):
+                with self.subTest(profile=selected['name'], failure=failure), self.assertRaises(RuntimeError):
+                    R.check_refusal(R.H.go_json(dict(refusal, failure=failure)), parent, ctx, selected)
+            for changed in ({k: v for k, v in refusal.items() if k != 'failure'}, {**refusal, 'unknown': True}):
+                with self.subTest(profile=selected['name']), self.assertRaises(RuntimeError):
+                    R.check_refusal(R.H.go_json(changed), parent, ctx, selected)
 
     def test_trace_to_reported_native_stdout_binding(self):
         values = [r['before'] for r in self.expected]

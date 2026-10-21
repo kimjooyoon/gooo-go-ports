@@ -315,16 +315,19 @@ def inspect_receipt(raw, rows, inputs, ctx, go_version, go_sha, parent=None, pro
 def check_refusal(raw, parent, ctx, profile=None):
     r = decoded(raw)
     keys = {'schema', 'decision', 'manifest', 'manifest_digest', 'error', 'replayed_from_sha256'}
-    if uses_inspection(profile): keys.add('failure')
+    # Exact205 emits the structured manifest refusal for both current profiles.
+    # The absent profile preserves the explicitly archival six-field reader.
+    structured = profile is not None and profile['compiler_revision'] == SOURCE_INSPECTION037['compiler_revision']
+    if structured: keys.add('failure')
     H.need(set(r) == keys and
            r['schema'] == 'gooo/workspace-body-execution-receipt/v1' and r['decision'] == 'FAIL_CLOSED' and
            r['error'] == 'saved execution envelope or workspace manifest differs' and
            r['replayed_from_sha256'] == H.digest(parent) and r['manifest'] == str(ctx['workspace']) and
            r['manifest_digest'] == H.digest(ctx['raw']), 'exact current manifest-stage cross-workspace refusal')
-    if uses_inspection(profile):
+    if structured:
         H.need(H.equal(r['failure'], {'code': 'REPLAY_MANIFEST_MISMATCH',
                                      'detail': 'saved execution envelope or workspace manifest differs'}),
-               'exact source-inspection037 manifest-stage failure code and detail')
+               'exact current205 manifest-stage failure code and detail')
 
 
 def check_demo(inputs, comparisons, root, read):

@@ -96,3 +96,100 @@ func TestCurrentGo1273ReadAndLocalMetadataStaysFinite(t *testing.T) {
 		})
 	}
 }
+
+// Literal-report uses multiple scalar ports, so its finite RawMessage roster
+// deliberately excludes delivery.input. Keep that unsupported unary shape
+// refused while checking the real required actual RawMessage values.
+func TestCurrent205RawMessageOmitemptyPreservesEncodedZero(t *testing.T) {
+	const path = "$.runtime.traces.*.deliveries.*"
+	shape := map[string]profileShape{path: {Kinds: []string{"object"}, Fields: []profileField{
+		{Name: "activity_id"}, {Name: "producer_id", Optional: true, OmitZero: true},
+		{Name: "input", Optional: true, OmitZero: true}, {Name: "actual"},
+	}}, path + ".activity_id": {Kinds: []string{"string"}}, path + ".producer_id": {Kinds: []string{"string"}}}
+	type sourceDelivery struct {
+		ActivityID string          `json:"activity_id"`
+		ProducerID string          `json:"producer_id,omitempty"`
+		Input      json.RawMessage `json:"input,omitempty"`
+		Actual     json.RawMessage `json:"actual"`
+	}
+	normalize := func(raw []byte, current bool) ([]byte, error) {
+		d := json.NewDecoder(bytes.NewReader(raw))
+		d.UseNumber()
+		return normalizeResultValueForProfile(d, raw, path, shape, 0, current)
+	}
+	for _, literal := range []string{`""`, `false`, `0`, `null`, `[]`, `{}`} {
+		t.Run(literal, func(t *testing.T) {
+			raw := json.RawMessage(literal)
+			unsupported, err := json.Marshal(sourceDelivery{ActivityID: "source-id", Input: raw, Actual: json.RawMessage(`false`)})
+			if err != nil {
+				t.Fatal(err)
+			}
+			want, err := json.Marshal(sourceDelivery{ActivityID: "source-id", Actual: raw})
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, current := range []bool{false, true} {
+				if _, err := normalize(unsupported, current); err == nil {
+					t.Fatal("finite multiport reader accepted scalar input")
+				}
+				got, err := normalize(want, current)
+				if err != nil || !bytes.Equal(got, want) {
+					t.Fatalf("required RawMessage changed: %s %v", got, err)
+				}
+			}
+		})
+	}
+	for name, raw := range map[string]string{
+		"ordinary empty scalar": `{"activity_id":"source-id","producer_id":"","actual":false}`,
+		"ordinary null scalar":  `{"activity_id":"source-id","producer_id":null,"actual":false}`,
+		"unknown field":         `{"activity_id":"source-id","extra":false,"actual":false}`,
+		"wrong field order":     `{"actual":false,"activity_id":"source-id"}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			if _, err := normalize([]byte(raw), true); err == nil {
+				t.Fatal("accepted ordinary omission or unknown/order change")
+			}
+		})
+	}
+}
+
+func TestCurrent205ConditionFieldMetadataShapesStayFinite(t *testing.T) {
+	var p resultProfile
+	if err := json.Unmarshal(resultProfileJSON, &p); err != nil {
+		t.Fatal(err)
+	}
+	plain := `[{"entity_id":"e","field_id":"f","name":"n"}]`
+	declared := `[{"declaration":{"status":"MAPPED","view":"selected_gooo_source","kind":"field","stable_id":"f","name":"n","source_sha256":"sha256:s","start_byte":1,"end_byte":2},"entity_id":"e","field_id":"f","name":"n"}]`
+	for _, path := range []string{"$.composition.steps.*.generation.report.body_conditions.*.fields", "$.runtime.condition_sites.*.source.fields"} {
+		encode := func(raw string) ([]byte, error) {
+			d := json.NewDecoder(strings.NewReader(raw))
+			d.UseNumber()
+			return normalizeResultValueForProfile(d, []byte(raw), path, p.Nodes, 0, true)
+		}
+		for _, raw := range []string{plain, declared} {
+			got, err := encode(raw)
+			if err != nil || string(got) != raw {
+				t.Fatal("typed field declaration order", path, string(got), err)
+			}
+		}
+		for name, raw := range map[string]string{
+			"unknown field":         strings.Replace(plain, `"entity_id":`, `"untrusted":0,"entity_id":`, 1),
+			"duplicate field":       strings.Replace(plain, `"field_id":"f"`, `"field_id":"f","field_id":"f"`, 1),
+			"missing field":         strings.Replace(plain, `"field_id":"f",`, "", 1),
+			"wrong field order":     `[{"name":"n","entity_id":"e","field_id":"f"}]`,
+			"wrong field type":      strings.Replace(plain, `"field_id":"f"`, `"field_id":false`, 1),
+			"wrong array kind":      `{}`,
+			"null optional pointer": strings.Replace(plain, `{"entity_id":`, `{"declaration":null,"entity_id":`, 1),
+			"decimal span":          strings.Replace(declared, `"start_byte":1`, `"start_byte":1.0`, 1),
+			"Boolean span":          strings.Replace(declared, `"start_byte":1`, `"start_byte":true`, 1),
+			"unknown declaration":   strings.Replace(declared, `"status":`, `"untrusted":0,"status":`, 1),
+			"empty optional reason": strings.Replace(declared, `"status":"MAPPED",`, `"status":"MAPPED","reason":"",`, 1),
+		} {
+			t.Run(path+"/"+name, func(t *testing.T) {
+				if _, err := encode(raw); err == nil {
+					t.Fatal("unsupported field metadata admitted")
+				}
+			})
+		}
+	}
+}

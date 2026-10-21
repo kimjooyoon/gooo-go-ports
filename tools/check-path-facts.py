@@ -22,7 +22,10 @@ ENTRIES = [('ext','go/path:Ext','path-ext.workspace.json'),
            ('isabs','go/path:IsAbs','path-isabs.workspace.json'),
            ('report','app/path-facts:Report','path-facts.workspace.json')]
 WORK_CAP, PRE_CAP, FREE_MIN = 384<<20, 320<<20, 5<<30
-STDOUT_CAP, STDERR_CAP, ROWS_CAP, PROOF_CAP = 8<<20, 1<<20, 8<<20, 16<<20
+# Current205 adds finite trace diagnostics: the fixed24-row Ext/Report receipts
+# are2.18/2.75MB. Retain all six originals and18 byte-preserving tamper copies.
+# Per-command, generated rows, work, time and free-space limits stay unchanged.
+STDOUT_CAP, STDERR_CAP, ROWS_CAP, PROOF_CAP = 8<<20, 1<<20, 8<<20, 64<<20
 SOURCE_NAMES = ['LICENSE','go.mod','upstream.json','internal/jsonkeys/keys.go',
  'ports/path/path.gooo','examples/path-facts/main.gooo','examples/path-facts/inputs.json',
  'examples/path-facts/README.md','third_party/GO-LICENSE','third_party/go/path.go.txt',

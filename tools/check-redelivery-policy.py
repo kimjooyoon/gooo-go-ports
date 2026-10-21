@@ -20,12 +20,14 @@ import zlib
 ENTRY='app/automatic-redelivery:AssessRedelivery'
 ACTIVITY_ID='gooo://automatic-redelivery/assess/v1'
 WORK_CAP,PRE_CAP,FREE_MIN=384<<20,320<<20,5<<30
-STDOUT_CAP,STDERR_CAP,PROOF_CAP=1<<20,256<<10,8<<20
+# Four original receipts and18 tamper copies are each bounded by1MiB. Add the
+# existing2MiB compressed rows and bounded reference/ledger files, below32MiB.
+STDOUT_CAP,STDERR_CAP,PROOF_CAP=1<<20,256<<10,32<<20
 RAW_CAP,GZIP_CAP,LINE_CAP,WIRE_CAP=16<<20,2<<20,16<<10,8192
 GZIP_HEADER=bytes.fromhex('1f8b08000000000002ff')
 MODULE_NAMES=('go.mod','main.go','candidate.go','corpus.go','rows.go','boundary.go','policy.go','harness_test.go','generated.go')
 POSITIVE=('go-root','build-oracle','build-checker','compiler-build','original-oracle-manual16','batch-0-strict','batch-0-execute','batch-0-replay','batch-0-observe','batch-8-strict','batch-8-execute','batch-8-replay','batch-8-observe','harness-tests','build-harness','full12288-generated-native')
-HELPER_SHA='95d565708d554fe1d37c0eee9030bc243b11c0755d6d1032197a0a346e030c28'
+HELPER_SHA='363a85df7012cb3af26da99e1593cff350ba44d24a7e9bb598207cb9d5b1bcb1'
 H=None
 
 WIRE_NAMES=('missing','unknown','null-text','null-boolean','null-integer','bool-as-integer','number-as-boolean','fractional-integer','out-of-int64','duplicate-exact','duplicate-escaped','raw-invalid-utf8','unpaired-high','unpaired-low','text-1025','trailing','malformed','nonobject')
@@ -308,7 +310,7 @@ class Attempt:
     def budget(self,active=False):
         if time.monotonic()-self.started>=self.overall:raise RuntimeError('Whole policy timeout')
         if logical(self.work,active=active)>WORK_CAP:raise RuntimeError('Owned work exceeds384MiB')
-        if logical(self.out)>PROOF_CAP:raise RuntimeError('Proof exceeds8MiB')
+        if logical(self.out)>PROOF_CAP:raise RuntimeError('Proof exceeds32MiB')
         for suffix,cap in (('.stdout',STDOUT_CAP),('.stderr',STDERR_CAP)):
             for p in self.out.glob('*'+suffix):
                 if p.is_symlink() or not p.is_file() or p.stat().st_size>cap:raise RuntimeError('Policy stage output cap')

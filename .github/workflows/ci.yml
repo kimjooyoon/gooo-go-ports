@@ -1432,7 +1432,7 @@ jobs:
           assert owned.is_absolute() and not owned.exists() and not owned.is_symlink()
           assert len(s["producer_binaries_observed_while_present"]) == 3
           for item in s["producer_binaries_observed_while_present"]: rawref(item,present=False)
-          assert sum(p.stat().st_size for p in root.rglob("*") if p.is_file()) <= 8 << 20
+          assert sum(p.stat().st_size for p in root.rglob("*") if p.is_file()) <= 32 << 20
           print(json.dumps({"schema":"gooo/redelivery-public-ci-gate/v1","status":"CURRENT_TWO_LAYER_REFS_CHECKED","retained_current_paths":len(seen)}))
           PY
       - name: Verify the isolated native IPv4 address facts sidecar
@@ -1578,6 +1578,7 @@ jobs:
         run: |
           set -euo pipefail
           export GOENV=off
+          go test -race -count=1 templates/etag-project/check.go templates/etag-project/check_test.go
           python3 -B tools/export-etag-project.py --out "$PWD/out/etag-project"
           go_executable="$(go env GOROOT)/bin/go"
           "$go_executable" -C out/etag-project mod download

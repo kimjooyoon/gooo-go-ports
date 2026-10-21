@@ -398,6 +398,21 @@ func cases(b batch, rows []inputRow, sources map[string][]byte) ([]byte, []any, 
 
 // Each direct child owns a new process group. Cancellation/cap/Wait failure
 // kills only that group. Bounded original streams and dispositions are retained.
+const maxCommandStdout = 1 << 20
+
+// The current seven baseline receipts plus one mutation receipt peak at
+// 7,628,750 bytes. This finite 8 MiB budget is not a promise for arbitrary edits.
+const maxReceiptStdout = 8 << 20
+const maxCommandStderr = 256 << 10
+
+// Only the explicit compiler package-execute JSON path receives a receipt budget.
+func commandStdoutLimit(binary, compiler string, args []string) int {
+	if binary == compiler && len(args) >= 3 && args[0] == "package" && args[1] == "execute" && args[2] == "--json" {
+		return maxReceiptStdout
+	}
+	return maxCommandStdout
+}
+
 type stream struct {
 	file   *os.File
 	data   bytes.Buffer
@@ -466,8 +481,8 @@ func (r *runner) run(name, binary, cwd string, args ...string) process {
 	}
 	ctx, cancel := context.WithTimeout(r.ctx, 90*time.Second)
 	defer cancel()
-	out := &stream{file: stdout, limit: 1 << 20, cancel: cancel}
-	diag := &stream{file: stderr, limit: 256 << 10, cancel: cancel}
+	out := &stream{file: stdout, limit: commandStdoutLimit(binary, r.compiler, args), cancel: cancel}
+	diag := &stream{file: stderr, limit: maxCommandStderr, cancel: cancel}
 	cmd := exec.CommandContext(ctx, binary, args...)
 	cmd.Dir = cwd
 	cmd.Env = cleanEnv()

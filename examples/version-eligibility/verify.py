@@ -38,6 +38,11 @@ SOURCES = ("ports/xmod/semver.gooo", "examples/version-eligibility/main.gooo")
 MANIFEST = "version-eligibility.workspace.json"
 EXAMPLE = "examples/version-eligibility"
 MAX_OUTPUT = 2 << 20
+# Current compiler provenance expands finite receipts beyond ordinary command output.
+# All six fixed profiles retain <=12 cases and <=2 source files; the measured
+# 12 execute/replay receipts peak at 10,428,916 bytes. Keep a finite 16 MiB receipt
+# budget with margin, below the compiler's 32 MiB saved-receipt JSON ceiling.
+MAX_RECEIPT = 16 << 20
 MAX_WORK = 150 << 20
 
 
@@ -94,8 +99,10 @@ def pairs(items):
     return result
 
 
-def load(raw):
-    need(len(raw) <= MAX_OUTPUT, "JSON exceeds bounded profile")
+def load(raw, limit=None):
+    if limit is None:
+        limit = MAX_OUTPUT
+    need(len(raw) <= limit, "JSON exceeds bounded profile")
     return json.loads(raw.decode("utf-8"), object_pairs_hook=pairs,
                       parse_constant=lambda _: need(False, "nonfinite JSON"))
 
@@ -215,7 +222,9 @@ class Runner:
 
     def run(self, label, argv, cwd, stdin=None):
         need(not self.signals, "interrupted")
-        record = {"label": label, "argv": list(map(str, argv))}
+        output_limits = {"stdout": MAX_RECEIPT if label in ("execute", "replay") else MAX_OUTPUT,
+                         "stderr": MAX_OUTPUT}
+        record = {"label": label, "argv": list(map(str, argv)), "output_limits": output_limits}
         self.commands.append(record)
         started = time.monotonic()
         input_file = stdin.open("rb") if stdin else None
@@ -252,7 +261,7 @@ class Runner:
                             selector.unregister(key.fileobj)
                             continue
                         sizes[key.data] += len(chunk)
-                        need(sizes[key.data] <= MAX_OUTPUT, "bounded command output: " + label)
+                        need(sizes[key.data] <= output_limits[key.data], "bounded command output: " + label)
                         streams[key.data].write(chunk)
                 record["exit"] = proc.wait(timeout=max(1, min(self.deadline, started + 90) - time.monotonic()))
                 need(record["exit"] == 0, "command failed: " + label)
@@ -274,13 +283,13 @@ class Runner:
         cached = b"go: downloading golang.org/x/mod v0.29.0\n"
         need(not diagnostics or label == "oracle-build" and diagnostics == cached,
              "unexpected command diagnostics: " + label)
-        return read(self.out / (label + ".stdout"))
+        return read(self.out / (label + ".stdout"), output_limits["stdout"])
 
 
 def receipt(raw, expected, rows, source_ids, manifest, cases, go_identity, version, selected=None):
     selected = selected or policy("upgrade")
     scalar, count = selected.get("scalar", False), selected["count"]
-    e = load(raw)
+    e = load(raw, MAX_RECEIPT)
     need(e["schema"] == "gooo/workspace-body-execution-receipt/v1" and e["decision"] == "PASS" and
          e.get("error", "") == "" and e["manifest_digest"] == manifest and e["cases_digest"] == cases,
          "finite receipt/manifest/cases binding")

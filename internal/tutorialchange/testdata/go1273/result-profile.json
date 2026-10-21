@@ -782,6 +782,129 @@
         "string"
       ]
     },
+    "$.composition.steps.*.generation.report.body_conditions.*.fields": {
+      "kinds": [
+        "array",
+        "null"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_conditions.*.fields.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "declaration",
+          "optional": true
+        },
+        {
+          "name": "entity_id"
+        },
+        {
+          "name": "field_id"
+        },
+        {
+          "name": "name"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_conditions.*.fields.*.declaration": {
+      "kinds": [
+        "object",
+        "null"
+      ],
+      "fields": [
+        {
+          "name": "status"
+        },
+        {
+          "name": "reason",
+          "optional": true,
+          "omit_zero": true
+        },
+        {
+          "name": "view"
+        },
+        {
+          "name": "kind"
+        },
+        {
+          "name": "stable_id"
+        },
+        {
+          "name": "name"
+        },
+        {
+          "name": "source_sha256"
+        },
+        {
+          "name": "start_byte"
+        },
+        {
+          "name": "end_byte"
+        }
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_conditions.*.fields.*.declaration.end_byte": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_conditions.*.fields.*.declaration.kind": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_conditions.*.fields.*.declaration.name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_conditions.*.fields.*.declaration.reason": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_conditions.*.fields.*.declaration.source_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_conditions.*.fields.*.declaration.stable_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_conditions.*.fields.*.declaration.start_byte": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_conditions.*.fields.*.declaration.status": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_conditions.*.fields.*.declaration.view": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_conditions.*.fields.*.entity_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_conditions.*.fields.*.field_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.composition.steps.*.generation.report.body_conditions.*.fields.*.name": {
+      "kinds": [
+        "string"
+      ]
+    },
     "$.composition.steps.*.generation.report.body_conditions.*.native_ordinal": {
       "kinds": [
         "integer"
@@ -3875,6 +3998,129 @@
       ]
     },
     "$.runtime.condition_sites.*.source.expression": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.condition_sites.*.source.fields": {
+      "kinds": [
+        "array",
+        "null"
+      ]
+    },
+    "$.runtime.condition_sites.*.source.fields.*": {
+      "kinds": [
+        "object"
+      ],
+      "fields": [
+        {
+          "name": "declaration",
+          "optional": true
+        },
+        {
+          "name": "entity_id"
+        },
+        {
+          "name": "field_id"
+        },
+        {
+          "name": "name"
+        }
+      ]
+    },
+    "$.runtime.condition_sites.*.source.fields.*.declaration": {
+      "kinds": [
+        "object",
+        "null"
+      ],
+      "fields": [
+        {
+          "name": "status"
+        },
+        {
+          "name": "reason",
+          "optional": true,
+          "omit_zero": true
+        },
+        {
+          "name": "view"
+        },
+        {
+          "name": "kind"
+        },
+        {
+          "name": "stable_id"
+        },
+        {
+          "name": "name"
+        },
+        {
+          "name": "source_sha256"
+        },
+        {
+          "name": "start_byte"
+        },
+        {
+          "name": "end_byte"
+        }
+      ]
+    },
+    "$.runtime.condition_sites.*.source.fields.*.declaration.end_byte": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.condition_sites.*.source.fields.*.declaration.kind": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.condition_sites.*.source.fields.*.declaration.name": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.condition_sites.*.source.fields.*.declaration.reason": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.condition_sites.*.source.fields.*.declaration.source_sha256": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.condition_sites.*.source.fields.*.declaration.stable_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.condition_sites.*.source.fields.*.declaration.start_byte": {
+      "kinds": [
+        "integer"
+      ]
+    },
+    "$.runtime.condition_sites.*.source.fields.*.declaration.status": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.condition_sites.*.source.fields.*.declaration.view": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.condition_sites.*.source.fields.*.entity_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.condition_sites.*.source.fields.*.field_id": {
+      "kinds": [
+        "string"
+      ]
+    },
+    "$.runtime.condition_sites.*.source.fields.*.name": {
       "kinds": [
         "string"
       ]
@@ -7975,10 +8221,6 @@
       "reason": "not covered by this source-backed finite profile; populated value must fail closed",
       "go_type": "[]BodyConstructionOrigin"
     },
-    "$.composition.steps.*.generation.report.body_conditions.*.fields": {
-      "reason": "not covered by this source-backed finite profile; populated value must fail closed",
-      "go_type": "[]ConditionSourceField"
-    },
     "$.composition.steps.*.generation.report.body_fields.*.operation": {
       "reason": "not covered by this source-backed finite profile; populated value must fail closed",
       "go_type": "string"
@@ -8162,10 +8404,6 @@
     "$.runtime.condition_sites.*.source.reason": {
       "reason": "not covered by this source-backed finite profile; populated value must fail closed",
       "go_type": "string"
-    },
-    "$.runtime.condition_sites.*.source.fields": {
-      "reason": "not covered by this source-backed finite profile; populated value must fail closed",
-      "go_type": "[]ConditionSourceField"
     },
     "$.runtime.condition_sites.*.source.declaration.reason": {
       "reason": "not covered by this source-backed finite profile; populated value must fail closed",
@@ -8664,7 +8902,7 @@
       "git_blob_oid": "d7401e382f6271556ca0552610acb448fe22365f"
     }
   },
-  "scope": "Source-backed final205 finite849-node profile: original50 unchanged Git sources plus exact body_read_origin.go. Only12 typed path shapes advance for the observed index-read branch and scalar local-use reason/drop metadata including the bounded local-use drop count; all other unsupported branches still fail closed. Historical2a tutorial calibration and its original raw/typed hashes remain unchanged. Four RawMessage boundaries and two generic-map paths remain unchanged. New actual205 literal receipt/replay validation is recorded separately, never as rewritten historical calibration.",
+  "scope": "Source-backed final205 finite879-node profile: all849 prior nodes remain exact. Thirty source-declared ConditionSourceField/declaration shapes advance only for generation body_conditions.fields and runtime condition_sites.source.fields; the separate49 IPv4 record extension stays add-only and disjoint. All other unsupported populated branches fail closed. Historical calibration/raw receipts are unchanged; these shapes do not authenticate origin metadata.",
   "machine_int_bits": 64,
   "historical_calibration": {
     "compiler_revision": "2a05847facf6ba9ce7d433aab87da931bfb927b2",

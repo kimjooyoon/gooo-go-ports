@@ -58,6 +58,11 @@ also check refusals for stale sources, changed typed data and a wrong saved
 replay parent without another native execution.
 
 Read the new run's summary and retained evidence before claiming success.
+
+The current205 verifier keeps the same48 cases in six batches. Its retained
+source diagnostics require a16MiB command-output limit and a200MiB total
+evidence limit. Other users of the shared command runner keep the8MiB default;
+input, stderr, process, time and owned-work limits are unchanged.
 These instructions and the source contract do not establish that a particular
 checkout or edit passed. A changed source must receive fresh verification.
 
