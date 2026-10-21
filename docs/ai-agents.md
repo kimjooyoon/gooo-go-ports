@@ -292,8 +292,9 @@ compiler issue before passing a minimal case to the language repository.
 - **Write a Gooo program:** use the first-program skill, then the existing
   [local edit-and-replay guide](../examples/learn-gooo/README.md#make-one-visible-change).
 - **Edit an API policy rule:** use the [editable source comparison](../examples/editable-api-policy/README.md).
-  To extract a same-file helper, follow its explicit `source-inspection036`
-  compiler profile. Keep the default839 path for the original demo. The selected
+  To extract a same-file helper, follow its explicit `source-inspection037`
+  compiler profile. Keep the `default` profile (compiler `205896a`) for the
+  original demo. The selected
   compiler prepares each current call plan before execution; every native
   execution and saved replay must contain that same full program. This checks
   source/result binding for the supplied facts, not live authorization or full
@@ -320,10 +321,10 @@ compiler issue before passing a minimal case to the language repository.
   Tell us whether a successful run helps your real task, or share the first
   failure, through the [existing feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml).
   Select **Native setup, verification, or replay** and use public synthetic inputs.
-- **Edit a patch-line update rule with newer Gooo:** the separate
+- **Edit a patch-line update rule in a separate checkout:** the separate
   [same-minor source example](https://gist.github.com/kimjooyoon/9ca55091bd18ddb6f06a563e99f68348#file-00-readme-md)
   preserves the released **0.6.36-dev**, compiler `31497af3` and Go 1.27.2 profile. Follow its
-  isolated setup; this checkout still uses compiler `83928fa`. The program
+  isolated setup; this checkout uses compiler `205896a`. The program
   adapts Go `semver.MajorMinor` to a result record whose `value` field explicitly
   permits 1,026 UTF-8 bytes, preserving the longest supported shorthand input.
   An importing Gooo rule requires a newer stable candidate in the same

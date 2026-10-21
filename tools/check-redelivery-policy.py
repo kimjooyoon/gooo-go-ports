@@ -256,7 +256,7 @@ class Attempt:
          'cmd/check-path-facts/testdata/current-go1273-execution.json',
          'cmd/check-path-facts/testdata/current-go1273-execution.provenance.json',
          'cmd/check-literal-text-report/testdata/pinned-original-execution.json',
-         'internal/jsonkeys/keys.go','internal/jsonkeys/keys_test.go','LICENSE','go.mod','upstream.json',
+         'internal/jsonkeys/keys.go','internal/jsonkeys/keys_test.go','internal/jsonkeys/keys_byte_walker_test.go','LICENSE','go.mod','upstream.json',
          'cmd/check-redelivery-policy/testdata/wire/manifest.json']
         if (self.repository/'go.sum').exists():names.append('go.sum')
         for item in cases:
@@ -271,7 +271,7 @@ class Attempt:
         for directory,want in [(self.repository/'cmd/check-redelivery-policy',set(CHECKER)|{'testdata'}),
           (self.repository/'tools/redelivery-native-source',{n+'.txt' for n in TEMPLATES}),
           (self.reference,{'go.mod','main.go','policy.go','policy_test.go','strict.go'}),
-          (self.repository/'internal/jsonkeys',{'keys.go','keys_test.go'})]:
+          (self.repository/'internal/jsonkeys',{'keys.go','keys_test.go','keys_byte_walker_test.go'})]:
             actual={p.name for p in directory.iterdir()}
             if actual!=want:raise ValueError('Public code source roster differs')
             if any(p.is_symlink() for p in directory.iterdir()):raise ValueError('Source roster symlink')

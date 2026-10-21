@@ -5,7 +5,7 @@ keep each result attached to its own source and official saved replay. This is
 an experimental offline example, not live authorization or a trace importer.
 The existing sealed API-policy consumer and Action remain separate.
 
-Start in the repository root with the pinned **Gooo compiler83928fa** and
+Start in the repository root with the pinned **Gooo compiler205896a** and
 **Go1.27.3** already prepared; see [setup](../../README.md#run-and-edit-locally).
 The script uses Python3's standard library and an existing repository process
 helper. It does not install tools, download modules, or build an engine.
@@ -108,6 +108,13 @@ fields or send the first failure through the existing feedback form below.
 Omit `--check-demo` when intentionally changing the facts or rule.
 
 ## Extract a helper with the separate source-inspection profile
+
+For this checkout, add `--compiler-profile source-inspection037` to either
+command above, using compiler `205896a` and Go1.27.3. This selects same-file
+helper support; keep the selected entry, imports and nine-input/fifteen-field
+ABI unchanged. The default profile retains its one-activity-per-source check.
+
+### Frozen source-inspection036 reproduction
 
 This opt-in release profile retains its exact Go 1.27.2 compiler/SDK identity.
 It is separate from the current-source Go 1.27.3 migration target above; the
