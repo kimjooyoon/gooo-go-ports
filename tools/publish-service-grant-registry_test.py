@@ -468,6 +468,15 @@ class ValidationOnlySafety(unittest.TestCase):
                 M.main()
             runtime.assert_not_called()
 
+    def test_shared_install_workflow_has_no_authentication_or_publish_capability(self):
+        raw = (SOURCE.parent.parent / '.github/workflows/registry-install-smoke.yml').read_text()
+        self.assertIn('  workflow_call:\n', raw)
+        for forbidden in ('id-token:', 'packages: write', 'secrets.', 'secrets: inherit',
+                          'workflow_dispatch:', '--allow-publish', 'docker image push', 'docker login'):
+            self.assertNotIn(forbidden, raw)
+        self.assertIn('  contents: read\n', raw)
+        self.assertIn('--registry-metadata registry/service-grant-preview16.server.json', raw)
+
     def test_PR_workflow_has_no_oidc_secrets_or_publish_trigger(self):
         path = SOURCE.parent.parent / '.github/workflows/check-service-grant-registry.yml'
         raw = path.read_text()
@@ -477,13 +486,19 @@ class ValidationOnlySafety(unittest.TestCase):
         self.assertNotIn('id-token:', raw)
         self.assertNotIn('secrets.', raw)
         self.assertNotIn('--allow-publish', raw)
-        self.assertEqual(raw.count('      contents: read\n'), 1)
+        self.assertEqual(raw.count('      contents: read\n'), 2)
+        self.assertIn('uses: ./.github/workflows/registry-install-smoke.yml', raw)
         trigger_paths = M.re.findall(r"^      - '([^']+)'$", raw[raw.index('    paths:\n'):raw.index('\npermissions:')], M.re.MULTILINE)
         self.assertEqual(trigger_paths, [
             '.github/workflows/check-service-grant-registry.yml',
+            '.github/workflows/registry-install-smoke.yml',
             '.github/workflows/publish-service-grant-registry.yml',
             'tools/publish-service-grant-registry.py',
             'tools/publish-service-grant-registry_test.py',
+            'tools/verify-service-grant-container.py',
+            'tools/verify-service-grant-container_test.py',
+            'tools/service_grant_mcp_oci.py',
+            'containers/service-grant-mcp/**',
             'registry/service-grant-preview13.server.json',
             'registry/service-grant-preview14.server.json',
             'registry/service-grant-preview15.server.json',
