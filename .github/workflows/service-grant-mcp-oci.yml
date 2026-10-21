@@ -5,6 +5,8 @@ on:
     paths:
       - '.github/workflows/service-grant-mcp-oci.yml'
       - 'tools/service_grant_mcp_oci*'
+      - 'tools/registry_action_auth*'
+      - 'registry/oci-recovery/contract.json'
       - 'tools/service_grant_mcp_container*'
       - 'tools/verify-service-grant-container*'
       - 'containers/service-grant-mcp/**'
@@ -230,6 +232,9 @@ jobs:
     outputs:
       digest: ${{ steps.push.outputs.digest }}
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           artifact-ids: ${{ needs.verify.outputs.artifact-id }}
@@ -276,6 +281,12 @@ jobs:
         run: |
           set -euo pipefail
           printf '%s' "$GHCR_TOKEN" | timeout -k 5s 30s docker --config "$RUNNER_TEMP/gooo-push-config" login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Stage the private login at the pinned attestation reader's actual path
+        run: |
+          set -euo pipefail
+          timeout -k 5s 15s python3 -I -B tools/registry_action_auth.py stage \
+            --home "$HOME" --state-dir "$RUNNER_TEMP/gooo-action-auth" \
+            --private-config "$RUNNER_TEMP/gooo-push-config/config.json"
       - name: Push exactly once under a unique run tag and capture the manifest digest
         id: push
         env:
@@ -338,6 +349,14 @@ jobs:
           cp out/input/build-manifest.json out/publish/native-and-build-materials.json
           cp out/input/{sbom.cdx.json,scan.json,trivy-db-version.json} out/publish/
           printf '%s\n%s\n' "$PROVENANCE_ID" "$SBOM_ID" > out/publish/attestation-ids.txt
+      - name: Restore the original default Docker config, including after a partial staging failure
+        if: always()
+        run: |
+          set -euo pipefail
+          if test -f "$RUNNER_TEMP/gooo-action-auth/state.json"; then
+            timeout -k 5s 15s python3 -I -B tools/registry_action_auth.py restore \
+              --home "$HOME" --state-dir "$RUNNER_TEMP/gooo-action-auth"
+          fi
       - name: Remove only publication credentials and this loaded image
         if: always()
         run: |

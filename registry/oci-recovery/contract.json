@@ -1,0 +1,54 @@
+{
+  "@context": {
+    "prov": "http://www.w3.org/ns/prov#",
+    "@vocab": "https://github.com/kimjooyoon/gooo-go-ports/terms/"
+  },
+  "@id": "urn:gooo:oci-attestation-credential-plan:v1",
+  "@type": "prov:Plan",
+  "prov:wasDerivedFrom": [
+    {
+      "@id": "https://github.com/actions/attest/blob/1e69f48acb82d1966a394da916b4c1698aa569d6/src/attest.ts"
+    },
+    {
+      "@id": "https://registry.npmjs.org/@sigstore/oci/-/oci-0.7.2.tgz"
+    }
+  ],
+  "action_ref": "actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6",
+  "credential_package": {
+    "name": "@sigstore/oci",
+    "version": "0.7.2",
+    "integrity": "sha512-dhqphH/gjg8IFB0xAeD1Ppb/aSNwA2HUG+7A5mVJwiZt6rn5YoYMVc+esZREdhQLZ1H4JFyGZlTQXaZYx/l7yQ==",
+    "reader_sha256": "dc36f6b27ce8ba7a802f1c0278bd094917eee2057cbdf1f06279a6b327fb74fc"
+  },
+  "writer_config": "job-private DOCKER_CONFIG/config.json",
+  "reader_config": "os.homedir()/.docker/config.json",
+  "bridge": "tools/registry_action_auth.py",
+  "original_bundle_sha256": "e8c5f6936322a1e3a6e61c953b4f2b2454589087ef7e9c8f6ef8d41f6164c83f",
+  "image": "ghcr.io/kimjooyoon/gooo-service-grant-mcp",
+  "digest": "sha256:a83d8fa57657bb877453cce7ed11f1ff1000a84b1e80c65a4e1c0b20196d3ee4",
+  "assembly_source": "6ff4e3a6c3baf9b518838bd35d2429decdf991bf",
+  "assembly_run": 39672180710,
+  "scope": "Static I/O contract and byte-pinned original public materials; not credential authority or a live recovery observation. Retained scan is a historical snapshot.",
+  "original_materials": {
+    "build-manifest.json": {
+      "bytes": 1300,
+      "sha256": "f2850cc0df561a4d3e04918a6cd82a7f71370edc0b92f3fda495cdc30ae55f6f"
+    },
+    "sbom.cdx.json": {
+      "bytes": 14579,
+      "sha256": "21dc8f17b376aa6ae084ff9acb1d840feda418028ef18c80b84fd24cb8d49a1e"
+    },
+    "scan.json": {
+      "bytes": 10962,
+      "sha256": "af4cb3a4da9795fa6da9f2b2f018d4379c8a0e808ceb92cf71b7487ac661d37a"
+    },
+    "trivy-db-version.json": {
+      "bytes": 192,
+      "sha256": "23a52d0c1600e311db5dbaaddbfd7224a434cf592e3c7267451470850584d74f"
+    },
+    "public-manifest.json": {
+      "bytes": 734,
+      "sha256": "a83d8fa57657bb877453cce7ed11f1ff1000a84b1e80c65a4e1c0b20196d3ee4"
+    }
+  }
+}

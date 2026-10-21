@@ -79,6 +79,41 @@ all eleven embedded Go module identities and the embedded Go version even though
 `scratch` has no operating-system packages. Notices with tooling-only scope do
 not imply that all those tools are present in the executable.
 
+## Recovering the original partial publication
+
+The original main-source run [39672180710](https://github.com/kimjooyoon/gooo-go-ports/actions/runs/39672180710)
+pushed one image successfully, then failed registry attestation transport because
+the pinned `@sigstore/oci`0.7.2 reader uses `os.homedir()/.docker/config.json`
+and ignores `DOCKER_CONFIG`. The build signature was already created on GitHub.
+Its original overall failure remains a failure; a recovery must not rerun the
+publisher, rebuild the image, or sign a replacement build statement.
+
+`registry/oci-recovery/` retains the exact public manifest, original signed bundle,
+original SBOM and historical scan materials. `contract.json` binds their bytes
+and the immutable action/dependency credential path. Its PROV-O Plan declaration
+is documentation and regression input, not an execution authorization or a safety
+proof. The retained scan is a snapshot, not a current vulnerability assessment.
+
+The separate `service-grant-oci-proof-recovery.yml` defaults to read-only checks.
+Only an explicit `recover` dispatch on this repository's default main, attempt1,
+can transport the fixed original bundle and sign the retained SBOM. Before any
+write, `gh attestation verify` checks the original bundle's signature against
+its exact manifest digest, original source/workflow/main identity and hosted
+runner requirement. The original signed bytes are transported unchanged.
+The new SBOM attestation names the same image digest but truthfully uses the
+new recovery workflow's source identity. Both proofs are then fetched from the
+registry and cryptographically checked against their distinct signers; complete
+verified build/SBOM contents must match the original retained statements.
+
+Both writer jobs temporarily copy only their private GHCR login to the actual
+reader path using `tools/registry_action_auth.py`. The helper stores the old
+configuration privately, restores its exact bytes and mode in an `always()`
+step, and refuses to overwrite concurrent changes. Neither the configuration
+nor its state/backup directory is uploaded. Tests exercise the actual pinned
+reader with a disposable fake home and synthetic credentials. Recovery results
+are pending until the manual workflow and both registry verification steps
+actually succeed; the checked-in materials alone are not evidence of recovery.
+
 ## Public visibility and readback gate
 
 GitHub documents that a first GHCR publication is private by default. Repository
