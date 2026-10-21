@@ -1,9 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"flag"
 	"fmt"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"sync/atomic"
@@ -188,6 +192,72 @@ func TestNativeSuiteWorkersReturnEarliestFailureAndJoinCancelledWork(t *testing.
 	case index := <-started:
 		t.Fatal("started a new suite after failure", index)
 	default:
+	}
+}
+
+func TestNativeSuiteWorkersParentCancellationRetainsObservedSemanticFailure(t *testing.T) {
+	outer := workerTestContext(t)
+	ctx, cancel := context.WithCancel(outer)
+	defer cancel()
+	started := make(chan int, 3)
+	releaseFailure := make(chan struct{})
+	finished := make(chan error, 1)
+	semantic := errors.New("current receipt activity identity differs")
+	var active atomic.Int32
+	go func() {
+		results, err := runNativeSuitesOrdered(ctx, workerTestSuites(3), 2, []int{2, 0, 1},
+			func(ctx context.Context, index int, s suite) (nativeSuiteResult, error) {
+				active.Add(1)
+				defer active.Add(-1)
+				started <- index
+				if index == 2 {
+					select {
+					case <-releaseFailure:
+						return nativeSuiteResult{}, semantic
+					case <-ctx.Done():
+						return nativeSuiteResult{}, ctx.Err()
+					}
+				}
+				<-ctx.Done()
+				return nativeSuiteResult{}, ctx.Err()
+			})
+		if results != nil {
+			finished <- fmt.Errorf("cancellation returned acceptance results")
+			return
+		}
+		finished <- err
+	}()
+	initial := map[int]bool{}
+	for range 2 {
+		select {
+		case index := <-started:
+			initial[index] = true
+		case <-outer.Done():
+			t.Fatal("initial workers did not start", outer.Err())
+		}
+	}
+	if !reflect.DeepEqual(initial, map[int]bool{2: true, 0: true}) {
+		t.Fatal("priority changed", initial)
+	}
+	close(releaseFailure)
+	// Index1 starts only after the coordinator has received index2's failure.
+	select {
+	case index := <-started:
+		if index != 1 {
+			t.Fatal("pending lower index changed", index)
+		}
+	case <-outer.Done():
+		t.Fatal("pending lower original index did not start", outer.Err())
+	}
+	cancel()
+	select {
+	case err := <-finished:
+		if !errors.Is(err, context.Canceled) || errors.Is(err, semantic) || active.Load() != 0 ||
+			!strings.Contains(err.Error(), "previously observed suite 2 example/worker:Suite02: "+semantic.Error()) {
+			t.Fatal("lost context outcome, observed diagnostic, or worker closure", err, active.Load())
+		}
+	case <-outer.Done():
+		t.Fatal("canceled workers did not join", outer.Err())
 	}
 }
 
@@ -571,6 +641,251 @@ func TestNativeSuiteWorkersOrderedParentCancellationSkipsPendingLowerAndJoins(t 
 	for index := 0; index < 3; index++ {
 		if calls[index].Load() != 0 {
 			t.Fatal("parent cancellation started pending lower index", index)
+		}
+	}
+}
+
+func TestNativeSuiteFailFastCancelsAllJoinsAndKeepsFirstFailure(t *testing.T) {
+	guard := workerTestContext(t)
+	ctx, cancel := context.WithCancel(guard)
+	defer cancel()
+	suites := workerTestSuites(7)
+	order := []int{4, 0, 6, 1, 2, 3, 5}
+	first, later := errors.New("first completed semantic failure"), errors.New("later lower-index failure")
+	calls := make([]atomic.Int32, len(suites))
+	var active atomic.Int32
+	started := make(chan int, len(suites))
+	releaseFailure := make(chan struct{})
+	canceled := make(chan int, 2)
+	releaseJoin := make(chan struct{})
+	finished := make(chan error, 1)
+	go func() {
+		results, err := runNativeSuitesOrderedPolicy(ctx, suites, 3, order, true,
+			func(suiteCtx context.Context, index int, _ suite) (nativeSuiteResult, error) {
+				calls[index].Add(1)
+				active.Add(1)
+				defer active.Add(-1)
+				started <- index
+				if index == 4 {
+					select {
+					case <-releaseFailure:
+						return nativeSuiteResult{}, first
+					case <-suiteCtx.Done():
+						return nativeSuiteResult{}, suiteCtx.Err()
+					}
+				}
+				<-suiteCtx.Done()
+				canceled <- index
+				select {
+				case <-releaseJoin:
+				case <-guard.Done():
+				}
+				if index == 0 {
+					return nativeSuiteResult{}, later
+				}
+				return nativeSuiteResult{}, suiteCtx.Err()
+			})
+		if results != nil {
+			finished <- errors.New("failure returned acceptance results")
+			return
+		}
+		finished <- err
+	}()
+	initial := map[int]bool{}
+	for range 3 {
+		select {
+		case index := <-started:
+			initial[index] = true
+		case <-guard.Done():
+			t.Fatal("initial workers did not start", guard.Err())
+		}
+	}
+	if !reflect.DeepEqual(initial, map[int]bool{4: true, 0: true, 6: true}) {
+		t.Fatal("initial dispatch changed", initial)
+	}
+	close(releaseFailure)
+	stopped := map[int]bool{}
+	for range 2 {
+		select {
+		case index := <-canceled:
+			stopped[index] = true
+		case <-guard.Done():
+			t.Fatal("active lower and higher workers not canceled", guard.Err())
+		}
+	}
+	if !reflect.DeepEqual(stopped, map[int]bool{0: true, 6: true}) {
+		t.Fatal("fail-fast canceled only one index direction", stopped)
+	}
+	select {
+	case err := <-finished:
+		t.Fatal("returned before joining canceled callbacks", err)
+	default:
+	}
+	// Both canceled notifications prove the coordinator selected the semantic
+	// failure before this later parent cancellation.
+	cancel()
+	close(releaseJoin)
+	select {
+	case err := <-finished:
+		if !errors.Is(err, first) || errors.Is(err, later) || errors.Is(err, context.Canceled) || active.Load() != 0 ||
+			!strings.Contains(err.Error(), "suite 4 example/worker:Suite04:") {
+			t.Fatal("first failure or full join changed", err, active.Load())
+		}
+	case <-guard.Done():
+		t.Fatal("fail-fast callbacks did not join", guard.Err())
+	}
+	for index := range suites {
+		want := int32(0)
+		if initial[index] {
+			want = 1
+		}
+		if calls[index].Load() != want {
+			t.Fatal("pending suite ran or active repeated", index, calls[index].Load())
+		}
+	}
+}
+
+func TestNativeSuiteFailFastParentCancellationPrecedesLateSemanticFailure(t *testing.T) {
+	guard := workerTestContext(t)
+	ctx, cancel := context.WithCancel(guard)
+	defer cancel()
+	started := make(chan int, 2)
+	release := make(chan struct{})
+	finished := make(chan error, 1)
+	semantic := errors.New("failure returned only after parent cancellation")
+	var active atomic.Int32
+	go func() {
+		_, err := runNativeSuitesOrderedPolicy(ctx, workerTestSuites(4), 2, []int{3, 0, 2, 1}, true,
+			func(suiteCtx context.Context, index int, _ suite) (nativeSuiteResult, error) {
+				active.Add(1)
+				defer active.Add(-1)
+				started <- index
+				if index == 3 {
+					select {
+					case <-release:
+					case <-guard.Done():
+					}
+					return nativeSuiteResult{}, semantic
+				}
+				<-suiteCtx.Done()
+				return nativeSuiteResult{}, suiteCtx.Err()
+			})
+		finished <- err
+	}()
+	for range 2 {
+		select {
+		case <-started:
+		case <-guard.Done():
+			t.Fatal("workers did not start", guard.Err())
+		}
+	}
+	cancel()
+	close(release)
+	select {
+	case err := <-finished:
+		if !errors.Is(err, context.Canceled) || errors.Is(err, semantic) || active.Load() != 0 {
+			t.Fatal("late semantic failure replaced parent outcome or join", err, active.Load())
+		}
+	case <-guard.Done():
+		t.Fatal("canceled callbacks did not join", guard.Err())
+	}
+	select {
+	case index := <-started:
+		t.Fatal("pending work started after parent cancellation", index)
+	default:
+	}
+}
+
+func TestNativeSuiteFailFastSuccessPreservesAllOriginalIndices(t *testing.T) {
+	const count = 82
+	suites := workerTestSuites(count)
+	order := make([]int, count)
+	for index := range order {
+		order[index] = count - 1 - index
+	}
+	calls := make([]atomic.Int32, count)
+	results, err := runNativeSuitesOrderedPolicy(workerTestContext(t), suites, 3, order, true,
+		func(_ context.Context, index int, s suite) (nativeSuiteResult, error) {
+			calls[index].Add(1)
+			return nativeSuiteResult{Observation: observation{Activity: s.Activity, Cases: index + 1}}, nil
+		})
+	if err != nil || len(results) != count {
+		t.Fatal("successful run incomplete", len(results), err)
+	}
+	for index, result := range results {
+		if calls[index].Load() != 1 || result.Observation.Activity != suites[index].Activity || result.Observation.Cases != index+1 {
+			t.Fatal("success skipped, repeated or reordered original index", index)
+		}
+	}
+}
+
+func TestNativeSuiteTimeoutBoundsAndOptInSummary(t *testing.T) {
+	for _, timeout := range []time.Duration{time.Second, defaultNativeSuiteTimeout, 60 * time.Minute} {
+		if err := validateNativeSuiteTimeout(timeout); err != nil {
+			t.Fatal("valid timeout rejected", timeout, err)
+		}
+	}
+	for _, timeout := range []time.Duration{-time.Second, 0, time.Second - time.Nanosecond, 60*time.Minute + time.Nanosecond} {
+		if err := validateNativeSuiteTimeout(timeout); err == nil {
+			t.Fatal("invalid timeout accepted", timeout)
+		}
+	}
+	original := map[string]any{"cases": 123, "scope": "unchanged"}
+	addNativeExecutionSummary(original, false, false, defaultNativeSuiteTimeout)
+	if !reflect.DeepEqual(original, map[string]any{"cases": 123, "scope": "unchanged"}) {
+		t.Fatal("default summary changed", original)
+	}
+	for _, failFast := range []bool{false, true} {
+		summary := map[string]any{"cases": 123}
+		addNativeExecutionSummary(summary, true, failFast, 60*time.Minute)
+		selection := "earliest-catalog-index"
+		if failFast {
+			selection = "first-completed-uncanceled"
+		}
+		want := map[string]any{"cases": 123, "native_fail_fast": failFast, "native_timeout_ns": int64(60 * time.Minute), "native_failure_selection": selection}
+		if !reflect.DeepEqual(summary, want) {
+			t.Fatal("explicit policy summary differs", summary, want)
+		}
+	}
+}
+
+func TestNativeExecutionCLIRefusesBeforeUpstreamOrOutput(t *testing.T) {
+	root := t.TempDir()
+	t.Chdir(root)
+	target := filepath.Join(root, "uncreated-parent", "evidence")
+	priorFlags, priorArgs := flag.CommandLine, os.Args
+	t.Cleanup(func() { flag.CommandLine, os.Args = priorFlags, priorArgs })
+	for _, test := range []struct {
+		args []string
+		want string
+	}{
+		{[]string{"--out", target, "--timeout=0"}, "--timeout must be between"},
+		{[]string{"--out", target, "--timeout=-1s"}, "--timeout must be between"},
+		{[]string{"--out", target, "--timeout=999ms"}, "--timeout must be between"},
+		{[]string{"--out", target, "--timeout=60m1ns"}, "--timeout must be between"},
+		{[]string{"--out", target, "--timeout=invalid"}, "invalid value"},
+		{[]string{"--fail-fast"}, "require --out"},
+		{[]string{"--timeout=1s"}, "require --out"},
+		{[]string{"--browser-fixtures=browser.json", "--fail-fast=false"}, "cannot be used with --browser-fixtures"},
+		{[]string{"--browser-fixtures=browser.json", "--timeout=30m"}, "cannot be used with --browser-fixtures"},
+		{[]string{"--ci-shard-plan-out=plan.json", "--ci-shard-context=unused", "--ci-shard-count=2", "--fail-fast=false"}, "full execution flags cannot be combined"},
+		{[]string{"--ci-shard-plan-out=plan.json", "--ci-shard-context=unused", "--ci-shard-count=2", "--timeout=30m"}, "full execution flags cannot be combined"},
+		{[]string{"--ci-shard-execute-out=native", "--ci-shard-context=unused", "--ci-shard-plan=unused", "--ci-shard-index=0", "--fail-fast=false"}, "no full or metadata output flags"},
+		{[]string{"--ci-shard-verify-out=verified", "--ci-shard-context=unused", "--ci-shard-plan=unused", "--ci-shard-partial=unused", "--ci-shard-evidence=unused", "--timeout=30m"}, "no full or metadata output flags"},
+	} {
+		flag.CommandLine = flag.NewFlagSet("native-execution-test", flag.ContinueOnError)
+		flag.CommandLine.SetOutput(&bytes.Buffer{})
+		os.Args = append([]string{"verify"}, test.args...)
+		if err := run(); err == nil || !strings.Contains(err.Error(), test.want) {
+			t.Fatal("policy flag not refused before source/output work", test.args, err)
+		}
+		if _, err := os.Stat(filepath.Dir(target)); !os.IsNotExist(err) {
+			t.Fatal("refusal created output parent", err)
+		}
+		for _, name := range []string{"browser.json", "plan.json", "native", "verified"} {
+			if _, err := os.Stat(name); !os.IsNotExist(err) {
+				t.Fatal("refusal created output", name, err)
+			}
 		}
 	}
 }

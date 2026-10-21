@@ -195,7 +195,7 @@ def load_contract(raw, frozen_prefix, frozen_sources):
 
 
 REVIEWED_PATH = "cmd/verify/testdata/native-verification-contract-v1.json"
-REVIEWED_RAW_SHA256 = "b15cb329b36da4c0e19ef26cbb3f3c72f3e639701bc790cbd873cf75c0a24c13"
+REVIEWED_RAW_SHA256 = "f9549c87045a92db2b21215263021797badf3a655327b7d6b286acced4884d78"
 REVIEWED_PREFIX = FrozenGuard("b19b5517f8e9716affb0f75fd07045b8217cdaf1", 80,
     "sha256:9020c39f7746e766ef38b6d5854d97c14fcd386638d038937cf8f178aec52478")
 # The source baseline binds immutable main 057bc6d8 path/mode identities.

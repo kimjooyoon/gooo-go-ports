@@ -287,7 +287,7 @@ def validate_plan(root,reader,H,plan):
     p=shape(plan,PLAN_FIELDS);need(p['schema'] == 'gooo/native-ci-shard-plan/v1','current shard plan schema')
     valid_digest(p['plan_sha256']);valid_digest(p['contract_sha256']);p['run']=ordered_run(p['run'])
     expected=H.reviewed_contract(root,reader.read)
-    need((expected.suite_count,expected.total_cases,expected.total_batches,expected.source_count) == (82,175649,2305,288), 'current reviewed full population required')
+    need((expected.suite_count,expected.total_cases,expected.total_batches,expected.source_count) == (82,175649,2305,293), 'current reviewed full population required')
     need(equal(p['profiles'],expected.document['profiles']) and equal(p['suites'],expected.document['suites']) and equal(p['cases'],expected.total_cases) and equal(p['batches'],expected.total_batches),'exact reviewed profiles, original suites and totals')
     p['profiles']=shape(p['profiles'],('case','workspace'))
     p['suites']=[shape(row,SUITE_FIELDS) for row in p['suites']]
@@ -297,7 +297,7 @@ def validate_plan(root,reader,H,plan):
     modes={row['path']:row['mode'] for row in expected.document['sources']}
     need(not set(modes).intersection(READER_SOURCES),'legacy and experimental reader rosters must not overlap')
     modes.update({name:'100644' for name in READER_SOURCES})
-    need(set(p['sources']) == set(modes) and len(modes) == 305,'exact legacy288 plus explicit17 reader sources')
+    need(set(p['sources']) == set(modes) and len(modes) == 310,'exact reviewed293 plus explicit17 reader sources')
     source_bytes={}
     for name,mode in modes.items():
         raw=reader.read(root/name);observed=p['sources'][name]

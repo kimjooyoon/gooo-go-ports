@@ -112,7 +112,13 @@ func pathAliasLowerBody(body string, definitions map[string]pathAliasBody) strin
 	return output.String()
 }
 
+// Preserve the historical839 synthetic fixture expectation. Current inspection
+// supplies an independently selected compiler profile to WithIdentity.
 func pathAliasPureCalls(definitions map[string]pathAliasBody) map[string]any {
+	return pathAliasPureCallsWithIdentity(definitions, legacyPureCallIdentityProfile)
+}
+
+func pathAliasPureCallsWithIdentity(definitions map[string]pathAliasBody, ids pureCallIdentityProfile) map[string]any {
 	names := make([]string, 0, len(definitions))
 	for name := range definitions {
 		names = append(names, name)
@@ -124,7 +130,7 @@ func pathAliasPureCalls(definitions map[string]pathAliasBody) map[string]any {
 	activities, sites := []any{}, []any{}
 	for _, name := range names {
 		d := definitions[name]
-		activities = append(activities, map[string]any{"activity": map[string]any{"package_path": d.Package, "activity": name, "lowered_name": d.Lowered}, "activity_id": decimalPayloadDerivedID(d.Namespace, name), "lowered_activity_id": decimalPayloadDerivedID("gooo_workspace", d.Lowered), "source": d.Source, "source_body_sha256": contentDigest([]byte(d.Declaration.Body))})
+		activities = append(activities, map[string]any{"activity": map[string]any{"package_path": d.Package, "activity": name, "lowered_name": d.Lowered}, "activity_id": ids.original(d.Namespace, name, d.Declaration.ID), "lowered_activity_id": ids.lowered(d.Lowered, d.Declaration.ID), "source": d.Source, "source_body_sha256": contentDigest([]byte(d.Declaration.Body))})
 		for _, match := range pathAliasCall.FindAllStringSubmatchIndex(d.Declaration.Body, -1) {
 			token := d.Declaration.Body[match[4]:match[5]]
 			callee := strings.TrimPrefix(token, "paths.")
@@ -234,7 +240,11 @@ func inspectPathAliasABI(raw []byte, s suite, identity expectedIdentity) error {
 			return fmt.Errorf("path alias changed lowered source body/signature")
 		}
 	}
-	if !decimalPayloadSame(p["pure_calls"], pathAliasPureCalls(definitions)) {
+	ids, err := selectPureCallIdentityProfile(identity.CompilerRevision)
+	if err != nil {
+		return err
+	}
+	if !decimalPayloadSame(p["pure_calls"], pathAliasPureCallsWithIdentity(definitions, ids)) {
 		return fmt.Errorf("path alias original pure-call identities/sites")
 	}
 	sourceSHA := contentDigest([]byte(text))

@@ -1388,6 +1388,15 @@ CURRENT_COMPILER_BLOCK_PAIRS += ((
     '          python3 -B tools/export-etag-project.py --out "$PWD/out/etag-project"\n',
 ),)
 
+# The current205 full native run explicitly selects safe first-failure joining
+# and a finite60-minute verifier budget. The job keeps15 minutes for setup,
+# later native gates and failure artifacts. All82 suites/cases remain required.
+CURRENT_COMPILER_BLOCK_PAIRS += (
+    ('  native-execution:\n    runs-on: ubuntu-24.04\n    timeout-minutes: 40\n', '  native-execution:\n    runs-on: ubuntu-24.04\n    timeout-minutes: 75\n'),
+    ('          go run -mod=readonly ./cmd/verify --workers 3 --case-profile uuid-and-literal-report-compact-v1 --workspace-profile dependency-closure-v1 --suite-order largest-corpus-first --out out/ci --timing-out out/ci/timing.jsonl\n', '          go run -mod=readonly ./cmd/verify --workers 3 --case-profile uuid-and-literal-report-compact-v1 --workspace-profile dependency-closure-v1 --suite-order largest-corpus-first --fail-fast --timeout 60m --out out/ci --timing-out out/ci/timing.jsonl\n'),
+    ('            .native_suite_workers == 3 and\n            .suite_order == "largest-corpus-first" and\n', '            .native_suite_workers == 3 and\n            .native_fail_fast == true and\n            .native_timeout_ns == 3600000000000 and\n            .native_failure_selection == "first-completed-uncanceled" and\n            .suite_order == "largest-corpus-first" and\n'),
+)
+
 def project_current_compiler_profile(text):
     lines = text.splitlines(keepends=True)
     expected_revision_count = sum(new.count(CURRENT_COMPILER_REVISION) * count
@@ -2006,6 +2015,23 @@ class WorkflowScopeTests(unittest.TestCase):
                 validate(self.text.replace(line, "", 1))
 
     def test_full_native_ci_binds_three_workers_and_timing(self):
+        # Exact opt-in flags, recorded outcome policy and finite budgets are
+        # bound before the historical inverse projection runs.
+        current = WORKFLOW.read_text()
+        for before, after in (
+                (" --fail-fast --timeout 60m", ""),
+                (" --fail-fast --timeout 60m", " --fail-fast=false --timeout 60m"),
+                (" --fail-fast --timeout 60m", " --fail-fast --timeout 30m"),
+                (" --fail-fast --timeout 60m", " --fail-fast --timeout 60m --timeout 30m"),
+                ('.native_fail_fast == true and', '.native_fail_fast == false and'),
+                ('.native_timeout_ns == 3600000000000 and', '.native_timeout_ns == 1800000000000 and'),
+                ('.native_failure_selection == "first-completed-uncanceled" and',
+                 '.native_failure_selection == "earliest-catalog-index" and'),
+                ('  native-execution:\n    runs-on: ubuntu-24.04\n    timeout-minutes: 75\n',
+                 '  native-execution:\n    runs-on: ubuntu-24.04\n    timeout-minutes: 150\n')):
+            self.assertEqual(current.count(before), 1)
+            with self.subTest(native_budget=after), self.assertRaises(ValueError):
+                project_current_compiler_profile(current.replace(before, after, 1))
         for workers in (1, 2, 4, 5):
             for before, after in (("--workers 3 --case-profile", f"--workers {workers} --case-profile"),
                                   (".native_suite_workers == 3 and", f".native_suite_workers == {workers} and"),

@@ -7,9 +7,31 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 )
 
 const maxNativeSuiteWorkers = 4
+const defaultNativeSuiteTimeout = 30 * time.Minute
+
+func validateNativeSuiteTimeout(timeout time.Duration) error {
+	if timeout < time.Second || timeout > 60*time.Minute {
+		return fmt.Errorf("--timeout must be between 1s and 60m")
+	}
+	return nil
+}
+
+func addNativeExecutionSummary(summary map[string]any, requested, failFast bool, timeout time.Duration) {
+	if !requested {
+		return
+	}
+	selection := "earliest-catalog-index"
+	if failFast {
+		selection = "first-completed-uncanceled"
+	}
+	summary["native_fail_fast"] = failFast
+	summary["native_timeout_ns"] = int64(timeout)
+	summary["native_failure_selection"] = selection
+}
 
 type nativeSuiteOrder string
 
@@ -96,6 +118,14 @@ func runNativeSuites(ctx context.Context, suites []suite, workers int,
 // canceled, and every started goroutine is joined before returning.
 func runNativeSuitesOrdered(ctx context.Context, suites []suite, workers int, order []int,
 	verify func(context.Context, int, suite) (nativeSuiteResult, error)) ([]nativeSuiteResult, error) {
+	return runNativeSuitesOrderedPolicy(ctx, suites, workers, order, false, verify)
+}
+
+// Fail-fast is opt-in. Its first uncanceled failure closes dispatch and cancels
+// every active suite context, but still joins every started callback. Commands
+// retain their existing parent context and finish the active complete batch.
+func runNativeSuitesOrderedPolicy(ctx context.Context, suites []suite, workers int, order []int, failFast bool,
+	verify func(context.Context, int, suite) (nativeSuiteResult, error)) ([]nativeSuiteResult, error) {
 	if err := validateNativeSuiteWorkers(workers); err != nil {
 		return nil, err
 	}
@@ -115,9 +145,10 @@ func runNativeSuitesOrdered(ctx context.Context, suites []suite, workers int, or
 		return nil, err
 	}
 	type completion struct {
-		index  int
-		result nativeSuiteResult
-		err    error
+		index        int
+		result       nativeSuiteResult
+		err          error
+		contextError error
 	}
 	completed := make(chan completion, workers)
 	var joined sync.WaitGroup
@@ -125,9 +156,16 @@ func runNativeSuitesOrdered(ctx context.Context, suites []suite, workers int, or
 	results := make([]nativeSuiteResult, len(suites))
 	next, failed := 0, len(suites)
 	var failure error
+	fastFailureIndex := len(suites)
+	var fastFailure error
+	// Keep a completed, uncanceled failure for diagnostics if the parent later
+	// expires while earlier original indices are still being checked. This does
+	// not select the outcome or change dispatch, cancellation, or error priority.
+	diagnosticIndex := len(suites)
+	var diagnosticFailure error
 	parentDone := ctx.Done()
 	start := func() {
-		for next < len(dispatch) && len(active) < workers && ctx.Err() == nil {
+		for next < len(dispatch) && len(active) < workers && ctx.Err() == nil && fastFailure == nil {
 			index := dispatch[next]
 			next++
 			if index > failed {
@@ -145,7 +183,7 @@ func runNativeSuitesOrdered(ctx context.Context, suites []suite, workers int, or
 				if err == nil {
 					result, err = verify(suiteContext, index, suites[index])
 				}
-				completed <- completion{index, result, err}
+				completed <- completion{index, result, err, suiteContext.Err()}
 			}()
 		}
 	}
@@ -161,6 +199,18 @@ func runNativeSuitesOrdered(ctx context.Context, suites []suite, workers int, or
 			active[done.index]()
 			delete(active, done.index)
 			results[done.index] = done.result
+			if done.err != nil && done.contextError == nil && done.index < diagnosticIndex {
+				diagnosticIndex, diagnosticFailure = done.index, done.err
+			}
+			// A parent cancellation already visible at this boundary retains its
+			// context outcome. Once selected, a genuine uncanceled failure is not
+			// replaced by canceled callbacks or a later deadline while joining.
+			if failFast && fastFailure == nil && done.err != nil && done.contextError == nil && ctx.Err() == nil {
+				fastFailureIndex, fastFailure = done.index, done.err
+				for _, cancel := range active {
+					cancel()
+				}
+			}
 			if done.err != nil && done.index < failed {
 				failed, failure = done.index, done.err
 				for index, cancel := range active {
@@ -173,7 +223,15 @@ func runNativeSuitesOrdered(ctx context.Context, suites []suite, workers int, or
 		}
 	}
 	joined.Wait()
+	if fastFailure != nil {
+		s := suites[fastFailureIndex]
+		return nil, fmt.Errorf("suite %d %s:%s: %w", fastFailureIndex, s.Package, s.Activity, fastFailure)
+	}
 	if err := ctx.Err(); err != nil {
+		if diagnosticFailure != nil {
+			s := suites[diagnosticIndex]
+			return nil, fmt.Errorf("%w; previously observed suite %d %s:%s: %v", err, diagnosticIndex, s.Package, s.Activity, diagnosticFailure)
+		}
 		return nil, err
 	}
 	if failure != nil {

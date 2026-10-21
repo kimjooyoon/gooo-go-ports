@@ -117,7 +117,7 @@ jobs:
           retention-days: 7
   native-execution:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 75
     env:
       GOTOOLCHAIN: local
       GOWORK: 'off'
@@ -354,11 +354,14 @@ jobs:
           python3 -I -B tools/native_verification_contract.py --root "$PWD" > out/native-contract-expected.json
           go mod download golang.org/x/net golang.org/x/text
           go mod verify
-          go run -mod=readonly ./cmd/verify --workers 3 --case-profile uuid-and-literal-report-compact-v1 --workspace-profile dependency-closure-v1 --suite-order largest-corpus-first --out out/ci --timing-out out/ci/timing.jsonl
+          go run -mod=readonly ./cmd/verify --workers 3 --case-profile uuid-and-literal-report-compact-v1 --workspace-profile dependency-closure-v1 --suite-order largest-corpus-first --fail-fast --timeout 60m --out out/ci --timing-out out/ci/timing.jsonl
           jq -e --slurpfile expected out/native-contract-expected.json '
             $expected[0] as $e |
             .schema == "gooo/go-ports-differential/v1" and
             .native_suite_workers == 3 and
+            .native_fail_fast == true and
+            .native_timeout_ns == 3600000000000 and
+            .native_failure_selection == "first-completed-uncanceled" and
             .suite_order == "largest-corpus-first" and
             .planned_dispatch_indices == (.runs | to_entries | sort_by([-.value.cases, .key]) | map(.key)) and
             .go_version == "go1.27.3" and

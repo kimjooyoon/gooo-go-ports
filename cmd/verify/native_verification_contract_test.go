@@ -81,7 +81,7 @@ func TestProductionVersionFreezesCurrentSuffixAndAllReaderPaths(t *testing.T) {
 			continue
 		}
 		for _, role := range source.Roles {
-			if role != "contract-reader" {
+			if role != "contract-reader" && role != "explicit-observer-input" {
 				continue
 			}
 			t.Run(source.Path, func(t *testing.T) {
@@ -405,5 +405,55 @@ func TestSourceAndSuiteMembership(t *testing.T) {
 	for _, path := range []string{"", "/abs", "a/../b", "a/./b", "../b", "a//b", "a/", "a\\b", "a:b", "a\x00b", "a\x7fb", "é", "a\nb"} {
 		t.Run("unsafe-source/"+path, func(t *testing.T) { rejectMutation(t, func(m map[string]any) { sourceRow(m, 2)["path"] = path }, "") })
 		t.Run("unsafe-package/"+path, func(t *testing.T) { rejectMutation(t, func(m map[string]any) { suiteRow(m, 2)["package"] = path }, "") })
+	}
+}
+
+// New observer dependencies extend only the current roster. The historical
+// path/mode baseline and suite prefix stay independently pinned and unchanged.
+func TestProductionAdditiveObserverInputsPreserveHistoricalBaseline(t *testing.T) {
+	c, err := nativeExpectedVerificationContract()
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]bool{
+		"cmd/verify/pure_call_identity.go":           true,
+		"cmd/verify/pure_call_identity_test.go":      true,
+		"internal/jsonkeys/keys.go":                  true,
+		"internal/jsonkeys/keys_test.go":             true,
+		"internal/jsonkeys/keys_byte_walker_test.go": true,
+	}
+	seen := map[string]bool{}
+	baseline := []baselineSourceIdentity{}
+	readers := 0
+	for _, row := range c.Sources {
+		if row.Baseline {
+			baseline = append(baseline, baselineSourceIdentity{row.Path, row.Mode})
+			continue
+		}
+		if len(row.Roles) == 1 && row.Roles[0] == "contract-reader" {
+			readers++
+			continue
+		}
+		if !want[row.Path] || row.Mode != "100644" || row.Owner != "native-ci" ||
+			len(row.Roles) != 1 || row.Roles[0] != "explicit-observer-input" {
+			t.Fatal("unexpected added observer row", row)
+		}
+		seen[row.Path] = true
+	}
+	if len(c.Sources) != 293 || len(seen) != len(want) || readers != 5 {
+		t.Fatal("exact five observers plus original five readers required", len(c.Sources), seen, readers)
+	}
+	for name := range want {
+		if !seen[name] {
+			t.Fatal("missing observer dependency", name)
+		}
+	}
+	digest, err := canonicalContractDigest(baseline)
+	if err != nil || len(baseline) != 283 || digest != "sha256:2b7247008db8ee9d7d92374bb3d01a317e3e35c2df009cfe943ac153037f2184" ||
+		c.SourceBaseline != nativeFrozenSourceGuard() || c.Prefix != nativeFrozenPrefixGuard() {
+		t.Fatal("historical source baseline or prefix changed", len(baseline), digest, err)
+	}
+	if len(c.Suites) != 82 || c.TotalCases != 175649 || c.TotalBatches != 2305 || c.TimingEvents != 2471 {
+		t.Fatal("observer-only additions changed native obligations")
 	}
 }

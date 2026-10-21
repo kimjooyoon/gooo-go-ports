@@ -94,7 +94,7 @@ class SyntheticFixture:
         self.index['shards']=[shard];self.index_path.write_bytes(raw_json(self.index))
 
     def validate_fixture_plan(self,root,reader,host,plan):
-        # Deliberately replace ONLY the current full305-source/82-suite loading.
+        # Deliberately replace ONLY the current full310-source/82-suite loading.
         # The real production validate_plan remains mandatory outside this test.
         R.need(R.equal(plan,self.plan),'fixture plan identity')
         for name,raw in self.source_bytes.items():R.need(reader.read(root/name) == raw,'synthetic original source drift')

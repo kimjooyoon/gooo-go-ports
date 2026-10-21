@@ -1755,6 +1755,24 @@
       "baseline": true
     },
     {
+      "path": "cmd/verify/pure_call_identity.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": false
+    },
+    {
+      "path": "cmd/verify/pure_call_identity_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": false
+    },
+    {
       "path": "cmd/verify/simple_fold_exhaustive_test.go",
       "mode": "100644",
       "owner": "native-ci",
@@ -2771,6 +2789,33 @@
         "explicit-observer-input"
       ],
       "baseline": true
+    },
+    {
+      "path": "internal/jsonkeys/keys.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": false
+    },
+    {
+      "path": "internal/jsonkeys/keys_byte_walker_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": false
+    },
+    {
+      "path": "internal/jsonkeys/keys_test.go",
+      "mode": "100644",
+      "owner": "native-ci",
+      "roles": [
+        "explicit-observer-input"
+      ],
+      "baseline": false
     },
     {
       "path": "literal-cut-report.workspace.json",

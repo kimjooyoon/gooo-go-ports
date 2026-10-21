@@ -169,7 +169,7 @@ class FreshHostTests(unittest.TestCase):
         self.assertIn('examples/diagnostic-header-addition/main.gooo',roster)
         self.assertIn('cmd/verify/header_addition_corpus.go',roster)
         self.assertIn('ports/autobot/ai_lines.gooo',roster)
-        self.assertEqual(len(roster),288)
+        self.assertEqual(len(roster),293)
         self.assertEqual(len(catalog['packages']),56)
         self.assertEqual(sum(len(p['sources']) for p in catalog['packages']),67)
         for name in ('ports/net/textproto/canonical.gooo','examples/canonical-header-key/main.gooo','cmd/verify/canonical_header_contracts.go','cmd/verify/canonical_header_corpus_test.go','examples/canonical-header-key/manual20.json','third_party/go/net/textproto/reader.go.txt','cmd/verify/etag_contracts.go','cmd/verify/etag_native_test.go','ports/net/http/etag.gooo','examples/strong-validator-facts/main.gooo','examples/strong-validator-facts/manual247.json','third_party/go/net/http/fs.go.txt','etag-scan.workspace.json','etag-strong-match.workspace.json','strong-validator-facts.workspace.json'):
@@ -239,7 +239,7 @@ class FreshHostTests(unittest.TestCase):
         qualified=[row['path'] for row in expected.document['sources'] if 'catalog-source' in row['roles']]
         catalog={'packages':[{'path':'synthetic/membership-only','sources':qualified}]}
         roster=CHECK.source_roster(ROOT,catalog)
-        self.assertEqual(len(roster),288)
+        self.assertEqual(len(roster),293)
         self.assertTrue(set(CHECK.OWN_FILES).issubset(roster))
         self.assertTrue(set(CHECK.CONTRACT.CONTRACT_FILES).issubset(roster))
         self.assertEqual(sum('catalog-source' in row['roles'] for row in expected.document['sources']),67)
