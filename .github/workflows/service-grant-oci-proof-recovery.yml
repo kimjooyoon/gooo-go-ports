@@ -1,0 +1,153 @@
+name: Recover original preview16 OCI proofs without another image push
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/service-grant-mcp-oci.yml'
+      - '.github/workflows/service-grant-oci-proof-recovery.yml'
+      - 'tools/registry_action_auth*'
+      - 'tools/oci_action_contract*'
+      - 'tools/oci-proof-transport/**'
+      - 'registry/oci-recovery/**'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Read-only checks by default; recover transports the fixed original proof and signs its retained SBOM
+        type: choice
+        options: [verify, recover]
+        default: verify
+        required: true
+
+permissions:
+  contents: read
+concurrency:
+  group: gooo-preview16-oci-publisher
+  cancel-in-progress: false
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.19.0'
+      - name: Test the actual pinned reader and original material bindings without real credentials
+        run: |
+          set -euo pipefail
+          timeout -k 5s 30s python3 -I -B -m unittest discover -s tools -p registry_action_auth_test.py -v
+          timeout -k 5s 120s npm ci --prefix tools/oci-proof-transport --ignore-scripts --no-audit --no-fund
+          timeout -k 5s 30s node --test tools/oci-proof-transport/attach.test.cjs tools/oci-proof-transport/credentials.test.cjs
+          node tools/oci-proof-transport/materials.cjs
+          python3 -I -B -m unittest discover -s tools -p oci_action_contract_test.py -v
+          python3 -I -B tools/oci_action_contract.py
+
+  recover:
+    needs: verify
+    if: >-
+      github.event_name == 'workflow_dispatch' && inputs.mode == 'recover' &&
+      github.repository == 'kimjooyoon/gooo-go-ports' && github.ref == 'refs/heads/main' &&
+      github.event.repository.default_branch == 'main' && github.run_attempt == '1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    env:
+      IMAGE: ghcr.io/kimjooyoon/gooo-service-grant-mcp
+      ORIGINAL_DIGEST: sha256:a83d8fa57657bb877453cce7ed11f1ff1000a84b1e80c65a4e1c0b20196d3ee4
+      ORIGINAL_SOURCE: 6ff4e3a6c3baf9b518838bd35d2429decdf991bf
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.19.0'
+      - name: Verify the original signed build statement and exact retained materials before any write
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p out/recovery "$RUNNER_TEMP/gooo-push-config"
+          node tools/oci-proof-transport/materials.cjs > out/recovery/material-bindings.json
+          timeout -k 5s 120s gh attestation verify registry/oci-recovery/public-manifest.json \
+            --repo kimjooyoon/gooo-go-ports --bundle registry/oci-recovery/original-build.bundle.json \
+            --signer-workflow kimjooyoon/gooo-go-ports/.github/workflows/service-grant-mcp-oci.yml \
+            --signer-digest "$ORIGINAL_SOURCE" --source-digest "$ORIGINAL_SOURCE" \
+            --source-ref refs/heads/main --deny-self-hosted-runners \
+            --predicate-type https://slsa.dev/provenance/v1 --format json > out/recovery/original-build-verification.json
+          timeout -k 5s 120s npm ci --prefix tools/oci-proof-transport --ignore-scripts --no-audit --no-fund
+      - name: Authenticate only proof transport and stage the pinned reader's credential path
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$GHCR_TOKEN" | timeout -k 5s 30s docker --config "$RUNNER_TEMP/gooo-push-config" login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          timeout -k 5s 15s python3 -I -B tools/registry_action_auth.py stage \
+            --home "$HOME" --state-dir "$RUNNER_TEMP/gooo-action-auth" \
+            --private-config "$RUNNER_TEMP/gooo-push-config/config.json"
+      - name: Transport the original signed build bundle without re-signing or pushing an image
+        run: |
+          set -euo pipefail
+          printf '%s\n' '{"original_run":39672180710,"image_push_attempts":0,"original_build_resigned":false,"transport_attempts":1}' > out/recovery/transport-intent.json
+          timeout -k 10s 150s node tools/oci-proof-transport/attach.cjs \
+            registry/oci-recovery/original-build.bundle.json out/recovery/original-build-transport.json
+      - name: Sign the exact retained original SBOM under this recovery workflow identity
+        id: sbom
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ env.ORIGINAL_DIGEST }}
+          sbom-path: registry/oci-recovery/sbom.cdx.json
+          push-to-registry: true
+          create-storage-record: false
+      - name: Verify both registry proofs against their distinct original and recovery signers
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SBOM_BUNDLE: ${{ steps.sbom.outputs.bundle-path }}
+        run: |
+          set -euo pipefail
+          cp -- "$SBOM_BUNDLE" out/recovery/recovery-sbom.bundle.json
+          timeout -k 5s 120s gh attestation verify "oci://$IMAGE@$ORIGINAL_DIGEST" \
+            --bundle-from-oci --repo kimjooyoon/gooo-go-ports \
+            --signer-workflow kimjooyoon/gooo-go-ports/.github/workflows/service-grant-mcp-oci.yml \
+            --signer-digest "$ORIGINAL_SOURCE" --source-digest "$ORIGINAL_SOURCE" \
+            --source-ref refs/heads/main --deny-self-hosted-runners \
+            --predicate-type https://slsa.dev/provenance/v1 --format json > out/recovery/registry-original-build-verification.json
+          timeout -k 5s 120s gh attestation verify "oci://$IMAGE@$ORIGINAL_DIGEST" \
+            --bundle-from-oci --repo kimjooyoon/gooo-go-ports \
+            --signer-workflow kimjooyoon/gooo-go-ports/.github/workflows/service-grant-oci-proof-recovery.yml \
+            --signer-digest "$GITHUB_SHA" --source-digest "$GITHUB_SHA" \
+            --source-ref refs/heads/main --deny-self-hosted-runners \
+            --predicate-type https://cyclonedx.org/bom --format json > out/recovery/registry-recovery-sbom-verification.json
+          node tools/oci-proof-transport/verify-results.cjs \
+            out/recovery/registry-original-build-verification.json \
+            out/recovery/registry-recovery-sbom-verification.json > out/recovery/verified-content-bindings.json
+      - name: Restore the previous default credentials even after partial staging or transport failure
+        if: always()
+        run: |
+          set -euo pipefail
+          if test -f "$RUNNER_TEMP/gooo-action-auth/state.json"; then
+            timeout -k 5s 15s python3 -I -B tools/registry_action_auth.py restore \
+              --home "$HOME" --state-dir "$RUNNER_TEMP/gooo-action-auth"
+          fi
+      - name: Remove only this job's private registry login
+        if: always()
+        run: rm -rf -- "$RUNNER_TEMP/gooo-push-config"
+      - name: Retain proof receipts without credential or backup directories
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: gooo-oci-original-proof-recovery-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: ignore
+          path: out/recovery/

@@ -1,0 +1,34 @@
+{
+  "schema": "gooo/fixed-preview16-oci-delivery/v1",
+  "repository": "kimjooyoon/gooo-go-ports",
+  "workflow_commit": "6ff4e3a6c3baf9b518838bd35d2429decdf991bf",
+  "run_id": "39672180710",
+  "run_attempt": "1",
+  "native_version": "v0.1.0-preview.16",
+  "native_source": "fceb89f8b53eabd6687d16258d7cee89853c2cfe",
+  "archive_sha256": "0ae9bc25eef2ad73535642a66b8b7602e9f64a148b3e60696e36048a3b4a0524",
+  "binary_sha256": "a848a8747669e46e9afef6c0f1ed8b2014df4838cc370416f60ab9c6acccfc0a",
+  "platform": "linux/amd64",
+  "local_image_id": "sha256:3eb9f25369e0f5864477df85591fe4a5c3f1efb4b1c6ba6c7a3754be289bb46e",
+  "files": {
+    "image.tar": {
+      "bytes": 15495680,
+      "sha256": "88e279e48914621db25d6c272a85f3d323e6b3941067fd17831ea73e93755ee6"
+    },
+    "sbom.cdx.json": {
+      "bytes": 14579,
+      "sha256": "21dc8f17b376aa6ae084ff9acb1d840feda418028ef18c80b84fd24cb8d49a1e"
+    },
+    "scan.json": {
+      "bytes": 10962,
+      "sha256": "af4cb3a4da9795fa6da9f2b2f018d4379c8a0e808ceb92cf71b7487ac661d37a"
+    },
+    "trivy-db-version.json": {
+      "bytes": 192,
+      "sha256": "23a52d0c1600e311db5dbaaddbfd7224a434cf592e3c7267451470850584d74f"
+    }
+  },
+  "security_gate": "TRIVY_0_76_0_NO_HIGH_OR_CRITICAL_WITHOUT_EXCLUSIONS",
+  "published": false,
+  "external_adoption": false
+}
