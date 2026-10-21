@@ -117,5 +117,36 @@ class ConstructorCleanupTests(unittest.TestCase):
         self.assertIn("UnsupportedOperation", record["failure"])
         self.assertTrue(any("diagnostic disk failure" in note for note in record["secondary_diagnostic_errors"]))
 
+class RegistryLaunchInputTests(unittest.TestCase):
+    def subject(self):
+        spec = importlib.util.spec_from_file_location('registry_launch_test', SUBJECT)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_actual_descriptor_drives_fixed_reference_and_runtime_argv(self):
+        module = self.subject()
+        package = module.registry_package(SUBJECT.parents[1] / 'registry/service-grant-preview16.server.json')
+        self.assertEqual(package['runtime_argv'], ['--network', 'none', '--read-only', '--platform', 'linux/amd64'])
+        trial = types.SimpleNamespace(image='sha256:' + 'a' * 64, label='io.gooo.test=registry', registry_package=package)
+        argv = module.create_arguments(trial, 'owned-name')
+        self.assertEqual(argv[-1], package['identifier'])
+        self.assertIn('@sha256:a83d8fa57657bb877453cce7ed11f1ff1000a84b1e80c65a4e1c0b20196d3ee4', argv[-1])
+        self.assertEqual(argv[argv.index('--network') + 1], 'none')
+        self.assertEqual(argv[argv.index('--platform') + 1], 'linux/amd64')
+        self.assertIn('--read-only', argv)
+        self.assertNotIn(trial.image, argv)
+
+    def test_changed_descriptor_is_refused_without_a_subprocess(self):
+        module = self.subject()
+        with tempfile.TemporaryDirectory(dir=SUBJECT.parent) as temporary:
+            path = Path(temporary) / 'changed.json'
+            raw = (SUBJECT.parents[1] / 'registry/service-grant-preview16.server.json').read_bytes()
+            path.write_bytes(raw.replace(b'"none"', b'"host"'))
+            with mock.patch('subprocess.Popen', side_effect=AssertionError('must not spawn')):
+                with self.assertRaisesRegex(RuntimeError, 'descriptor bytes changed'):
+                    module.registry_package(path)
+
+
 if __name__ == "__main__":
     unittest.main()

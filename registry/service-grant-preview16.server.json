@@ -9,5 +9,31 @@
     "subfolder": "examples/service-grant-mcp"
   },
   "version": "0.1.0-preview.16",
-  "websiteUrl": "https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.16"
+  "websiteUrl": "https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.16",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/kimjooyoon/gooo-service-grant-mcp@sha256:a83d8fa57657bb877453cce7ed11f1ff1000a84b1e80c65a4e1c0b20196d3ee4",
+      "runtimeHint": "docker",
+      "transport": {
+        "type": "stdio"
+      },
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "--network",
+          "value": "none"
+        },
+        {
+          "type": "named",
+          "name": "--read-only"
+        },
+        {
+          "type": "named",
+          "name": "--platform",
+          "value": "linux/amd64"
+        }
+      ]
+    }
+  ]
 }

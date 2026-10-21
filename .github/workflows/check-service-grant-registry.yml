@@ -7,6 +7,10 @@ on:
       - '.github/workflows/publish-service-grant-registry.yml'
       - 'tools/publish-service-grant-registry.py'
       - 'tools/publish-service-grant-registry_test.py'
+      - 'tools/verify-service-grant-container.py'
+      - 'tools/verify-service-grant-container_test.py'
+      - 'tools/service_grant_mcp_oci.py'
+      - 'containers/service-grant-mcp/**'
       - 'registry/service-grant-preview13.server.json'
       - 'registry/service-grant-preview14.server.json'
       - 'registry/service-grant-preview15.server.json'
@@ -48,3 +52,85 @@ jobs:
           path: ${{ runner.temp }}/gooo-registry-check-${{ github.run_id }}-${{ github.run_attempt }}/proof
           if-no-files-found: error
           retention-days: 7
+
+  install-candidate:
+    needs: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    permissions:
+      contents: read
+    env:
+      DOCKER_CONFIG: ${{ github.workspace }}/out/registry-anonymous-client-config
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Check descriptor consumption and lifecycle refusal paths
+        run: python3 -I -B tools/verify-service-grant-container_test.py
+      - name: Prepare the byte-pinned original public native input
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p out/registry-install "$DOCKER_CONFIG"
+          printf '%s\n' '{"auths":{}}' > "$DOCKER_CONFIG/config.json"
+          curl --fail --location --proto '=https' --proto-redir '=https' \
+            --connect-timeout 15 --max-time 120 --max-filesize 7217754 \
+            --output out/registry-install/native.tar.gz \
+            https://github.com/kimjooyoon/gooo-go-ports/releases/download/v0.1.0-preview.16/gooo-service-grant-mcp-linux-amd64.tar.gz
+          python3 -I -B tools/service_grant_mcp_oci.py prepare \
+            --bundle out/registry-install/native.tar.gz \
+            --sha256 0ae9bc25eef2ad73535642a66b8b7602e9f64a148b3e60696e36048a3b4a0524 \
+            --source-commit fceb89f8b53eabd6687d16258d7cee89853c2cfe \
+            --version v0.1.0-preview.16 --out out/registry-install/context
+          python3 -I -B - <<'PYTHON'
+          import importlib.util, pathlib
+          spec = importlib.util.spec_from_file_location('registry_container', 'tools/verify-service-grant-container.py')
+          client = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(client)
+          package = client.registry_package(pathlib.Path('registry/service-grant-preview16.server.json'))
+          pathlib.Path('out/registry-install/image.ref').write_text(package['identifier'] + '\n')
+          PYTHON
+      - name: Pull the actual descriptor's immutable image anonymously
+        run: |
+          set -euo pipefail
+          timeout -k 10s 120s env -u GH_TOKEN -u GITHUB_TOKEN -u GH_ENTERPRISE_TOKEN -u GITHUB_ENTERPRISE_TOKEN \
+            docker --config "$DOCKER_CONFIG" image pull "$(cat out/registry-install/image.ref)" \
+            > out/registry-install/pull.stdout 2> out/registry-install/pull.stderr
+          docker --config "$DOCKER_CONFIG" image inspect "$(cat out/registry-install/image.ref)" > out/registry-install/image-inspect.json
+          python3 -I -B - <<'PYTHON'
+          import json, pathlib, re
+          root = pathlib.Path('out/registry-install')
+          rows = json.loads((root / 'image-inspect.json').read_bytes())
+          assert len(rows) == 1 and re.fullmatch('sha256:[0-9a-f]{64}', rows[0]['Id'])
+          assert (root / 'image.ref').read_text().strip() in rows[0]['RepoDigests']
+          (root / 'image.id').write_text(rows[0]['Id'] + '\n')
+          PYTHON
+      - name: Execute descriptor-derived sessions and check complete proofs and runtime bytes
+        run: |
+          set -euo pipefail
+          timeout -k 10s 90s python3 -I -B tools/verify-service-grant-container.py \
+            --docker "$(command -v docker)" --image "$(cat out/registry-install/image.id)" \
+            --registry-metadata registry/service-grant-preview16.server.json \
+            --context "$PWD/out/registry-install/context" --out "$PWD/out/registry-install/wire" \
+            --label "io.gooo.registry.install=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+      - name: Remove only the image pulled by this job and its anonymous config
+        if: always()
+        run: |
+          set -euo pipefail
+          if test -f out/registry-install/image.id; then
+            timeout -k 5s 20s docker --config "$DOCKER_CONFIG" image rm --force "$(cat out/registry-install/image.id)"
+          fi
+          rm -rf -- "$DOCKER_CONFIG"
+      - name: Retain finite descriptor, protocol, runtime and cleanup observations
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: gooo-registry-install-preview16-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          path: |
+            out/registry-install/wire/
+            out/registry-install/image.ref
+            out/registry-install/image.id
+            out/registry-install/image-inspect.json
+            out/registry-install/pull.*
+            out/registry-install/context/context.json

@@ -187,7 +187,7 @@ class MetadataGate(unittest.TestCase):
         value = M.load(raw)
         self.assertEqual(value['name'], M.NAME)
         self.assertEqual(value['version'], M.VERSION)
-        self.assertNotIn('packages', value)
+        self.assertEqual(value['packages'], [M.fixed_oci_package()])
         self.assertNotIn('remotes', value)
         self.assertLessEqual(len(value['description']), 100)
         self.assertEqual(value['websiteUrl'],
@@ -400,6 +400,7 @@ class ValidationOnlySafety(unittest.TestCase):
                 mock.patch.object(M.platform, 'machine', return_value='x86_64'), \
                 mock.patch.object(M, 'Runtime', FakeRuntime), \
                 mock.patch.object(M, 'public_preview', side_effect=preview), \
+                mock.patch.object(M, 'require_oci_recovery', side_effect=lambda runtime: trace.append(('reviewed-OCI-proof-recovery', False))), \
                 mock.patch.object(M, 'bootstrap', side_effect=bootstrap), \
                 mock.patch.object(M.signal, 'signal', return_value=None):
             try:
@@ -441,7 +442,8 @@ class ValidationOnlySafety(unittest.TestCase):
         out, runtime, trace, error = self.run_flow(False)
         self.assertIsNone(error)
         self.assertEqual(trace, [('public-preview-all-four-whole-byte-gate', False),
-                                 ('registry-before', True), ('official-pinned-bootstrap', False),
+                                 ('registry-before', True), ('reviewed-OCI-proof-recovery', False),
+                                 ('official-pinned-bootstrap', False),
                                  ('publisher-version', False), ('publisher-validate', False),
                                  ('publisher-login', True), ('publisher-publish', True),
                                  ('registry-after', False)])
@@ -462,7 +464,7 @@ class ValidationOnlySafety(unittest.TestCase):
                 mock.patch.object(M, 'METADATA_SHA', M.sha(raw)), \
                 mock.patch.object(Path, 'read_bytes', return_value=raw), \
                 mock.patch.object(M, 'Runtime') as runtime:
-            with self.assertRaisesRegex(M.Refused, 'fixed custom-install metadata changed'):
+            with self.assertRaisesRegex(M.Refused, 'fixed OCI-install metadata changed'):
                 M.main()
             runtime.assert_not_called()
 
@@ -926,6 +928,116 @@ class RegistryReadTimeoutTests(unittest.TestCase):
                 self.assertFalse(runtime.http['requests'][0]['EOF'])
                 self.assertTrue(state.closed)
 
+
+
+class OCIInstallContract(unittest.TestCase):
+    def metadata(self):
+        return M.load((SOURCE.parent.parent / 'registry/service-grant-preview16.server.json').read_bytes())
+
+    def test_digest_and_restricted_launch_arguments_are_required(self):
+        value = self.metadata()
+        M.check_metadata(value)
+        variants = []
+        for key, replacement in [('identifier', M.OCI_IMAGE + ':latest'),
+                                  ('transport', {'type': 'streamable-http', 'url': 'https://example.com'}),
+                                  ('version', 'latest'), ('registryBaseUrl', 'https://ghcr.io'),
+                                  ('fileSha256', '0' * 64), ('environmentVariables', [{'name': 'TOKEN'}])]:
+            changed = copy.deepcopy(value)
+            changed['packages'][0][key] = replacement
+            variants.append(changed)
+        changed = copy.deepcopy(value)
+        changed['packages'][0]['runtimeArguments'][0]['value'] = 'host'
+        variants.append(changed)
+        for changed in variants:
+            with self.subTest(package=changed['packages'][0]), self.assertRaises(M.Refused):
+                M.check_metadata(changed)
+
+    def fixture(self):
+        import tempfile
+        temporary = tempfile.TemporaryDirectory(dir=SOURCE.parent)
+        self.addCleanup(temporary.cleanup)
+        run = {'id': 123, 'head_sha': '1' * 40, 'run_attempt': 1, 'event': 'workflow_dispatch',
+               'head_branch': 'main', 'status': 'completed', 'conclusion': 'success',
+               'path': '.github/workflows/service-grant-oci-proof-recovery.yml'}
+        jobs = {'total_count': 2, 'jobs': [{'name': name, 'status': 'completed', 'conclusion': 'success',
+                'steps': [{'status': 'completed', 'conclusion': 'success'}]} for name in ('verify', 'recover')]}
+        calls = []
+        def public_json(label, url):
+            calls.append((label, url))
+            return copy.deepcopy(jobs if label.endswith('-jobs') else run)
+        runtime = types.SimpleNamespace(proof=Path(temporary.name), public_json=public_json)
+        return runtime, run, jobs, calls
+
+    def test_pending_recovery_is_refused_before_any_external_read(self):
+        runtime, _, _, calls = self.fixture()
+        with mock.patch.object(M, 'OCI_RECOVERY', None), self.assertRaisesRegex(M.Refused, 'recovery is pending'):
+            M.require_oci_recovery(runtime)
+        self.assertEqual(calls, [])
+
+    def test_exact_reviewed_success_is_recorded_as_historical_run_not_new_install(self):
+        runtime, _, _, calls = self.fixture()
+        with mock.patch.object(M, 'OCI_RECOVERY', {'run_id': 123, 'source': '1' * 40}):
+            M.require_oci_recovery(runtime)
+        self.assertEqual(len(calls), 2)
+        proof = M.load((runtime.proof / 'reviewed-OCI-recovery.json').read_bytes())
+        self.assertEqual(proof['digest'], M.OCI_DIGEST)
+        self.assertIn('not a new client install', proof['scope'])
+
+    def test_wrong_source_attempt_context_or_failed_run_refused(self):
+        for key, value in [('head_sha', '2' * 40), ('run_attempt', 2), ('run_attempt', True),
+                           ('event', 'pull_request'), ('conclusion', 'failure'),
+                           ('status', 'in_progress'), ('head_branch', 'feature')]:
+            runtime, run, _, _ = self.fixture()
+            run[key] = value
+            with mock.patch.object(M, 'OCI_RECOVERY', {'run_id': 123, 'source': '1' * 40}), \
+                    self.subTest(field=key, value=value), self.assertRaises(M.Refused):
+                M.require_oci_recovery(runtime)
+            self.assertFalse((runtime.proof / 'reviewed-OCI-recovery.json').exists())
+
+    def test_skipped_failed_or_incomplete_recovery_jobs_refused(self):
+        for change in ('skipped', 'failed-cleanup', 'missing-job'):
+            runtime, _, jobs, _ = self.fixture()
+            if change == 'skipped':
+                jobs['jobs'][1]['conclusion'] = 'skipped'
+            elif change == 'failed-cleanup':
+                jobs['jobs'][1]['steps'][0]['conclusion'] = 'failure'
+            else:
+                jobs['jobs'].pop()
+            with mock.patch.object(M, 'OCI_RECOVERY', {'run_id': 123, 'source': '1' * 40}), \
+                    self.subTest(change=change), self.assertRaises(M.Refused):
+                M.require_oci_recovery(runtime)
+
+    def test_main_pending_recovery_never_bootstraps_authenticates_or_publishes(self):
+        import tempfile
+        temporary = tempfile.TemporaryDirectory(dir=SOURCE.parent)
+        self.addCleanup(temporary.cleanup)
+        out = Path(temporary.name) / 'out'
+        instances = []
+        actual_runtime = M.Runtime
+        class FakeRuntime(actual_runtime):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                instances.append(self)
+            def registry_version(self, *_args, **_kwargs):
+                return None
+        environment = {'GITHUB_ACTIONS': 'true', 'GITHUB_REPOSITORY': M.REPOSITORY,
+                       'GITHUB_EVENT_NAME': 'workflow_dispatch', 'GITHUB_REF': 'refs/heads/main'}
+        with mock.patch.dict(M.os.environ, environment, clear=True), \
+                mock.patch.object(__import__('sys'), 'argv', ['test', '--out', str(out), '--allow-publish']), \
+                mock.patch.object(M.platform, 'system', return_value='Linux'), \
+                mock.patch.object(M.platform, 'machine', return_value='x86_64'), \
+                mock.patch.object(M, 'Runtime', FakeRuntime), \
+                mock.patch.object(M, 'public_preview'), \
+                mock.patch.object(M, 'OCI_RECOVERY', None), \
+                mock.patch.object(M, 'bootstrap') as bootstrap, \
+                mock.patch.object(M.signal, 'signal', return_value=None), \
+                self.assertRaisesRegex(M.Refused, 'recovery is pending'):
+            M.main()
+        bootstrap.assert_not_called()
+        self.assertEqual(instances[0].calls, [])
+        self.assertFalse(instances[0].home.exists())
+        first = M.load((out / 'proof/first-failure.json').read_bytes())
+        self.assertEqual(first['stage'], 'reviewed-OCI-proof-recovery')
 
 
 if __name__ == '__main__':

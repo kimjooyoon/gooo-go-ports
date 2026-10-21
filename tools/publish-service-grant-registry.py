@@ -2,7 +2,7 @@
 # Copyright (c) 2026 Gooo Go Ports contributors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Validate or publish one fixed custom-install metadata version after public checks.
+"""Validate or publish one fixed digest-pinned OCI metadata version after public checks.
 
 No Go/compiler build, package-registry account, PAT, or automatic retry. Only
 the official publisher handles the job's OIDC token and its private token file.
@@ -37,9 +37,15 @@ TAG_OBJECT = '0221132eae836549b0b560f7ad45fca0fc8f43f4'
 RELEASE_ID = 419800618
 NAME = 'io.github.kimjooyoon/gooo-service-grant'
 VERSION = '0.1.0-preview.16'
-METADATA_BYTES = 586
-METADATA_SHA = 'f2eda392c4bd9cb3dcc570b60d71a65ed5194647dbf6c19b710ad7b031d5eb4d'
+METADATA_BYTES = 1203
+METADATA_SHA = 'ed779aac0d22a79e4cedca16cdbdbb39781b1ecd7fa4d2e4d31c756af716f306'
 REGISTRY = 'https://registry.modelcontextprotocol.io'
+OCI_IMAGE = 'ghcr.io/kimjooyoon/gooo-service-grant-mcp'
+OCI_DIGEST = 'sha256:a83d8fa57657bb877453cce7ed11f1ff1000a84b1e80c65a4e1c0b20196d3ee4'
+# Development branch: set from accepted actual recovery evidence before
+# publication. Validate-only is usable; live publication refuses while unset.
+OCI_RECOVERY = None
+
 PUBLISHER_VERSION = 'v1.8.1'
 PUBLISHER_RELEASE_ID = 366432047
 PUBLISHER_ASSET_ID = 504323513
@@ -148,6 +154,52 @@ def typed_subset(actual, expected):
             typed_subset(left, right)
     else:
         require(actual == expected, 'public metadata value changed')
+
+
+def fixed_oci_package():
+    return {'registryType': 'oci', 'identifier': OCI_IMAGE + '@' + OCI_DIGEST,
+            'runtimeHint': 'docker', 'transport': {'type': 'stdio'},
+            'runtimeArguments': [{'type': 'named', 'name': '--network', 'value': 'none'},
+                                 {'type': 'named', 'name': '--read-only'},
+                                 {'type': 'named', 'name': '--platform', 'value': 'linux/amd64'}]}
+
+
+def check_metadata(metadata):
+    require(metadata.get('name') == NAME and metadata.get('version') == VERSION
+            and type(metadata.get('packages')) is list and len(metadata['packages']) == 1
+            and 'remotes' not in metadata, 'fixed OCI-install metadata changed')
+    expected = fixed_oci_package()
+    typed_subset(metadata['packages'][0], expected)
+    require(metadata['packages'][0] == expected, 'fixed OCI package arguments changed')
+
+
+def require_oci_recovery(runtime):
+    require(type(OCI_RECOVERY) is dict and set(OCI_RECOVERY) == {'run_id', 'source'},
+            'reviewed OCI proof recovery is pending')
+    identity, source = OCI_RECOVERY['run_id'], OCI_RECOVERY['source']
+    require(type(identity) is int and identity > 0 and type(source) is str
+            and re.fullmatch('[0-9a-f]{40}', source) is not None,
+            'invalid reviewed OCI recovery identity')
+    api = 'https://api.github.com/repos/' + REPOSITORY + '/actions/runs/' + str(identity)
+    run = runtime.public_json('reviewed-OCI-recovery-run', api)
+    typed_subset(run, {'id': identity, 'head_sha': source, 'run_attempt': 1,
+                      'event': 'workflow_dispatch', 'head_branch': 'main',
+                      'status': 'completed', 'conclusion': 'success',
+                      'path': '.github/workflows/service-grant-oci-proof-recovery.yml'})
+    jobs = runtime.public_json('reviewed-OCI-recovery-jobs', api + '/jobs?per_page=100')
+    require(type(jobs['total_count']) is int and jobs['total_count'] == 2
+            and type(jobs['jobs']) is list and len(jobs['jobs']) == 2
+            and {job['name'] for job in jobs['jobs']} == {'verify', 'recover'},
+            'reviewed OCI recovery jobs changed')
+    for job in jobs['jobs']:
+        require(job['conclusion'] == 'success' and job['status'] == 'completed'
+                and type(job['steps']) is list and bool(job['steps'])
+                and all(step['conclusion'] == 'success' and step['status'] == 'completed'
+                        for step in job['steps']), 'reviewed OCI recovery step did not succeed')
+    dump(runtime.proof / 'reviewed-OCI-recovery.json', {
+        'status': 'REVIEWED_HOSTED_PROOF_RECOVERY_RUN_CONFIRMED',
+        'run_id': identity, 'source': source, 'image': OCI_IMAGE, 'digest': OCI_DIGEST,
+        'scope': 'Exact reviewed recovery workflow run; not a new client install or current vulnerability scan.'})
 
 
 def release_assets(release):
@@ -623,9 +675,7 @@ def main():
     metadata_raw = metadata_path.read_bytes()
     require(len(metadata_raw) == METADATA_BYTES and sha(metadata_raw) == METADATA_SHA, 'metadata bytes changed')
     metadata = load(metadata_raw)
-    require(metadata['name'] == NAME and metadata['version'] == VERSION
-            and 'packages' not in metadata and 'remotes' not in metadata,
-            'fixed custom-install metadata changed')
+    check_metadata(metadata)
     runtime = Runtime(args.out, validate_only=args.validate_only)
     failure = None
     try:
@@ -640,6 +690,8 @@ def main():
             runtime.stage = 'registry-version-absence'
             require(runtime.registry_version('registry-before', allow_missing=True) is None,
                     'this version is already registered')
+            runtime.stage = 'reviewed-OCI-proof-recovery'
+            require_oci_recovery(runtime)
         runtime.stage = 'official-publisher-bootstrap'
         executable = bootstrap(runtime)
         server_file = runtime.home / 'server.json'
@@ -659,12 +711,13 @@ def main():
             runtime.stage = 'anonymous-registry-readback'
             server = runtime.registry_version('registry-after')
             typed_subset(server, metadata)
-            require(not server.get('packages') and not server.get('remotes'),
-                    'registry returned unrequested installation endpoints')
+            require(server.get('packages') == metadata['packages'] and not server.get('remotes'),
+                    'registry returned different installation endpoints')
             dump(runtime.proof / 'registration.json', {
                 'status': 'OFFICIAL_REGISTRY_EXACT_VERSION_ANONYMOUSLY_READ_BACK',
                 'name': NAME, 'version': VERSION, 'metadata_sha256': METADATA_SHA,
-                'source': SOURCE, 'release_id': RELEASE_ID, 'custom_install_only': True,
+                'source': SOURCE, 'release_id': RELEASE_ID, 'custom_install_only': False,
+                'OCI_image': OCI_IMAGE, 'OCI_digest': OCI_DIGEST, 'OCI_recovery': OCI_RECOVERY,
                 'automatic_client_installation_proven': False, 'external_adoption': False})
     except BaseException as error:
         failure = runtime.first_failure or error
