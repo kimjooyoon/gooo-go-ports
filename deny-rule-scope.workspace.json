@@ -1,0 +1,15 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "app/deny-rule-scope",
+    "activity": "DiagnoseDenyRule"
+  },
+  "packages": [
+    {
+      "path": "app/deny-rule-scope",
+      "sources": [
+        "examples/deny-rule-scope/main.gooo"
+      ]
+    }
+  ]
+}

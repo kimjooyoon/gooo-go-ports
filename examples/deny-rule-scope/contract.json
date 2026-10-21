@@ -1,0 +1,33 @@
+{
+  "schema": "gooo/deny-rule-scope-contract/v1",
+  "original_policy_not_upstream_fix": true,
+  "upstream_issue": "https://github.com/openclaw/openclaw/issues/137470",
+  "input_contract": {
+    "surface_id": "Nonempty caller-bound runtime/backend/inventory identity",
+    "rule_id": "Nonempty caller-bound expanded rule identity",
+    "backend_known": "Host has an authoritative enforceability contract for this rule",
+    "backend_can_enforce": "Host contract covers this rule; false with backend_known false",
+    "inventory_complete": "Host establishes full pre-policy inventory for this exact surface",
+    "prepolicy_matches": "Distinct matching tool identities before any deny/construction removal, 0..4096",
+    "remaining_matches": "Disjoint matching identities still available at the inspected layer",
+    "earlier_denied_matches": "Disjoint matching identities removed by previous policy layers",
+    "construction_denied_matches": "Disjoint matching identities suppressed before layer filtering"
+  },
+  "partition_equation": "remaining + earlier_denied + construction_denied = prepolicy",
+  "count_partition_truth_not_proven_by_arithmetic": true,
+  "unsupported": [
+    "Raw glob matching/alias/group expansion",
+    "Discovery or proof of complete live inventories",
+    "Backend enforcement or permission application",
+    "Upstream warning placement/deduplication",
+    "OpenClaw runtime integration"
+  ],
+  "synthetic_cases": 87,
+  "finite_validation": {
+    "partition_count_maximum": 2,
+    "boolean_combinations": 8,
+    "partition_cases": 80,
+    "additional_domain_cases": 7,
+    "cases": 87
+  }
+}

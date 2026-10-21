@@ -331,6 +331,7 @@ jobs:
           ./.gooo check examples/ipv4-prefix-probe/main.gooo
           ./.gooo check examples/ipv4-rule-pair/main.gooo
           ./.gooo check examples/automatic-redelivery/main.gooo
+          ./.gooo check examples/deny-rule-scope/main.gooo
           ./.gooo check ports/cel/scalar_access.gooo
           ./.gooo check examples/cel-api-policy/main.gooo
           ./.gooo check ports/agentmesh/service_pattern.gooo
@@ -1708,6 +1709,20 @@ jobs:
         with:
           name: tool-catalog-change-evidence
           path: ${{ runner.temp }}/tool-catalog-change
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Verify the original scoped deny-rule diagnostic
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 5
+        run: |
+          bash examples/deny-rule-scope/verify.sh "$PWD/.gooo" "$(go env GOROOT)/bin/go" "$RUNNER_TEMP/deny-rule-scope"
+          jq --slurpfile pins upstream.json -e '.status == "FINITE_ORIGINAL_GOOO_SCOPE_POLICY_NATIVE_AND_REPLAY_MATCHED_GO_REFERENCE" and .native_cases == 87 and .saved_replay_cases == 87 and .fields_per_result == 12 and (.receipt_mutation_refusals | length) == 9 and .compiler == $pins[0].compiler_revision and .go == $pins[0].go_version and .model_calls == 0' "$RUNNER_TEMP/deny-rule-scope/verification.json"
+      - name: Preserve scoped deny-rule evidence
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: deny-rule-scope-evidence
+          path: ${{ runner.temp }}/deny-rule-scope
           if-no-files-found: warn
           retention-days: 14
       - name: Upload offline policy experiment evidence
