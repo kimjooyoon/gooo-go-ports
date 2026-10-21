@@ -31,6 +31,13 @@ It runs after Registry validation on pull requests. An explicit read-only
 candidate branch, without publishing an image or requesting signing permission.
 A candidate-branch result is not a replacement for final-source full native CI.
 
+The candidate at `be8c0c6577ca0f3ff03de2fabfaaf7138010fea8` passed
+[read-only hosted verification
+39685013716](https://github.com/kimjooyoon/gooo-go-ports/actions/runs/39685013716):
+an anonymous pull of the descriptor digest, all 63 runtime file comparisons,
+complete default and multi-request proof comparisons, malformed-input refusal,
+and container cleanup. New source revisions require their own checks.
+
 These finite checks do not prove installation by every agent host, a model-led
 task or outside adoption. The assessment evaluates supplied facts and never
 applies grants or authenticates live authority.
@@ -43,12 +50,16 @@ publication. A reviewed successful original-proof recovery run is required
 before the publisher is bootstrapped or authenticated. It checks the exact run,
 source, workflow/main identity, first attempt and both jobs including cleanup.
 
-`OCI_RECOVERY` is deliberately unset on this local development branch until the
-actual proof-only recovery succeeds and its source/result is reviewed. The live
-publication path therefore refuses. This is a missing observed prerequisite,
-not a request for a new human approval gate. The descriptor cannot itself grant
-permission to publish. The source change must receive the required full native
-CI checks before it can enter main.
+`OCI_RECOVERY` pins the reviewed [proof-only recovery run
+39687579594](https://github.com/kimjooyoon/gooo-go-ports/actions/runs/39687579594),
+at source `ace68b20d9be24f77dbb3ec9c8630aa9908996f2`. It preserved the original
+build statement and signature from assembly run 39672180710, transported that
+proof to the original image digest, and separately signed the retained SBOM.
+The original failed assembly workflow remains failed; the image was not rebuilt
+or pushed again. Recovery success does not constitute a current vulnerability
+scan or final-source native CI acceptance. The descriptor cannot itself grant
+permission to publish. This source change still requires full native CI before
+it can enter main.
 
 After those prerequisites, publication retains one official CLI publish call,
 no automatic retry, and anonymous exact-version readback. Readback must include

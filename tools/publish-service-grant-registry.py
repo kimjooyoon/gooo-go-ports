@@ -42,9 +42,12 @@ METADATA_SHA = 'ed779aac0d22a79e4cedca16cdbdbb39781b1ecd7fa4d2e4d31c756af716f306
 REGISTRY = 'https://registry.modelcontextprotocol.io'
 OCI_IMAGE = 'ghcr.io/kimjooyoon/gooo-service-grant-mcp'
 OCI_DIGEST = 'sha256:a83d8fa57657bb877453cce7ed11f1ff1000a84b1e80c65a4e1c0b20196d3ee4'
-# Development branch: set from accepted actual recovery evidence before
-# publication. Validate-only is usable; live publication refuses while unset.
-OCI_RECOVERY = None
+# Reviewed proof-only recovery: original image/build signature preserved,
+# retained SBOM signed separately. Recheck this exact hosted run before auth.
+OCI_RECOVERY = {
+    'run_id': 39687579594,
+    'source': 'ace68b20d9be24f77dbb3ec9c8630aa9908996f2',
+}
 
 PUBLISHER_VERSION = 'v1.8.1'
 PUBLISHER_RELEASE_ID = 366432047
