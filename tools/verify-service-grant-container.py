@@ -43,9 +43,37 @@ def note(error, message):
         error.add_note(message)
 
 
+def registry_package(path):
+    spec = importlib.util.spec_from_file_location('fixed_registry_metadata', ROOT / 'tools/publish-service-grant-registry.py')
+    publisher = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(publisher)
+    raw = path.read_bytes()
+    publisher.require(len(raw) == publisher.METADATA_BYTES and sha(raw) == publisher.METADATA_SHA,
+                      'registry descriptor bytes changed')
+    doc = publisher.load(raw)
+    publisher.check_metadata(doc)
+    package = doc['packages'][0]
+    flags = []
+    for argument in package['runtimeArguments']:
+        flags.append(argument['name'])
+        if 'value' in argument:
+            flags.append(argument['value'])
+    return {'identifier': package['identifier'], 'runtime_argv': flags, 'descriptor_sha256': sha(raw)}
+
+
+def create_arguments(trial, name):
+    package = getattr(trial, 'registry_package', None)
+    flags = package['runtime_argv'] if package else ['--platform=linux/amd64', '--network=none', '--read-only']
+    image = package['identifier'] if package else trial.image
+    return ['container', 'create', '--name', name, '--pull=never', '--interactive', *flags,
+            '--cap-drop=ALL', '--security-opt=no-new-privileges', '--pids-limit=32',
+            '--memory=128m', '--user=65532:65532', '--label', trial.label, image]
+
+
 class Trial:
-    def __init__(self, docker, image, context, out, label):
+    def __init__(self, docker, image, context, out, label, registry_package=None):
         self.docker, self.image, self.context, self.out, self.label = docker, image, context, out, label
+        self.registry_package = registry_package
         self.sequence = 0
         self.cleaning = False
         self.commands = out / "commands"
@@ -168,10 +196,7 @@ class ContainerSession(WIRE.Session):
         # Persist a unique recovery name before create, including if its reply is lost.
         save(self.work / "intent.json", {"container_name": self.name, "image": trial.image})
         try:
-            args = ["container", "create", "--name", self.name, "--pull=never",
-                    "--platform=linux/amd64", "--interactive", "--network=none", "--read-only",
-                    "--cap-drop=ALL", "--security-opt=no-new-privileges", "--pids-limit=32",
-                    "--memory=128m", "--user=65532:65532", "--label", trial.label, trial.image]
+            args = create_arguments(trial, self.name)
             if mode == "many":
                 args.append("--many-required")
             _, raw, _ = trial.command(args)
@@ -341,14 +366,24 @@ def main():
     parser.add_argument("--docker", required=True)
     parser.add_argument("--image", required=True, help="Exact local sha256 image ID, never a mutable tag")
     parser.add_argument("--context", type=Path, required=True)
+    parser.add_argument("--registry-metadata", type=Path, help="Optional byte-pinned preview16 OCI descriptor; not generic untrusted metadata")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--label", default="io.gooo.container-smoke=local")
     args = parser.parse_args()
     assert re.fullmatch(r"sha256:[0-9a-f]{64}", args.image)
     docker = str(Path(args.docker).resolve(strict=True))
     context = args.context.resolve(strict=True)
+    package = registry_package(args.registry_metadata) if args.registry_metadata else None
     args.out.mkdir(parents=True, exist_ok=False)
-    trial = Trial(docker, args.image, context, args.out, args.label)
+    trial = Trial(docker, args.image, context, args.out, args.label, package)
+    if package:
+        _, raw, _ = trial.command(['image', 'inspect', package['identifier']])
+        images = json.loads(raw)
+        assert len(images) == 1 and images[0]['Id'] == args.image
+        assert images[0]['Os'] == 'linux' and images[0]['Architecture'] == 'amd64'
+        assert package['identifier'] in images[0]['RepoDigests']
+        save(args.out / 'registry-install-input.json', {**package, 'local_image_id': args.image,
+             'scope': 'Descriptor-driven finite headless client; additional lifecycle/resource guards applied. No AI host or outside adoption claim.'})
     observations = []
     try:
         for mode in ("default", "many"):
