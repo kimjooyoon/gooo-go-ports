@@ -278,11 +278,14 @@ See [NOTICE.md](NOTICE.md) and the original [Apache license](LICENSE-APACHE-2.0)
 
 From the repository root, `python3 -I -B tools/current-toolchain-docs.py --check`
 checks the marked current-toolchain blocks against each module's bound compiler
-identity, generation manifest, Go module and generator/verifier profiles.
+identity, generation manifest, Go module and generator/verifier profiles. It also
+checks the current-checkout sentence in `context7.json` against `upstream.json`,
+requiring those upstream pins to agree with both current module generations.
 To prepare an update, use `--out /absolute/new/doc-candidates` instead. It
-creates both README candidates and an actual PROV-O generation record, without
+creates both README candidates, a Context7 candidate and an actual PROV-O generation record, without
 editing source or running a compiler. Compare the recorded preimage hashes before
 applying the candidates together in one reviewed Git change. Normal CI remains
-required. Historical profiles and material outside the marked blocks are preserved.
+required. Historical profiles, the isolated Context7 example and material outside
+the selected current-toolchain fields are preserved.
 This documentation check does not authorize a dependency migration or establish
-that every consumer outside this two-guide family has been found.
+that every consumer outside this three-document family has been found.

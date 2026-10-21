@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) 2026 Gooo Go Ports contributors. All rights reserved.
 # Use of this source code is governed by a BSD-style license in LICENSE.
-"""Check two current reproduction guides or generate detached doc candidates.
+"""Check current reproduction guides and agent metadata, or generate detached candidates.
 
 This is a bounded documentation consumer, not dependency migration authority.
 It never imports the generators, runs Gooo, edits source, or changes old receipts.
@@ -127,14 +127,31 @@ def render(module, revision, go, version):
 
 def plan(root):
     inputs, outputs = {}, {}
+    upstream = strict(read(root, 'upstream.json', inputs))
+    need(type(upstream) is dict, 'upstream must be an object')
+    current = tuple(upstream.get(k) for k in ('compiler_revision', 'go_version', 'compiler_version'))
     for module in MODULES:
         revision, go, version = facts(root, module, inputs)
+        need((revision, go, version) == current, 'upstream/current generation identity mismatch')
         relative = 'examples/' + module + '/README.md'
         raw = read(root, relative, inputs)
         need(raw.count(START) == raw.count(END) == 1, 'missing or duplicate doc markers: ' + relative)
         before, rest = raw.split(START)
         old, after = rest.split(END)
         outputs[relative] = before + START + render(module, revision, go, version) + END + after
+    raw = read(root, 'context7.json', inputs)
+    context = strict(raw)
+    need(type(context) is dict and type(context.get('rules')) is list
+         and all(type(rule) is str for rule in context['rules']), 'invalid Context7 rules')
+    pattern = r'the maintained checkout uses compiler [0-9a-f]{40} and Go [0-9]+\.[0-9]+\.[0-9]+, as recorded in upstream\.json\.'
+    matches = [match.group(0) for rule in context['rules'] for match in re.finditer(pattern, rule)]
+    need(len(matches) == 1, 'missing or ambiguous Context7 current toolchain sentence')
+    revision, go, _ = current
+    replacement = f'the maintained checkout uses compiler {revision} and Go {go[2:]}, as recorded in upstream.json.'
+    encoded = lambda value: json.dumps(value, ensure_ascii=False)[1:-1].encode()
+    old = encoded(matches[0])
+    need(raw.count(old) == 1, 'Context7 sentence must have one canonical JSON representation')
+    outputs['context7.json'] = raw.replace(old, encoded(replacement), 1)
     return inputs, outputs
 
 
@@ -160,7 +177,9 @@ def generate(root, out):
                       'path': name, 'bytes': len(raw), 'sha256': sha(raw),
                       'prov:wasGeneratedBy': {'@id': activity_id},
                       'prov:wasDerivedFrom': [{'@id': activity_id + ':input:' + quote(key, safe='')}
-                                             for key in inputs if key.startswith(name.rsplit('/', 1)[0] + '/')]})
+                                             for key in inputs
+                                             if (key in ('upstream.json', 'context7.json') if name == 'context7.json'
+                                                 else key == 'upstream.json' or key.startswith(name.rsplit('/', 1)[0] + '/'))]})
     graph.append({'@id': activity_id, '@type': 'prov:Activity', 'prov:used': used,
                   'prov:startedAtTime': {'@value': started, '@type': 'xsd:dateTime'},
                   'prov:endedAtTime': {'@value': datetime.datetime.now(datetime.timezone.utc).isoformat(), '@type': 'xsd:dateTime'},
