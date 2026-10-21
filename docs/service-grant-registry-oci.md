@@ -17,7 +17,7 @@ endpoint for schema and semantic validation. That call does not authenticate
 package ownership, install the MCP server or publish a Registry version.
 The read-only PR validation job still cannot request an OIDC token or publish.
 
-The separate `install-candidate` CI job pulls the exact descriptor reference with
+The shared `registry-install-smoke.yml` job pulls the exact descriptor reference with
 an empty Docker client configuration. It binds that reference to the local
 image ID before any session starts. The headless client reads runtime arguments
 from the byte-pinned descriptor, creates containers and exercises the existing
@@ -25,6 +25,11 @@ complete default and optional multi-request proof comparisons. It also compares
 all runtime file bytes/modes to the fixed original native archive and checks
 container/process cleanup. Additional capability, memory and process limits are
 client verification controls, beyond the three descriptor arguments.
+
+It runs after Registry validation on pull requests. An explicit read-only
+`verify` dispatch of the existing OCI workflow can also exercise it on a
+candidate branch, without publishing an image or requesting signing permission.
+A candidate-branch result is not a replacement for final-source full native CI.
 
 These finite checks do not prove installation by every agent host, a model-led
 task or outside adoption. The assessment evaluates supplied facts and never

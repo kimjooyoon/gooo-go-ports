@@ -683,7 +683,8 @@ def main():
             runtime.handlers[number] = signal.signal(number, runtime.interrupted)
         with (runtime.out / 'EXECUTION-STARTED.json').open('x') as output:
             json.dump({'fixed_name': NAME, 'version': VERSION, 'source': SOURCE,
-                       'mode': mode}, output)
+                       'mode': mode, 'native_source': SOURCE,
+                       'registry_metadata_source': os.environ.get('GITHUB_SHA')}, output)
         runtime.stage = 'public-preview-byte-gate'
         public_preview(runtime)
         if not args.validate_only:
@@ -716,7 +717,9 @@ def main():
             dump(runtime.proof / 'registration.json', {
                 'status': 'OFFICIAL_REGISTRY_EXACT_VERSION_ANONYMOUSLY_READ_BACK',
                 'name': NAME, 'version': VERSION, 'metadata_sha256': METADATA_SHA,
-                'source': SOURCE, 'release_id': RELEASE_ID, 'custom_install_only': False,
+                'source': SOURCE, 'native_source': SOURCE,
+                'registry_metadata_source': os.environ.get('GITHUB_SHA'),
+                'release_id': RELEASE_ID, 'custom_install_only': False,
                 'OCI_image': OCI_IMAGE, 'OCI_digest': OCI_DIGEST, 'OCI_recovery': OCI_RECOVERY,
                 'automatic_client_installation_proven': False, 'external_adoption': False})
     except BaseException as error:
@@ -759,7 +762,8 @@ def main():
         dump(runtime.proof / 'validation-only.json', {
             'status': 'OFFICIAL_CLI_VALIDATED_FIXED_PUBLIC_METADATA_WITHOUT_AUTH_OR_PUBLISH',
             'mode': mode, 'name': NAME, 'version': VERSION,
-            'metadata_sha256': METADATA_SHA, 'source': SOURCE, 'release_id': RELEASE_ID,
+            'metadata_sha256': METADATA_SHA, 'source': SOURCE, 'native_source': SOURCE,
+            'registry_metadata_source': os.environ.get('GITHUB_SHA'), 'release_id': RELEASE_ID,
             'registry_version_absence_required': False, 'publisher_commands': 2,
             'authentication_commands': 0, 'publish_commands': 0,
             'actual_registry_registration': False, 'automatic_client_installation_proven': False,
