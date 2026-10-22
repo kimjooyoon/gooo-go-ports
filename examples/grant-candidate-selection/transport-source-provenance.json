@@ -1,0 +1,25 @@
+{
+  "source_repository": "https://github.com/kimjooyoon/gooo-go-ports",
+  "source_revision": "7180a4a0f36a1b0d89470100d6ccf6efdb5fd38d",
+  "source_path": "examples/service-grant-many/input.go",
+  "source_sha256": "1c24ea415bd88ea9c50370df3de4f735a29910fae0dd83ac76ae4cccdce9b451",
+  "selected_functions": [
+    {
+      "function": "object",
+      "source_sha256": "472f12985d222af389f8d5ded47f6439b20b591c951ffcf14aaa02a76505d09d"
+    },
+    {
+      "function": "text",
+      "source_sha256": "d03cd245b99fd4a09845a846329633ad8aff401579a87f7f6efed74eb2fbe835"
+    },
+    {
+      "function": "array",
+      "source_sha256": "356cdc3420ac4029ea4990a2b12f0f738e5c5dd539a2a1abaac49c6c20480cf3"
+    },
+    {
+      "function": "validJSONString",
+      "source_sha256": "030cb1374956603d9a0eea499a80a4de3df6ff712de5f13db116bad6dddd45bb"
+    }
+  ],
+  "transform": "Copy only listed parser helper function bodies; rename their MaxBatchBytes budget to MaxInputBytes. Package/import/header/error constants are local. No policy or selection behavior copied."
+}

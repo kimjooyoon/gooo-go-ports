@@ -1,0 +1,11 @@
+{
+  "before": "*",
+  "required_requests": [
+    {"type": "mcp", "name": "weather"},
+    {"type": "mcp", "name": "calculator"}
+  ],
+  "candidates": [
+    {"id": "weather-only", "after": "mcp://weather", "preference": 0},
+    {"id": "all-mcp", "after": "mcp://*", "preference": 10}
+  ]
+}
