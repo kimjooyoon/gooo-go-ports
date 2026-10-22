@@ -1,7 +1,7 @@
 {
   "$schema": "https://context7.com/schema/context7.json",
   "projectTitle": "Gooo Go Ports",
-  "description": "Selected Go APIs implemented in the experimental Gooo language, with runnable importing examples, independent Go references and saved replay. Includes version-upgrade eligibility with minimum-version and stable same-major rules, bounded ETag/header diagnostics and comparison of two supplied API policy profiles. The language engine is kimjooyoon/meta-ontology-go.",
+  "description": "Selected Go APIs and original bounded policies implemented in experimental Gooo, with runnable examples, independent Go references and saved replay. Includes ETag/header facts, version eligibility, fixed API policy comparison and service-grant narrowing assessment over MCP for one or multiple required requests. Language engine: kimjooyoon/meta-ontology-go.",
   "folders": [
     "examples/learn-gooo",
     "docs",
@@ -21,7 +21,10 @@
     "ports/net/textproto",
     "ports/strconv",
     "ports/path",
-    "ports/xmod"
+    "ports/xmod",
+    "examples/service-grant-mcp",
+    "examples/service-grant-many",
+    "examples/agentmesh-service-policy"
   ],
   "excludeFolders": [
     "**/evidence",
@@ -67,11 +70,24 @@
     "The experimental Gooo language engine is https://github.com/kimjooyoon/meta-ontology-go. This independent repository provides selected Go API adaptations and runnable Gooo examples.",
     "Use each task's exact pinned sources and toolchain. Declaration checking is separate from native execution; an input-only OBSERVED result and saved replay are separate from independent Go-reference validation.",
     "The selected header, decimal and slash-path native examples use decoded valid UTF-8 Text up to 1,024 bytes. The generated API policy module has a separate 65,536-byte Text bound; follow the selected example's full transport and type contract.",
-    "The current checkout compares cel-api-original-v1 with cel-api-readonly-principal-v1, preserving nine supplied facts and requiring a present, nonempty principal for an otherwise allowed read. The API CI Action example pins an earlier module with cel-api-readonly-v1; use each selected module and saved generation with its own profile names. The integrating host supplies current identity and effect authority.",
+    "The current checkout compares cel-api-original-v1 with cel-api-readonly-principal-v1, preserving nine supplied facts and requiring a present, nonempty principal for an otherwise allowed read. The API CI Action example pins an earlier module with",
+    "cel-api-readonly-v1; use each selected module and saved generation with its own profile names. The integrating host supplies current identity and effect authority.",
     "Gooo owns port and policy calculations. Preserve original values, upstream attribution and API differences; unsupported Gooo behavior must not silently fall back to handwritten Go semantics.",
     "Pure diagnostic and comparison calculations need no per-request human approval. Enforcing an effect belongs to a trusted integrating host that supplies current facts and applies its documented authority and atomicity contract.",
-    "For ETag tasks, use examples/strong-validator-facts and ports/net/http. Each operand must already be decoded Unicode-scalar valid UTF-8 Text of 0–1,024 bytes; callers own transport validity and this bound. The original thirteen-field Report separates raw header validity, parsed-tag strength and trailing content. Raw ETagStrongMatch does not validate grammar. These facts do not implement full If-Match, current-resource matching, authorization or atomic writes.",
-    "For version-update tasks, use examples/version-eligibility and ports/xmod. A plain JSON current/candidate/minimum request is converted to Gooo inputs without computing eligibility. AssessUpdate returns the minimum-only eligible/reason: all three versions valid, candidate newer than current and at least minimum. Select --policy stable for AssessStableSameMajorUpdate and consume policy_eligible/policy_reason; its eligible/reason remain minimum-only facts. This filter also requires the same major and no prerelease, but does not prove API compatibility or safe deployment, including v0 minor updates. Each Text is at most 1,024 UTF-8 bytes without trimming. The 56 supplied function/policy cases use an independent Go reference and are separate from custom input-only OBSERVED execution and replay.",
-    "For a same-minor patch-line rule, including a deliberate edit to that rule, use the separate source example https://gist.github.com/kimjooyoon/9ca55091bd18ddb6f06a563e99f68348#file-00-readme-md with released Gooo 0.6.36-dev, compiler source 31497af3beaef210b5a075867b0de76cf55ee3ca, SDK v0.2.51-experimental and Go 1.27.2. Follow its isolated setup; the maintained checkout uses compiler 205896a413e5dea92366309c35ae85e542d055f6 and Go 1.27.3, as recorded in upstream.json. Keep the isolated Go 1.27.2 reproduction separate from the current checkout. MajorMinor returns a one-field record with a source-owned 1,026-byte value bound. Its importing Gooo policy requires a newer stable candidate in the same major.minor line and at least minimum; read policy_eligible/policy_reason. The example includes 27 finite Go-reference cases and an input-only source-edit guide with saved replay. This is not a new --policy option in the maintained request converter. A finite match or same-line result does not establish API compatibility, effect authority or safe deployment."
+    "For ETag tasks, use examples/strong-validator-facts and ports/net/http. Each operand must already be decoded Unicode-scalar valid UTF-8 Text of 0–1,024 bytes; callers own transport validity and this bound. The original thirteen-field Report separates raw",
+    "header validity, parsed-tag strength and trailing content. Raw ETagStrongMatch does not validate grammar. These facts do not implement full If-Match, current-resource matching, authorization or atomic writes.",
+    "For version-update tasks, use examples/version-eligibility and ports/xmod. A plain JSON current/candidate/minimum request is converted to Gooo inputs without computing eligibility. AssessUpdate returns the minimum-only eligible/reason: all three versions",
+    "valid, candidate newer than current and at least minimum. Select --policy stable for AssessStableSameMajorUpdate and consume policy_eligible/policy_reason; its eligible/reason remain minimum-only facts. This filter also requires the same major and no",
+    "prerelease, but does not prove API compatibility or safe deployment, including v0 minor updates. Each Text is at most 1,024 UTF-8 bytes without trimming. The 56 supplied function/policy cases use an independent Go reference and are separate from custom",
+    "input-only OBSERVED execution and replay.",
+    "For a same-minor patch-line rule, including a deliberate edit to that rule, use the separate source example https://gist.github.com/kimjooyoon/9ca55091bd18ddb6f06a563e99f68348#file-00-readme-md with released Gooo 0.6.36-dev, compiler source",
+    "31497af3beaef210b5a075867b0de76cf55ee3ca, SDK v0.2.51-experimental and Go 1.27.2. Follow its isolated setup; the maintained checkout uses compiler 205896a413e5dea92366309c35ae85e542d055f6 and Go 1.27.3, as recorded in upstream.json. Keep the isolated Go",
+    "1.27.2 reproduction separate from the current checkout. MajorMinor returns a one-field record with a source-owned 1,026-byte value bound. Its importing Gooo policy requires a newer stable candidate in the same major.minor line and at least minimum; read",
+    "policy_eligible/policy_reason. The example includes 27 finite Go-reference cases and an input-only source-edit guide with saved replay. This is not a new --policy option in the maintained request converter. A finite match or same-line result does not",
+    "establish API compatibility, effect authority or safe deployment.",
+    "For service-grant assessment, use examples/service-grant-mcp. Default assess_service_grant preserves one required service pair; --many-required additionally exposes assess_service_grant_change for an ordered list.",
+    "For multiple required requests, use assess_service_grant_change and preserve order and duplicate positions. Its Gooo policy admits 1-256 pairs; an excess list is represented INVALID_INPUT, not a transport error.",
+    "Use canonical service identifiers, not URL paths or individual tool names. Pattern and component strings are ASCII, at most 128 bytes. Preserve unsupported text; do not trim, repair or substitute a single-request assessment.",
+    "ELIGIBLE, REFUSED and represented INVALID_INPUT are calculations, not live grants. Retain facts, every decision field and full bindings. MCP isError or a missing tool is a setup, input, transport or execution failure; do not invent a decision."
   ]
 }

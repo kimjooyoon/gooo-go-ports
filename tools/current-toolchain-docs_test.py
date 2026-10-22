@@ -204,7 +204,10 @@ class ToolchainDocs(unittest.TestCase):
     def test_context7_ambiguous_rule_refuses_before_any_output(self):
         path = self.root / 'context7.json'
         value = json.loads(path.read_bytes())
-        value['rules'].append(value['rules'][-1])
+        current_rules = [rule for rule in value['rules']
+                         if 'the maintained checkout uses compiler ' in rule]
+        self.assertEqual(len(current_rules), 1)
+        value['rules'].append(current_rules[0])
         path.write_text(json.dumps(value))
         self.refused_before_output()
 
