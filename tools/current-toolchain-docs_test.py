@@ -22,6 +22,9 @@ class ToolchainDocs(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.base = Path(self.temp.name)
         self.root = self.base / 'source'
+        self.root.mkdir()
+        for name in ('upstream.json', 'context7.json'):
+            shutil.copyfile(ROOT / name, self.root / name)
         for module in DOCS.MODULES:
             for name in ('compiler.json', 'generation.json', 'go.mod', 'generate.py', 'verify.py', 'README.md'):
                 relative = Path('examples') / module / name
@@ -59,11 +62,14 @@ class ToolchainDocs(unittest.TestCase):
         before = {str(p.relative_to(self.root)): p.read_bytes() for p in self.root.rglob('*') if p.is_file()}
         out = self.base / 'candidate'
         outputs = DOCS.generate(self.root, out)
-        self.assertEqual(len(outputs), 2)
+        self.assertEqual(len(outputs), 3)
         for relative, raw in outputs.items():
             original = before[relative]
-            self.assertEqual(original.split(DOCS.START)[0], raw.split(DOCS.START)[0])
-            self.assertEqual(original.split(DOCS.END)[1], raw.split(DOCS.END)[1])
+            if relative != 'context7.json':
+                self.assertEqual(original.split(DOCS.START)[0], raw.split(DOCS.START)[0])
+                self.assertEqual(original.split(DOCS.END)[1], raw.split(DOCS.END)[1])
+            else:
+                self.assertEqual(original, raw)
             self.assertEqual((out / relative).read_bytes(), raw)
         self.assertEqual(before, {str(p.relative_to(self.root)): p.read_bytes() for p in self.root.rglob('*') if p.is_file()})
         proof = json.loads((out / 'generation.provenance.jsonld').read_text())
@@ -71,7 +77,7 @@ class ToolchainDocs(unittest.TestCase):
         activities = [r for r in proof['@graph'] if r['@type'] == 'prov:Activity']
         self.assertEqual(len(activities), 1)
         generated = [r for r in proof['@graph'] if 'prov:wasGeneratedBy' in r]
-        self.assertEqual(len(generated), 2)
+        self.assertEqual(len(generated), 3)
         for row in generated:
             self.assertEqual(row['prov:wasGeneratedBy']['@id'], activities[0]['@id'])
             self.assertNotIn(row['@id'], [r['@id'] for r in row['prov:wasDerivedFrom']])
@@ -150,7 +156,7 @@ class ToolchainDocs(unittest.TestCase):
                 self.refused_before_output()
 
     def test_stale_doc_check_refuses_without_altering_source(self):
-        self.assertEqual(DOCS.check(self.root), 2)
+        self.assertEqual(DOCS.check(self.root), 3)
         path = self.path('service-grant-many', 'README.md')
         raw = path.read_bytes()
         prefix, rest = raw.split(DOCS.START)
@@ -176,6 +182,100 @@ class ToolchainDocs(unittest.TestCase):
         with self.assertRaises(DOCS.Refused):
             DOCS.generate(self.root, out)
         self.assertFalse(out.exists())
+
+    def test_context7_current_drift_is_repaired_without_changing_historical_rule(self):
+        path = self.root / 'context7.json'
+        raw = path.read_bytes()
+        pin = json.loads((self.root / 'upstream.json').read_bytes())['compiler_revision']
+        old = ('the maintained checkout uses compiler ' + pin).encode()
+        stale = raw.replace(old, b'the maintained checkout uses compiler ' + b'a' * 40)
+        self.assertNotEqual(stale, raw)
+        path.write_bytes(stale)
+        with self.assertRaises(DOCS.Refused):
+            DOCS.check(self.root)
+        out = self.base / 'candidate'
+        self.assertEqual(DOCS.generate(self.root, out)['context7.json'], raw)
+        self.assertEqual(path.read_bytes(), stale)
+        proof = json.loads((out / 'generation.provenance.jsonld').read_bytes())
+        row = next(r for r in proof['@graph'] if r.get('path') == 'context7.json' and 'prov:wasGeneratedBy' in r)
+        entities = {r['@id']: r for r in proof['@graph']}
+        self.assertEqual({entities[r['@id']]['path'] for r in row['prov:wasDerivedFrom']}, {'upstream.json', 'context7.json'})
+
+    def test_context7_ambiguous_rule_refuses_before_any_output(self):
+        path = self.root / 'context7.json'
+        value = json.loads(path.read_bytes())
+        value['rules'].append(value['rules'][-1])
+        path.write_text(json.dumps(value))
+        self.refused_before_output()
+
+    def test_upstream_pin_conflict_refuses_before_any_output(self):
+        path = self.root / 'upstream.json'
+        value = json.loads(path.read_bytes())
+        value['compiler_revision'] = 'a' * 40
+        path.write_text(json.dumps(value))
+        self.refused_before_output()
+
+    def test_context7_go_drift_is_repaired_in_detached_candidate(self):
+        path = self.root / 'context7.json'
+        raw = path.read_bytes()
+        go = json.loads((self.root / 'upstream.json').read_bytes())['go_version'][2:]
+        needle = (' and Go ' + go + ', as recorded in upstream.json.').encode()
+        self.assertEqual(raw.count(needle), 1)
+        stale = raw.replace(needle, b' and Go 1.0.0, as recorded in upstream.json.')
+        path.write_bytes(stale)
+        with self.assertRaises(DOCS.Refused):
+            DOCS.check(self.root)
+        out = self.base / 'candidate'
+        self.assertEqual(DOCS.generate(self.root, out)['context7.json'], raw)
+        self.assertEqual(path.read_bytes(), stale)
+
+    def test_missing_context7_current_sentence_refuses_before_output(self):
+        path = self.root / 'context7.json'
+        self.mutate_text(path, 'the maintained checkout uses compiler', 'unrecognized current checkout wording')
+        self.refused_before_output()
+
+    def test_coherent_future_fixture_updates_all_three_consumers_together(self):
+        # Synthetic metadata fixture only: no new compiler or Go version is run.
+        upstream_path = self.root / 'upstream.json'
+        upstream = json.loads(upstream_path.read_bytes())
+        old_pin, old_go = upstream['compiler_revision'], upstream['go_version']
+        new_pin = 'a' * 40 if old_pin != 'a' * 40 else 'b' * 40
+        prefix, patch = old_go.rsplit('.', 1)
+        new_go = prefix + '.' + str(int(patch) + 1)
+        upstream['compiler_revision'], upstream['go_version'] = new_pin, new_go
+        upstream_path.write_text(json.dumps(upstream))
+        originals = {}
+        for module in DOCS.MODULES:
+            originals[module] = self.path(module, 'README.md').read_bytes()
+            for name in ('compiler.json', 'go.mod', 'generate.py', 'verify.py'):
+                path = self.path(module, name)
+                path.write_bytes(path.read_bytes().replace(old_pin.encode(), new_pin.encode())
+                                 .replace(old_go.encode(), new_go.encode())
+                                 .replace(old_go[2:].encode(), new_go[2:].encode()))
+            path = self.path(module, 'generation.json')
+            path.write_bytes(path.read_bytes().replace(old_pin.encode(), new_pin.encode())
+                             .replace(old_go.encode(), new_go.encode()))
+            for name in ('compiler.json', 'go.mod', 'generate.py', 'verify.py'):
+                self.rebind_fixture_asset(module, name)
+        context_original = (self.root / 'context7.json').read_bytes()
+        with self.assertRaises(DOCS.Refused):
+            DOCS.check(self.root)
+        out = self.base / 'candidate'
+        outputs = DOCS.generate(self.root, out)
+        self.assertEqual(len(outputs), 3)
+        for module in DOCS.MODULES:
+            rendered = outputs['examples/' + module + '/README.md']
+            self.assertIn(new_pin.encode(), rendered)
+            self.assertIn(('Go ' + new_go[2:]).encode(), rendered)
+            self.assertEqual(self.path(module, 'README.md').read_bytes(), originals[module])
+            self.assertEqual(rendered.split(DOCS.START)[0], originals[module].split(DOCS.START)[0])
+            self.assertEqual(rendered.split(DOCS.END)[1], originals[module].split(DOCS.END)[1])
+        expected = context_original.replace(
+            ('the maintained checkout uses compiler ' + old_pin + ' and Go ' + old_go[2:]).encode(),
+            ('the maintained checkout uses compiler ' + new_pin + ' and Go ' + new_go[2:]).encode())
+        self.assertNotEqual(expected, context_original)
+        self.assertEqual(outputs['context7.json'], expected)
+        self.assertEqual((self.root / 'context7.json').read_bytes(), context_original)
 
 
 if __name__ == '__main__':
