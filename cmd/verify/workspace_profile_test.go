@@ -226,6 +226,7 @@ func workspaceProfileBatchBytes(t *testing.T, s suite, start int, prepared nativ
 }
 
 func TestWorkspaceProfileFixed70ClosuresPreserveEveryOriginalCaseAndPartition(t *testing.T) {
+	parallelFullCorpusTest(t)
 	// This is the only full-factory construction in the new tests. No compiler,
 	// native command, retained output or Gooo result supplies expected values.
 	suites := allNativeSuites(t)

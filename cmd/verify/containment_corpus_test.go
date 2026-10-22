@@ -282,6 +282,7 @@ func TestContainmentStandalone14LiteralObservationsMatchOriginalGo(t *testing.T)
 }
 
 func TestContainmentPreservesAllOriginal57CaseBytesAndBatchBoundaries(t *testing.T) {
+	parallelFullCorpusTest(t)
 	legacy := original57NativeSuites(t)
 	all := original59NativeSuites(t)
 	if len(legacy) != 57 || len(all) != len(legacy)+2 || !reflect.DeepEqual(all[:len(legacy)], legacy) {

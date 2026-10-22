@@ -77,6 +77,7 @@ func TestLiteralTextRejectsCompleteBadRosterBeforeOracle(t *testing.T) {
 }
 
 func TestLiteralTextCoverageOriginalInputsAndSerializedBatches(t *testing.T) {
+	parallelFullCorpusTest(t)
 	result, err := literalTextCorpus()
 	if err != nil {
 		t.Fatal(err)

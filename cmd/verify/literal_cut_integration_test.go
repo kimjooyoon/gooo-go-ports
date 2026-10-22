@@ -14,6 +14,7 @@ import (
 // are checked by exact projection, while the selected source bytes/hashes stay
 // current. This does not claim a historical original62 source image or native PASS.
 func TestLiteralCutPreservesOriginal62CasesWorkspacesAndBatchBoundaries(t *testing.T) {
+	parallelFullCorpusTest(t)
 	var base struct {
 		Schema    string              `json:"schema"`
 		Catalog   verificationCatalog `json:"catalog"`

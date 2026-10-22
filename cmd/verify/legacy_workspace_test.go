@@ -257,6 +257,7 @@ func legacy445HistoricalSnapshot(t *testing.T, current frozenVerificationCatalog
 }
 
 func TestLegacy445HistoricalSnapshotCatalogSourcesManifestsInputsCasesAndBatchesRemainIdentical(t *testing.T) {
+	parallelFullCorpusTest(t)
 	fixture := loadLegacy445Fixture(t)
 	current, err := freezeVerificationCatalog("../../verification-catalog.json")
 	if err != nil {
