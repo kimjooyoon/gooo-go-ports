@@ -388,7 +388,7 @@
           "type": "string",
           "pattern": "^sha256:[0-9a-f]{64}$"
         },
-        "upstream_facts_sha256": {
+        "selected_upstream_pins_sha256": {
           "type": "string",
           "pattern": "^sha256:[0-9a-f]{64}$"
         },
@@ -457,7 +457,7 @@
         "workspace_sha256",
         "cases_sha256",
         "generator_sha256",
-        "upstream_facts_sha256",
+        "selected_upstream_pins_sha256",
         "schema_validation_spec_sha256",
         "typed_plan_sha256",
         "raw_projection_sha256",

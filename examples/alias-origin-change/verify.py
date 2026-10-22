@@ -73,6 +73,10 @@ def main():
             if p.is_file() and p.name!='generation.provenance.jsonld':
                 name=str(p.relative_to(generated));assert p.read_bytes()==(HERE/name).read_bytes(),name;generated_names.append(name)
         host.save(out/'generated-asset-check.json',{'files':generated_names,'all_exact':True,'actual_PROV_O':host.ref(generated/'generation.provenance.jsonld')})
+        run('check-consumed-pin-dependencies',['python3','-I','-B',HERE/'generator_dependencies_test.py','--execution',execution,'--replay',replay,'--gofmt',go.parent/'gofmt','--out',out/'consumed-pin-dependencies'],180)
+        dependency=host.strict((out/'consumed-pin-dependencies/summary.json').read_bytes())
+        assert dependency['status']=='CONSUMED_PINS_STABLE_UNRELATED_AND_REJECT_RELEVANT_CHANGES' and dependency['all_direct_wait_EOF_PG_ESRCH'] and dependency['public_source_unchanged'] and dependency['stable_assets']==7
+        summary['consumed_pin_dependency_regression']=True
         run('module-integrity',[go,'-C',HERE,'mod','verify']);run('go-vet',[go,'-C',HERE,'vet','./...'])
         race=dict(env,CGO_ENABLED='1');run('API-race-and-schema-tests',[go,'-C',HERE,'test','-race','./...','-count=1'],180,environment=race)
         deps=[x for x in run('native-runtime-dependencies',[go,'-C',HERE,'list','-deps','-f','{{if not .Standard}}{{.ImportPath}}{{end}}','./cmd/compare']).decode().splitlines() if x];assert len(deps)==3 and all(x.startswith('github.com/kimjooyoon/gooo-go-ports/examples/alias-origin-change') for x in deps)

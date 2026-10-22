@@ -18,6 +18,8 @@ ROOT = HERE.parents[1]
 FACTS = json.loads((ROOT / 'upstream.json').read_bytes())
 PIN = FACTS['compiler_revision']
 GO_VERSION = FACTS['go_version']
+SELECTED_PINS = {'compiler_revision': PIN, 'go_version': GO_VERSION}
+SELECTED_PIN_BYTES = json.dumps(SELECTED_PINS, sort_keys=True, separators=(',', ':')).encode()
 assert re.fullmatch(r'go1[.][0-9]+[.][0-9]+', GO_VERSION)
 ENTRY = 'gooo/tool-origin:CompareAliasOrigin'
 PREFIX = 'gooo://tool-origin/v1/'
@@ -140,7 +142,7 @@ def render(execution, replay, gofmt):
     manifest = {'schema': 'gooo/alias-origin-generation/v1', 'compiler_source_sha': PIN,
         'go_version': GO_VERSION, 'source': {'ports/tool-origin/alias_origin.gooo': digest(source_raw)},
         'workspace_sha256': digest(manifest_raw), 'cases_sha256': digest(cases_raw),
-        'generator_sha256': digest(Path(__file__).read_bytes()), 'upstream_facts_sha256': digest((ROOT/'upstream.json').read_bytes()),
+        'generator_sha256': digest(Path(__file__).read_bytes()), 'selected_upstream_pins_sha256': digest(SELECTED_PIN_BYTES),
         'schema_validation_spec_sha256': digest((HERE/'schema-validation.json').read_bytes()),
         'typed_plan_sha256': plan['typed_plan_sha256'], 'raw_projection_sha256': digest(raw.encode()),
         'projection_transform': 'Replace first package token main with kernel; all other bytes unchanged.',
@@ -166,12 +168,16 @@ if __name__ == '__main__':
         args.out.mkdir()
         for name,raw in produced.items():
             target=args.out/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(raw)
-        used=[ROOT/'upstream.json',ROOT/'ports/tool-origin/alias_origin.gooo',ROOT/'alias-origin-change.workspace.json',HERE/'kernel.cases.json',HERE/'schema-validation.json',Path(__file__),args.execution,args.replay,args.gofmt]
+        used=[ROOT/'upstream.json',ROOT/'ports/tool-origin/alias_origin.gooo',ROOT/'alias-origin-change.workspace.json',HERE/'kernel.cases.json',HERE/'schema-validation.json',Path(__file__),args.execution,args.replay,args.gofmt,args.gofmt.parent/'go']
         activity='urn:uuid:'+str(uuid.uuid4());graph=[];parents=[];entities={}
         for path in used:
             raw=path.read_bytes();identity='urn:sha256:'+digest(raw)[7:];node={'@id':identity,'@type':'prov:Entity','path':str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path),'sha256':digest(raw)}
             if path in (args.execution,args.replay):node['original_JSON_sha256']=digest(read(path))
             graph.append(node);reference={'@id':identity};parents.append(reference);entities[path]=reference
+        projection_id='urn:sha256:'+digest(SELECTED_PIN_BYTES)[7:]
+        projection={'@id':projection_id}
+        graph.append({'@id':projection_id,'@type':'prov:Entity','path':'upstream.json#consumed-generator-pins','sha256':digest(SELECTED_PIN_BYTES),'jsonPointers':['/compiler_revision','/go_version'],'canonicalJSON':SELECTED_PIN_BYTES.decode(),'prov:wasDerivedFrom':[entities[ROOT/'upstream.json']]})
+        parents.append(projection)
         graph.append({'@id':activity,'@type':'prov:Activity','prov:used':parents,'prov:endedAtTime':{'@value':datetime.datetime.now(datetime.timezone.utc).isoformat(),'@type':'http://www.w3.org/2001/XMLSchema#dateTime'}})
         for name,raw in produced.items():
             if name in ('go.mod','reference/go.mod'):
@@ -179,7 +185,7 @@ if __name__ == '__main__':
                 if name=='go.mod':dependencies.append(HERE/'schema-validation.json')
             elif name=='go.sum':dependencies=[HERE/'schema-validation.json',Path(__file__)]
             else:dependencies=used
-            graph.append({'@id':'urn:sha256:'+digest(raw)[7:],'@type':'prov:Entity','path':name,'sha256':digest(raw),'prov:wasGeneratedBy':{'@id':activity},'prov:wasDerivedFrom':[entities[path] for path in dependencies]})
-        proof={'@context':{'prov':'http://www.w3.org/ns/prov#','gooo':'https://github.com/kimjooyoon/gooo-go-ports/provenance#','path':'gooo:path','sha256':'gooo:sha256','original_JSON_sha256':'gooo:originalJSONSHA256','scope':'gooo:scope'},'@graph':graph,'scope':'Actual local rendering derivation; not signed producer/current-state/effect authority.'}
+            graph.append({'@id':'urn:sha256:'+digest(raw)[7:],'@type':'prov:Entity','path':name,'sha256':digest(raw),'prov:wasGeneratedBy':{'@id':activity},'prov:wasDerivedFrom':[projection if path==ROOT/'upstream.json' else entities[path] for path in dependencies]})
+        proof={'@context':{'prov':'http://www.w3.org/ns/prov#','gooo':'https://github.com/kimjooyoon/gooo-go-ports/provenance#','path':'gooo:path','sha256':'gooo:sha256','original_JSON_sha256':'gooo:originalJSONSHA256','scope':'gooo:scope','jsonPointers':'gooo:jsonPointers','canonicalJSON':'gooo:canonicalJSON'},'@graph':graph,'scope':'Actual local rendering derivation; not signed producer/current-state/effect authority.'}
         (args.out/'generation.provenance.jsonld').write_text(json.dumps(proof,indent=2)+'\n')
     print(json.dumps({'files':list(produced),'status':'GENERATED_FROM_FRESH_SOURCE_BOUND_NATIVE_PAIR' if args.out else 'CHECKED_EXACT_GENERATED_BYTES'}))

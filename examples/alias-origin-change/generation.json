@@ -9,17 +9,17 @@
     "internal/kernel/types_generated.go": "sha256:5807c82495b89fd0d9585edd11493927076bdb6db3d0f05c813c07e2dd43637e",
     "reference/go.mod": "sha256:bb6a00214e6cff7be2b3504ee9321a00bb27e1aa5736388cb98bbd6d0aa05990"
   },
-  "generator_sha256": "sha256:a83d8d95c0de265b02495a1e1a10abf696eef32df539011a810b6ac8e5faafc2",
+  "generator_sha256": "sha256:ec9bc37c2cb6b5efd26b685e7e2754acf8570041a7050c6d470f5856fd936aa6",
   "go_version": "go1.27.3",
   "projection_transform": "Replace first package token main with kernel; all other bytes unchanged.",
   "raw_projection_sha256": "sha256:bed6c98d344d3a63e6d40b747e5c10b3c59d61b79816af3b96dc4c59f080d897",
   "schema": "gooo/alias-origin-generation/v1",
   "schema_validation_spec_sha256": "sha256:bd1b0e220e51a92b8b0bcb964b8b69a792c0b916dc98d9d7be1dbaec16308fb0",
   "scope": "Finite native/replay source-bound generation; not authenticated authority or host integration proof.",
+  "selected_upstream_pins_sha256": "sha256:20171ad851133bf6627bc72cffbfc440c72a962073d184d8fd349fb635ae5721",
   "source": {
     "ports/tool-origin/alias_origin.gooo": "sha256:b45ac1d43674b9edcbdbedd74a253f5891d51b9fbdaf08ec2f056a55112b55d7"
   },
   "typed_plan_sha256": "sha256:b557d4ae9aa03db064c8d920e43e670d65f8536377fa9782b772106637595993",
-  "upstream_facts_sha256": "sha256:fef5d5dcd80b7f1b1ed836454bd49c5fa6038a397482a1922ef715b2568ba14c",
   "workspace_sha256": "sha256:335de05db5fb7051036552a151c501d403001ac3d8c95b14cca4f84ee23f32d8"
 }
