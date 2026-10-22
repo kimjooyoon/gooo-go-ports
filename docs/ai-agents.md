@@ -6,6 +6,31 @@ source, and save a new execution/replay pair.
 The [Gooo language and compiler](https://github.com/kimjooyoon/meta-ontology-go)
 are developed separately; this repository supplies ports and runnable examples.
 
+## Select the task before setup
+
+| Requested work | Entry point | Result and boundary |
+| --- | --- | --- |
+| Assess a grant change for one required service | [Single-request MCP tool](#connect-the-service-grant-mcp-tool): `assess_service_grant` | One supplied type/name pair; seven decision fields and full bindings. |
+| Preserve all required services while narrowing a grant | [Ordered-request MCP tool](#preserve-several-required-requests-through-mcp): start with `--many-required`, then call `assess_service_grant_change` | An ordered list, normally 1-256 pairs; twelve decision fields, including the first original counterexample index. Do not replace it with the single-request tool. |
+| Compare the supplied API policy profiles | [Fixed-policy command](#compare-fixed-api-policies-without-a-compiler) | Compares the documented profiles; does not load an arbitrary edited policy. |
+| Edit and execute Gooo source | [First-program skill](#run-the-first-program-skill) | An actual source edit plus new execution and replay records; declaration checking alone is insufficient. |
+
+The native MCP routes need no compiler at runtime. The optional
+`--many-required` mode adds the list tool while retaining the single-request
+tool; a host may separately filter its enabled tools. Use discovery to check
+what the connected executable exposes.
+
+The [service-pattern domain](../examples/agentmesh-service-policy/README.md#exact-represented-domain)
+uses bounded ASCII service identifiers, rather than URL paths or individual MCP
+tool names. Unsupported patterns must remain explicit failures or represented
+`INVALID_INPUT`; do not repair inputs to obtain an eligible result.
+`ELIGIBLE` and `REFUSED` are assessment outcomes, while an MCP error or absent
+tool is a setup, input, transport or execution failure. Preserve the complete facts, typed decision
+and source bindings. These calculations require no per-request human approval;
+they neither authenticate supplied facts nor apply a live change. Report the
+[actual first attempt](#report-a-first-attempt-or-a-real-task), including a
+missing capability, rather than treating installation as task completion.
+
 ## Check a service-grant change without a toolchain
 
 Start with [native preview.12](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.12)
