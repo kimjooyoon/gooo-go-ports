@@ -234,6 +234,49 @@ class ToolchainDocs(unittest.TestCase):
         self.mutate_text(path, 'the maintained checkout uses compiler', 'unrecognized current checkout wording')
         self.refused_before_output()
 
+    def test_coherent_future_fixture_updates_all_three_consumers_together(self):
+        # Synthetic metadata fixture only: no new compiler or Go version is run.
+        upstream_path = self.root / 'upstream.json'
+        upstream = json.loads(upstream_path.read_bytes())
+        old_pin, old_go = upstream['compiler_revision'], upstream['go_version']
+        new_pin = 'a' * 40 if old_pin != 'a' * 40 else 'b' * 40
+        prefix, patch = old_go.rsplit('.', 1)
+        new_go = prefix + '.' + str(int(patch) + 1)
+        upstream['compiler_revision'], upstream['go_version'] = new_pin, new_go
+        upstream_path.write_text(json.dumps(upstream))
+        originals = {}
+        for module in DOCS.MODULES:
+            originals[module] = self.path(module, 'README.md').read_bytes()
+            for name in ('compiler.json', 'go.mod', 'generate.py', 'verify.py'):
+                path = self.path(module, name)
+                path.write_bytes(path.read_bytes().replace(old_pin.encode(), new_pin.encode())
+                                 .replace(old_go.encode(), new_go.encode())
+                                 .replace(old_go[2:].encode(), new_go[2:].encode()))
+            path = self.path(module, 'generation.json')
+            path.write_bytes(path.read_bytes().replace(old_pin.encode(), new_pin.encode())
+                             .replace(old_go.encode(), new_go.encode()))
+            for name in ('compiler.json', 'go.mod', 'generate.py', 'verify.py'):
+                self.rebind_fixture_asset(module, name)
+        context_original = (self.root / 'context7.json').read_bytes()
+        with self.assertRaises(DOCS.Refused):
+            DOCS.check(self.root)
+        out = self.base / 'candidate'
+        outputs = DOCS.generate(self.root, out)
+        self.assertEqual(len(outputs), 3)
+        for module in DOCS.MODULES:
+            rendered = outputs['examples/' + module + '/README.md']
+            self.assertIn(new_pin.encode(), rendered)
+            self.assertIn(('Go ' + new_go[2:]).encode(), rendered)
+            self.assertEqual(self.path(module, 'README.md').read_bytes(), originals[module])
+            self.assertEqual(rendered.split(DOCS.START)[0], originals[module].split(DOCS.START)[0])
+            self.assertEqual(rendered.split(DOCS.END)[1], originals[module].split(DOCS.END)[1])
+        expected = context_original.replace(
+            ('the maintained checkout uses compiler ' + old_pin + ' and Go ' + old_go[2:]).encode(),
+            ('the maintained checkout uses compiler ' + new_pin + ' and Go ' + new_go[2:]).encode())
+        self.assertNotEqual(expected, context_original)
+        self.assertEqual(outputs['context7.json'], expected)
+        self.assertEqual((self.root / 'context7.json').read_bytes(), context_original)
+
 
 if __name__ == '__main__':
     unittest.main()
