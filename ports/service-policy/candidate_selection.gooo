@@ -1,0 +1,91 @@
+// Copyright (c) 2026 Gooo Go Ports contributors. BSD-3-Clause; see ../../LICENSE.
+// Original selection policy over internally bound assessment summaries.
+// ADMIT performs the same source-owned candidate checks before policy fan-out.
+// Neither phase authenticates live facts or authorizes an effect.
+package candidate_selection
+namespace gooo_candidate_selection_v1
+entity SelectionInput id "gooo://service-policy/candidate-selection/input/v1" fields {
+ field phase id "gooo://service-policy/candidate-selection/input/phase" type string required one
+ field context_id id "gooo://service-policy/candidate-selection/input/context" type string required one
+ field candidate_ids id "gooo://service-policy/candidate-selection/input/candidates" type string required many
+ field assessment_ids id "gooo://service-policy/candidate-selection/input/assessments" type string required many
+ field context_ids id "gooo://service-policy/candidate-selection/input/contexts" type string required many
+ field statuses id "gooo://service-policy/candidate-selection/input/statuses" type string required many
+ field priorities id "gooo://service-policy/candidate-selection/input/priorities" type integer required many
+ field bindings_verified id "gooo://service-policy/candidate-selection/input/bindings" type boolean required many
+}
+entity Selection id "gooo://service-policy/candidate-selection/result/v1" fields {
+ field context_id id "gooo://service-policy/candidate-selection/result/context" type string required one
+ field state id "gooo://service-policy/candidate-selection/result/state" type string required one
+ field reason id "gooo://service-policy/candidate-selection/result/reason" type string required one
+ field selected_candidate_id id "gooo://service-policy/candidate-selection/result/candidate" type string required one
+ field selected_assessment_id id "gooo://service-policy/candidate-selection/result/assessment" type string required one
+ field selected_index id "gooo://service-policy/candidate-selection/result/index" type integer required one
+ field selected_priority id "gooo://service-policy/candidate-selection/result/priority" type integer required one
+ field candidate_count id "gooo://service-policy/candidate-selection/result/count" type integer required one
+ field eligible_count id "gooo://service-policy/candidate-selection/result/eligible-count" type integer required one
+ field invalid_index id "gooo://service-policy/candidate-selection/result/invalid-index" type integer required one
+ field unknown_index id "gooo://service-policy/candidate-selection/result/unknown-index" type integer required one
+ field execution_authorized id "gooo://service-policy/candidate-selection/result/authorized" type boolean required one
+}
+activity SelectCandidate(SelectionInput) -> Selection id "gooo://service-policy/candidate-selection/select/v1" computes `
+let count = int64(len(input.candidate_ids))
+let invalid = false
+let invalidIndex = -1
+let unknown = -1
+let selected = ""
+let assessment = ""
+let selectedIndex = -1
+let priority = 0
+let eligible = 0
+if input.context_id == "" || count < 2 || count > 32 || len(input.priorities) != count ||
+ (input.phase != "ADMIT" && input.phase != "SELECT") {
+ invalid = true
+} else {
+ let index = 0
+ for candidate in input.candidate_ids {
+  let bad = candidate == "" || len(candidate) > 128 || input.priorities[index] < 0
+  let prior = 0
+  for previous in input.candidate_ids {
+   if prior < index && previous == candidate { bad = true }
+   prior = prior + 1
+  }
+  if bad { invalid = true; if invalidIndex == -1 { invalidIndex = index } }
+  index = index + 1
+ }
+}
+if !invalid && input.phase == "SELECT" {
+ if len(input.assessment_ids) != count || len(input.context_ids) != count ||
+  len(input.statuses) != count || len(input.bindings_verified) != count {
+  invalid = true
+ } else {
+  let index = 0
+  for candidate in input.candidate_ids {
+   let status = input.statuses[index]
+   let bad = input.assessment_ids[index] == "" ||
+    (status != "ELIGIBLE" && status != "REFUSED" && status != "INVALID_INPUT")
+   if bad { invalid = true; if invalidIndex == -1 { invalidIndex = index } }
+   if unknown == -1 && (!input.bindings_verified[index] || input.context_ids[index] != input.context_id) { unknown = index }
+   if status == "ELIGIBLE" {
+    eligible = eligible + 1
+    if selected == "" || input.priorities[index] < priority {
+     selected = candidate; assessment = input.assessment_ids[index]
+     selectedIndex = index; priority = input.priorities[index]
+    }
+   }
+   index = index + 1
+  }
+ }
+}
+let state = "REFUSED"
+let reason = "NO_ELIGIBLE_ASSESSMENT"
+if invalid || unknown != -1 {
+ selected = ""; assessment = ""; selectedIndex = -1; priority = 0; eligible = 0
+ if invalid { state = "INVALID_INPUT"; reason = "INVALID_CANDIDATE_COLUMNS" } else { state = "UNKNOWN"; reason = "UNBOUND_OR_DIFFERENT_CONTEXT" }
+} else if input.phase == "ADMIT" { state = "ADMITTED"; reason = "CANDIDATE_COLUMNS_ADMITTED" } else if selected != "" { state = "PROPOSED"; reason = "LOWEST_SUPPLIED_PRIORITY_STABLE_INPUT_ORDER" }
+return Selection{context_id: input.context_id, state: state, reason: reason,
+ selected_candidate_id: selected, selected_assessment_id: assessment,
+ selected_index: selectedIndex, selected_priority: priority, candidate_count: count,
+ eligible_count: eligible, invalid_index: invalidIndex, unknown_index: unknown,
+ execution_authorized: false}
+`

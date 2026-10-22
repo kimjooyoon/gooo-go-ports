@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:gooo:grant-candidate-selection:diagnostic:v1",
+  "title": "Grant selection stderr diagnostic",
+  "description": "Exit one with no semantic decision on stdout. UNKNOWN is a binding/host failure, distinct from a represented Gooo REFUSED result. Field may identify supplied text; logs must be handled as potentially sensitive.",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "state": {
+          "const": "INVALID_TRANSPORT"
+        },
+        "stage": {
+          "const": "decode_input"
+        },
+        "code": {
+          "enum": [
+            "INVALID_JSON_FACTS"
+          ]
+        },
+        "index": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "stage",
+        "code",
+        "index"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "state": {
+          "const": "INVALID_TRANSPORT"
+        },
+        "stage": {
+          "const": "admit_text"
+        },
+        "code": {
+          "enum": [
+            "INVALID_UTF8",
+            "TEXT_LIMIT_EXCEEDED"
+          ]
+        },
+        "index": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "stage",
+        "code",
+        "index"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "state": {
+          "const": "INVALID_TRANSPORT"
+        },
+        "stage": {
+          "const": "encode_result"
+        },
+        "code": {
+          "enum": [
+            "OUTPUT_LIMIT_EXCEEDED"
+          ]
+        },
+        "index": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "stage",
+        "code",
+        "index"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "state": {
+          "const": "UNKNOWN"
+        },
+        "stage": {
+          "const": "command"
+        },
+        "code": {
+          "enum": [
+            "IO_FAILURE"
+          ]
+        },
+        "index": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "stage",
+        "code",
+        "index"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "state": {
+          "const": "UNKNOWN"
+        },
+        "stage": {
+          "const": "bind_generation"
+        },
+        "code": {
+          "enum": [
+            "GENERATION_UNREADABLE",
+            "GENERATION_PROFILE_MISMATCH",
+            "POLICY_BINDINGS_MISMATCH"
+          ]
+        },
+        "index": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "stage",
+        "code",
+        "index"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "state": {
+          "const": "UNKNOWN"
+        },
+        "stage": {
+          "const": "bind_assessment"
+        },
+        "code": {
+          "enum": [
+            "ASSESSMENT_BINDING_MISMATCH",
+            "ASSESSMENT_RESULT_INVALID"
+          ]
+        },
+        "index": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "stage",
+        "code",
+        "index"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "state": {
+          "const": "UNKNOWN"
+        },
+        "stage": {
+          "const": "evaluate_policy"
+        },
+        "code": {
+          "enum": [
+            "DEPENDENCY_PANIC"
+          ]
+        },
+        "index": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "stage",
+        "code",
+        "index"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

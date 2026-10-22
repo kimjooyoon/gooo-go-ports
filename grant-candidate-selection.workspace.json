@@ -1,0 +1,15 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "gooo/service-policy/candidate-selection",
+    "activity": "SelectCandidate"
+  },
+  "packages": [
+    {
+      "path": "gooo/service-policy/candidate-selection",
+      "sources": [
+        "ports/service-policy/candidate_selection.gooo"
+      ]
+    }
+  ]
+}

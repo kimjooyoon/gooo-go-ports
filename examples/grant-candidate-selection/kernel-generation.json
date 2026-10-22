@@ -1,0 +1,19 @@
+{
+  "cases_sha256": "sha256:2db4f58634f45f37429b71ba5de28cd6364fd496bbcb943b90a8ff4163bdbe3f",
+  "compiler_source_sha": "205896a413e5dea92366309c35ae85e542d055f6",
+  "generated_assets": {
+    "internal/selector/bridge_generated.go": "sha256:36ee18220255dd4dd700a575f0ef6828fb0d8e183939131bec4bded35e8c6f59",
+    "internal/selector/projection_generated.go": "sha256:a11e654da8bd5a68999312fc36cfddacfdf3f2aeb9fb0f310717d76f83ffa113",
+    "internal/selector/types_generated.go": "sha256:fdf0aa5517608a0a375873a23b74b2fb00372f1f61eace33eb7b89fd1a9d589f"
+  },
+  "go_version": "go1.27.3",
+  "projection_transform": "Replace first package token main with selector; all other bytes unchanged.",
+  "raw_projection_sha256": "sha256:628c9f8fd4a893ddb151e14b142e8be39e013683c9c214e002c78cb14c446d8b",
+  "schema": "gooo/grant-selection-kernel-generation/v1",
+  "scope": "Finite native/replay source-bound generation; not authenticated authority or host integration proof.",
+  "source": {
+    "ports/service-policy/candidate_selection.gooo": "sha256:6086fff904a28056519c5c1d44ea37aacaab3b69230781475e2fe8b3652c56d1"
+  },
+  "typed_plan_sha256": "sha256:c0edc31244e28da88b343e04fb403e3b727fe7da7854d6e8c4ca0d30d31392bc",
+  "workspace_sha256": "sha256:f07944aac24fc581ef0c196f1a61d90b9f3ca27f43416dc198ef61078b77a8fc"
+}

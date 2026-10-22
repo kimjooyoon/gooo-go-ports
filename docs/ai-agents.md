@@ -472,6 +472,15 @@ compiler issue before passing a minimal case to the language repository.
   from an MCP host, use the explicit
   [ordered-request mode](#preserve-several-required-requests-through-mcp).
   The default MCP tool still assesses one required request.
+- **Choose among several supplied grant-change proposals:** use the
+  [source-owned Gooo selector](../examples/grant-candidate-selection/README.md).
+  Pass one `before` grant, the ordered `required_requests`, and candidate IDs,
+  `after` grants and nonnegative preferences. The native API evaluates every
+  proposal internally; callers cannot assert assessment status or verification.
+  Gooo selects by supplied preference among eligible proposals and retains all
+  original proofs. `PROPOSED` is a proposal and `execution_authorized` stays
+  false. See the module's reproduction command and failure states. This checkout
+  module is not a tool in the released MCP bundles.
 - **Discover the same assessment through MCP:** build the
   [local service-grant MCP server](../examples/service-grant-mcp/README.md)
   and configure your host to launch its absolute executable path over stdio.

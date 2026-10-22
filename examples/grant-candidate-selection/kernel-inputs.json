@@ -1,0 +1,3703 @@
+[
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      4,
+      4,
+      4
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "REFUSED",
+      "INVALID_INPUT",
+      "REFUSED"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "REFUSED",
+      "ELIGIBLE",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [],
+    "assessment_ids": [],
+    "context_ids": [],
+    "statuses": [],
+    "priorities": [],
+    "bindings_verified": [],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0"
+    ],
+    "assessment_ids": [
+      "proof-0"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      1
+    ],
+    "bindings_verified": [
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6",
+      "candidate-7",
+      "candidate-8",
+      "candidate-9",
+      "candidate-10",
+      "candidate-11",
+      "candidate-12",
+      "candidate-13",
+      "candidate-14",
+      "candidate-15",
+      "candidate-16",
+      "candidate-17",
+      "candidate-18",
+      "candidate-19",
+      "candidate-20",
+      "candidate-21",
+      "candidate-22",
+      "candidate-23",
+      "candidate-24",
+      "candidate-25",
+      "candidate-26",
+      "candidate-27",
+      "candidate-28",
+      "candidate-29",
+      "candidate-30",
+      "candidate-31"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6",
+      "proof-7",
+      "proof-8",
+      "proof-9",
+      "proof-10",
+      "proof-11",
+      "proof-12",
+      "proof-13",
+      "proof-14",
+      "proof-15",
+      "proof-16",
+      "proof-17",
+      "proof-18",
+      "proof-19",
+      "proof-20",
+      "proof-21",
+      "proof-22",
+      "proof-23",
+      "proof-24",
+      "proof-25",
+      "proof-26",
+      "proof-27",
+      "proof-28",
+      "proof-29",
+      "proof-30",
+      "proof-31"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      32,
+      31,
+      30,
+      29,
+      28,
+      27,
+      26,
+      25,
+      24,
+      23,
+      22,
+      21,
+      20,
+      19,
+      18,
+      17,
+      16,
+      15,
+      14,
+      13,
+      12,
+      11,
+      10,
+      9,
+      8,
+      7,
+      6,
+      5,
+      4,
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6",
+      "candidate-7",
+      "candidate-8",
+      "candidate-9",
+      "candidate-10",
+      "candidate-11",
+      "candidate-12",
+      "candidate-13",
+      "candidate-14",
+      "candidate-15",
+      "candidate-16",
+      "candidate-17",
+      "candidate-18",
+      "candidate-19",
+      "candidate-20",
+      "candidate-21",
+      "candidate-22",
+      "candidate-23",
+      "candidate-24",
+      "candidate-25",
+      "candidate-26",
+      "candidate-27",
+      "candidate-28",
+      "candidate-29",
+      "candidate-30",
+      "candidate-31",
+      "candidate-32"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6",
+      "proof-7",
+      "proof-8",
+      "proof-9",
+      "proof-10",
+      "proof-11",
+      "proof-12",
+      "proof-13",
+      "proof-14",
+      "proof-15",
+      "proof-16",
+      "proof-17",
+      "proof-18",
+      "proof-19",
+      "proof-20",
+      "proof-21",
+      "proof-22",
+      "proof-23",
+      "proof-24",
+      "proof-25",
+      "proof-26",
+      "proof-27",
+      "proof-28",
+      "proof-29",
+      "proof-30",
+      "proof-31",
+      "proof-32"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      33,
+      32,
+      31,
+      30,
+      29,
+      28,
+      27,
+      26,
+      25,
+      24,
+      23,
+      22,
+      21,
+      20,
+      19,
+      18,
+      17,
+      16,
+      15,
+      14,
+      13,
+      12,
+      11,
+      10,
+      9,
+      8,
+      7,
+      6,
+      5,
+      4,
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      ""
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      ""
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "UNKNOWN"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      -1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-0"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      false
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "different-requirements"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      false
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      9223372036854775807,
+      0,
+      9223372036854775807
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-0"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "REFUSED",
+      "INVALID_INPUT",
+      "REFUSED",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      1,
+      0,
+      9223372036854775807,
+      1,
+      0,
+      1,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "INVALID_INPUT",
+      "INVALID_INPUT",
+      "INVALID_INPUT",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      0,
+      1,
+      1,
+      9223372036854775807
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      100,
+      0
+    ],
+    "bindings_verified": [
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "REFUSED",
+      "ELIGIBLE",
+      "INVALID_INPUT",
+      "REFUSED",
+      "REFUSED"
+    ],
+    "priorities": [
+      0,
+      0,
+      1,
+      1,
+      100,
+      0
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "INVALID_INPUT",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      9223372036854775807,
+      9223372036854775807
+    ],
+    "bindings_verified": [
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "REFUSED",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      100,
+      0,
+      100,
+      100
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      false
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "REFUSED",
+      "INVALID_INPUT",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      2,
+      0,
+      2,
+      9223372036854775807,
+      1,
+      0,
+      0
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-0"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "REFUSED",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      9223372036854775807,
+      100
+    ],
+    "bindings_verified": [
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "INVALID_INPUT",
+      "ELIGIBLE",
+      "INVALID_INPUT",
+      "INVALID_INPUT",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      2,
+      0,
+      9223372036854775807,
+      100,
+      0
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "REFUSED",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "INVALID_INPUT",
+      "ELIGIBLE",
+      "REFUSED"
+    ],
+    "priorities": [
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      2,
+      0,
+      2,
+      100
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      2,
+      9223372036854775807
+    ],
+    "bindings_verified": [
+      true,
+      false
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "INVALID_INPUT",
+      "INVALID_INPUT",
+      "ELIGIBLE",
+      "REFUSED"
+    ],
+    "priorities": [
+      9223372036854775807,
+      2,
+      100,
+      0,
+      100,
+      2
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "INVALID_INPUT",
+      "REFUSED",
+      "INVALID_INPUT",
+      "INVALID_INPUT",
+      "INVALID_INPUT",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      9223372036854775807,
+      9223372036854775807,
+      100,
+      2,
+      2,
+      2,
+      9223372036854775807
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "INVALID_INPUT",
+      "INVALID_INPUT",
+      "REFUSED",
+      "INVALID_INPUT",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      2,
+      1,
+      1,
+      9223372036854775807,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-0"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "INVALID_INPUT",
+      "REFUSED",
+      "REFUSED",
+      "ELIGIBLE",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      0,
+      0,
+      100,
+      9223372036854775807,
+      2
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "INVALID_INPUT",
+      "INVALID_INPUT",
+      "ELIGIBLE",
+      "INVALID_INPUT",
+      "ELIGIBLE",
+      "INVALID_INPUT",
+      "REFUSED"
+    ],
+    "priorities": [
+      100,
+      9223372036854775807,
+      1,
+      1,
+      100,
+      1,
+      9223372036854775807
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "INVALID_INPUT",
+      "REFUSED",
+      "INVALID_INPUT",
+      "INVALID_INPUT",
+      "REFUSED",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      1,
+      100,
+      2,
+      0,
+      2,
+      0,
+      9223372036854775807
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "INVALID_INPUT",
+      "REFUSED",
+      "INVALID_INPUT",
+      "REFUSED",
+      "REFUSED"
+    ],
+    "priorities": [
+      9223372036854775807,
+      9223372036854775807,
+      100,
+      0,
+      9223372036854775807,
+      9223372036854775807,
+      0
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "REFUSED",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      100,
+      0,
+      0
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "REFUSED",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      100,
+      100,
+      2
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "INVALID_INPUT",
+      "REFUSED",
+      "REFUSED"
+    ],
+    "priorities": [
+      9223372036854775807,
+      2,
+      0
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      false
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-0"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      100,
+      9223372036854775807
+    ],
+    "bindings_verified": [
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "REFUSED",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      2,
+      1,
+      100
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "REFUSED",
+      "REFUSED",
+      "REFUSED",
+      "REFUSED",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      9223372036854775807,
+      1,
+      9223372036854775807,
+      1,
+      9223372036854775807
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "REFUSED",
+      "INVALID_INPUT",
+      "INVALID_INPUT",
+      "REFUSED",
+      "ELIGIBLE",
+      "REFUSED"
+    ],
+    "priorities": [
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      0,
+      1,
+      0,
+      0
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "INVALID_INPUT",
+      "REFUSED",
+      "ELIGIBLE",
+      "INVALID_INPUT",
+      "ELIGIBLE",
+      "INVALID_INPUT",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      9223372036854775807,
+      2,
+      1,
+      9223372036854775807,
+      2,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "REFUSED",
+      "INVALID_INPUT",
+      "INVALID_INPUT",
+      "REFUSED",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      9223372036854775807,
+      9223372036854775807,
+      2,
+      1,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "REFUSED",
+      "REFUSED",
+      "INVALID_INPUT",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      1,
+      9223372036854775807,
+      1,
+      100
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-0"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "REFUSED",
+      "REFUSED",
+      "INVALID_INPUT",
+      "REFUSED",
+      "REFUSED"
+    ],
+    "priorities": [
+      1,
+      9223372036854775807,
+      1,
+      0,
+      1,
+      0
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "REFUSED",
+      "REFUSED",
+      "REFUSED",
+      "REFUSED",
+      "REFUSED",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      1,
+      2,
+      9223372036854775807,
+      1,
+      2,
+      100
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "INVALID_INPUT",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      2,
+      0
+    ],
+    "bindings_verified": [
+      true,
+      false
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "INVALID_INPUT",
+      "INVALID_INPUT",
+      "REFUSED",
+      "REFUSED",
+      "ELIGIBLE",
+      "REFUSED",
+      "REFUSED"
+    ],
+    "priorities": [
+      0,
+      2,
+      9223372036854775807,
+      2,
+      0,
+      100,
+      100
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "REFUSED",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "REFUSED"
+    ],
+    "priorities": [
+      2,
+      0,
+      2
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "INVALID_INPUT",
+      "INVALID_INPUT",
+      "INVALID_INPUT",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      1,
+      9223372036854775807,
+      1,
+      100
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6",
+      "candidate-0"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6",
+      "proof-7"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "INVALID_INPUT",
+      "ELIGIBLE",
+      "REFUSED",
+      "ELIGIBLE",
+      "INVALID_INPUT",
+      "REFUSED",
+      "ELIGIBLE",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      100,
+      2,
+      1,
+      2,
+      2,
+      2,
+      9223372036854775807,
+      0
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "REFUSED",
+      "REFUSED",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      2,
+      1,
+      2,
+      2
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "INVALID_INPUT",
+      "REFUSED",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      0,
+      0,
+      1,
+      9223372036854775807
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6",
+      "candidate-7"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6",
+      "proof-7"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "REFUSED",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "REFUSED",
+      "INVALID_INPUT",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "REFUSED"
+    ],
+    "priorities": [
+      0,
+      0,
+      2,
+      1,
+      0,
+      0,
+      1,
+      100
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "INVALID_INPUT",
+      "ELIGIBLE",
+      "INVALID_INPUT",
+      "INVALID_INPUT",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      0,
+      2,
+      2,
+      100,
+      2
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "REFUSED",
+      "INVALID_INPUT",
+      "ELIGIBLE",
+      "REFUSED",
+      "REFUSED",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      100,
+      9223372036854775807,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "REFUSED",
+      "REFUSED",
+      "ELIGIBLE",
+      "INVALID_INPUT",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      0,
+      0,
+      1,
+      0,
+      2
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6",
+      "candidate-0"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6",
+      "proof-7"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "REFUSED",
+      "ELIGIBLE",
+      "REFUSED",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      2,
+      0,
+      9223372036854775807,
+      1,
+      2,
+      2,
+      0,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "REFUSED",
+      "ELIGIBLE",
+      "REFUSED",
+      "ELIGIBLE",
+      "REFUSED",
+      "REFUSED"
+    ],
+    "priorities": [
+      1,
+      0,
+      1,
+      9223372036854775807,
+      0,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5",
+      "proof-6"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "REFUSED",
+      "ELIGIBLE",
+      "REFUSED",
+      "ELIGIBLE",
+      "INVALID_INPUT"
+    ],
+    "priorities": [
+      1,
+      1,
+      0,
+      0,
+      1,
+      2,
+      100
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      1,
+      100
+    ],
+    "bindings_verified": [
+      true,
+      false
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "INVALID_INPUT",
+      "INVALID_INPUT",
+      "REFUSED",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      1,
+      9223372036854775807,
+      1,
+      9223372036854775807
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2",
+      "proof-3",
+      "proof-4",
+      "proof-5"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "REFUSED",
+      "INVALID_INPUT",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      100,
+      2,
+      1,
+      100,
+      1,
+      2
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [],
+    "assessment_ids": [],
+    "context_ids": [],
+    "statuses": [],
+    "priorities": [],
+    "bindings_verified": [],
+    "phase": "ADMIT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0"
+    ],
+    "assessment_ids": [],
+    "context_ids": [],
+    "statuses": [],
+    "priorities": [
+      0
+    ],
+    "bindings_verified": [],
+    "phase": "ADMIT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1"
+    ],
+    "assessment_ids": [],
+    "context_ids": [],
+    "statuses": [],
+    "priorities": [
+      0,
+      0
+    ],
+    "bindings_verified": [],
+    "phase": "ADMIT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6",
+      "candidate-7",
+      "candidate-8",
+      "candidate-9",
+      "candidate-10",
+      "candidate-11",
+      "candidate-12",
+      "candidate-13",
+      "candidate-14",
+      "candidate-15",
+      "candidate-16",
+      "candidate-17",
+      "candidate-18",
+      "candidate-19",
+      "candidate-20",
+      "candidate-21",
+      "candidate-22",
+      "candidate-23",
+      "candidate-24",
+      "candidate-25",
+      "candidate-26",
+      "candidate-27",
+      "candidate-28",
+      "candidate-29",
+      "candidate-30",
+      "candidate-31"
+    ],
+    "assessment_ids": [],
+    "context_ids": [],
+    "statuses": [],
+    "priorities": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "bindings_verified": [],
+    "phase": "ADMIT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2",
+      "candidate-3",
+      "candidate-4",
+      "candidate-5",
+      "candidate-6",
+      "candidate-7",
+      "candidate-8",
+      "candidate-9",
+      "candidate-10",
+      "candidate-11",
+      "candidate-12",
+      "candidate-13",
+      "candidate-14",
+      "candidate-15",
+      "candidate-16",
+      "candidate-17",
+      "candidate-18",
+      "candidate-19",
+      "candidate-20",
+      "candidate-21",
+      "candidate-22",
+      "candidate-23",
+      "candidate-24",
+      "candidate-25",
+      "candidate-26",
+      "candidate-27",
+      "candidate-28",
+      "candidate-29",
+      "candidate-30",
+      "candidate-31",
+      "candidate-32"
+    ],
+    "assessment_ids": [],
+    "context_ids": [],
+    "statuses": [],
+    "priorities": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "bindings_verified": [],
+    "phase": "ADMIT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한한",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "SELECT"
+  },
+  {
+    "context_id": "requirements:weather-calculator",
+    "candidate_ids": [
+      "candidate-0",
+      "candidate-1",
+      "candidate-2"
+    ],
+    "assessment_ids": [
+      "proof-0",
+      "proof-1",
+      "proof-2"
+    ],
+    "context_ids": [
+      "requirements:weather-calculator",
+      "requirements:weather-calculator",
+      "requirements:weather-calculator"
+    ],
+    "statuses": [
+      "ELIGIBLE",
+      "ELIGIBLE",
+      "ELIGIBLE"
+    ],
+    "priorities": [
+      3,
+      2,
+      1
+    ],
+    "bindings_verified": [
+      true,
+      true,
+      true
+    ],
+    "phase": "WRONG"
+  }
+]

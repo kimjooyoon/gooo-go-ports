@@ -1673,6 +1673,23 @@ jobs:
             .all_direct_wait_EOF_PG_ESRCH == true and .remaining_owned_groups == 0 and
             .model_calls == 0 and .engine_builds == 0 and .local_lineage_complete_claim == false
           ' out/service-grant-many/summary.json
+      - name: Verify source-owned grant candidate selection
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          python3 -I -B examples/grant-candidate-selection/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$PWD/out/grant-candidate-selection"
+          jq -e '
+            .schema == "gooo/grant-candidate-selection-verification/v1" and
+            .status == "SOURCE_KERNEL82_AND_NATIVE_CONSUMER_REPLAY_PASS" and
+            .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
+            .kernel_cases == 82 and .actual_consumer_cases == 2 and .typed_selection_fields == 12 and
+            .transport_refusals == 3 and .receipt_negative_controls == 4 and
+            .runtime_path_empty == true and .runtime_goroot_absent == true and
+            .all_direct_wait_EOF_PG_ESRCH == true and
+            .execution_authorized == false and .model_calls == 0 and .engine_builds == 0 and
+            .external_adoption == false and .local_lineage_complete_claim == false
+          ' out/grant-candidate-selection/summary.json
       - name: Verify original AutoBot resolver adaptation
         if: steps.change-scope.outputs.docs_only != 'true'
         timeout-minutes: 6
@@ -1744,6 +1761,7 @@ jobs:
             out/cel-api-policy/
             out/api-policy-revision/
             out/agentmesh-service-policy/
+            out/grant-candidate-selection/
             out/service-grant-many/summary.json
             out/service-grant-many/source-before.json
             out/service-grant-many/source-after.json

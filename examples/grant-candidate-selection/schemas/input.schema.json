@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:gooo:grant-candidate-selection:input:v1",
+  "title": "Grant candidate selection JSON input",
+  "description": "One JSON document for the checkout native command; this is not an MCP tool input schema.",
+  "allOf": [
+    {
+      "$ref": "#/$defs/input"
+    }
+  ],
+  "$defs": {
+    "input": {
+      "type": "object",
+      "properties": {
+        "before": {
+          "type": "string",
+          "$comment": "Native parser additionally requires decoded valid UTF-8 and at most 1024 bytes."
+        },
+        "required_requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/request"
+          }
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/candidate"
+          }
+        }
+      },
+      "required": [
+        "before",
+        "required_requests",
+        "candidates"
+      ],
+      "additionalProperties": false,
+      "$comment": "Transport shape only. Candidate count, ID uniqueness/128-byte limit, nonnegative preference and service policy are evaluated by Gooo. JSON Schema does not detect duplicate keys, lossy escapes, integer token spelling, raw byte budgets or source/effect authority. Native parsing and assessment remain required."
+    },
+    "request": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "$comment": "Native parser additionally requires decoded valid UTF-8 and at most 1024 bytes."
+        },
+        "name": {
+          "type": "string",
+          "$comment": "Native parser additionally requires decoded valid UTF-8 and at most 1024 bytes."
+        }
+      },
+      "required": [
+        "type",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "candidate": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "$comment": "Native parser additionally requires decoded valid UTF-8 and at most 1024 bytes."
+        },
+        "after": {
+          "type": "string",
+          "$comment": "Native parser additionally requires decoded valid UTF-8 and at most 1024 bytes."
+        },
+        "preference": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "id",
+        "after",
+        "preference"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

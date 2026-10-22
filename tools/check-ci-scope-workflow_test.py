@@ -1353,7 +1353,31 @@ DENY_SCOPE_DECL = '          ./.gooo check examples/deny-rule-scope/main.gooo\n'
 DENY_SCOPE_PRIOR_WORKFLOW_SHA = '82868e888670937a8070c0423a9703331b58f4d941dd66c5233469b7679099a8'
 
 
+
+GRANT_SELECTION_STEP = '      - name: Verify source-owned grant candidate selection\n        if: steps.change-scope.outputs.docs_only != \'true\'\n        timeout-minutes: 12\n        run: |\n          set -euo pipefail\n          python3 -I -B examples/grant-candidate-selection/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$PWD/out/grant-candidate-selection"\n          jq -e \'\n            .schema == "gooo/grant-candidate-selection-verification/v1" and\n            .status == "SOURCE_KERNEL82_AND_NATIVE_CONSUMER_REPLAY_PASS" and\n            .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and\n            .kernel_cases == 82 and .actual_consumer_cases == 2 and .typed_selection_fields == 12 and\n            .transport_refusals == 3 and .receipt_negative_controls == 4 and\n            .runtime_path_empty == true and .runtime_goroot_absent == true and\n            .all_direct_wait_EOF_PG_ESRCH == true and\n            .execution_authorized == false and .model_calls == 0 and .engine_builds == 0 and\n            .external_adoption == false and .local_lineage_complete_claim == false\n          \' out/grant-candidate-selection/summary.json\n'
+GRANT_SELECTION_ARTIFACT = '            out/grant-candidate-selection/\n'
+GRANT_SELECTION_PRIOR_WORKFLOW_SHA = 'ff0eb915100042186fcb83c68d5c3f453f95567e4fc8cf8555b69a8605d946d0'
+
+def project_grant_selection_integration(text):
+    jobs = workflow_jobs(text)
+    require(text.count(GRANT_SELECTION_STEP) == 1 and
+            GRANT_SELECTION_STEP in jobs['policy-native-checks'],
+            'candidate selection requires its exact full-scope policy step once')
+    require(text.index(GRANT_SELECTION_STEP) + len(GRANT_SELECTION_STEP) ==
+            text.index('      - name: Verify original AutoBot resolver adaptation\n'),
+            'candidate selection must follow ordered grant verification before AutoBot')
+    _, policy, _ = job_steps(jobs['policy-native-checks'])
+    upload = policy[POLICY_UPLOAD]
+    require(text.count(GRANT_SELECTION_ARTIFACT) == 1 and
+            GRANT_SELECTION_ARTIFACT in upload and field(upload, 'if') == 'always() && ' + FULL,
+            'candidate-selection raw evidence must upload on failure in full scope')
+    prior = text.replace(GRANT_SELECTION_STEP, '', 1).replace(GRANT_SELECTION_ARTIFACT, '', 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == GRANT_SELECTION_PRIOR_WORKFLOW_SHA,
+            'candidate selection changed unrelated workflow bytes')
+    return prior
+
 def project_deny_rule_scope_integration(text):
+    text = project_grant_selection_integration(text)
     jobs = workflow_jobs(text)
     require(text.count(DENY_SCOPE_BLOCK) == 1 and DENY_SCOPE_BLOCK in jobs['policy-native-checks'],
             'scoped deny checks and evidence require their exact policy steps once')
@@ -3870,6 +3894,40 @@ class RootGoReferenceTests(unittest.TestCase):
             self.assertIn(before, raw)
             with self.subTest(change=before), self.assertRaises(ValueError):
                 project_root_go_reference(raw.replace(before, after, 1))
+
+
+class GrantSelectionIntegrationTests(unittest.TestCase):
+    def test_exact_additions_preserve_every_previous_workflow_byte(self):
+        prior = project_grant_selection_integration(WORKFLOW.read_text())
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), GRANT_SELECTION_PRIOR_WORKFLOW_SHA)
+        project_root_go_reference(WORKFLOW.read_text())
+
+    def test_skip_mask_wrong_identity_counts_and_missing_evidence_are_rejected(self):
+        raw = WORKFLOW.read_text()
+        for old, new in ((GRANT_SELECTION_STEP, ''),
+                         (GRANT_SELECTION_STEP, GRANT_SELECTION_STEP * 2),
+                         (GRANT_SELECTION_ARTIFACT, ''),
+                         (GRANT_SELECTION_ARTIFACT, GRANT_SELECTION_ARTIFACT * 2),
+                         ('.kernel_cases == 82', '.kernel_cases == 0'),
+                         ('.receipt_negative_controls == 4', '.receipt_negative_controls == 0'),
+                         ('--out "$PWD/out/grant-candidate-selection"', '--out "$PWD/out/grant-candidate-selection" || true'),
+                         ('--compiler "$PWD/.gooo" --go', '--compiler other --go')):
+            with self.subTest(change=old[:70]), self.assertRaises(ValueError):
+                project_grant_selection_integration(raw.replace(old, new, 1))
+        for change in (GRANT_SELECTION_STEP.replace(FULL, DOCS),
+                       GRANT_SELECTION_STEP.replace('        if: ' + FULL + '\n', ''),
+                       GRANT_SELECTION_STEP.replace('timeout-minutes: 12', 'timeout-minutes: 120')):
+            with self.assertRaises(ValueError):
+                project_grant_selection_integration(raw.replace(GRANT_SELECTION_STEP, change, 1))
+
+    def test_other_native_or_action_changes_cannot_hide_behind_addition(self):
+        raw = WORKFLOW.read_text()
+        for old, new in (('--workers 3', '--workers 1'),
+                         ('go test -race -timeout=15m', 'go test -timeout=15m'),
+                         ('actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e', 'actions/setup-go@main')):
+            self.assertIn(old, raw)
+            with self.assertRaises(ValueError):
+                project_grant_selection_integration(raw.replace(old, new, 1))
 
 
 if __name__ == "__main__":
