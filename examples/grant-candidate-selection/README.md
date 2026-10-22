@@ -84,6 +84,33 @@ int64 boundaries, Unicode ID byte limits, invalid columns and unknown bindings.
 The API tests cover real policy composition, preservation of every proof,
 caller reuse, no partial result after a late binding failure, concurrency,
 32 candidates with 256 requirements, malformed JSON and I/O boundaries.
-The full reproducible verification command and CI integration are still being
-completed; these local observations are not a claim of external adoption or
-compatibility with every client or platform.
+
+## Reproduce the verification
+
+With the exact reviewed compiler above and Go 1.27.3, write evidence to a fresh
+output directory:
+
+```sh
+python3 -I -B examples/grant-candidate-selection/verify.py \
+  --compiler /absolute/path/to/gooo --go /absolute/path/to/go \
+  --out /absolute/path/to/new-selection-evidence
+```
+
+The verifier compares a fresh independent reference with all 82 checked-in
+cases, executes and replays the Gooo kernel, checks generated files, runs Go
+static and race checks, and builds the public command. It runs that command
+with an empty PATH and no GOROOT, then independently compares and replays the
+two actual selection results, retaining all 12 fields and original proof IDs.
+Four altered-receipt controls must fail. Three malformed JSON controls must
+exit one with no decision on stdout.
+
+The compiler is never built or downloaded by this command. Building the
+consumer may download its exact pinned public module. Optional `--go-cache` and
+`--module-cache` reuse existing caches, which this verifier never removes;
+no cold-cache performance or shared-cache size bound is claimed. Child process
+receipts retain direct wait, stream EOF and process-group closure. Completed
+owned command binaries are removed; raw results and summaries remain.
+
+The full-scope policy CI job runs this verifier and retains its evidence. Local
+observations do not establish external adoption or compatibility with every
+client or platform. The new public CI step is pending its first remote run.
