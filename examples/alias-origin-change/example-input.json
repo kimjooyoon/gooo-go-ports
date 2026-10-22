@@ -1,0 +1,1 @@
+{"target_alias":"docs_search","before":[{"server":"docs","original_name":"search","exposed_name":"docs_search"}],"after":[{"server":"issues","original_name":"search","exposed_name":"docs_search"}]}

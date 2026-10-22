@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kimjooyoon/gooo-go-ports/alias-origin-change/diagnostic.schema.json",
+  "type": "object",
+  "properties": {
+    "state": {
+      "enum": [
+        "INVALID_TRANSPORT",
+        "UNKNOWN"
+      ]
+    },
+    "stage": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "state",
+    "stage",
+    "code"
+  ],
+  "additionalProperties": false,
+  "oneOf": [
+    {
+      "properties": {
+        "state": {
+          "const": "INVALID_TRANSPORT"
+        },
+        "stage": {
+          "const": "decode_facts"
+        },
+        "code": {
+          "enum": [
+            "COLLECTION_LIMIT",
+            "TEXT_LIMIT_OR_ENCODING"
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "state": {
+          "const": "INVALID_TRANSPORT"
+        },
+        "stage": {
+          "const": "decode_json"
+        },
+        "code": {
+          "enum": [
+            "INVALID_JSON_FACTS"
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "state": {
+          "const": "INVALID_TRANSPORT"
+        },
+        "stage": {
+          "const": "encode_result"
+        },
+        "code": {
+          "enum": [
+            "OUTPUT_LIMIT_EXCEEDED"
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "state": {
+          "const": "UNKNOWN"
+        },
+        "stage": {
+          "const": "evaluate"
+        },
+        "code": {
+          "enum": [
+            "KERNEL_FAILURE"
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "state": {
+          "const": "UNKNOWN"
+        },
+        "stage": {
+          "const": "bind_result"
+        },
+        "code": {
+          "enum": [
+            "KERNEL_CONTEXT_OR_AUTHORITY_MISMATCH"
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "state": {
+          "const": "UNKNOWN"
+        },
+        "stage": {
+          "const": "command"
+        },
+        "code": {
+          "enum": [
+            "IO_FAILURE"
+          ]
+        }
+      }
+    }
+  ]
+}

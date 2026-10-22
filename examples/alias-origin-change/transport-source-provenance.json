@@ -1,0 +1,11 @@
+{
+  "repository": "https://github.com/kimjooyoon/gooo-go-ports",
+  "revision": "ac2deb255bfefadda6f2bd3a5fdbe84f366d6495",
+  "path": "examples/grant-candidate-selection/transport_helpers.go",
+  "source_sha256": "sha256:ccc18e34090f683142219e738424f4f70aafa250b3e0c4780415b2eeb7286741",
+  "changes": [
+    "Package declaration grantselection becomes aliasorigin.",
+    "Error text describes alias-origin facts."
+  ],
+  "scope": "Owned BSD-3-Clause transport helper reuse; no policy comparison implemented in Go."
+}
