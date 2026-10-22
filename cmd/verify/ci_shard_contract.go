@@ -22,6 +22,7 @@ const (
 // and its historical guards are not rewritten to introduce an optional mode.
 var ciShardReaderSources = []string{
 	"cmd/verify/ci_shard_contract.go", "cmd/verify/ci_shard_cli.go", "cmd/verify/ci_shard_contract_test.go",
+	"cmd/verify/ci_shard_receipt_storage.go", "cmd/verify/ci_shard_receipt_storage_test.go",
 	"cmd/verify/ci_shard_native_types.go", "cmd/verify/ci_shard_execute.go", "cmd/verify/ci_shard_execute_test.go",
 	"cmd/verify/ci_shard_native_evidence.go", "cmd/verify/ci_shard_native_evidence_test.go",
 	"cmd/verify/ci_shard_native_cli.go", "cmd/verify/ci_shard_native_cli_test.go",

@@ -259,7 +259,7 @@ class Metadata(unittest.TestCase):
         suites = [{"original_index": i, "exhaustive": []} for i in range(82)]
         for index, kind in M.EXHAUSTIVE:
             suites[index]["exhaustive"] = [{"kind": kind}]
-        reference = {"schema": "gooo/native-shard-reference-index/v1",
+        reference = {"schema": "gooo/native-shard-reference-index/v2",
                      "state": "RAW_REFERENCES_CHECKED_PRODUCER_UNAUTHENTICATED",
                      "raw_receipts_inspected": True, "producer_authenticated": False,
                      "native_acceptance": False, "plan": plan, "suites": suites,

@@ -23,6 +23,9 @@ type nativeSuiteVerifier struct {
 	caseProfile nativeCaseProfile
 	// nil retains the original full-verifier evidence layout exactly.
 	batchDirectory func(int) string
+	// Experimental at-rest compaction after all per-batch/exhaustive checks.
+	// nil preserves every original full-mode file and byte unchanged.
+	compactBatch func(string) error
 	// Optional waited-command accounting for an explicit shard. nil preserves
 	// the original full timing path and its context exactly.
 	commandObserver func(int, string, nativeCommandResources)
@@ -186,6 +189,11 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 				return result, err
 			}
 			result.CaseMapping = &exhaustive
+		}
+		if v.compactBatch != nil {
+			if err := v.compactBatch(dir); err != nil {
+				return result, err
+			}
 		}
 		r.Batches++
 		r.Passed += len(batch.Cases)

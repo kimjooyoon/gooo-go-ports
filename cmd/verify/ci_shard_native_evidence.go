@@ -554,7 +554,7 @@ func inspectCIShardSuiteEvidence(plan ciShardPlan, shard, original int, inventor
 			}
 		}
 		identity := expectedIdentity{CompilerRevision: inventory.Lock.CompilerRevision, GoVersion: inventory.Lock.GoVersion, ManifestDigest: contentDigest(manifest), CasesDigest: contentDigest(cases), Sources: selected.Identities, SourceBytes: selected.Sources}
-		execution, err := reader.read(filepath.Join(relative, "execution.json"), 64<<20)
+		_, execution, err := reader.receipt(filepath.Join(relative, "execution.json"))
 		if err != nil {
 			return fail(err)
 		}
@@ -562,7 +562,7 @@ func inspectCIShardSuiteEvidence(plan ciShardPlan, shard, original int, inventor
 		if err != nil {
 			return fail(err)
 		}
-		replay, err := reader.read(filepath.Join(relative, "replay.json"), 64<<20)
+		_, replay, err := reader.receipt(filepath.Join(relative, "replay.json"))
 		if err != nil {
 			return fail(err)
 		}
