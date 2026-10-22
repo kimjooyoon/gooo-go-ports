@@ -468,7 +468,24 @@ compiler issue before passing a minimal case to the language repository.
 
 ## Connect the service-grant MCP tool
 
-Download the [native MCP preview.16](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.16)
+If you already use Homebrew on **macOS arm64 or Linux amd64**, install the
+[project tap](https://github.com/kimjooyoon/homebrew-gooo):
+
+```sh
+brew install kimjooyoon/gooo/gooo-service-grant-mcp
+printf '%s/bin/gooo-service-grant-mcp\n' "$(brew --prefix kimjooyoon/gooo/gooo-service-grant-mcp)"
+```
+
+Use the absolute executable path printed by the second command in the host
+settings below. This installs the existing preview16 native executable and its
+license texts, without building Go or Gooo. The tap is project-maintained and
+is not part of Homebrew core. If you prefer a container, the
+[immutable public Docker image](service-grant-container.md#use-the-public-immutable-image)
+needs Docker with a Linux amd64 runtime; its connection settings include the
+image reference and runtime arguments rather than a native executable path.
+Neither route edits Gooo source; use the first-program workflow for that.
+
+For a manual native installation, download the [native MCP preview.16](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.16)
 archive and matching `.sha256` file for **Linux amd64** or **macOS arm64**.
 In the download directory, verify the checksum with `sha256sum -c FILE.sha256`
 (Linux) or `shasum -a 256 -c FILE.sha256` (macOS), then extract the verified
