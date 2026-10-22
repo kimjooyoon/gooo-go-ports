@@ -333,14 +333,25 @@ func TestCIShardActualNativeStatusTextSmoke(t *testing.T) {
 	if !bytes.Equal(cases, expected) {
 		t.Fatal("actual native smoke changed independent original case bytes")
 	}
-	execution, err := os.ReadFile(filepath.Join(dir, "execution.json"))
+	storedReader, err := newCIShardEvidenceReader(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	replay, err := os.ReadFile(filepath.Join(dir, "replay.json"))
+	executionFile, execution, err := storedReader.receipt("execution.json")
 	if err != nil {
 		t.Fatal(err)
 	}
+	replayFile, replay, err := storedReader.receipt("replay.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if executionFile.Encoding != "gzip" || replayFile.Encoding != "gzip" {
+		t.Fatal("actual shard did not compact its completed receipt pair")
+	}
+	if err := storedReader.finish(); err != nil {
+		t.Fatal(err)
+	}
+	receipt["execution_storage"], receipt["replay_storage"] = executionFile, replayFile
 	var original, rerun envelope
 	if err := json.Unmarshal(execution, &original); err != nil {
 		t.Fatal(err)

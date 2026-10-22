@@ -8,6 +8,7 @@ Raw references, parsers, joined-partial coverage, cases/receipt/source/tool/wait
 checks and the final frozen-file recheck use the production implementation.
 """
 import copy
+import gzip
 import importlib.util
 import json
 import os
@@ -57,7 +58,7 @@ class SyntheticFixture:
         self.tools['after']=copy.deepcopy(self.tools['before'])
         accounting={'status':'OBSERVED','goos':'linux','scope':'waited-command-accounting','user_cpu_ns':1,'system_cpu_ns':0,'maxrss_raw':2,'maxrss_unit':'KiB','maxrss_bytes':2048}
         self.commands={'schema':'gooo/native-shard-command-observations/v1','plan_sha256':self.plan['plan_sha256'],'run':run,'index':0,'namespace':R.namespace(0),'sources':sources,'goos':'linux','command_resources_schema':'gooo/native-command-resources/v1','joined':True,'complete':True,'state':'WAIT_ACCOUNTING_COMPLETE_NATIVE_UNACCEPTED','failure':'','native_acceptance':False,'producer_authenticated':False,'suites':[],'scope':'Invented synthetic wait records only.'}
-        self.index={'schema':'gooo/native-shard-reference-index/v1','state':'RAW_REFERENCES_CHECKED_PRODUCER_UNAUTHENTICATED','native_acceptance':False,'raw_receipts_inspected':True,'producer_authenticated':False,'plan':self.plan,'shards':[],'suites':[],'scope':'Tiny unsigned test fixture; not actual full native evidence.'}
+        self.index={'schema':'gooo/native-shard-reference-index/v2','state':'RAW_REFERENCES_CHECKED_PRODUCER_UNAUTHENTICATED','native_acceptance':False,'raw_receipts_inspected':True,'producer_authenticated':False,'plan':self.plan,'shards':[],'suites':[],'scope':'Tiny unsigned test fixture; not actual full native evidence.'}
         for original,suite in enumerate(suites):
             entry=self.entries[original];workspace=workspaces[original];base=R.batch_namespace(0,original,0);key=suite['package']+':'+suite['activity']
             manifest={'schema':'gooo/package-workspace-manifest/v1','entry':{'package_path':suite['package'],'activity':suite['activity']},'packages':[{'path':suite['package'],'sources':suite['source_paths']}]}
@@ -332,6 +333,47 @@ class UnsignedSyntheticReferenceTests(unittest.TestCase):
                 else:ex['files'][3]=fixture.file(ex['files'][3]['path'],b'--- FAIL: TestSimpleFoldExhaustive (0.00s)\nFAIL\n')
                 fixture.sync()
                 with self.assertRaises(RuntimeError):fixture.read()
+
+
+class CompressedReceiptReferenceTests(unittest.TestCase):
+    def compressed_fixture(self):
+        directory=tempfile.TemporaryDirectory();self.addCleanup(directory.cleanup)
+        fixture=SyntheticFixture(directory.name)
+        for suite in fixture.index['suites']:
+            for batch in suite['batches']:
+                for key in ('execution','replay'):
+                    ref=batch[key];path=fixture.evidence/ref['path'];raw=path.read_bytes();packed=gzip.compress(raw,mtime=0)
+                    target=path.with_name(path.name+'.gz');target.write_bytes(packed);path.unlink()
+                    ref.update(path=ref['path']+'.gz',encoding='gzip',stored_bytes=len(packed),stored_sha256=R.digest(packed))
+        fixture.sync();return fixture
+
+    def test_all_synthetic_exhaustive_and_consumer_references_read_compressed(self):
+        fixture=self.compressed_fixture();result=fixture.read()
+        self.assertEqual(result['suite_count'],8);self.assertEqual(len(result['batches']),1)
+        self.assertEqual(sum(len(s['exhaustive']) for s in fixture.index['suites']),7)
+        self.assertTrue(any(p.endswith('/execution.json.gz') for p in result['pins']))
+        self.assertFalse(any(p.endswith('/execution.json') for p in result['pins']))
+
+    def test_compressed_corruption_wrong_wire_identity_and_ambiguity_refuse(self):
+        for kind in ('stored-hash','raw-hash','encoding','trailing','truncated','multiple','ambiguous'):
+            with self.subTest(kind=kind):
+                fixture=self.compressed_fixture();ref=fixture.index['suites'][0]['batches'][0]['execution'];path=fixture.evidence/ref['path'];packed=path.read_bytes()
+                if kind == 'stored-hash':ref['stored_sha256']='sha256:'+'0'*64
+                elif kind == 'raw-hash':ref['sha256']='sha256:'+'0'*64
+                elif kind == 'encoding':ref['encoding']='unknown'
+                elif kind == 'ambiguous':path.with_suffix('').write_bytes(b'{}')
+                else:
+                    packed=packed+b'x' if kind == 'trailing' else packed[:-1] if kind == 'truncated' else packed+packed
+                    path.write_bytes(packed);ref.update(stored_bytes=len(packed),stored_sha256=R.digest(packed))
+                fixture.sync()
+                with self.assertRaises(RuntimeError):fixture.read()
+
+    def test_decoded_limit_crc_and_empty_stream_refuse(self):
+        raw=b' {"ok":false}\n';packed=gzip.compress(raw,mtime=0)
+        self.assertEqual(R.unpack_receipt(packed,len(raw)),raw)
+        damaged=bytearray(packed);damaged[-5]^=1
+        for wire,limit in [(packed,len(raw)-1),(bytes(damaged),1024),(gzip.compress(b'',mtime=0),1024)]:
+            with self.assertRaises(RuntimeError):R.unpack_receipt(wire,limit)
 
 
 if __name__=='__main__':

@@ -15,9 +15,12 @@ import (
 // These are references to files inspected by this invocation. They are not
 // attestations, a synthetic legacy timing stream, or permission to execute.
 type ciShardReferenceFile struct {
-	Path   string `json:"path"`
-	Bytes  int64  `json:"bytes"`
-	SHA256 string `json:"sha256"`
+	Path         string `json:"path"`
+	Bytes        int64  `json:"bytes"`
+	SHA256       string `json:"sha256"`
+	Encoding     string `json:"encoding,omitempty"`
+	StoredBytes  int64  `json:"stored_bytes,omitempty"`
+	StoredSHA256 string `json:"stored_sha256,omitempty"`
 }
 
 type ciShardToolObservation struct {
@@ -171,6 +174,13 @@ type ciShardNativeReference struct {
 }
 
 func ciShardReferenceRead(reader *ciShardEvidenceReader, path string, want string) (ciShardReferenceFile, []byte, error) {
+	if base := filepath.Base(path); base == "execution.json" || base == "replay.json" {
+		identity, raw, err := reader.receipt(path)
+		if err == nil && want != "" && identity.SHA256 != want {
+			err = fmt.Errorf("native shard reference original JSON differs: %s", path)
+		}
+		return identity, raw, err
+	}
 	raw, err := reader.read(path, 64<<20)
 	if err != nil {
 		return ciShardReferenceFile{}, nil, err
@@ -222,7 +232,7 @@ func referenceCIShardExhaustive(reader *ciShardEvidenceReader, directory string,
 // post-read stability; it never upgrades unsigned results into CI acceptance.
 func buildCIShardNativeReference(plan ciShardPlan, inventory ciShardNativeInventory, partials []ciShardPartial, partialPaths, evidence map[int]string) (ciShardNativeReference, error) {
 	result := ciShardNativeReference{
-		Schema: "gooo/native-shard-reference-index/v1", State: "RAW_REFERENCES_CHECKED_PRODUCER_UNAUTHENTICATED", RawReceiptsInspected: true, Plan: plan,
+		Schema: "gooo/native-shard-reference-index/v2", State: "RAW_REFERENCES_CHECKED_PRODUCER_UNAUTHENTICATED", RawReceiptsInspected: true, Plan: plan,
 		Shards: []ciShardReferenceShard{}, Suites: []ciShardReferenceSuite{},
 		Scope: "References from the current raw native inspection, original case boundaries and actual waited-command/tool observations. Producer manifest strings are data, separate from local artifact paths. No authenticated job, legacy footer, child environment or CI acceptance is asserted.",
 	}
@@ -341,7 +351,7 @@ func buildCIShardNativeReference(plan ciShardPlan, inventory ciShardNativeInvent
 				if len(r.Batches) == 0 {
 					return result, fmt.Errorf("exhaustive reference requires its original first batch")
 				}
-				replay, err := reader.read(r.Batches[0].Replay.Path, 64<<20)
+				_, replay, err := reader.receipt(r.Batches[0].Replay.Path)
 				if err != nil {
 					return result, err
 				}

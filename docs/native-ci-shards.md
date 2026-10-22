@@ -204,7 +204,7 @@ A successful raw verification has state
 No workflow consumes it as an accepted replacement for the full CI gate.
 
 The optional `--ci-shard-reference-out` additionally writes a separate
-`gooo/native-shard-reference-index/v1` for downstream consumers. It requires
+`gooo/native-shard-reference-index/v2` for downstream consumers. It requires
 each original paired `partial.json`, complete actual execute/replay wait
 observations and unchanged compiler/Go/verifier binary snapshots. Missing
 observations remain `NOT_OBSERVED`; they are not filled with invented
@@ -218,6 +218,29 @@ consumers compare it as data and never open it. Original receipts, manifests,
 case bytes and sources are not rewritten after artifact transfer. Exhaustive
 generated source, harness, module, diagnostic and report are semantically
 re-inspected with the same reader that exports their byte references.
+
+Experimental workers compact each completed, checked execute/replay pair as
+`execution.json.gz` and `replay.json.gz`. Both files are written with exclusive
+creation, synced and decoded back to the exact original bytes before either
+plain original is removed. A failure preserves originals and fails the worker.
+The original full verifier keeps its existing plain JSON layout.
+
+Reference-index v2 distinguishes `bytes` / `sha256` of the original JSON from
+`stored_bytes` / `stored_sha256` of the gzip file, with `encoding: "gzip"` and
+the actual `.json.gz` path. Replay parents still identify the original JSON,
+including whitespace. Go and the independent Python consumer bound each stored
+receipt to 8 MiB and each decoded receipt to the existing 64 MiB read limit;
+they reject damaged/truncated streams, trailing data, multiple gzip members,
+both plain and gzip representations, changed stored bytes and raw hash drift.
+Non-receipt references retain the original three fields and are never decoded.
+
+This storage change follows a failed current-source experiment whose shard0
+hit the 3 GiB owned-work cap: its complete artifact directory declared
+3,243,937,028 uncompressed bytes, of which paired execution/replay JSON accounted
+for 3,122,503,812. These are declared directory lengths, not independent validation
+of all receipt bodies. Compression has not yet demonstrated a successful hosted
+full82 run or a speed improvement. The existing worker, extraction, ZIP and
+join caps remain unchanged, as do all suites, cases, batches and exhaustive checks.
 
 The header-addition consumers have an explicit experimental route:
 

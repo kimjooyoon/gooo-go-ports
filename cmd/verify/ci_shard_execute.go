@@ -169,6 +169,7 @@ func executeCIShardNativeWith(ctx context.Context, compiler, out string, plan ci
 		attempts[local].started = true
 		verifier := newNativeSuiteVerifier(ctx, compiler, ciShardSuiteDirectory(root, shardIndex, original), inventory.Lock, cache)
 		verifier.caseProfile = nativeCaseProfile(plan.Profiles.Case)
+		verifier.compactBatch = compactCIShardReceipts
 		verifier.batchDirectory = func(batch int) string { return ciShardBatchDirectory(root, shardIndex, original, batch) }
 		result, err := native.verify(worker, original, verifier, s, inventory.Workspaces[original])
 		if err == nil {

@@ -222,7 +222,7 @@ def artifact_prefix(context):
 
 
 def validate_reference(reference, plan):
-    need(reference["schema"] == "gooo/native-shard-reference-index/v1" and
+    need(reference["schema"] == "gooo/native-shard-reference-index/v2" and
          reference["state"] == "RAW_REFERENCES_CHECKED_PRODUCER_UNAUTHENTICATED" and
          reference["raw_receipts_inspected"] is True and reference["producer_authenticated"] is False and
          reference["native_acceptance"] is False and exact(reference["plan"], plan),

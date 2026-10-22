@@ -17,6 +17,7 @@ import pathlib
 import re
 import stat
 import sys
+import zlib
 
 MAX_JSON = 16 << 20
 MAX_FILE = 64 << 20
@@ -32,6 +33,7 @@ REFERENCE_SUITE_FIELDS = ('original_index','shard_index','package','activity','b
 REFERENCE_BATCH_FIELDS = ('batch','workspace','cases','execution','replay','sources','producer_manifest_path','go_version','go_binary')
 READER_SOURCES = (
     'cmd/verify/ci_shard_contract.go','cmd/verify/ci_shard_cli.go','cmd/verify/ci_shard_contract_test.go',
+    'cmd/verify/ci_shard_receipt_storage.go','cmd/verify/ci_shard_receipt_storage_test.go',
     'cmd/verify/ci_shard_native_types.go','cmd/verify/ci_shard_execute.go','cmd/verify/ci_shard_execute_test.go',
     'cmd/verify/ci_shard_native_evidence.go','cmd/verify/ci_shard_native_evidence_test.go',
     'cmd/verify/ci_shard_native_cli.go','cmd/verify/ci_shard_native_cli_test.go',
@@ -114,6 +116,18 @@ def load(raw, *, metadata=True):
         raise RuntimeError('invalid strict JSON: '+type(error).__name__) from error
 
 
+def unpack_receipt(raw, limit=MAX_FILE):
+    need(type(raw) is bytes and 0 < len(raw) <= 8 << 20 and 0 < limit <= MAX_FILE, 'bounded stored receipt required')
+    try:
+        stream=zlib.decompressobj(16+zlib.MAX_WBITS)
+        decoded=stream.decompress(raw,limit+1)
+    except zlib.error as error:
+        raise RuntimeError('invalid gzip receipt') from error
+    need(0 < len(decoded) <= limit and stream.eof and not stream.unused_data and not stream.unconsumed_tail,
+         'oversized, truncated, trailing or multiple-member gzip receipt')
+    return decoded
+
+
 def relative(value):
     text(value)
     need(not value.startswith('/') and '\\' not in value and ':' not in value and
@@ -180,11 +194,34 @@ class Reader:
         return raw
 
     def file(self,root,ref,expected=None,limit=MAX_FILE):
-        shape(ref,('path','bytes','sha256'),'exact raw file reference required')
+        compressed=type(ref) is dict and 'encoding' in ref
+        fields=('path','bytes','sha256','encoding','stored_bytes','stored_sha256') if compressed else ('path','bytes','sha256')
+        shape(ref,fields,'exact raw/stored file reference required')
         name=relative(ref['path']);integer(ref['bytes'],1,limit);valid_digest(ref['sha256'])
-        need(expected is None or name == expected, 'raw file reference path differs from canonical namespace')
+        logical=name[:-3] if compressed else name
+        if compressed:
+            need(ref['encoding'] == 'gzip' and name.endswith('.json.gz') and pathlib.PurePosixPath(logical).name in ('execution.json','replay.json'),
+                 'gzip is only supported for explicitly referenced native receipts')
+            integer(ref['stored_bytes'],1,8 << 20);valid_digest(ref['stored_sha256'])
+        need(expected is None or logical == expected, 'raw file reference path differs from canonical namespace')
         root=self.directory(root);path=root/name
-        raw=self.read(path,limit)
+        counterpart=root/(logical if compressed else logical+'.gz')
+        def unambiguous():
+            if pathlib.PurePosixPath(logical).name not in ('execution.json','replay.json'):
+                return
+            try:
+                counterpart.lstat()
+            except FileNotFoundError:
+                return
+            raise RuntimeError('ambiguous plain and gzip receipt')
+        unambiguous()
+        stored=self.read(path,(8 << 20) if compressed else limit)
+        if compressed:
+            need(len(stored) == ref['stored_bytes'] and digest(stored) == ref['stored_sha256'], 'stored receipt bytes/hash differ')
+            raw=unpack_receipt(stored,limit)
+        else:
+            raw=stored
+        unambiguous()
         need(len(raw) == ref['bytes'] and digest(raw) == ref['sha256'], 'raw reference bytes/hash differ: '+name)
         return path,raw
 
@@ -494,7 +531,7 @@ def read_reference(root,index_path):
     H=load_host(root,reader)
     index=load(reader.read(index_path,MAX_JSON))
     shape(index,('schema','state','native_acceptance','raw_receipts_inspected','producer_authenticated','plan','shards','suites','scope'))
-    need(index['schema'] == 'gooo/native-shard-reference-index/v1' and index['state'] == 'RAW_REFERENCES_CHECKED_PRODUCER_UNAUTHENTICATED' and index['native_acceptance'] is False and index['raw_receipts_inspected'] is True and index['producer_authenticated'] is False,'experimental unauthenticated reference state only')
+    need(index['schema'] == 'gooo/native-shard-reference-index/v2' and index['state'] == 'RAW_REFERENCES_CHECKED_PRODUCER_UNAUTHENTICATED' and index['native_acceptance'] is False and index['raw_receipts_inspected'] is True and index['producer_authenticated'] is False,'experimental unauthenticated reference state only')
     text(index['scope'])
     plan,owners,source_bytes,entries,lock=validate_plan(root,reader,H,index['plan'])
     need(type(index['shards']) is list and len(index['shards']) == len(plan['shards']) and type(index['suites']) is list and len(index['suites']) == len(plan['suites']),'complete reference shard/suite population')
