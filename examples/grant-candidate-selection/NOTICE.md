@@ -15,3 +15,8 @@ This example does not copy those policy implementations into a new Go wrapper.
 The lossless JSON transport helper functions come from the same pinned module's
 BSD-3-Clause `input.go`; `transport-source-provenance.json` records the exact
 source bytes, selected functions and mechanical budget-name transformation.
+
+Schema contract tests use `github.com/google/jsonschema-go v0.4.3` under its
+MIT-style license. This dependency is used by tests, not the native command.
+Its upstream source and license remain in the separately downloaded Go module;
+no validator implementation is vendored or presented as Gooo behavior.

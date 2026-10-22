@@ -24,6 +24,20 @@ The report retains both complete assessments and their source bindings.
 selected proof. `input_sha256` identifies the exact received JSON document,
 including whitespace, rather than a reserialized object.
 
+## For an agent integrating this command
+
+Use the standalone JSON schemas for [input](schemas/input.schema.json),
+[stdout results](schemas/output.schema.json) and
+[stderr diagnostics](schemas/diagnostic.schema.json). The
+[recovery guide](agent-recovery.md) explains each state, stage/code and next
+step without requiring routine human approval for this pure assessment.
+
+Schemas describe structure. They do not replace the native byte parser, Gooo
+admission/policy decisions, proof correspondence or host effect authority.
+Contract tests exercise actual public API results and explicitly preserve those
+boundaries. The schema validator is a pinned test dependency; the compiled
+command still links only the existing policy module.
+
 ## Native Go API
 
 Call `Assess(Input)` with `before`, ordered `required_requests` and ordered
@@ -113,4 +127,5 @@ owned command binaries are removed; raw results and summaries remain.
 
 The full-scope policy CI job runs this verifier and retains its evidence. Local
 observations do not establish external adoption or compatibility with every
-client or platform. The new public CI step is pending its first remote run.
+client or platform. Each source revision still requires its own full-scope CI; previous source
+observations are not rebound to a changed checkout.

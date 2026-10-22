@@ -1,0 +1,447 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:gooo:grant-candidate-selection:output:v1",
+  "title": "Grant selection stdout document",
+  "description": "Shape of a represented native result. Hash-shaped strings do not establish freshness, authenticity, correspondence or application authority. Verify original facts and producer bindings separately.",
+  "allOf": [
+    {
+      "$ref": "#/$defs/document"
+    }
+  ],
+  "$defs": {
+    "document": {
+      "type": "object",
+      "properties": {
+        "input_sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "result": {
+          "$ref": "#/$defs/result"
+        }
+      },
+      "required": [
+        "input_sha256",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "result": {
+      "type": "object",
+      "properties": {
+        "facts": {
+          "$ref": "#/$defs/input"
+        },
+        "context_id": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "assessments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/assessment"
+          }
+        },
+        "selection": {
+          "$ref": "#/$defs/selection"
+        },
+        "bindings": {
+          "type": "object",
+          "properties": {
+            "selector": {
+              "$ref": "#/$defs/kernelBindings"
+            },
+            "policy": {
+              "$ref": "#/$defs/policyBindings"
+            }
+          },
+          "required": [
+            "selector",
+            "policy"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "facts",
+        "context_id",
+        "assessments",
+        "selection",
+        "bindings"
+      ],
+      "additionalProperties": false
+    },
+    "selection": {
+      "type": "object",
+      "properties": {
+        "context_id": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "state": {
+          "enum": [
+            "PROPOSED",
+            "REFUSED",
+            "INVALID_INPUT",
+            "UNKNOWN"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "selected_candidate_id": {
+          "type": "string"
+        },
+        "selected_assessment_id": {
+          "type": "string",
+          "anyOf": [
+            {
+              "const": ""
+            },
+            {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            }
+          ]
+        },
+        "selected_index": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "selected_priority": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "candidate_count": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "eligible_count": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "invalid_index": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "unknown_index": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "execution_authorized": {
+          "const": false
+        }
+      },
+      "required": [
+        "context_id",
+        "state",
+        "reason",
+        "selected_candidate_id",
+        "selected_assessment_id",
+        "selected_index",
+        "selected_priority",
+        "candidate_count",
+        "eligible_count",
+        "invalid_index",
+        "unknown_index",
+        "execution_authorized"
+      ],
+      "additionalProperties": false
+    },
+    "assessment": {
+      "type": "object",
+      "properties": {
+        "candidate_id": {
+          "type": "string"
+        },
+        "supplied_preference": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "proof_sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "proof": {
+          "$ref": "#/$defs/proof"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "supplied_preference",
+        "proof_sha256",
+        "proof"
+      ],
+      "additionalProperties": false
+    },
+    "proof": {
+      "type": "object",
+      "properties": {
+        "facts": {
+          "$ref": "#/$defs/policyFacts"
+        },
+        "decision": {
+          "$ref": "#/$defs/policyDecision"
+        },
+        "bindings": {
+          "$ref": "#/$defs/policyBindings"
+        }
+      },
+      "required": [
+        "facts",
+        "decision",
+        "bindings"
+      ],
+      "additionalProperties": false
+    },
+    "policyFacts": {
+      "type": "object",
+      "properties": {
+        "before": {
+          "type": "string",
+          "$comment": "Native parser additionally requires decoded valid UTF-8 and at most 1024 bytes."
+        },
+        "after": {
+          "type": "string",
+          "$comment": "Native parser additionally requires decoded valid UTF-8 and at most 1024 bytes."
+        },
+        "required_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "$comment": "Native parser additionally requires decoded valid UTF-8 and at most 1024 bytes."
+          }
+        },
+        "required_names": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "$comment": "Native parser additionally requires decoded valid UTF-8 and at most 1024 bytes."
+          }
+        }
+      },
+      "required": [
+        "before",
+        "after",
+        "required_types",
+        "required_names"
+      ],
+      "additionalProperties": false
+    },
+    "policyDecision": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "ELIGIBLE",
+            "REFUSED",
+            "INVALID_INPUT"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "invalid_field": {
+          "type": "string"
+        },
+        "invalid_index": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "first_counterexample": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "request_count": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "checked_count": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "all_preserved": {
+          "type": "boolean"
+        },
+        "supported_subset": {
+          "type": "boolean"
+        },
+        "subset_rule_id": {
+          "type": "string"
+        },
+        "counterexample_before_match": {
+          "type": "boolean"
+        },
+        "counterexample_after_match": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "status",
+        "reason",
+        "invalid_field",
+        "invalid_index",
+        "first_counterexample",
+        "request_count",
+        "checked_count",
+        "all_preserved",
+        "supported_subset",
+        "subset_rule_id",
+        "counterexample_before_match",
+        "counterexample_after_match"
+      ],
+      "additionalProperties": false
+    },
+    "policyBindings": {
+      "type": "object",
+      "properties": {
+        "compiler_source_sha": {
+          "const": "205896a413e5dea92366309c35ae85e542d055f6"
+        },
+        "generation_sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "sources": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        },
+        "assets": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        }
+      },
+      "required": [
+        "compiler_source_sha",
+        "generation_sha256",
+        "sources",
+        "assets"
+      ],
+      "additionalProperties": false
+    },
+    "kernelBindings": {
+      "type": "object",
+      "properties": {
+        "compiler_source_sha": {
+          "const": "205896a413e5dea92366309c35ae85e542d055f6"
+        },
+        "go_version": {
+          "const": "go1.27.3"
+        },
+        "generation_sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "sources": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        },
+        "generated_assets": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        }
+      },
+      "required": [
+        "compiler_source_sha",
+        "go_version",
+        "generation_sha256",
+        "sources",
+        "generated_assets"
+      ],
+      "additionalProperties": false
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "before": {
+          "type": "string",
+          "$comment": "Native parser additionally requires decoded valid UTF-8 and at most 1024 bytes."
+        },
+        "required_requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/request"
+          }
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/candidate"
+          }
+        }
+      },
+      "required": [
+        "before",
+        "required_requests",
+        "candidates"
+      ],
+      "additionalProperties": false,
+      "$comment": "Transport shape only. Candidate count, ID uniqueness/128-byte limit, nonnegative preference and service policy are evaluated by Gooo. JSON Schema does not detect duplicate keys, lossy escapes, integer token spelling, raw byte budgets or source/effect authority. Native parsing and assessment remain required."
+    },
+    "request": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "$comment": "Native parser additionally requires decoded valid UTF-8 and at most 1024 bytes."
+        },
+        "name": {
+          "type": "string",
+          "$comment": "Native parser additionally requires decoded valid UTF-8 and at most 1024 bytes."
+        }
+      },
+      "required": [
+        "type",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "candidate": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "$comment": "Native parser additionally requires decoded valid UTF-8 and at most 1024 bytes."
+        },
+        "after": {
+          "type": "string",
+          "$comment": "Native parser additionally requires decoded valid UTF-8 and at most 1024 bytes."
+        },
+        "preference": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "id",
+        "after",
+        "preference"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
