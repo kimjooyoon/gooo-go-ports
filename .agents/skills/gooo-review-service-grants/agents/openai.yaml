@@ -1,4 +1,4 @@
 interface:
   display_name: "Review service grants with Gooo"
-  short_description: "Check grant narrowing against every required request"
-  default_prompt: "Use $gooo-review-service-grants to compare these grant proposals and preserve every required request."
+  short_description: "Review grants and select by supplied preference"
+  default_prompt: "Use $gooo-review-service-grants to compare these grant proposals, preserve every required request, and select using my supplied preferences."
