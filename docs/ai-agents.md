@@ -603,6 +603,28 @@ first command, exit status and diagnostic, and use public synthetic facts.
 Did it help one real API or automation task, or which service pattern could you
 not express? The command contacts no service and uploads no feedback itself.
 
+## Choose among grant-change proposals without a checkout
+
+The rule is written in [Gooo](https://github.com/kimjooyoon/meta-ontology-go).
+The command runs generated Go and needs no Gooo compiler, model or API key at runtime.
+Use Go 1.27.3 for this pinned example.
+
+Save the [two-candidate input](../examples/grant-candidate-selection/example-input.json)
+as `proposals.json`, then run:
+
+```sh
+GOTOOLCHAIN=local GOWORK=off go run github.com/kimjooyoon/gooo-go-ports/examples/grant-candidate-selection/cmd/select@v0.0.0-20261022032513-52fb59a8ca9a < proposals.json
+```
+
+Go may access module and version metadata while building. The weather-only proposal
+is refused because it removes calculator; `all-mcp` preserves both requests.
+Inspect every assessment and `execution_authorized:false`. No grant is applied.
+See the [schemas and recovery guide](../examples/grant-candidate-selection/agent-recovery.md).
+This command is separate from the tools in currently released MCP bundles.
+If it fails on your task, share a public synthetic input, the command version and
+the diagnostic through [a GitHub issue](https://github.com/kimjooyoon/gooo-go-ports/issues/new).
+Do not include private policies or credentials.
+
 ## Preserve several required requests through MCP
 
 For reusable agent instructions, use the [service-grant review skill](../.agents/skills/gooo-review-service-grants/SKILL.md). It preserves the required-request list and complete results while comparing the user's proposals.
