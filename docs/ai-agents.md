@@ -787,10 +787,22 @@ not external adoption.
 
 Use this when an agent previously selected a tool name and you want to compare
 its declared server and original function before and after a catalog update.
-Build the command using the [MCP source instructions](../examples/service-grant-mcp/README.md#optional-tool-alias-origin-comparison)
-and configure your host to run that absolute executable path with
-`args: ["--alias-origin-change"]`. This mode is not in the preview16 executable,
-Homebrew package or container image. It needs no compiler at runtime.
+With Go **1.27.3**, install this immutable source snapshot without a checkout:
+
+```sh
+install_dir="$(mktemp -d)"
+GOBIN="$install_dir" go install -trimpath \
+  github.com/kimjooyoon/gooo-go-ports/examples/service-grant-mcp@v0.0.0-20261024233450-c3f6cdaf7c9f
+go version -m "$install_dir/service-grant-mcp"
+```
+
+Installation uses the public Go module service. The module checksum is
+`h1:GFQHFwo5Z6L1L6B0oFExrEyoYyiPRJkDpNOBNOlX34I=`. Configure your host to run the
+absolute path to that `service-grant-mcp` executable with
+`args: ["--alias-origin-change"]`. The installed executable needs no Go or Gooo
+compiler at runtime. To build a checkout instead, use the
+[MCP source instructions](../examples/service-grant-mcp/README.md#optional-tool-alias-origin-comparison).
+This mode is not in the preview16 executable, Homebrew package or container image.
 
 Discover `gooo_compare_alias_origin` before calling it. A host that filters
 enabled tools must allow this name. If it is absent, keep the executable
@@ -812,6 +824,14 @@ catalog completeness or authority; `execution_authorized` remains `false`.
 Both optional flags may be supplied to expose all three tools. For a real
 attempt, [report the first failure or useful result](#report-a-first-attempt-or-a-real-task)
 with sanitized catalogs and the exact executable version.
+
+A macOS arm64 internal trial installed this exact version from the public
+module service. Its 20 source files matched the accepted source snapshot. Raw
+stdio checks covered two protocol versions and four discovery modes, six normal
+comparison cases and seven refusal cases, including the large-response limits.
+The complete saved wire passed the existing validator, and all owned processes
+closed. This is a synthetic transport observation, not a completed external-agent
+task or external adoption.
 
 ## Optional Claude Code ETag workflow
 
