@@ -1,0 +1,478 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kimjooyoon/gooo-go-ports/alias-origin-change/output.schema.json",
+  "type": "object",
+  "properties": {
+    "facts": {
+      "type": "object",
+      "properties": {
+        "target_alias": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "before": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "type": "object",
+            "properties": {
+              "server": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "original_name": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "exposed_name": {
+                "type": "string",
+                "maxLength": 1024
+              }
+            },
+            "required": [
+              "server",
+              "original_name",
+              "exposed_name"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "after": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "type": "object",
+            "properties": {
+              "server": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "original_name": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "exposed_name": {
+                "type": "string",
+                "maxLength": 1024
+              }
+            },
+            "required": [
+              "server",
+              "original_name",
+              "exposed_name"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "target_alias",
+        "before",
+        "after"
+      ],
+      "additionalProperties": false
+    },
+    "facts_sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "input_sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "decision": {
+      "type": "object",
+      "properties": {
+        "context_id": {
+          "type": "string",
+          "pattern": "^gooo/alias-origin/v1/sha256:[0-9a-f]{64}$"
+        },
+        "state": {
+          "enum": [
+            "UNCHANGED",
+            "ORIGIN_CHANGED",
+            "REMOVED",
+            "ADDED",
+            "ABSENT",
+            "INVALID_INPUT",
+            "AMBIGUOUS"
+          ]
+        },
+        "reason": {
+          "enum": [
+            "SAME_DECLARED_ORIGIN",
+            "DIFFERENT_DECLARED_ORIGIN",
+            "ALIAS_REMOVED_FROM_SUPPLIED_CATALOG",
+            "ALIAS_ADDED_TO_SUPPLIED_CATALOG",
+            "ALIAS_NOT_IN_SUPPLIED_CATALOGS",
+            "INVALID_CATALOG_COLUMNS",
+            "DUPLICATE_EXPOSED_NAME"
+          ]
+        },
+        "before_index": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 255
+        },
+        "after_index": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 255
+        },
+        "conflict_catalog": {
+          "enum": [
+            "",
+            "BEFORE",
+            "AFTER"
+          ]
+        },
+        "conflict_first_index": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 255
+        },
+        "conflict_second_index": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 255
+        },
+        "execution_authorized": {
+          "const": false
+        }
+      },
+      "required": [
+        "context_id",
+        "state",
+        "reason",
+        "before_index",
+        "after_index",
+        "conflict_catalog",
+        "conflict_first_index",
+        "conflict_second_index",
+        "execution_authorized"
+      ],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "state": {
+              "const": "UNCHANGED"
+            },
+            "reason": {
+              "const": "SAME_DECLARED_ORIGIN"
+            },
+            "before_index": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "after_index": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "conflict_catalog": {
+              "const": ""
+            },
+            "conflict_first_index": {
+              "const": -1
+            },
+            "conflict_second_index": {
+              "const": -1
+            }
+          }
+        },
+        {
+          "properties": {
+            "state": {
+              "const": "ORIGIN_CHANGED"
+            },
+            "reason": {
+              "const": "DIFFERENT_DECLARED_ORIGIN"
+            },
+            "before_index": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "after_index": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "conflict_catalog": {
+              "const": ""
+            },
+            "conflict_first_index": {
+              "const": -1
+            },
+            "conflict_second_index": {
+              "const": -1
+            }
+          }
+        },
+        {
+          "properties": {
+            "state": {
+              "const": "REMOVED"
+            },
+            "reason": {
+              "const": "ALIAS_REMOVED_FROM_SUPPLIED_CATALOG"
+            },
+            "before_index": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "after_index": {
+              "const": -1
+            },
+            "conflict_catalog": {
+              "const": ""
+            },
+            "conflict_first_index": {
+              "const": -1
+            },
+            "conflict_second_index": {
+              "const": -1
+            }
+          }
+        },
+        {
+          "properties": {
+            "state": {
+              "const": "ADDED"
+            },
+            "reason": {
+              "const": "ALIAS_ADDED_TO_SUPPLIED_CATALOG"
+            },
+            "before_index": {
+              "const": -1
+            },
+            "after_index": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "conflict_catalog": {
+              "const": ""
+            },
+            "conflict_first_index": {
+              "const": -1
+            },
+            "conflict_second_index": {
+              "const": -1
+            }
+          }
+        },
+        {
+          "properties": {
+            "state": {
+              "const": "ABSENT"
+            },
+            "reason": {
+              "const": "ALIAS_NOT_IN_SUPPLIED_CATALOGS"
+            },
+            "before_index": {
+              "const": -1
+            },
+            "after_index": {
+              "const": -1
+            },
+            "conflict_catalog": {
+              "const": ""
+            },
+            "conflict_first_index": {
+              "const": -1
+            },
+            "conflict_second_index": {
+              "const": -1
+            }
+          }
+        },
+        {
+          "properties": {
+            "state": {
+              "const": "INVALID_INPUT"
+            },
+            "reason": {
+              "const": "INVALID_CATALOG_COLUMNS"
+            },
+            "before_index": {
+              "const": -1
+            },
+            "after_index": {
+              "const": -1
+            },
+            "conflict_catalog": {
+              "const": ""
+            },
+            "conflict_first_index": {
+              "const": -1
+            },
+            "conflict_second_index": {
+              "const": -1
+            }
+          }
+        },
+        {
+          "properties": {
+            "state": {
+              "const": "AMBIGUOUS"
+            },
+            "reason": {
+              "const": "DUPLICATE_EXPOSED_NAME"
+            },
+            "before_index": {
+              "const": -1
+            },
+            "after_index": {
+              "const": -1
+            },
+            "conflict_catalog": {
+              "enum": [
+                "BEFORE",
+                "AFTER"
+              ]
+            },
+            "conflict_first_index": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 254
+            },
+            "conflict_second_index": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 255
+            }
+          }
+        }
+      ]
+    },
+    "bindings": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "gooo/alias-origin-generation/v1"
+        },
+        "compiler_source_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "go_version": {
+          "type": "string",
+          "pattern": "^go1\\.[0-9]+\\.[0-9]+$"
+        },
+        "source": {
+          "type": "object",
+          "properties": {
+            "ports/tool-origin/alias_origin.gooo": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "ports/tool-origin/alias_origin.gooo"
+          ],
+          "additionalProperties": false
+        },
+        "workspace_sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "cases_sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "generator_sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "selected_upstream_pins_sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "schema_validation_spec_sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "typed_plan_sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "raw_projection_sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "projection_transform": {
+          "const": "Replace first package token main with kernel; all other bytes unchanged."
+        },
+        "generated_assets": {
+          "type": "object",
+          "properties": {
+            "internal/kernel/projection_generated.go": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "internal/kernel/types_generated.go": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "internal/kernel/bridge_generated.go": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "go.mod": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "go.sum": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "reference/go.mod": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "internal/kernel/projection_generated.go",
+            "internal/kernel/types_generated.go",
+            "internal/kernel/bridge_generated.go",
+            "go.mod",
+            "go.sum",
+            "reference/go.mod"
+          ],
+          "additionalProperties": false
+        },
+        "scope": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema",
+        "compiler_source_sha",
+        "go_version",
+        "source",
+        "workspace_sha256",
+        "cases_sha256",
+        "generator_sha256",
+        "selected_upstream_pins_sha256",
+        "schema_validation_spec_sha256",
+        "typed_plan_sha256",
+        "raw_projection_sha256",
+        "projection_transform",
+        "generated_assets",
+        "scope"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "facts",
+    "facts_sha256",
+    "decision",
+    "bindings"
+  ],
+  "additionalProperties": false
+}

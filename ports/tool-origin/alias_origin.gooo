@@ -1,0 +1,85 @@
+// Copyright (c) 2026 Gooo Go Ports contributors. BSD-3-Clause; see ../../LICENSE.
+// Original alias-origin comparison over supplied catalog facts.
+// Motivated by google/adk-go#1126; not an ADK adapter or effect permission.
+package tool_origin
+namespace gooo_tool_origin_v1
+entity OriginInput id "gooo://tool-origin/v1/input" fields {
+ field context_id id "gooo://tool-origin/v1/input/context_id" type string required one
+ field target_alias id "gooo://tool-origin/v1/input/target_alias" type string required one
+ field before_servers id "gooo://tool-origin/v1/input/before_servers" type string required many
+ field before_names id "gooo://tool-origin/v1/input/before_names" type string required many
+ field before_aliases id "gooo://tool-origin/v1/input/before_aliases" type string required many
+ field after_servers id "gooo://tool-origin/v1/input/after_servers" type string required many
+ field after_names id "gooo://tool-origin/v1/input/after_names" type string required many
+ field after_aliases id "gooo://tool-origin/v1/input/after_aliases" type string required many
+}
+entity OriginResult id "gooo://tool-origin/v1/result" fields {
+ field context_id id "gooo://tool-origin/v1/result/context_id" type string required one
+ field state id "gooo://tool-origin/v1/result/state" type string required one
+ field reason id "gooo://tool-origin/v1/result/reason" type string required one
+ field before_index id "gooo://tool-origin/v1/result/before_index" type integer required one
+ field after_index id "gooo://tool-origin/v1/result/after_index" type integer required one
+ field conflict_catalog id "gooo://tool-origin/v1/result/conflict_catalog" type string required one
+ field conflict_first_index id "gooo://tool-origin/v1/result/conflict_first_index" type integer required one
+ field conflict_second_index id "gooo://tool-origin/v1/result/conflict_second_index" type integer required one
+ field execution_authorized id "gooo://tool-origin/v1/result/execution_authorized" type boolean required one
+}
+activity CompareAliasOrigin(OriginInput) -> OriginResult id "gooo://tool-origin/v1/compare" computes `
+let invalid = input.context_id == "" || input.target_alias == ""
+let beforeIndex = -1
+let afterIndex = -1
+let conflictCatalog = ""
+let first = -1
+let second = -1
+if len(input.before_servers) != len(input.before_aliases) || len(input.before_names) != len(input.before_aliases) { invalid = true }
+if len(input.after_servers) != len(input.after_aliases) || len(input.after_names) != len(input.after_aliases) { invalid = true }
+if !invalid {
+ let index = 0
+ for alias in input.before_aliases {
+  if alias == "" || input.before_servers[index] == "" || input.before_names[index] == "" { invalid = true }
+  index = index + 1
+ }
+}
+if !invalid {
+ let index = 0
+ for alias in input.after_aliases {
+  if alias == "" || input.after_servers[index] == "" || input.after_names[index] == "" { invalid = true }
+  index = index + 1
+ }
+}
+if !invalid {
+ let index = 0
+ for alias in input.before_aliases {
+  let prior = 0
+  for previous in input.before_aliases {
+   if conflictCatalog == "" && prior < index && previous == alias { conflictCatalog = "BEFORE"; first = prior; second = index }
+   prior = prior + 1
+  }
+  if alias == input.target_alias { beforeIndex = index }
+  index = index + 1
+ }
+}
+if !invalid {
+ let index = 0
+ for alias in input.after_aliases {
+  let prior = 0
+  for previous in input.after_aliases {
+   if conflictCatalog == "" && prior < index && previous == alias { conflictCatalog = "AFTER"; first = prior; second = index }
+   prior = prior + 1
+  }
+  if alias == input.target_alias { afterIndex = index }
+  index = index + 1
+ }
+}
+let state = "ABSENT"
+let reason = "ALIAS_NOT_IN_SUPPLIED_CATALOGS"
+if invalid {
+ state = "INVALID_INPUT"; reason = "INVALID_CATALOG_COLUMNS"; beforeIndex = -1; afterIndex = -1
+} else if conflictCatalog != "" {
+ state = "AMBIGUOUS"; reason = "DUPLICATE_EXPOSED_NAME"; beforeIndex = -1; afterIndex = -1
+} else if beforeIndex >= 0 && afterIndex >= 0 {
+ if input.before_servers[beforeIndex] == input.after_servers[afterIndex] && input.before_names[beforeIndex] == input.after_names[afterIndex] { state = "UNCHANGED"; reason = "SAME_DECLARED_ORIGIN" } else { state = "ORIGIN_CHANGED"; reason = "DIFFERENT_DECLARED_ORIGIN" }
+} else if beforeIndex >= 0 { state = "REMOVED"; reason = "ALIAS_REMOVED_FROM_SUPPLIED_CATALOG"
+} else if afterIndex >= 0 { state = "ADDED"; reason = "ALIAS_ADDED_TO_SUPPLIED_CATALOG" }
+return OriginResult{context_id: input.context_id, state: state, reason: reason, before_index: beforeIndex, after_index: afterIndex, conflict_catalog: conflictCatalog, conflict_first_index: first, conflict_second_index: second, execution_authorized: false}
+`

@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kimjooyoon/gooo-go-ports/alias-origin-change/input.schema.json",
+  "type": "object",
+  "properties": {
+    "target_alias": {
+      "type": "string",
+      "maxLength": 1024
+    },
+    "before": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "properties": {
+          "server": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "original_name": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "exposed_name": {
+            "type": "string",
+            "maxLength": 1024
+          }
+        },
+        "required": [
+          "server",
+          "original_name",
+          "exposed_name"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "after": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "properties": {
+          "server": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "original_name": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "exposed_name": {
+            "type": "string",
+            "maxLength": 1024
+          }
+        },
+        "required": [
+          "server",
+          "original_name",
+          "exposed_name"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "target_alias",
+    "before",
+    "after"
+  ],
+  "additionalProperties": false
+}

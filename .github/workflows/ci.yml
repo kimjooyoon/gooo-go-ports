@@ -1690,6 +1690,32 @@ jobs:
             .execution_authorized == false and .model_calls == 0 and .engine_builds == 0 and
             .external_adoption == false and .local_lineage_complete_claim == false
           ' out/grant-candidate-selection/summary.json
+      - name: Verify source-owned tool alias origin changes
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          python3 -I -B examples/alias-origin-change/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/alias-origin-change"
+          jq -e '
+            .schema == "gooo/alias-origin-verification/v1" and
+            .status == "SOURCE_KERNEL111_AND_ROW_API_NATIVE_CONSUMER_REPLAY_PASS" and
+            .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
+            .go_version == "go1.27.3" and .kernel_cases == 111 and
+            .actual_consumer_cases == 3 and .public_row_API_cases == 104 and .typed_decision_fields == 9 and
+            .consumed_pin_dependency_regression == true and
+            .transport_refusals == 3 and .receipt_negative_controls == 4 and
+            .runtime_path_empty == true and .runtime_goroot_absent == true and
+            .all_direct_wait_EOF_PG_ESRCH == true and .execution_authorized == false and
+            .model_calls == 0 and .external_adoption == false and .ADK_runtime_executed == false
+          ' "$RUNNER_TEMP/alias-origin-change/summary.json"
+      - name: Preserve alias-origin change evidence
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: alias-origin-change-evidence
+          path: ${{ runner.temp }}/alias-origin-change/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Verify original AutoBot resolver adaptation
         if: steps.change-scope.outputs.docs_only != 'true'
         timeout-minutes: 6

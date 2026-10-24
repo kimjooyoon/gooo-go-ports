@@ -1,0 +1,15 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "gooo/tool-origin",
+    "activity": "CompareAliasOrigin"
+  },
+  "packages": [
+    {
+      "path": "gooo/tool-origin",
+      "sources": [
+        "ports/tool-origin/alias_origin.gooo"
+      ]
+    }
+  ]
+}
