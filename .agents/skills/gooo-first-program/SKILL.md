@@ -73,8 +73,15 @@ shows `out/learn-gooo/threshold-80-execution.json` and
 new names. Run `package execute --json`, then `package replay --json` with that
 new execution record, the same inputs and the same workspace. Preserve the
 original program's records rather than replaying them as evidence for an edit.
-Stop at a failed command and report its first diagnostic before changing the
-source or setup.
+Stop the failed workflow and preserve its first diagnostic before changing the
+source or setup. For an already configured optional upstream ADK bridge only,
+`gooo_discover_capability` returning `SOURCE_LOWER_FAILED` without a useful
+source location permits one
+diagnostic-only `gooo_check_source` call with the same relative `path`, unchanged
+source, fixed binary and root. Preserve both results and the original exit status;
+report an absent source location as unavailable. This does not retry discovery,
+edit inputs or resume execution. See the [upstream ADK scope and result formats](../../../docs/ai-agents.md#choose-a-task-that-matches-the-current-capability);
+this diagnostic route does not change the checkout's compiler pin.
 
 ## Interpret the result
 
