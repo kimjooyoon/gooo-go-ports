@@ -32,6 +32,31 @@ The executable uses its generated kernel at runtime. It does not need the Gooo
 compiler, a model, credentials or network access to compare a saved input. This
 example has its own CLI and Go package; released MCP bundles do not expose it.
 
+### Discover the installed command
+
+After building this checkout's command, help, build identity and complete
+synthetic input are available without reading standard input:
+
+```sh
+/tmp/gooo-recorded-catalog --help
+/tmp/gooo-recorded-catalog --version
+/tmp/gooo-recorded-catalog --example > synthetic-observations.json
+/tmp/gooo-recorded-catalog < synthetic-observations.json > report.json
+```
+
+`--version` prints the running binary's Go build metadata as JSON. A local build
+may report `(devel)`, a dirty VCS state or no module checksum; these values are
+preserved, not replaced by a release pin. Metadata is not an authenticated source
+attestation. `--example` prints the same `example-input.json` embedded in the
+binary and performs no comparison. The last command separately compares those
+synthetic observations. No live server or model is contacted.
+
+Use exactly one discovery option at a time. Unknown, positional or combined
+arguments return exit code `2` and a JSON diagnostic on stderr before reading
+stdin. A normal comparison has no arguments, returns exit code `0` on success,
+and returns `1` on input, comparison or I/O failure. A successful domain result
+such as `INCOMPLETE_COLLECTION` remains a report, not a transport error.
+
 ## Provide your saved observations
 
 Use the shape in [example-input.json](example-input.json). Every outer field is
