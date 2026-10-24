@@ -7,13 +7,15 @@ language compiler.
 이 저장소는 원본 Go 프로그램의 동작을 읽고 Gooo로 표현하는 작업장입니다.
 언어 컴파일러의 구현과는 별도로, 실제 이용자 관점의 입력·결과·제약을 축적합니다.
 
-## Report a problem
+## Share a first-use result or report a problem
 
-Use the [problem report form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml)
-for a page that will not load, a failed first install, or an unexpected code-generation,
-function, or text-inspection result.
+Use the [feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml)
+for a result from your own task, a missing capability, a page that will not load,
+a failed first install, or an unexpected code-generation, function, or text-inspection result.
+For a completed run, explain the decision it helped with or what was still missing.
+Say whether you used your own public input or an unchanged example.
 Include the page URL or command, what you saw, and your browser/operating system if known.
-For a function result, include its name, exact integer inputs, and the result you expected.
+For a function result, include its name, exact public input, and the result you expected.
 For the [Gooo source editor](https://kimjooyoon.github.io/gooo-go-ports/codegen/),
 choose **Gooo source editor** in the form and include the activity name and minimal
 public source if possible. A visible error is enough if you cannot share the source.
@@ -30,7 +32,9 @@ does not attach your input or submit anything; choose what to include and review
 A shared link, inspection report, version, or build metadata is optional. For a loading
 failure, the page URL and visible error are enough.
 
-처음 설치하거나 데모를 여는 단계에서 막혀도 같은 양식으로 제보할 수 있습니다.
+자기 입력으로 실행한 결과와 어떤 결정에 도움이 됐는지도 같은 양식으로 공유할 수 있습니다.
+직접 만든 공개 입력인지, 제공 예제를 그대로 실행했는지 적어 주세요.
+처음 설치하거나 데모를 여는 단계에서 막혀도 제보할 수 있습니다.
 한국어·영어 모두 괜찮습니다. 페이지 주소 또는 실행 명령, 실제 오류나 결과를 적어 주세요.
 버전을 알면 릴리스 이름이나 리비전을 덧붙이고, 공유 링크는 데모가 동작할 때만 넣으면 됩니다.
 Gooo 소스 편집기는 양식에서 **Gooo source editor**를 선택하고, 가능하면 activity 이름과
