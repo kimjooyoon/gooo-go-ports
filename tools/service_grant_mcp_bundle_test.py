@@ -86,7 +86,7 @@ class BundleRefusals(unittest.TestCase):
     def test_many_dependency_is_required_with_exact_public_identity(self):
         original = build()
         many_index = next(i for i, row in enumerate(original["Deps"]) if row["Path"] == M.MANY_MODULE)
-        self.assertEqual(len(original["Deps"]), 11)
+        self.assertEqual(len(original["Deps"]), 12)
         changes = [
             lambda x: x["Deps"][many_index].update(Sum="h1:wrong"),
             lambda x: x["Deps"][many_index].update(Version="v0.0.0-other"),
@@ -115,6 +115,89 @@ class BundleRefusals(unittest.TestCase):
         (module/"unsealed.go").write_bytes(b"package servicegrantmany")
         with self.assertRaisesRegex(ValueError, "complete roster"):
             M.many_module_source(cache, repo)
+
+    def alias_module_fixture(self, omit=None):
+        repo = Path(os.environ.get("MCP_BUNDLE_TEST_SOURCE_ROOT", Path(__file__).resolve().parents[1]))
+        cache = self.root / "alias-cache"
+        module = cache / (M.ALIAS_MODULE + "@" + M.ALIAS_VERSION)
+        archive_path = cache / "cache/download" / M.ALIAS_MODULE / "@v" / (M.ALIAS_VERSION + ".zip")
+        archive_path.parent.mkdir(parents=True)
+        with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+            for relative, digest in M.ALIAS_FILES.items():
+                raw = (repo / "examples/alias-origin-change" / relative).read_bytes()
+                self.assertEqual(M.sha(raw), digest)
+                if relative == omit:
+                    continue
+                target = module / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(raw)
+                archive.writestr(M.ALIAS_MODULE + "@" + M.ALIAS_VERSION + "/" + relative, raw)
+        return cache, module, repo
+
+    def test_alias_public_module_and_generation_bindings_are_required(self):
+        cache, module, repo = self.alias_module_fixture()
+        generation, actual = M.alias_module_source(cache, repo)
+        self.assertEqual(actual, module)
+        self.assertEqual(generation["source"], M.ALIAS_SOURCE)
+        model = module / "model.go"
+        raw = model.read_bytes()
+        model.write_bytes(raw + b"changed")
+        with self.assertRaisesRegex(ValueError, "installed module differs"):
+            M.alias_module_source(cache, repo)
+        model.write_bytes(raw)
+        (module / "unlisted.go").write_bytes(b"package aliasorigin")
+        with self.assertRaisesRegex(ValueError, "complete roster"):
+            M.alias_module_source(cache, repo)
+
+    def test_alias_dependency_pin_cannot_be_removed_replaced_or_changed(self):
+        original = build()
+        index = next(i for i, row in enumerate(original["Deps"]) if row["Path"] == M.ALIAS_MODULE)
+        for change in (lambda x: x["Deps"].pop(index),
+                       lambda x: x["Deps"][index].update(Sum="h1:changed"),
+                       lambda x: x["Deps"][index].update(Version=M.MANY_VERSION),
+                       lambda x: x["Deps"][index].update(Replace={"Path": "local"})):
+            value = copy.deepcopy(original)
+            change(value)
+            with self.assertRaises(ValueError):
+                M.build_identity(value, "darwin/arm64", COMMIT)
+
+    def test_alias_reference_cli_requires_public_module_and_clean_runtime_shape(self):
+        cli = build()
+        cli.update(Path=M.ALIAS_MODULE + "/cmd/compare",
+                   Main={"Path": M.ALIAS_MODULE, "Version": M.ALIAS_VERSION, "Sum": M.ALIAS_SUM}, Deps=[])
+        cli["Settings"] = [row for row in cli["Settings"] if not row["Key"].startswith("vcs")]
+        M.alias_cli_identity(cli, "darwin/arm64")
+        for change in (lambda b: b["Main"].update(Version="(devel)"),
+                       lambda b: b["Main"].update(Sum="h1:changed"),
+                       lambda b: b["Main"].update(Replace={"Path": "local"}),
+                       lambda b: b["Deps"].append({"Path": "foreign"}),
+                       lambda b: next(row for row in b["Settings"] if row["Key"] == "CGO_ENABLED").update(Value="1")):
+            changed = copy.deepcopy(cli)
+            change(changed)
+            with self.assertRaises(ValueError):
+                M.alias_cli_identity(changed, "darwin/arm64")
+
+    def test_alias_notice_and_selected_generation_pins_are_not_optional(self):
+        cache, _, repo = self.alias_module_fixture(omit="NOTICE.md")
+        with self.assertRaisesRegex(ValueError, "roster/size"):
+            M.alias_module_source(cache, repo)
+        self.temp.cleanup()
+        self.temp = tempfile.TemporaryDirectory(dir=os.environ.get("MCP_BUNDLE_TEST_TMP"))
+        self.root = Path(self.temp.name)
+        cache, _, repo = self.alias_module_fixture()
+        original = M.member
+        for name in ("upstream.json", "ports/tool-origin/alias_origin.gooo", "examples/alias-origin-change/reference/go.mod"):
+            def changed(root, relative, *args):
+                raw = original(root, relative, *args)
+                if root == repo and relative == name:
+                    if name == "upstream.json":
+                        value = json.loads(raw); value["compiler_revision"] = "0" * 40
+                        return json.dumps(value).encode()
+                    return raw + b"changed"
+                return raw
+            with self.subTest(name=name), patch.object(M, "member", side_effect=changed):
+                with self.assertRaises(ValueError):
+                    M.alias_module_source(cache, repo)
 
     def test_many_missing_apache_notice_is_not_silently_omitted(self):
         cache, _, repo = self.many_module_fixture(omit="LICENSE-APACHE-2.0")

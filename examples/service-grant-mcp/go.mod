@@ -4,6 +4,7 @@ go 1.27.3
 
 require (
 	github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy v0.0.0-20261020182808-7180a4a0f36a
+	github.com/kimjooyoon/gooo-go-ports/examples/alias-origin-change v0.0.0-20261024154510-16d1e7864dc8
 	github.com/kimjooyoon/gooo-go-ports/examples/service-grant-many v0.0.0-20261020182808-7180a4a0f36a
 	github.com/modelcontextprotocol/go-sdk v1.8.0
 )

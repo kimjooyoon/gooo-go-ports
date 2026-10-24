@@ -147,3 +147,105 @@ python3 -I -B examples/service-grant-mcp/verify_many.py \
 Both clients exercise the two documented protocol versions without a model.
 The paired MCP input cannot express a mismatch between two column lengths; that
 separate public Go API case remains covered in `service-grant-many` tests.
+
+## Optional tool-alias origin comparison
+
+Build this checkout's command and start it with `--alias-origin-change` to add
+the read-only tool `gooo_compare_alias_origin`. This source profile is not in
+the previously released preview16 executable or image. It reuses the public
+`alias-origin-change` module at
+`v0.0.0-20261024154510-16d1e7864dc8`, without invoking Go or Gooo at runtime.
+The module's compiler pin is `205896a413e5dea92366309c35ae85e542d055f6` and its
+embedded generation document is pinned by SHA-256
+`b0c87b7865697c4b6433ef54e23defd7267ed8ea4da562cc8e1af24e283e7b06`.
+
+The default command still exposes only `assess_service_grant`;
+`--many-required` still exposes the same two service-grant tools. The alias
+option alone exposes those default and alias tools (two total). Both options
+together expose all three tools, in either argument order. Duplicate or unknown
+options are errors. A host with an `enabled_tools` allowlist must also include
+`gooo_compare_alias_origin` before the agent can discover it.
+
+Use it when a name chosen by an agent might resolve to a different declared
+server or original function after an update. Pass one exact arguments object:
+
+```json
+{"target_alias":"docs_search","before":[{"server":"docs","original_name":"search","exposed_name":"docs_search"}],"after":[{"server":"issues","original_name":"query","exposed_name":"docs_search"}]}
+```
+
+This returns `ORIGIN_CHANGED`: the supplied alias moved from `docs/search` to
+`issues/query`. Review that change before relying on the previous tool choice.
+`UNCHANGED` means the supplied origin pair is the same. `ADDED`, `REMOVED` and
+`ABSENT` describe presence in the two supplied lists. `AMBIGUOUS` identifies a
+duplicate exposed name anywhere in either catalog, even an unrelated alias;
+repair those indexed rows and compare fresh facts. Empty domain text returns
+`INVALID_INPUT`. See the [complete recovery guide](../alias-origin-change/agent-recovery.md)
+for the next action for every state.
+
+The adapter passes the received arguments bytes directly to `CompareJSON`.
+It returns the complete `facts`, `facts_sha256`, `input_sha256`, nine-field
+`decision` and `bindings` in both `structuredContent` and JSON text. The input
+digest identifies the exact arguments object received through MCP, including
+its whitespace; it does not identify the whole JSON-RPC request. Original row
+positions are zero-based. Text is opaque: preserve spelling, order and Unicode
+without trimming, case folding or normalization. The executable contains exact
+snapshots of the pinned module's [input](../alias-origin-change/schemas/input.schema.json)
+and [output](../alias-origin-change/schemas/output.schema.json) schemas for discovery;
+wire checks compare these with the public module rather than defining a second
+schema contract.
+
+Each catalog allows at most 256 rows, each text at most 1,024 UTF-8 bytes, and
+the raw arguments object at most 1 MiB. The alias profile allows another 64 KiB
+for inbound JSON-RPC framing; the default 64 KiB and existing many-request
+frame limits are unchanged. Invalid JSON, duplicate keys, null arrays, invalid
+Unicode or transport bounds return `isError: true` with the public JSON
+diagnostic in text and no partial report. These are separate from the seven
+represented decision states.
+
+The serialized report retains its separate 4 MiB limit. A complete outbound
+JSON-RPC frame, including structured content, the escaped text copy, metadata,
+request IDs, any batch framing and the final newline, is limited to
+**16 MiB + 64 KiB** only in the alias profile. The larger bound accounts for two
+copies of a report and additional JSON escaping and framing; a report size
+alone is not a wire size. An oversized frame replaces its alias reports with
+`isError: true` diagnostics whose state/stage/code are
+`INVALID_TRANSPORT / encode_result / MCP_WIRE_LIMIT_EXCEEDED`, without writing
+partial reports. Other tools' results in a mixed frame are preserved; an output
+that cannot be reduced within the bound fails the connection without writing
+that frame. This output-only diagnostic extends the module's CLI diagnostics.
+
+These comparisons use supplied snapshots. They do not authenticate catalog
+completeness, live server identity, SDK routing or current authority. Every
+represented result retains `execution_authorized: false`. No named tool,
+service or model is called.
+
+The separate `verify_alias.py` wire check uses a built comparison CLI from the
+same pinned public module as its complete-report reference, on protocols
+`2025-11-25` and `2026-07-28`. Its default `--scope full` includes large accepted
+responses and the independent 4 MiB report refusal. `--scope bundle-small`
+checks the fixed small cases and all four discovery modes for an extracted
+binary; it does not repeat or claim the large-response observations. Both
+scopes retain command identities, exact streams and child-process closure.
+These are finite internal protocol checks, not a completed task in an external
+agent application or a published release.
+
+After building the MCP command above, build its reference CLI from the same
+pinned dependency in the MCP module context, then use a fresh evidence directory:
+
+```sh
+mcp_binary=/absolute/private/bin/gooo-service-grant-mcp
+alias_cli=/absolute/private/bin/alias-compare
+GOTOOLCHAIN=local GOWORK=off CGO_ENABLED=0 \
+  go -C examples/service-grant-mcp build -trimpath -o "$alias_cli" \
+  github.com/kimjooyoon/gooo-go-ports/examples/alias-origin-change/cmd/compare
+alias_module="$(go -C examples/service-grant-mcp list -m -f '{{.Dir}}' \
+  github.com/kimjooyoon/gooo-go-ports/examples/alias-origin-change)"
+python3 -I -B examples/service-grant-mcp/verify_alias.py \
+  --binary "$mcp_binary" --alias-cli "$alias_cli" \
+  --alias-module "$alias_module" --go "$(go env GOROOT)/bin/go" \
+  --out /absolute/private/new-alias-wire --scope full
+```
+
+The Go executable in this verification command only inspects the two binaries'
+build identities. The actual CLI and MCP calls run with empty `PATH` and absent
+`GOROOT`; no model or external service is used.

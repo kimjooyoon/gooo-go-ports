@@ -1,11 +1,11 @@
-"""Prepare a fresh Docker context from a checksum-pinned preview.14 bundle.
+"""Prepare a fresh Docker context from a checksum-pinned native MCP bundle.
 
 No subprocess, network, archive extraction helper, Go installation or container
 execution occurs here. The caller supplies independently reviewed expected pins. The expected archive
 SHA256 is the trust anchor: these internal consistency checks do not independently
 parse the executable build info or authenticate its producer. A caller-selected
 untrusted checksum cannot establish authenticity.
-The format checks support the pinned flat Linux/amd64 v2 distribution only.
+The format checks support exact flat Linux/amd64 v2 and alias-enabled v3 layouts.
 """
 
 import gzip
@@ -23,6 +23,23 @@ EXPANDED_LIMIT = 32 * 1024 * 1024
 DOCKERFILE_LIMIT = 64 * 1024
 BINARY = "gooo-service-grant-mcp"
 SCHEMA = "gooo/service-grant-mcp-native-bundle/v2"
+ALIAS_SCHEMA = "gooo/service-grant-mcp-native-bundle/v3"
+LAYOUTS = {SCHEMA: (63, 58), ALIAS_SCHEMA: (65, 60)}
+ALIAS_DEPENDENCY = {
+    "Path": "github.com/kimjooyoon/gooo-go-ports/examples/alias-origin-change",
+    "Version": "v0.0.0-20261024154510-16d1e7864dc8",
+    "Sum": "h1:YCIMYxnE7+rqIumnIdG0e5JCkYOnaoLIHMCUJbdTKQA=",
+}
+ALIAS_GENERATION = "b0c87b7865697c4b6433ef54e23defd7267ed8ea4da562cc8e1af24e283e7b06"
+MANY_PROFILE_SHA256 = "5f5eb503299a7ccfc1007c366a95eb1033cffd6fc7c1cbc98328dc0b644423ba"
+ALIAS_NOTICES = {"LICENSE": "099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48",
+                 "NOTICE.md": "23cd2a8311b533aa6d14788b98824ff3c1d24675ac404dda1282086d350d2189"}
+PROFILES = {
+    "default": {"argv": [], "tools": ["assess_service_grant"]},
+    "many_required": {"argv": ["--many-required"], "tools": ["assess_service_grant", "assess_service_grant_change"]},
+    "alias_origin_change": {"argv": ["--alias-origin-change"], "tools": ["assess_service_grant", "gooo_compare_alias_origin"]},
+    "many_and_alias": {"argv": ["--many-required", "--alias-origin-change"], "tools": ["assess_service_grant", "assess_service_grant_change", "gooo_compare_alias_origin"]},
+}
 GO_VERSION = "go1.27.3"
 MODULE = "github.com/kimjooyoon/gooo-go-ports/examples/service-grant-mcp"
 HEX64 = re.compile(r"[0-9a-f]{64}\Z")
@@ -98,7 +115,7 @@ def unpack_checked(raw):
             require(offset + 1024 <= len(expanded), "missing tar end records")
             require(not any(expanded[offset:]), "nonzero data after tar end")
             break
-        require(len(files) < 63, "archive member count exceeds 63")
+        require(len(files) < 65, "archive member count exceeds known layouts")
         try:
             info = tarfile.TarInfo.frombuf(block, "utf-8", "strict")
         except (tarfile.HeaderError, UnicodeError, ValueError) as error:
@@ -119,7 +136,7 @@ def unpack_checked(raw):
         offset = padded_end
     else:
         raise Refusal("missing tar end records")
-    require(len(files) == 63, "archive must contain exactly 63 regular files")
+    require(len(files) in (63, 65), "archive must match an exact known regular-file layout")
     return files, modes, len(expanded)
 
 
@@ -146,14 +163,16 @@ def validate_build_info(build, source_commit):
 def validate_manifest(files, modes, source_commit):
     require("BUNDLE.json" in files, "missing BUNDLE.json")
     bundle = strict_json(files["BUNDLE.json"], "BUNDLE")
-    require(isinstance(bundle, dict) and bundle.get("schema") == SCHEMA and
+    require(isinstance(bundle, dict) and bundle.get("schema") in LAYOUTS and
             bundle.get("platform") == "linux/amd64" and
             bundle.get("source_commit") == source_commit,
             "bundle schema, platform or source mismatch")
+    member_count, notice_count = LAYOUTS[bundle["schema"]]
+    require(len(files) == member_count, "archive population differs from its bundle schema")
     members = bundle.get("members")
-    require(isinstance(members, dict) and len(members) == 62 and
+    require(isinstance(members, dict) and len(members) == member_count - 1 and
             set(members) == set(files) - {"BUNDLE.json"},
-            "manifest must bind exactly the other 62 members")
+            "manifest must bind exactly the other layout members")
     require(modes["BUNDLE.json"] == 0o644, "BUNDLE mode mismatch")
     for name, meta in members.items():
         flat_name(name)
@@ -171,9 +190,9 @@ def validate_manifest(files, modes, source_commit):
     require(base <= set(members), "missing required runtime member")
     inventory = strict_json(files["NOTICE-INVENTORY.json"], "notice inventory")
     require(type(bundle.get("notice_texts")) is int and
-            bundle["notice_texts"] == 58 and
-            isinstance(inventory, list) and len(inventory) == 58,
-            "expected 58 notice texts")
+            bundle["notice_texts"] == notice_count and
+            isinstance(inventory, list) and len(inventory) == notice_count,
+            "notice text count differs from bundle schema")
     notices = set()
     for notice in inventory:
         require(isinstance(notice, dict), "invalid notice inventory entry")
@@ -195,7 +214,43 @@ def validate_manifest(files, modes, source_commit):
     require(bundle.get("binary_sha256") == digest(files[BINARY]),
             "binary hash differs from manifest")
     validate_build_info(build, source_commit)
+    if bundle["schema"] == ALIAS_SCHEMA:
+        validate_alias_profile(bundle, build, inventory, files)
     return bundle
+
+
+def validate_alias_profile(bundle, build, inventory, files):
+    require(bundle.get("profiles") == PROFILES, "exact default/many/alias/combined profiles required")
+    optional = bundle.get("optional_profiles")
+    require(isinstance(optional, dict) and set(optional) == {"many_required", "alias_origin_change"},
+            "exact optional profile roster required")
+    require(digest(json.dumps(optional["many_required"], sort_keys=True,
+                              separators=(",", ":")).encode()) == MANY_PROFILE_SHA256,
+            "existing many profile bindings differ")
+    alias = optional["alias_origin_change"]
+    require(isinstance(alias, dict) and set(alias) == {"argv", "additional_tool", "module",
+            "compiler_source_sha", "generation_sha256", "bindings"}, "alias profile fields differ")
+    require(alias["argv"] == ["--alias-origin-change"] and
+            alias["additional_tool"] == "gooo_compare_alias_origin" and
+            alias["module"] == ALIAS_DEPENDENCY and
+            alias["compiler_source_sha"] == "205896a413e5dea92366309c35ae85e542d055f6" and
+            alias["generation_sha256"] == "sha256:" + ALIAS_GENERATION,
+            "alias profile immutable identity differs")
+    binding_bytes = (json.dumps(alias["bindings"], sort_keys=True, indent=2) + "\n").encode()
+    require(digest(binding_bytes) == ALIAS_GENERATION, "alias generation binding bytes differ")
+    dependencies = build.get("Deps")
+    require(isinstance(dependencies, list) and len(dependencies) == 12 and
+            [dep for dep in dependencies if isinstance(dep, dict) and
+             dep.get("Path") == ALIAS_DEPENDENCY["Path"]] == [ALIAS_DEPENDENCY],
+            "alias executable dependency pin differs")
+    rows = [row for row in inventory if isinstance(row.get("module"), dict) and
+            row["module"].get("Path") == ALIAS_DEPENDENCY["Path"]]
+    require(len(rows) == 2 and {row.get("source_relative_path") for row in rows} == set(ALIAS_NOTICES),
+            "alias license/notice inventory differs")
+    for row in rows:
+        name = row["source_relative_path"]
+        require(row.get("module") == ALIAS_DEPENDENCY and row.get("sha256") == ALIAS_NOTICES[name] and
+                digest(files[row["file"]]) == ALIAS_NOTICES[name], "alias notice source pin differs")
 
 
 def write_new(path, raw, mode):
@@ -223,7 +278,8 @@ def prepare(bundle: Path, sha256: str, source_commit: str,
     except UnicodeError as error:
         raise Refusal("Dockerfile is not UTF-8") from error
     context = {
-        "schema": "gooo/preview14-container-context/v1",
+        "schema": ("gooo/service-grant-mcp-container-context/v2" if manifest["schema"] == ALIAS_SCHEMA
+                   else "gooo/preview14-container-context/v1"),
         "archive_sha256": sha256,
         "archive_bytes": len(raw),
         "expanded_archive_bytes": expanded_bytes,
@@ -233,7 +289,7 @@ def prepare(bundle: Path, sha256: str, source_commit: str,
         "binary_sha256": digest(files[BINARY]),
         "dockerfile_sha256": digest(docker_raw),
         "runtime_members": len(files),
-        "notice_texts": 58,
+        "notice_texts": manifest["notice_texts"],
         "runtime_directory": "runtime",
         "docker_execution_performed": False,
         "producer_authenticated": False,
