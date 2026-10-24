@@ -1,17 +1,5 @@
 package kernel
 
-//gooo:generated:start id="gooo://tool-origin/recorded-catalog/v1/capture-index" kind="entity"
-type GoooRecordb214173db20d1e111cb2d37cb50161021e7209036b0dc426c8816d7ff307e5e3 struct {
-	GoooField702c28ee8c8fd82f7806c2cbab3c0bf224427973f0846ee972e97930bb2b1d8b int64 `json:"index"`
-}
-
-//gooo:generated:end id="gooo://tool-origin/recorded-catalog/v1/capture-index" kind="entity"
-//gooo:generated:start id="gooo://tool-origin/recorded-catalog/v1/cursor-repetition" kind="entity"
-type GoooRecord56d1319c1dfff9ba75989cecf5cee5faacb8304c1e931cd022d2805a0ff1c566 struct {
-	GoooField77ed4ce367a4bcace6e6438d5e00f3c4a34d1a9c4e9711d55d7e767ebf7a98c6 int64 `json:"first_page_index"`
-}
-
-//gooo:generated:end id="gooo://tool-origin/recorded-catalog/v1/cursor-repetition" kind="entity"
 //gooo:generated:start id="gooo://tool-origin/recorded-catalog/v1/input" kind="entity"
 type GoooRecorde9a2c608bd57c725bc756fe66f68f2407910973fe5391c93fdd4d7ad43edd1a3 struct {
 	GoooField1f17ccb002e4ab134fff7f78e56e479a421e2baeb938a2e8ff02acef74a0864f string   `json:"context_id"`
@@ -425,7 +413,6 @@ func GoooComposedActivity0(input0 GoooRecord8cfc2951857a013943ea032087d799c5a9bc
 		for _, side := range input1.GoooFieldc8f0bafffb7055d0bbb70e7d0c016f2cbd94b9de6fbb49e552c1e927b0f2945f {
 			var pageStatus = "COMPLETE"
 			var configStatus = "RECORDED_STABLE"
-			var repeated = GoooComposedActivity0Call1(input1, GoooRecordb214173db20d1e111cb2d37cb50161021e7209036b0dc426c8816d7ff307e5e3{GoooField702c28ee8c8fd82f7806c2cbab3c0bf224427973f0846ee972e97930bb2b1d8b: c})
 			var capturedPages int64 = 0
 			var previousKind = ""
 			var previousCursor = ""
@@ -449,10 +436,6 @@ func GoooComposedActivity0(input0 GoooRecord8cfc2951857a013943ea032087d799c5a9bc
 							broken = true
 							code = "CURSOR_LINK_MISMATCH"
 						}
-					}
-					if repeated.GoooField77ed4ce367a4bcace6e6438d5e00f3c4a34d1a9c4e9711d55d7e767ebf7a98c6 == p {
-						broken = true
-						code = "REPEATED_CONTINUATION_CURSOR"
 					}
 					if broken {
 						if pageStatus == "COMPLETE" {
@@ -841,25 +824,6 @@ func GoooComposedActivity0Call0(input GoooRecord8cfc2951857a013943ea032087d799c5
 		reason = "ALIAS_ADDED_TO_SUPPLIED_CATALOG"
 	}
 	return GoooRecorde0ad1c493684691a6d21d05f83c27094f343f3bee137cb4d596f1809dd0be330{GoooField7f24f8dc1d6f723e8d49830371f3dc7684d77020312f44feb4721b166a743a7d: input.GoooField745624ba329caed765a6591a971cebe37c88dd1650d854f4b043177defc6f44f, GoooFieldfb8728181cfded348b301ec43994868412a36d6024eb0feea4857b5e30d8236b: state, GoooField2f4939454fb06b7f88e1ecc70be0e7ad808274d896dffc1b3fbcb71f75b2ccc5: reason, GoooField91bcf6a6e5f244af7b578b292812f2b398122ef299c631fe28231e073aa6c87d: beforeIndex, GoooField655bd17dbb2ec6d2ff98a7187dbdbb593d37752eb5400e5c17e3bf96f62fe4cd: afterIndex, GoooField2b8efaee9b09888bd39b5c8c164a4d3157ff3b174ae63ec97ae95d2d56b97fd8: conflictCatalog, GoooFieldd2d2867afb14dd78731b64142c6345b137cca6dbb7ebad9b367b567e04fd99ef: first, GoooFieldbfacd31df3560849d89122a41fc040f3d329e0614805bfcd1eccbe0894c74b28: second, GoooFielda660e93ccc2a5d204d69a64193e6825a84e5740ac34e409f2b6f0a9e64ce41f4: false}
-
-}
-func GoooComposedActivity0Call1(input0 GoooRecorde9a2c608bd57c725bc756fe66f68f2407910973fe5391c93fdd4d7ad43edd1a3, input1 GoooRecordb214173db20d1e111cb2d37cb50161021e7209036b0dc426c8816d7ff307e5e3) GoooRecord56d1319c1dfff9ba75989cecf5cee5faacb8304c1e931cd022d2805a0ff1c566 {
-
-	var first int64 = -1
-	var p int64 = 0
-	for _, capture := range input0.GoooField8b9de0aee82e1beeeda3e157dc4b7bbf377f1c523048f5b2ece15572e3b50872 {
-		if capture == input1.GoooField702c28ee8c8fd82f7806c2cbab3c0bf224427973f0846ee972e97930bb2b1d8b {
-			var prior int64 = 0
-			for _, priorCapture := range input0.GoooField8b9de0aee82e1beeeda3e157dc4b7bbf377f1c523048f5b2ece15572e3b50872 {
-				if first == -1 && prior < p && priorCapture == capture && input0.GoooFieldd07e402b1e467849c56643ee97dff6b36fc0c0b658edff237dd0ab09874ef10f[p] == "STRING" && input0.GoooFieldd07e402b1e467849c56643ee97dff6b36fc0c0b658edff237dd0ab09874ef10f[prior] == "STRING" && input0.GoooFieldafda383193e738c3c19bc9a49361d319ef33dad8017c1ec3e130253ff6306be2[p] == input0.GoooFieldafda383193e738c3c19bc9a49361d319ef33dad8017c1ec3e130253ff6306be2[prior] {
-					first = p
-				}
-				prior = prior + 1
-			}
-		}
-		p = p + 1
-	}
-	return GoooRecord56d1319c1dfff9ba75989cecf5cee5faacb8304c1e931cd022d2805a0ff1c566{GoooField77ed4ce367a4bcace6e6438d5e00f3c4a34d1a9c4e9711d55d7e767ebf7a98c6: first}
 
 }
 

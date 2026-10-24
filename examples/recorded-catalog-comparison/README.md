@@ -62,6 +62,13 @@ cursors from those frames. An absent request cursor starts a chain; request
 The empty string is a real continuation token. A response marked
 `resultType: complete` does not establish that all pages were collected.
 
+Successive pages may repeat the same opaque cursor, including the empty string.
+The comparison verifies that each request carries the preceding response's
+cursor; it does not infer a cycle or deduplicate pages from token values. The
+sixteen-page bound limits the saved input, and a final non-null cursor still means
+the supplied chain is incomplete. This distinction follows the real truncation
+case reported in [typescript-sdk #2735](https://github.com/modelcontextprotocol/typescript-sdk/issues/2735).
+
 This is a narrow saved-frame profile: JSON-RPC 2.0 `tools/list`, string or int64
 integer IDs, successful result objects, and absent or `complete` result type.
 It is not a general MCP protocol validator. A saved RPC error produces a bounded
@@ -75,6 +82,7 @@ diagnostic containing the original response instead of an empty tool list.
 | Same connection, changed backend between stable captures | `ORIGIN_CHANGED` | `RECORDED_CONTEXT_COMPLETE` |
 | Same origin, old exposed alias removed | `REMOVED` | `RECORDED_CONTEXT_COMPLETE` |
 | Middle page missing | Result over remaining supplied rows | `INCOMPLETE_COLLECTION` |
+| Three complete pages share an empty continuation token | Result over all three pages | `RECORDED_CONTEXT_COMPLETE` |
 | Relevant configuration changed during capture | Result over supplied rows | `UNSTABLE_CONFIGURATION` |
 | Host mapping added retrospectively | Result over supplied rows | `COLLECTION_CONTEXT_UNKNOWN` |
 
@@ -111,7 +119,7 @@ results and include the next action selected by Gooo.
 
 ## Verification and source
 
-[consumer-cases.json](consumer-cases.json) provides six synthetic first-use cases
+[consumer-cases.json](consumer-cases.json) provides seven synthetic first-use cases
 with independently stated public expectations. The verifier executes and replays
 the pinned source, checks freshly generated kernel assets, runs the module tests
 and checks actual CLI consumers. Its result and retained receipts determine

@@ -100,7 +100,6 @@ def render(execution, replay, gofmt):
         wanted_origins = {
             ORIGIN_PREFIX+'compare': SOURCES['gooo/tool-origin'],
             PREFIX+'compare': SOURCES['gooo/tool-origin/recorded-catalog'],
-            PREFIX+'check-capture-continuation': SOURCES['gooo/tool-origin/recorded-catalog'],
         }
         assert len(origins) == len(wanted_origins) and {origin['lowered_activity_id'] for origin in origins} == set(wanted_origins)
         for origin in origins:
@@ -115,8 +114,6 @@ def render(execution, replay, gofmt):
             ORIGIN_PREFIX+'result': {name: ORIGIN_PREFIX+'result/'+name for name in ALIAS_OUTPUT},
             PREFIX+'input': {name: PREFIX+'input/'+name for name in COLLECTION_INPUT},
             PREFIX+'result': {name: PREFIX+'result/'+name for name in RAW_OUTPUT},
-            PREFIX+'capture-index': {'index': PREFIX+'capture-index/index'},
-            PREFIX+'cursor-repetition': {'first_page_index': PREFIX+'cursor-repetition/first-page-index'},
         }
         assert set(typed_records) == set(semantic_fields)
         for record_id, wanted in semantic_fields.items():
@@ -154,7 +151,7 @@ def render(execution, replay, gofmt):
     assert raw.startswith('package main\n') and 'import ' not in raw
     records = {record['id']: record for record in plan['record_types']}
     assert len(records) == len(plan['record_types'])
-    expected_records = {ORIGIN_PREFIX+'input', ORIGIN_PREFIX+'result', PREFIX+'input', PREFIX+'result', PREFIX+'capture-index', PREFIX+'cursor-repetition'}
+    expected_records = {ORIGIN_PREFIX+'input', ORIGIN_PREFIX+'result', PREFIX+'input', PREFIX+'result'}
     assert set(records) == expected_records
     origin_in, collection_in, origin_out, out = (records[name] for name in (ORIGIN_PREFIX+'input', PREFIX+'input', ORIGIN_PREFIX+'result', PREFIX+'result'))
     for record, names in ((origin_in, ORIGIN_INPUT), (collection_in, COLLECTION_INPUT), (origin_out, ALIAS_OUTPUT), (out, RAW_OUTPUT)):

@@ -11,7 +11,7 @@
     "reason": "origin_reason",
     "state": "origin_state"
   },
-  "cases_sha256": "sha256:deca949e52934c7c2f910331f1f669a3b0498fa66d9dc8e74196aafd65798841",
+  "cases_sha256": "sha256:c9ac149162a66f78dd3b07500f0e5d9e6e7add67dd23fef5bbbf69ce1541f894",
   "collection_field_mapping": {
     "after_configuration_state": "after_configuration_state",
     "after_pagination_state": "after_pagination_state",
@@ -43,19 +43,19 @@
   "generated_assets": {
     "go.mod": "sha256:3145f41f6d8921ad29d8d25ee4bee3a66cf397fae6afaaeeecba63564c8b5f49",
     "internal/kernel/bridge_generated.go": "sha256:a53a77e3dd6eaa66c320149402a6f82d5821bff2e174dfd969c4b724238f051e",
-    "internal/kernel/projection_generated.go": "sha256:47ea6b09d2b993d954cdaa72b1e782571364708a11ee3a6c2e1fa7eb76477bc1",
+    "internal/kernel/projection_generated.go": "sha256:cf13f4265065246bb2f357e936289eec875243cb9e94beab3f76e74c1b566902",
     "internal/kernel/types_generated.go": "sha256:6325b8ff35fad38813c0b0a1c7f9de5341ee9587296a0151438865548a226144"
   },
-  "generator_sha256": "sha256:54beb19a309d5d21995f65c38dec9297827d9240b29471f9b4541ad05d9aa39b",
+  "generator_sha256": "sha256:f64b0df498d4816b2cece12eedf14a1e2f85678982cd5d074b1cae62b818d3db",
   "go_version": "go1.27.3",
   "projection_transform": "Replace first package token main with kernel; all other bytes unchanged.",
-  "raw_projection_sha256": "sha256:101349ffd4e56e8808f224c8f1219779512aa518711f67d01e6ddea4e7f04310",
+  "raw_projection_sha256": "sha256:ea9a4df2a63907fdf9c489ac85a199f0ae5fc116f68c35d1d484162a07208eef",
   "schema": "gooo/recorded-catalog-generation/v1",
   "scope": "Finite source-bound native execution/replay; saved declared context, not authenticated collection, live removal or effect authority.",
   "selected_upstream_pins_sha256": "sha256:20171ad851133bf6627bc72cffbfc440c72a962073d184d8fd349fb635ae5721",
   "source": {
     "ports/tool-origin/alias_origin.gooo": "sha256:b45ac1d43674b9edcbdbedd74a253f5891d51b9fbdaf08ec2f056a55112b55d7",
-    "ports/tool-origin/recorded_catalog.gooo": "sha256:7cc31ded6fa011bdb8e42816e3b6f4731370204b40b0102b31586ff4fe82ac10"
+    "ports/tool-origin/recorded_catalog.gooo": "sha256:2628fc4ddf000ca789938e0f0e71ce64c892d869a17bdce140dabe7b295a677e"
   },
   "typed_plan_sha256": "sha256:c4da8006dd558c408911bad51b050d4ffd4bc702f0f9cc1e005cc29a16bcac24",
   "workspace_sha256": "sha256:c41d6ed75d837986cce7b6d31737ed9829c7dd962e7e5ce3047001b0e3de69ef"

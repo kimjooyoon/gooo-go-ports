@@ -3,6 +3,7 @@ package recordedcatalog
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -120,7 +121,7 @@ func TestCollectionContextBoundaries(t *testing.T) {
 		{"linked empty cursor", "RECORDED_CONTEXT_COMPLETE", func(in *Input) {
 			in.After.Captures[0].Pages = []Page{fixturePage([]string{"search"}, []string{"search"}, nil, pointer("")), fixturePage([]string{}, []string{}, pointer(""), nil)}
 		}},
-		{"repeated cursor", "INCOMPLETE_COLLECTION", func(in *Input) {
+		{"repeated opaque cursor remains valid", "RECORDED_CONTEXT_COMPLETE", func(in *Input) {
 			in.After.Captures[0].Pages = []Page{fixturePage([]string{"search"}, []string{"search"}, nil, pointer("a")), fixturePage([]string{}, []string{}, pointer("a"), pointer("a")), fixturePage([]string{}, []string{}, pointer("a"), nil)}
 		}},
 		{"pages after terminal", "INCOMPLETE_COLLECTION", func(in *Input) {
@@ -168,6 +169,84 @@ func TestBoundFactsAndCoreProjection(t *testing.T) {
 	if other.CollectionContext.State != "RECORDED_CONTEXT_COMPLETE" {
 		t.Fatal("null response continuation should end chain")
 	}
+}
+
+func TestRepeatedEmptyCursorPageBoundary(t *testing.T) {
+	inputWithPages := func(count int) Input {
+		in := fixtureInput()
+		pages := make([]Page, count)
+		for i := range pages {
+			var requestCursor, nextCursor *string
+			if i > 0 {
+				requestCursor = pointer("")
+			}
+			if i < count-1 {
+				nextCursor = pointer("")
+			}
+			pages[i] = fixturePage([]string{fmt.Sprintf("tool-%02d", i)}, []string{fmt.Sprintf("exposed-%02d", i)}, requestCursor, nextCursor)
+		}
+		in.TargetAlias = fmt.Sprintf("exposed-%02d", count-1)
+		in.Before.Captures[0].Pages = pages
+		in.After.Captures[0].Pages = pages
+		return in
+	}
+	t.Run("sixteen complete pages retain every row", func(t *testing.T) {
+		in := inputWithPages(16)
+		raw := encode(t, in)
+		r, err := CompareJSON(raw)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if r.CollectionContext.State != "RECORDED_CONTEXT_COMPLETE" || r.AliasDecision.State != "UNCHANGED" || r.AliasDecision.BeforeIndex != 15 || r.AliasDecision.AfterIndex != 15 {
+			t.Fatalf("complete repeated cursor chain lost its last row: %+v / %+v", r.CollectionContext, r.AliasDecision)
+		}
+		if !reflect.DeepEqual(r.Facts, in) || r.InputSHA256 != digest(raw) {
+			t.Fatal("saved frames or original input bytes were not preserved")
+		}
+		for _, side := range []struct {
+			name  string
+			facts []Entry
+			pages []PageSource
+			rows  []RowSource
+		}{
+			{"before", r.Projection.Facts.Before, r.Projection.BeforePages, r.Projection.BeforeRows},
+			{"after", r.Projection.Facts.After, r.Projection.AfterPages, r.Projection.AfterRows},
+		} {
+			if len(side.facts) != 16 || len(side.pages) != 16 || len(side.rows) != 16 {
+				t.Fatalf("%s: dropped or duplicated rows/pages: %d/%d/%d", side.name, len(side.facts), len(side.pages), len(side.rows))
+			}
+			for i := 0; i < 16; i++ {
+				fact, page, row := side.facts[i], side.pages[i], side.rows[i]
+				saved := in.Before.Captures[0].Pages[i]
+				request, next := Cursor{Tag: "STRING"}, Cursor{Tag: "STRING"}
+				if i == 0 {
+					request.Tag = "ABSENT"
+				}
+				if i == 15 {
+					next.Tag = "ABSENT"
+				}
+				if fact.OriginalName != fmt.Sprintf("tool-%02d", i) || fact.ExposedName != fmt.Sprintf("exposed-%02d", i) || fact.Server == "" || fact.Server != row.OriginID {
+					t.Fatalf("%s row %d: tool order or origin link changed: %+v / %+v", side.name, i, fact, row)
+				}
+				if page.CaptureIndex != 0 || page.PageIndex != i || page.RequestCursor != request || page.NextCursor != next || page.RequestSHA256 != digest([]byte(saved.RequestJSON)) || page.ResponseSHA256 != digest([]byte(saved.ResponseJSON)) {
+					t.Fatalf("%s page %d: cursor or frame binding changed: %+v", side.name, i, page)
+				}
+				if row.CaptureIndex != 0 || row.PageIndex != i || row.ToolIndex != 0 || row.ResponseSHA256 != page.ResponseSHA256 || row.OriginTuple != ([3]string{"host", "a", "backend-r1"}) {
+					t.Fatalf("%s row %d: page-to-tool provenance changed: %+v", side.name, i, row)
+				}
+			}
+		}
+	})
+	t.Run("seventeen complete pages return no partial report", func(t *testing.T) {
+		r, err := CompareJSON(encode(t, inputWithPages(17)))
+		problem, ok := err.(*Problem)
+		if !ok || problem.State != "INVALID_TRANSPORT" || problem.Stage != "decode_json" || problem.Code != "PAGE_LIMIT" {
+			t.Fatalf("want PAGE_LIMIT transport refusal, got %v", err)
+		}
+		if !reflect.DeepEqual(r, Report{}) {
+			t.Fatal("page limit returned a partial report")
+		}
+	})
 }
 
 func TestInvalidFrameReturnsNoPartialReport(t *testing.T) {
@@ -222,8 +301,8 @@ func TestConsumerFixturesAndExport(t *testing.T) {
 	if err := json.Unmarshal(raw, &corpus); err != nil {
 		t.Fatal(err)
 	}
-	if len(corpus.Cases) != 6 {
-		t.Fatal("six consumer scenarios required")
+	if len(corpus.Cases) != 7 {
+		t.Fatal("seven consumer scenarios required")
 	}
 	records := []map[string]any{}
 	for _, c := range corpus.Cases {

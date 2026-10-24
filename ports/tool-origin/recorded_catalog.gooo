@@ -72,28 +72,6 @@ entity RecordedCatalogResult id "gooo://tool-origin/recorded-catalog/v1/result" 
  field capture_recording_bases id "gooo://tool-origin/recorded-catalog/v1/result/capture_recording_bases" type string required many
  field capture_evidence_kinds id "gooo://tool-origin/recorded-catalog/v1/result/capture_evidence_kinds" type string required many
 }
-entity CaptureIndex id "gooo://tool-origin/recorded-catalog/v1/capture-index" fields {
- field index id "gooo://tool-origin/recorded-catalog/v1/capture-index/index" type integer required one
-}
-entity CursorRepetition id "gooo://tool-origin/recorded-catalog/v1/cursor-repetition" fields {
- field first_page_index id "gooo://tool-origin/recorded-catalog/v1/cursor-repetition/first-page-index" type integer required one
-}
-// Separate activity keeps each syntactic collection product at the existing bound.
-activity CheckCaptureContinuation(CollectionInput, CaptureIndex) -> CursorRepetition id "gooo://tool-origin/recorded-catalog/v1/check-capture-continuation" computes `
-let first = -1
-let p = 0
-for capture in input0.page_capture_indexes {
- if capture == input1.index {
-  let prior = 0
-  for priorCapture in input0.page_capture_indexes {
-   if first == -1 && prior < p && priorCapture == capture && input0.page_next_cursor_kinds[p] == "STRING" && input0.page_next_cursor_kinds[prior] == "STRING" && input0.page_next_cursor_values[p] == input0.page_next_cursor_values[prior] { first = p }
-   prior = prior + 1
-  }
- }
- p = p + 1
-}
-return CursorRepetition{first_page_index:first}
-`
 activity CompareRecordedCatalog(origin.OriginInput, CollectionInput) -> RecordedCatalogResult id "gooo://tool-origin/recorded-catalog/v1/compare" computes `
 let core = origin.CompareAliasOrigin(input0)
 let count = len(input1.capture_sides)
@@ -269,7 +247,6 @@ if !invalid {
  for side in input1.capture_sides {
   let pageStatus = "COMPLETE"
   let configStatus = "RECORDED_STABLE"
-  let repeated = CheckCaptureContinuation(input1, CaptureIndex{index:c})
   let capturedPages = 0
   let previousKind = ""
   let previousCursor = ""
@@ -288,7 +265,6 @@ if !invalid {
     } else {
      if previousKind != "STRING" || input1.page_request_cursor_kinds[p] != "STRING" || input1.page_request_cursor_values[p] != previousCursor { broken = true; code = "CURSOR_LINK_MISMATCH" }
     }
-    if repeated.first_page_index == p { broken = true; code = "REPEATED_CONTINUATION_CURSOR" }
     if broken { if pageStatus == "COMPLETE" { badPage = p; pageCode = code }; pageStatus = "INCOMPLETE" }
     if input1.page_bindings[p] != input1.capture_begin_bindings[c] || input1.page_auth_contexts[p] != input1.capture_begin_auth_contexts[c] || input1.page_config_revisions[p] != input1.capture_begin_config_revisions[c] || input1.page_protocols[p] != input1.capture_begin_protocols[c] {
      changed = true

@@ -1,4 +1,4 @@
-"""Finite source/native equivalence and six synthetic saved-catalog consumers.
+"""Finite source/native equivalence and seven synthetic saved-catalog consumers.
 
 Independent state expectations come from the committed consumer corpus. Full
 consumer reports are compared with fresh native execution of their projected
@@ -120,8 +120,7 @@ def verify_pair(execution, replay, cases_path, go_identity):
             assert source['filename'] == name
             assert source['source_digest'] == sha(go_json((ROOT / name).read_text()))
         expected_origins = {CORE + 'compare': SOURCES['gooo/tool-origin'],
-                            PREFIX + 'compare': SOURCES['gooo/tool-origin/recorded-catalog'],
-                            PREFIX + 'check-capture-continuation': SOURCES['gooo/tool-origin/recorded-catalog']}
+                            PREFIX + 'compare': SOURCES['gooo/tool-origin/recorded-catalog']}
         origins = program['activity_origins']
         assert len(origins) == len(expected_origins)
         assert {o['lowered_activity_id'] for o in origins} == set(expected_origins)
@@ -133,9 +132,8 @@ def verify_pair(execution, replay, cases_path, go_identity):
         plan = document['result']['composition']['plan']
         assert len(plan['activities']) == 1 and plan['activities'][0]['id'] == PREFIX + 'compare'
         records = {r['id']: r for r in plan['record_types']}
-        assert len(records) == len(plan['record_types']) == 6
-        assert set(records) == {CORE + 'input', CORE + 'result', PREFIX + 'input',
-                                PREFIX + 'result', PREFIX + 'capture-index', PREFIX + 'cursor-repetition'}
+        assert len(records) == len(plan['record_types']) == 4
+        assert set(records) == {CORE + 'input', CORE + 'result', PREFIX + 'input', PREFIX + 'result'}
         for index, (trace, case) in enumerate(zip(runtime['traces'], cases)):
             assert trace['case_index'] == index and len(trace['deliveries']) == 1
             delivery = trace['deliveries'][0]
@@ -325,7 +323,7 @@ def main():
         inputs = host.strict((HERE / 'kernel.inputs.json').read_bytes())
         cases = host.strict((HERE / 'kernel.cases.json').read_bytes())
         assert inputs['schema'] == cases['schema'] == 'gooo/body-composition-cases/v1'
-        assert len(inputs['cases']) == len(cases['cases']) == 26
+        assert len(inputs['cases']) == len(cases['cases']) == 29
         for item, case in zip(inputs['cases'], cases['cases']):
             host.exact(item, {'inputs': case['inputs']})
 
@@ -340,7 +338,7 @@ def main():
             return execution, replay, count, projection
 
         execution, replay, count, raw_projection = native_pair('kernel', HERE / 'kernel.cases.json')
-        assert count == 26
+        assert count == 29
         generated = out / 'generated'
         run('source-bound-generation', [sys.executable, '-I', '-B', HERE / 'generate.py',
                                        '--execution', execution, '--replay', replay,
@@ -374,8 +372,8 @@ def main():
         fixtures = host.strict((HERE / 'consumer-cases.json').read_bytes())
         assert fixtures['schema'] == 'gooo/recorded-catalog-consumer-cases/v1'
         assert fixtures['evidence_kind'] == 'SYNTHETIC_FIXTURE'
-        assert len(records) == len(fixtures['cases']) == 6
-        assert len({f['label'] for f in fixtures['cases']}) == 6
+        assert len(records) == len(fixtures['cases']) == 7
+        assert len({f['label'] for f in fixtures['cases']}) == 7
         deps = [line for line in run('native-runtime-dependencies', [go, '-C', HERE, 'list', '-deps', '-f',
                 '{{if not .Standard}}{{.ImportPath}}{{end}}', './cmd/compare']).decode().splitlines() if line]
         assert set(deps) == {MODULE, MODULE + '/internal/kernel', MODULE + '/cmd/compare'} and len(deps) == 3
@@ -406,7 +404,7 @@ def main():
         actual_path = out / 'actual-consumer-kernel.cases.json'
         host.save(actual_path, {'schema': 'gooo/body-composition-cases/v1', 'cases': actual_cases})
         _, _, actual_count, actual_projection = native_pair('actual-consumer', actual_path)
-        assert actual_count == 6 and actual_projection == raw_projection
+        assert actual_count == 7 and actual_projection == raw_projection
         host.save(out / 'consumer-observations.json', observations)
         _, original_replay = receipt(replay)
         controls = []

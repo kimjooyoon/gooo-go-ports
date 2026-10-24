@@ -1726,7 +1726,7 @@ jobs:
             .schema == "gooo/recorded-catalog-verification/v1" and
             .status == "SOURCE_RECORDED_CATALOG_AND_SYNTHETIC_CONSUMER_REPLAY_PASS" and
             .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
-            .go_version == "go1.27.3" and .kernel_cases == 26 and .actual_consumer_cases == 6 and
+            .go_version == "go1.27.3" and .kernel_cases == 29 and .actual_consumer_cases == 7 and
             .receipt_negative_controls == 5 and .source_unchanged == true and .generated_assets_exact == true and
             .all_direct_wait_EOF_PG_ESRCH == true and .synthetic_consumer_observations_only == true and
             .model_calls == 0 and .external_adoption == false and .live_capture_executed == false and
