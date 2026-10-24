@@ -1,0 +1,940 @@
+{
+  "schema": "gooo/recorded-catalog-consumer-cases/v1",
+  "evidence_kind": "SYNTHETIC_FIXTURE",
+  "cases": [
+    {
+      "label": "same-claimed-name-different-connection",
+      "input": {
+        "target_alias": "docs_search",
+        "before": {
+          "catalog_authorization_context_id": "example-scope",
+          "declared_connections": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a"
+            },
+            {
+              "host_id": "example-host",
+              "connection_id": "b"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"Synthetic example; no live capture\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\"}}",
+                  "declared_exposed_names": [
+                    "docs_search"
+                  ]
+                }
+              ]
+            },
+            {
+              "host_id": "example-host",
+              "connection_id": "b",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"Synthetic example; no live capture\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\"}}",
+                  "declared_exposed_names": [
+                    "other_search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "example-scope",
+          "declared_connections": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a"
+            },
+            {
+              "host_id": "example-host",
+              "connection_id": "b"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"Synthetic example; no live capture\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\"}}",
+                  "declared_exposed_names": [
+                    "other_search"
+                  ]
+                }
+              ]
+            },
+            {
+              "host_id": "example-host",
+              "connection_id": "b",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"Synthetic example; no live capture\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\"}}",
+                  "declared_exposed_names": [
+                    "docs_search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expected_alias_state": "ORIGIN_CHANGED",
+      "expected_collection_state": "RECORDED_CONTEXT_COMPLETE"
+    },
+    {
+      "label": "backend-binding-change-between-captures",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "example-scope",
+          "declared_connections": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"Synthetic example; no live capture\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\"}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "example-scope",
+          "declared_connections": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r2",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r2",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r2",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"Synthetic example; no live capture\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\"}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expected_alias_state": "ORIGIN_CHANGED",
+      "expected_collection_state": "RECORDED_CONTEXT_COMPLETE"
+    },
+    {
+      "label": "same-origin-alias-only-change",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "example-scope",
+          "declared_connections": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"Synthetic example; no live capture\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\"}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "example-scope",
+          "declared_connections": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"Synthetic example; no live capture\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\"}}",
+                  "declared_exposed_names": [
+                    "docs_search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expected_alias_state": "REMOVED",
+      "expected_collection_state": "RECORDED_CONTEXT_COMPLETE"
+    },
+    {
+      "label": "missing-intermediate-page",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "example-scope",
+          "declared_connections": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"Synthetic example; no live capture\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\"}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "example-scope",
+          "declared_connections": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"one\",\"description\":\"Synthetic example; no live capture\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\",\"nextCursor\":\"middle\"}}",
+                  "declared_exposed_names": [
+                    "one"
+                  ]
+                },
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\",\"params\":{\"cursor\":\"last\"}}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"last\",\"description\":\"Synthetic example; no live capture\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\"}}",
+                  "declared_exposed_names": [
+                    "last"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expected_alias_state": "REMOVED",
+      "expected_collection_state": "INCOMPLETE_COLLECTION"
+    },
+    {
+      "label": "revision-change-during-capture",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "example-scope",
+          "declared_connections": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"Synthetic example; no live capture\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\"}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "example-scope",
+          "declared_connections": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r2",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"Synthetic example; no live capture\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\"}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expected_alias_state": "UNCHANGED",
+      "expected_collection_state": "UNSTABLE_CONFIGURATION"
+    },
+    {
+      "label": "identical-saved-observation-replay",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "example-scope",
+          "declared_connections": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"Synthetic example; no live capture\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\"}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "example-scope",
+          "declared_connections": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"Synthetic example; no live capture\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\"}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expected_alias_state": "UNCHANGED",
+      "expected_collection_state": "RECORDED_CONTEXT_COMPLETE"
+    },
+    {
+      "label": "repeated-empty-opaque-cursor-keeps-all-three-pages",
+      "source_reference": "https://github.com/modelcontextprotocol/typescript-sdk/issues/2735",
+      "scope": "Synthetic saved frames inspired by a public bug report, not an execution of the TypeScript SDK or an external adoption observation.",
+      "input": {
+        "target_alias": "gamma",
+        "before": {
+          "catalog_authorization_context_id": "example-scope",
+          "declared_connections": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"gamma\",\"description\":\"Synthetic reproduction of a reported opaque-cursor case\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\"}}",
+                  "declared_exposed_names": [
+                    "gamma"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "example-scope",
+          "declared_connections": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "example-host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-fixture-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"alpha\",\"description\":\"Synthetic reproduction of a reported opaque-cursor case\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\",\"nextCursor\":\"\"}}",
+                  "declared_exposed_names": [
+                    "alpha"
+                  ]
+                },
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/list\",\"params\":{\"cursor\":\"\"}}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":3,\"result\":{\"tools\":[{\"name\":\"beta\",\"description\":\"Synthetic reproduction of a reported opaque-cursor case\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\",\"nextCursor\":\"\"}}",
+                  "declared_exposed_names": [
+                    "beta"
+                  ]
+                },
+                {
+                  "context": {
+                    "captured_at": "synthetic-fixture-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/list\",\"params\":{\"cursor\":\"\"}}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":4,\"result\":{\"tools\":[{\"name\":\"gamma\",\"description\":\"Synthetic reproduction of a reported opaque-cursor case\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\"}}",
+                  "declared_exposed_names": [
+                    "gamma"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expected_alias_state": "UNCHANGED",
+      "expected_collection_state": "RECORDED_CONTEXT_COMPLETE"
+    }
+  ]
+}
