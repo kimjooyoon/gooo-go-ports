@@ -6,7 +6,8 @@ oracles. This reader checks the resulting plan, current sources and every raw
 reference again. It neither reruns those oracles nor authenticates a producer,
 Git checkout, process exit or GitHub job. It never emits native acceptance or a
 legacy full-run timing/footer. Producer manifest strings are data, never paths
-used for local reads. Public API: read_reference(root, index_path), seven keys.
+used for local reads. Public API: read_reference(root, index_path) returns
+consumer data plus a receipt accessor bound to the same frozen stored files.
 """
 import hashlib
 import importlib.util
@@ -233,6 +234,36 @@ class Reader:
             need((info.st_dev,info.st_ino,info.st_mode) == identity and stat.S_ISDIR(info.st_mode), 'directory changed before finish: '+name)
 
 
+class ConsumerReceiptReader:
+    """Reopen only the addition receipts already checked by the same reader."""
+    def __init__(self,reader,references):
+        self.reader=reader
+        self.references={name:(root,dict(ref),logical) for name,(root,ref,logical) in references.items()}
+
+    def selected(self,path):
+        name=str(absolute(path))
+        need(name in self.references,'unverified consumer receipt path: '+name)
+        return self.references[name]
+
+    def read(self,path):
+        root,ref,logical=self.selected(path)
+        _,raw=self.reader.file(root,ref,logical)
+        return raw
+
+    def storage(self,path):
+        root,ref,_=self.selected(path)
+        return {'path':str(root/ref['path']),'encoding':ref.get('encoding','identity'),
+                'bytes':ref.get('stored_bytes',ref['bytes']),
+                'sha256':ref.get('stored_sha256',ref['sha256'])}
+
+    def finish(self):
+        # Recheck representation absence too: Reader.finish only pins files
+        # that existed, so it cannot detect a newly added plain counterpart.
+        for name in self.references:
+            self.read(pathlib.Path(name))
+        self.reader.finish()
+
+
 def load_host(root,reader):
     # A fixed sibling module is the only dynamically loaded API. Index contents
     # can never choose module names, Python paths, commands or executable input.
@@ -320,6 +351,24 @@ def entry_contract(suite,owners,source_bytes):
     return selected[0]
 
 
+def validate_source_roster(root,reader,expected,sources):
+    sources=ordered_sources(sources)
+    modes={row['path']:row['mode'] for row in expected.document['sources']}
+    need(not set(modes).intersection(READER_SOURCES),'legacy and experimental reader rosters must not overlap')
+    modes.update({name:'100644' for name in READER_SOURCES})
+    need(set(sources) == set(modes) and len(modes) == expected.source_count+len(READER_SOURCES),
+         'exact reviewed sources plus explicit reader sources')
+    source_bytes={}
+    for name,mode in modes.items():
+        raw=reader.read(root/name);observed=sources[name]
+        need(observed['mode'] == mode and bool((root/name).lstat().st_mode&stat.S_IXUSR) == (mode == '100755'),'current source mode differs: '+name)
+        need(observed['bytes'] == len(raw) and observed['sha256'] == digest(raw),'current source bytes differ: '+name)
+        source_bytes[name]=raw
+    declaration=re.search(r'var ciShardReaderSources = \[\]string\{(.*?)\n\}',source_bytes['cmd/verify/ci_shard_contract.go'].decode(),re.S)
+    need(declaration is not None and tuple(re.findall(r'"([^"\n]+)"',declaration[1])) == READER_SOURCES,'Go/Python explicit experimental reader roster differs')
+    return sources,source_bytes
+
+
 def validate_plan(root,reader,H,plan):
     p=shape(plan,PLAN_FIELDS);need(p['schema'] == 'gooo/native-ci-shard-plan/v1','current shard plan schema')
     valid_digest(p['plan_sha256']);valid_digest(p['contract_sha256']);p['run']=ordered_run(p['run'])
@@ -330,19 +379,7 @@ def validate_plan(root,reader,H,plan):
     p['suites']=[shape(row,SUITE_FIELDS) for row in p['suites']]
     ledger=reader.read(root/H.CONTRACT.REVIEWED_PATH,1<<20)
     need(digest(ledger) == p['contract_sha256'],'current reviewed contract raw hash')
-    p['sources']=ordered_sources(p['sources'])
-    modes={row['path']:row['mode'] for row in expected.document['sources']}
-    need(not set(modes).intersection(READER_SOURCES),'legacy and experimental reader rosters must not overlap')
-    modes.update({name:'100644' for name in READER_SOURCES})
-    need(set(p['sources']) == set(modes) and len(modes) == 310,'exact reviewed293 plus explicit17 reader sources')
-    source_bytes={}
-    for name,mode in modes.items():
-        raw=reader.read(root/name);observed=p['sources'][name]
-        need(observed['mode'] == mode and bool((root/name).lstat().st_mode&stat.S_IXUSR) == (mode == '100755'),'current source mode differs: '+name)
-        need(observed['bytes'] == len(raw) and observed['sha256'] == digest(raw),'current source bytes differ: '+name)
-        source_bytes[name]=raw
-    declaration=re.search(r'var ciShardReaderSources = \[\]string\{(.*?)\n\}',source_bytes['cmd/verify/ci_shard_contract.go'].decode(),re.S)
-    need(declaration is not None and tuple(re.findall(r'"([^"\n]+)"',declaration[1])) == READER_SOURCES,'Go/Python explicit experimental reader roster differs')
+    p['sources'],source_bytes=validate_source_roster(root,reader,expected,p['sources'])
     lock=load(source_bytes['upstream.json'])
     need(lock['compiler_revision'] == H.REV == p['run']['compiler_revision'] and lock['go_version'] == p['run']['go_version'],'current upstream producer pins')
     catalog=load(source_bytes['verification-catalog.json']);H.source_roster(root,catalog,expected)
@@ -526,7 +563,7 @@ def inspect_exhaustive(reader,evidence_root,suite,shard,saved,references,generat
 
 
 def read_reference(root,index_path):
-    """Return seven shared-consumer keys only after all local consistency checks."""
+    """Return consumer data and a bounded receipt accessor after full checks."""
     root,index_path=map(absolute,(root,index_path));reader=Reader();reader.directory(root)
     H=load_host(root,reader)
     index=load(reader.read(index_path,MAX_JSON))
@@ -553,7 +590,7 @@ def read_reference(root,index_path):
         need(equal(reference['original_index'],original) and equal(reference['shard_index'],shard) and reference['package'] == suite['package'] and reference['activity'] == suite['activity'],'exact ordered reference original suite')
         need(type(reference['batches']) is list and len(reference['batches']) == len(record['batches']),'complete referenced original batch population')
         source_map={a['name']:a['identity'] for a in workspace['sources']};source_map={name:source_map[name] for name in sorted(source_map)}
-        anchors=[];first_generated=None;tool=tools[shard];go_version='go version '+tool['go_version']+' '+tool['goos']+'/'+tool['goarch'];go_binary=tool['before']['go']
+        anchors=[];receipt_files={};first_generated=None;tool=tools[shard];go_version='go version '+tool['go_version']+' '+tool['goos']+'/'+tool['goarch'];go_binary=tool['before']['go']
         for metadata,ref in zip(record['batches'],reference['batches']):
             shape(ref,REFERENCE_BATCH_FIELDS);need(equal(ref['batch'],metadata),'reference batch must equal original partial record')
             base=metadata['namespace'];batch=metadata['index'];evidence_root=roots[shard]
@@ -583,12 +620,16 @@ def read_reference(root,index_path):
             need(generated == replay_generated and (first_generated is None or generated == first_generated),'same exact generated source across original batches and saved replay')
             first_generated=generated
             anchors.append({'batch_index':batch,'start':metadata['start'],'end':metadata['end'],'manifest_digest':metadata['manifest_sha256'],'cases_digest':metadata['cases_sha256'],'original_receipt_sha256':metadata['execution_sha256'],'workspace':local_manifest,'producer_manifest_path':producer})
+            for key in ('execution','replay'):
+                logical=base+'/'+key+'.json'
+                receipt_files[str(evidence_root/logical)]=(evidence_root,ref[key],logical)
             total_batches+=1;total_cases+=len(cases['cases'])
         inspect_exhaustive(reader,roots[shard],suite,shard,record['exhaustive'],reference['exhaustive'],record['batches'][0]['generated_sha256'])
         total_exhaustive+=len(reference['exhaustive'])
         if suite['package'] == ADDITION_PACKAGE and suite['activity'] == ADDITION_ACTIVITY:
             need(addition is None,'one original addition suite')
-            addition={'source_set':source_map,'source_set_sha256':digest(go_json(source_map)),'batches':anchors,'go_version':go_version,'go_binary':go_binary}
+            addition={'source_set':source_map,'source_set_sha256':digest(go_json(source_map)),'batches':anchors,'go_version':go_version,'go_binary':go_binary,
+                      'receipt_reader':ConsumerReceiptReader(reader,receipt_files)}
     need(total_cases == plan['cases'] and total_batches == plan['batches'] and total_exhaustive == 7,'all original cases/batches/seven exhaustive reports checked')
     need(addition is not None,'original addition consumer suite required')
     reader.finish()

@@ -39,8 +39,11 @@ jobs:
         with:
           go-version-file: go.mod
           cache: false
-      - name: Check orchestration refusal controls
-        run: python3 -I -B tools/manual-native-shard_test.py -v
+      - name: Check orchestration and consumer refusal controls
+        run: |
+          python3 -I -B tools/manual-native-shard_test.py -v
+          python3 -I -B tools/native-shard-reference_test.py -v
+          python3 -I -B tools/check-header-addition-host_test.py -v
       - name: Build one compiler and plan all original82 suites
         env:
           GH_TOKEN: ${{ github.token }}
