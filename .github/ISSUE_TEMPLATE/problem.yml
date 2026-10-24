@@ -1,10 +1,10 @@
-name: Loading, setup, code generation, or function problem
-description: Report a failed first run, coding-agent trial, or unexpected result in a Gooo example or port.
+name: First-use result, missing capability, or problem
+description: Share a result from your own task, a missing capability, or the first error in a Gooo example or port.
 body:
   - type: markdown
     attributes:
       value: |
-        Describe where you got stuck. A working demo, shared input link, inspection report, or build metadata is not required.
+        Tell us what you tried and what happened, whether it worked or stopped at the first error. For a completed run, describe the decision it helped with or what was still missing. Say whether you used your own public input or an unchanged example. A working demo, shared input link, inspection report, or build metadata is not required.
         English and Korean reports are welcome. Inspection JSON contains the exact original text. The source editor's Raw compiler response includes generated Go and selected Gooo code; it is not a receipt of executing the generated program. Share only public data: review source code, paths, text, files, and logs before submitting this public issue. Opening this form uploads, attaches, and submits nothing automatically.
   - type: dropdown
     id: entry-point
@@ -36,7 +36,7 @@ body:
     id: steps
     attributes:
       label: Page URL or command and steps
-      description: For source editing, include the activity name and minimal public source if possible. A visible error is enough if you cannot share the source. For a function result, include its name and exact input if you reached that point. For a text inspection, include only input you choose to make public. For a loading failure, the page address is enough.
+      description: Include the command or page and minimal public input if available; say whether the input is your own or an unchanged example. For source editing, include the activity name. For a function result, include its name and exact input. A visible error is enough if you cannot share input or source; for a loading failure, the page address is enough.
     validations:
       required: true
   - type: textarea
@@ -60,7 +60,7 @@ body:
     id: intended-use
     attributes:
       label: What would you use Gooo for? (optional)
-      description: Describe one real task and the input, output, or automation you need. If this example does not help, explain what is missing.
+      description: Describe one real task and the decision this result helped you make, or the input, output, or automation you still need. If this example does not help, explain what is missing.
   - type: textarea
     id: supporting-details
     attributes:
