@@ -1483,9 +1483,55 @@ def project_current_doc_fact_check(text):
     return prior
 
 
+MANUAL_CONSUMER_STEP_NAME = 'Check orchestration and consumer refusal controls'
+MANUAL_CONSUMER_STEP = """      - name: Check orchestration and consumer refusal controls
+        run: |
+          python3 -I -B tools/manual-native-shard_test.py -v
+          python3 -I -B tools/native-shard-reference_test.py -v
+          python3 -I -B tools/check-header-addition-host_test.py -v
+"""
+MANUAL_CONSUMER_PRIOR_STEP = """      - name: Check orchestration refusal controls
+        run: python3 -I -B tools/manual-native-shard_test.py -v
+"""
+MANUAL_CONSUMER_PRIOR_WORKFLOW_SHA = '929878a54cc9eed9b4d789aefb8cf8b2f2aafc4d7da8a3e951179b2420618bcc'
+
+
+def manual_planner_job(text):
+    # The main CI parser deliberately owns a different fixed job order.
+    require(text.count("jobs:\n") == 1, 'missing or repeated manual jobs map')
+    raw = text.split("jobs:\n", 1)[1]
+    starts = list(re.finditer(r"^  ([a-z][a-z0-9-]*):\n", raw, re.M))
+    require(tuple(match[1] for match in starts) == ('plan', 'native-shards', 'join'),
+            'unknown, repeated, missing or reordered manual job')
+    require(len(starts) == len(re.findall(r"^  \S", raw, re.M)),
+            'unrecognized manual job layout')
+    return raw[starts[0].start():starts[1].start()]
+
+
+def project_manual_consumer_preflight(text):
+    # Only the reviewed preflight expansion is projected away. Its old scalar
+    # form is not an accepted current workflow, and every other byte stays bound.
+    plan = manual_planner_job(text)
+    require(text.count(MANUAL_CONSUMER_STEP) == 1 and MANUAL_CONSUMER_STEP in plan,
+            'manual consumer controls require their exact planner step once')
+    _, named, _ = job_steps(plan)
+    require(named.get(MANUAL_CONSUMER_STEP_NAME) == MANUAL_CONSUMER_STEP,
+            'manual consumer controls must run unconditionally without failure masking')
+    anchor = '      - name: Build one compiler and plan all original82 suites\n'
+    require(plan.count(anchor) == 1 and
+            plan.index(MANUAL_CONSUMER_STEP) + len(MANUAL_CONSUMER_STEP) == plan.index(anchor),
+            'manual consumer controls must precede compiler construction and planning')
+    prior = text.replace(MANUAL_CONSUMER_STEP, MANUAL_CONSUMER_PRIOR_STEP, 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == MANUAL_CONSUMER_PRIOR_WORKFLOW_SHA,
+            'manual consumer preflight changed unrelated workflow bytes')
+    return prior
+
+
 def project_root_go_reference(text, module_text=None, path='.github/workflows/ci.yml'):
     if path == '.github/workflows/ci.yml':
         text = project_current_doc_fact_check(text)
+    elif path == '.github/workflows/manual-native-shards.yml':
+        text = project_manual_consumer_preflight(text)
     if module_text is None:
         module_text = (WORKFLOW.parent.parent.parent / 'go.mod').read_text()
     require(re.findall(r'^go ([^\s]+)[ \t]*$', module_text, re.M) == ['1.27.3'],
@@ -3883,6 +3929,91 @@ class CurrentDocFactCheckTests(unittest.TestCase):
         self.assertNotEqual(changed, raw)
         with self.assertRaises(ValueError):
             project_current_doc_fact_check(changed)
+
+
+class ManualConsumerPreflightTests(unittest.TestCase):
+    path = '.github/workflows/manual-native-shards.yml'
+
+    def raw(self):
+        return (WORKFLOW.parent.parent.parent / self.path).read_text()
+
+    def test_exact_expansion_preserves_both_historical_preimages(self):
+        raw = self.raw()
+        prior = project_manual_consumer_preflight(raw)
+        self.assertEqual(prior, raw.replace(MANUAL_CONSUMER_STEP, MANUAL_CONSUMER_PRIOR_STEP, 1))
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), MANUAL_CONSUMER_PRIOR_WORKFLOW_SHA)
+        literal = project_root_go_reference(raw, path=self.path)
+        self.assertEqual(literal.count(ROOT_GO_LITERAL_LINE), 3)
+        self.assertEqual(hashlib.sha256(literal.encode()).hexdigest(), ROOT_GO_REFERENCES[self.path][1])
+
+    def test_missing_old_duplicate_modified_and_masked_preflights_are_rejected(self):
+        raw = self.raw()
+        variants = [('', 'missing'), (MANUAL_CONSUMER_PRIOR_STEP, 'old-only'),
+                    (MANUAL_CONSUMER_STEP * 2, 'duplicate-step')]
+        commands = [
+            '          python3 -I -B tools/manual-native-shard_test.py -v\n',
+            '          python3 -I -B tools/native-shard-reference_test.py -v\n',
+            '          python3 -I -B tools/check-header-addition-host_test.py -v\n',
+        ]
+        for command in commands:
+            for replacement, label in [
+                    ('', 'missing-command'), (command * 2, 'duplicate-command'),
+                    (command.rstrip('\n') + ' || true\n', 'masked-command'),
+                    (command.replace('python3 -I -B', 'true # python3 -I -B'), 'commented-command'),
+                    (command.replace('.py', '-other.py'), 'wrong-path')]:
+                variants.append((MANUAL_CONSUMER_STEP.replace(command, replacement, 1),
+                                 label + ':' + command.strip()))
+        variants.append((MANUAL_CONSUMER_STEP.replace(commands[1] + commands[2],
+                                                       commands[2] + commands[1], 1), 'reordered-consumers'))
+        for old, new in [
+                ('        run: |\n', '        run: >-\n'),
+                ('        run: |\n', '        if: false\n        run: |\n'),
+                ('        run: |\n', '        continue-on-error: true\n        run: |\n'),
+                ('        run: |\n', '        shell: bash {0}\n        run: |\n')]:
+            variants.append((MANUAL_CONSUMER_STEP.replace(old, new, 1), new.strip()))
+        for replacement, label in variants:
+            with self.subTest(mutation=label), self.assertRaises(ValueError):
+                project_root_go_reference(raw.replace(MANUAL_CONSUMER_STEP, replacement, 1), path=self.path)
+
+    def test_preflight_moved_after_planning_or_into_another_job_is_rejected(self):
+        raw = self.raw()
+        _, named, _ = job_steps(manual_planner_job(raw))
+        planner = named['Build one compiler and plan all original82 suites']
+        self.assertIn(MANUAL_CONSUMER_STEP + planner, raw)
+        moved = raw.replace(MANUAL_CONSUMER_STEP + planner, planner + MANUAL_CONSUMER_STEP, 1)
+        with self.assertRaises(ValueError):
+            project_root_go_reference(moved, path=self.path)
+        for anchor in [
+                '      - name: Execute original full-plan shard and retain its raw evidence\n',
+                '      - name: Reconcile official jobs and inspect all original receipts and consumers\n']:
+            moved = raw.replace(MANUAL_CONSUMER_STEP, '', 1).replace(anchor, MANUAL_CONSUMER_STEP + anchor, 1)
+            with self.subTest(job=anchor), self.assertRaises(ValueError):
+                project_root_go_reference(moved, path=self.path)
+
+    def test_projection_cannot_hide_other_execution_or_artifact_changes(self):
+        raw = self.raw()
+        for old, new in [
+                ('EXPECTED_SOURCE_SHA: ${{ inputs.expected_source_sha }}', 'EXPECTED_SOURCE_SHA: ${{ github.sha }}'),
+                ('    timeout-minutes: 15\n', '    timeout-minutes: 16\n'),
+                ('    runs-on: ubuntu-24.04\n', '    runs-on: ubuntu-22.04\n'),
+                ('tools/manual-native-shard.py worker', 'tools/manual-native-shard.py plan'),
+                ('tools/manual-native-shard.py join', 'true # tools/manual-native-shard.py join'),
+                ('    needs: [plan, native-shards]\n', '    needs: plan\n'),
+                ('        index: [0, 1, 2]\n', '        index: [0, 1]\n'),
+                ('          if-no-files-found: error\n', '          if-no-files-found: warn\n'),
+                ('    permissions:\n', '    if: false\n    permissions:\n')]:
+            self.assertIn(old, raw)
+            with self.subTest(change=old), self.assertRaises(ValueError):
+                project_root_go_reference(raw.replace(old, new, 1), path=self.path)
+
+    def test_manual_projection_retains_all_go_selector_and_workflow_path_checks(self):
+        raw = self.raw()
+        for replacement in ['', ROOT_GO_REFERENCE_LINE * 2, ROOT_GO_LITERAL_LINE,
+                            ROOT_GO_REFERENCE_LINE.replace('go.mod', 'other/go.mod')]:
+            with self.subTest(selector=replacement), self.assertRaises(ValueError):
+                project_root_go_reference(raw.replace(ROOT_GO_REFERENCE_LINE, replacement, 1), path=self.path)
+        with self.assertRaises(ValueError):
+            project_root_go_reference(raw, path='.github/workflows/api-policy-action.yml')
 
 
 class RootGoReferenceTests(unittest.TestCase):
