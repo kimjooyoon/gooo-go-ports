@@ -41,6 +41,7 @@ An incomplete attempt is useful feedback. Share public source and inputs only.
 | Preserve every required request when narrowing a grant | [Agent task skill](.agents/skills/gooo-review-service-grants/SKILL.md), [native MCP setup](docs/ai-agents.md#preserve-several-required-requests-through-mcp) or [Go API](examples/service-grant-many/README.md) | Inspect the first request that would break, with original order and all 12 Gooo decision fields. |
 | Choose among supplied grant-change proposals | [Native first use](docs/ai-agents.md#choose-among-grant-change-proposals-without-a-checkout) or [Gooo candidate selection](examples/grant-candidate-selection/README.md) | Evaluate every candidate against the same ordered requirements, then select by supplied preference with original proofs; no execution is authorized. This Go module is separate from released MCP bundles. |
 | Detect a tool alias changing its declared origin | [Source-built MCP tool](docs/ai-agents.md#compare-a-tool-alias-before-reusing-it) or [Gooo comparison module](examples/alias-origin-change/README.md) | Compare supplied before/after catalogs, detect duplicate exposed names, and preserve original row indexes and source bindings. This optional MCP mode requires a build of this source; preview16 does not contain it. |
+| Compare saved MCP catalogs with collection context | [Recorded-catalog comparison](examples/recorded-catalog-comparison/README.md) | Import saved pages and host-declared aliases; distinguish origin changes from missing pages, configuration changes and retrospective metadata. Experimental offline CLI; no live removal or execution authority is inferred. |
 | Review tool exposure across a source upgrade | [Gooo catalog-change example](examples/tool-catalog-change/README.md) | Inspect added and removed selected tools under the same supplied flags and selectors, with independent Go results and saved replay. |
 | Explain an unmatched deny rule | [Scoped deny-rule diagnostic](examples/deny-rule-scope/README.md) | Distinguish incomplete inventories, backend limits and earlier denials from zero matches in a declared complete surface. |
 | Install the MCP tool without a compiler | [Homebrew or verified native archive](docs/ai-agents.md#connect-the-service-grant-mcp-tool) | Install the preview16 executable on macOS arm64 or Linux amd64, then assess supplied grant-change facts. |
@@ -699,9 +700,11 @@ evidence, and standalone browser archives, with licenses, provenance, and checks
 Downloads do not require a GitHub login. Follow that version's download and verification
 instructions; the live demo and main branch can be newer than the chosen snapshot.
 
-If loading or running fails, [report a problem](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml)
-with the page URL or command and what happened. A working demo or shared input link
-is not required. See [reporting guidance](CONTRIBUTING.md#report-a-problem) for useful details.
+Share a [first-use result or problem](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml)
+with the page URL or command and what happened. If it worked, tell us which decision
+it helped with and whether you used your own public input or an unchanged example.
+A first setup error is useful too; a working demo or shared input link is not required.
+See [reporting guidance](CONTRIBUTING.md#share-a-first-use-result-or-report-a-problem) for useful details.
 
 Go로 작성된 오픈소스의 동작을 **Gooo 함수로 이식하고 원본과 비교**하는 공개 실험 저장소입니다.
 현재 Go 표준 라이브러리, x/image와 Google UUID의 HTTP·Unicode·IPv4 분류·prefix 질의·십진수 파싱·문자열 검색·분할·슬래시 경로·UUID 형식 검사·파싱·8비트 정수·색상 변환·시간 간격·사각형·고정소수점 API 56개와, 별도 URL 구성 요소 인코딩 API 2개를 소스로 표현합니다.

@@ -1,0 +1,62 @@
+{
+  "activity_id": "gooo://tool-origin/recorded-catalog/v1/compare",
+  "alias_field_mapping": {
+    "after_index": "origin_after_index",
+    "before_index": "origin_before_index",
+    "conflict_catalog": "origin_conflict_catalog",
+    "conflict_first_index": "origin_conflict_first_index",
+    "conflict_second_index": "origin_conflict_second_index",
+    "context_id": "origin_context_id",
+    "execution_authorized": "origin_execution_authorized",
+    "reason": "origin_reason",
+    "state": "origin_state"
+  },
+  "cases_sha256": "sha256:c9ac149162a66f78dd3b07500f0e5d9e6e7add67dd23fef5bbbf69ce1541f894",
+  "collection_field_mapping": {
+    "after_configuration_state": "after_configuration_state",
+    "after_pagination_state": "after_pagination_state",
+    "alias_context_id": "origin_context_id",
+    "authorization_relation": "authorization_relation",
+    "before_configuration_state": "before_configuration_state",
+    "before_pagination_state": "before_pagination_state",
+    "capture_configuration_states": "capture_configuration_states",
+    "capture_evidence_kinds": "capture_evidence_kinds",
+    "capture_pagination_states": "capture_pagination_states",
+    "capture_recording_bases": "capture_recording_bases",
+    "contains_synthetic_fixture": "contains_synthetic_fixture",
+    "context_id": "context_id",
+    "execution_authorized": "execution_authorized",
+    "first_problem_capture_index": "first_problem_capture_index",
+    "first_problem_code": "first_problem_code",
+    "first_problem_declared_index": "first_problem_declared_index",
+    "first_problem_page_index": "first_problem_page_index",
+    "first_problem_side": "first_problem_side",
+    "live_removal_proven": "live_removal_proven",
+    "next_action": "next_action",
+    "reason": "reason",
+    "recording_basis_state": "recording_basis_state",
+    "remote_atomicity": "remote_atomicity",
+    "state": "state"
+  },
+  "compiler_source_sha": "205896a413e5dea92366309c35ae85e542d055f6",
+  "entry": "gooo/tool-origin/recorded-catalog:CompareRecordedCatalog",
+  "generated_assets": {
+    "go.mod": "sha256:3145f41f6d8921ad29d8d25ee4bee3a66cf397fae6afaaeeecba63564c8b5f49",
+    "internal/kernel/bridge_generated.go": "sha256:a53a77e3dd6eaa66c320149402a6f82d5821bff2e174dfd969c4b724238f051e",
+    "internal/kernel/projection_generated.go": "sha256:cf13f4265065246bb2f357e936289eec875243cb9e94beab3f76e74c1b566902",
+    "internal/kernel/types_generated.go": "sha256:6325b8ff35fad38813c0b0a1c7f9de5341ee9587296a0151438865548a226144"
+  },
+  "generator_sha256": "sha256:f64b0df498d4816b2cece12eedf14a1e2f85678982cd5d074b1cae62b818d3db",
+  "go_version": "go1.27.3",
+  "projection_transform": "Replace first package token main with kernel; all other bytes unchanged.",
+  "raw_projection_sha256": "sha256:ea9a4df2a63907fdf9c489ac85a199f0ae5fc116f68c35d1d484162a07208eef",
+  "schema": "gooo/recorded-catalog-generation/v1",
+  "scope": "Finite source-bound native execution/replay; saved declared context, not authenticated collection, live removal or effect authority.",
+  "selected_upstream_pins_sha256": "sha256:20171ad851133bf6627bc72cffbfc440c72a962073d184d8fd349fb635ae5721",
+  "source": {
+    "ports/tool-origin/alias_origin.gooo": "sha256:b45ac1d43674b9edcbdbedd74a253f5891d51b9fbdaf08ec2f056a55112b55d7",
+    "ports/tool-origin/recorded_catalog.gooo": "sha256:2628fc4ddf000ca789938e0f0e71ce64c892d869a17bdce140dabe7b295a677e"
+  },
+  "typed_plan_sha256": "sha256:c4da8006dd558c408911bad51b050d4ffd4bc702f0f9cc1e005cc29a16bcac24",
+  "workspace_sha256": "sha256:c41d6ed75d837986cce7b6d31737ed9829c7dd962e7e5ce3047001b0e3de69ef"
+}

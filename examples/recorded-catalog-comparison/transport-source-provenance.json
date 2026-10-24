@@ -1,0 +1,10 @@
+{
+  "schema": "gooo/transport-adaptation/v1",
+  "source_revision": "9e2dcb29553b25bec10dd4b1537067f28404c691",
+  "source_files": {
+    "examples/alias-origin-change/transport_helpers.go": "sha256:6eb40b25b2b0acb0318533afdfd20d161987dc63a285a5deccf241cb74d56335",
+    "examples/alias-origin-change/cmd/compare/main.go": "sha256:6c4d03b0c8ba038a976a9d3a8e3d38c2f3155c55a59d9494738c45c21056173a"
+  },
+  "license": "BSD-3-Clause",
+  "scope": "validJSONString adapts the existing scalar-preserving scanner; CLI adapts the existing bounded stdin/stdout command. Collection decisions are not implemented in these transport files."
+}
