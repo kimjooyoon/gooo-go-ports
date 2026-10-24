@@ -21,7 +21,7 @@ def encoded(value):
     return (json.dumps(value, sort_keys=True) + "\n").encode()
 
 
-def fixture():
+def fixture(alias=False):
     files = {P.BINARY: b"synthetic-not-executed-binary", "START-HERE.txt": b"start\n"}
     build = {"GoVersion": P.GO_VERSION, "Path": P.MODULE, "Settings": [
         {"Key": "CGO_ENABLED", "Value": "0"},
@@ -39,6 +39,31 @@ def fixture():
     bundle = {"schema": P.SCHEMA, "platform": "linux/amd64", "source_commit": SOURCE,
               "notice_texts": 58, "build_info": build,
               "binary_sha256": P.digest(files[P.BINARY])}
+    if alias:
+        module = Path(__file__).resolve().parents[1] / "examples/alias-origin-change"
+        many = json.loads((module.parent / "service-grant-many/generation.json").read_bytes())
+        for name in P.ALIAS_NOTICES:
+            target = "NOTICE-module-alias-" + name
+            files[target] = (module / name).read_bytes()
+            inventory.append({"file": target, "module": copy.deepcopy(P.ALIAS_DEPENDENCY),
+                              "source_relative_path": name, "sha256": P.digest(files[target])})
+        files["NOTICE-INVENTORY.json"] = encoded(inventory)
+        build["Deps"] = [{"Path": "synthetic-unused-dependency-%d" % n} for n in range(11)] + [copy.deepcopy(P.ALIAS_DEPENDENCY)]
+        files["BUILD-INFO.json"] = encoded(build)
+        bundle.update(schema=P.ALIAS_SCHEMA, notice_texts=60, profiles=copy.deepcopy(P.PROFILES),
+                      optional_profiles={"many_required": {
+                          "argv": ["--many-required"], "additional_tool": "assess_service_grant_change",
+                          "module": {"Path": "github.com/kimjooyoon/gooo-go-ports/examples/service-grant-many",
+                                     "Version": "v0.0.0-20261020182808-7180a4a0f36a",
+                                     "Sum": "h1:p3zs2m5zxSwlgn0Z3Wq1rl+cfcBN4JN2JhrmjhARgkk="},
+                          "compiler_source_sha": "205896a413e5dea92366309c35ae85e542d055f6",
+                          "generation_sha256": "sha256:86d714e4793f04d7d45d53e824cd7066ddee5f7d1e987697f26f4216a6b4e164",
+                          "assets": many["assets"], "sources": many["public_sources"]}, "alias_origin_change": {
+                          "argv": ["--alias-origin-change"], "additional_tool": "gooo_compare_alias_origin",
+                          "module": copy.deepcopy(P.ALIAS_DEPENDENCY),
+                          "compiler_source_sha": "205896a413e5dea92366309c35ae85e542d055f6",
+                          "generation_sha256": "sha256:" + P.ALIAS_GENERATION,
+                          "bindings": json.loads((module / "generation.json").read_text())}})
     return files, bundle
 
 
@@ -104,6 +129,43 @@ class Preparation(unittest.TestCase):
         raw = pack(self.files, self.bundle)
         self.refused(raw, "expected archive SHA256", "not-a-sha")
         self.refused(raw, "archive SHA256 mismatch", "0" * 64)
+
+    def test_alias_layout_requires_all_bound_notices_and_profiles(self):
+        files, bundle = fixture(alias=True)
+        result = self.run_prepare(pack(files, bundle))
+        self.assertEqual(result["runtime_members"], 65)
+        self.assertEqual(result["notice_texts"], 60)
+        actual = json.loads((self.out / "runtime/BUNDLE.json").read_text())
+        self.assertEqual(actual["profiles"], P.PROFILES)
+
+    def test_alias_schema_cannot_relabel_legacy_or_extra_members(self):
+        for alias in (False, True):
+            with self.subTest(alias=alias):
+                files, bundle = fixture(alias=alias)
+                bundle["schema"] = P.SCHEMA if alias else P.ALIAS_SCHEMA
+                self.refused(pack(files, bundle), "population differs")
+
+    def test_alias_pin_generation_and_profile_changes_refuse_before_output(self):
+        changes = [
+            lambda b: b["profiles"]["default"]["tools"].append("gooo_compare_alias_origin"),
+            lambda b: b["profiles"]["many_and_alias"].update(argv=["--alias-origin-change"]),
+            lambda b: b["optional_profiles"]["many_required"].update(argv=[]),
+            lambda b: b["optional_profiles"]["alias_origin_change"]["module"].update(Sum="h1:changed"),
+            lambda b: b["optional_profiles"]["alias_origin_change"]["bindings"].update(compiler_source_sha="0" * 40),
+            lambda b: b["build_info"]["Deps"][-1].update(Replace={"Path": "local"}),
+        ]
+        for change in changes:
+            files, bundle = fixture(alias=True)
+            change(bundle)
+            files["BUILD-INFO.json"] = encoded(bundle["build_info"])
+            self.refused(pack(files, bundle), "profiles|identity|binding|dependency")
+
+    def test_alias_notice_cannot_be_swapped_for_an_unrelated_valid_notice(self):
+        files, bundle = fixture(alias=True)
+        inventory = json.loads(files["NOTICE-INVENTORY.json"])
+        inventory[-1]["module"]["Version"] = "v0.0.0-other"
+        files["NOTICE-INVENTORY.json"] = encoded(inventory)
+        self.refused(pack(files, bundle), "notice source pin")
 
     def test_unsafe_duplicate_and_nonregular_tar_records(self):
         for kind in ["../outside", "/absolute", "nested/name", "duplicate",
