@@ -1716,6 +1716,30 @@ jobs:
           path: ${{ runner.temp }}/alias-origin-change/
           if-no-files-found: warn
           retention-days: 14
+      - name: Verify recorded catalogs with Gooo collection context
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          python3 -I -B examples/recorded-catalog-comparison/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/recorded-catalog-comparison"
+          jq -e '
+            .schema == "gooo/recorded-catalog-verification/v1" and
+            .status == "SOURCE_RECORDED_CATALOG_AND_SYNTHETIC_CONSUMER_REPLAY_PASS" and
+            .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
+            .go_version == "go1.27.3" and .kernel_cases == 29 and .actual_consumer_cases == 7 and
+            .receipt_negative_controls == 5 and .source_unchanged == true and .generated_assets_exact == true and
+            .all_direct_wait_EOF_PG_ESRCH == true and .synthetic_consumer_observations_only == true and
+            .model_calls == 0 and .external_adoption == false and .live_capture_executed == false and
+            .native_acceptance == false and .execution_authorized == false
+          ' "$RUNNER_TEMP/recorded-catalog-comparison/summary.json"
+      - name: Preserve recorded-catalog comparison evidence
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: recorded-catalog-comparison-evidence
+          path: ${{ runner.temp }}/recorded-catalog-comparison/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Verify original AutoBot resolver adaptation
         if: steps.change-scope.outputs.docs_only != 'true'
         timeout-minutes: 6

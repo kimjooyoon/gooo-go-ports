@@ -1354,12 +1354,36 @@ DENY_SCOPE_PRIOR_WORKFLOW_SHA = '82868e888670937a8070c0423a9703331b58f4d941dd66c
 
 
 
+RECORDED_CATALOG_STEP = '      - name: Verify recorded catalogs with Gooo collection context\n        if: steps.change-scope.outputs.docs_only != \'true\'\n        timeout-minutes: 12\n        run: |\n          set -euo pipefail\n          python3 -I -B examples/recorded-catalog-comparison/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/recorded-catalog-comparison"\n          jq -e \'\n            .schema == "gooo/recorded-catalog-verification/v1" and\n            .status == "SOURCE_RECORDED_CATALOG_AND_SYNTHETIC_CONSUMER_REPLAY_PASS" and\n            .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and\n            .go_version == "go1.27.3" and .kernel_cases == 29 and .actual_consumer_cases == 7 and\n            .receipt_negative_controls == 5 and .source_unchanged == true and .generated_assets_exact == true and\n            .all_direct_wait_EOF_PG_ESRCH == true and .synthetic_consumer_observations_only == true and\n            .model_calls == 0 and .external_adoption == false and .live_capture_executed == false and\n            .native_acceptance == false and .execution_authorized == false\n          \' "$RUNNER_TEMP/recorded-catalog-comparison/summary.json"\n'
+RECORDED_CATALOG_UPLOAD = "      - name: Preserve recorded-catalog comparison evidence\n        if: always() && steps.change-scope.outputs.docs_only != 'true'\n        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7\n        with:\n          name: recorded-catalog-comparison-evidence\n          path: ${{ runner.temp }}/recorded-catalog-comparison/\n          if-no-files-found: warn\n          retention-days: 14\n"
+RECORDED_CATALOG_PRIOR_WORKFLOW_SHA = 'bb6474182e5a97d6b42868ed7debd6eeec04efaa5cb94dbe4108c331938d18d4'
+
+
+def project_recorded_catalog_integration(text):
+    jobs = workflow_jobs(text)
+    require(text.count(RECORDED_CATALOG_STEP) == 1 and
+            RECORDED_CATALOG_STEP in jobs['policy-native-checks'],
+            'recorded catalog requires its exact full-scope source verification once')
+    require(text.count(RECORDED_CATALOG_UPLOAD) == 1 and
+            RECORDED_CATALOG_UPLOAD in jobs['policy-native-checks'] and
+            text.index(ALIAS_ORIGIN_UPLOAD) + len(ALIAS_ORIGIN_UPLOAD) == text.index(RECORDED_CATALOG_STEP) and
+            text.index(RECORDED_CATALOG_STEP) + len(RECORDED_CATALOG_STEP) == text.index(RECORDED_CATALOG_UPLOAD) and
+            text.index(RECORDED_CATALOG_UPLOAD) + len(RECORDED_CATALOG_UPLOAD) ==
+            text.index('      - name: Verify original AutoBot resolver adaptation\n'),
+            'recorded catalog verification and separate evidence must follow alias comparison')
+    prior = text.replace(RECORDED_CATALOG_STEP, '', 1).replace(RECORDED_CATALOG_UPLOAD, '', 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == RECORDED_CATALOG_PRIOR_WORKFLOW_SHA,
+            'recorded catalog integration changed unrelated workflow bytes')
+    return prior
+
+
 ALIAS_ORIGIN_STEP = '      - name: Verify source-owned tool alias origin changes\n        if: steps.change-scope.outputs.docs_only != \'true\'\n        timeout-minutes: 12\n        run: |\n          set -euo pipefail\n          python3 -I -B examples/alias-origin-change/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/alias-origin-change"\n          jq -e \'\n            .schema == "gooo/alias-origin-verification/v1" and\n            .status == "SOURCE_KERNEL111_AND_ROW_API_NATIVE_CONSUMER_REPLAY_PASS" and\n            .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and\n            .go_version == "go1.27.3" and .kernel_cases == 111 and\n            .actual_consumer_cases == 3 and .public_row_API_cases == 104 and .typed_decision_fields == 9 and\n            .consumed_pin_dependency_regression == true and\n            .transport_refusals == 3 and .receipt_negative_controls == 4 and\n            .runtime_path_empty == true and .runtime_goroot_absent == true and\n            .all_direct_wait_EOF_PG_ESRCH == true and .execution_authorized == false and\n            .model_calls == 0 and .external_adoption == false and .ADK_runtime_executed == false\n          \' "$RUNNER_TEMP/alias-origin-change/summary.json"\n'
 ALIAS_ORIGIN_UPLOAD = "      - name: Preserve alias-origin change evidence\n        if: always() && steps.change-scope.outputs.docs_only != 'true'\n        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7\n        with:\n          name: alias-origin-change-evidence\n          path: ${{ runner.temp }}/alias-origin-change/\n          if-no-files-found: warn\n          retention-days: 14\n"
 ALIAS_ORIGIN_PRIOR_WORKFLOW_SHA = '1a515986d59236854fd54db43d3566ef9969025f1f5475f3d217d6f972978a69'
 
 
 def project_alias_origin_integration(text):
+    text = project_recorded_catalog_integration(text)
     jobs = workflow_jobs(text)
     require(text.count(ALIAS_ORIGIN_STEP) == 1 and
             ALIAS_ORIGIN_STEP in jobs['policy-native-checks'],
@@ -4035,6 +4059,47 @@ class GrantSelectionIntegrationTests(unittest.TestCase):
             self.assertIn(old, raw)
             with self.assertRaises(ValueError):
                 project_grant_selection_integration(raw.replace(old, new, 1))
+
+
+
+class RecordedCatalogIntegrationTests(unittest.TestCase):
+    def test_exact_steps_preserve_previous_full_workflow(self):
+        raw = WORKFLOW.read_text()
+        prior = project_recorded_catalog_integration(raw)
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), RECORDED_CATALOG_PRIOR_WORKFLOW_SHA)
+        project_root_go_reference(raw)
+
+    def test_skips_masking_and_weakened_source_receipts_fail(self):
+        raw = WORKFLOW.read_text()
+        mutations = [raw.replace(RECORDED_CATALOG_STEP, '', 1),
+                     raw.replace(RECORDED_CATALOG_STEP, RECORDED_CATALOG_STEP * 2, 1)]
+        for old, new in ((FULL, DOCS), ('timeout-minutes: 12', 'timeout-minutes: 120'),
+                         ('set -euo pipefail', 'set +e'),
+                         ('--compiler "$PWD/.gooo"', '--compiler other'),
+                         ('--out "$RUNNER_TEMP/recorded-catalog-comparison"', '--out "$RUNNER_TEMP/recorded-catalog-comparison" || true')):
+            self.assertIn(old, RECORDED_CATALOG_STEP)
+            mutations.append(raw.replace(RECORDED_CATALOG_STEP, RECORDED_CATALOG_STEP.replace(old, new, 1), 1))
+        for clause in ('.kernel_cases == 29', '.actual_consumer_cases == 7', '.receipt_negative_controls == 5',
+                       '.source_unchanged == true', '.generated_assets_exact == true', '.first_failure == null',
+                       '.all_direct_wait_EOF_PG_ESRCH == true', '.synthetic_consumer_observations_only == true',
+                       '.model_calls == 0', '.live_capture_executed == false', '.external_adoption == false',
+                       '.execution_authorized == false'):
+            self.assertEqual(RECORDED_CATALOG_STEP.count(clause), 1)
+            mutations.append(raw.replace(RECORDED_CATALOG_STEP, RECORDED_CATALOG_STEP.replace(clause, 'true', 1), 1))
+        for index, mutation in enumerate(mutations):
+            with self.subTest(mutation=index), self.assertRaises(ValueError):
+                project_recorded_catalog_integration(mutation)
+
+    def test_original_evidence_remains_separate_and_failure_safe(self):
+        raw = WORKFLOW.read_text()
+        for replacement in ('', RECORDED_CATALOG_UPLOAD * 2,
+                            RECORDED_CATALOG_UPLOAD.replace('always() && ', '', 1),
+                            RECORDED_CATALOG_UPLOAD.replace('${{ runner.temp }}/recorded-catalog-comparison/', 'out/recorded-catalog-comparison/', 1),
+                            RECORDED_CATALOG_UPLOAD.replace('retention-days: 14', 'retention-days: 1', 1)):
+            with self.subTest(replacement=replacement), self.assertRaises(ValueError):
+                project_recorded_catalog_integration(raw.replace(RECORDED_CATALOG_UPLOAD, replacement, 1))
+        with self.assertRaises(ValueError):
+            project_recorded_catalog_integration(raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1))
 
 
 if __name__ == "__main__":
