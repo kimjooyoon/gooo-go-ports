@@ -1695,7 +1695,7 @@ jobs:
         timeout-minutes: 12
         run: |
           set -euo pipefail
-          python3 -I -B examples/alias-origin-change/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$PWD/out/alias-origin-change"
+          python3 -I -B examples/alias-origin-change/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/alias-origin-change"
           jq -e '
             .schema == "gooo/alias-origin-verification/v1" and
             .status == "SOURCE_KERNEL111_AND_ROW_API_NATIVE_CONSUMER_REPLAY_PASS" and
@@ -1707,7 +1707,15 @@ jobs:
             .runtime_path_empty == true and .runtime_goroot_absent == true and
             .all_direct_wait_EOF_PG_ESRCH == true and .execution_authorized == false and
             .model_calls == 0 and .external_adoption == false and .ADK_runtime_executed == false
-          ' out/alias-origin-change/summary.json
+          ' "$RUNNER_TEMP/alias-origin-change/summary.json"
+      - name: Preserve alias-origin change evidence
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: alias-origin-change-evidence
+          path: ${{ runner.temp }}/alias-origin-change/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Verify original AutoBot resolver adaptation
         if: steps.change-scope.outputs.docs_only != 'true'
         timeout-minutes: 6
@@ -1780,7 +1788,6 @@ jobs:
             out/api-policy-revision/
             out/agentmesh-service-policy/
             out/grant-candidate-selection/
-            out/alias-origin-change/
             out/service-grant-many/summary.json
             out/service-grant-many/source-before.json
             out/service-grant-many/source-after.json

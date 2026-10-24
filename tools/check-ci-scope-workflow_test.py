@@ -1354,11 +1354,42 @@ DENY_SCOPE_PRIOR_WORKFLOW_SHA = '82868e888670937a8070c0423a9703331b58f4d941dd66c
 
 
 
+ALIAS_ORIGIN_STEP = '      - name: Verify source-owned tool alias origin changes\n        if: steps.change-scope.outputs.docs_only != \'true\'\n        timeout-minutes: 12\n        run: |\n          set -euo pipefail\n          python3 -I -B examples/alias-origin-change/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/alias-origin-change"\n          jq -e \'\n            .schema == "gooo/alias-origin-verification/v1" and\n            .status == "SOURCE_KERNEL111_AND_ROW_API_NATIVE_CONSUMER_REPLAY_PASS" and\n            .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and\n            .go_version == "go1.27.3" and .kernel_cases == 111 and\n            .actual_consumer_cases == 3 and .public_row_API_cases == 104 and .typed_decision_fields == 9 and\n            .consumed_pin_dependency_regression == true and\n            .transport_refusals == 3 and .receipt_negative_controls == 4 and\n            .runtime_path_empty == true and .runtime_goroot_absent == true and\n            .all_direct_wait_EOF_PG_ESRCH == true and .execution_authorized == false and\n            .model_calls == 0 and .external_adoption == false and .ADK_runtime_executed == false\n          \' "$RUNNER_TEMP/alias-origin-change/summary.json"\n'
+ALIAS_ORIGIN_UPLOAD = "      - name: Preserve alias-origin change evidence\n        if: always() && steps.change-scope.outputs.docs_only != 'true'\n        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7\n        with:\n          name: alias-origin-change-evidence\n          path: ${{ runner.temp }}/alias-origin-change/\n          if-no-files-found: warn\n          retention-days: 14\n"
+ALIAS_ORIGIN_PRIOR_WORKFLOW_SHA = '1a515986d59236854fd54db43d3566ef9969025f1f5475f3d217d6f972978a69'
+
+
+def project_alias_origin_integration(text):
+    jobs = workflow_jobs(text)
+    require(text.count(ALIAS_ORIGIN_STEP) == 1 and
+            ALIAS_ORIGIN_STEP in jobs['policy-native-checks'],
+            'alias-origin comparison requires its exact full-scope policy step once')
+    require(text.index(GRANT_SELECTION_STEP) + len(GRANT_SELECTION_STEP) ==
+            text.index(ALIAS_ORIGIN_STEP) and
+            text.index(ALIAS_ORIGIN_STEP) + len(ALIAS_ORIGIN_STEP) ==
+            text.index(ALIAS_ORIGIN_UPLOAD) and
+            text.index(ALIAS_ORIGIN_UPLOAD) + len(ALIAS_ORIGIN_UPLOAD) ==
+            text.index('      - name: Verify original AutoBot resolver adaptation\n'),
+            'alias-origin comparison and evidence must follow candidate selection before AutoBot')
+    _, policy, _ = job_steps(jobs['policy-native-checks'])
+    upload = policy['Preserve alias-origin change evidence']
+    require(text.count(ALIAS_ORIGIN_UPLOAD) == 1 and upload == ALIAS_ORIGIN_UPLOAD and
+            field(upload, 'if') == 'always() && ' + FULL,
+            'alias-origin outside-checkout evidence requires its separate failure-safe full-scope upload')
+    require('alias-origin-change' not in policy[POLICY_UPLOAD],
+            'outside-checkout alias evidence must not change the existing policy archive root')
+    prior = text.replace(ALIAS_ORIGIN_STEP, '', 1).replace(ALIAS_ORIGIN_UPLOAD, '', 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == ALIAS_ORIGIN_PRIOR_WORKFLOW_SHA,
+            'alias-origin comparison changed unrelated workflow bytes')
+    return prior
+
+
 GRANT_SELECTION_STEP = '      - name: Verify source-owned grant candidate selection\n        if: steps.change-scope.outputs.docs_only != \'true\'\n        timeout-minutes: 12\n        run: |\n          set -euo pipefail\n          python3 -I -B examples/grant-candidate-selection/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$PWD/out/grant-candidate-selection"\n          jq -e \'\n            .schema == "gooo/grant-candidate-selection-verification/v1" and\n            .status == "SOURCE_KERNEL82_AND_NATIVE_CONSUMER_REPLAY_PASS" and\n            .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and\n            .kernel_cases == 82 and .actual_consumer_cases == 2 and .typed_selection_fields == 12 and\n            .transport_refusals == 3 and .receipt_negative_controls == 4 and\n            .runtime_path_empty == true and .runtime_goroot_absent == true and\n            .all_direct_wait_EOF_PG_ESRCH == true and\n            .execution_authorized == false and .model_calls == 0 and .engine_builds == 0 and\n            .external_adoption == false and .local_lineage_complete_claim == false\n          \' out/grant-candidate-selection/summary.json\n'
 GRANT_SELECTION_ARTIFACT = '            out/grant-candidate-selection/\n'
 GRANT_SELECTION_PRIOR_WORKFLOW_SHA = 'ff0eb915100042186fcb83c68d5c3f453f95567e4fc8cf8555b69a8605d946d0'
 
 def project_grant_selection_integration(text):
+    text = project_alias_origin_integration(text)
     jobs = workflow_jobs(text)
     require(text.count(GRANT_SELECTION_STEP) == 1 and
             GRANT_SELECTION_STEP in jobs['policy-native-checks'],
@@ -3894,6 +3925,82 @@ class RootGoReferenceTests(unittest.TestCase):
             self.assertIn(before, raw)
             with self.subTest(change=before), self.assertRaises(ValueError):
                 project_root_go_reference(raw.replace(before, after, 1))
+
+
+class AliasOriginIntegrationTests(unittest.TestCase):
+    def test_exact_additions_preserve_every_previous_workflow_byte(self):
+        raw = WORKFLOW.read_text()
+        prior = project_alias_origin_integration(raw)
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), ALIAS_ORIGIN_PRIOR_WORKFLOW_SHA)
+        project_root_go_reference(raw)
+
+    def test_skip_mask_wrong_paths_identity_counts_and_missing_semantics_are_rejected(self):
+        raw = WORKFLOW.read_text()
+        changes = [('', 'missing-step'), (ALIAS_ORIGIN_STEP * 2, 'duplicate-step')]
+        for old, new in (
+                ('        if: ' + FULL + '\n', ''),
+                (FULL, DOCS),
+                ('timeout-minutes: 12', 'timeout-minutes: 120'),
+                ('python3 -I -B examples/alias-origin-change/verify.py', 'true # python3 -I -B examples/alias-origin-change/verify.py'),
+                ('--out "$RUNNER_TEMP/alias-origin-change"', '--out "$RUNNER_TEMP/alias-origin-change" || true'),
+                ('--out "$RUNNER_TEMP/alias-origin-change"', '--out "$PWD/out/alias-origin-change"'),
+                ('"$RUNNER_TEMP/alias-origin-change/summary.json"', '"$PWD/out/alias-origin-change/summary.json"'),
+                ('--compiler "$PWD/.gooo"', '--compiler other'),
+                ('--go "$(go env GOROOT)/bin/go"', '--go go')):
+            self.assertIn(old, ALIAS_ORIGIN_STEP)
+            changes.append((ALIAS_ORIGIN_STEP.replace(old, new, 1), old))
+        for clause in (
+                '.schema == "gooo/alias-origin-verification/v1"',
+                '.status == "SOURCE_KERNEL111_AND_ROW_API_NATIVE_CONSUMER_REPLAY_PASS"',
+                '.first_failure == null',
+                '.compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6"',
+                '.go_version == "go1.27.3"', '.kernel_cases == 111',
+                '.actual_consumer_cases == 3', '.public_row_API_cases == 104',
+                '.typed_decision_fields == 9', '.consumed_pin_dependency_regression == true',
+                '.transport_refusals == 3', '.receipt_negative_controls == 4',
+                '.runtime_path_empty == true', '.runtime_goroot_absent == true',
+                '.all_direct_wait_EOF_PG_ESRCH == true', '.execution_authorized == false',
+                '.model_calls == 0', '.external_adoption == false', '.ADK_runtime_executed == false'):
+            self.assertEqual(ALIAS_ORIGIN_STEP.count(clause), 1)
+            changes.append((ALIAS_ORIGIN_STEP.replace(clause, 'true', 1), clause))
+        for replacement, label in changes:
+            altered = raw.replace(ALIAS_ORIGIN_STEP, replacement, 1)
+            self.assertNotEqual(altered, raw)
+            with self.subTest(change=label), self.assertRaises(ValueError):
+                project_alias_origin_integration(altered)
+
+    def test_failure_safe_evidence_owner_order_and_other_workflow_bytes_are_required(self):
+        raw = WORKFLOW.read_text()
+        _, policy, _ = job_steps(workflow_jobs(raw)['policy-native-checks'])
+        altered = [raw.replace(ALIAS_ORIGIN_UPLOAD, replacement, 1)
+                   for replacement in ('', ALIAS_ORIGIN_UPLOAD * 2)]
+        for old, new in (('always() && ' + FULL, FULL),
+                         ('${{ runner.temp }}/alias-origin-change/', 'out/alias-origin-change/'),
+                         ('name: alias-origin-change-evidence', 'name: gooo-go-ports-policy-evidence'),
+                         ('retention-days: 14', 'retention-days: 1'),
+                         ('actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9', 'actions/upload-artifact@main')):
+            self.assertIn(old, ALIAS_ORIGIN_UPLOAD)
+            altered.append(raw.replace(ALIAS_ORIGIN_UPLOAD, ALIAS_ORIGIN_UPLOAD.replace(old, new, 1), 1))
+        # A path outside the checkout changes the common archive root if mixed
+        # into the established policy artifact, breaking existing consumers.
+        policy_upload = policy[POLICY_UPLOAD]
+        mixed_upload = policy_upload.replace('          path: |\n',
+                                             '          path: |\n            ${{ runner.temp }}/alias-origin-change/\n', 1)
+        altered.append(raw.replace(policy_upload, mixed_upload, 1))
+        block = ALIAS_ORIGIN_STEP + ALIAS_ORIGIN_UPLOAD
+        without = raw.replace(block, '', 1)
+        altered.append(without.replace(GRANT_SELECTION_STEP, block + GRANT_SELECTION_STEP, 1))
+        browser = workflow_jobs(without)['browser-demo']
+        altered.append(without.replace(browser, browser.replace('    steps:\n', '    steps:\n' + block, 1), 1))
+        for old, new in (('--workers 3', '--workers 1'),
+                         ('go test -race -timeout=15m', 'go test -timeout=15m'),
+                         ('actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e', 'actions/setup-go@main')):
+            self.assertIn(old, raw)
+            altered.append(raw.replace(old, new, 1))
+        for index, mutation in enumerate(altered):
+            self.assertNotEqual(mutation, raw)
+            with self.subTest(mutation=index), self.assertRaises(ValueError):
+                project_alias_origin_integration(mutation)
 
 
 class GrantSelectionIntegrationTests(unittest.TestCase):
