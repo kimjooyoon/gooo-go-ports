@@ -129,30 +129,46 @@ compatibility.
 
 ## Required CI results
 
-Accept a change only when all three current producer checks succeed:
-`observer-checks`, `native-execution`, and `browser-demo`. The first runs the
-common Go/Python and generator checks, the second runs the pinned native
-validation for the classified scope, and the third runs the full browser checks.
-No single producer check substitutes for the other two. The separate
+Accept a change only when all four current producer checks succeed:
+`observer-checks`, `native-execution`, `policy-native-checks`, and `browser-demo`.
+They run the common Go/Python and generator checks, pinned native validation,
+separate policy/example validation, and full browser checks respectively.
+The native and policy steps follow the existing exact-tree scope classifier;
+approved step omissions do not mean an entire producer job may be skipped.
+No single producer check substitutes for the other three. The separate
 `native-ports` aggregate job is intentionally removed; this changes the check-name
 contract rather than moving that name onto a producer with weaker meaning.
 
-Main-branch Pages deployment directly depends on those same three jobs and
-requires all three results to be exactly `success`, a main-branch push, and no
+Main-branch Pages deployment directly depends on those same four jobs and
+requires all four results to be exactly `success`, a main-branch push, and no
 workflow cancellation. Failure, cancellation, skipping, or an absent result does
 not permit deployment. The individual validation commands and coverage remain
-required. GitHub branch protection/rules are separate repository configuration:
-verify the current required-check settings before adopting this check-name change;
-the workflow does not rewrite them or establish that they are configured.
+required. GitHub branch protection is separate repository configuration. On
+25 October 2026 (Asia/Seoul), `main` protection was configured and read back with
+these four checks restricted to the GitHub Actions app, an up-to-date branch
+requirement, and administrator enforcement. No human review is required.
+GitHub's [required-check semantics](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks)
+also accept `skipped` and `neutral`, so this
+configuration alone does not enforce the stronger all-four-`success` rule at
+merge time. The existing Pages condition enforces that rule after merge;
+[issue #212](https://github.com/kimjooyoon/gooo-go-ports/issues/212) retains the
+remaining admission gap. Re-read the live settings when assessing enforcement;
+workflow source alone does not establish the current remote configuration.
 
-변경 수락에는 현재 `observer-checks`, `native-execution`, `browser-demo` 세 검사의
-성공이 모두 필요합니다. 공통 Go·Python·생성기 검사, 분류된 범위의 고정 native 검증,
-전체 브라우저 검사를 각각 유지하며 한 검사로 나머지를 대신하지 않습니다.
+변경 수락에는 현재 `observer-checks`, `native-execution`, `policy-native-checks`,
+`browser-demo` 네 검사의 성공이 모두 필요합니다. 공통 Go·Python·생성기 검사,
+고정 native 검증, 별도 정책·예제 검증, 전체 브라우저 검사를 각각 유지하며
+한 검사로 나머지를 대신하지 않습니다. 기존 정확한 트리 분류가 허용한 native·정책
+단계 생략은 전체 producer 작업을 건너뛸 수 있다는 뜻이 아닙니다.
 별도 `native-ports` 집계 작업을 제거하는 명시적인 검사 이름 계약 변경입니다.
-배포도 세 작업을 직접 의존하며, 취소되지 않은 main push에서 세 결과가 모두 정확히
+배포도 네 작업을 직접 의존하며, 취소되지 않은 main push에서 네 결과가 모두 정확히
 `success`일 때만 허용합니다. 실패·취소·건너뜀·결과 누락은 배포 성공으로 취급하지
-않습니다. 실제 적용 전 GitHub의 현재 필수 검사 설정을 확인해야 하며, 워크플로 파일
-변경 자체가 원격 보호 규칙을 변경하거나 설정 완료를 증명하지는 않습니다.
+않습니다. 2026년 10월 25일(한국 시간)에는 GitHub Actions가 제공하는 네 필수 검사,
+최신 브랜치 조건과 관리자 적용을 `main` 보호에 설정하고 다시 조회했습니다.
+사람의 리뷰는 요구하지 않습니다. GitHub 자체 규칙은 `skipped`·`neutral`도 허용하므로
+이 설정만으로 병합 전 네 결과의 정확한 `success`를 강제하지는 못합니다.
+기존 Pages 조건은 병합 후 배포를 제한하며, 남은 병합 수락 경계는 #212에서 추적합니다.
+실제 보호 상태는 현재 원격 설정으로 확인해야 하며, 워크플로 파일만으로 증명하지 않습니다.
 
 Documentation CI is limited to content-only changes in these six exact paths:
 
