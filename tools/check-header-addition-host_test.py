@@ -5,6 +5,7 @@ import ast
 import contextlib
 import io
 import copy
+import gzip
 import json
 import pathlib
 import tempfile
@@ -700,15 +701,17 @@ class EvidenceModesTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError,'provider refused fixture'):CHECK.read_shard_verification(root,index)
                 provider.write_text('def read_reference(root,index_path):\n    return {"unexpected": True}\n')
                 with self.assertRaisesRegex(RuntimeError,'exact shard reference provider API'):CHECK.read_shard_verification(root,index)
+                provider.write_text('def read_reference(root,index_path):\n    return {"pins":{},"source_set":{},"source_set_sha256":"old-api","batches":[],"go_version":"old-api","go_binary":{},"suite_count":82}\n')
+                with self.assertRaisesRegex(RuntimeError,'exact shard reference provider API'):CHECK.read_shard_verification(root,index)
 
     def test_shard_wrapper_passes_only_provider_api_to_common_reader(self):
         with tempfile.TemporaryDirectory() as directory:
             root=pathlib.Path(directory).resolve();(root/'tools').mkdir();index=root/'index.json';index.write_bytes(b'{}')
             provider=root/'tools/native-shard-reference.py'
-            provider.write_text('import hashlib\ndef read_reference(root,index_path):\n    p=root/"tools/native-shard-reference.py"\n    raw=p.read_bytes()\n    return {"pins":{str(p):{"bytes":len(raw),"sha256":hashlib.sha256(raw).hexdigest()}},"source_set":{},"source_set_sha256":"source-set-fixture","batches":[],"go_version":"go-fixture","go_binary":{},"suite_count":82}\n')
-            with mock.patch.object(CHECK,'read_addition_evidence',return_value={'boundary_fixture':True}) as common:
+            provider.write_text((ROOT/'tools/native-shard-reference.py').read_text()+'\ndef read_reference(root,index_path):\n    reader=Reader();reader.read(root/"tools/native-shard-reference.py")\n    return {"pins":reader.pins,"source_set":{},"source_set_sha256":"source-set-fixture","batches":[],"go_version":"go-fixture","go_binary":{},"suite_count":82,"receipt_reader":ConsumerReceiptReader(reader,{})}\n')
+            with mock.patch.object(CHECK,'read_addition_evidence',return_value={'boundary_fixture':True,'evidence':[]}) as common:
                 result=CHECK.read_shard_verification(root,index)
-            self.assertEqual(result,{'boundary_fixture':True,'evidence_mode':'experimental-shard-native-reference'})
+            self.assertEqual(result,{'boundary_fixture':True,'evidence':[],'evidence_mode':'experimental-shard-native-reference'})
             args=common.call_args.args
             self.assertEqual(args[0],root);self.assertTrue(callable(args[1]));self.assertIn(str(index),args[2])
             self.assertEqual(args[3:],({},'source-set-fixture',[],'go-fixture',{},82))
@@ -803,6 +806,106 @@ class AdditionEvidenceBoundaryTests(unittest.TestCase):
         with self.assertRaises(KeyError) as failure:
             CHECK.receipt(raw,[],b'{}',b'{}',[],'go version go1.27.3 linux/amd64','a'*64,{CHECK.ENTRY:{}},{},'/producer/gooo.workspace.json')
         self.assertEqual(failure.exception.args,('result',))
+
+
+
+class ShardCompressedConsumerBoundaryTests(unittest.TestCase):
+    """Synthetic seven-batch transport boundary, not native/full82 acceptance.
+
+    The fixture provider replaces complete-plan selection only. Its receipt
+    reader, shard wrapper and common file/case reader are production code.
+    The deep ABI validator is mocked to observe all fourteen exact raw calls.
+    """
+    def fixture(self,directory,compressed=True):
+        root=pathlib.Path(directory).resolve();evidence=root/'evidence';evidence.mkdir()
+        helper=AdditionEvidenceBoundaryTests();fixture=helper.fixture(evidence)
+        names=[name for _,name in CHECK.PACKAGES]+['diagnostic-header-addition.workspace.json',
+               'examples/diagnostic-header-addition/contract.json','examples/diagnostic-header-addition/corpus.json']
+        for name in names:
+            target=root/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes((ROOT/name).read_bytes())
+        batches=[];references={}
+        for batch in fixture['batches']:
+            batches.append({**batch,'workspace':str(batch['workspace'])})
+            for operation in ('execution','replay'):
+                path=batch['workspace'].parent/(operation+'.json');raw=path.read_bytes()
+                logical=str(path.relative_to(root));ref={'path':logical,'bytes':len(raw),'sha256':CHECK.digest(raw)}
+                if compressed:
+                    packed=gzip.compress(raw,mtime=0);path.with_name(path.name+'.gz').write_bytes(packed);path.unlink()
+                    ref.update(path=logical+'.gz',encoding='gzip',stored_bytes=len(packed),stored_sha256=CHECK.digest(packed))
+                references[logical]=ref
+        document={'batches':batches,'source_set':fixture['source_set'],'source_set_sha256':fixture['source_set_sha256'],'references':references}
+        index=root/'index.json';index.write_text(json.dumps(document))
+        provider=root/'tools/native-shard-reference.py';provider.parent.mkdir()
+        provider.write_text((ROOT/'tools/native-shard-reference.py').read_text()+"""
+# Synthetic selection only: no claim that this fixture verified the full plan.
+def read_reference(root,index_path):
+    reader=Reader();reader.read(root/'tools/native-shard-reference.py')
+    document=load(reader.read(index_path));references={}
+    for logical,ref in document['references'].items():
+        reader.file(root,ref,logical)
+        references[str(root/logical)]=(root,ref,logical)
+    batches=[{**batch,'workspace':pathlib.Path(batch['workspace'])} for batch in document['batches']]
+    reader.finish()
+    return {'pins':reader.pins,'source_set':document['source_set'],
+            'source_set_sha256':document['source_set_sha256'],'batches':batches,
+            'go_version':'go version go1.27.3 linux/amd64','go_binary':{'bytes':1,'sha256':'a'*64},
+            'suite_count':82,'receipt_reader':ConsumerReceiptReader(reader,references)}
+""")
+        return root,index,fixture,document,helper
+
+    def test_actual_shard_and_common_reader_accept_plain_and_gzip_without_rewriting(self):
+        for compressed in (False,True):
+            with self.subTest(compressed=compressed),tempfile.TemporaryDirectory() as directory:
+                root,index,fixture,document,helper=self.fixture(directory,compressed)
+                before={p:p.read_bytes() for p in (root/'evidence').rglob('*') if p.is_file()}
+                with mock.patch.object(CHECK,'receipt',side_effect=helper.observed) as abi:
+                    result=CHECK.read_shard_verification(root,index)
+                self.assertEqual(len(abi.call_args_list),14);self.assertEqual(result['rows'],fixture['rows'])
+                self.assertEqual(result['fresh_addition_cases'],50)
+                self.assertNotIn('receipt_reader',result)
+                provenance={'evidence':result['evidence'],'input_pins':result['pins']}
+                CHECK.save(root/'consumer-provenance.json',provenance)
+                self.assertEqual(json.loads((root/'consumer-provenance.json').read_text()),provenance)
+                for number,batch in enumerate(fixture['batches']):
+                    original=abi.call_args_list[2*number].args;replay=abi.call_args_list[2*number+1].args
+                    self.assertEqual(original[0],fixture['originals'][number]);self.assertEqual(replay[0],fixture['replays'][number])
+                    self.assertEqual(replay[10],fixture['originals'][number]);self.assertEqual(original[9],batch['producer_manifest_path'])
+                    for offset,key in enumerate(('execution','replay')):
+                        item=result['evidence'][2*number+offset];logical=batch['workspace'].parent/(key+'.json')
+                        stored=pathlib.Path(str(logical)+('.gz' if compressed else ''))
+                        self.assertEqual(item['receipt'],str(stored));self.assertEqual(item['receipt_storage']['encoding'],'gzip' if compressed else 'identity')
+                        self.assertEqual(item['receipt_storage']['sha256'],CHECK.digest(stored.read_bytes()))
+                        self.assertEqual(item['receipt_sha256_scope'],'original-json')
+                        self.assertEqual(item['receipt_sha256'],CHECK.sha((fixture['originals'] if offset==0 else fixture['replays'])[number]))
+                        self.assertIn(str(stored),result['pins'])
+                        if compressed:self.assertFalse(logical.exists());self.assertNotIn(str(logical),result['pins'])
+                self.assertEqual(before,{p:p.read_bytes() for p in (root/'evidence').rglob('*') if p.is_file()})
+
+    def test_corrupt_or_mismatched_compressed_reference_refuses_before_ABI(self):
+        for change in ('stored-hash','raw-hash','truncated','multiple','plain-counterpart'):
+            with self.subTest(change=change),tempfile.TemporaryDirectory() as directory:
+                root,index,fixture,document,_=self.fixture(directory)
+                logical=next(iter(document['references']));ref=document['references'][logical];path=root/ref['path']
+                if change=='stored-hash':ref['stored_sha256']='sha256:'+'0'*64
+                elif change=='raw-hash':ref['sha256']='sha256:'+'0'*64
+                elif change=='plain-counterpart':(root/logical).write_bytes(b'{}')
+                else:
+                    raw=path.read_bytes();raw=raw[:-1] if change=='truncated' else raw+raw
+                    path.write_bytes(raw);ref.update(stored_bytes=len(raw),stored_sha256=CHECK.digest(raw))
+                index.write_text(json.dumps(document))
+                with mock.patch.object(CHECK,'receipt',side_effect=AssertionError('invalid transport before ABI')),self.assertRaises(RuntimeError):
+                    CHECK.read_shard_verification(root,index)
+
+    def test_new_counterpart_during_common_reader_refuses_before_return(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,index,fixture,_,helper=self.fixture(directory);calls=[]
+            def inspect(*args):
+                calls.append(args)
+                if len(calls)==14:(fixture['batches'][0]['workspace'].parent/'execution.json').write_bytes(b'{}')
+                return helper.observed(*args)
+            with mock.patch.object(CHECK,'receipt',side_effect=inspect),self.assertRaisesRegex(RuntimeError,'ambiguous plain and gzip receipt'):
+                CHECK.read_shard_verification(root,index)
+            self.assertEqual(len(calls),14)
 
 
 class PinScanCancellationTests(unittest.TestCase):
