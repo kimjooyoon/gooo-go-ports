@@ -417,7 +417,8 @@ compiler issue before passing a minimal case to the language repository.
   diagnostics use `schema_version: "gooo/diagnostics/v1"`, `status` and `diagnostics`;
   successful discovery uses `schema: "gooo/capability-discovery-report/v1"`.
   Its `PROGRESS` or `UNKNOWN` evidence does not establish implementation success.
-  If `gooo_discover_capability` reports `SOURCE_LOWER_FAILED`, call
+  Use a source location supplied by `gooo_discover_capability` when available.
+  If it reports `SOURCE_LOWER_FAILED` without a useful location, call
   `gooo_check_source` at most once with the same source-root-relative `path`,
   unchanged source, fixed binary and root. Its `semantic.lowering` diagnostic may
   identify the unresolved reference. If it supplies no location, report that

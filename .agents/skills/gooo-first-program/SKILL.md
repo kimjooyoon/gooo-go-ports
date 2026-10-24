@@ -75,7 +75,8 @@ new execution record, the same inputs and the same workspace. Preserve the
 original program's records rather than replaying them as evidence for an edit.
 Stop the failed workflow and preserve its first diagnostic before changing the
 source or setup. For an already configured optional upstream ADK bridge only,
-`gooo_discover_capability` returning `SOURCE_LOWER_FAILED` permits one
+`gooo_discover_capability` returning `SOURCE_LOWER_FAILED` without a useful
+source location permits one
 diagnostic-only `gooo_check_source` call with the same relative `path`, unchanged
 source, fixed binary and root. Preserve both results and the original exit status;
 report an absent source location as unavailable. This does not retry discovery,
