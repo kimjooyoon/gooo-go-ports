@@ -1,0 +1,21 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "gooo/tool-origin/recorded-catalog",
+    "activity": "CompareRecordedCatalog"
+  },
+  "packages": [
+    {
+      "path": "gooo/tool-origin",
+      "sources": [
+        "ports/tool-origin/alias_origin.gooo"
+      ]
+    },
+    {
+      "path": "gooo/tool-origin/recorded-catalog",
+      "sources": [
+        "ports/tool-origin/recorded_catalog.gooo"
+      ]
+    }
+  ]
+}

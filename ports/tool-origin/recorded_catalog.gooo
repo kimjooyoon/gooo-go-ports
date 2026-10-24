@@ -1,0 +1,437 @@
+// Copyright (c) 2026 Gooo Go Ports contributors. BSD-3-Clause; see ../../LICENSE.
+// Offline judgments over saved frames and declared capture-time context.
+// UNKNOWN remote atomicity never suppresses the supplied alias comparison.
+package recorded_catalog
+namespace gooo_recorded_catalog_v1
+import origin "gooo/tool-origin"
+entity CollectionInput id "gooo://tool-origin/recorded-catalog/v1/input" fields {
+ field context_id id "gooo://tool-origin/recorded-catalog/v1/input/context_id" type string required one
+ field alias_context_id id "gooo://tool-origin/recorded-catalog/v1/input/alias_context_id" type string required one
+ field before_catalog_authorization_context_id id "gooo://tool-origin/recorded-catalog/v1/input/before_catalog_authorization_context_id" type string required one
+ field after_catalog_authorization_context_id id "gooo://tool-origin/recorded-catalog/v1/input/after_catalog_authorization_context_id" type string required one
+ field declared_sides id "gooo://tool-origin/recorded-catalog/v1/input/declared_sides" type string required many
+ field declared_host_ids id "gooo://tool-origin/recorded-catalog/v1/input/declared_host_ids" type string required many
+ field declared_connection_ids id "gooo://tool-origin/recorded-catalog/v1/input/declared_connection_ids" type string required many
+ field capture_sides id "gooo://tool-origin/recorded-catalog/v1/input/capture_sides" type string required many
+ field capture_host_ids id "gooo://tool-origin/recorded-catalog/v1/input/capture_host_ids" type string required many
+ field capture_connection_ids id "gooo://tool-origin/recorded-catalog/v1/input/capture_connection_ids" type string required many
+ field capture_recording_bases id "gooo://tool-origin/recorded-catalog/v1/input/capture_recording_bases" type string required many
+ field capture_evidence_kinds id "gooo://tool-origin/recorded-catalog/v1/input/capture_evidence_kinds" type string required many
+ field capture_watch_coverages id "gooo://tool-origin/recorded-catalog/v1/input/capture_watch_coverages" type string required many
+ field capture_remote_atomicities id "gooo://tool-origin/recorded-catalog/v1/input/capture_remote_atomicities" type string required many
+ field capture_begin_bindings id "gooo://tool-origin/recorded-catalog/v1/input/capture_begin_bindings" type string required many
+ field capture_end_bindings id "gooo://tool-origin/recorded-catalog/v1/input/capture_end_bindings" type string required many
+ field capture_begin_auth_contexts id "gooo://tool-origin/recorded-catalog/v1/input/capture_begin_auth_contexts" type string required many
+ field capture_end_auth_contexts id "gooo://tool-origin/recorded-catalog/v1/input/capture_end_auth_contexts" type string required many
+ field capture_begin_config_revisions id "gooo://tool-origin/recorded-catalog/v1/input/capture_begin_config_revisions" type string required many
+ field capture_end_config_revisions id "gooo://tool-origin/recorded-catalog/v1/input/capture_end_config_revisions" type string required many
+ field capture_begin_protocols id "gooo://tool-origin/recorded-catalog/v1/input/capture_begin_protocols" type string required many
+ field capture_end_protocols id "gooo://tool-origin/recorded-catalog/v1/input/capture_end_protocols" type string required many
+ field capture_relevant_change_observed id "gooo://tool-origin/recorded-catalog/v1/input/capture_relevant_change_observed" type boolean required many
+ field page_capture_indexes id "gooo://tool-origin/recorded-catalog/v1/input/page_capture_indexes" type integer required many
+ field page_request_cursor_kinds id "gooo://tool-origin/recorded-catalog/v1/input/page_request_cursor_kinds" type string required many
+ field page_request_cursor_values id "gooo://tool-origin/recorded-catalog/v1/input/page_request_cursor_values" type string required many
+ field page_next_cursor_kinds id "gooo://tool-origin/recorded-catalog/v1/input/page_next_cursor_kinds" type string required many
+ field page_next_cursor_values id "gooo://tool-origin/recorded-catalog/v1/input/page_next_cursor_values" type string required many
+ field page_bindings id "gooo://tool-origin/recorded-catalog/v1/input/page_bindings" type string required many
+ field page_auth_contexts id "gooo://tool-origin/recorded-catalog/v1/input/page_auth_contexts" type string required many
+ field page_config_revisions id "gooo://tool-origin/recorded-catalog/v1/input/page_config_revisions" type string required many
+ field page_protocols id "gooo://tool-origin/recorded-catalog/v1/input/page_protocols" type string required many
+}
+entity RecordedCatalogResult id "gooo://tool-origin/recorded-catalog/v1/result" fields {
+ field origin_context_id id "gooo://tool-origin/recorded-catalog/v1/result/origin_context_id" type string required one
+ field origin_state id "gooo://tool-origin/recorded-catalog/v1/result/origin_state" type string required one
+ field origin_reason id "gooo://tool-origin/recorded-catalog/v1/result/origin_reason" type string required one
+ field origin_before_index id "gooo://tool-origin/recorded-catalog/v1/result/origin_before_index" type integer required one
+ field origin_after_index id "gooo://tool-origin/recorded-catalog/v1/result/origin_after_index" type integer required one
+ field origin_conflict_catalog id "gooo://tool-origin/recorded-catalog/v1/result/origin_conflict_catalog" type string required one
+ field origin_conflict_first_index id "gooo://tool-origin/recorded-catalog/v1/result/origin_conflict_first_index" type integer required one
+ field origin_conflict_second_index id "gooo://tool-origin/recorded-catalog/v1/result/origin_conflict_second_index" type integer required one
+ field origin_execution_authorized id "gooo://tool-origin/recorded-catalog/v1/result/origin_execution_authorized" type boolean required one
+ field context_id id "gooo://tool-origin/recorded-catalog/v1/result/context_id" type string required one
+ field state id "gooo://tool-origin/recorded-catalog/v1/result/state" type string required one
+ field reason id "gooo://tool-origin/recorded-catalog/v1/result/reason" type string required one
+ field next_action id "gooo://tool-origin/recorded-catalog/v1/result/next_action" type string required one
+ field before_pagination_state id "gooo://tool-origin/recorded-catalog/v1/result/before_pagination_state" type string required one
+ field after_pagination_state id "gooo://tool-origin/recorded-catalog/v1/result/after_pagination_state" type string required one
+ field before_configuration_state id "gooo://tool-origin/recorded-catalog/v1/result/before_configuration_state" type string required one
+ field after_configuration_state id "gooo://tool-origin/recorded-catalog/v1/result/after_configuration_state" type string required one
+ field authorization_relation id "gooo://tool-origin/recorded-catalog/v1/result/authorization_relation" type string required one
+ field recording_basis_state id "gooo://tool-origin/recorded-catalog/v1/result/recording_basis_state" type string required one
+ field remote_atomicity id "gooo://tool-origin/recorded-catalog/v1/result/remote_atomicity" type string required one
+ field first_problem_side id "gooo://tool-origin/recorded-catalog/v1/result/first_problem_side" type string required one
+ field first_problem_code id "gooo://tool-origin/recorded-catalog/v1/result/first_problem_code" type string required one
+ field first_problem_capture_index id "gooo://tool-origin/recorded-catalog/v1/result/first_problem_capture_index" type integer required one
+ field first_problem_page_index id "gooo://tool-origin/recorded-catalog/v1/result/first_problem_page_index" type integer required one
+ field first_problem_declared_index id "gooo://tool-origin/recorded-catalog/v1/result/first_problem_declared_index" type integer required one
+ field contains_synthetic_fixture id "gooo://tool-origin/recorded-catalog/v1/result/contains_synthetic_fixture" type boolean required one
+ field live_removal_proven id "gooo://tool-origin/recorded-catalog/v1/result/live_removal_proven" type boolean required one
+ field execution_authorized id "gooo://tool-origin/recorded-catalog/v1/result/execution_authorized" type boolean required one
+ field capture_pagination_states id "gooo://tool-origin/recorded-catalog/v1/result/capture_pagination_states" type string required many
+ field capture_configuration_states id "gooo://tool-origin/recorded-catalog/v1/result/capture_configuration_states" type string required many
+ field capture_recording_bases id "gooo://tool-origin/recorded-catalog/v1/result/capture_recording_bases" type string required many
+ field capture_evidence_kinds id "gooo://tool-origin/recorded-catalog/v1/result/capture_evidence_kinds" type string required many
+}
+entity CaptureIndex id "gooo://tool-origin/recorded-catalog/v1/capture-index" fields {
+ field index id "gooo://tool-origin/recorded-catalog/v1/capture-index/index" type integer required one
+}
+entity CursorRepetition id "gooo://tool-origin/recorded-catalog/v1/cursor-repetition" fields {
+ field first_page_index id "gooo://tool-origin/recorded-catalog/v1/cursor-repetition/first-page-index" type integer required one
+}
+// Separate activity keeps each syntactic collection product at the existing bound.
+activity CheckCaptureContinuation(CollectionInput, CaptureIndex) -> CursorRepetition id "gooo://tool-origin/recorded-catalog/v1/check-capture-continuation" computes `
+let first = -1
+let p = 0
+for capture in input0.page_capture_indexes {
+ if capture == input1.index {
+  let prior = 0
+  for priorCapture in input0.page_capture_indexes {
+   if first == -1 && prior < p && priorCapture == capture && input0.page_next_cursor_kinds[p] == "STRING" && input0.page_next_cursor_kinds[prior] == "STRING" && input0.page_next_cursor_values[p] == input0.page_next_cursor_values[prior] { first = p }
+   prior = prior + 1
+  }
+ }
+ p = p + 1
+}
+return CursorRepetition{first_page_index:first}
+`
+activity CompareRecordedCatalog(origin.OriginInput, CollectionInput) -> RecordedCatalogResult id "gooo://tool-origin/recorded-catalog/v1/compare" computes `
+let core = origin.CompareAliasOrigin(input0)
+let count = len(input1.capture_sides)
+let declaredCount = len(input1.declared_sides)
+let pageCount = len(input1.page_capture_indexes)
+let invalid = input1.context_id == "" || input1.alias_context_id == "" || input1.alias_context_id != input0.context_id || input1.before_catalog_authorization_context_id == "" || input1.after_catalog_authorization_context_id == ""
+if count > 16 || declaredCount > 16 || pageCount > 256 { invalid = true }
+if len(input1.declared_host_ids) != declaredCount { invalid = true }
+if len(input1.declared_connection_ids) != declaredCount { invalid = true }
+if len(input1.capture_host_ids) != count { invalid = true }
+if len(input1.capture_connection_ids) != count { invalid = true }
+if len(input1.capture_recording_bases) != count { invalid = true }
+if len(input1.capture_evidence_kinds) != count { invalid = true }
+if len(input1.capture_watch_coverages) != count { invalid = true }
+if len(input1.capture_remote_atomicities) != count { invalid = true }
+if len(input1.capture_begin_bindings) != count { invalid = true }
+if len(input1.capture_end_bindings) != count { invalid = true }
+if len(input1.capture_begin_auth_contexts) != count { invalid = true }
+if len(input1.capture_end_auth_contexts) != count { invalid = true }
+if len(input1.capture_begin_config_revisions) != count { invalid = true }
+if len(input1.capture_end_config_revisions) != count { invalid = true }
+if len(input1.capture_begin_protocols) != count { invalid = true }
+if len(input1.capture_end_protocols) != count { invalid = true }
+if len(input1.capture_relevant_change_observed) != count { invalid = true }
+if len(input1.page_request_cursor_kinds) != pageCount { invalid = true }
+if len(input1.page_request_cursor_values) != pageCount { invalid = true }
+if len(input1.page_next_cursor_kinds) != pageCount { invalid = true }
+if len(input1.page_next_cursor_values) != pageCount { invalid = true }
+if len(input1.page_bindings) != pageCount { invalid = true }
+if len(input1.page_auth_contexts) != pageCount { invalid = true }
+if len(input1.page_config_revisions) != pageCount { invalid = true }
+if len(input1.page_protocols) != pageCount { invalid = true }
+let basisState = "CAPTURE_TIME_ONLY"
+let synthetic = false
+for basis in input1.capture_recording_bases {
+ if basis == "RETROSPECTIVE" && basisState != "UNKNOWN_PRESENT" { basisState = "RETROSPECTIVE_PRESENT" }
+ if basis == "UNKNOWN" { basisState = "UNKNOWN_PRESENT" }
+}
+for kind in input1.capture_evidence_kinds { if kind == "SYNTHETIC_FIXTURE" { synthetic = true } }
+let declaredBefore = 0
+let declaredAfter = 0
+let capturedBefore = 0
+let capturedAfter = 0
+if !invalid {
+ let d = 0
+ for side in input1.declared_sides {
+  if side != "BEFORE" && side != "AFTER" { invalid = true }
+  if input1.declared_host_ids[d] == "" || input1.declared_connection_ids[d] == "" { invalid = true }
+  if side == "BEFORE" { declaredBefore = declaredBefore + 1 } else { declaredAfter = declaredAfter + 1 }
+  let prior = 0
+  for earlier in input1.declared_sides {
+   if prior < d && earlier == side && input1.declared_host_ids[prior] == input1.declared_host_ids[d] && input1.declared_connection_ids[prior] == input1.declared_connection_ids[d] { invalid = true }
+   prior = prior + 1
+  }
+  d = d + 1
+ }
+ let c = 0
+ for side in input1.capture_sides {
+  if side != "BEFORE" && side != "AFTER" { invalid = true }
+  if side == "BEFORE" { capturedBefore = capturedBefore + 1 } else { capturedAfter = capturedAfter + 1 }
+  if input1.capture_host_ids[c] == "" || input1.capture_connection_ids[c] == "" { invalid = true }
+  if input1.capture_recording_bases[c] != "CAPTURE_TIME" && input1.capture_recording_bases[c] != "RETROSPECTIVE" && input1.capture_recording_bases[c] != "UNKNOWN" { invalid = true }
+  if input1.capture_evidence_kinds[c] != "SYNTHETIC_FIXTURE" && input1.capture_evidence_kinds[c] != "RECORDED_OBSERVATION" { invalid = true }
+  if input1.capture_watch_coverages[c] != "CONTINUOUS" && input1.capture_watch_coverages[c] != "ENDPOINTS_ONLY" && input1.capture_watch_coverages[c] != "UNKNOWN" { invalid = true }
+  if input1.capture_remote_atomicities[c] != "UNKNOWN" { invalid = true }
+  if input1.capture_begin_bindings[c] == "" { invalid = true }
+  if input1.capture_end_bindings[c] == "" { invalid = true }
+  if input1.capture_begin_auth_contexts[c] == "" { invalid = true }
+  if input1.capture_end_auth_contexts[c] == "" { invalid = true }
+  if input1.capture_begin_config_revisions[c] == "" { invalid = true }
+  if input1.capture_end_config_revisions[c] == "" { invalid = true }
+  if input1.capture_begin_protocols[c] == "" { invalid = true }
+  if input1.capture_end_protocols[c] == "" { invalid = true }
+  let declared = false
+  let declarationIndex = 0
+  for declaredSide in input1.declared_sides {
+   if declaredSide == side && input1.declared_host_ids[declarationIndex] == input1.capture_host_ids[c] && input1.declared_connection_ids[declarationIndex] == input1.capture_connection_ids[c] { declared = true }
+   declarationIndex = declarationIndex + 1
+  }
+  if !declared { invalid = true }
+  let prior = 0
+  for earlier in input1.capture_sides {
+   if prior < c && earlier == side && input1.capture_host_ids[prior] == input1.capture_host_ids[c] && input1.capture_connection_ids[prior] == input1.capture_connection_ids[c] { invalid = true }
+   prior = prior + 1
+  }
+  c = c + 1
+ }
+ if declaredBefore > 8 || declaredAfter > 8 || capturedBefore > 8 || capturedAfter > 8 { invalid = true }
+ let p = 0
+ let previousCapture = -1
+ for capture in input1.page_capture_indexes {
+  if capture < 0 || capture >= count || capture < previousCapture { invalid = true }
+  previousCapture = capture
+  if input1.page_request_cursor_kinds[p] != "ABSENT" && input1.page_request_cursor_kinds[p] != "STRING" { invalid = true }
+  if input1.page_request_cursor_kinds[p] == "ABSENT" && input1.page_request_cursor_values[p] != "" { invalid = true }
+  if input1.page_next_cursor_kinds[p] != "ABSENT" && input1.page_next_cursor_kinds[p] != "NULL" && input1.page_next_cursor_kinds[p] != "STRING" { invalid = true }
+  if input1.page_next_cursor_kinds[p] != "STRING" && input1.page_next_cursor_values[p] != "" { invalid = true }
+  if input1.page_bindings[p] == "" || input1.page_auth_contexts[p] == "" || input1.page_config_revisions[p] == "" || input1.page_protocols[p] == "" { invalid = true }
+  p = p + 1
+ }
+}
+let beforePages = "COMPLETE"
+let afterPages = "COMPLETE"
+let beforeConfig = "RECORDED_STABLE"
+let afterConfig = "RECORDED_STABLE"
+let authorization = "SAME_RECORDED"
+let pageState0 = "INVALID"
+let configState0 = "UNKNOWN"
+let pageState1 = "INVALID"
+let configState1 = "UNKNOWN"
+let pageState2 = "INVALID"
+let configState2 = "UNKNOWN"
+let pageState3 = "INVALID"
+let configState3 = "UNKNOWN"
+let pageState4 = "INVALID"
+let configState4 = "UNKNOWN"
+let pageState5 = "INVALID"
+let configState5 = "UNKNOWN"
+let pageState6 = "INVALID"
+let configState6 = "UNKNOWN"
+let pageState7 = "INVALID"
+let configState7 = "UNKNOWN"
+let pageState8 = "INVALID"
+let configState8 = "UNKNOWN"
+let pageState9 = "INVALID"
+let configState9 = "UNKNOWN"
+let pageState10 = "INVALID"
+let configState10 = "UNKNOWN"
+let pageState11 = "INVALID"
+let configState11 = "UNKNOWN"
+let pageState12 = "INVALID"
+let configState12 = "UNKNOWN"
+let pageState13 = "INVALID"
+let configState13 = "UNKNOWN"
+let pageState14 = "INVALID"
+let configState14 = "UNKNOWN"
+let pageState15 = "INVALID"
+let configState15 = "UNKNOWN"
+let incomplete = false
+let unstable = false
+let unknown = false
+let incompleteSide = ""
+let incompleteCapture = -1
+let incompletePage = -1
+let incompleteDeclared = -1
+let incompleteCode = ""
+let unstableSide = ""
+let unstableCapture = -1
+let unstablePage = -1
+let unknownSide = ""
+let unknownCapture = -1
+let unknownCode = ""
+let authCapture = -1
+let authSide = ""
+if input1.before_catalog_authorization_context_id != input1.after_catalog_authorization_context_id { authorization = "CHANGED" }
+if !invalid {
+ let d = 0
+ for side in input1.declared_sides {
+  let found = false
+  let c = 0
+  for capturedSide in input1.capture_sides {
+   if capturedSide == side && input1.capture_host_ids[c] == input1.declared_host_ids[d] && input1.capture_connection_ids[c] == input1.declared_connection_ids[d] { found = true }
+   c = c + 1
+  }
+  if !found {
+   if !incomplete { incompleteSide = side; incompleteDeclared = d; incompleteCode = "MISSING_DECLARED_CAPTURE" }
+   incomplete = true
+   if side == "BEFORE" { beforePages = "INCOMPLETE" } else { afterPages = "INCOMPLETE" }
+  }
+  d = d + 1
+ }
+ let c = 0
+ for side in input1.capture_sides {
+  let pageStatus = "COMPLETE"
+  let configStatus = "RECORDED_STABLE"
+  let repeated = CheckCaptureContinuation(input1, CaptureIndex{index:c})
+  let capturedPages = 0
+  let previousKind = ""
+  let previousCursor = ""
+  let lastPage = -1
+  let badPage = -1
+  let pageCode = ""
+  let changedPage = -1
+  let changed = input1.capture_relevant_change_observed[c] || input1.capture_begin_bindings[c] != input1.capture_end_bindings[c] || input1.capture_begin_auth_contexts[c] != input1.capture_end_auth_contexts[c] || input1.capture_begin_config_revisions[c] != input1.capture_end_config_revisions[c] || input1.capture_begin_protocols[c] != input1.capture_end_protocols[c]
+  let p = 0
+  for capture in input1.page_capture_indexes {
+   if capture == c {
+    let broken = false
+    let code = ""
+    if capturedPages == 0 {
+     if input1.page_request_cursor_kinds[p] != "ABSENT" { broken = true; code = "MISSING_INITIAL_PAGE" }
+    } else {
+     if previousKind != "STRING" || input1.page_request_cursor_kinds[p] != "STRING" || input1.page_request_cursor_values[p] != previousCursor { broken = true; code = "CURSOR_LINK_MISMATCH" }
+    }
+    if repeated.first_page_index == p { broken = true; code = "REPEATED_CONTINUATION_CURSOR" }
+    if broken { if pageStatus == "COMPLETE" { badPage = p; pageCode = code }; pageStatus = "INCOMPLETE" }
+    if input1.page_bindings[p] != input1.capture_begin_bindings[c] || input1.page_auth_contexts[p] != input1.capture_begin_auth_contexts[c] || input1.page_config_revisions[p] != input1.capture_begin_config_revisions[c] || input1.page_protocols[p] != input1.capture_begin_protocols[c] {
+     changed = true
+     if changedPage == -1 { changedPage = p }
+    }
+    previousKind = input1.page_next_cursor_kinds[p]
+    previousCursor = input1.page_next_cursor_values[p]
+    capturedPages = capturedPages + 1
+    lastPage = p
+   }
+   p = p + 1
+  }
+  if capturedPages > 16 { invalid = true }
+  if capturedPages == 0 { pageStatus = "INCOMPLETE"; pageCode = "NO_SAVED_PAGES" }
+  if capturedPages > 0 && previousKind == "STRING" {
+   if pageStatus == "COMPLETE" { badPage = lastPage; pageCode = "MISSING_TERMINAL_PAGE" }
+   pageStatus = "INCOMPLETE"
+  }
+  if changed { configStatus = "CHANGED" } else if input1.capture_watch_coverages[c] != "CONTINUOUS" { configStatus = "UNKNOWN" }
+  if c == 0 { pageState0 = pageStatus; configState0 = configStatus }
+  if c == 1 { pageState1 = pageStatus; configState1 = configStatus }
+  if c == 2 { pageState2 = pageStatus; configState2 = configStatus }
+  if c == 3 { pageState3 = pageStatus; configState3 = configStatus }
+  if c == 4 { pageState4 = pageStatus; configState4 = configStatus }
+  if c == 5 { pageState5 = pageStatus; configState5 = configStatus }
+  if c == 6 { pageState6 = pageStatus; configState6 = configStatus }
+  if c == 7 { pageState7 = pageStatus; configState7 = configStatus }
+  if c == 8 { pageState8 = pageStatus; configState8 = configStatus }
+  if c == 9 { pageState9 = pageStatus; configState9 = configStatus }
+  if c == 10 { pageState10 = pageStatus; configState10 = configStatus }
+  if c == 11 { pageState11 = pageStatus; configState11 = configStatus }
+  if c == 12 { pageState12 = pageStatus; configState12 = configStatus }
+  if c == 13 { pageState13 = pageStatus; configState13 = configStatus }
+  if c == 14 { pageState14 = pageStatus; configState14 = configStatus }
+  if c == 15 { pageState15 = pageStatus; configState15 = configStatus }
+  if pageStatus == "INCOMPLETE" {
+   if !incomplete { incompleteSide = side; incompleteCapture = c; incompletePage = badPage; incompleteCode = pageCode }
+   incomplete = true
+   if side == "BEFORE" { beforePages = "INCOMPLETE" } else { afterPages = "INCOMPLETE" }
+  }
+  if configStatus == "CHANGED" {
+   if !unstable { unstableSide = side; unstableCapture = c; unstablePage = changedPage }
+   unstable = true
+   if side == "BEFORE" { beforeConfig = "CHANGED" } else { afterConfig = "CHANGED" }
+  } else if configStatus == "UNKNOWN" {
+   if !unknown { unknownSide = side; unknownCapture = c; unknownCode = "CONFIGURATION_WATCH_UNKNOWN" }
+   unknown = true
+   if side == "BEFORE" && beforeConfig != "CHANGED" { beforeConfig = "UNKNOWN" }
+   if side == "AFTER" && afterConfig != "CHANGED" { afterConfig = "UNKNOWN" }
+  }
+  if input1.capture_recording_bases[c] != "CAPTURE_TIME" {
+   if !unknown { unknownSide = side; unknownCapture = c; unknownCode = "CONTEXT_NOT_RECORDED_AT_CAPTURE" }
+   unknown = true
+  }
+  if side == "BEFORE" {
+   let other = 0
+   for otherSide in input1.capture_sides {
+    if otherSide == "AFTER" && input1.capture_host_ids[c] == input1.capture_host_ids[other] && input1.capture_connection_ids[c] == input1.capture_connection_ids[other] && (input1.capture_begin_auth_contexts[c] != input1.capture_begin_auth_contexts[other] || input1.capture_end_auth_contexts[c] != input1.capture_end_auth_contexts[other]) {
+     authorization = "CHANGED"
+     if authCapture == -1 { authCapture = other; authSide = "AFTER" }
+    }
+    other = other + 1
+   }
+  }
+  c = c + 1
+ }
+}
+let state = "RECORDED_CONTEXT_COMPLETE"
+let reason = "RECORDED_SCOPE_PAGES_AND_CONTEXT_SATISFIED"
+let action = "FOLLOW_ALIAS_RESULT"
+let problemSide = ""
+let problemCapture = -1
+let problemPage = -1
+let problemDeclared = -1
+let problemCode = ""
+if invalid {
+ state = "INVALID_CONTEXT"; reason = "INVALID_COLLECTION_COLUMNS"; action = "FIX_CAPTURE_RECORD"; problemCode = reason
+ beforePages = "INCOMPLETE"; afterPages = "INCOMPLETE"; beforeConfig = "UNKNOWN"; afterConfig = "UNKNOWN"; authorization = "UNKNOWN"
+ pageState0 = "INVALID"; configState0 = "UNKNOWN"
+ pageState1 = "INVALID"; configState1 = "UNKNOWN"
+ pageState2 = "INVALID"; configState2 = "UNKNOWN"
+ pageState3 = "INVALID"; configState3 = "UNKNOWN"
+ pageState4 = "INVALID"; configState4 = "UNKNOWN"
+ pageState5 = "INVALID"; configState5 = "UNKNOWN"
+ pageState6 = "INVALID"; configState6 = "UNKNOWN"
+ pageState7 = "INVALID"; configState7 = "UNKNOWN"
+ pageState8 = "INVALID"; configState8 = "UNKNOWN"
+ pageState9 = "INVALID"; configState9 = "UNKNOWN"
+ pageState10 = "INVALID"; configState10 = "UNKNOWN"
+ pageState11 = "INVALID"; configState11 = "UNKNOWN"
+ pageState12 = "INVALID"; configState12 = "UNKNOWN"
+ pageState13 = "INVALID"; configState13 = "UNKNOWN"
+ pageState14 = "INVALID"; configState14 = "UNKNOWN"
+ pageState15 = "INVALID"; configState15 = "UNKNOWN"
+} else if incomplete {
+ state = "INCOMPLETE_COLLECTION"; reason = incompleteCode; action = "RECAPTURE_DECLARED_SCOPE"
+ problemSide = incompleteSide; problemCapture = incompleteCapture; problemPage = incompletePage; problemDeclared = incompleteDeclared; problemCode = reason
+} else if unstable {
+ state = "UNSTABLE_CONFIGURATION"; reason = "RECORDED_CONTEXT_CHANGED_DURING_CAPTURE"; action = "RECAPTURE_STABLE_CONTEXT"
+ problemSide = unstableSide; problemCapture = unstableCapture; problemPage = unstablePage; problemCode = reason
+} else if unknown {
+ state = "COLLECTION_CONTEXT_UNKNOWN"; reason = unknownCode; action = "RECORD_CAPTURE_TIME_CONTEXT"
+ problemSide = unknownSide; problemCapture = unknownCapture; problemCode = reason
+} else if authorization == "CHANGED" {
+ state = "AUTH_CONTEXT_CHANGED"; reason = "DECLARED_AUTHORIZATION_CONTEXT_CHANGED"; action = "RECONCILE_AUTH_SCOPE"
+ problemSide = authSide; problemCapture = authCapture; problemCode = reason
+}
+let resultCount = count
+if resultCount > 16 { resultCount = 0 }
+let paginationStates = []string{pageState0, pageState1, pageState2, pageState3, pageState4, pageState5, pageState6, pageState7, pageState8, pageState9, pageState10, pageState11, pageState12, pageState13, pageState14, pageState15}[:resultCount]
+let configurationStates = []string{configState0, configState1, configState2, configState3, configState4, configState5, configState6, configState7, configState8, configState9, configState10, configState11, configState12, configState13, configState14, configState15}[:resultCount]
+return RecordedCatalogResult{
+ origin_context_id: core.context_id,
+ origin_state: core.state,
+ origin_reason: core.reason,
+ origin_before_index: core.before_index,
+ origin_after_index: core.after_index,
+ origin_conflict_catalog: core.conflict_catalog,
+ origin_conflict_first_index: core.conflict_first_index,
+ origin_conflict_second_index: core.conflict_second_index,
+ origin_execution_authorized: core.execution_authorized,
+ context_id: input1.context_id,
+ state: state,
+ reason: reason,
+ next_action: action,
+ before_pagination_state: beforePages,
+ after_pagination_state: afterPages,
+ before_configuration_state: beforeConfig,
+ after_configuration_state: afterConfig,
+ authorization_relation: authorization,
+ recording_basis_state: basisState,
+ remote_atomicity: "UNKNOWN",
+ first_problem_side: problemSide,
+ first_problem_code: problemCode,
+ first_problem_capture_index: problemCapture,
+ first_problem_page_index: problemPage,
+ first_problem_declared_index: problemDeclared,
+ contains_synthetic_fixture: synthetic,
+ live_removal_proven: false,
+ execution_authorized: false,
+ capture_pagination_states: paginationStates,
+ capture_configuration_states: configurationStates,
+ capture_recording_bases: input1.capture_recording_bases,
+ capture_evidence_kinds: input1.capture_evidence_kinds,
+}
+`
