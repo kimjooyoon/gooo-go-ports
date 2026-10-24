@@ -408,6 +408,22 @@ compiler issue before passing a minimal case to the language repository.
   code and stage from stderr, keeping the process exit and stdout together.
   Normal policy denials remain successful domain results; diagnostic output
   does not authorize a retry or a live API effect.
+- **Locate a source error through optional upstream ADK:** use an already configured
+  [bridge at `b875196c`](https://github.com/kimjooyoon/meta-ontology-go/blob/b875196c4e3b2c36402a91346c41e320f877eed0/integrations/adk-go/README.md).
+  This guidance is based on upstream source and parity-test review, with no new
+  ADK or agent execution. This upstream adapter profile is separate from this
+  checkout's pinned compiler; follow the linked adapter setup for its tools.
+  Keep the original tool result and `exit_code`, then decode `report_json`:
+  diagnostics use `schema_version: "gooo/diagnostics/v1"`, `status` and `diagnostics`;
+  successful discovery uses `schema: "gooo/capability-discovery-report/v1"`.
+  Its `PROGRESS` or `UNKNOWN` evidence does not establish implementation success.
+  If `gooo_discover_capability` reports `SOURCE_LOWER_FAILED`, call
+  `gooo_check_source` at most once with the same source-root-relative `path`,
+  unchanged source, fixed binary and root. Its `semantic.lowering` diagnostic may
+  identify the unresolved reference. If it supplies no location, report that
+  location as unavailable. Preserve both results and the original failure even
+  if the check succeeds. This adds diagnostic evidence without editing the input
+  or retrying discovery; it does not execute the program or grant authority.
 - **Inspect an API ETag before a conditional write:** use the
   [strong-validator workflow below](#inspect-etag-and-header-facts). It preserves
   raw input and separates parsed-tag strength, trailing content and raw header
