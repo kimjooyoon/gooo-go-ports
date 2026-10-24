@@ -95,7 +95,7 @@ class SyntheticFixture:
         self.index['shards']=[shard];self.index_path.write_bytes(raw_json(self.index))
 
     def validate_fixture_plan(self,root,reader,host,plan):
-        # Deliberately replace ONLY the current full310-source/82-suite loading.
+        # Deliberately replace ONLY the current full-source/82-suite loading.
         # The real production validate_plan remains mandatory outside this test.
         R.need(R.equal(plan,self.plan),'fixture plan identity')
         for name,raw in self.source_bytes.items():R.need(reader.read(root/name) == raw,'synthetic original source drift')
@@ -250,14 +250,54 @@ class SelectedPackageEntityTests(unittest.TestCase):
             R.entry_contract(suite,owners,sources)
 
 
+class CurrentSourceRosterTests(unittest.TestCase):
+    def roster(self):
+        expected=H.reviewed_contract(ROOT)
+        modes={row['path']:row['mode'] for row in expected.document['sources']}
+        modes.update({name:'100644' for name in R.READER_SOURCES})
+        sources={name:{'mode':mode,'bytes':len((ROOT/name).read_bytes()),
+                       'sha256':R.digest((ROOT/name).read_bytes())} for name,mode in modes.items()}
+        return expected,sources
+
+    def test_current_legacy_and_explicit_reader_sources_match_actual_Go_roster(self):
+        expected,sources=self.roster();reader=R.Reader()
+        observed,raw=R.validate_source_roster(ROOT,reader,expected,sources)
+        self.assertEqual(expected.source_count,293)
+        self.assertEqual(len(R.READER_SOURCES),19)
+        self.assertEqual(len(observed),312)
+        self.assertEqual(set(raw),set(sources))
+        self.assertIn('cmd/verify/ci_shard_receipt_storage.go',raw)
+        self.assertIn('cmd/verify/ci_shard_receipt_storage_test.go',raw)
+        reader.finish()
+
+    def test_missing_substituted_mode_hash_and_Go_order_changes_refuse(self):
+        expected,sources=self.roster();name='cmd/verify/ci_shard_receipt_storage.go'
+        for change in ('missing','substitute','mode','bytes','hash','Go-order'):
+            with self.subTest(change=change):
+                changed=copy.deepcopy(sources);reader=R.Reader();read=reader.read
+                if change=='missing':del changed[name]
+                elif change=='substitute':changed['not-a-reader.go']=changed.pop(name)
+                elif change=='mode':changed[name]['mode']='100755'
+                elif change=='bytes':changed[name]['bytes']+=1
+                elif change=='hash':changed[name]['sha256']='sha256:'+'0'*64
+                else:
+                    path=ROOT/'cmd/verify/ci_shard_contract.go'
+                    original=path.read_bytes();first,second=R.READER_SOURCES[:2]
+                    altered=original.replace(('"'+first+'"').encode(),b'"SWAP"',1).replace(('"'+second+'"').encode(),('"'+first+'"').encode(),1).replace(b'"SWAP"',('"'+second+'"').encode(),1)
+                    self.assertNotEqual(altered,original)
+                    changed[str(path.relative_to(ROOT))].update(bytes=len(altered),sha256=R.digest(altered))
+                    reader.read=lambda requested,limit=R.MAX_FILE:altered if requested==path else read(requested,limit)
+                with self.assertRaises(RuntimeError):R.validate_source_roster(ROOT,reader,expected,changed)
+
+
 class UnsignedSyntheticReferenceTests(unittest.TestCase):
     def fixture(self):
         directory=tempfile.TemporaryDirectory();self.addCleanup(directory.cleanup)
         return SyntheticFixture(directory.name)
 
-    def test_exact_seven_key_api_and_local_producer_path_separation(self):
+    def test_exact_consumer_api_and_local_producer_path_separation(self):
         fixture=self.fixture();before={p:p.read_bytes() for p in fixture.evidence.rglob('*') if p.is_file()};result=fixture.read()
-        self.assertEqual(set(result),{'pins','source_set','source_set_sha256','batches','go_version','go_binary','suite_count'})
+        self.assertEqual(set(result),{'pins','source_set','source_set_sha256','batches','go_version','go_binary','suite_count','receipt_reader'})
         self.assertEqual(result['suite_count'],8);self.assertEqual(len(result['batches']),1)
         batch=result['batches'][0];self.assertIsInstance(batch['workspace'],pathlib.Path)
         self.assertNotEqual(str(batch['workspace']),batch['producer_manifest_path']);self.assertNotIn(batch['producer_manifest_path'],result['pins'])
@@ -353,6 +393,29 @@ class CompressedReceiptReferenceTests(unittest.TestCase):
         self.assertEqual(sum(len(s['exhaustive']) for s in fixture.index['suites']),7)
         self.assertTrue(any(p.endswith('/execution.json.gz') for p in result['pins']))
         self.assertFalse(any(p.endswith('/execution.json') for p in result['pins']))
+
+    def test_consumer_accessor_keeps_frozen_reader_and_only_declared_logical_paths(self):
+        fixture=self.compressed_fixture();result=fixture.read();access=result['receipt_reader']
+        self.assertIs(access.reader.pins,result['pins'])
+        logical=result['batches'][0]['workspace'].parent/'execution.json'
+        raw=access.read(logical);self.assertEqual(R.digest(raw),result['batches'][0]['original_receipt_sha256'])
+        storage=access.storage(logical)
+        self.assertEqual(storage['path'],str(logical)+'.gz');self.assertEqual(storage['encoding'],'gzip')
+        self.assertEqual(storage['sha256'],R.digest(pathlib.Path(storage['path']).read_bytes()))
+        for path in (logical.with_suffix('.json.gz'),logical.parent/'cases.json',fixture.evidence/'execution.json'):
+            with self.subTest(path=path),self.assertRaisesRegex(RuntimeError,'unverified consumer receipt path'):
+                access.read(path)
+        access.finish();self.assertFalse(logical.exists())
+
+    def test_consumer_accessor_rejects_post_validation_file_or_representation_changes(self):
+        for change in ('stored-bytes','new-plain','missing'):
+            with self.subTest(change=change):
+                fixture=self.compressed_fixture();result=fixture.read();access=result['receipt_reader']
+                logical=result['batches'][0]['workspace'].parent/'execution.json';packed=pathlib.Path(str(logical)+'.gz')
+                if change=='stored-bytes':packed.write_bytes(gzip.compress(b'changed decoded bytes',mtime=0))
+                elif change=='new-plain':logical.write_bytes(b'{}')
+                else:packed.unlink()
+                with self.assertRaises((RuntimeError,FileNotFoundError)):access.finish()
 
     def test_compressed_corruption_wrong_wire_identity_and_ambiguity_refuse(self):
         for kind in ('stored-hash','raw-hash','encoding','trailing','truncated','multiple','ambiguous'):

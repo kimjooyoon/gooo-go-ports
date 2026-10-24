@@ -485,12 +485,21 @@ def read_shard_verification(root,index_path):
     exec(compile(provider_raw,str(provider),'exec'),module.__dict__)
     unchanged(bootstrap_pins)
     reference=module.read_reference(root,index_path)
-    need(type(reference) is dict and set(reference)=={'pins','source_set','source_set_sha256','batches','go_version','go_binary','suite_count'},'exact shard reference provider API')
+    need(type(reference) is dict and set(reference)=={'pins','source_set','source_set_sha256','batches','go_version','go_binary','suite_count','receipt_reader'},'exact shard reference provider API')
     pins=reference['pins'];need(type(pins) is dict,'shard reference frozen pins')
+    receipts=reference['receipt_reader']
+    need(isinstance(receipts,module.ConsumerReceiptReader) and receipts.reader.pins is pins,'shared frozen shard receipt reader required')
     for name,value in bootstrap_pins.items():need(equal(pins.get(name),value),'shard provider bytes are frozen with its evidence')
-    read=lambda p:frozen_read(p,pins)
+    def read(path):
+        if path.name in ('execution.json','replay.json'):
+            return receipts.read(path)
+        return frozen_read(path,pins)
     read(index_path)
     result=read_addition_evidence(root,read,pins,reference['source_set'],reference['source_set_sha256'],reference['batches'],reference['go_version'],reference['go_binary'],reference['suite_count'])
+    receipts.finish()
+    for item in result['evidence']:
+        storage=receipts.storage(pathlib.Path(item['receipt']))
+        item.update(receipt=storage['path'],receipt_storage=storage,receipt_sha256_scope='original-json')
     result['evidence_mode']='experimental-shard-native-reference'
     return result
 
