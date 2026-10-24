@@ -6,6 +6,8 @@ github.com/google/jsonschema-go v0.4.3 h1:/DBOLZTfDow7pe2GmaJNhltueGTtDKICi8V8p+
 github.com/google/jsonschema-go v0.4.3/go.mod h1:r5quNTdLOYEz95Ru18zA0ydNbBuYoo9tgaYcxEYhJVE=
 github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy v0.0.0-20261020182808-7180a4a0f36a h1:wiJUz5Om53/Ng69iQj/43qBKD7DSuqlqrdGLr6HgZDA=
 github.com/kimjooyoon/gooo-go-ports/examples/agentmesh-service-policy v0.0.0-20261020182808-7180a4a0f36a/go.mod h1:vK0nyI5FZr9LCKe42lsier/OajQhOgiZXExeW5Hlhzk=
+github.com/kimjooyoon/gooo-go-ports/examples/alias-origin-change v0.0.0-20261024154510-16d1e7864dc8 h1:YCIMYxnE7+rqIumnIdG0e5JCkYOnaoLIHMCUJbdTKQA=
+github.com/kimjooyoon/gooo-go-ports/examples/alias-origin-change v0.0.0-20261024154510-16d1e7864dc8/go.mod h1:AMo9C2I8+n2j/uA6A8uuV0sURgez9XEx9LqkVzmJR+I=
 github.com/kimjooyoon/gooo-go-ports/examples/service-grant-many v0.0.0-20261020182808-7180a4a0f36a h1:p3zs2m5zxSwlgn0Z3Wq1rl+cfcBN4JN2JhrmjhARgkk=
 github.com/kimjooyoon/gooo-go-ports/examples/service-grant-many v0.0.0-20261020182808-7180a4a0f36a/go.mod h1:E0cBwR8ybR1+jlHM6zdepav8UP3gwHQuFPpw35R5C6k=
 github.com/modelcontextprotocol/go-sdk v1.8.0 h1:KIvahhYqwtbeniWVPs3TcXEA7b8jEtwfBpOTAI+Urx4=

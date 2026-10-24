@@ -28,7 +28,8 @@ import zipfile
 REFERENCE_SOURCE = '9c29602f77492be0e60c0ef91afd6d3968890b24'
 
 SOURCE_FILES = {'examples/service-grant-mcp/LICENSE': '099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48',
- 'examples/service-grant-mcp/README.md': '8ff5048ec7140f260af7c2289ed42fa6605cae0a781a260143ad29dc89e89c24',
+ 'examples/service-grant-mcp/README.md': 'b398fa9c7708f4f252ac3c0045a7f0097214f28517a03c4a50fa1b660c1d4f3c',
+ 'examples/service-grant-mcp/alias_test.go': '2cc9492166c2d008605ce69932da8cd6f26895ff60d732c18a2862c2c3f98a4b',
  'examples/service-grant-mcp/fixtures/control-1.input': 'eaa120445bed9038ab6d9a4e71949344f6d92c44bad73fc7d713b8fc17c0dcb4',
  'examples/service-grant-mcp/fixtures/control-1.stdout': 'd16eee837f400c55fa49f6bbdef280d4747976efa8e4a00e1eb8b71a8a8e95c3',
  'examples/service-grant-mcp/fixtures/control-2.input': '947f10f40652f17eb97c9f7d7a372a493a9eca5e24976ab7dbbe9c1863bac34e',
@@ -38,11 +39,12 @@ SOURCE_FILES = {'examples/service-grant-mcp/LICENSE': '099e1adf9145f6fe45357f004
  'examples/service-grant-mcp/fixtures/control-4.input': 'd744fc59eceac73a8cc68430047424c5b065137f4807daea9a411318a220cc0a',
  'examples/service-grant-mcp/fixtures/control-4.stdout': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
  'examples/service-grant-mcp/fixtures/origin.json': '40915248a7743baaaf307bdf620fa2386d46790b255b1e90a58cc17d6142423c',
- 'examples/service-grant-mcp/go.mod': '2dd303dce968a4c2b7fa8d1dc820b94c3bc53bcd8535fc7e14d3847179a306d4',
- 'examples/service-grant-mcp/go.sum': 'a85b704ac364c538f41594af4a1e8bcb2850a5769376072f7c59d92a5fdf7678',
- 'examples/service-grant-mcp/main.go': '57474ebcacd51849adbcdbf9b9a47b77392748a96a2cf90cade28a69640b4674',
- 'examples/service-grant-mcp/main_test.go': 'bfd6a2b45c6ffeb293e0b68b0a9afa08a02e16409ba8b9e0ff7aa9e1e5e9f6d6',
+ 'examples/service-grant-mcp/go.mod': 'c5ba3d0c47d2fc8e6c6c8813c1752a97544618335abc81dbb16d95bc7585c060',
+ 'examples/service-grant-mcp/go.sum': 'f8ee16d9384cf6c675c29dd9248b052e33ddfcd6ac8012e9848c62b1def37d50',
+ 'examples/service-grant-mcp/main.go': '1586af3ec751cb6057d44ab4f14d0a1cf66736cae35a134b3e3e738d8a778450',
+ 'examples/service-grant-mcp/main_test.go': 'e32bfa721127f821ba2d61fa4502ae2e1877c5c5228d4113129489deb9287686',
  'examples/service-grant-mcp/verify.py': '0fd5a5f80748551cd177d05d2913c11c158d409d61464109c27da0bc21d98612',
+ 'examples/service-grant-mcp/verify_alias.py': '81fce83be47917fcc8c31ed511222c212e56ead3ec8a64543b4e1fbecf8e8ea7',
  'examples/service-grant-mcp/verify_close_test.py': '63076fe685edbed02e8d6ebb821b1660f6c6504ca110ac44dcf5a01e5b523375',
  'examples/service-grant-mcp/verify_many.py': '2fb1602cc76f17b0c9ed8e8e3187560e9673d5db33bbc600b503ed905ded56cf'}
 
@@ -320,6 +322,52 @@ MANY_PUBLIC_SOURCES = {'examples/agentmesh-service-policy/checked_refinement.goo
  'ports/agentmesh/service_pattern.gooo': 'sha256:e9aabc13addf3db59a3a5448f8ad2e01e8b731a6da5f6e5eac7b749bf93bda7d',
  'ports/service-policy/multi_required.gooo': 'sha256:097e2304fdd70e47d31f7295c8ea5de161afa4f8ab4c2d87a435a993513332ba'}
 
+ALIAS_MODULE = 'github.com/kimjooyoon/gooo-go-ports/examples/alias-origin-change'
+ALIAS_VERSION = 'v0.0.0-20261024154510-16d1e7864dc8'
+ALIAS_SUM = 'h1:YCIMYxnE7+rqIumnIdG0e5JCkYOnaoLIHMCUJbdTKQA='
+ALIAS_MOD_SUM = 'h1:AMo9C2I8+n2j/uA6A8uuV0sURgez9XEx9LqkVzmJR+I='
+ALIAS_PIN = '205896a413e5dea92366309c35ae85e542d055f6'
+ALIAS_GENERATION = 'b0c87b7865697c4b6433ef54e23defd7267ed8ea4da562cc8e1af24e283e7b06'
+ALIAS_SOURCE = {'ports/tool-origin/alias_origin.gooo': 'sha256:b45ac1d43674b9edcbdbedd74a253f5891d51b9fbdaf08ec2f056a55112b55d7'}
+ALIAS_FILES = {'LICENSE': '099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48',
+ 'NOTICE.md': '23cd2a8311b533aa6d14788b98824ff3c1d24675ac404dda1282086d350d2189',
+ 'README.md': '658e062244a269184c1d6872f1628f281ca563c49e3fccd69ec6f7ba6efa7a45',
+ 'agent-recovery.md': '1055c2a0644c3924bd5f800cfb6db3f8b90de3d82ae576878892a85fe3a28079',
+ 'cmd/compare/main.go': '6c4d03b0c8ba038a976a9d3a8e3d38c2f3155c55a59d9494738c45c21056173a',
+ 'example-input.json': '041216add93b050b6dda2b1a18a0f5b65fc233514cd7a7e0880acff325f9885f',
+ 'generate.py': 'ec9bc37c2cb6b5efd26b685e7e2754acf8570041a7050c6d470f5856fd936aa6',
+ 'generation.json': 'b0c87b7865697c4b6433ef54e23defd7267ed8ea4da562cc8e1af24e283e7b06',
+ 'generator_dependencies_test.py': '0b5224f2ceb128e9ce4caf52452cb9f28596e8613974dfbc4f563c0b58cb194f',
+ 'go.mod': '6515ad8f3355be2e707803274dc984e0e60a7995ababbcbdb75c9a9bf1864f5d',
+ 'go.sum': 'c778cf5851eca6f6e926682d81cd7431d1b4de08bf945a7107ba8c3ce86874a6',
+ 'internal/kernel/bridge_generated.go': '0b5852bbb31fcd9e223922b760be0f3733671f2f7e3034ef034fd530b0ab296c',
+ 'internal/kernel/kernel_test.go': 'd2319d8dde88f4f3995d3c917efb51c027d8b188681fc51e654fb2c73517dd1b',
+ 'internal/kernel/projection_generated.go': '5d094dab41ba28ec06d869327ad6fda8cdf0820d0a4ed37d51e21f57cfd3d3b9',
+ 'internal/kernel/types_generated.go': '5807c82495b89fd0d9585edd11493927076bdb6db3d0f05c813c07e2dd43637e',
+ 'kernel-case-labels.json': '331c86ec7fca35bab456ef5ebf66fcf10e6f330531b58ccba2196643ca868c0a',
+ 'kernel.cases.json': '3357a169efc32e4d03bbdea061584f6054118400a7eb582307cebcef83ace61d',
+ 'kernel.inputs.json': '6f846a8eef9f189a4fec0578e4308ca7c367f0741a9d8aa2f208f284d00dd523',
+ 'model.go': '9e0db7191363805be7dc0529dccd20f8012927245caa26eef75593ed68e59ee4',
+ 'model_test.go': 'c60648db87ae45084b5ceb2db4d3f56c37f86bd1f484a9988ef98fa845cedecc',
+ 'schema-validation.json': 'bd1b0e220e51a92b8b0bcb964b8b69a792c0b916dc98d9d7be1dbaec16308fb0',
+ 'schema_test.go': '8e33ecf7db0e369ffa44c84b992623221761298ff3acb12a655b46a0fa86bc48',
+ 'schemas/diagnostic.schema.json': 'd031f21827f178ef9a60f811daeb1aef320f4bb6917161c983c90d678b94c65a',
+ 'schemas/input.schema.json': 'bad7868610d8466367e44f3ef01d2188afb9ae2e2c8aa239989503b091b8285a',
+ 'schemas/output.schema.json': '3ced908f616265ba0838f558218baea236727df75a5b02a47e134f2bf866543a',
+ 'transport-source-provenance.json': '8d7425de14a8223e5d25e346d31262f443e5c3701ecc6aa222090c50c5d97e82',
+ 'transport_helpers.go': '6eb40b25b2b0acb0318533afdfd20d161987dc63a285a5deccf241cb74d56335',
+ 'verify.py': '28f334ade52ca9ca80fc1ac5430f77ba7568dd8c5d5a86e001a02e535eccb10b'}
+PROFILES = {
+    'default': {'argv': [], 'tools': ['assess_service_grant']},
+    'many_required': {'argv': ['--many-required'], 'tools': ['assess_service_grant', 'assess_service_grant_change']},
+    'alias_origin_change': {'argv': ['--alias-origin-change'], 'tools': ['assess_service_grant', 'gooo_compare_alias_origin']},
+    'many_and_alias': {'argv': ['--many-required', '--alias-origin-change'], 'tools': ['assess_service_grant', 'assess_service_grant_change', 'gooo_compare_alias_origin']},
+}
+DEPENDENCIES.append({'dependency': {'Path': ALIAS_MODULE, 'Version': ALIAS_VERSION, 'Sum': ALIAS_SUM},
+                     'notices': {name: ALIAS_FILES[name] for name in ('LICENSE', 'NOTICE.md')}})
+DEPENDENCIES.sort(key=lambda row: row['dependency']['Path'])
+
+
 def imported(name, path):
     spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
@@ -460,7 +508,8 @@ def source_contract(root, modcache):
     archive = modcache/"cache/download"/SERVICE.MODULE/"@v"/(SERVICE.VERSION+".zip")
     generation, _ = SERVICE.module_source(runtime, archive, root)
     many_generation, _ = many_module_source(modcache, root)
-    return generation, many_generation
+    alias_generation, _ = alias_module_source(modcache, root)
+    return generation, many_generation, alias_generation
 
 
 def structural_schema(schema):
@@ -579,6 +628,74 @@ def many_module_source(modcache, root):
         need(digest == "sha256:"+sha(member(root, relative)), "many public Gooo source bytes differ")
     need(member(root, "examples/service-grant-many/generation.json") == generation_raw,
          "packaging checkout has another many generation")
+    return generation, directory
+
+
+def alias_module_source(modcache, root):
+    """Bind public ZIP, installed files and source-bound alias generation exactly."""
+    directory = modcache/(ALIAS_MODULE+"@"+ALIAS_VERSION)
+    archive_path = modcache/"cache/download"/ALIAS_MODULE/"@v"/(ALIAS_VERSION+".zip")
+    prefix = ALIAS_MODULE+"@"+ALIAS_VERSION+"/"
+    files = {}
+    with zipfile.ZipFile(io.BytesIO(read(archive_path, 1 << 20))) as archive:
+        rows = archive.infolist()
+        need(len(rows) == 28 and sum(row.file_size for row in rows) == 363434,
+             "complete alias module roster/size differs")
+        for row in rows:
+            name = row.filename
+            relative = name.removeprefix(prefix)
+            need(name.startswith(prefix) and relative in ALIAS_FILES and name not in files
+                 and "\\" not in name and "\n" not in name and "\r" not in name
+                 and all(part not in ("", ".", "..") for part in relative.split("/"))
+                 and not row.is_dir() and row.file_size <= MAX_SOURCE
+                 and (row.external_attr >> 16) & 0o170000 in (0, stat.S_IFREG),
+                 "unsafe, duplicate or foreign alias module member")
+            content = archive.read(row)
+            need(sha(content) == ALIAS_FILES[relative], "alias module source bytes differ: "+relative)
+            need(member(directory, relative) == content, "alias installed module differs from ZIP")
+            files[name] = content
+    need(SERVICE.dirhash(files) == ALIAS_SUM, "alias public module h1 differs")
+    relative_files = {name[len(prefix):]: raw for name, raw in files.items()}
+    actual = set()
+    need(stat.S_ISDIR(directory.lstat().st_mode), "regular alias module directory required")
+    for current, dirs, names in os.walk(directory, followlinks=False):
+        need(all(not (Path(current)/x).is_symlink() for x in dirs), "alias module directory symlink")
+        for name in names:
+            path = Path(current)/name
+            need(stat.S_ISREG(path.lstat().st_mode), "alias module nonregular file")
+            actual.add(path.relative_to(directory).as_posix())
+    need(actual == set(ALIAS_FILES), "alias installed module complete roster differs")
+    need(SERVICE.dirhash({"go.mod": relative_files["go.mod"]}) == ALIAS_MOD_SUM,
+         "alias go.mod h1 differs")
+    generation_raw = relative_files["generation.json"]
+    need(sha(generation_raw) == ALIAS_GENERATION, "alias generation bytes differ")
+    generation = load(generation_raw)
+    need(generation.get("schema") == "gooo/alias-origin-generation/v1"
+         and generation.get("compiler_source_sha") == ALIAS_PIN and generation.get("go_version") == "go1.27.3",
+         "alias generation identity differs")
+    exact(generation.get("source"), ALIAS_SOURCE)
+    for name, digest in ALIAS_SOURCE.items():
+        need(digest == "sha256:"+sha(member(root, name)), "alias public Gooo source differs")
+    need(type(generation.get("generated_assets")) is dict and len(generation["generated_assets"]) == 6,
+         "alias generated asset population differs")
+    for name, digest in generation["generated_assets"].items():
+        if name in relative_files:
+            raw = relative_files[name]
+        else:
+            need(name == "reference/go.mod", "unlisted alias nested-reference asset")
+            raw = member(root, "examples/alias-origin-change/"+name)
+        need(digest == "sha256:"+sha(raw), "alias generated asset bytes differ")
+    for field, name in (("cases_sha256", "kernel.cases.json"), ("generator_sha256", "generate.py"),
+                        ("schema_validation_spec_sha256", "schema-validation.json")):
+        need(generation[field] == "sha256:"+sha(relative_files[name]), "alias generation input differs")
+    need(generation["workspace_sha256"] == "sha256:"+sha(member(root, "alias-origin-change.workspace.json")),
+         "alias source workspace differs")
+    pins = load(member(root, "upstream.json"))
+    selected = json.dumps({key: pins[key] for key in ("compiler_revision", "go_version")},
+                          sort_keys=True, separators=(",", ":")).encode()
+    need(generation["selected_upstream_pins_sha256"] == "sha256:"+sha(selected), "alias consumed pins differ")
+    need(member(root, "examples/alias-origin-change/generation.json") == generation_raw,
+         "packaging checkout has another alias generation")
     return generation, directory
 
 
@@ -757,10 +874,68 @@ def checked_many_report(report_path, binary, root, modcache, generation):
     return report
 
 
+def alias_cli_identity(build, target):
+    need(type(build) is dict and set(build) == {"GoVersion", "Path", "Main", "Deps", "Settings"},
+         "alias CLI BuildInfo fields differ")
+    need(build["GoVersion"] == "go1.27.3" and build["Path"] == ALIAS_MODULE+"/cmd/compare",
+         "alias CLI Go/package differs")
+    exact(build["Main"], {"Path": ALIAS_MODULE, "Version": ALIAS_VERSION, "Sum": ALIAS_SUM})
+    exact(build["Deps"], [])
+    settings = unique((row["Key"], row["Value"]) for row in build["Settings"])
+    goos, arch = target.split("/")
+    archkey, archvalue = ("GOARM64", "v8.0") if arch == "arm64" else ("GOAMD64", "v1")
+    exact(settings, {"-buildmode": "exe", "-compiler": "gc", "-trimpath": "true", "CGO_ENABLED": "0",
+                     "GOOS": goos, "GOARCH": arch, archkey: archvalue})
+
+
+def checked_alias_report(report_path, binary, alias_cli, root, modcache, go_root, build, expected_scope):
+    need(expected_scope in ("full", "bundle-small"), "explicit alias verification scope required")
+    need(report_path.is_absolute() and report_path.name == "acceptance.json",
+         "exact alias acceptance report path required")
+    report_raw = read(report_path, MAX_SOURCE)
+    script = "examples/service-grant-mcp/verify_alias.py"
+    raw = member(root, script)
+    need(sha(raw) == SOURCE_FILES[script], "alias saved verifier source differs")
+    verifier = types.ModuleType("mcp_bundle_alias_saved_verifier")
+    verifier.__file__ = str(root/script)
+    exec(compile(raw, verifier.__file__, "exec"), verifier.__dict__)
+    report = verifier.validate_saved(report_path.parent, binary, alias_cli,
+        modcache/(ALIAS_MODULE+"@"+ALIAS_VERSION), go_root/"bin/go",
+        root/"examples/service-grant-mcp/verify.py", expected_scope=expected_scope)
+    exact(report, load(report_raw))
+    exact(report["build_identities"]["server"], build)
+    cli_raw = read(alias_cli, BASE.MAX_BINARY)
+    target = binary_platform(read(binary, BASE.MAX_BINARY))
+    need(binary_platform(cli_raw) == target, "alias CLI platform differs from MCP executable")
+    cli_build = embedded_info(cli_raw)
+    alias_cli_identity(cli_build, target)
+    # Go's JSON encoder may render the zero dependency slice as null.
+    reported = dict(report["build_identities"]["alias_cli"])
+    if reported.get("Deps") is None:
+        reported["Deps"] = []
+    exact(reported, cli_build)
+    return report
+
+
 def native_many_verify(root, binary, modcache, output):
+    script = root/"examples/service-grant-mcp/verify_many.py"
+    return native_optional_verify(script, ["--binary", str(binary),
+        "--legacy-verifier", str(root/"examples/service-grant-mcp/verify.py"), "--many-module",
+        str(modcache/(MANY_MODULE+"@"+MANY_VERSION))], output)
+
+
+def native_alias_verify(root, binary, alias_cli, modcache, go_root, output):
+    script = root/"examples/service-grant-mcp/verify_alias.py"
+    return native_optional_verify(script, ["--binary", str(binary), "--alias-cli", str(alias_cli),
+        "--alias-module", str(modcache/(ALIAS_MODULE+"@"+ALIAS_VERSION)),
+        "--go", str(go_root/"bin/go"), "--legacy-verifier",
+        str(root/"examples/service-grant-mcp/verify.py"), "--scope", "bundle-small"], output)
+
+
+def native_optional_verify(script, arguments, output):
     output.mkdir(mode=0o700)
     tracker = OwnedChildren(output)
-    verifier = imported("mcp_bundle_many_wire_verifier", root/"examples/service-grant-mcp/verify_many.py")
+    verifier = imported("mcp_bundle_optional_wire_verifier", script)
     verifier.subprocess = types.SimpleNamespace(Popen=tracker.spawn, PIPE=subprocess.PIPE,
                                                TimeoutExpired=subprocess.TimeoutExpired)
     stdout, stderr, failure = BoundedText(), BoundedText(), None
@@ -777,9 +952,7 @@ def native_many_verify(root, binary, modcache, output):
         for number in (signal.SIGINT, signal.SIGTERM, signal.SIGALRM):
             old_handlers[number] = signal.getsignal(number)
             signal.signal(number, interrupted)
-        sys.argv = [str(root/"examples/service-grant-mcp/verify_many.py"), "--binary", str(binary),
-            "--legacy-verifier", str(root/"examples/service-grant-mcp/verify.py"), "--many-module",
-            str(modcache/(MANY_MODULE+"@"+MANY_VERSION)), "--out", str(output/"wire")]
+        sys.argv = [str(script), *arguments, "--out", str(output/"wire")]
         with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
             verifier.main()
     except BaseException as error:
@@ -796,14 +969,14 @@ def native_many_verify(root, binary, modcache, output):
             if failure is None:
                 failure = error
             elif hasattr(failure, "add_note"):
-                failure.add_note("many verifier diagnostics: "+str(error))
+                failure.add_note("optional verifier diagnostics: "+str(error))
         try:
             tracker.close(failure)
         except BaseException as error:
             if failure is None:
                 failure = error
             elif error is not failure and hasattr(failure, "add_note"):
-                failure.add_note("many child cleanup: "+str(error))
+                failure.add_note("optional child cleanup: "+str(error))
         if failure is None and pending:
             failure = verifier.WireCancelled("optional wire interrupted by signal "+str(pending[0]))
         try:
@@ -814,7 +987,7 @@ def native_many_verify(root, binary, modcache, output):
             if failure is None:
                 failure = error
             elif hasattr(failure, "add_note"):
-                failure.add_note("many first-failure diagnostic: "+str(error))
+                failure.add_note("optional first-failure diagnostic: "+str(error))
         finally:
             for number, handler in old_handlers.items():
                 signal.signal(number, handler)
@@ -849,7 +1022,7 @@ def notice_files(modcache, go_root, root):
         files[name] = (raw, 0o644)
         inventory.append({"file": name, "source_relative_path": relative, "sha256": digest,
                           "scope": "Generation tool attribution only; no Gooo compiler is included" if "Gooo" in name else "transport license"})
-    need(len(files) == 58, "exact 58 notice texts required")
+    need(len(files) == 60, "exact 60 notice texts required")
     return files, inventory
 
 
@@ -1020,7 +1193,8 @@ def native_verify(root, binary, build_path, output):
 
 
 def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
-            packager_commit=None, verify_native=False, many_wire_path=None):
+            packager_commit=None, verify_native=False, many_wire_path=None,
+            alias_wire_path=None, alias_cli=None):
     need(out.is_dir() and not out.is_symlink() and not any(out.iterdir()), "fresh owned output directory required")
     need(verify_native or packager_commit is None, "committed packaging requires fresh extracted-native verification")
     need(packager_commit is None or re.fullmatch(r"[0-9a-f]{40}", packager_commit), "packager commit differs")
@@ -1034,11 +1208,16 @@ def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
         build = load(read(build_path, MAX_SOURCE))
         exact(embedded_info(raw), build)
         build_identity(build, target, commit)
-        generation, many_generation = source_contract(root, modcache)
+        generation, many_generation, alias_generation = source_contract(root, modcache)
         report = load(read(wire_path, MAX_SOURCE))
         checked_report(report, build, sha(raw), root, generation)
         need(isinstance(many_wire_path, Path), "source-bound many wire report required")
         many_report = checked_many_report(many_wire_path, binary, root, modcache, many_generation)
+        need(isinstance(alias_wire_path, Path) and isinstance(alias_cli, Path),
+             "source-bound full alias wire report and pinned reference CLI required")
+        alias_cli_raw = read(alias_cli, BASE.MAX_BINARY)
+        alias_report = checked_alias_report(alias_wire_path, binary, alias_cli, root,
+                                            modcache, go_root, build, "full")
         files, notices = notice_files(modcache, go_root, root)
         files[COMMAND] = (raw, 0o755)
         files["BUILD-INFO.json"] = (encoded(build), 0o644)
@@ -1053,10 +1232,15 @@ def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
                  "Optional: args [--many-required] additionally exposes assess_service_grant_change.\n"
                  "Its OBJECT arguments use before, after and required_requests [{type,name},...]; order and duplicates survive.\n"
                  f"Optional results retain ordered-column facts, 12 decision fields, compiler {MANY_PIN}, generation {MANY_GENERATION}, and 30-asset/5-source bindings.\n"
-                 "No authority is authenticated and no grant is applied in either mode.\n"
+                 "Optional: args [--alias-origin-change] additionally exposes gooo_compare_alias_origin.\n"
+                 "Its OBJECT arguments are target_alias and before/after arrays of {server,original_name,exposed_name}.\n"
+                 "Both optional flags may be combined; the default tool remains available in every profile.\n"
+                 "Alias decisions preserve supplied facts, raw-input/content hashes and source-bound generation; they never authorize execution.\n"
+                 "Full alias response-boundary checks bind the source binary; extracted-package checks use the explicitly smaller bundle-small scope.\n"
+                 "No authority is authenticated and no grant is applied in any mode.\n"
                  "Some included Go toolchain notices concern compiler/test components; inventory scope is explicit.\n")
         files["START-HERE.txt"] = (guide.encode(), 0o644)
-        manifest = {"schema": "gooo/service-grant-mcp-native-bundle/v2", "platform": target,
+        manifest = {"schema": "gooo/service-grant-mcp-native-bundle/v3", "platform": target,
                     "source_commit": commit, "legacy_transport_reference": REFERENCE_SOURCE, "source_files": SOURCE_FILES,
                     "packager": {"commit": packager_commit, "kind": "uncommitted-private-prototype" if packager_commit is None else "committed-CI-candidate",
                                  "source_sha256": sha(read(Path(__file__), MAX_SOURCE)), "support_sources": SUPPORT_HASHES},
@@ -1065,31 +1249,48 @@ def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
                     "optional_profiles": {"many_required": {"argv": ["--many-required"],
                         "additional_tool": "assess_service_grant_change", "module": {"Path": MANY_MODULE, "Version": MANY_VERSION, "Sum": MANY_SUM},
                         "compiler_source_sha": MANY_PIN, "generation_sha256": "sha256:"+MANY_GENERATION,
-                        "assets": many_generation["assets"], "sources": many_generation["public_sources"]}},
-                    "build_info": build, "binary_sha256": sha(raw), "notice_texts": 58,
+                        "assets": many_generation["assets"], "sources": many_generation["public_sources"]},
+                        "alias_origin_change": {"argv": ["--alias-origin-change"],
+                            "additional_tool": "gooo_compare_alias_origin",
+                            "module": {"Path": ALIAS_MODULE, "Version": ALIAS_VERSION, "Sum": ALIAS_SUM},
+                            "compiler_source_sha": ALIAS_PIN, "generation_sha256": "sha256:"+ALIAS_GENERATION,
+                            "bindings": alias_generation}},
+                    "profiles": PROFILES,
+                    "build_info": build, "binary_sha256": sha(raw), "notice_texts": 60,
                     "finite_checks": {"original_wire_report_binary_SHA_equal": True, "original_report_proofs": 8,
                                       "original_many_report_binary_SHA_equal": True, "many_reference_comparisons": 30,
                                       "many_policy257_observations": 2,
+                                      "original_alias_report_binary_SHA_equal": True,
+                                      "alias_original_scope": "full", "alias_protocol_sessions": 8,
+                                      "alias_full_report_sha256": sha(read(alias_wire_path, MAX_SOURCE)),
+                                      "alias_reference_cli_sha256": sha(alias_cli_raw),
+                                      "alias_extracted_scope": "bundle-small" if verify_native else None,
+                                      "alias_large_extracted_test_performed": False,
                                       "fresh_extracted_native_wire_requested": verify_native,
                                       "new_Linux_execution": verify_native and target == "linux/amd64",
                                       "grant_applied": False, "producer_authenticated": False, "external_adoption": False},
                     "members": {name: {"bytes": len(content), "sha256": sha(content), "mode": mode}
                                 for name, (content, mode) in sorted(files.items())}}
         files["BUNDLE.json"] = (encoded(manifest), 0o644)
-        need(len(files) == 63, "exact sixty-three archive members required")
+        need(len(files) == 65, "exact sixty-five archive members required")
         name = COMMAND+"-"+target.replace("/", "-")+".tar.gz"
         candidate = work/name
         SERVICE.write_archive(candidate, files)
         extracted = work/"extracted"
         extract_checked(candidate, files, extracted)
-        new_report, new_many_report = None, None
+        new_report, new_many_report, new_alias_report = None, None, None
         if verify_native:
             need(SERVICE.native_platform() == target, "native runtime platform differs")
             new_report = native_verify(root, extracted/COMMAND, extracted/"BUILD-INFO.json", out/"native-verification")
             checked_report(new_report, build, sha(raw), root, generation)
             native_many_path = native_many_verify(root, extracted/COMMAND, modcache, out/"many-native-verification")
             new_many_report = checked_many_report(native_many_path, extracted/COMMAND, root, modcache, many_generation)
+            native_alias_path = native_alias_verify(root, extracted/COMMAND, alias_cli,
+                                                   modcache, go_root, out/"alias-native-verification")
+            new_alias_report = checked_alias_report(native_alias_path, extracted/COMMAND,
+                alias_cli, root, modcache, go_root, build, "bundle-small")
         need(read(extracted/COMMAND, BASE.MAX_BINARY) == raw == read(binary, BASE.MAX_BINARY), "binary changed during checks")
+        need(read(alias_cli, BASE.MAX_BINARY) == alias_cli_raw, "alias reference CLI changed during checks")
         final_raw = read(candidate, BASE.MAX_ARCHIVE)
         shutil.rmtree(work)
         need(not work.exists(), "owned work cleanup incomplete")
@@ -1109,7 +1310,11 @@ def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
                   "source_commit": commit, "binary_sha256": sha(raw), "members": sorted(files), "manifest": manifest,
                   "extracted_binary_SHA_equal": True, "new_extracted_native_wire": new_report is not None,
                   "new_extracted_many_wire": new_many_report is not None,
-                  "Linux_scope": "fresh native stdio" if verify_native and target == "linux/amd64" else "no new Linux execution; previous original-CI byte equivalence only",
+                  "new_extracted_alias_wire": new_alias_report is not None,
+                  "alias_original_scope": alias_report["scope"],
+                  "alias_extracted_scope": new_alias_report["scope"] if new_alias_report is not None else None,
+                  "alias_large_extracted_test_performed": False,
+                  "Linux_scope": "fresh native stdio" if verify_native and target == "linux/amd64" else "not exercised in this run",
                   "owned_work_removed": True, "not_published": True}
         (out/"verification.json").write_bytes(encoded(result))
     except BaseException as error:
@@ -1143,7 +1348,8 @@ def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ("binary", "build-info", "wire-report", "many-wire-report", "module-cache", "go-root", "root", "out"):
+    for name in ("binary", "build-info", "wire-report", "many-wire-report", "alias-wire-report",
+                 "alias-cli", "module-cache", "go-root", "root", "out"):
         parser.add_argument("--"+name, type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--packager-commit")
@@ -1159,7 +1365,8 @@ def main():
         result = produce(args.binary.absolute(), args.build_info.absolute(), args.wire_report.absolute(),
                          args.module_cache.absolute(), args.go_root.absolute(), args.root.absolute(),
                          args.out.absolute(), args.source_commit, args.packager_commit, args.verify_native,
-                         args.many_wire_report.absolute())
+                         args.many_wire_report.absolute(), args.alias_wire_report.absolute(),
+                         args.alias_cli.absolute())
         print(json.dumps({"status": result["status"], "platform": result["platform"],
                           "archive_sha256": result["archive"]["sha256"], "new_native_wire": result["new_extracted_native_wire"]}))
     finally:

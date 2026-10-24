@@ -12,6 +12,7 @@ are developed separately; this repository supplies ports and runnable examples.
 | --- | --- | --- |
 | Assess a grant change for one required service | [Single-request MCP tool](#connect-the-service-grant-mcp-tool): `assess_service_grant` | One supplied type/name pair; seven decision fields and full bindings. |
 | Preserve all required services while narrowing a grant | [Ordered-request MCP tool](#preserve-several-required-requests-through-mcp): start with `--many-required`, then call `assess_service_grant_change` | An ordered list, normally 1-256 pairs; twelve decision fields, including the first original counterexample index. Do not replace it with the single-request tool. |
+| Check whether a previously selected tool alias changed origin | [Source-built alias MCP tool](#compare-a-tool-alias-before-reusing-it): start with `--alias-origin-change`, then call `gooo_compare_alias_origin` | Compare supplied catalogs and retain the original row indexes. Requires this source build; unavailable in preview16. |
 | Compare the supplied API policy profiles | [Fixed-policy command](#compare-fixed-api-policies-without-a-compiler) | Compares the documented profiles; does not load an arbitrary edited policy. |
 | Compare saved MCP tool catalogs | [Pinned comparison command](#compare-saved-mcp-catalogs-without-a-checkout) | Separates alias-origin changes from missing pages or unknown collection context; does not collect a live catalog. |
 | Edit and execute Gooo source | [First-program skill](#run-the-first-program-skill) | An actual source edit plus new execution and replay records; declaration checking alone is insufficient. |
@@ -781,6 +782,36 @@ host/version, candidates and ordered pairs, the selected proposal or first
 failure, and any missing facts or patterns. The useful first success is an agent
 selecting a narrowing that preserves every required pair; internal trials are
 not external adoption.
+
+## Compare a tool alias before reusing it
+
+Use this when an agent previously selected a tool name and you want to compare
+its declared server and original function before and after a catalog update.
+Build the command using the [MCP source instructions](../examples/service-grant-mcp/README.md#optional-tool-alias-origin-comparison)
+and configure your host to run that absolute executable path with
+`args: ["--alias-origin-change"]`. This mode is not in the preview16 executable,
+Homebrew package or container image. It needs no compiler at runtime.
+
+Discover `gooo_compare_alias_origin` before calling it. A host that filters
+enabled tools must allow this name. If it is absent, keep the executable
+identity and setup diagnostic; do not substitute the service-grant tool.
+Submit this arguments object to the discovered tool:
+
+```json
+{"target_alias":"docs_search","before":[{"server":"docs","original_name":"search","exposed_name":"docs_search"}],"after":[{"server":"issues","original_name":"query","exposed_name":"docs_search"}]}
+```
+
+The supplied origin changes from `docs/search` to `issues/query`, returning
+`ORIGIN_CHANGED`. Retain the complete facts, input digest, nine-field decision
+and source bindings. An `AMBIGUOUS` result identifies duplicate exposed names;
+use its original row indexes and the [state-specific recovery guide](../examples/alias-origin-change/agent-recovery.md).
+Keep malformed-input or transport errors separate from represented decisions.
+
+These comparisons neither call the named tools nor authenticate live routing,
+catalog completeness or authority; `execution_authorized` remains `false`.
+Both optional flags may be supplied to expose all three tools. For a real
+attempt, [report the first failure or useful result](#report-a-first-attempt-or-a-real-task)
+with sanitized catalogs and the exact executable version.
 
 ## Optional Claude Code ETag workflow
 

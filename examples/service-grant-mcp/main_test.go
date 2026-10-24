@@ -122,11 +122,11 @@ func manyResult(t *testing.T, raw []byte) many.Result {
 
 func TestManyProfileIsExplicit(t *testing.T) {
 	legacy, err := parseMode(nil)
-	if err != nil || legacy || frameMax(legacy) != 64<<10 {
+	if err != nil || legacy != (serverMode{}) || frameMax(legacy) != 64<<10 {
 		t.Fatal("default no-argument profile changed")
 	}
 	enabled, err := parseMode([]string{"--many-required"})
-	if err != nil || !enabled || frameMax(enabled) != many.MaxBatchBytes+(64<<10) {
+	if err != nil || !enabled.manyRequired || enabled.aliasOriginChange || frameMax(enabled) != many.MaxBatchBytes+(64<<10) {
 		t.Fatal("many profile did not reserve bounded JSON-RPC overhead")
 	}
 	for _, args := range [][]string{{"--many-required", "--many-required"}, {"--many-required", "extra"}, {"--many-required=false"}, {"--compact-proof-v1"}, {"extra"}} {

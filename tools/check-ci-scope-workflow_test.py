@@ -1507,6 +1507,50 @@ def project_current_doc_fact_check(text):
     return prior
 
 
+SERVICE_GRANT_ALIAS_INSERTIONS = (
+    (r"""      - name: Verify the optional alias comparison through both protocol versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          alias_version="v0.0.0-20261024154510-16d1e7864dc8"
+          alias_module="$(go -C examples/service-grant-mcp list -m -f '{{if eq .Version "v0.0.0-20261024154510-16d1e7864dc8"}}{{.Dir}}{{end}}' github.com/kimjooyoon/gooo-go-ports/examples/alias-origin-change)"
+          test -n "$alias_module"
+          mkdir -p "$RUNNER_TEMP/alias-cli-bin"
+          GOBIN="$RUNNER_TEMP/alias-cli-bin" go install -trimpath \
+            "github.com/kimjooyoon/gooo-go-ports/examples/alias-origin-change/cmd/compare@$alias_version"
+          python3 -I -B examples/service-grant-mcp/verify_alias.py \
+            --binary "$RUNNER_TEMP/gooo-service-grant-mcp" \
+            --alias-cli "$RUNNER_TEMP/alias-cli-bin/compare" \
+            --alias-module "$alias_module" --go "$(command -v go)" \
+            --legacy-verifier "$PWD/examples/service-grant-mcp/verify.py" \
+            --scope full --out "$PWD/out/service-grant-mcp/alias-wire"
+""", '      - name: Check native MCP packaging refusal controls\n'),
+    (r"""            --alias-wire-report "$PWD/out/service-grant-mcp/alias-wire/acceptance.json" \
+            --alias-cli "$RUNNER_TEMP/alias-cli-bin/compare" \
+""", '            --module-cache "$(go env GOMODCACHE)" \\\n'),
+    (r"""            --alias-wire-report "$PWD/out/service-grant-mcp/alias-wire/acceptance.json" \
+            --alias-module "$(go -C examples/service-grant-mcp list -m -f '{{.Dir}}' github.com/kimjooyoon/gooo-go-ports/examples/alias-origin-change)" \
+            --alias-cli "$RUNNER_TEMP/alias-cli-bin/compare" --go "$(command -v go)" \
+""", '            --label "io.gooo.ci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"\n'),
+    ('            out/service-grant-mcp-bundle/alias-native-verification/\n',
+     '      - name: Retain the bounded original wire observations\n'),
+)
+SERVICE_GRANT_ALIAS_PRIOR_WORKFLOW_SHA = '75a0a00fdcb2521479f92e42c77fd4dbfe98b95c04f9d641b0ac8c0bf26daf01'
+
+
+def project_service_grant_alias_integration(text):
+    # Only the four reviewed additions are new. Anchors also bind their order
+    # and consumers: deleting unanchored additions would hide moved checks.
+    for addition, anchor in SERVICE_GRANT_ALIAS_INSERTIONS:
+        require(text.count(addition) == 1 and text.count(anchor) == 1 and
+                text.count(addition + anchor) == 1,
+                'alias MCP integration requires each exact addition at its reviewed location once')
+        text = text.replace(addition + anchor, anchor, 1)
+    require(hashlib.sha256(text.encode()).hexdigest() == SERVICE_GRANT_ALIAS_PRIOR_WORKFLOW_SHA,
+            'alias MCP integration changed unrelated workflow bytes')
+    return text
+
+
 MANUAL_CONSUMER_STEP_NAME = 'Check orchestration and consumer refusal controls'
 MANUAL_CONSUMER_STEP = """      - name: Check orchestration and consumer refusal controls
         run: |
@@ -1554,6 +1598,8 @@ def project_manual_consumer_preflight(text):
 def project_root_go_reference(text, module_text=None, path='.github/workflows/ci.yml'):
     if path == '.github/workflows/ci.yml':
         text = project_current_doc_fact_check(text)
+    elif path == '.github/workflows/service-grant-mcp.yml':
+        text = project_service_grant_alias_integration(text)
     elif path == '.github/workflows/manual-native-shards.yml':
         text = project_manual_consumer_preflight(text)
     if module_text is None:
@@ -3953,6 +3999,84 @@ class CurrentDocFactCheckTests(unittest.TestCase):
         self.assertNotEqual(changed, raw)
         with self.assertRaises(ValueError):
             project_current_doc_fact_check(changed)
+
+
+class ServiceGrantAliasProjectionTests(unittest.TestCase):
+    path = '.github/workflows/service-grant-mcp.yml'
+
+    def raw(self):
+        return (WORKFLOW.parent.parent.parent / self.path).read_text()
+
+    def test_exact_additions_preserve_both_historical_preimages(self):
+        raw = self.raw()
+        prior = project_service_grant_alias_integration(raw)
+        expected = raw
+        for addition, _ in SERVICE_GRANT_ALIAS_INSERTIONS:
+            expected = expected.replace(addition, '', 1)
+        self.assertEqual(prior, expected)
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), SERVICE_GRANT_ALIAS_PRIOR_WORKFLOW_SHA)
+        literal = project_root_go_reference(raw, path=self.path)
+        self.assertEqual(literal.count(ROOT_GO_LITERAL_LINE), 1)
+        self.assertEqual(hashlib.sha256(literal.encode()).hexdigest(), ROOT_GO_REFERENCES[self.path][1])
+        with self.assertRaises(ValueError):
+            project_root_go_reference(prior, path=self.path)
+
+    def test_missing_duplicate_and_modified_additions_are_rejected(self):
+        raw = self.raw()
+        for addition, _ in SERVICE_GRANT_ALIAS_INSERTIONS:
+            for replacement, label in [('', 'missing'), (addition * 2, 'duplicate'),
+                                        (addition.replace('alias', 'unreviewed', 1), 'wrong-source-or-path')]:
+                with self.subTest(addition=addition.splitlines()[0], mutation=label), self.assertRaises(ValueError):
+                    project_root_go_reference(raw.replace(addition, replacement, 1), path=self.path)
+        step = SERVICE_GRANT_ALIAS_INSERTIONS[0][0]
+        for old, new in [
+                ('--scope full', '--scope bundle-small'),
+                ('v0.0.0-20261024154510-16d1e7864dc8', 'latest'),
+                ('        run: |\n', '        if: false\n        run: |\n'),
+                ('        shell: bash\n', '        continue-on-error: true\n        shell: bash\n'),
+                ('--scope full --out "$PWD/out/service-grant-mcp/alias-wire"\n',
+                 '--scope full --out "$PWD/out/service-grant-mcp/alias-wire" || true\n')]:
+            self.assertIn(old, step)
+            changed = raw.replace(step, step.replace(old, new, 1), 1)
+            with self.subTest(mutation=old), self.assertRaises(ValueError):
+                project_root_go_reference(changed, path=self.path)
+
+    def test_intact_additions_moved_to_other_consumers_are_rejected(self):
+        raw = self.raw()
+        destinations = (
+            '      - name: Verify with an independent stdio client\n',
+            '            --many-module "$many_module" \\\n',
+            '            --module-cache "$(go env GOMODCACHE)" \\\n',
+            '            out/service-grant-mcp-bundle/*.tar.gz\n',
+        )
+        for (addition, _), destination in zip(SERVICE_GRANT_ALIAS_INSERTIONS, destinations):
+            self.assertEqual(raw.count(destination), 1)
+            moved = raw.replace(addition, '', 1).replace(destination, addition + destination, 1)
+            self.assertNotEqual(moved, raw)
+            self.assertEqual(moved.count(addition), 1)
+            with self.subTest(destination=destination), self.assertRaises(ValueError):
+                project_root_go_reference(moved, path=self.path)
+
+    def test_projection_cannot_hide_existing_execution_or_artifact_changes(self):
+        raw = self.raw()
+        for old, new in [
+                ('    timeout-minutes: 8\n', '    timeout-minutes: 9\n'),
+                ('test -race -count=1 ./...', 'test -count=1 ./...'),
+                ('actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e', 'actions/setup-go@main'),
+                ('        if: always()\n', '        if: success()\n'),
+                ('          if-no-files-found: error\n', '          if-no-files-found: warn\n')]:
+            self.assertIn(old, raw)
+            with self.subTest(mutation=old), self.assertRaises(ValueError):
+                project_root_go_reference(raw.replace(old, new, 1), path=self.path)
+
+    def test_projection_keeps_go_selectors_and_workflow_path_bound(self):
+        raw = self.raw()
+        for replacement in ['', ROOT_GO_REFERENCE_LINE * 2, ROOT_GO_LITERAL_LINE,
+                            ROOT_GO_REFERENCE_LINE.replace('go.mod', 'other/go.mod')]:
+            with self.subTest(selector=replacement), self.assertRaises(ValueError):
+                project_root_go_reference(raw.replace(ROOT_GO_REFERENCE_LINE, replacement, 1), path=self.path)
+        with self.assertRaises(ValueError):
+            project_root_go_reference(raw, path='.github/workflows/service-grant-cli-bundle.yml')
 
 
 class ManualConsumerPreflightTests(unittest.TestCase):
