@@ -97,6 +97,22 @@ jobs:
             --legacy-verifier "$PWD/examples/service-grant-mcp/verify.py" \
             --many-module "$many_module" \
             --out "$PWD/out/service-grant-mcp/many-wire"
+      - name: Verify the optional alias comparison through both protocol versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          alias_version="v0.0.0-20261024154510-16d1e7864dc8"
+          alias_module="$(go -C examples/service-grant-mcp list -m -f '{{if eq .Version "v0.0.0-20261024154510-16d1e7864dc8"}}{{.Dir}}{{end}}' github.com/kimjooyoon/gooo-go-ports/examples/alias-origin-change)"
+          test -n "$alias_module"
+          mkdir -p "$RUNNER_TEMP/alias-cli-bin"
+          GOBIN="$RUNNER_TEMP/alias-cli-bin" go install -trimpath \
+            "github.com/kimjooyoon/gooo-go-ports/examples/alias-origin-change/cmd/compare@$alias_version"
+          python3 -I -B examples/service-grant-mcp/verify_alias.py \
+            --binary "$RUNNER_TEMP/gooo-service-grant-mcp" \
+            --alias-cli "$RUNNER_TEMP/alias-cli-bin/compare" \
+            --alias-module "$alias_module" --go "$(command -v go)" \
+            --legacy-verifier "$PWD/examples/service-grant-mcp/verify.py" \
+            --scope full --out "$PWD/out/service-grant-mcp/alias-wire"
       - name: Check native MCP packaging refusal controls
         shell: bash
         run: |
@@ -113,6 +129,8 @@ jobs:
             --build-info "$PWD/out/service-grant-mcp/build-info.json" \
             --wire-report "$PWD/out/service-grant-mcp/wire/verification.json" \
             --many-wire-report "$PWD/out/service-grant-mcp/many-wire/acceptance.json" \
+            --alias-wire-report "$PWD/out/service-grant-mcp/alias-wire/acceptance.json" \
+            --alias-cli "$RUNNER_TEMP/alias-cli-bin/compare" \
             --module-cache "$(go env GOMODCACHE)" \
             --go-root "$(go env GOROOT)" --root "$PWD" \
             --out "$PWD/out/service-grant-mcp-bundle" \
@@ -138,6 +156,9 @@ jobs:
           python3 -I -B tools/verify-service-grant-container.py \
             --docker "$(command -v docker)" --image "$(cat "$container_out/image.id")" \
             --context "$container_out/context" --out "$container_out/wire" \
+            --alias-wire-report "$PWD/out/service-grant-mcp/alias-wire/acceptance.json" \
+            --alias-module "$(go -C examples/service-grant-mcp list -m -f '{{.Dir}}' github.com/kimjooyoon/gooo-go-ports/examples/alias-origin-change)" \
+            --alias-cli "$RUNNER_TEMP/alias-cli-bin/compare" --go "$(command -v go)" \
             --label "io.gooo.ci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
       - name: Remove only this job's container test resources
         if: always() && runner.os == 'Linux'
@@ -184,6 +205,7 @@ jobs:
             out/service-grant-mcp-bundle/first-failure.json
             out/service-grant-mcp-bundle/native-verification/
             out/service-grant-mcp-bundle/many-native-verification/
+            out/service-grant-mcp-bundle/alias-native-verification/
       - name: Retain the bounded original wire observations
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
