@@ -107,6 +107,30 @@ class SyntheticFixture:
 
 
 class StrictReaderTests(unittest.TestCase):
+    def test_many_nested_integer_tokens_keep_exact_types_and_signed64_boundaries(self):
+        values=[-(1<<63),-(1<<53)-1,-1,0,1,(1<<53)+1,(1<<63)-1]*1024
+        expected={'values':values,'nested':{'zero':0,'minimum':-(1<<63)},
+                  'flags':[True,False],'text':'9223372036854775808'}
+        raw=json.dumps(expected,separators=(',',':')).encode()
+        for metadata in (True,False):
+            with self.subTest(metadata=metadata):
+                actual=R.load(raw,metadata=metadata)
+                self.assertEqual(actual,expected)
+                self.assertTrue(all(type(value) is int for value in actual['values']))
+                self.assertIs(actual['flags'][0],True)
+                self.assertIs(actual['flags'][1],False)
+                self.assertIs(type(actual['text']),str)
+
+    def test_integer_grammar_range_and_duplicate_refusals_hold_for_raw_receipts(self):
+        tokens=(b'-0',b'00',b'-01',b'+1',b'9223372036854775808',
+                b'-9223372036854775809',b'999999999999999999999999999999')
+        for metadata in (True,False):
+            for token in tokens:
+                with self.subTest(metadata=metadata,token=token),self.assertRaises(RuntimeError):
+                    R.load(b'{"nested":[{"value":'+token+b'}]}',metadata=metadata)
+            with self.subTest(metadata=metadata),self.assertRaises(RuntimeError):
+                R.load(b'{"x":1,"\\u0078":2}',metadata=metadata)
+
     def test_duplicate_unknown_truncated_and_nondecimal_json(self):
         for raw in (b'{"x":1,"x":2}',b'{"x":',b'{}{}',b'{"x":NaN}',b'{"x":1e0}',b'{"x":1.5}',b'{"x":-0}',b'{"x":9223372036854775808}'):
             with self.subTest(raw=raw),self.assertRaises(RuntimeError):R.load(raw)
