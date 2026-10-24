@@ -1314,7 +1314,7 @@ def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
                   "alias_original_scope": alias_report["scope"],
                   "alias_extracted_scope": new_alias_report["scope"] if new_alias_report is not None else None,
                   "alias_large_extracted_test_performed": False,
-                  "Linux_scope": "fresh native stdio" if verify_native and target == "linux/amd64" else "no new Linux execution; previous original-CI byte equivalence only",
+                  "Linux_scope": "fresh native stdio" if verify_native and target == "linux/amd64" else "not exercised in this run",
                   "owned_work_removed": True, "not_published": True}
         (out/"verification.json").write_bytes(encoded(result))
     except BaseException as error:
