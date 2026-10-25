@@ -1,0 +1,5 @@
+{
+  "jsonrpc": "2.0",
+  "id": "synthetic-output-schema-string-to-number-after",
+  "method": "tools/list"
+}

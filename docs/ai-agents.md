@@ -584,6 +584,8 @@ comparison question, and the first diagnostic or missing capability through
 the [existing feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml).
 Use a synthetic reproduction when sharing; keep private catalog contents local.
 
+For an upgrade or reconnect review, try the [three saved-definition regression examples](../examples/mcp-upgrade-regressions/README.md). They cover an output-schema change, unchanged definitions with separate version context, and a missing tool in an incomplete page set. The inputs are synthetic and use this source checkout.
+
 ## Compare saved MCP catalogs without a checkout
 
 For Linux x86-64 or Apple Silicon macOS, start with the

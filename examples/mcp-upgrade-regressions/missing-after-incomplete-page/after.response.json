@@ -1,0 +1,30 @@
+{
+  "jsonrpc": "2.0",
+  "id": "synthetic-missing-after-incomplete-page-after",
+  "result": {
+    "tools": [
+      {
+        "name": "synthetic.other",
+        "description": "SYNTHETIC_FIXTURE: upgrade/reconnect regression",
+        "inputSchema": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "outputSchema": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "value"
+          ],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "nextCursor": "synthetic-page-2-not-retained"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "schema": "gooo/synthetic-snapshot-regression-context/v1",
+  "evidence_kind": "SYNTHETIC_CONTEXT_ONLY",
+  "not_passed_to_comparator": true,
+  "captured_from_server": false,
+  "upstream_reproduction_executed": false,
+  "inspiration_issue": "https://github.com/modelcontextprotocol/typescript-sdk/issues/2964",
+  "description": "The selected descriptor and absent annotations are identical. A separately authored synthetic version label changes, but server-version context is outside the snapshot input contract and cannot change the selected-definition relation.",
+  "fictional_advertised_versions": {
+    "before": "synthetic-version-A",
+    "after": "synthetic-version-B"
+  }
+}

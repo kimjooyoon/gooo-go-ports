@@ -1,0 +1,19 @@
+{
+  "target_name": "synthetic.lookup",
+  "before": {
+    "pages": [
+      {
+        "request_json": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": \"synthetic-same-definition-version-context-only-before\",\n  \"method\": \"tools/list\"\n}\n",
+        "response_json": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": \"synthetic-same-definition-version-context-only-before\",\n  \"result\": {\n    \"tools\": [\n      {\n        \"name\": \"synthetic.lookup\",\n        \"description\": \"SYNTHETIC_FIXTURE: upgrade/reconnect regression\",\n        \"inputSchema\": {\n          \"type\": \"object\",\n          \"properties\": {},\n          \"additionalProperties\": false\n        },\n        \"outputSchema\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"value\": {\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"value\"\n          ],\n          \"additionalProperties\": false\n        }\n      }\n    ]\n  }\n}\n"
+      }
+    ]
+  },
+  "after": {
+    "pages": [
+      {
+        "request_json": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": \"synthetic-same-definition-version-context-only-after\",\n  \"method\": \"tools/list\"\n}\n",
+        "response_json": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": \"synthetic-same-definition-version-context-only-after\",\n  \"result\": {\n    \"tools\": [\n      {\n        \"name\": \"synthetic.lookup\",\n        \"description\": \"SYNTHETIC_FIXTURE: upgrade/reconnect regression\",\n        \"inputSchema\": {\n          \"type\": \"object\",\n          \"properties\": {},\n          \"additionalProperties\": false\n        },\n        \"outputSchema\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"value\": {\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"value\"\n          ],\n          \"additionalProperties\": false\n        }\n      }\n    ]\n  }\n}\n"
+      }
+    ]
+  }
+}

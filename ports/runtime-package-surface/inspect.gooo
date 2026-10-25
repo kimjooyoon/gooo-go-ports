@@ -1,0 +1,51 @@
+package runtimepackages
+namespace runtimepackages
+
+// The application's declared runtime surface is owned here. Observations cannot
+// supply or enlarge it. Paths retain their exact spelling and the caller's order.
+activity Inspect(Observation) -> Assessment id "urn:gooo:runtime-package-surface:inspect" computes `
+let module = "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison"
+let declared = []string{
+    module,
+    module + "/internal/kernel",
+    module + "/internal/definitionkernel",
+    module + "/internal/observationkernel",
+    module + "/internal/availabilitykernel",
+    module + "/internal/availabilityobservationkernel",
+    module + "/internal/snapshotkernel",
+    module + "/cmd/compare",
+}
+let missing = 0
+let undeclared = 0
+for required in declared {
+    let found = false
+    for observed in input.import_paths {
+        if observed == required { found = true }
+    }
+    if !found { missing = missing + 1 }
+}
+for observed in input.import_paths {
+    let found = false
+    for required in declared {
+        if observed == required { found = true }
+    }
+    if !found { undeclared = undeclared + 1 }
+}
+let duplicated = HasDuplicates(Paths{values: input.import_paths})
+let status = "OBSERVED_EXACT"
+if missing > 0 && undeclared > 0 { status = "MISSING_AND_UNDECLARED" }
+else if missing > 0 { status = "MISSING_PACKAGES" }
+else if undeclared > 0 { status = "UNDECLARED_PACKAGES" }
+else if duplicated { status = "REPEATED_PACKAGE" }
+if input.origin_ref == "" { status = "ORIGIN_UNOBSERVED" }
+if len(declared) == 0 || HasDuplicates(Paths{values: declared}) { status = "INVALID_DECLARED_SURFACE" }
+return Assessment{
+    status: status,
+    observation_origin: input.origin_ref,
+    declared_paths: declared,
+    observed_paths: input.import_paths,
+    missing_count: missing,
+    undeclared_count: undeclared,
+    duplicate_observation: duplicated,
+}
+`

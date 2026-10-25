@@ -1,0 +1,5 @@
+{
+  "jsonrpc": "2.0",
+  "id": "synthetic-missing-after-incomplete-page-after",
+  "method": "tools/list"
+}

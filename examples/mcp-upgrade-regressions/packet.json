@@ -1,0 +1,192 @@
+{
+  "schema": "gooo/synthetic-upgrade-regression-packet/v1",
+  "status": "SYNTHETIC_FIXTURE_PACKET",
+  "source_repository": "https://github.com/kimjooyoon/gooo-go-ports",
+  "source_commit": "85d96c7fe23d34d32a92664920f829fcf7a6e1f9",
+  "compiler_source": "205896a413e5dea92366309c35ae85e542d055f6",
+  "go_version": "go1.27.3",
+  "cases": [
+    {
+      "case": "output-schema-string-to-number",
+      "input": "output-schema-string-to-number/snapshot-input.json",
+      "expectations": "output-schema-string-to-number/expected.json",
+      "observed_decision": "output-schema-string-to-number/observed-decision.json",
+      "evidence_kind": "SYNTHETIC_FIXTURE",
+      "state": "OBSERVED_DEFINITION_CHANGED"
+    },
+    {
+      "case": "same-definition-version-context-only",
+      "input": "same-definition-version-context-only/snapshot-input.json",
+      "expectations": "same-definition-version-context-only/expected.json",
+      "observed_decision": "same-definition-version-context-only/observed-decision.json",
+      "evidence_kind": "SYNTHETIC_FIXTURE",
+      "state": "OBSERVED_DEFINITION_SAME"
+    },
+    {
+      "case": "missing-after-incomplete-page",
+      "input": "missing-after-incomplete-page/snapshot-input.json",
+      "expectations": "missing-after-incomplete-page/expected.json",
+      "observed_decision": "missing-after-incomplete-page/observed-decision.json",
+      "evidence_kind": "SYNTHETIC_FIXTURE",
+      "state": "UNASSESSED"
+    }
+  ],
+  "files": [
+    {
+      "path": "missing-after-incomplete-page/after.request.json",
+      "bytes": 106,
+      "sha256": "9adb5a08041026fef3b4ac7344d026b52e027695e8cd97793f34444b70dab240"
+    },
+    {
+      "path": "missing-after-incomplete-page/after.response.json",
+      "bytes": 696,
+      "sha256": "2ce3732bd0fbbba841aa55534bb94410a7168702fec30f41c3b3c24230e59473"
+    },
+    {
+      "path": "missing-after-incomplete-page/before.request.json",
+      "bytes": 107,
+      "sha256": "3d303d09c92e2e755d7fb23ebd6cacb46ddf7fc27f66b02a6bb615a1abb72d33"
+    },
+    {
+      "path": "missing-after-incomplete-page/before.response.json",
+      "bytes": 647,
+      "sha256": "c900e6f64b22589e0920ff6b81ccd66ca344be16ec7c50af964a80b9cb8c73e7"
+    },
+    {
+      "path": "missing-after-incomplete-page/context.json",
+      "bytes": 554,
+      "sha256": "4f780675f13d8d8f2059ce2233c83ba8e6914bfad76fdd79a0c40bd83d540112"
+    },
+    {
+      "path": "missing-after-incomplete-page/expected.json",
+      "bytes": 2987,
+      "sha256": "06255fe86bde81d5c396570b3dd7e5e464c91e88ea483e9732a3dc1fe4507655"
+    },
+    {
+      "path": "missing-after-incomplete-page/observed-decision.json",
+      "bytes": 1428,
+      "sha256": "d54c7edc25b7625508c485f4346cbf2d0623ba5094b1b5ffcfa0452a1054211c"
+    },
+    {
+      "path": "missing-after-incomplete-page/snapshot-input.json",
+      "bytes": 2016,
+      "sha256": "00b2bade2cc9680fa52f1fc5a8aaca0033ab4802d8ab8e6fdf6f2d387f934107"
+    },
+    {
+      "path": "output-schema-string-to-number/after.request.json",
+      "bytes": 107,
+      "sha256": "269219675c59673334f266cb2f087b865c81e219f9d92672008a42bae7a5d29d"
+    },
+    {
+      "path": "output-schema-string-to-number/after.response.json",
+      "bytes": 647,
+      "sha256": "ab68d205a9fa60ecc3366a8eb7f31b96521257b5234edf8c3009a054cb2da8fc"
+    },
+    {
+      "path": "output-schema-string-to-number/before.request.json",
+      "bytes": 113,
+      "sha256": "c2f1289396686750eceab31d61d6b227390917bcb8d36265b820b068d6e86f47"
+    },
+    {
+      "path": "output-schema-string-to-number/before.response.json",
+      "bytes": 677,
+      "sha256": "80f0f4b7fbd4b48cc54a79d9d42d268cb694817bb4f350c242ea112f8cf8d96b"
+    },
+    {
+      "path": "output-schema-string-to-number/context.json",
+      "bytes": 539,
+      "sha256": "bb499001c77c90de623fa4f288f03f952e504dbf8837d8f1253048671dc7d344"
+    },
+    {
+      "path": "output-schema-string-to-number/expected.json",
+      "bytes": 2996,
+      "sha256": "c22917b5a52608c09546696c581e03e73ecd6c1fa0ee480083a772177e90fc73"
+    },
+    {
+      "path": "output-schema-string-to-number/observed-decision.json",
+      "bytes": 1639,
+      "sha256": "f1d3db8b2061d85c9d67fd1779402671d6261ac624a9a51638d346d2e84d1f94"
+    },
+    {
+      "path": "output-schema-string-to-number/snapshot-input.json",
+      "bytes": 2033,
+      "sha256": "d1197671d823de68ac0a5597bb6da9c7d1fe753050adad8a78b58805a24e03bb"
+    },
+    {
+      "path": "same-definition-version-context-only/after.request.json",
+      "bytes": 113,
+      "sha256": "a428c77873a8c9f38818fb570416118ff21eb5f0c4e3e8413132690f0704b283"
+    },
+    {
+      "path": "same-definition-version-context-only/after.response.json",
+      "bytes": 653,
+      "sha256": "d4c21320777e9d16f98ad4d6f7df41a7bdcc757cbe31ebd2494aa23024a452ce"
+    },
+    {
+      "path": "same-definition-version-context-only/before.request.json",
+      "bytes": 114,
+      "sha256": "4743284a2c174a5bf955b4163bfb0fda3905b488f5ae4b0823cf4acf28ed5f56"
+    },
+    {
+      "path": "same-definition-version-context-only/before.response.json",
+      "bytes": 654,
+      "sha256": "8559371be656208145bf97c096ece6de60e4bbf5cde6a3070b343ec0ef74a84f"
+    },
+    {
+      "path": "same-definition-version-context-only/context.json",
+      "bytes": 683,
+      "sha256": "6c79f216ab87d435d7cb5bf3a74f2f0ce4e0357f795eb77cb95bbb36da90429c"
+    },
+    {
+      "path": "same-definition-version-context-only/expected.json",
+      "bytes": 3122,
+      "sha256": "225632b53fa8ac583b94b2b547403432bf3e9110a54cb074e0a12aeb34bf7ae7"
+    },
+    {
+      "path": "same-definition-version-context-only/observed-decision.json",
+      "bytes": 1633,
+      "sha256": "d99e9f50eff95e176fc23aa06fab1b96a99234ce96d5efbc05a932c4e4c7be6f"
+    },
+    {
+      "path": "same-definition-version-context-only/snapshot-input.json",
+      "bytes": 1989,
+      "sha256": "96430547aca669e7a703991f35f0b764f4cad8465e5db124a4a30a56c2fda389"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 1496,
+      "sha256": "099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48"
+    }
+  ],
+  "observed_local_validation": {
+    "CLI": 3,
+    "independent_reference": 3,
+    "native": 3,
+    "own_replay": 3,
+    "all_8_processes_closed": true,
+    "original_native_receipts_included_in_packet": false
+  },
+  "scope": "Three synthetic saved-definition regression examples. The local validation counts belong to source_commit; they do not establish current-checkout CI acceptance, SDK reproduction, call ordering, notification delivery, schema compatibility, execution authority or outside use.",
+  "new_capture_or_model_calls": 0,
+  "external_adoption": false,
+  "license": "BSD-3-Clause",
+  "reproduction": {
+    "argv_template": [
+      "go",
+      "-C",
+      "{repository_checkout}/examples/recorded-catalog-comparison",
+      "run",
+      "./cmd/compare",
+      "--definition-snapshot"
+    ],
+    "env": {
+      "GOTOOLCHAIN": "local",
+      "GOWORK": "off"
+    },
+    "stdin": "Each cases[].input, resolved relative to this packet directory.",
+    "expected": "Compare decision fields to cases[].expectations anchors; cases[].observed_decision retains the local observed32fields.",
+    "original_validation_source_commit": "85d96c7fe23d34d32a92664920f829fcf7a6e1f9",
+    "current_checkout": "Use a source checkout that includes --definition-snapshot. A fresh current-source run must be assessed independently; it does not inherit the original local validation."
+  },
+  "derived_from_prepared_packet_sha256": "c29b6821bcf79e8610d4793dbbfab53319d006f9ae35959279ad37ddefb29683"
+}

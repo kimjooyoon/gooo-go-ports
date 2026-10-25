@@ -1,0 +1,54 @@
+{
+  "schema": "gooo/runtime-package-surface-upstream/v1",
+  "repository": "https://github.com/kimjooyoon/meta-ontology-go",
+  "revision": "2a69071552a944be597d86fdd34041ea344cdce0",
+  "source_directory": "examples/runtime-package-surface",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2026 Kim Joo-yoon",
+  "license_file": "ports/runtime-package-surface/LICENSE",
+  "license_sha256": "5177457bc30b96eae6f786d0fbe3d1fda382edef61ecef25eb6f446a8b35b4f3",
+  "files": [
+    {
+      "name": "contract.gooo",
+      "path": "examples/runtime-package-surface/contract.gooo",
+      "bytes": 1668,
+      "sha256": "0bf82d1bc790507628dd7e1d9d1ea52716f82db9777cc2fce06bf8a3c36e21ef",
+      "git_blob": "173946dcff04237e424ecec6466aa77f73dd6cdd",
+      "official_url": "https://github.com/kimjooyoon/meta-ontology-go/blob/2a69071552a944be597d86fdd34041ea344cdce0/examples/runtime-package-surface/contract.gooo"
+    },
+    {
+      "name": "inspect.gooo",
+      "path": "examples/runtime-package-surface/inspect.gooo",
+      "bytes": 1896,
+      "sha256": "8298666e0c052ef41dc4869b31e81e78c6e52d88c184d3c215e50125fe204b06",
+      "git_blob": "70d3efdca6096064fc9a74f8db29e0988c8d7e8e",
+      "official_url": "https://github.com/kimjooyoon/meta-ontology-go/blob/2a69071552a944be597d86fdd34041ea344cdce0/examples/runtime-package-surface/inspect.gooo"
+    },
+    {
+      "name": "gooo.workspace.json",
+      "path": "examples/runtime-package-surface/gooo.workspace.json",
+      "bytes": 255,
+      "sha256": "1f027eb48cffcd071a7eefd3cdf5ffa934623f52d99dcc995ffa36e32bc9f1b7",
+      "git_blob": "e170021bc70286cdddf7ab3e21b520ab17d53fb1",
+      "official_url": "https://github.com/kimjooyoon/meta-ontology-go/blob/2a69071552a944be597d86fdd34041ea344cdce0/examples/runtime-package-surface/gooo.workspace.json"
+    },
+    {
+      "name": "cases.json",
+      "path": "examples/runtime-package-surface/cases.json",
+      "bytes": 40749,
+      "sha256": "66f08e4129f9201568eb7e4528c298ad108a462a8e11c5591db2a72624a0ff07",
+      "git_blob": "d7f4306acafb94bc54fb1d9a8c940afbb95cd6d4",
+      "official_url": "https://github.com/kimjooyoon/meta-ontology-go/blob/2a69071552a944be597d86fdd34041ea344cdce0/examples/runtime-package-surface/cases.json"
+    },
+    {
+      "name": "README.md",
+      "path": "examples/runtime-package-surface/README.md",
+      "bytes": 4260,
+      "sha256": "0cd9ffdde97ec76e0013141c5bb9521889b497333d6325ab4167faf408733807",
+      "git_blob": "7e601ec4507d2909e52be1de329e40c6135ca8dc",
+      "official_url": "https://github.com/kimjooyoon/meta-ontology-go/blob/2a69071552a944be597d86fdd34041ea344cdce0/examples/runtime-package-surface/README.md"
+    }
+  ],
+  "adaptation": "The two Gooo sources and independent14-case corpus are byte-identical to upstream. Only the workspace source locations change for this repository; entry and package identities are unchanged. Runtime validation/generation uses this repository compiler pin205 independently of the upstream source commit.",
+  "upstream_execution_inherited": false
+}

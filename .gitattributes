@@ -1,2 +1,6 @@
 # Unified diff context lines include a space; preserve the pinned patch bytes.
 tools/compiler-explorer/gooo-source-view.patch whitespace=-blank-at-eol
+
+# Saved JSON-RPC bytes are part of the observation identity, including CRLF.
+examples/mcp-upgrade-regressions/*/*.request.json -text whitespace=cr-at-eol
+examples/mcp-upgrade-regressions/*/*.response.json -text whitespace=cr-at-eol

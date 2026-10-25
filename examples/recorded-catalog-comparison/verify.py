@@ -37,6 +37,8 @@ SOURCES = {'gooo/tool-origin': 'ports/tool-origin/alias_origin.gooo',
 GENERATED = {'internal/kernel/projection_generated.go',
              'internal/kernel/types_generated.go',
              'internal/kernel/bridge_generated.go', 'generation.json', 'go.mod'}
+surface_spec=importlib.util.spec_from_file_location('runtime_package_surface_adapter', ROOT/'tools/runtime_package_surface.py')
+runtime_surface=importlib.util.module_from_spec(surface_spec);surface_spec.loader.exec_module(runtime_surface)
 EXCLUDED = {'.git', '__pycache__', '.cache', 'cache', 'tmp', 'out', 'output',
             'bin', 'gopath', 'modcache', 'home', 'node_modules'}
 
@@ -73,6 +75,7 @@ def receipt(path):
 def source_snapshot():
     paths = [ROOT / 'upstream.json', MANIFEST, RUNNER,
              *[ROOT / name for name in SOURCES.values()]]
+    paths.extend(runtime_surface.source_roster(ROOT))
     for directory, dirs, files in os.walk(HERE, followlinks=False):
         parent = Path(directory)
         for name in dirs:
@@ -374,9 +377,9 @@ def main():
         assert fixtures['evidence_kind'] == 'SYNTHETIC_FIXTURE'
         assert len(records) == len(fixtures['cases']) == 7
         assert len({f['label'] for f in fixtures['cases']}) == 7
-        deps = [line for line in run('native-runtime-dependencies', [go, '-C', HERE, 'list', '-deps', '-f',
-                '{{if not .Standard}}{{.ImportPath}}{{end}}', './cmd/compare']).decode().splitlines() if line]
-        assert set(deps) == {MODULE, MODULE + '/internal/kernel', MODULE + '/internal/definitionkernel', MODULE + '/internal/observationkernel', MODULE + '/internal/availabilitykernel', MODULE + '/internal/availabilityobservationkernel', MODULE + '/internal/snapshotkernel', MODULE + '/cmd/compare'} and len(deps) == 8
+        surface = runtime_surface.verify(ROOT, HERE, go, go_identity, env, run, host, out, 'native-runtime-dependencies')
+        deps = surface['assessment']['observed_paths']
+        summary['runtime_package_surface'] = surface
         binary = out / 'bin/compare'
         run('native-CLI-build', [go, '-C', HERE, 'build', '-trimpath', '-buildvcs=false', '-o', binary, './cmd/compare'])
         info = host.strict(run('native-CLI-build-info', [go, 'version', '-m', '-json', binary], 20))

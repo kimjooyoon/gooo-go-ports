@@ -100,6 +100,7 @@ jobs:
           python3 -I -B tools/api_policy_cli_bundle_test.py -v
           python3 -I -B tools/recorded_catalog_cli_bundle_test.py -v
           python3 -I -B tools/assemble_saved_frames_test.py -v
+          python3 -I -B tools/runtime_package_surface_test.py -v
           python3 -I -B tools/check-header-addition-host_test.py -v
           python3 -I -B tools/native-shard-reference_test.py -v
           python3 -I -B tools/export-header-addition-evidence_test.py -v
@@ -293,6 +294,8 @@ jobs:
           ./.gooo check ports/unicode/space.gooo
           ./.gooo check ports/math/bits.gooo
           ./.gooo check ports/tool-origin/definition_snapshot.gooo
+          ./.gooo check ports/runtime-package-surface/contract.gooo
+          ./.gooo check ports/runtime-package-surface/inspect.gooo
           ./.gooo check ports/image/color.gooo
           ./.gooo check ports/image/nrgba.gooo
           ./.gooo check examples/alpha-matte/main.gooo
@@ -1802,6 +1805,34 @@ jobs:
         with:
           name: tool-definition-snapshot-evidence
           path: ${{ runner.temp }}/tool-definition-snapshot/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Verify Gooo runtime package surface
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          python3 -I -B examples/runtime-package-surface/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/runtime-package-surface"
+          jq -e '
+            .schema == "gooo/runtime-package-surface-verification/v1" and
+            .status == "RUNTIME_SURFACE14_NATIVE_REPLAY_AND_TWO_MUTATIONS_PASS" and
+            .first_failure == null and
+            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
+            .go_version == "go1.27.3" and .receipt_negative_controls == 6 and
+            .native_cases == 14 and .replay_cases == 14 and
+            .source_mutations == 2 and .rejected_mutation_cases == 28 and
+            .generated_assets == 4 and .generated_assets_exact == true and
+            .PROV_O_bindings_verified == true and .source_unchanged == true and
+            .all_direct_wait_EOF_PG_ESRCH == true and
+            .synthetic_observations_only == true and .external_adoption == false and
+            .model_calls == 0 and .engine_builds == 0 and .network_calls == 0
+          ' "$RUNNER_TEMP/runtime-package-surface/summary.json"
+      - name: Preserve runtime package surface evidence
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: runtime-package-surface-evidence
+          path: ${{ runner.temp }}/runtime-package-surface/
           if-no-files-found: warn
           retention-days: 14
       - name: Verify Gooo recorded observation diagnostics

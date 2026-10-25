@@ -1,0 +1,36 @@
+{
+  "activity_id": "urn:gooo:runtime-package-surface:inspect",
+  "cases": 14,
+  "compiler_source_sha": "205896a413e5dea92366309c35ae85e542d055f6",
+  "entry": "example/runtime-package-surface:Inspect",
+  "generated_assets": {
+    "internal/runtimepackagesurface/bridge_generated.go": "sha256:a30857b413451603825c9a22dea077c4cd4965a1c0451e90b1e6259727a80e2b",
+    "internal/runtimepackagesurface/projection_generated.go": "sha256:0d0ab35fe0f1708757932f6979c3897f68c9f82cca18eccc3326b7f4054ca403",
+    "internal/runtimepackagesurface/types_generated.go": "sha256:8c4714dab2c5ee6ab78097b83d4b681435945073ebd784f98f051487363d8d31"
+  },
+  "generator_source": {
+    "examples/recorded-catalog-comparison/generate.py": "sha256:f64b0df498d4816b2cece12eedf14a1e2f85678982cd5d074b1cae62b818d3db",
+    "examples/runtime-package-surface/evidence.py": "sha256:ada67c9efb4f1f42f8f77e143b9ad83ccfe0e35992b3924a59f0360ef8c24efa",
+    "examples/runtime-package-surface/generate.py": "sha256:7919e6e85bdb11cf48234a37ed6b8d2fc08b9ad2f988894d61ac4d71462dc789",
+    "examples/service-grant-many/verify.py": "sha256:ff3d94c39782619e06f64d5fbcfc3218733013332293f07b14368e5e939d3f0f",
+    "examples/tool-definition-binding/evidence.py": "sha256:22829d04c7d532d0ad7e5f8cdd2a2c57daa2d69d7ebdec77ec6343677e48a65f"
+  },
+  "go_version": "go1.27.3",
+  "projection_transform": "Replace first package token main with runtimepackagesurface; all other bytes unchanged.",
+  "raw_projection_sha256": "sha256:502c339f0287f64ff51025387dcf9b6b4ddea0906216949327d9de0c23942598",
+  "reference_source": {
+    "examples/runtime-package-surface/abi.json": "sha256:70c5304ca295da89cc35b373c7a5fa693569aac563379d709cc5b210273ab1e5",
+    "examples/runtime-package-surface/cases.json": "sha256:66f08e4129f9201568eb7e4528c298ad108a462a8e11c5591db2a72624a0ff07",
+    "examples/runtime-package-surface/upstream.json": "sha256:8f29cdfbd183c15b4b0090283e951b3482b939f67f24c1a7ab16f9bb0d12e3b7",
+    "ports/runtime-package-surface/LICENSE": "sha256:5177457bc30b96eae6f786d0fbe3d1fda382edef61ecef25eb6f446a8b35b4f3"
+  },
+  "schema": "gooo/runtime-package-surface-generation/v1",
+  "scope": "Frozen fourteen synthetic package observations and own replay. Root CI checker only; matching paths do not authenticate a producer, prove behavior or authorize updates.",
+  "selected_upstream_pins_sha256": "sha256:20171ad851133bf6627bc72cffbfc440c72a962073d184d8fd349fb635ae5721",
+  "source": {
+    "ports/runtime-package-surface/contract.gooo": "sha256:0bf82d1bc790507628dd7e1d9d1ea52716f82db9777cc2fce06bf8a3c36e21ef",
+    "ports/runtime-package-surface/inspect.gooo": "sha256:8298666e0c052ef41dc4869b31e81e78c6e52d88c184d3c215e50125fe204b06"
+  },
+  "typed_plan_sha256": "sha256:4a3fd7b8b1da0aaed78673b6f706b24a0c112daebb7deaf1d4a1c3e727a3b1c2",
+  "workspace_sha256": "sha256:b521ae340980cfb9ec004bc652956e68ab55f26e432a529b745a56138844c35e"
+}

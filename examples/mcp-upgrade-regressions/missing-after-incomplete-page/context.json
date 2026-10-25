@@ -1,0 +1,9 @@
+{
+  "schema": "gooo/synthetic-snapshot-regression-context/v1",
+  "evidence_kind": "SYNTHETIC_CONTEXT_ONLY",
+  "not_passed_to_comparator": true,
+  "captured_from_server": false,
+  "upstream_reproduction_executed": false,
+  "inspiration_issue": "https://github.com/modelcontextprotocol/typescript-sdk/issues/2964",
+  "description": "Before contains the selected name. The only retained after page has another name and a nextCursor, while the following page is absent. The selected tool may still be on that missing page, so removal cannot be concluded."
+}

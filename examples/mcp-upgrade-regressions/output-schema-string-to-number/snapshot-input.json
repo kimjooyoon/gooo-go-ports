@@ -1,0 +1,19 @@
+{
+  "target_name": "synthetic.lookup",
+  "before": {
+    "pages": [
+      {
+        "request_json": "{\r\n  \"jsonrpc\": \"2.0\",\r\n  \"id\": \"synthetic-output-schema-string-to-number-before\",\r\n  \"method\": \"tools/list\"\r\n}\r\n",
+        "response_json": "{\r\n  \"jsonrpc\": \"2.0\",\r\n  \"id\": \"synthetic-output-schema-string-to-number-before\",\r\n  \"result\": {\r\n    \"tools\": [\r\n      {\r\n        \"name\": \"synthetic.lookup\",\r\n        \"description\": \"SYNTHETIC_FIXTURE: upgrade/reconnect regression\",\r\n        \"inputSchema\": {\r\n          \"type\": \"object\",\r\n          \"properties\": {},\r\n          \"additionalProperties\": false\r\n        },\r\n        \"outputSchema\": {\r\n          \"type\": \"object\",\r\n          \"properties\": {\r\n            \"value\": {\r\n              \"type\": \"string\"\r\n            }\r\n          },\r\n          \"required\": [\r\n            \"value\"\r\n          ],\r\n          \"additionalProperties\": false\r\n        }\r\n      }\r\n    ]\r\n  }\r\n}\r\n"
+      }
+    ]
+  },
+  "after": {
+    "pages": [
+      {
+        "request_json": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": \"synthetic-output-schema-string-to-number-after\",\n  \"method\": \"tools/list\"\n}\n",
+        "response_json": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": \"synthetic-output-schema-string-to-number-after\",\n  \"result\": {\n    \"tools\": [\n      {\n        \"name\": \"synthetic.lookup\",\n        \"description\": \"SYNTHETIC_FIXTURE: upgrade/reconnect regression\",\n        \"inputSchema\": {\n          \"type\": \"object\",\n          \"properties\": {},\n          \"additionalProperties\": false\n        },\n        \"outputSchema\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"value\": {\n              \"type\": \"number\"\n            }\n          },\n          \"required\": [\n            \"value\"\n          ],\n          \"additionalProperties\": false\n        }\n      }\n    ]\n  }\n}\n"
+      }
+    ]
+  }
+}

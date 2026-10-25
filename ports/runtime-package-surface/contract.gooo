@@ -1,0 +1,31 @@
+package runtimepackages
+namespace runtimepackages
+
+entity Boolean id "urn:gooo:type:boolean"
+entity Paths id "urn:gooo:runtime-package-surface:paths" fields {
+    field values id "urn:gooo:runtime-package-surface:paths:values" type string required many
+}
+entity Observation id "urn:gooo:runtime-package-surface:observation" fields {
+    field origin_ref id "urn:gooo:runtime-package-surface:observation:origin" type string required one
+    field import_paths id "urn:gooo:runtime-package-surface:observation:paths" type string required many
+}
+entity Assessment id "urn:gooo:runtime-package-surface:assessment" fields {
+    field status id "urn:gooo:runtime-package-surface:assessment:status" type string required one
+    field observation_origin id "urn:gooo:runtime-package-surface:assessment:origin" type string required one
+    field declared_paths id "urn:gooo:runtime-package-surface:assessment:declared" type string required many
+    field observed_paths id "urn:gooo:runtime-package-surface:assessment:observed" type string required many
+    field missing_count id "urn:gooo:runtime-package-surface:assessment:missing" type integer required one
+    field undeclared_count id "urn:gooo:runtime-package-surface:assessment:undeclared" type integer required one
+    field duplicate_observation id "urn:gooo:runtime-package-surface:assessment:duplicate" type boolean required one
+}
+
+activity HasDuplicates(Paths) -> Boolean id "urn:gooo:runtime-package-surface:duplicates" computes `
+for value in input.values {
+    let count = 0
+    for other in input.values {
+        if value == other { count = count + 1 }
+    }
+    if count > 1 { return true }
+}
+return false
+`
