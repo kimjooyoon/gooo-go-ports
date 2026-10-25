@@ -1,0 +1,160 @@
+// Copyright 2026 Gooo Go Ports contributors. BSD-3-Clause; see ../../LICENSE.
+// Original comparison of supplied definition/context bindings. No effect authority.
+// Local prototype: strict external adapter and final-source hosted checks pending.
+package definition_binding
+namespace gooo_tool_definition_binding_v1
+import origin "gooo/tool-origin"
+import recorded "gooo/tool-origin/recorded-catalog"
+entity Text id "gooo://std/text"
+entity Boolean id "gooo://std/boolean"
+entity DefinitionInput id "gooo://tool-origin/definition-binding/v1/input" fields {
+ field context_id id "gooo://tool-origin/definition-binding/v1/input/context_id" type string required one
+ field alias_context_id id "gooo://tool-origin/definition-binding/v1/input/alias_context_id" type string required one
+ field collection_context_id id "gooo://tool-origin/definition-binding/v1/input/collection_context_id" type string required one
+ field before_definition_ids id "gooo://tool-origin/definition-binding/v1/input/before_definition_ids" type string required many
+ field after_definition_ids id "gooo://tool-origin/definition-binding/v1/input/after_definition_ids" type string required many
+ field before_definition_profiles id "gooo://tool-origin/definition-binding/v1/input/before_definition_profiles" type string required many
+ field after_definition_profiles id "gooo://tool-origin/definition-binding/v1/input/after_definition_profiles" type string required many
+ field before_capability_ids id "gooo://tool-origin/definition-binding/v1/input/before_capability_ids" type string required many
+ field after_capability_ids id "gooo://tool-origin/definition-binding/v1/input/after_capability_ids" type string required many
+ field before_policy_revision id "gooo://tool-origin/definition-binding/v1/input/before_policy_revision" type string required one
+ field after_policy_revision id "gooo://tool-origin/definition-binding/v1/input/after_policy_revision" type string required one
+}
+entity DefinitionResult id "gooo://tool-origin/definition-binding/v1/result" fields {
+ field context_id id "gooo://tool-origin/definition-binding/v1/result/context_id" type string required one
+ field origin_context_id id "gooo://tool-origin/definition-binding/v1/result/origin_context_id" type string required one
+ field collection_context_id id "gooo://tool-origin/definition-binding/v1/result/collection_context_id" type string required one
+ field origin_state id "gooo://tool-origin/definition-binding/v1/result/origin_state" type string required one
+ field origin_reason id "gooo://tool-origin/definition-binding/v1/result/origin_reason" type string required one
+ field collection_state id "gooo://tool-origin/definition-binding/v1/result/collection_state" type string required one
+ field collection_reason id "gooo://tool-origin/definition-binding/v1/result/collection_reason" type string required one
+ field before_index id "gooo://tool-origin/definition-binding/v1/result/before_index" type integer required one
+ field after_index id "gooo://tool-origin/definition-binding/v1/result/after_index" type integer required one
+ field collection_first_problem_code id "gooo://tool-origin/definition-binding/v1/result/collection_first_problem_code" type string required one
+ field definition_relation id "gooo://tool-origin/definition-binding/v1/result/definition_relation" type string required one
+ field definition_profile_relation id "gooo://tool-origin/definition-binding/v1/result/definition_profile_relation" type string required one
+ field capability_relation id "gooo://tool-origin/definition-binding/v1/result/capability_relation" type string required one
+ field authorization_relation id "gooo://tool-origin/definition-binding/v1/result/authorization_relation" type string required one
+ field policy_relation id "gooo://tool-origin/definition-binding/v1/result/policy_relation" type string required one
+ field before_definition_id id "gooo://tool-origin/definition-binding/v1/result/before_definition_id" type string required one
+ field after_definition_id id "gooo://tool-origin/definition-binding/v1/result/after_definition_id" type string required one
+ field before_definition_profile id "gooo://tool-origin/definition-binding/v1/result/before_definition_profile" type string required one
+ field after_definition_profile id "gooo://tool-origin/definition-binding/v1/result/after_definition_profile" type string required one
+ field before_capability_id id "gooo://tool-origin/definition-binding/v1/result/before_capability_id" type string required one
+ field after_capability_id id "gooo://tool-origin/definition-binding/v1/result/after_capability_id" type string required one
+ field before_policy_revision id "gooo://tool-origin/definition-binding/v1/result/before_policy_revision" type string required one
+ field after_policy_revision id "gooo://tool-origin/definition-binding/v1/result/after_policy_revision" type string required one
+ field state id "gooo://tool-origin/definition-binding/v1/result/state" type string required one
+ field reason id "gooo://tool-origin/definition-binding/v1/result/reason" type string required one
+ field next_action id "gooo://tool-origin/definition-binding/v1/result/next_action" type string required one
+ field declared_bindings_match id "gooo://tool-origin/definition-binding/v1/result/declared_bindings_match" type boolean required one
+ field behavior_equivalence_proven id "gooo://tool-origin/definition-binding/v1/result/behavior_equivalence_proven" type boolean required one
+ field execution_authorized id "gooo://tool-origin/definition-binding/v1/result/execution_authorized" type boolean required one
+ field live_effect_performed id "gooo://tool-origin/definition-binding/v1/result/live_effect_performed" type boolean required one
+ field contains_synthetic_fixture id "gooo://tool-origin/definition-binding/v1/result/contains_synthetic_fixture" type boolean required one
+ field remote_atomicity id "gooo://tool-origin/definition-binding/v1/result/remote_atomicity" type string required one
+}
+activity IsSHA256Text(Text) -> Boolean id "gooo://tool-origin/definition-binding/v1/is-sha256-text" computes `
+if len(input) != 71 { return false }
+if input[0:7] != "sha256:" { return false }
+let offset = 0
+for offset = 0; offset < 71; offset = offset + 1 {
+ if offset >= 7 {
+  let octet = int64(input[offset])
+  if !((octet >= 48 && octet <= 57) || (octet >= 97 && octet <= 102)) { return false }
+ }
+}
+return true
+`
+activity AssessDefinitionBinding(origin.OriginInput, recorded.CollectionInput, DefinitionInput) -> DefinitionResult id "gooo://tool-origin/definition-binding/v1/assess" computes `
+let collection = recorded.CompareRecordedCatalog(input0, input1)
+let beforeCount = len(input0.before_aliases)
+let afterCount = len(input0.after_aliases)
+let invalid = input2.context_id == "" || input2.alias_context_id != input0.context_id || input2.collection_context_id != input1.context_id
+if len(input2.before_definition_ids) != beforeCount || len(input2.before_definition_profiles) != beforeCount || len(input2.before_capability_ids) != beforeCount { invalid = true }
+if len(input2.after_definition_ids) != afterCount || len(input2.after_definition_profiles) != afterCount || len(input2.after_capability_ids) != afterCount { invalid = true }
+let beforeDefinition = ""
+let afterDefinition = ""
+let beforeProfile = ""
+let afterProfile = ""
+let beforeCapability = ""
+let afterCapability = ""
+let definitionRelation = "UNASSESSED"
+let profileRelation = "UNASSESSED"
+let capabilityRelation = "UNASSESSED"
+let policyRelation = "UNASSESSED"
+let supportedProfile = "gooo/mcp-tool-definition-json/v1"
+if !invalid && collection.origin_state == "UNCHANGED" {
+ let beforeIndex = collection.origin_before_index
+ let afterIndex = collection.origin_after_index
+ beforeDefinition = input2.before_definition_ids[beforeIndex]
+ afterDefinition = input2.after_definition_ids[afterIndex]
+ beforeProfile = input2.before_definition_profiles[beforeIndex]
+ afterProfile = input2.after_definition_profiles[afterIndex]
+ beforeCapability = input2.before_capability_ids[beforeIndex]
+ afterCapability = input2.after_capability_ids[afterIndex]
+ if beforeProfile != "" && afterProfile != "" {
+  profileRelation = "DIFFERENT_SUPPLIED"
+  if beforeProfile == afterProfile { profileRelation = "SAME_SUPPLIED" }
+ }
+ if beforeProfile == supportedProfile && afterProfile == supportedProfile {
+  if beforeDefinition != "" && !IsSHA256Text(beforeDefinition) { invalid = true }
+  if afterDefinition != "" && !IsSHA256Text(afterDefinition) { invalid = true }
+  if beforeCapability != "" && !IsSHA256Text(beforeCapability) { invalid = true }
+  if afterCapability != "" && !IsSHA256Text(afterCapability) { invalid = true }
+  if !invalid && beforeDefinition != "" && afterDefinition != "" {
+   definitionRelation = "DIFFERENT_SUPPLIED"
+   if beforeDefinition == afterDefinition { definitionRelation = "SAME_SUPPLIED" }
+  }
+  if !invalid && beforeCapability != "" && afterCapability != "" {
+   capabilityRelation = "DIFFERENT_SUPPLIED"
+   if beforeCapability == afterCapability { capabilityRelation = "SAME_SUPPLIED" }
+  }
+ }
+ if input2.before_policy_revision != "" && input2.after_policy_revision != "" {
+  policyRelation = "DIFFERENT_SUPPLIED"
+  if input2.before_policy_revision == input2.after_policy_revision { policyRelation = "SAME_SUPPLIED" }
+ }
+}
+let state = "UNASSESSED"
+let reason = "SUPPLIED_BINDINGS_NOT_ASSESSED"
+let action = "COMPLETE_BINDING_OBSERVATION"
+let matches = false
+if invalid {
+ state = "INVALID_INPUT"; reason = "INVALID_OR_UNBOUND_DEFINITION_COLUMNS"; action = "FIX_BOUND_INPUT"
+ definitionRelation = "UNASSESSED"; capabilityRelation = "UNASSESSED"; policyRelation = "UNASSESSED"
+} else if collection.origin_state != "UNCHANGED" {
+ state = "ORIGIN_NOT_UNCHANGED"; reason = "ORIGIN_BINDING_REQUIRES_REEVALUATION"; action = "REEVALUATE_ORIGIN"
+} else if collection.state == "AUTH_CONTEXT_CHANGED" {
+ state = "REEVALUATE_AUTHORIZATION"; reason = "RECORDED_AUTHORIZATION_CONTEXT_CHANGED"; action = "REEVALUATE_POLICY"
+} else if collection.state != "RECORDED_CONTEXT_COMPLETE" {
+ reason = "COLLECTION_CONTEXT_NOT_ESTABLISHED"; action = collection.next_action
+} else if definitionRelation == "DIFFERENT_SUPPLIED" {
+ state = "REEVALUATE_DEFINITION"; reason = "SUPPLIED_TOOL_DEFINITION_CHANGED"; action = "REEVALUATE_POLICY"
+} else if capabilityRelation == "DIFFERENT_SUPPLIED" {
+ state = "REEVALUATE_CAPABILITY"; reason = "SUPPLIED_CAPABILITY_CLAIM_CHANGED"; action = "REEVALUATE_POLICY"
+} else if policyRelation == "DIFFERENT_SUPPLIED" {
+ state = "REEVALUATE_POLICY"; reason = "SUPPLIED_POLICY_REVISION_CHANGED"; action = "REEVALUATE_POLICY"
+} else if beforeProfile != supportedProfile || afterProfile != supportedProfile {
+ reason = "DEFINITION_PROFILE_NOT_COMPARABLE"
+} else if definitionRelation == "UNASSESSED" || capabilityRelation == "UNASSESSED" || policyRelation == "UNASSESSED" {
+ reason = "DEFINITION_CAPABILITY_OR_POLICY_NOT_OBSERVED"
+} else {
+ state = "BINDINGS_MATCH"; reason = "SAME_SUPPLIED_BINDINGS_ONLY"; action = "CONTINUE_HOST_VALIDATION"; matches = true
+}
+return DefinitionResult{
+ context_id: input2.context_id, origin_context_id: collection.origin_context_id, collection_context_id: collection.context_id,
+ origin_state: collection.origin_state, origin_reason: collection.origin_reason,
+ collection_state: collection.state, collection_reason: collection.reason,
+ before_index: collection.origin_before_index, after_index: collection.origin_after_index,
+ collection_first_problem_code: collection.first_problem_code,
+ definition_relation: definitionRelation, definition_profile_relation: profileRelation, capability_relation: capabilityRelation,
+ authorization_relation: collection.authorization_relation, policy_relation: policyRelation,
+ before_definition_id: beforeDefinition, after_definition_id: afterDefinition, before_definition_profile: beforeProfile, after_definition_profile: afterProfile,
+ before_capability_id: beforeCapability, after_capability_id: afterCapability, before_policy_revision: input2.before_policy_revision, after_policy_revision: input2.after_policy_revision,
+ state: state, reason: reason, next_action: action, declared_bindings_match: matches,
+ behavior_equivalence_proven: false, execution_authorized: false, live_effect_performed: false,
+ contains_synthetic_fixture: collection.contains_synthetic_fixture, remote_atomicity: collection.remote_atomicity,
+}
+`
+
