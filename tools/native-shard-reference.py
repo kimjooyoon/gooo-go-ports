@@ -94,18 +94,22 @@ def go_json(value, *, html=False, sorted_map=False):
 
 
 def load(raw, *, metadata=True):
-    # A receipt can contain hundreds of thousands of integer tokens. Keep the
-    # exact grammar check without a module-level regex/cache lookup per token.
-    canonical_integer = re.compile(r'0|-?[1-9][0-9]*').fullmatch
+    # The stdlib scanner already supplies decimal integer tokens. Keep the
+    # extra -0/ASCII and signed64 restrictions without repeated regex/type
+    # validation; malformed token boundaries still fail in the scanner.
     def pairs(items):
         result={}
         for key,value in items:
-            need(key not in result, 'duplicate decoded JSON key: '+key)
+            if key in result:
+                raise RuntimeError('duplicate decoded JSON key: '+key)
             result[key]=value
         return result
     def number(value):
-        need(canonical_integer(value) is not None,'canonical decimal integer token required')
-        parsed=int(value);integer(parsed,-MAX_INT-1)
+        if value == '-0' or not value.isascii():
+            raise RuntimeError('canonical decimal integer token required')
+        parsed=int(value)
+        if parsed < -MAX_INT-1 or parsed > MAX_INT:
+            raise RuntimeError('bounded exact integer required')
         return parsed
     def finite(value):
         parsed=float(value);need(math.isfinite(parsed),'nonfinite raw JSON number')
@@ -118,7 +122,6 @@ def load(raw, *, metadata=True):
                           parse_int=number,parse_float=reject if metadata else finite,parse_constant=reject)
     except (ValueError,UnicodeError,RecursionError) as error:
         raise RuntimeError('invalid strict JSON: '+type(error).__name__) from error
-
 
 def unpack_receipt(raw, limit=MAX_FILE):
     need(type(raw) is bytes and 0 < len(raw) <= 8 << 20 and 0 < limit <= MAX_FILE, 'bounded stored receipt required')
