@@ -28,8 +28,9 @@ host = e.host
 
 def source_snapshot():
     paths = [ROOT/'upstream.json',e.MANIFEST,o.MANIFEST,*[ROOT/p for p in e.SOURCES.values()],ROOT/o.SOURCE,
-             ROOT/'examples/tool-definition-binding/evidence.py',ROOT/'examples/recorded-catalog-comparison/generate.py',ROOT/'examples/service-grant-many/verify.py']
-    for directory in (HERE,ROOT/'examples/recorded-catalog-comparison'):
+             ROOT/'examples/tool-definition-binding/evidence.py',ROOT/'examples/recorded-catalog-comparison/generate.py',ROOT/'examples/service-grant-many/verify.py',
+             ROOT/'definition-snapshot.workspace.json',ROOT/'ports/tool-origin/definition_snapshot.gooo']
+    for directory in (HERE,ROOT/'examples/recorded-catalog-comparison',ROOT/'examples/tool-definition-snapshot'):
         paths.extend(p for p in directory.rglob('*') if p.is_file() and p.suffix in ('.py','.go','.mod','.json') and '__pycache__' not in p.parts)
     return {str(p.relative_to(ROOT)):host.ref(p) for p in sorted(set(paths))}
 

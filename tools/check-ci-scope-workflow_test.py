@@ -1385,7 +1385,40 @@ SAVED_FRAME_ASSEMBLER_NEXT_UNIT = '          python3 -I -B tools/check-header-ad
 # Remove only the new common unit line before applying unchanged older guards.
 SAVED_FRAME_ASSEMBLER_PRIOR_WORKFLOW_SHA = '8dc9407b6e35fd9fb79d7aa3a569187a5a799100335d4b75d42065dd325207d5'
 
+# This integration is removed before the unchanged historical workflow guards.
+# Default CI verifies checked-in assets; it never runs bootstrap publication.
+SNAPSHOT_COMMON = '          go -C examples/tool-definition-snapshot/reference vet ./...\n          go -C examples/tool-definition-snapshot/reference test -race -count=1 ./...\n          python3 -I -B examples/tool-definition-snapshot/reference/make_inputs.py --check\n          python3 -I -B examples/tool-definition-snapshot/provenance_test.py\n'
+SNAPSHOT_DECL = '          ./.gooo check ports/tool-origin/definition_snapshot.gooo\n'
+SNAPSHOT_STEP = '      - name: Verify Gooo saved definition snapshots\n        if: steps.change-scope.outputs.docs_only != \'true\'\n        timeout-minutes: 12\n        run: |\n          set -euo pipefail\n          python3 -I -B examples/tool-definition-snapshot/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/tool-definition-snapshot"\n          jq -e \'\n            .schema == "gooo/definition-snapshot-verification/v1" and\n            .status == "FINITE_SNAPSHOT_NATIVE_OWN_REPLAY_PASS" and\n            .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and\n            .go_version == "go1.27.3" and .reference_cases == 89 and .kernel_cases == 83 and\n            .input_rejection_cases == 6 and .input_rejections_verified == true and .reference_cases_accounted == 89 and\n            .reference_cases == (.kernel_cases + .input_rejection_cases) and .typed_decision_fields == 32 and\n            .receipt_negative_controls == 8 and .generated_assets == 5 and .generated_assets_exact == true and\n            .PROV_O_bindings_verified == true and .source_unchanged == true and\n            .all_direct_wait_EOF_PG_ESRCH == true and .synthetic_domain_observations_only == true and\n            .adapter_CLI_validation_included == false and .full_repository_CI_required == true and\n            .model_calls == 0 and .engine_builds == 0 and .external_adoption == false and .live_capture_executed == false and\n            .native_acceptance == false and .execution_authorized == false\n          \' "$RUNNER_TEMP/tool-definition-snapshot/summary.json"\n'
+SNAPSHOT_UPLOAD = "      - name: Preserve saved definition snapshot evidence\n        if: always() && steps.change-scope.outputs.docs_only != 'true'\n        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7\n        with:\n          name: tool-definition-snapshot-evidence\n          path: ${{ runner.temp }}/tool-definition-snapshot/\n          if-no-files-found: warn\n          retention-days: 14\n"
+SNAPSHOT_PRIOR_WORKFLOW_SHA = 'cbe3c8485fb1fed201cc5fc93c6f42a4ab906e623a5adcad29bcb6a2963f5056'
+
+
+def project_definition_snapshot_integration(text):
+    jobs = workflow_jobs(text)
+    _, observer, _ = job_steps(jobs['observer-checks'])
+    _, native, _ = job_steps(jobs['native-execution'])
+    require(text.count(SNAPSHOT_COMMON) == 1 and
+            DEFINITION_PREFLIGHT + SNAPSHOT_COMMON in observer['Check the Go observer'],
+            'snapshot reference and fixture checks must remain adjacent unconditional common checks')
+    require(text.count(SNAPSHOT_DECL) == 1 and
+            SNAPSHOT_DECL + '          ./.gooo check ports/image/color.gooo\n' in native['Check Gooo declarations'],
+            'snapshot declaration check must remain in common declaration validation')
+    for chunk in (SNAPSHOT_STEP, SNAPSHOT_UPLOAD):
+        require(text.count(chunk) == 1 and chunk in jobs['policy-native-checks'],
+                'snapshot needs exact full-scope native verification and failure-safe evidence')
+    require(text.index(DEFINITION_UPLOAD) + len(DEFINITION_UPLOAD) == text.index(SNAPSHOT_STEP) and
+            text.index(SNAPSHOT_STEP) + len(SNAPSHOT_STEP) == text.index(SNAPSHOT_UPLOAD) and
+            text.index(SNAPSHOT_UPLOAD) + len(SNAPSHOT_UPLOAD) == text.index(OBSERVATION_STEP),
+            'snapshot verification must remain between definition and observation checks')
+    prior = text.replace(SNAPSHOT_COMMON, '', 1).replace(SNAPSHOT_DECL, '', 1).replace(SNAPSHOT_STEP, '', 1).replace(SNAPSHOT_UPLOAD, '', 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == SNAPSHOT_PRIOR_WORKFLOW_SHA,
+            'snapshot integration changed unrelated workflow bytes')
+    return prior
+
+
 def project_saved_frame_assembler_integration(text):
+    text = project_definition_snapshot_integration(text)
     jobs = workflow_jobs(text)
     _, observer, _ = job_steps(jobs['observer-checks'])
     require(text.count(SAVED_FRAME_ASSEMBLER_UNIT) == 1 and
@@ -4502,6 +4535,47 @@ class RecordedCatalogIntegrationTests(unittest.TestCase):
             project_recorded_catalog_integration(raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1))
 
 
+class DefinitionSnapshotIntegrationTests(unittest.TestCase):
+    def test_exact_additions_preserve_the_complete_previous_workflow(self):
+        raw = WORKFLOW.read_text()
+        prior = project_definition_snapshot_integration(raw)
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), SNAPSHOT_PRIOR_WORKFLOW_SHA)
+        self.assertNotIn('tool-definition-snapshot', prior)
+        project_root_go_reference(raw)
+
+    def test_skipped_masked_or_bootstrap_verification_is_refused(self):
+        raw = WORKFLOW.read_text()
+        mutations = [raw.replace(SNAPSHOT_STEP, '', 1), raw.replace(SNAPSHOT_STEP, SNAPSHOT_STEP * 2, 1),
+                     raw.replace(SNAPSHOT_COMMON, '', 1), raw.replace(SNAPSHOT_DECL, '', 1)]
+        for old, new in ((FULL, DOCS), ('set -euo pipefail', 'set +e'),
+                         ('--out "$RUNNER_TEMP/tool-definition-snapshot"', '--write-generated --out "$RUNNER_TEMP/tool-definition-snapshot"'),
+                         ('--out "$RUNNER_TEMP/tool-definition-snapshot"', '--out "$RUNNER_TEMP/tool-definition-snapshot" || true'),
+                         ('.kernel_cases == 83', 'true'), ('.reference_cases == 89', 'true'),
+                         ('.input_rejection_cases == 6', 'true'), ('.input_rejections_verified == true', 'true'),
+                         ('.reference_cases_accounted == 89', 'true'),
+                         ('.reference_cases == (.kernel_cases + .input_rejection_cases)', 'true'),
+                         ('.receipt_negative_controls == 8', 'true'),
+                         ('.generated_assets_exact == true', 'true'), ('.source_unchanged == true', 'true'),
+                         ('.PROV_O_bindings_verified == true', 'true'), ('.first_failure == null', 'true'),
+                         ('.all_direct_wait_EOF_PG_ESRCH == true', 'true'), ('.model_calls == 0', 'true'),
+                         ('.execution_authorized == false', 'true'), ('.adapter_CLI_validation_included == false', 'true')):
+            self.assertIn(old, SNAPSHOT_STEP)
+            mutations.append(raw.replace(SNAPSHOT_STEP, SNAPSHOT_STEP.replace(old, new, 1), 1))
+        for mutation in mutations:
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                project_definition_snapshot_integration(mutation)
+
+    def test_failure_evidence_is_retained_once_in_its_original_directory(self):
+        raw = WORKFLOW.read_text()
+        for replacement in ('', SNAPSHOT_UPLOAD * 2, SNAPSHOT_UPLOAD.replace('always() && ', '', 1),
+                            SNAPSHOT_UPLOAD.replace('${{ runner.temp }}/tool-definition-snapshot/', 'out/wrong/', 1)):
+            with self.subTest(replacement=replacement), self.assertRaises(ValueError):
+                project_definition_snapshot_integration(raw.replace(SNAPSHOT_UPLOAD, replacement, 1))
+        moved = raw.replace(SNAPSHOT_STEP + SNAPSHOT_UPLOAD, '', 1).replace(DEFINITION_STEP, SNAPSHOT_STEP + SNAPSHOT_UPLOAD + DEFINITION_STEP, 1)
+        with self.assertRaises(ValueError):project_definition_snapshot_integration(moved)
+        with self.assertRaises(ValueError):project_definition_snapshot_integration(raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1))
+
+
 class DefinitionBindingIntegrationTests(unittest.TestCase):
     def test_exact_integration_projects_to_unchanged_previous_workflow(self):
         raw = WORKFLOW.read_text()
@@ -4614,7 +4688,7 @@ class SavedFrameAssemblerIntegrationTests(unittest.TestCase):
     def test_only_common_unit_line_is_removed_before_historical_guards(self):
         raw = WORKFLOW.read_text()
         prior = project_saved_frame_assembler_integration(raw)
-        self.assertEqual(prior, raw.replace(SAVED_FRAME_ASSEMBLER_UNIT, '', 1))
+        self.assertEqual(prior, project_definition_snapshot_integration(raw).replace(SAVED_FRAME_ASSEMBLER_UNIT, '', 1))
         self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(),
                          SAVED_FRAME_ASSEMBLER_PRIOR_WORKFLOW_SHA)
         project_catalog_bundle_integration(raw)

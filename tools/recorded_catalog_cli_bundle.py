@@ -30,14 +30,65 @@ need, sha, read, encoded, unique = BASE.need, BASE.sha, BASE.read, BASE.encoded,
 COMMAND = "gooo-recorded-catalog"
 MODULE = "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison"
 PROFILE = "examples/recorded-catalog-comparison/"
-SOURCE_DIRS = ("examples/explicit-observation-availability/", PROFILE)
+SOURCE_DIRS = ("examples/explicit-observation-availability/", "examples/tool-definition-snapshot/", PROFILE)
 SOURCE_EXTRAS = {
     "upstream.json", "explicit-availability.workspace.json", "explicit-observation.workspace.json",
+    "definition-snapshot.workspace.json", "ports/tool-origin/definition_snapshot.gooo",
     "ports/tool-origin/alias_origin.gooo", "ports/tool-origin/definition_binding.gooo",
     "ports/tool-origin/explicit_availability.gooo", "ports/tool-origin/explicit_observation.gooo",
     "ports/tool-origin/recorded_catalog.gooo", "examples/service-grant-many/verify.py",
     "examples/tool-definition-binding/evidence.py",
 }
+# Bind the complete runtime generation roster, not just an equal-size subset.
+GENERATION_MANIFESTS = {PROFILE + name for name in (
+    "generation.json", "definition-generation.json", "observation-generation.json",
+    "availability-generation.json", "availability-observation-generation.json",
+    "snapshot-generation.json",
+)}
+
+
+SNAPSHOT_ROOT = "examples/tool-definition-snapshot/"
+SNAPSHOT_GENERATOR_SOURCES = {
+    SNAPSHOT_ROOT + "generate.py", SNAPSHOT_ROOT + "evidence.py",
+    PROFILE + "generate.py", "examples/service-grant-many/verify.py",
+}
+SNAPSHOT_GENERATED_ASSETS = {PROFILE + "internal/snapshotkernel/" + name for name in
+                             ("projection_generated.go", "types_generated.go", "bridge_generated.go")} | {
+    PROFILE + "snapshot-kernel-cases.json",
+}
+SNAPSHOT_REFERENCE_SOURCES = {
+    "reference/main.go", "reference/go.mod", "reference/make_inputs.py",
+    "reference-inputs.json", "case-labels.json", "input-boundaries.json", "abi.json",
+}
+
+
+def check_generation_roster(generations):
+    need(set(generations) == GENERATION_MANIFESTS, "all exact runtime generation manifests required")
+
+
+def check_snapshot_materials(generation, sources):
+    """Bind the new generator's actual material claims to retained source bytes.
+
+    This does not replace native receipt verification or authenticate a producer.
+    """
+    for group, names, prefix in (
+        ("source", {"ports/tool-origin/definition_snapshot.gooo"}, ""),
+        ("generator_source", SNAPSHOT_GENERATOR_SOURCES, ""),
+        ("reference_source", SNAPSHOT_REFERENCE_SOURCES, SNAPSHOT_ROOT),
+        ("generated_assets", SNAPSHOT_GENERATED_ASSETS, ""),
+    ):
+        values = generation.get(group)
+        need(type(values) is dict and set(values) == names, "snapshot material roster differs")
+        for name, digest in values.items():
+            path = prefix + name
+            need(path in sources and digest == "sha256:" + sources[path]["sha256"],
+                 "snapshot material differs from bound source")
+    for key, path in (("workspace_sha256", "definition-snapshot.workspace.json"),
+                      ("cases_sha256", SNAPSHOT_ROOT + "kernel.cases.json")):
+        need(path in sources and generation.get(key) == "sha256:" + sources[path]["sha256"],
+             "snapshot material differs from bound source")
+
+
 LABELS = ("supplied-unknown", "unobserved-unknown", "unobserved-other-text", "asymmetric-unobserved",
           "known-page-change", "unobserved-policy", "optional-timestamps", "backend-unobserved-same",
           "backend-unobserved-different", "backend-unobserved-asymmetric", "backend-unobserved-known-host",
@@ -349,8 +400,10 @@ def check_evidence(root, evidence, synthetic_export, revision):
                 relative = asset if asset.startswith(PROFILE) else PROFILE + asset
                 need(relative in sources and digest == "sha256:" + sources[relative]["sha256"],
                      "generation asset differs from bound source")
+            if name == PROFILE + "snapshot-generation.json":
+                check_snapshot_materials(generation, sources)
             generations[name] = identity(raw_generation)
-    need(len(generations) == 5, "all runtime generation manifests required")
+    check_generation_roster(generations)
     return {"binary": binary, "build": build, "platform": target, "rows": rows, "sources": sources,
             "licenses": licenses, "public_export": identity(raw_export),
             "compiler_source_sha": pins["compiler_revision"], "generations": generations}

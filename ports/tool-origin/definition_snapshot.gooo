@@ -1,0 +1,272 @@
+// Copyright 2026 Gooo Go Ports contributors. BSD-3-Clause; see ../../LICENSE.
+// Original finite comparison of saved definition observations, without host aliases.
+// Source WIP: native generation, own replay and final-source CI remain required.
+package definition_snapshot
+namespace gooo_tool_definition_snapshot_v1
+entity Text id "gooo://std/text"
+entity Boolean id "gooo://std/boolean"
+entity SnapshotFacts id "gooo://tool-origin/definition-snapshot/v1/facts" fields {
+ field page_request_cursor_kinds id "gooo://tool-origin/definition-snapshot/v1/facts/page_request_cursor_kinds" type string required many
+ field page_request_cursor_values id "gooo://tool-origin/definition-snapshot/v1/facts/page_request_cursor_values" type string required many
+ field page_next_cursor_kinds id "gooo://tool-origin/definition-snapshot/v1/facts/page_next_cursor_kinds" type string required many
+ field page_next_cursor_values id "gooo://tool-origin/definition-snapshot/v1/facts/page_next_cursor_values" type string required many
+ field original_names id "gooo://tool-origin/definition-snapshot/v1/facts/original_names" type string required many
+ field definition_ids id "gooo://tool-origin/definition-snapshot/v1/facts/definition_ids" type string required many
+ field definition_profiles id "gooo://tool-origin/definition-snapshot/v1/facts/definition_profiles" type string required many
+ field annotation_ids id "gooo://tool-origin/definition-snapshot/v1/facts/annotation_ids" type string required many
+ field row_page_indexes id "gooo://tool-origin/definition-snapshot/v1/facts/row_page_indexes" type integer required many
+}
+entity Selection id "gooo://tool-origin/definition-snapshot/v1/selection" fields {
+ field context_id id "gooo://tool-origin/definition-snapshot/v1/selection/context_id" type string required one
+ field target_name id "gooo://tool-origin/definition-snapshot/v1/selection/target_name" type string required one
+}
+entity SnapshotStatus id "gooo://tool-origin/definition-snapshot/v1/snapshot-status" fields {
+ field valid id "gooo://tool-origin/definition-snapshot/v1/snapshot-status/valid" type boolean required one
+ field shape_reason id "gooo://tool-origin/definition-snapshot/v1/snapshot-status/shape_reason" type string required one
+ field coverage id "gooo://tool-origin/definition-snapshot/v1/snapshot-status/coverage" type string required one
+ field coverage_reason id "gooo://tool-origin/definition-snapshot/v1/snapshot-status/coverage_reason" type string required one
+ field problem_page_index id "gooo://tool-origin/definition-snapshot/v1/snapshot-status/problem_page_index" type integer required one
+ field problem_row_index id "gooo://tool-origin/definition-snapshot/v1/snapshot-status/problem_row_index" type integer required one
+ field duplicate_first_index id "gooo://tool-origin/definition-snapshot/v1/snapshot-status/duplicate_first_index" type integer required one
+ field duplicate_second_index id "gooo://tool-origin/definition-snapshot/v1/snapshot-status/duplicate_second_index" type integer required one
+ field selected_index id "gooo://tool-origin/definition-snapshot/v1/snapshot-status/selected_index" type integer required one
+}
+entity SnapshotDecision id "gooo://tool-origin/definition-snapshot/v1/result" fields {
+ field context_id id "gooo://tool-origin/definition-snapshot/v1/result/context_id" type string required one
+ field target_name id "gooo://tool-origin/definition-snapshot/v1/result/target_name" type string required one
+ field state id "gooo://tool-origin/definition-snapshot/v1/result/state" type string required one
+ field reason id "gooo://tool-origin/definition-snapshot/v1/result/reason" type string required one
+ field next_action id "gooo://tool-origin/definition-snapshot/v1/result/next_action" type string required one
+ field comparison_scope id "gooo://tool-origin/definition-snapshot/v1/result/comparison_scope" type string required one
+ field before_page_coverage id "gooo://tool-origin/definition-snapshot/v1/result/before_page_coverage" type string required one
+ field after_page_coverage id "gooo://tool-origin/definition-snapshot/v1/result/after_page_coverage" type string required one
+ field before_coverage_reason id "gooo://tool-origin/definition-snapshot/v1/result/before_coverage_reason" type string required one
+ field after_coverage_reason id "gooo://tool-origin/definition-snapshot/v1/result/after_coverage_reason" type string required one
+ field before_problem_page_index id "gooo://tool-origin/definition-snapshot/v1/result/before_problem_page_index" type integer required one
+ field after_problem_page_index id "gooo://tool-origin/definition-snapshot/v1/result/after_problem_page_index" type integer required one
+ field before_problem_row_index id "gooo://tool-origin/definition-snapshot/v1/result/before_problem_row_index" type integer required one
+ field after_problem_row_index id "gooo://tool-origin/definition-snapshot/v1/result/after_problem_row_index" type integer required one
+ field before_index id "gooo://tool-origin/definition-snapshot/v1/result/before_index" type integer required one
+ field after_index id "gooo://tool-origin/definition-snapshot/v1/result/after_index" type integer required one
+ field before_definition_id id "gooo://tool-origin/definition-snapshot/v1/result/before_definition_id" type string required one
+ field after_definition_id id "gooo://tool-origin/definition-snapshot/v1/result/after_definition_id" type string required one
+ field before_definition_profile id "gooo://tool-origin/definition-snapshot/v1/result/before_definition_profile" type string required one
+ field after_definition_profile id "gooo://tool-origin/definition-snapshot/v1/result/after_definition_profile" type string required one
+ field before_annotation_id id "gooo://tool-origin/definition-snapshot/v1/result/before_annotation_id" type string required one
+ field after_annotation_id id "gooo://tool-origin/definition-snapshot/v1/result/after_annotation_id" type string required one
+ field observed_presence_relation id "gooo://tool-origin/definition-snapshot/v1/result/observed_presence_relation" type string required one
+ field definition_relation id "gooo://tool-origin/definition-snapshot/v1/result/definition_relation" type string required one
+ field annotation_relation id "gooo://tool-origin/definition-snapshot/v1/result/annotation_relation" type string required one
+ field profile_relation id "gooo://tool-origin/definition-snapshot/v1/result/profile_relation" type string required one
+ field origin_relation id "gooo://tool-origin/definition-snapshot/v1/result/origin_relation" type string required one
+ field authorization_relation id "gooo://tool-origin/definition-snapshot/v1/result/authorization_relation" type string required one
+ field behavior_equivalence_proven id "gooo://tool-origin/definition-snapshot/v1/result/behavior_equivalence_proven" type boolean required one
+ field execution_authorized id "gooo://tool-origin/definition-snapshot/v1/result/execution_authorized" type boolean required one
+ field live_effect_performed id "gooo://tool-origin/definition-snapshot/v1/result/live_effect_performed" type boolean required one
+ field remote_atomicity id "gooo://tool-origin/definition-snapshot/v1/result/remote_atomicity" type string required one
+}
+activity IsBoundedSnapshotText(Text) -> Boolean id "gooo://tool-origin/definition-snapshot/v1/bounded-text" computes `
+if len(input) > 1024 { return false }
+let i = 0
+for i = 0; i < 1024; i = i + 1 {
+ if i < len(input) { if int64(input[i]) == 0 { return false } }
+}
+return true
+`
+activity IsSnapshotDigest(Text) -> Boolean id "gooo://tool-origin/definition-snapshot/v1/digest-text" computes `
+if len(input) != 71 { return false }
+if input[0:7] != "sha256:" { return false }
+let i = 0
+for i = 0; i < 71; i = i + 1 {
+ if i >= 7 {
+  let octet = int64(input[i])
+  if !((octet >= 48 && octet <= 57) || (octet >= 97 && octet <= 102)) { return false }
+ }
+}
+return true
+`
+activity InspectDefinitionSnapshot(SnapshotFacts, Selection) -> SnapshotStatus id "gooo://tool-origin/definition-snapshot/v1/inspect" computes `
+let pages = len(input0.page_request_cursor_kinds)
+let rows = len(input0.original_names)
+let valid = true
+let shapeReason = ""
+let coverage = "COMPLETE"
+let coverageReason = "OBSERVED_PAGE_CHAIN_COMPLETE"
+let problemPage = -1
+let problemRow = -1
+let duplicateFirst = -1
+let duplicateSecond = -1
+let selected = -1
+if pages > 16 || rows > 256 {
+ valid = false; shapeReason = "SNAPSHOT_LIMIT"
+}
+if len(input0.page_request_cursor_values) != pages || len(input0.page_next_cursor_kinds) != pages || len(input0.page_next_cursor_values) != pages {
+ if valid { shapeReason = "PAGE_COLUMN_LENGTH" }
+ valid = false
+}
+if len(input0.definition_ids) != rows || len(input0.definition_profiles) != rows || len(input0.annotation_ids) != rows || len(input0.row_page_indexes) != rows {
+ if valid { shapeReason = "ROW_COLUMN_LENGTH" }
+ valid = false
+}
+if valid {
+ let p = 0
+ for requestKind in input0.page_request_cursor_kinds {
+  let nextKind = input0.page_next_cursor_kinds[p]
+  let requestValue = input0.page_request_cursor_values[p]
+  let nextValue = input0.page_next_cursor_values[p]
+  let bad = (requestKind != "ABSENT" && requestKind != "STRING") || (nextKind != "ABSENT" && nextKind != "NULL" && nextKind != "STRING")
+  if requestKind != "STRING" && requestValue != "" { bad = true }
+  if nextKind != "STRING" && nextValue != "" { bad = true }
+  if !IsBoundedSnapshotText(requestValue) || !IsBoundedSnapshotText(nextValue) { bad = true }
+  if bad && valid {
+   valid = false; shapeReason = "INVALID_CURSOR_TAG_OR_VALUE"; problemPage = p
+  }
+  p = p + 1
+ }
+}
+if valid {
+ let r = 0
+ let previousPage = -1
+ for name in input0.original_names {
+  let bad = name == "" || !IsBoundedSnapshotText(name)
+  if !IsSnapshotDigest(input0.definition_ids[r]) || !IsSnapshotDigest(input0.annotation_ids[r]) { bad = true }
+  if input0.definition_profiles[r] == "" || !IsBoundedSnapshotText(input0.definition_profiles[r]) { bad = true }
+  let page = input0.row_page_indexes[r]
+  if page < 0 || page >= pages || page < previousPage { bad = true }
+  if bad && valid {
+   valid = false; shapeReason = "INVALID_ROW_FACT"; problemRow = r
+  }
+  previousPage = page
+  r = r + 1
+ }
+}
+if valid {
+ let r = 0
+ for name in input0.original_names {
+  if name == input1.target_name && selected == -1 { selected = r }
+  let earlier = 0
+  for prior in input0.original_names {
+   if earlier < r && prior == name && duplicateFirst == -1 {
+    duplicateFirst = earlier; duplicateSecond = r; problemRow = r
+   }
+   earlier = earlier + 1
+  }
+  r = r + 1
+ }
+ if pages == 0 {
+  coverage = "INCOMPLETE"; coverageReason = "NO_SAVED_PAGES"
+ } else {
+  let p = 0
+  for requestKind in input0.page_request_cursor_kinds {
+   let badLink = false
+   let linkReason = ""
+   if p == 0 {
+    if requestKind != "ABSENT" { badLink = true; linkReason = "MISSING_INITIAL_PAGE" }
+   } else {
+    if input0.page_next_cursor_kinds[p - 1] != "STRING" {
+     badLink = true; linkReason = "PAGE_AFTER_TERMINAL"
+    } else if requestKind != "STRING" || input0.page_request_cursor_values[p] != input0.page_next_cursor_values[p - 1] {
+     badLink = true; linkReason = "CURSOR_LINK_MISMATCH"
+    }
+   }
+   if badLink && coverage == "COMPLETE" {
+    coverage = "INCOMPLETE"; coverageReason = linkReason; problemPage = p
+   }
+   p = p + 1
+  }
+  if input0.page_next_cursor_kinds[pages - 1] == "STRING" && coverage == "COMPLETE" {
+   coverage = "INCOMPLETE"; coverageReason = "MISSING_TERMINAL_PAGE"; problemPage = pages - 1
+  }
+ }
+} else {
+ coverage = "INVALID"; coverageReason = shapeReason
+}
+return SnapshotStatus{
+ valid: valid, shape_reason: shapeReason, coverage: coverage, coverage_reason: coverageReason,
+ problem_page_index: problemPage, problem_row_index: problemRow,
+ duplicate_first_index: duplicateFirst, duplicate_second_index: duplicateSecond, selected_index: selected,
+}
+`
+activity CompareDefinitionSnapshot(SnapshotFacts, SnapshotFacts, Selection) -> SnapshotDecision id "gooo://tool-origin/definition-snapshot/v1/compare" computes `
+let before = InspectDefinitionSnapshot(input0, input2)
+let after = InspectDefinitionSnapshot(input1, input2)
+let bi = before.selected_index
+let ai = after.selected_index
+if before.duplicate_first_index >= 0 || after.duplicate_first_index >= 0 { bi = -1; ai = -1 }
+let beforeDefinition = ""
+let afterDefinition = ""
+let beforeProfile = ""
+let afterProfile = ""
+let beforeAnnotation = ""
+let afterAnnotation = ""
+if before.valid && bi >= 0 {
+ beforeDefinition = input0.definition_ids[bi]
+ beforeProfile = input0.definition_profiles[bi]
+ beforeAnnotation = input0.annotation_ids[bi]
+}
+if after.valid && ai >= 0 {
+ afterDefinition = input1.definition_ids[ai]
+ afterProfile = input1.definition_profiles[ai]
+ afterAnnotation = input1.annotation_ids[ai]
+}
+let presence = "UNASSESSED"
+let definitionRelation = "UNASSESSED"
+let annotationRelation = "UNASSESSED"
+let profileRelation = "UNASSESSED"
+let state = "UNASSESSED"
+let reason = "TARGET_OBSERVATION_INCOMPLETE"
+let action = "OBTAIN_DEFINITION_OBSERVATION"
+let supported = "gooo/mcp-tool-definition-json/v1"
+let selectionValid = input2.context_id != "" && input2.target_name != "" && IsBoundedSnapshotText(input2.context_id) && IsBoundedSnapshotText(input2.target_name)
+if !selectionValid {
+ state = "INVALID_INPUT"; reason = "INVALID_SELECTION_TEXT"; action = "FIX_BOUND_INPUT"
+} else if !before.valid || !after.valid {
+ state = "INVALID_INPUT"; reason = "INVALID_SNAPSHOT_FACTS"; action = "FIX_BOUND_INPUT"
+} else if before.duplicate_first_index >= 0 || after.duplicate_first_index >= 0 {
+ state = "AMBIGUOUS_NAME"; reason = "DUPLICATE_OBSERVED_NAME"; action = "RESOLVE_OBSERVATION_AMBIGUITY"
+} else {
+ if bi >= 0 && ai >= 0 {
+  presence = "OBSERVED_BOTH"
+  profileRelation = "DIFFERENT_OBSERVED"
+  if beforeProfile == afterProfile { profileRelation = "SAME_OBSERVED" }
+  if beforeProfile != supported || afterProfile != supported {
+   reason = "DEFINITION_PROFILE_NOT_COMPARABLE"; action = "USE_SUPPORTED_DEFINITION_PROFILE"
+  } else {
+   definitionRelation = "DIFFERENT_OBSERVED"
+   annotationRelation = "DIFFERENT_OBSERVED"
+   if beforeDefinition == afterDefinition { definitionRelation = "SAME_OBSERVED" }
+   if beforeAnnotation == afterAnnotation { annotationRelation = "SAME_OBSERVED" }
+   if definitionRelation == "DIFFERENT_OBSERVED" {
+    state = "OBSERVED_DEFINITION_CHANGED"; reason = "SELECTED_DESCRIPTOR_BYTES_DIFFER"; action = "REVIEW_DEFINITION_CHANGE"
+   } else if annotationRelation == "DIFFERENT_OBSERVED" {
+    state = "OBSERVED_ANNOTATIONS_CHANGED"; reason = "SELECTED_ANNOTATION_CLAIMS_DIFFER"; action = "REVIEW_ANNOTATION_CHANGE"
+   } else {
+    state = "OBSERVED_DEFINITION_SAME"; reason = "SELECTED_DESCRIPTOR_AND_ANNOTATIONS_SAME"; action = "RETAIN_OBSERVATION"
+   }
+  }
+ } else if bi < 0 && ai >= 0 && before.coverage == "COMPLETE" {
+  presence = "OBSERVED_ADDED"; state = "OBSERVED_NAME_ADDED"; reason = "ABSENT_FROM_COMPLETE_BEFORE_PAGES"; action = "REVIEW_OBSERVED_ADDITION"
+ } else if bi >= 0 && ai < 0 && after.coverage == "COMPLETE" {
+  presence = "OBSERVED_REMOVED"; state = "OBSERVED_NAME_REMOVED"; reason = "ABSENT_FROM_COMPLETE_AFTER_PAGES"; action = "REVIEW_OBSERVED_REMOVAL"
+ } else if bi < 0 && ai < 0 && before.coverage == "COMPLETE" && after.coverage == "COMPLETE" {
+  presence = "ABSENT_BOTH_COMPLETE"; state = "OBSERVED_NAME_ABSENT"; reason = "ABSENT_FROM_BOTH_COMPLETE_PAGE_SETS"; action = "RETAIN_OBSERVATION"
+ }
+}
+return SnapshotDecision{
+ context_id: input2.context_id, target_name: input2.target_name, state: state, reason: reason, next_action: action,
+ comparison_scope: "SAVED_ROWS_ONLY",
+ before_page_coverage: before.coverage, after_page_coverage: after.coverage,
+ before_coverage_reason: before.coverage_reason, after_coverage_reason: after.coverage_reason,
+ before_problem_page_index: before.problem_page_index, after_problem_page_index: after.problem_page_index,
+ before_problem_row_index: before.problem_row_index, after_problem_row_index: after.problem_row_index,
+ before_index: bi, after_index: ai,
+ before_definition_id: beforeDefinition, after_definition_id: afterDefinition,
+ before_definition_profile: beforeProfile, after_definition_profile: afterProfile,
+ before_annotation_id: beforeAnnotation, after_annotation_id: afterAnnotation,
+ observed_presence_relation: presence, definition_relation: definitionRelation,
+ annotation_relation: annotationRelation, profile_relation: profileRelation,
+ origin_relation: "NOT_ASSESSED", authorization_relation: "NOT_ASSESSED",
+ behavior_equivalence_proven: false, execution_authorized: false, live_effect_performed: false,
+ remote_atomicity: "UNKNOWN",
+}
+`

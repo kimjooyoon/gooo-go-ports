@@ -327,18 +327,25 @@ type decodedPage struct {
 }
 
 func decodePage(page Page) (decodedPage, error) {
+	return decodeSavedPage(page.RequestJSON, page.ResponseJSON, len(page.DeclaredExposedNames), true)
+}
+
+// decodeSavedPage validates saved JSON-RPC bytes without asserting a host
+// identity. The existing host path still checks exposure count at the original
+// position, before decoding individual tool names.
+func decodeSavedPage(requestJSON, responseJSON string, exposedCount int, requireExposure bool) (decodedPage, error) {
 	var result decodedPage
-	if err := strictJSON([]byte(page.RequestJSON), MaxFrameBytes); err != nil {
+	if err := strictJSON([]byte(requestJSON), MaxFrameBytes); err != nil {
 		return result, err
 	}
-	if err := strictJSON([]byte(page.ResponseJSON), MaxFrameBytes); err != nil {
+	if err := strictJSON([]byte(responseJSON), MaxFrameBytes); err != nil {
 		return result, err
 	}
-	req, err := jsonObject([]byte(page.RequestJSON))
+	req, err := jsonObject([]byte(requestJSON))
 	if err != nil {
 		return result, err
 	}
-	res, err := jsonObject([]byte(page.ResponseJSON))
+	res, err := jsonObject([]byte(responseJSON))
 	if err != nil {
 		return result, err
 	}
@@ -392,7 +399,7 @@ func decodePage(page Page) (decodedPage, error) {
 		if !validJSONString(bytes.TrimSpace(errObj["message"])) {
 			return result, invalid("INVALID_RPC_ERROR")
 		}
-		return result, &Problem{State: "UNKNOWN", Stage: "saved_response", Code: "SAVED_RPC_ERROR", ResponseJSON: page.ResponseJSON}
+		return result, &Problem{State: "UNKNOWN", Stage: "saved_response", Code: "SAVED_RPC_ERROR", ResponseJSON: responseJSON}
 	}
 	cursor := Cursor{Tag: "ABSENT"}
 	if raw, present := req["params"]; present {
@@ -413,7 +420,7 @@ func decodePage(page Page) (decodedPage, error) {
 	if raw, present := body["resultType"]; present {
 		value, e := scalarText(raw)
 		if e != nil || value != "complete" {
-			return result, &Problem{State: "INVALID_TRANSPORT", Stage: "saved_response", Code: "UNSUPPORTED_RESULT_TYPE", ResponseJSON: page.ResponseJSON}
+			return result, &Problem{State: "INVALID_TRANSPORT", Stage: "saved_response", Code: "UNSUPPORTED_RESULT_TYPE", ResponseJSON: responseJSON}
 		}
 	}
 	var tools []json.RawMessage
@@ -425,7 +432,7 @@ func decodePage(page Page) (decodedPage, error) {
 	if len(tools) > MaxEntries {
 		return result, invalid("ROW_LIMIT")
 	}
-	if len(tools) != len(page.DeclaredExposedNames) {
+	if requireExposure && len(tools) != exposedCount {
 		return result, invalid("EXPOSURE_COUNT_MISMATCH")
 	}
 	result.Names = make([]string, len(tools))
@@ -444,7 +451,7 @@ func decodePage(page Page) (decodedPage, error) {
 	if e != nil {
 		return result, e
 	}
-	result.Source = PageSource{RequestSHA256: digest([]byte(page.RequestJSON)), ResponseSHA256: digest([]byte(page.ResponseJSON)), RequestID: append(json.RawMessage(nil), req["id"]...), ResponseID: append(json.RawMessage(nil), res["id"]...), RequestCursor: cursor, NextCursor: next}
+	result.Source = PageSource{RequestSHA256: digest([]byte(requestJSON)), ResponseSHA256: digest([]byte(responseJSON)), RequestID: append(json.RawMessage(nil), req["id"]...), ResponseID: append(json.RawMessage(nil), res["id"]...), RequestCursor: cursor, NextCursor: next}
 	return result, nil
 }
 

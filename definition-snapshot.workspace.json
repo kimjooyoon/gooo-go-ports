@@ -1,0 +1,15 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "gooo/tool-origin/definition-snapshot",
+    "activity": "CompareDefinitionSnapshot"
+  },
+  "packages": [
+    {
+      "path": "gooo/tool-origin/definition-snapshot",
+      "sources": [
+        "ports/tool-origin/definition_snapshot.gooo"
+      ]
+    }
+  ]
+}
