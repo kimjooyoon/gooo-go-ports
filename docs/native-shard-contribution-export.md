@@ -3,9 +3,10 @@
 This first slice projects the existing experimental native-shard reader's
 `app/diagnostic-header-addition:AssessAddition` observations into the fixed
 [bridge evidence/v1 contract](https://github.com/kimjooyoon/gooo-language-bridge/blob/6142c05e9aa32b5003dcd77cfbc87669f66ed402/bridges/contribution-response/evidence.schema.json).
-One real-artifact integration and the local unit controls have passed. The
-required exact-revision hosted checks are pending; this status does not complete
-[issue #211](https://github.com/kimjooyoon/gooo-go-ports/issues/211).
+One real-artifact integration and the local unit controls are recorded below.
+Required hosted checks must be assessed for each exact source revision.
+[Issue #211](https://github.com/kimjooyoon/gooo-go-ports/issues/211) tracks the
+producer-to-bridge integration; an exported artifact alone does not complete it.
 
 The exporter calls the existing full-population reader without changing its
 checks. The reader must finish before the selected 50 typed rows and 14 original
