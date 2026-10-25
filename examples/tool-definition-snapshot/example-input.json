@@ -1,0 +1,19 @@
+{
+  "target_name": "synthetic.lookup",
+  "before": {
+    "pages": [
+      {
+        "request_json": "{\"jsonrpc\":\"2.0\",\"id\":\"synthetic-before\",\"method\":\"tools/list\"}",
+        "response_json": "{\"jsonrpc\":\"2.0\",\"id\":\"synthetic-before\",\"result\":{\"tools\":[{\"name\":\"synthetic.lookup\",\"description\":\"SYNTHETIC_FIXTURE\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"limit\":{\"type\":\"integer\",\"maximum\":10}}}}]}}"
+      }
+    ]
+  },
+  "after": {
+    "pages": [
+      {
+        "request_json": "{\"jsonrpc\":\"2.0\",\"id\":\"synthetic-after\",\"method\":\"tools/list\"}",
+        "response_json": "{\"jsonrpc\":\"2.0\",\"id\":\"synthetic-after\",\"result\":{\"tools\":[{\"name\":\"synthetic.lookup\",\"description\":\"SYNTHETIC_FIXTURE\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"limit\":{\"type\":\"integer\",\"maximum\":20}}}}]}}"
+      }
+    ]
+  }
+}

@@ -1,0 +1,373 @@
+{
+  "schema": "gooo/definition-snapshot-authored-contract/v1",
+  "status": "SOURCE_WIP_NOT_A_GENERATED_PLAN_OR_EXECUTION_RECEIPT",
+  "module": "gooo/tool-origin/definition-snapshot",
+  "entry": "gooo/tool-origin/definition-snapshot:CompareDefinitionSnapshot",
+  "activity_id": "gooo://tool-origin/definition-snapshot/v1/compare",
+  "source": "ports/tool-origin/definition_snapshot.gooo",
+  "inputs": [
+    {
+      "port": "input0",
+      "entity_id": "gooo://tool-origin/definition-snapshot/v1/facts",
+      "meaning": "before"
+    },
+    {
+      "port": "input1",
+      "entity_id": "gooo://tool-origin/definition-snapshot/v1/facts",
+      "meaning": "after"
+    },
+    {
+      "port": "input2",
+      "entity_id": "gooo://tool-origin/definition-snapshot/v1/selection",
+      "meaning": "selection"
+    }
+  ],
+  "output_entity_id": "gooo://tool-origin/definition-snapshot/v1/result",
+  "records": {
+    "SnapshotFacts": {
+      "id": "gooo://tool-origin/definition-snapshot/v1/facts",
+      "fields": [
+        {
+          "name": "page_request_cursor_kinds",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/page_request_cursor_kinds",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "page_request_cursor_values",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/page_request_cursor_values",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "page_next_cursor_kinds",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/page_next_cursor_kinds",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "page_next_cursor_values",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/page_next_cursor_values",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "original_names",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/original_names",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "definition_ids",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/definition_ids",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "definition_profiles",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/definition_profiles",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "annotation_ids",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/annotation_ids",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "row_page_indexes",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/row_page_indexes",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "many"
+        }
+      ]
+    },
+    "Selection": {
+      "id": "gooo://tool-origin/definition-snapshot/v1/selection",
+      "fields": [
+        {
+          "name": "context_id",
+          "id": "gooo://tool-origin/definition-snapshot/v1/selection/context_id",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "target_name",
+          "id": "gooo://tool-origin/definition-snapshot/v1/selection/target_name",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        }
+      ]
+    },
+    "SnapshotStatus": {
+      "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status",
+      "fields": [
+        {
+          "name": "valid",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/valid",
+          "type_id": "urn:gooo:type:boolean",
+          "cardinality": "one"
+        },
+        {
+          "name": "shape_reason",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/shape_reason",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "coverage",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/coverage",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "coverage_reason",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/coverage_reason",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "problem_page_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/problem_page_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "problem_row_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/problem_row_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "duplicate_first_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/duplicate_first_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "duplicate_second_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/duplicate_second_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "selected_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/selected_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        }
+      ]
+    },
+    "SnapshotDecision": {
+      "id": "gooo://tool-origin/definition-snapshot/v1/result",
+      "fields": [
+        {
+          "name": "context_id",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/context_id",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "target_name",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/target_name",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "state",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/state",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "reason",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/reason",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "next_action",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/next_action",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "comparison_scope",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/comparison_scope",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "before_page_coverage",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/before_page_coverage",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "after_page_coverage",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/after_page_coverage",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "before_coverage_reason",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/before_coverage_reason",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "after_coverage_reason",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/after_coverage_reason",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "before_problem_page_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/before_problem_page_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "after_problem_page_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/after_problem_page_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "before_problem_row_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/before_problem_row_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "after_problem_row_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/after_problem_row_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "before_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/before_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "after_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/after_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "before_definition_id",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/before_definition_id",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "after_definition_id",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/after_definition_id",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "before_definition_profile",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/before_definition_profile",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "after_definition_profile",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/after_definition_profile",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "before_annotation_id",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/before_annotation_id",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "after_annotation_id",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/after_annotation_id",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "observed_presence_relation",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/observed_presence_relation",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "definition_relation",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/definition_relation",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "annotation_relation",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/annotation_relation",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "profile_relation",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/profile_relation",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "origin_relation",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/origin_relation",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "authorization_relation",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/authorization_relation",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "behavior_equivalence_proven",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/behavior_equivalence_proven",
+          "type_id": "urn:gooo:type:boolean",
+          "cardinality": "one"
+        },
+        {
+          "name": "execution_authorized",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/execution_authorized",
+          "type_id": "urn:gooo:type:boolean",
+          "cardinality": "one"
+        },
+        {
+          "name": "live_effect_performed",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/live_effect_performed",
+          "type_id": "urn:gooo:type:boolean",
+          "cardinality": "one"
+        },
+        {
+          "name": "remote_atomicity",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/remote_atomicity",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        }
+      ]
+    }
+  },
+  "limits": {
+    "pages_per_side": 16,
+    "rows_per_side": 256,
+    "text_bytes": 1024,
+    "digest_text": "sha256: plus 64 lowercase hex digits"
+  },
+  "profile": "gooo/mcp-tool-definition-json/v1",
+  "scope": {
+    "paired_rows": "Exact supplied descriptor and annotation projection equality, even with incomplete pages. No global uniqueness or full-catalog equivalence claim.",
+    "missing_rows": "Observed addition/removal needs complete page coverage on the absent side. Both absent needs both page sets complete.",
+    "duplicates": "Any duplicate original name makes the snapshot pair ambiguous; both selected row indexes become -1 and selected metadata becomes empty. Each duplicate side reports the second row as problem_row_index; the earlier matching name remains inspectable in the ordered public projection rows. Internal SnapshotStatus retains both indexes.",
+    "authority": "Origin and authorization stay NOT_ASSESSED; behavior-equivalence, execution-authorized and live-effect-performed stay false; remote atomicity stays UNKNOWN."
+  }
+}

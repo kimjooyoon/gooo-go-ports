@@ -61,6 +61,24 @@ stdin. A normal comparison has no arguments, returns exit code `0` on success,
 and returns `1` on input, comparison or I/O failure. A successful domain result
 such as `INCOMPLETE_COLLECTION` remains a report, not a transport error.
 
+## Compare definitions without a host mapping
+
+The separate `--definition-snapshot` mode accepts `target_name` and two `pages`
+arrays containing exact `request_json` and `response_json` strings. Use it when
+you retained the server's original tool names but have no historical host alias
+registry. It does not create a retrospective mapping or permission context.
+See the [saved-definition example](../tool-definition-snapshot/README.md) for
+its current validation status, synthetic input and command.
+
+This mode reports the selected descriptor and annotation relation, page coverage,
+and source rows separately. Two observed selected rows can still be compared
+when pages are incomplete. Missing-page observations cannot establish removal;
+observed duplicate names prevent selecting an arbitrary row. Origin and
+authorization remain `NOT_ASSESSED`, and the command never authorizes an effect.
+The original no-argument and `--definitions` host comparison modes retain their
+input contracts. Policy and availability flags cannot be combined with the
+snapshot mode.
+
 ## Provide your saved observations
 
 Use the shape in [example-input.json](example-input.json). Every outer field is

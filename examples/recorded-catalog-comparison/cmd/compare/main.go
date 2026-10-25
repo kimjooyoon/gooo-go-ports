@@ -14,6 +14,7 @@ const usage = `Compare saved MCP tool catalogs using rules written in Gooo and c
 
 Usage:
   compare < saved-observations.json > report.json
+  compare --definition-snapshot < saved-definition-pages.json
   compare --definitions --before-policy REV --after-policy REV < saved-observations.json
   compare --definitions --diagnostics < saved-observations.json
   compare --availability-template < saved-observations.json > availability.json
@@ -27,6 +28,11 @@ With no arguments, read one JSON comparison from stdin (at most 1 MiB).
 --version prints JSON build metadata, not an authenticated source identity.
 --help (-h) prints this text. These options never read stdin or compare inputs.
 Use one display option at a time; unknown arguments are refused before reading stdin.
+--definition-snapshot compares one original tool name using saved pages alone.
+Its separate input has target_name and before/after pages of request_json and
+response_json; no host mapping or policy flags are accepted. Reports retain
+exact supplied input and row/page references. Incomplete page observations
+remain explicit, and origin and authorization are NOT_ASSESSED.
 --definitions compares definition and annotation-claim bindings as well as origin.
 Policy revisions are optional supplied text; omitted revisions remain unobserved.
 --diagnostics immediately after --definitions adds field observation diagnostics.
@@ -130,6 +136,8 @@ func runCommand(args []string, input io.Reader, out, diagnostics io.Writer) int 
 	}
 	if len(args) == 1 {
 		switch args[0] {
+		case "--definition-snapshot":
+			return runDefinitionSnapshot(input, out, diagnostics)
 		case "--help", "-h":
 			return emit([]byte(usage), out, diagnostics)
 		case "--example":
@@ -163,6 +171,25 @@ func runDefinitionDiagnostics(input io.Reader, out, diagnostics io.Writer, befor
 	encoded, err := json.Marshal(report)
 	if err != nil {
 		return diagnostic(diagnostics, err)
+	}
+	return emit(append(encoded, '\n'), out, diagnostics)
+}
+
+func runDefinitionSnapshot(input io.Reader, out, diagnostics io.Writer) int {
+	raw, err := io.ReadAll(io.LimitReader(input, origin.MaxInputBytes+1))
+	if err != nil {
+		return diagnostic(diagnostics, err)
+	}
+	report, err := origin.CompareDefinitionSnapshotJSON(raw)
+	if err != nil {
+		return diagnostic(diagnostics, err)
+	}
+	encoded, err := json.Marshal(report)
+	if err != nil {
+		return diagnostic(diagnostics, err)
+	}
+	if len(encoded) > origin.MaxReportBytes {
+		return diagnostic(diagnostics, &origin.Problem{State: "INVALID_TRANSPORT", Stage: "encode_result", Code: "OUTPUT_LIMIT_EXCEEDED"})
 	}
 	return emit(append(encoded, '\n'), out, diagnostics)
 }

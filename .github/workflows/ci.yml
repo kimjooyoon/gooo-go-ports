@@ -47,6 +47,10 @@ jobs:
           go vet ./...
           go -C examples/recorded-catalog-comparison vet ./...
           go -C examples/recorded-catalog-comparison test -race -count=1 ./...
+          go -C examples/tool-definition-snapshot/reference vet ./...
+          go -C examples/tool-definition-snapshot/reference test -race -count=1 ./...
+          python3 -I -B examples/tool-definition-snapshot/reference/make_inputs.py --check
+          python3 -I -B examples/tool-definition-snapshot/provenance_test.py
           # Native correctness fixtures run under race checking in this package.
           # Keep a finite package budget above the observed600s default timeout.
           mkdir -p out/observer-tests
@@ -288,6 +292,7 @@ jobs:
           ./.gooo check ports/unicode/utf16.gooo
           ./.gooo check ports/unicode/space.gooo
           ./.gooo check ports/math/bits.gooo
+          ./.gooo check ports/tool-origin/definition_snapshot.gooo
           ./.gooo check ports/image/color.gooo
           ./.gooo check ports/image/nrgba.gooo
           ./.gooo check examples/alpha-matte/main.gooo
@@ -1769,6 +1774,34 @@ jobs:
         with:
           name: tool-definition-binding-evidence
           path: ${{ runner.temp }}/tool-definition-binding/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Verify Gooo saved definition snapshots
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          python3 -I -B examples/tool-definition-snapshot/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/tool-definition-snapshot"
+          jq -e '
+            .schema == "gooo/definition-snapshot-verification/v1" and
+            .status == "FINITE_SNAPSHOT_NATIVE_OWN_REPLAY_PASS" and
+            .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
+            .go_version == "go1.27.3" and .reference_cases == 89 and .kernel_cases == 83 and
+            .input_rejection_cases == 6 and .input_rejections_verified == true and .reference_cases_accounted == 89 and
+            .reference_cases == (.kernel_cases + .input_rejection_cases) and .typed_decision_fields == 32 and
+            .receipt_negative_controls == 8 and .generated_assets == 5 and .generated_assets_exact == true and
+            .PROV_O_bindings_verified == true and .source_unchanged == true and
+            .all_direct_wait_EOF_PG_ESRCH == true and .synthetic_domain_observations_only == true and
+            .adapter_CLI_validation_included == false and .full_repository_CI_required == true and
+            .model_calls == 0 and .engine_builds == 0 and .external_adoption == false and .live_capture_executed == false and
+            .native_acceptance == false and .execution_authorized == false
+          ' "$RUNNER_TEMP/tool-definition-snapshot/summary.json"
+      - name: Preserve saved definition snapshot evidence
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: tool-definition-snapshot-evidence
+          path: ${{ runner.temp }}/tool-definition-snapshot/
           if-no-files-found: warn
           retention-days: 14
       - name: Verify Gooo recorded observation diagnostics

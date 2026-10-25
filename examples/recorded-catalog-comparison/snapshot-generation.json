@@ -1,0 +1,43 @@
+{
+  "activity_id": "gooo://tool-origin/definition-snapshot/v1/compare",
+  "batches": 11,
+  "cases": 89,
+  "cases_sha256": "sha256:8a25491830d47549520d0b28ad9c1fed9662e6de65f5b50fb96206be3432f353",
+  "compiler_source_sha": "205896a413e5dea92366309c35ae85e542d055f6",
+  "entry": "gooo/tool-origin/definition-snapshot:CompareDefinitionSnapshot",
+  "generated_assets": {
+    "examples/recorded-catalog-comparison/internal/snapshotkernel/bridge_generated.go": "sha256:1c4873232a86d9adfb61c6b75a6733b78aed6ff74a05341fea30afa6a24316ce",
+    "examples/recorded-catalog-comparison/internal/snapshotkernel/projection_generated.go": "sha256:724ebb3927f7b16e75bacc9d86fed80f8f0759f7ef3dd08eae0b9201d199ce63",
+    "examples/recorded-catalog-comparison/internal/snapshotkernel/types_generated.go": "sha256:d27a9b83dbc9001de014264e0ee3efcd2811985ec2a85c9a84cd43a3358436a9",
+    "examples/recorded-catalog-comparison/snapshot-kernel-cases.json": "sha256:8a25491830d47549520d0b28ad9c1fed9662e6de65f5b50fb96206be3432f353"
+  },
+  "generator_source": {
+    "examples/recorded-catalog-comparison/generate.py": "sha256:f64b0df498d4816b2cece12eedf14a1e2f85678982cd5d074b1cae62b818d3db",
+    "examples/service-grant-many/verify.py": "sha256:ff3d94c39782619e06f64d5fbcfc3218733013332293f07b14368e5e939d3f0f",
+    "examples/tool-definition-snapshot/evidence.py": "sha256:3b93c1f0729f6e5b553a5c0a9e1c6ba262bcab289fe9ff92a4d9a0f7c876b22a",
+    "examples/tool-definition-snapshot/generate.py": "sha256:9a37f994cf8adbcdce4b1f07a633afa8d8099903ddc795477dfc429f164594fe"
+  },
+  "go_version": "go1.27.3",
+  "input_rejection_cases": 6,
+  "input_rejection_producer_binding": "Pinned build identity, exact launched executable path and unchanged executable SHA256; retained local observations, not producer authentication.",
+  "native_cases": 83,
+  "projection_transform": "Replace first package token main with snapshotkernel; all other bytes unchanged.",
+  "raw_projection_sha256": "sha256:4e37105619e7d3161f644c753ebe4a68b19bd88b1b49694d7ac642c0e256eec6",
+  "reference_source": {
+    "abi.json": "sha256:138a422f6e7a28693f0227e6545ef8f1cfeebaa9d808fe03e550923b51127efb",
+    "case-labels.json": "sha256:3ec743416939e86f84b6677b539c5cd53bdea4281c7979a8fa5452d063d6b64e",
+    "input-boundaries.json": "sha256:0f706f16c742949cc413f3ce5cc6862956e70176462fe77ba9ece53fe40d0cdc",
+    "reference-inputs.json": "sha256:3d2a87da3b0bd2814ecd5764f8f1a56d020f13f2208b5a9d8d526f0331b44da6",
+    "reference/go.mod": "sha256:961563217df6e318000de3c677a4f009dae0b3d9bb33b5cbbafffc53d817b1bb",
+    "reference/main.go": "sha256:5985d5cfc0fe929d095d25d8884e30ddfbf5afafd19f51e5c79be39b4f9fbffc",
+    "reference/make_inputs.py": "sha256:7541169eb788ee05d8aba3e4973cbaeeb623c25ec847988b985ba2da9a741975"
+  },
+  "schema": "gooo/definition-snapshot-generation/v1",
+  "scope": "All 89 independent reference cases retained: 83 actual Gooo native cases and own replay, 6 separately verified typed-input refusals before the Gooo body. Direct generated-function API validation is separate. Exact selected-row metadata comparison only; no authenticated origin, complete-catalog equivalence, behavior proof or effect authorization.",
+  "selected_upstream_pins_sha256": "sha256:20171ad851133bf6627bc72cffbfc440c72a962073d184d8fd349fb635ae5721",
+  "source": {
+    "ports/tool-origin/definition_snapshot.gooo": "sha256:f38db871a589080187c5f35618704dfa95d02d532b8a5a324f792400040bc274"
+  },
+  "typed_plan_sha256": "sha256:e34c4fb90299897794166028437a368fee3de81a10c8477a75c0f0ad449095d5",
+  "workspace_sha256": "sha256:e12d9af9d4ddf21a49b4e5412f7729f93012320818a032290fe7543d67b66970"
+}

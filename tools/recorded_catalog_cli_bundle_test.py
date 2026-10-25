@@ -94,12 +94,64 @@ class Contracts(unittest.TestCase):
     def test_roster_includes_added_runtime_source_not_just_declared_subset(self):
         tree = {b.PROFILE + "main.go": (), b.PROFILE + "newkernel/new.go": (),
                 b.PROFILE + "README.md": (), "examples/explicit-observation-availability/new.json": (),
+                "examples/tool-definition-snapshot/reference/main.go": (),
+                "examples/tool-definition-snapshot/example-input.json": (),
+                "examples/tool-definition-snapshot/provenance_test.py": (),
                 "tools/unrelated.py": ()}
         roster = b.source_roster(tree)
         self.assertTrue(b.SOURCE_EXTRAS <= roster)
         self.assertIn(b.PROFILE + "newkernel/new.go", roster)
         self.assertIn("examples/explicit-observation-availability/new.json", roster)
         self.assertNotIn(b.PROFILE + "README.md", roster)
+        self.assertIn("examples/tool-definition-snapshot/reference/main.go", roster)
+        self.assertIn("examples/tool-definition-snapshot/example-input.json", roster)
+        self.assertIn("examples/tool-definition-snapshot/provenance_test.py", roster)
+        self.assertIn("definition-snapshot.workspace.json", roster)
+        self.assertIn("ports/tool-origin/definition_snapshot.gooo", roster)
+
+    def test_exact_generation_roster_refuses_equal_count_substitution(self):
+        b.check_generation_roster(dict.fromkeys(b.GENERATION_MANIFESTS))
+        self.assertEqual(len(b.GENERATION_MANIFESTS), 6)
+        for missing in b.GENERATION_MANIFESTS:
+            changed = set(b.GENERATION_MANIFESTS) - {missing}
+            with self.assertRaisesRegex(ValueError, "exact runtime generation"):
+                b.check_generation_roster(changed)
+            changed.add(b.PROFILE + "unrelated-generation.json")
+            with self.assertRaisesRegex(ValueError, "exact runtime generation"):
+                b.check_generation_roster(changed)
+        with self.assertRaisesRegex(ValueError, "exact runtime generation"):
+            b.check_generation_roster(b.GENERATION_MANIFESTS | {b.PROFILE + "unrelated-generation.json"})
+
+    def test_snapshot_materials_require_current_complete_source_bindings(self):
+        groups = {
+            "source": {"ports/tool-origin/definition_snapshot.gooo"},
+            "generator_source": b.SNAPSHOT_GENERATOR_SOURCES,
+            "reference_source": b.SNAPSHOT_REFERENCE_SOURCES,
+            "generated_assets": b.SNAPSHOT_GENERATED_ASSETS,
+        }
+        sources = {}
+        generation = {}
+        for group, names in groups.items():
+            prefix = b.SNAPSHOT_ROOT if group == "reference_source" else ""
+            generation[group] = {}
+            for name in names:
+                digest = b.sha((prefix + name).encode())
+                sources[prefix + name] = {"sha256": digest}
+                generation[group][name] = "sha256:" + digest
+        for key, path in (("workspace_sha256", "definition-snapshot.workspace.json"),
+                          ("cases_sha256", b.SNAPSHOT_ROOT + "kernel.cases.json")):
+            digest = b.sha(path.encode()); sources[path] = {"sha256": digest}
+            generation[key] = "sha256:" + digest
+        b.check_snapshot_materials(generation, sources)
+        for group in groups:
+            changed = copy.deepcopy(generation)
+            changed[group].pop(next(iter(changed[group])))
+            with self.assertRaisesRegex(ValueError, "snapshot material roster"):
+                b.check_snapshot_materials(changed, sources)
+        for name in sources:
+            changed = copy.deepcopy(sources); changed[name]["sha256"] = "0" * 64
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, "snapshot material differs"):
+                b.check_snapshot_materials(generation, changed)
 
     def test_member_refuses_parent_symlink_and_traversal(self):
         with tempfile.TemporaryDirectory() as tmp:

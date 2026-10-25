@@ -191,7 +191,7 @@ def main():
         assert len(consumers['cases'])==12
         deps=[x for x in run('runtime-dependencies',[go,'-C',MODULE,'list','-deps','-f','{{if not .Standard}}{{.ImportPath}}{{end}}','./cmd/compare']).decode().splitlines() if x]
         module='github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison'
-        assert set(deps)=={module,module+'/internal/kernel',module+'/internal/definitionkernel',module+'/internal/observationkernel',module+'/internal/availabilitykernel',module+'/internal/availabilityobservationkernel',module+'/cmd/compare'} and len(deps)==7
+        assert set(deps)=={module,module+'/internal/kernel',module+'/internal/definitionkernel',module+'/internal/observationkernel',module+'/internal/availabilitykernel',module+'/internal/availabilityobservationkernel',module+'/internal/snapshotkernel',module+'/cmd/compare'} and len(deps)==8
         binary=out/'bin/compare';run('CLI-build',[go,'-C',MODULE,'build','-trimpath','-buildvcs=false','-o',binary,'./cmd/compare'])
         info=host.strict(run('CLI-build-info',[go,'version','-m','-json',binary],20));assert info['GoVersion']==e.GO_VERSION and info['Main']['Path']==module and not info.get('Deps')
         settings={x['Key']:x['Value'] for x in info['Settings']};assert settings['CGO_ENABLED']=='0' and settings['-trimpath']=='true'
