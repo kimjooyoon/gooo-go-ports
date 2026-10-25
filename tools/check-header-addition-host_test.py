@@ -8,6 +8,7 @@ import copy
 import gzip
 import json
 import pathlib
+import select
 import tempfile
 import unittest
 from unittest import mock
@@ -1004,6 +1005,153 @@ class PinScanCancellationTests(unittest.TestCase):
                     with self.assertRaises(RuntimeError) as caught:inputs.main()
                     self.assertIs(caught.exception,primary)
                 else:self.assertEqual(inputs.main(),1)
+
+
+class HostProgressSnapshotTests(unittest.TestCase):
+    def observer(self):
+        directory=tempfile.TemporaryDirectory();self.addCleanup(directory.cleanup)
+        observer=CHECK.PinScanObservations();observer.output=pathlib.Path(directory.name).resolve()
+        return observer
+
+    def read(self,observer):
+        raw=(observer.output/'host-progress.json').read_bytes()
+        self.assertLessEqual(len(raw),32<<10)
+        return json.loads(raw)
+
+    def test_started_is_persisted_before_operation_and_completion_is_atomic(self):
+        observer=self.observer();calls=[]
+        def operation():
+            calls.append(self.read(observer)['events'][-1]['state']);return 'original result'
+        self.assertEqual(observer.observe('render','initial',operation),'original result')
+        self.assertEqual(calls,['STARTED']);snapshot=self.read(observer)
+        self.assertEqual(snapshot['events'][-1]['state'],'COMPLETED')
+        self.assertIs(snapshot['diagnostic_only'],True)
+        self.assertFalse(list(observer.output.glob('.host-progress-*.tmp')))
+        self.assertGreaterEqual(snapshot['cost']['wall_ns'],0);self.assertGreaterEqual(snapshot['cost']['process_cpu_ns'],0)
+
+    def test_sparse_completed_batch_coordinates_counts_and_fixed_history_cap(self):
+        observer=self.observer();observer.checkpoint('reference-batches','STARTED')
+        with mock.patch.object(CHECK.os,'replace',wraps=CHECK.os.replace) as publication:
+            for batch in range(65):
+                observer.record_read(10);observer.record_logical(100);observer.batch_completed(2,73,batch,8)
+            self.assertEqual(publication.call_count,3)
+        snapshot=self.read(observer)
+        self.assertEqual(snapshot['last_completed_batch'],{'shard':2,'suite':73,'batch':63})
+        self.assertEqual(snapshot['cost']['completed_batches'],64)
+        observer.checkpoint('reference-batches','COMPLETED');snapshot=self.read(observer)
+        self.assertEqual(snapshot['cost']['completed_batches'],65);self.assertEqual(snapshot['cost']['completed_cases'],520)
+        self.assertEqual(snapshot['cost']['stored_bytes'],650);self.assertEqual(snapshot['cost']['logical_bytes'],6500)
+        for _ in range(40):observer.checkpoint('provider-final','COMPLETED')
+        self.assertEqual(len(self.read(observer)['events']),32)
+
+    def test_write_failure_keeps_previous_snapshot_and_original_validation_outcome(self):
+        observer=self.observer();observer.checkpoint('initial-verification','STARTED')
+        previous=(observer.output/'host-progress.json').read_bytes()
+        primary=RuntimeError('private payload must never appear in diagnostic')
+        with mock.patch.object(CHECK.os,'replace',side_effect=OSError('private filesystem path')):
+            self.assertEqual(observer.observe('reference-plan','reference',lambda:42),42)
+            with self.assertRaises(RuntimeError) as caught:
+                observer.observe('selected-addition-abi','reference',mock.Mock(side_effect=primary))
+        self.assertIs(caught.exception,primary)
+        self.assertEqual((observer.output/'host-progress.json').read_bytes(),previous)
+        self.assertFalse(list(observer.output.glob('.host-progress-*.tmp')))
+        observer.checkpoint('initial-verification','REFUSED',preserve_failure=True)
+        raw=(observer.output/'host-progress.json').read_text()
+        self.assertNotIn('private',raw);self.assertNotIn(str(observer.output),raw)
+        self.assertEqual(json.loads(raw)['previous_diagnostic_error_type'],'OSError')
+        self.assertNotIn('PASS',raw)
+
+    def test_snapshot_cancellation_propagates_unless_preserving_prior_refusal(self):
+        for kind in (KeyboardInterrupt,SystemExit,RuntimeError):
+            observer=self.observer();failure=kind('cancel')
+            if kind is RuntimeError:observer.cancellation=failure
+            with mock.patch.object(CHECK.os,'replace',side_effect=failure):
+                with self.assertRaises(kind) as caught:observer.checkpoint('render','STARTED')
+                self.assertIs(caught.exception,failure)
+                observer.checkpoint('render','REFUSED',preserve_failure=True)
+
+    def test_observer_callback_failure_cannot_skip_repeat_or_replace_validation(self):
+        for behavior in ('before','after','swallow','repeat','skip'):
+            for refused in (False,True):
+                observer=self.observer();primary=RuntimeError('original refusal')
+                operation=mock.Mock(side_effect=primary) if refused else mock.Mock(return_value=42)
+                def observe(_label,_boundary,callback,_pins):
+                    if behavior=='before':raise OSError('diagnostic')
+                    if behavior=='skip':return 'invented result'
+                    if behavior=='swallow':
+                        try:callback()
+                        except BaseException:pass
+                        return 'invented result'
+                    if behavior=='repeat':
+                        for _ in range(2):
+                            try:callback()
+                            except BaseException:pass
+                        return 'invented result'
+                    callback();raise OSError('diagnostic')
+                with self.subTest(behavior=behavior,refused=refused),mock.patch.object(observer,'observe',side_effect=observe):
+                    if refused:
+                        with self.assertRaises(RuntimeError) as caught:observer.measured('scan','pre',operation)
+                        self.assertIs(caught.exception,primary)
+                    else:self.assertEqual(observer.measured('scan','pre',operation),42)
+                operation.assert_called_once_with()
+
+    def test_callback_cancellation_after_refusal_preserves_first_failure(self):
+        for kind in (KeyboardInterrupt,SystemExit,RuntimeError):
+            observer=self.observer();cancel=kind('cancel');observer.cancellation=cancel
+            primary=RuntimeError('original source drift');operation=mock.Mock(side_effect=primary)
+            def observe(_label,_boundary,callback,_pins):
+                try:callback()
+                except BaseException:raise cancel
+            with mock.patch.object(observer,'observe',side_effect=observe),self.assertRaises(RuntimeError) as caught:
+                observer.measured('scan','pre',operation)
+            self.assertIs(caught.exception,primary);operation.assert_called_once_with()
+            with mock.patch.object(observer,'record_read',side_effect=cancel),self.assertRaises(kind) as caught:
+                observer.diagnostic('record_read',1)
+            self.assertIs(caught.exception,cancel)
+
+    def test_owned_hard_kill_retains_last_complete_snapshot_without_finally(self):
+        observer=self.observer()
+        script = """
+import importlib.util,pathlib,signal,sys
+# Bound this independent session even if the parent dies before its finally.
+signal.signal(signal.SIGALRM,signal.SIG_DFL);signal.alarm(10)
+spec=importlib.util.spec_from_file_location('hard_kill_host',sys.argv[1]);host=importlib.util.module_from_spec(spec);spec.loader.exec_module(host)
+observer=host.PinScanObservations();observer.output=pathlib.Path(sys.argv[2])
+def blocked():
+    observer.checkpoint('reference-batches','STARTED')
+    for batch in range(32):observer.record_read(10);observer.record_logical(100);observer.batch_completed(0,73,batch,8)
+    def paused_replace(source,target):
+        print('CHECKPOINT_READY',flush=True)
+        signal.pause()
+    # Pause after a new temporary file is fsynced but before atomic publication.
+    # SIGKILL must retain the previous complete checkpoint, not partial JSON.
+    host.os.replace=paused_replace
+    observer.checkpoint('render','STARTED')
+try:observer.observe('initial-verification','parent',blocked)
+finally:observer.write_once()
+"""
+        child=CHECK.subprocess.Popen([CHECK.sys.executable,'-I','-B','-c',script,str(ROOT/'tools/check-header-addition-host.py'),str(observer.output)],
+                                     stdin=CHECK.subprocess.DEVNULL,stdout=CHECK.subprocess.PIPE,stderr=CHECK.subprocess.PIPE,start_new_session=True)
+        try:
+            ready,_,_=select.select([child.stdout],[],[],5)
+            self.assertTrue(ready,'owned child did not checkpoint within five seconds')
+            self.assertEqual(child.stdout.readline(),b'CHECKPOINT_READY\n')
+            CHECK.os.killpg(child.pid,CHECK.signal.SIGKILL)
+            stdout,stderr=child.communicate(timeout=5)
+            self.assertEqual(child.returncode,-CHECK.signal.SIGKILL);self.assertEqual(stdout,b'');self.assertEqual(stderr,b'')
+            with self.assertRaises(ProcessLookupError):CHECK.os.killpg(child.pid,0)
+            snapshot=self.read(observer)
+            self.assertEqual(snapshot['events'][0]['state'],'STARTED')
+            self.assertEqual(snapshot['events'][-1]['state'],'CHECKPOINT')
+            self.assertEqual(snapshot['last_completed_batch'],{'shard':0,'suite':73,'batch':31})
+            self.assertEqual(snapshot['cost']['completed_batches'],32)
+            self.assertFalse((observer.output/'pin-scans.json').exists(),'SIGKILL must not run final-only logger')
+            pending=list(observer.output.glob('.host-progress-*.tmp'));self.assertEqual(len(pending),1)
+            self.assertLessEqual(pending[0].stat().st_size,32<<10)
+            self.assertEqual(json.loads(pending[0].read_text())['events'][-1]['stage'],'render')
+        finally:
+            if child.poll() is None:CHECK.os.killpg(child.pid,CHECK.signal.SIGKILL)
+            child.communicate(timeout=5)
 
 
 if __name__=='__main__':unittest.main()

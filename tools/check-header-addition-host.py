@@ -111,6 +111,86 @@ class PinScanObservations:
     """Coarse diagnostics only; the existing validation callbacks stay intact."""
     def __init__(self):
         self.output=None;self.observations=[];self.write_error=None;self._write_attempted=False;self.cancellation=None
+        self.progress_events=[];self.progress_sequence=0;self.progress_error=None;self.progress_start=None;self.last_completed_batch=None
+        self.cost={name:0 for name in ("read_calls","stored_bytes","logical_file_calls","logical_bytes","completed_batches","completed_cases")}
+
+    def diagnostic(self,method,*args,preserve_failure=False):
+        """Ignore ordinary optional callback failures, never a marked cancel."""
+        try:getattr(self,method)(*args)
+        except BaseException as failure:
+            if not preserve_failure and self.is_cancellation(failure):raise
+            self.progress_error=type(failure).__name__
+
+    def measured(self,label,boundary,operation,pins=None):
+        """The observer cannot supply a result, swallow a refusal or retry work."""
+        called=False;result=None;primary=None
+        def once():
+            nonlocal called,result,primary
+            if not called:
+                called=True
+                try:result=operation()
+                except BaseException as failure:primary=failure
+            if primary is not None:raise primary
+            return result
+        try:self.observe(label,boundary,once,pins)
+        except BaseException as secondary:
+            if primary is not None:raise primary
+            if self.is_cancellation(secondary):raise
+            self.progress_error=type(secondary).__name__
+        # Even an observer failing before, returning without, or repeating its
+        # callback cannot skip or duplicate the original validation operation.
+        return once()
+
+    def checkpoint(self,label,state,preserve_failure=False):
+        """One bounded atomic diagnostic; no payloads, paths or acceptance claims.
+
+        A hard kill can lose the in-flight update, never the preceding complete
+        snapshot. Sparse batch snapshots are observations as of that checkpoint.
+        Ordinary diagnostic failure is optional; cancellation and a prior refusal
+        retain the same precedence as the existing final pin-scan writer.
+        """
+        if self.output is None:return
+        temporary=None
+        try:
+            need(re.fullmatch(r'[a-z0-9-]{1,64}',label) is not None and state in ('STARTED','COMPLETED','REFUSED','CHECKPOINT'),'fixed diagnostic stage/state')
+            wall,cpu=time.monotonic_ns(),time.process_time_ns()
+            if self.progress_start is None:self.progress_start=(wall,cpu)
+            elapsed={'wall_ns':max(0,wall-self.progress_start[0]),'process_cpu_ns':max(0,cpu-self.progress_start[1])}
+            self.progress_sequence+=1
+            event={'sequence':self.progress_sequence,'stage':label,'state':state,**elapsed}
+            self.progress_events=(self.progress_events+[event])[-32:]
+            document={'schema':'gooo/host-progress-snapshot/v1','diagnostic_only':True,
+                      'sequence':self.progress_sequence,'events':self.progress_events,
+                      'last_completed_batch':self.last_completed_batch,'cost':{**self.cost,**elapsed},
+                      'previous_diagnostic_error_type':self.progress_error,
+                      'scope':'Latest32 stage events and sparse completed-batch checkpoints, not acceptance. Byte/read counts cover only reference Reader returns, including repeated reads; they exclude host frozen reads, shared-pin scans, Go identity, render and the legacy route. They are not physical I/O and can be incomplete after diagnostic errors. Process CPU excludes children. No payload contents or paths. A killed process can have completed more work than this snapshot.'}
+            raw=(json.dumps(document,sort_keys=True,separators=(',',':'))+'\n').encode()
+            need(len(raw)<=32<<10,'bounded progress snapshot')
+            fd,name=tempfile.mkstemp(prefix='.host-progress-',suffix='.tmp',dir=self.output);temporary=pathlib.Path(name)
+            with os.fdopen(fd,'wb') as stream:
+                stream.write(raw);stream.flush();os.fsync(stream.fileno())
+            os.replace(temporary,self.output/'host-progress.json');temporary=None
+        except BaseException as failure:
+            if not preserve_failure and self.is_cancellation(failure):raise
+            self.progress_error=type(failure).__name__
+        finally:
+            if temporary is not None:
+                try:temporary.unlink()
+                except BaseException as failure:
+                    if not preserve_failure and self.is_cancellation(failure):raise
+                    self.progress_error=type(failure).__name__
+
+    def record_read(self,size):
+        self.cost['read_calls']+=1;self.cost['stored_bytes']+=size
+
+    def record_logical(self,size):
+        self.cost['logical_file_calls']+=1;self.cost['logical_bytes']+=size
+
+    def batch_completed(self,shard,suite,batch,cases):
+        self.last_completed_batch={'shard':shard,'suite':suite,'batch':batch}
+        self.cost['completed_batches']+=1;self.cost['completed_cases']+=cases
+        if self.cost['completed_batches']==1 or self.cost['completed_batches']%32==0:
+            self.checkpoint('reference-batches','CHECKPOINT')
 
     def is_cancellation(self,failure):
         return not isinstance(failure,Exception) or failure is self.cancellation
@@ -134,6 +214,7 @@ class PinScanObservations:
         except BaseException as failure:
             if self.is_cancellation(failure):raise
             started=None
+        self.diagnostic('checkpoint',label,'STARTED')
         refused=False
         try:
             result=operation()
@@ -148,6 +229,7 @@ class PinScanObservations:
                 ended=None
             if type(started) is int and type(ended) is int and ended>=started:
                 row['elapsed_ns']=ended-started;row['timing_available']=True
+            self.diagnostic('checkpoint',label,row['state'],preserve_failure=refused)
 
     def write_once(self,preserve_failure=False):
         if self.output is None or self._write_attempted:return
@@ -419,7 +501,7 @@ def read_verification(root,verification_out,timing):
         anchors.append({**{key:batch[key] for key in ('batch_index','start','end','manifest_digest','cases_digest','original_receipt_sha256')},'workspace':workspace,'producer_manifest_path':str(workspace)})
     return read_addition_evidence(root,read,pins,addition['source_set'],addition['source_set_sha256'],anchors,'go version go1.27.3 '+summary['goos']+'/'+summary['goarch'],header['identity']['binaries']['go'],contract_expected.suite_count)
 
-def read_addition_evidence(root,read,pins,source_set,source_set_sha256,batches,go_version,go_binary,suite_count):
+def read_addition_evidence(root,read,pins,source_set,source_set_sha256,batches,go_version,go_binary,suite_count,pin_scans=None):
     """Read the same seven local blobs and original producer-path bindings.
 
     Independent Go case rows remain the ABI oracle. A relocated blob path never
@@ -470,10 +552,12 @@ def read_addition_evidence(root,read,pins,source_set,source_set_sha256,batches,g
             source,plan=observed['source'],observed['plan'];selections.add(observed['tool_selection'])
             evidence.append({'batch':index,'operation':operation,'receipt':str(batchdir/('execution.json' if operation=='execute' else 'replay.json')),'receipt_sha256':sha(raw),'cases_digest':batch['cases_digest'],'original_receipt_sha256':batch['original_receipt_sha256']})
         rows.extend(cases['cases'])
-    need(len(rows)==50 and source is not None,'exact50 fresh case rows and generated source');unchanged(pins)
+    need(len(rows)==50 and source is not None,'exact50 fresh case rows and generated source')
+    if pin_scans is None:unchanged(pins)
+    else:pin_scans.measured('shared-pins-final','reference',lambda:unchanged(pins),pins)
     return {'rows':rows,'source':source,'pins':pins,'case_names':[c['label'] for c in corpus['cases']],'source_set':source_set,'typed_plan':plan,'records':records,'entry':ENTRY,'evidence':evidence,'go_binary':go_binary,'go_version':go_version,'tool_selections':sorted(selections),'fresh_native_suites':suite_count,'fresh_addition_batches':7,'fresh_addition_cases':50}
 
-def read_shard_verification(root,index_path):
+def read_shard_verification(root,index_path,pin_scans=None):
     """Read only the explicit experimental provider API; never try legacy input."""
     root,index_path=map(canonical,(root,index_path))
     provider=canonical(root/'tools/native-shard-reference.py');bootstrap_pins={}
@@ -484,7 +568,7 @@ def read_shard_verification(root,index_path):
     # Execute only these frozen sibling bytes, never a stale or writable pyc.
     exec(compile(provider_raw,str(provider),'exec'),module.__dict__)
     unchanged(bootstrap_pins)
-    reference=module.read_reference(root,index_path)
+    reference=module.read_reference(root,index_path) if pin_scans is None else module.read_reference(root,index_path,progress=pin_scans)
     need(type(reference) is dict and set(reference)=={'pins','source_set','source_set_sha256','batches','go_version','go_binary','suite_count','receipt_reader'},'exact shard reference provider API')
     pins=reference['pins'];need(type(pins) is dict,'shard reference frozen pins')
     receipts=reference['receipt_reader']
@@ -495,8 +579,12 @@ def read_shard_verification(root,index_path):
             return receipts.read(path)
         return frozen_read(path,pins)
     read(index_path)
-    result=read_addition_evidence(root,read,pins,reference['source_set'],reference['source_set_sha256'],reference['batches'],reference['go_version'],reference['go_binary'],reference['suite_count'])
-    receipts.finish()
+    def selected():
+        arguments=(root,read,pins,reference['source_set'],reference['source_set_sha256'],reference['batches'],reference['go_version'],reference['go_binary'],reference['suite_count'])
+        return read_addition_evidence(*arguments) if pin_scans is None else read_addition_evidence(*arguments,pin_scans=pin_scans)
+    result=selected() if pin_scans is None else pin_scans.measured('selected-addition-abi','reference',selected)
+    if pin_scans is None:receipts.finish()
+    else:pin_scans.measured('consumer-final','reference',receipts.finish,pins)
     for item in result['evidence']:
         storage=receipts.storage(pathlib.Path(item['receipt']))
         item.update(receipt=storage['path'],receipt_storage=storage,receipt_sha256_scope='original-json')
@@ -562,7 +650,7 @@ class OwnedCommands:
         self.pin_scans=pin_scans if pin_scans is not None else PinScanObservations()
         self.started=time.monotonic();self.observations=[];self.closed=True
     def call(self,label,args,seconds,extra_env=None,stdin_path=None,allowed_exit=(0,)):
-        self.pin_scans.observe(label,'pre',lambda:unchanged(self.pins),self.pins);directory=self.out/label;directory.mkdir();begin=time.monotonic();why=None;known={};child=None;remaining=[]
+        self.pin_scans.measured(label,'pre',lambda:unchanged(self.pins),self.pins);directory=self.out/label;directory.mkdir();begin=time.monotonic();why=None;known={};child=None;remaining=[]
         env=dict(self.env);env.update(extra_env or {})
         def live():
             rows=processes();owned={pid for pid,row in rows.items() if pid in known and row['birth']==known[pid]['birth']}
@@ -613,7 +701,7 @@ class OwnedCommands:
                 save(directory/'process.json',observation);self.observations.append(observation)
         need(child is not None and child.returncode in allowed_exit and why is None and not remaining,'command failure: '+label+' '+str(why))
         need((directory/'stdout').stat().st_size<=self.stdout_cap and (directory/'stderr').stat().st_size<=2<<20,'final output cap')
-        self.pin_scans.observe(label,'post',lambda:unchanged(self.pins),self.pins);return (directory/'stdout').read_bytes()
+        self.pin_scans.measured(label,'post',lambda:unchanged(self.pins),self.pins);return (directory/'stdout').read_bytes()
 
 def parse_args(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
@@ -640,11 +728,14 @@ def _main(pin_scans):
         raise failure
     original_handlers={number:signal.signal(number,interrupted) for number in [signal.SIGTERM,signal.SIGINT]}
     try:
-        verification=pin_scans.observe('initial-verification','parent',lambda:read_shard_verification(root,shard_index) if shard_index is not None else read_verification(root,verification_out,timing));pins=dict(verification['pins']);go_raw=frozen_read(go,pins)
-        need(equal(reference(go_raw),verification['go_binary']),'explicit host Go binary matches fresh differential Go identity')
-        rendered=out/'rendered';transformation=render(root,verification,rendered);pins.update(transformation['rendered_pins'])
+        verification=pin_scans.measured('initial-verification','parent',lambda:read_shard_verification(root,shard_index,pin_scans) if shard_index is not None else read_verification(root,verification_out,timing));pins=dict(verification['pins'])
+        def go_identity():
+            go_raw=frozen_read(go,pins)
+            need(equal(reference(go_raw),verification['go_binary']),'explicit host Go binary matches fresh differential Go identity')
+        pin_scans.measured('go-identity','initial',go_identity)
+        rendered=out/'rendered';transformation=pin_scans.measured('render','initial',lambda:render(root,verification,rendered));pins.update(transformation['rendered_pins'])
         save(out/'rendered-provenance.json',{'schema':'gooo/fresh-header-addition-host-provenance/v1','entry':ENTRY,'evidence':verification['evidence'],'input_pins':verification['pins'],**transformation})
-        save(out/'frozen-inputs.json',pins);pin_scans.observe('initial','initial',lambda:unchanged(pins),pins)
+        save(out/'frozen-inputs.json',pins);pin_scans.measured('initial','initial',lambda:unchanged(pins),pins)
         need(shutil.disk_usage(out).free>=1<<30,'at least1GiB free for bounded owned check')
         work=pathlib.Path(tempfile.mkdtemp(prefix='.header-addition-host-owned-',dir=out));(work/'tmp').mkdir();(work/'cache').mkdir();(work/'modules').mkdir();(work/'bin').mkdir()
         env={key:os.environ[key] for key in ['PATH','HOME','SYSTEMROOT'] if key in os.environ}
@@ -660,7 +751,7 @@ def _main(pin_scans):
         runner.call('race',[go,'test','-race','-count=1','-v','./...'],120,{'CGO_ENABLED':'1','CC':str(compiler)})
         runner.call('build',[go,'build','-trimpath','-o',work/'bin/demo','.'],60)
         demo=load(runner.call('demo',[work/'bin/demo'],5));need(demo['Status']=='APPLIED' and demo['HasDecision'] is True and equal([demo['BeforeRevision'],demo['AfterRevision'],demo['PolicyRevision']],[1,2,1]) and demo['Decision']['eligible'] is True and demo['Decision']['candidate_name']=='x-request-id' and demo['Decision']['candidate_value']=='req-123','actual exact demo one application')
-        pin_scans.observe('final','final',lambda:unchanged(pins),pins);need(runner.closed,'all observed processes closed');save(out/'final-source-tool-pins.json',pins)
+        pin_scans.measured('final','final',lambda:unchanged(pins),pins);need(runner.closed,'all observed processes closed');save(out/'final-source-tool-pins.json',pins)
     except BaseException as failure:error=str(failure)
     finally:
         if work is not None and (runner is None or runner.closed):
