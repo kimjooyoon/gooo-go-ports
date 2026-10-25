@@ -98,7 +98,7 @@ def read_checked(source_root, index_path, evidence_roots):
     # A fresh cache prefix avoids loading a producer checkout's stale pyc.
     # The private byte-identical index copy prevents metadata/path-scope races.
     with tempfile.TemporaryDirectory(prefix='gooo-evidence-read-') as directory:
-        work = Path(directory)
+        work = Path(directory).resolve(strict=True)
         previous = sys.pycache_prefix, sys.dont_write_bytecode
         sys.pycache_prefix, sys.dont_write_bytecode = str(work / 'pycache'), True
         try:

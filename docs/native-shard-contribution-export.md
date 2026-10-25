@@ -1,10 +1,10 @@
-# HeaderAddition evidence export prototype
+# HeaderAddition saved evidence export
 
 This first slice projects the existing experimental native-shard reader's
 `app/diagnostic-header-addition:AssessAddition` observations into the fixed
 [bridge evidence/v1 contract](https://github.com/kimjooyoon/gooo-language-bridge/blob/6142c05e9aa32b5003dcd77cfbc87669f66ed402/bridges/contribution-response/evidence.schema.json).
-Implementation and unit controls are local; real-artifact integration and the
-required exact-revision hosted checks are still pending. It does not complete
+One real-artifact integration and the local unit controls have passed. The
+required exact-revision hosted checks are pending; this status does not complete
 [issue #211](https://github.com/kimjooyoon/gooo-go-ports/issues/211).
 
 The exporter calls the existing full-population reader without changing its
@@ -67,7 +67,32 @@ provenance text and is not uploaded automatically.
 On refusal there is no `result/` directory or successful evidence record. Stderr
 contains a fixed JSON diagnostic; the first detailed error stays in the local
 `refusal.json`. An existing output directory is never overwritten. Unit fixtures
-are labelled synthetic and cannot replace the still-required real integration.
+are labelled synthetic and cannot replace real-artifact integration.
+
+## Observed integration
+
+The first real input was the existing
+[manual run 40138087345](https://github.com/kimjooyoon/gooo-go-ports/actions/runs/40138087345),
+with source `4548857e918d7c11d0e7fdf1138a78ae2d61c90a`. Its original control and
+three worker ZIPs were downloaded once and checked against their official
+complete SHA-256 digests; their members were read with CRC checks. All 312
+source bindings matched that historical source tree. The original Linux
+compiler was read as bytes and was not executed on the Mac consumer.
+
+The unchanged historical reader checked all 82 suites before returning the
+selected 50 rows, seven batches and 14 execution/replay references. All three
+exported phase records validated against the frozen B1 schema above. The
+producer's whole join failed at `header-host-consumer`; its original first
+failure is retained in the appendix and described by each record's `failures`.
+The local saved-reader/export command took about 343 seconds. This observation
+does not repair that failed join, change its 300-second bound, or establish a
+CI speed improvement.
+
+The original reference index is retained separately. A derived local index
+changes only the three shard `evidence_root` locations; original plans, receipt
+bytes and producer manifest paths are unchanged. Real-index mutations covering
+a wrong receipt hash, a missing original batch and a root absent from the host
+allowlist were refused without publishing any successful result directory.
 
 The fixed contract and small schema validator retain their upstream source
 revision, hashes and MIT notice in `tools/contracts/` and `tools/licenses/`.

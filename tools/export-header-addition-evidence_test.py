@@ -54,6 +54,54 @@ def fixture():
 
 
 class ProjectionTests(unittest.TestCase):
+    def test_private_index_uses_canonical_temp_path_and_preserves_bytes(self):
+        # macOS commonly exposes its temporary directory through /var, which
+        # aliases /private/var. The unchanged reader requires canonical paths.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            (root / 'tools').mkdir()
+            for name in ('native-shard-reference.py', 'check-header-addition-host.py', 'native_verification_contract.py'):
+                shutil.copyfile(ROOT / name, root / 'tools' / name)
+            allowed = root / 'allowed'
+            allowed.mkdir()
+            real = root / 'real-temp'
+            real.mkdir()
+            alias = root / 'temp-alias'
+            alias.symlink_to(real, target_is_directory=True)
+            raw = json.dumps({'schema': 'gooo/native-shard-reference-index/v2',
+                              'shards': [{'evidence_root': str(allowed)}]}).encode()
+            index = root / 'index.json'
+            index.write_bytes(raw)
+            sentinel = object()
+            observed = []
+
+            class Host:
+                @staticmethod
+                def read_shard_verification(source, private_index):
+                    self.assertEqual(source, root)
+                    self.assertEqual(private_index, private_index.resolve(strict=True))
+                    self.assertEqual(private_index.parent, real)
+                    self.assertEqual(private_index.read_bytes(), raw)
+                    observed.append(private_index)
+                    return sentinel
+
+            original_loader = X.load_code
+
+            def load_code(path, name, allowed_hashes):
+                if name == 'gooo_contribution_host':
+                    return Host
+                return original_loader(path, name, allowed_hashes)
+
+            @contextlib.contextmanager
+            def temporary_directory(**kwargs):
+                yield str(alias)
+
+            with mock.patch.object(X, 'load_code', side_effect=load_code), mock.patch.object(X.tempfile, 'TemporaryDirectory', temporary_directory):
+                data, _, sha = X.read_checked(root, index, [allowed])
+            self.assertIs(data, sentinel)
+            self.assertEqual(sha, hashlib.sha256(raw).hexdigest())
+            self.assertEqual(len(observed), 1)
+
     def test_metadata_root_is_not_file_access_permission(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
