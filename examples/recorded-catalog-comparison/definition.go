@@ -65,46 +65,70 @@ func definitionRows(o Observation, sources []RowSource) ([]DefinitionRow, error)
 			if source.ResponseSHA256 != digest([]byte(p.ResponseJSON)) {
 				return nil, invalid("DEFINITION_RESPONSE_BINDING")
 			}
-			var envelope struct {
-				Result struct {
-					Tools []map[string]any `json:"tools"`
-				} `json:"result"`
+			var err error
+			tools, err = definitionTools(p.ResponseJSON)
+			if err != nil {
+				return nil, err
 			}
-			d := json.NewDecoder(strings.NewReader(p.ResponseJSON))
-			d.UseNumber()
-			if d.Decode(&envelope) != nil {
-				return nil, invalid("DEFINITION_FRAME_DECODE")
-			}
-			tools = envelope.Result.Tools
 			decoded[key] = tools
 		}
 		if source.ToolIndex < 0 || source.ToolIndex >= len(tools) {
 			return nil, invalid("DEFINITION_ROW_BINDING")
 		}
-		tool := tools[source.ToolIndex]
-		descriptor := make(map[string]any, len(tool))
-		for k, v := range tool {
-			if k != "annotations" {
-				descriptor[k] = v
-			}
-		}
-		annotations, present := tool["annotations"]
-		// Presence is explicit; absent annotations and explicit null do not collapse.
-		claims := map[string]any{"present": present}
-		if present {
-			claims["value"] = annotations
-		}
-		definition, err := json.Marshal(descriptor)
+		definitionID, capabilityID, err := definitionIDs(tools[source.ToolIndex])
 		if err != nil {
-			return nil, invalid("DEFINITION_ENCODING")
+			return nil, err
 		}
-		capability, err := json.Marshal(claims)
-		if err != nil {
-			return nil, invalid("DEFINITION_ENCODING")
-		}
-		rows = append(rows, DefinitionRow{Source: source, DefinitionID: digest(append([]byte(DefinitionProfile+"\x00definition\x00"), definition...)), CapabilityID: digest(append([]byte(DefinitionProfile+"\x00annotations\x00"), capability...))})
+		rows = append(rows, DefinitionRow{Source: source, DefinitionID: definitionID, CapabilityID: capabilityID})
 	}
 	return rows, nil
+}
+
+// definitionTools reads the exact protocol keys already checked by the strict
+// transport. Struct decoding would also match Result/Tools case-insensitively
+// and could bind a valid original name to an unrelated shadow definition.
+func definitionTools(responseJSON string) ([]map[string]any, error) {
+	envelope, err := jsonObject([]byte(responseJSON))
+	if err != nil {
+		return nil, invalid("DEFINITION_FRAME_DECODE")
+	}
+	result, err := jsonObject(envelope["result"])
+	if err != nil {
+		return nil, invalid("DEFINITION_FRAME_DECODE")
+	}
+	var tools []map[string]any
+	decoder := json.NewDecoder(bytes.NewReader(result["tools"]))
+	decoder.UseNumber()
+	if decoder.Decode(&tools) != nil {
+		return nil, invalid("DEFINITION_FRAME_DECODE")
+	}
+	return tools, nil
+}
+
+// definitionIDs is the shared exact v1 descriptor projection. Callers first
+// validate the original frame and decode numbers with json.Decoder.UseNumber.
+func definitionIDs(tool map[string]any) (string, string, error) {
+	descriptor := make(map[string]any, len(tool))
+	for k, v := range tool {
+		if k != "annotations" {
+			descriptor[k] = v
+		}
+	}
+	annotations, present := tool["annotations"]
+	// Presence is explicit; absent annotations and explicit null do not collapse.
+	claims := map[string]any{"present": present}
+	if present {
+		claims["value"] = annotations
+	}
+	definition, err := json.Marshal(descriptor)
+	if err != nil {
+		return "", "", invalid("DEFINITION_ENCODING")
+	}
+	capability, err := json.Marshal(claims)
+	if err != nil {
+		return "", "", invalid("DEFINITION_ENCODING")
+	}
+	return digest(append([]byte(DefinitionProfile+"\x00definition\x00"), definition...)), digest(append([]byte(DefinitionProfile+"\x00annotations\x00"), capability...)), nil
 }
 
 // ProjectDefinitionInputsJSON derives the three source-bound inputs for the
