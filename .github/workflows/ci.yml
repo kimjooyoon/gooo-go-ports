@@ -94,6 +94,7 @@ jobs:
           python3 -B tools/check-ci-scope-workflow_test.py -v
           python3 -B tools/check-api-policy-public-consumer_test.py -v
           python3 -I -B tools/api_policy_cli_bundle_test.py -v
+          python3 -I -B tools/recorded_catalog_cli_bundle_test.py -v
           python3 -I -B tools/check-header-addition-host_test.py -v
           python3 -I -B tools/native-shard-reference_test.py -v
           python3 -I -B tools/export-header-addition-evidence_test.py -v
@@ -1833,6 +1834,31 @@ jobs:
           name: explicit-observation-availability-evidence
           path: ${{ runner.temp }}/explicit-observation-availability/
           if-no-files-found: warn
+          retention-days: 14
+      - name: Package the verified saved-catalog command
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 2
+        run: |
+          set -euo pipefail
+          python3 -I -B tools/recorded_catalog_cli_bundle.py \
+            --root "$PWD" \
+            --consumer-evidence "$RUNNER_TEMP/explicit-observation-availability/consumer" \
+            --synthetic-export "$RUNNER_TEMP/explicit-observation-availability/synthetic-export.json" \
+            --source-revision "$GITHUB_SHA" \
+            --producer-url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --out "$RUNNER_TEMP/recorded-catalog-cli-bundle"
+      - name: Preserve the checked saved-catalog distribution
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: gooo-recorded-catalog-linux-amd64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/recorded-catalog-cli-bundle/*.tar.gz
+            ${{ runner.temp }}/recorded-catalog-cli-bundle/*.sha256
+            ${{ runner.temp }}/recorded-catalog-cli-bundle/verification.json
+            ${{ runner.temp }}/recorded-catalog-cli-bundle/first-failure.json
+            ${{ runner.temp }}/recorded-catalog-cli-bundle/controls/
+          if-no-files-found: error
           retention-days: 14
       - name: Verify original AutoBot resolver adaptation
         if: steps.change-scope.outputs.docs_only != 'true'
