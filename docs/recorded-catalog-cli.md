@@ -45,6 +45,60 @@ the supplied collection. It is explicitly synthetic.
 
 ## Keep unavailable information explicit
 
+### Assemble saved frame files
+
+If your host saved each request and response in separate files, first use the
+[local frame assembler](../tools/assemble_saved_frames.py) with Python 3. Prepare
+a complete saved-observation plan in the [existing input format](../examples/recorded-catalog-comparison/README.md#provide-your-saved-observations),
+using your retained host records for metadata and exposed aliases. In **every**
+page, replace `request_json` and `response_json` with these file references:
+
+```json
+{
+  "request_file": "frames/page-01.request.json",
+  "response_file": "frames/page-01.response.json"
+}
+```
+
+This fragment shows only the replacement fields; keep the page's `context` and
+`declared_exposed_names`, and the complete before/after observations. Relative
+paths resolve from the plan file's directory. Absolute paths are also accepted.
+Keep the original files unchanged while assembling.
+
+```sh
+if python3 -I -B /absolute/path/to/gooo-go-ports/tools/assemble_saved_frames.py \
+  /absolute/path/to/capture-plan.json \
+  > saved-observations.json 2> assembly.stderr; then
+  printf '0\n' > assembly.exit
+else
+  command_status=$?
+  printf '%s\n' "$command_status" > assembly.exit
+  cat assembly.stderr >&2
+  exit "$command_status"
+fi
+```
+
+The assembler reads regular UTF-8 files, preserving their exact contents,
+including whitespace, escapes and CRLF. It changes only the page's file-reference
+fields; outer JSON formatting may change, while metadata number tokens are
+retained without floating-point conversion. Each frame is limited to 64 KiB, and
+the plan and assembled input are each limited to 1 MiB. Missing files, invalid
+UTF-8, ambiguous plan keys, mixed inline/file fields or exceeded bounds fail
+before any output is written to stdout. An output-device failure can
+leave a partial file; check the saved exit status. Inner JSON-RPC validation stays
+with `gooo-recorded-catalog`, so malformed frames are preserved for its diagnostic.
+
+For a Go MCP host, collect stdio bytes below the SDK's decoder through
+`IOTransport.Reader` and `Writer`, keeping request/response boundaries and actual
+I/O failures. [Go SDK v1.8.0's `LoggingTransport`](https://github.com/modelcontextprotocol/go-sdk/blob/3f3b699b2b67e1ed033a63d6651671dab53c2d32/mcp/transport.go)
+re-encodes decoded messages, so its log is a derived representation. A byte
+difference alone does not establish a semantic difference. Host aliases and
+backend, authorization and configuration revisions require their own retained
+host records; `tools/list` does not supply those facts. The assembler handles
+already saved files and makes no live collection or historical reconstruction.
+
+### Mark missing observations
+
 Follow the immutable source-format link in `START-HERE.txt`. Keep your own input separate from the synthetic example. The installation above changes into a new temporary directory, so replace the example path below with the **absolute path** to your original saved-observation JSON. Both commands read that same file; do not edit it between creating the roster and comparing it.
 
 ```sh

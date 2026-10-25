@@ -1379,7 +1379,27 @@ CATALOG_BUNDLE_STEP = '      - name: Package the verified saved-catalog command\
 CATALOG_BUNDLE_UPLOAD = "      - name: Preserve the checked saved-catalog distribution\n        if: always() && steps.change-scope.outputs.docs_only != 'true'\n        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7\n        with:\n          name: gooo-recorded-catalog-linux-amd64-${{ github.run_id }}-${{ github.run_attempt }}\n          path: |\n            ${{ runner.temp }}/recorded-catalog-cli-bundle/*.tar.gz\n            ${{ runner.temp }}/recorded-catalog-cli-bundle/*.sha256\n            ${{ runner.temp }}/recorded-catalog-cli-bundle/verification.json\n            ${{ runner.temp }}/recorded-catalog-cli-bundle/first-failure.json\n            ${{ runner.temp }}/recorded-catalog-cli-bundle/controls/\n          if-no-files-found: error\n          retention-days: 14\n"
 CATALOG_BUNDLE_PRIOR_WORKFLOW_SHA = '21b542a89cbc0f715f4050f2c8cbcb78f235600c9489b90f681fb7ac03a9aa35'
 
+SAVED_FRAME_ASSEMBLER_UNIT = '          python3 -I -B tools/assemble_saved_frames_test.py -v\n'
+SAVED_FRAME_ASSEMBLER_NEXT_UNIT = '          python3 -I -B tools/check-header-addition-host_test.py -v\n'
+# Actual .github/workflows/ci.yml bytes at a0bc2c281e330b154795e5c8a5d6170554682d03.
+# Remove only the new common unit line before applying unchanged older guards.
+SAVED_FRAME_ASSEMBLER_PRIOR_WORKFLOW_SHA = '8dc9407b6e35fd9fb79d7aa3a569187a5a799100335d4b75d42065dd325207d5'
+
+def project_saved_frame_assembler_integration(text):
+    jobs = workflow_jobs(text)
+    _, observer, _ = job_steps(jobs['observer-checks'])
+    require(text.count(SAVED_FRAME_ASSEMBLER_UNIT) == 1 and
+            'Check the Go observer' in observer and
+            CATALOG_BUNDLE_UNIT + SAVED_FRAME_ASSEMBLER_UNIT + SAVED_FRAME_ASSEMBLER_NEXT_UNIT
+            in observer['Check the Go observer'],
+            'saved-frame assembly tests must remain one unconditional adjacent common check')
+    prior = text.replace(SAVED_FRAME_ASSEMBLER_UNIT, '', 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == SAVED_FRAME_ASSEMBLER_PRIOR_WORKFLOW_SHA,
+            'saved-frame assembly integration changed unrelated workflow bytes')
+    return prior
+
 def project_catalog_bundle_integration(text):
+    text = project_saved_frame_assembler_integration(text)
     jobs = workflow_jobs(text)
     _, observer, _ = job_steps(jobs['observer-checks'])
     require(text.count(CATALOG_BUNDLE_UNIT) == 1 and
@@ -4588,6 +4608,34 @@ class ExplicitAvailabilityIntegrationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             project_explicit_availability_integration(raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1))
 
+
+
+class SavedFrameAssemblerIntegrationTests(unittest.TestCase):
+    def test_only_common_unit_line_is_removed_before_historical_guards(self):
+        raw = WORKFLOW.read_text()
+        prior = project_saved_frame_assembler_integration(raw)
+        self.assertEqual(prior, raw.replace(SAVED_FRAME_ASSEMBLER_UNIT, '', 1))
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(),
+                         SAVED_FRAME_ASSEMBLER_PRIOR_WORKFLOW_SHA)
+        project_catalog_bundle_integration(raw)
+
+    def test_missing_duplicate_or_conditional_move_is_refused(self):
+        raw = WORKFLOW.read_text()
+        removed = raw.replace(SAVED_FRAME_ASSEMBLER_UNIT, '', 1)
+        moved = removed.replace('  native-execution:\n',
+                                '      - name: Run saved-frame assembly only for native scope\n'
+                                '        if: ' + FULL + '\n'
+                                '        run: |\n' + SAVED_FRAME_ASSEMBLER_UNIT +
+                                '  native-execution:\n', 1)
+        mutations = {
+            'missing': removed,
+            'duplicate': raw.replace(SAVED_FRAME_ASSEMBLER_UNIT, SAVED_FRAME_ASSEMBLER_UNIT * 2, 1),
+            'conditional-move': moved,
+        }
+        for name, changed in mutations.items():
+            self.assertNotEqual(changed, raw)
+            with self.subTest(mutation=name), self.assertRaises(ValueError):
+                project_saved_frame_assembler_integration(changed)
 
 
 class RecordedCatalogBundleIntegrationTests(unittest.TestCase):

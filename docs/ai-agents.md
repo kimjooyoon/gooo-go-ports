@@ -563,6 +563,11 @@ keep the availability sidecar and report together, and retain stderr and the
 exit status on failure. For feedback, include the release tag, archive name,
 manifest source revision, whether the input was yours or the unchanged example,
 and the decision or first failure. The guide links the existing feedback form.
+For separate raw request/response files, the optional Python 3
+[frame assembler](recorded-catalog-cli.md#assemble-saved-frame-files) prepares the
+same input while retaining exact frame contents and host-supplied metadata. It
+does not infer exposed aliases or missing capture context. Complete input files
+still need only the native command.
 The source commands below retain the older pinned profiles and their distinct
 capabilities.
 
