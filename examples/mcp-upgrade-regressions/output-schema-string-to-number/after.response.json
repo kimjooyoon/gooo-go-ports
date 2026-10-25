@@ -1,0 +1,29 @@
+{
+  "jsonrpc": "2.0",
+  "id": "synthetic-output-schema-string-to-number-after",
+  "result": {
+    "tools": [
+      {
+        "name": "synthetic.lookup",
+        "description": "SYNTHETIC_FIXTURE: upgrade/reconnect regression",
+        "inputSchema": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "outputSchema": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "value"
+          ],
+          "additionalProperties": false
+        }
+      }
+    ]
+  }
+}

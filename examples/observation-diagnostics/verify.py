@@ -6,10 +6,13 @@ spec=importlib.util.spec_from_file_location('observation_e',HERE/'evidence.py');
 spec=importlib.util.spec_from_file_location('observation_g',HERE/'generate.py');g=importlib.util.module_from_spec(spec);spec.loader.exec_module(g)
 spec=importlib.util.spec_from_file_location('observation_graph_check',e.ROOT/'examples/tool-definition-binding/verify.py');old=importlib.util.module_from_spec(spec);spec.loader.exec_module(old)
 host=e.host;ROOT=e.ROOT;MODULE=ROOT/g.OUTPUT
+surface_spec=importlib.util.spec_from_file_location('runtime_package_surface_adapter', ROOT/'tools/runtime_package_surface.py')
+runtime_surface=importlib.util.module_from_spec(surface_spec);surface_spec.loader.exec_module(runtime_surface)
 EXCLUDED={'.git','__pycache__','.cache','cache','tmp','out','output','bin','gopath','modcache','home','node_modules'}
 
 def snapshot():
  paths=[ROOT/'upstream.json',e.MANIFEST,ROOT/e.SOURCE,*g.HELPERS,ROOT/'examples/tool-definition-binding/verify.py',ROOT/'examples/tool-definition-binding/provenance_test.py']
+ paths.extend(runtime_surface.source_roster(ROOT))
  for directory in (HERE,MODULE):
   for parent,dirs,files in os.walk(directory,followlinks=False):
    p=Path(parent);assert all(not (p/n).is_symlink() for n in dirs);dirs[:]=sorted(n for n in dirs if n not in EXCLUDED)
@@ -94,8 +97,8 @@ def main():
    for value,expected in zip(record['report']['observation_projection']['inputs'],record['report']['observations']):
     case=consumers['cases'][position];e.same(case['inputs'][e.ENTRY],value);e.same(case['expected'][e.ENTRY],expected);position+=1
   module='github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison'
-  deps=[s for s in run('runtime-dependencies',[go,'-C',MODULE,'list','-deps','-f','{{if not .Standard}}{{.ImportPath}}{{end}}','./cmd/compare']).decode().splitlines() if s]
-  assert set(deps)=={module,module+'/internal/kernel',module+'/internal/definitionkernel',module+'/internal/observationkernel',module+'/internal/availabilitykernel',module+'/internal/availabilityobservationkernel',module+'/internal/snapshotkernel',module+'/cmd/compare'} and len(deps)==8
+  surface=runtime_surface.verify(ROOT,MODULE,go,go_identity,env,run,host,out,'runtime-dependencies')
+  deps=surface['assessment']['observed_paths'];summary['runtime_package_surface']=surface
   binary=out/'bin/compare';run('CLI-build',[go,'-C',MODULE,'build','-trimpath','-buildvcs=false','-o',binary,'./cmd/compare'])
   info=host.strict(run('CLI-build-info',[go,'version','-m','-json',binary],20));assert info['GoVersion']==e.GO_VERSION and info['Main']['Path']==module and not info.get('Deps');settings={s['Key']:s['Value'] for s in info['Settings']};assert settings['CGO_ENABLED']=='0' and settings['-trimpath']=='true'
   runtime=dict(env,PATH='');runtime.pop('GOROOT',None)

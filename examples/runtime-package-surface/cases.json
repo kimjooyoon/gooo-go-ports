@@ -1,0 +1,605 @@
+{
+  "schema": "gooo/body-composition-cases/v1",
+  "cases": [
+    {
+      "inputs": {
+        "example/runtime-package-surface:Inspect": {
+          "origin_ref": "fixture://independent-package-observation",
+          "import_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ]
+        }
+      },
+      "expected": {
+        "example/runtime-package-surface:Inspect": {
+          "status": "OBSERVED_EXACT",
+          "observation_origin": "fixture://independent-package-observation",
+          "declared_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "observed_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "missing_count": 0,
+          "undeclared_count": 0,
+          "duplicate_observation": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "example/runtime-package-surface:Inspect": {
+          "origin_ref": "fixture://independent-package-observation",
+          "import_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison"
+          ]
+        }
+      },
+      "expected": {
+        "example/runtime-package-surface:Inspect": {
+          "status": "OBSERVED_EXACT",
+          "observation_origin": "fixture://independent-package-observation",
+          "declared_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "observed_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison"
+          ],
+          "missing_count": 0,
+          "undeclared_count": 0,
+          "duplicate_observation": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "example/runtime-package-surface:Inspect": {
+          "origin_ref": "fixture://independent-package-observation",
+          "import_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ]
+        }
+      },
+      "expected": {
+        "example/runtime-package-surface:Inspect": {
+          "status": "MISSING_PACKAGES",
+          "observation_origin": "fixture://independent-package-observation",
+          "declared_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "observed_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "missing_count": 1,
+          "undeclared_count": 0,
+          "duplicate_observation": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "example/runtime-package-surface:Inspect": {
+          "origin_ref": "fixture://independent-package-observation",
+          "import_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/undeclared"
+          ]
+        }
+      },
+      "expected": {
+        "example/runtime-package-surface:Inspect": {
+          "status": "UNDECLARED_PACKAGES",
+          "observation_origin": "fixture://independent-package-observation",
+          "declared_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "observed_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/undeclared"
+          ],
+          "missing_count": 0,
+          "undeclared_count": 1,
+          "duplicate_observation": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "example/runtime-package-surface:Inspect": {
+          "origin_ref": "fixture://independent-package-observation",
+          "import_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel"
+          ]
+        }
+      },
+      "expected": {
+        "example/runtime-package-surface:Inspect": {
+          "status": "REPEATED_PACKAGE",
+          "observation_origin": "fixture://independent-package-observation",
+          "declared_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "observed_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel"
+          ],
+          "missing_count": 0,
+          "undeclared_count": 0,
+          "duplicate_observation": true
+        }
+      }
+    },
+    {
+      "inputs": {
+        "example/runtime-package-surface:Inspect": {
+          "origin_ref": "fixture://independent-package-observation",
+          "import_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/undeclared"
+          ]
+        }
+      },
+      "expected": {
+        "example/runtime-package-surface:Inspect": {
+          "status": "MISSING_AND_UNDECLARED",
+          "observation_origin": "fixture://independent-package-observation",
+          "declared_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "observed_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/undeclared"
+          ],
+          "missing_count": 1,
+          "undeclared_count": 1,
+          "duplicate_observation": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "example/runtime-package-surface:Inspect": {
+          "origin_ref": "fixture://independent-package-observation",
+          "import_paths": [
+            "GitHub.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ]
+        }
+      },
+      "expected": {
+        "example/runtime-package-surface:Inspect": {
+          "status": "MISSING_AND_UNDECLARED",
+          "observation_origin": "fixture://independent-package-observation",
+          "declared_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "observed_paths": [
+            "GitHub.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "missing_count": 1,
+          "undeclared_count": 1,
+          "duplicate_observation": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "example/runtime-package-surface:Inspect": {
+          "origin_ref": "fixture://independent-package-observation",
+          "import_paths": []
+        }
+      },
+      "expected": {
+        "example/runtime-package-surface:Inspect": {
+          "status": "MISSING_PACKAGES",
+          "observation_origin": "fixture://independent-package-observation",
+          "declared_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "observed_paths": [],
+          "missing_count": 8,
+          "undeclared_count": 0,
+          "duplicate_observation": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "example/runtime-package-surface:Inspect": {
+          "origin_ref": "",
+          "import_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ]
+        }
+      },
+      "expected": {
+        "example/runtime-package-surface:Inspect": {
+          "status": "ORIGIN_UNOBSERVED",
+          "observation_origin": "",
+          "declared_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "observed_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "missing_count": 0,
+          "undeclared_count": 0,
+          "duplicate_observation": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "example/runtime-package-surface:Inspect": {
+          "origin_ref": "fixture://independent-package-observation",
+          "import_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/undeclared",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/undeclared"
+          ]
+        }
+      },
+      "expected": {
+        "example/runtime-package-surface:Inspect": {
+          "status": "UNDECLARED_PACKAGES",
+          "observation_origin": "fixture://independent-package-observation",
+          "declared_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "observed_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/undeclared",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/undeclared"
+          ],
+          "missing_count": 0,
+          "undeclared_count": 2,
+          "duplicate_observation": true
+        }
+      }
+    },
+    {
+      "inputs": {
+        "example/runtime-package-surface:Inspect": {
+          "origin_ref": "fixture://independent-package-observation",
+          "import_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison ",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ]
+        }
+      },
+      "expected": {
+        "example/runtime-package-surface:Inspect": {
+          "status": "MISSING_AND_UNDECLARED",
+          "observation_origin": "fixture://independent-package-observation",
+          "declared_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "observed_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison ",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "missing_count": 1,
+          "undeclared_count": 1,
+          "duplicate_observation": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "example/runtime-package-surface:Inspect": {
+          "origin_ref": "fixture://independent-package-observation",
+          "import_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel"
+          ]
+        }
+      },
+      "expected": {
+        "example/runtime-package-surface:Inspect": {
+          "status": "MISSING_PACKAGES",
+          "observation_origin": "fixture://independent-package-observation",
+          "declared_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "observed_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel"
+          ],
+          "missing_count": 7,
+          "undeclared_count": 0,
+          "duplicate_observation": false
+        }
+      }
+    },
+    {
+      "inputs": {
+        "example/runtime-package-surface:Inspect": {
+          "origin_ref": "fixture://independent-package-observation",
+          "import_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel"
+          ]
+        }
+      },
+      "expected": {
+        "example/runtime-package-surface:Inspect": {
+          "status": "MISSING_PACKAGES",
+          "observation_origin": "fixture://independent-package-observation",
+          "declared_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "observed_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel"
+          ],
+          "missing_count": 1,
+          "undeclared_count": 0,
+          "duplicate_observation": true
+        }
+      }
+    },
+    {
+      "inputs": {
+        "example/runtime-package-surface:Inspect": {
+          "origin_ref": "",
+          "import_paths": []
+        }
+      },
+      "expected": {
+        "example/runtime-package-surface:Inspect": {
+          "status": "ORIGIN_UNOBSERVED",
+          "observation_origin": "",
+          "declared_paths": [
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/observationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilitykernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/availabilityobservationkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/snapshotkernel",
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare"
+          ],
+          "observed_paths": [],
+          "missing_count": 8,
+          "undeclared_count": 0,
+          "duplicate_observation": false
+        }
+      }
+    }
+  ]
+}

@@ -24,7 +24,10 @@
     "ports/xmod",
     "examples/service-grant-mcp",
     "examples/service-grant-many",
-    "examples/agentmesh-service-policy"
+    "examples/agentmesh-service-policy",
+    "examples/recorded-catalog-comparison",
+    "examples/tool-definition-snapshot",
+    "examples/mcp-upgrade-regressions"
   ],
   "excludeFolders": [
     "**/evidence",
@@ -88,6 +91,8 @@
     "For service-grant assessment, use examples/service-grant-mcp. Default assess_service_grant preserves one required service pair; --many-required additionally exposes assess_service_grant_change for an ordered list.",
     "For multiple required requests, use assess_service_grant_change and preserve order and duplicate positions. Its Gooo policy admits 1-256 pairs; an excess list is represented INVALID_INPUT, not a transport error.",
     "Use canonical service identifiers, not URL paths or individual tool names. Pattern and component strings are ASCII, at most 128 bytes. Preserve unsupported text; do not trim, repair or substitute a single-request assessment.",
-    "ELIGIBLE, REFUSED and represented INVALID_INPUT are calculations, not live grants. Retain facts, every decision field and full bindings. MCP isError or a missing tool is a setup, input, transport or execution failure; do not invent a decision."
+    "ELIGIBLE, REFUSED and represented INVALID_INPUT are calculations, not live grants. Retain facts, every decision field and full bindings. MCP isError or a missing tool is a setup, input, transport or execution failure; do not invent a decision.",
+    "For saved tools/list pages without host alias records, use --definition-snapshot in examples/recorded-catalog-comparison with the input guide in examples/tool-definition-snapshot. This mode requires the current source; older binaries do not include it.",
+    "Try the synthetic upgrade cases in examples/mcp-upgrade-regressions. If a selected tool is missing from incomplete pages, keep UNASSESSED; do not infer removal. Definition changes do not prove behavior changes or authorize a call."
   ]
 }

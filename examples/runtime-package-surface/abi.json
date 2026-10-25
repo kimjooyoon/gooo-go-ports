@@ -1,0 +1,85 @@
+{
+  "schema": "gooo/runtime-package-surface-authored-contract/v1",
+  "status": "AUTHORED_SOURCE_ABI_NOT_EXECUTION_EVIDENCE",
+  "entry": "example/runtime-package-surface:Inspect",
+  "activity_id": "urn:gooo:runtime-package-surface:inspect",
+  "input_entity_id": "urn:gooo:runtime-package-surface:observation",
+  "output_entity_id": "urn:gooo:runtime-package-surface:assessment",
+  "records": {
+    "Paths": {
+      "id": "urn:gooo:runtime-package-surface:paths",
+      "fields": [
+        {
+          "name": "values",
+          "id": "urn:gooo:runtime-package-surface:paths:values",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        }
+      ]
+    },
+    "Observation": {
+      "id": "urn:gooo:runtime-package-surface:observation",
+      "fields": [
+        {
+          "name": "origin_ref",
+          "id": "urn:gooo:runtime-package-surface:observation:origin",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "import_paths",
+          "id": "urn:gooo:runtime-package-surface:observation:paths",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        }
+      ]
+    },
+    "Assessment": {
+      "id": "urn:gooo:runtime-package-surface:assessment",
+      "fields": [
+        {
+          "name": "status",
+          "id": "urn:gooo:runtime-package-surface:assessment:status",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "observation_origin",
+          "id": "urn:gooo:runtime-package-surface:assessment:origin",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "declared_paths",
+          "id": "urn:gooo:runtime-package-surface:assessment:declared",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "observed_paths",
+          "id": "urn:gooo:runtime-package-surface:assessment:observed",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "missing_count",
+          "id": "urn:gooo:runtime-package-surface:assessment:missing",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "undeclared_count",
+          "id": "urn:gooo:runtime-package-surface:assessment:undeclared",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "duplicate_observation",
+          "id": "urn:gooo:runtime-package-surface:assessment:duplicate",
+          "type_id": "urn:gooo:type:boolean",
+          "cardinality": "one"
+        }
+      ]
+    }
+  }
+}

@@ -1394,7 +1394,43 @@ SNAPSHOT_UPLOAD = "      - name: Preserve saved definition snapshot evidence\n  
 SNAPSHOT_PRIOR_WORKFLOW_SHA = 'cbe3c8485fb1fed201cc5fc93c6f42a4ab906e623a5adcad29bcb6a2963f5056'
 
 
+# The runtime surface is a new root validation sidecar, not a product kernel.
+# Removing these exact additions must recover every original workflow byte at
+# 9bbe157 (PR236 merged); older hashes and projection guards remain unchanged.
+RUNTIME_SURFACE_UNIT = '          python3 -I -B tools/runtime_package_surface_test.py -v\n'
+RUNTIME_SURFACE_DECL = '          ./.gooo check ports/runtime-package-surface/contract.gooo\n          ./.gooo check ports/runtime-package-surface/inspect.gooo\n'
+RUNTIME_SURFACE_STEP = '      - name: Verify Gooo runtime package surface\n        if: steps.change-scope.outputs.docs_only != \'true\'\n        timeout-minutes: 12\n        run: |\n          set -euo pipefail\n          python3 -I -B examples/runtime-package-surface/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/runtime-package-surface"\n          jq -e \'\n            .schema == "gooo/runtime-package-surface-verification/v1" and\n            .status == "RUNTIME_SURFACE14_NATIVE_REPLAY_AND_TWO_MUTATIONS_PASS" and\n            .first_failure == null and\n            .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and\n            .go_version == "go1.27.3" and .receipt_negative_controls == 6 and\n            .native_cases == 14 and .replay_cases == 14 and\n            .source_mutations == 2 and .rejected_mutation_cases == 28 and\n            .generated_assets == 4 and .generated_assets_exact == true and\n            .PROV_O_bindings_verified == true and .source_unchanged == true and\n            .all_direct_wait_EOF_PG_ESRCH == true and\n            .synthetic_observations_only == true and .external_adoption == false and\n            .model_calls == 0 and .engine_builds == 0 and .network_calls == 0\n          \' "$RUNNER_TEMP/runtime-package-surface/summary.json"\n'
+RUNTIME_SURFACE_UPLOAD = "      - name: Preserve runtime package surface evidence\n        if: always() && steps.change-scope.outputs.docs_only != 'true'\n        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7\n        with:\n          name: runtime-package-surface-evidence\n          path: ${{ runner.temp }}/runtime-package-surface/\n          if-no-files-found: warn\n          retention-days: 14\n"
+RUNTIME_SURFACE_PRIOR_WORKFLOW_SHA = '2e05299931a15acfa3f248e6b643c07abc39dd3017b90aa69c49326622415526'
+
+
+def project_runtime_package_surface_integration(text):
+    jobs = workflow_jobs(text)
+    _, observer, _ = job_steps(jobs['observer-checks'])
+    _, native, _ = job_steps(jobs['native-execution'])
+    require(all(text.count(line) == 1 for line in RUNTIME_SURFACE_DECL.splitlines(keepends=True)) and
+            SNAPSHOT_DECL + RUNTIME_SURFACE_DECL + '          ./.gooo check ports/image/color.gooo\n'
+            in native['Check Gooo declarations'],
+            'runtime surface declarations must remain unique adjacent unconditional common native checks')
+    require(text.count(RUNTIME_SURFACE_UNIT) == 1 and
+            SAVED_FRAME_ASSEMBLER_UNIT + RUNTIME_SURFACE_UNIT + SAVED_FRAME_ASSEMBLER_NEXT_UNIT
+            in observer['Check the Go observer'],
+            'runtime surface adapter tests must remain one adjacent unconditional common check')
+    for chunk in (RUNTIME_SURFACE_STEP, RUNTIME_SURFACE_UPLOAD):
+        require(text.count(chunk) == 1 and chunk in jobs['policy-native-checks'],
+                'runtime surface requires exact full-scope verification and failure-safe original evidence')
+    require(text.index(SNAPSHOT_UPLOAD) + len(SNAPSHOT_UPLOAD) == text.index(RUNTIME_SURFACE_STEP) and
+            text.index(RUNTIME_SURFACE_STEP) + len(RUNTIME_SURFACE_STEP) == text.index(RUNTIME_SURFACE_UPLOAD) and
+            text.index(RUNTIME_SURFACE_UPLOAD) + len(RUNTIME_SURFACE_UPLOAD) == text.index(OBSERVATION_STEP),
+            'runtime surface verification must remain between snapshot and observation checks')
+    prior = text.replace(RUNTIME_SURFACE_UNIT, '', 1).replace(RUNTIME_SURFACE_DECL, '', 1).replace(RUNTIME_SURFACE_STEP, '', 1).replace(RUNTIME_SURFACE_UPLOAD, '', 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == RUNTIME_SURFACE_PRIOR_WORKFLOW_SHA,
+            'runtime surface integration changed unrelated workflow bytes')
+    return prior
+
+
 def project_definition_snapshot_integration(text):
+    text = project_runtime_package_surface_integration(text)
     jobs = workflow_jobs(text)
     _, observer, _ = job_steps(jobs['observer-checks'])
     _, native, _ = job_steps(jobs['native-execution'])
@@ -4533,6 +4569,102 @@ class RecordedCatalogIntegrationTests(unittest.TestCase):
                 project_recorded_catalog_integration(raw.replace(RECORDED_CATALOG_UPLOAD, replacement, 1))
         with self.assertRaises(ValueError):
             project_recorded_catalog_integration(raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1))
+
+
+class RuntimePackageSurfaceIntegrationTests(unittest.TestCase):
+    def test_exact_additions_recover_complete_original_workflow(self):
+        raw = WORKFLOW.read_text()
+        prior = project_runtime_package_surface_integration(raw)
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), RUNTIME_SURFACE_PRIOR_WORKFLOW_SHA)
+        self.assertEqual(prior, raw.replace(RUNTIME_SURFACE_UNIT, '', 1).replace(RUNTIME_SURFACE_DECL, '', 1).replace(RUNTIME_SURFACE_STEP, '', 1).replace(RUNTIME_SURFACE_UPLOAD, '', 1))
+        self.assertNotIn('runtime-package-surface', prior)
+        self.assertNotIn('runtime_package_surface', prior)
+        # Continue through every unchanged historical layer, including snapshot.
+        project_root_go_reference(raw)
+
+    def test_each_added_line_is_required_once_without_changes(self):
+        raw = WORKFLOW.read_text()
+        for name, chunk in [('unit', RUNTIME_SURFACE_UNIT), ('declarations', RUNTIME_SURFACE_DECL), ('verify', RUNTIME_SURFACE_STEP), ('upload', RUNTIME_SURFACE_UPLOAD)]:
+            for index, line in enumerate(chunk.splitlines(keepends=True)):
+                for mutation, changed_line in [('omit', ''), ('duplicate', line + line), ('change', line.rstrip('\n') + ' # changed\n')]:
+                    changed = raw.replace(chunk, chunk.replace(line, changed_line, 1), 1)
+                    self.assertNotEqual(changed, raw)
+                    with self.subTest(block=name, line=index, mutation=mutation), self.assertRaises(ValueError):
+                        project_runtime_package_surface_integration(changed)
+
+    def test_declarations_keep_common_native_ownership_and_source_order(self):
+        raw = WORKFLOW.read_text()
+        first, second = RUNTIME_SURFACE_DECL.splitlines(keepends=True)
+        without = raw.replace(RUNTIME_SURFACE_DECL, '', 1)
+        moved = without.replace(RUNTIME_SURFACE_UNIT, RUNTIME_SURFACE_UNIT + RUNTIME_SURFACE_DECL, 1)
+        _, native, _ = job_steps(workflow_jobs(raw)['native-execution'])
+        original = native['Check Gooo declarations']
+        conditional = original.replace('        run: |\n', '        if: ' + FULL + '\n        run: |\n', 1)
+        self.assertNotEqual(original, conditional)
+        mutations = {'missing': without, 'reversed': raw.replace(RUNTIME_SURFACE_DECL, second + first, 1),
+                     'duplicate-line': raw.replace(first, first * 2, 1), 'wrong-owner': moved,
+                     'full-only': raw.replace(original, conditional, 1),
+                     'wrong-source': raw.replace(first, first.replace('contract.gooo', 'inspect.gooo'), 1)}
+        for name, changed in mutations.items():
+            self.assertNotEqual(changed, raw)
+            with self.subTest(mutation=name), self.assertRaises(ValueError):
+                project_runtime_package_surface_integration(changed)
+
+    def test_skips_masking_wrong_pins_counts_and_source_guards_are_refused(self):
+        raw = WORKFLOW.read_text()
+        alterations = [
+            (FULL, DOCS), ('set -euo pipefail', 'set +e'),
+            ('timeout-minutes: 12', 'timeout-minutes: 120'),
+            ('--out "$RUNNER_TEMP/runtime-package-surface"', '--write-generated --out "$RUNNER_TEMP/runtime-package-surface"'),
+            ('--out "$RUNNER_TEMP/runtime-package-surface"', '--out "$RUNNER_TEMP/runtime-package-surface" || true'),
+            ('--compiler "$PWD/.gooo"', '--compiler "$PWD/other-compiler"'),
+            ('.compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6"', 'true'),
+            ('.go_version == "go1.27.3"', '.go_version == "go1.27.2"'),
+            ('.receipt_negative_controls == 6', '.receipt_negative_controls == 0'),
+            ('.native_cases == 14', 'true'), ('.replay_cases == 14', 'true'),
+            ('.source_mutations == 2', 'true'), ('.rejected_mutation_cases == 28', 'true'),
+            ('.generated_assets == 4', 'true'), ('.generated_assets_exact == true', 'true'),
+            ('.PROV_O_bindings_verified == true', 'true'), ('.source_unchanged == true', 'true'),
+            ('.first_failure == null', 'true'), ('.all_direct_wait_EOF_PG_ESRCH == true', 'true'),
+            ('.synthetic_observations_only == true', 'true'), ('.external_adoption == false', 'true'),
+            ('.model_calls == 0', 'true'), ('.engine_builds == 0', 'true'), ('.network_calls == 0', 'true'),
+        ]
+        for old, new in alterations:
+            self.assertIn(old, RUNTIME_SURFACE_STEP)
+            changed = raw.replace(RUNTIME_SURFACE_STEP, RUNTIME_SURFACE_STEP.replace(old, new, 1), 1)
+            with self.subTest(guard=old), self.assertRaises(ValueError):
+                project_runtime_package_surface_integration(changed)
+
+    def test_evidence_is_failure_safe_separate_and_owned(self):
+        raw = WORKFLOW.read_text()
+        for name, replacement in [
+            ('omit', ''), ('duplicate', RUNTIME_SURFACE_UPLOAD * 2),
+            ('success-only', RUNTIME_SURFACE_UPLOAD.replace('always() && ', '', 1)),
+            ('wrong-directory', RUNTIME_SURFACE_UPLOAD.replace('${{ runner.temp }}/runtime-package-surface/', 'out/reused/', 1)),
+            ('wrong-name', RUNTIME_SURFACE_UPLOAD.replace('name: runtime-package-surface-evidence', 'name: tool-definition-snapshot-evidence', 1)),
+            ('different-action', RUNTIME_SURFACE_UPLOAD.replace('cf430e030ddbb5b0abf93d22962f4752f3646cd9', 'main', 1)),
+        ]:
+            with self.subTest(mutation=name), self.assertRaises(ValueError):
+                project_runtime_package_surface_integration(raw.replace(RUNTIME_SURFACE_UPLOAD, replacement, 1))
+
+    def test_moved_checks_and_unrelated_native_changes_are_refused(self):
+        raw = WORKFLOW.read_text()
+        block = RUNTIME_SURFACE_STEP + RUNTIME_SURFACE_UPLOAD
+        without = raw.replace(block, '', 1)
+        moved = without.replace(DEFINITION_STEP, block + DEFINITION_STEP, 1)
+        no_unit = raw.replace(RUNTIME_SURFACE_UNIT, '', 1)
+        moved_unit = no_unit.replace('  native-execution:\n',
+                                    '      - name: Conditional runtime surface unit\n'
+                                    '        if: ' + FULL + '\n'
+                                    '        run: |\n' + RUNTIME_SURFACE_UNIT + '  native-execution:\n', 1)
+        mutations = {'wrong-order': moved, 'conditional-unit': moved_unit,
+                     'native-race-removed': raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1),
+                     'duplicate-unit': raw.replace(RUNTIME_SURFACE_UNIT, RUNTIME_SURFACE_UNIT * 2, 1),
+                     'missing-verifier': raw.replace(RUNTIME_SURFACE_STEP, '', 1)}
+        for name, changed in mutations.items():
+            self.assertNotEqual(changed, raw)
+            with self.subTest(mutation=name), self.assertRaises(ValueError):
+                project_runtime_package_surface_integration(changed)
 
 
 class DefinitionSnapshotIntegrationTests(unittest.TestCase):
