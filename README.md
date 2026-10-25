@@ -16,7 +16,7 @@ open this checkout in Codex, Cursor or Claude Code and ask:
 > remaining question that affects my upgrade review.
 
 The [own-input guide](docs/ai-agents.md#compare-your-own-saved-pages) starts from
-four saved request/response files. It uses Go **1.27.3** and this checkout's
+four saved request/response files. Its source route uses Go **1.27.3** and this checkout's
 included evaluator; no Gooo compiler setup is needed. The published
 `recorded-catalog-cli-preview.1` does not support this mode. If you have no saved
 pages, [try the three synthetic cases](examples/mcp-upgrade-regressions/README.md)

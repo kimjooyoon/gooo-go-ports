@@ -574,11 +574,17 @@ Ask your coding agent:
 
 ### Compare your own saved pages
 
-Use an existing checkout of this source and Go **1.27.3**. The generated evaluator
-is already included; this task does not require bootstrapping the Gooo compiler.
-Replace the original tool name and four absolute paths below with your retained
-JSON-RPC `tools/list` payloads. Python 3 assembles the input without parsing and
-rewriting the original page text, including CRLF line endings.
+Choose the execution route before running the recipe. The source route uses an
+existing checkout and Go **1.27.3**; its generated evaluator is already included,
+so no Gooo compiler bootstrap is needed. With an extracted native archive that
+explicitly includes `mcp-upgrade-regressions/`, replace
+`go -C examples/recorded-catalog-comparison run ./cmd/compare` below with the
+absolute path to its `gooo-recorded-catalog` executable. The public
+`recorded-catalog-cli-preview.1` archive does not support `--definition-snapshot`.
+
+Replace the original tool name and four absolute paths with your retained
+JSON-RPC `tools/list` payloads. Both routes use Python 3 to assemble the input
+without parsing and rewriting the original page text, including CRLF line endings.
 
 ```sh
 snapshot_dir="$(mktemp -d "${TMPDIR:-/tmp}/gooo-snapshot.XXXXXX")" || exit 1
@@ -625,11 +631,6 @@ original request/response pairs to each `pages` array in observed order. Keep a
 retained `nextCursor` even when its next page is missing: absence from an
 incomplete page set cannot establish that a tool was removed. The command
 collects no new pages and invents no aliases or host metadata.
-
-With a native archive that explicitly includes `mcp-upgrade-regressions/`, you
-can replace `go -C examples/recorded-catalog-comparison run ./cmd/compare` above
-with the absolute path to its `gooo-recorded-catalog` executable. The public
-`recorded-catalog-cli-preview.1` archive does not support `--definition-snapshot`.
 
 A useful first-use result is an answer to your own comparison question, a missing
 observation, or the first setup failure. In the [existing feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml),
