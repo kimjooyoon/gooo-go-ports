@@ -376,7 +376,7 @@ def main():
         assert len({f['label'] for f in fixtures['cases']}) == 7
         deps = [line for line in run('native-runtime-dependencies', [go, '-C', HERE, 'list', '-deps', '-f',
                 '{{if not .Standard}}{{.ImportPath}}{{end}}', './cmd/compare']).decode().splitlines() if line]
-        assert set(deps) == {MODULE, MODULE + '/internal/kernel', MODULE + '/internal/definitionkernel', MODULE + '/internal/observationkernel', MODULE + '/cmd/compare'} and len(deps) == 5
+        assert set(deps) == {MODULE, MODULE + '/internal/kernel', MODULE + '/internal/definitionkernel', MODULE + '/internal/observationkernel', MODULE + '/internal/availabilitykernel', MODULE + '/internal/availabilityobservationkernel', MODULE + '/cmd/compare'} and len(deps) == 7
         binary = out / 'bin/compare'
         run('native-CLI-build', [go, '-C', HERE, 'build', '-trimpath', '-buildvcs=false', '-o', binary, './cmd/compare'])
         info = host.strict(run('native-CLI-build-info', [go, 'version', '-m', '-json', binary], 20))

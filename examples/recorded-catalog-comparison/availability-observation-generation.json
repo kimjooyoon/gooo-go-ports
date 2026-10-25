@@ -1,0 +1,37 @@
+{
+  "activity_id": "gooo://tool-origin/explicit-observation/v1/assess",
+  "batches": 2,
+  "cases": 12,
+  "cases_sha256": "sha256:32c2fc7ace1f54bb8ad6054046f7954d2ab1a889f5f39ab98c55e63047c5c3eb",
+  "compiler_source_sha": "205896a413e5dea92366309c35ae85e542d055f6",
+  "entry": "gooo/tool-origin/explicit-observation:AssessObservationField",
+  "generated_assets": {
+    "examples/recorded-catalog-comparison/availability-observation-kernel-cases.json": "sha256:32c2fc7ace1f54bb8ad6054046f7954d2ab1a889f5f39ab98c55e63047c5c3eb",
+    "examples/recorded-catalog-comparison/internal/availabilityobservationkernel/bridge_generated.go": "sha256:c5b343bc8db215db36f0b16ee03187589443372c3b09e44487f1b04923801535",
+    "examples/recorded-catalog-comparison/internal/availabilityobservationkernel/projection_generated.go": "sha256:0de241d128ccd6f661cf0d49e7f5b7bfb92d0251b8a640b30759d1bf5fdefe95",
+    "examples/recorded-catalog-comparison/internal/availabilityobservationkernel/types_generated.go": "sha256:9d7d9d873868f5923892a8cdb85ce8476b6af09e1436b7a3c2bc597970091014"
+  },
+  "generator_source": {
+    "examples/explicit-observation-availability/observation_evidence.py": "sha256:69d96773cc1f61e14aaeecc9e7ec26e0070f9d7565a2e31c768852bc61c13fd1",
+    "examples/explicit-observation-availability/observation_generate.py": "sha256:9e8f27fb6938d6fc8c351ced2f335cc28b218023fe8ff918ee46433520b347d4",
+    "examples/recorded-catalog-comparison/generate.py": "sha256:f64b0df498d4816b2cece12eedf14a1e2f85678982cd5d074b1cae62b818d3db",
+    "examples/service-grant-many/verify.py": "sha256:ff3d94c39782619e06f64d5fbcfc3218733013332293f07b14368e5e939d3f0f",
+    "examples/tool-definition-binding/evidence.py": "sha256:22829d04c7d532d0ad7e5f8cdd2a2c57daa2d69d7ebdec77ec6343677e48a65f"
+  },
+  "go_version": "go1.27.3",
+  "projection_transform": "Replace first package token main with availabilityobservationkernel; all other bytes unchanged.",
+  "raw_projection_sha256": "sha256:619a65d29c54673ad19faf49e283615df1b88a5c599d00a0db652b150ea0115f",
+  "reference_source": {
+    "examples/explicit-observation-availability/observation-reference-inputs.json": "sha256:154828da6c107a8ebb7bf87afa6261b39b491da3d50258234d611230ce284529",
+    "examples/explicit-observation-availability/observation-reference/go.mod": "sha256:c09dd5b1dbd551001cbf92b67c57a81c47cca0a883cbb19e5f873c3b6645417b",
+    "examples/explicit-observation-availability/observation-reference/main.go": "sha256:eabd94ea3ea070a8e20c13a48d111571424b845eeeaadd70c1b4720010130416"
+  },
+  "schema": "gooo/explicit-observation-generation/v1",
+  "scope": "Finite synthetic field diagnostics and own saved replay. Supplied text and matching observations do not authenticate producer, prove behavior equivalence or authorize effects.",
+  "selected_upstream_pins_sha256": "sha256:20171ad851133bf6627bc72cffbfc440c72a962073d184d8fd349fb635ae5721",
+  "source": {
+    "ports/tool-origin/explicit_observation.gooo": "sha256:d2b446d76f08b2ae4f288cdfb3d785741017c68a096289fed958c7fcb859f27d"
+  },
+  "typed_plan_sha256": "sha256:877046226d09f4976a6c9817230daac84036335c820b01d44ca2214eb4c2ea8d",
+  "workspace_sha256": "sha256:89b787292f346030895742a419ac3baf9d9fe3e0833edc6c4e9f06bc00923c7f"
+}

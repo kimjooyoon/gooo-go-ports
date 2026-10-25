@@ -1,0 +1,627 @@
+// Copyright 2026 Gooo Go Ports contributors. BSD-3-Clause; see ../../LICENSE.
+// Explicit presence is separate from raw opaque text. This offline profile grants no authority.
+package explicit_availability
+namespace gooo_explicit_availability_v1
+import origin "gooo/tool-origin"
+import recorded "gooo/tool-origin/recorded-catalog"
+import definition "gooo/tool-origin/definition-binding"
+entity Boolean id "gooo://std/boolean"
+entity AvailabilityInput id "gooo://tool-origin/explicit-availability/v1/input" fields {
+ field context_id id "gooo://tool-origin/explicit-availability/v1/input/context_id" type string required one
+ field alias_context_id id "gooo://tool-origin/explicit-availability/v1/input/alias_context_id" type string required one
+ field collection_context_id id "gooo://tool-origin/explicit-availability/v1/input/collection_context_id" type string required one
+ field definition_context_id id "gooo://tool-origin/explicit-availability/v1/input/definition_context_id" type string required one
+ field field_states id "gooo://tool-origin/explicit-availability/v1/input/field_states" type string required many
+ field field_values id "gooo://tool-origin/explicit-availability/v1/input/field_values" type string required many
+ field before_catalog_index id "gooo://tool-origin/explicit-availability/v1/input/before_catalog_index" type integer required one
+ field after_catalog_index id "gooo://tool-origin/explicit-availability/v1/input/after_catalog_index" type integer required one
+ field capture_begin_indexes id "gooo://tool-origin/explicit-availability/v1/input/capture_begin_indexes" type integer required many
+ field capture_end_indexes id "gooo://tool-origin/explicit-availability/v1/input/capture_end_indexes" type integer required many
+ field page_context_indexes id "gooo://tool-origin/explicit-availability/v1/input/page_context_indexes" type integer required many
+ field before_policy_index id "gooo://tool-origin/explicit-availability/v1/input/before_policy_index" type integer required one
+ field after_policy_index id "gooo://tool-origin/explicit-availability/v1/input/after_policy_index" type integer required one
+ field before_row_page_indexes id "gooo://tool-origin/explicit-availability/v1/input/before_row_page_indexes" type integer required many
+ field after_row_page_indexes id "gooo://tool-origin/explicit-availability/v1/input/after_row_page_indexes" type integer required many
+}
+activity ValidAvailability(origin.OriginInput, recorded.CollectionInput, definition.DefinitionInput, AvailabilityInput) -> Boolean id "gooo://tool-origin/explicit-availability/v1/valid" computes `
+let count = len(input1.capture_sides)
+let pages = len(input1.page_capture_indexes)
+let size = len(input3.field_states)
+if input3.context_id == "" || input3.alias_context_id != input0.context_id || input3.collection_context_id != input1.context_id || input3.definition_context_id != input2.context_id { return false }
+if size < 4 || size > 1444 || len(input3.field_values) != size || count > 16 || pages > 256 { return false }
+if len(input3.capture_begin_indexes) != count || len(input3.capture_end_indexes) != count || len(input3.page_context_indexes) != pages { return false }
+if len(input1.capture_begin_bindings) != count { return false }
+if len(input1.capture_begin_auth_contexts) != count { return false }
+if len(input1.capture_begin_config_revisions) != count { return false }
+if len(input1.capture_begin_protocols) != count { return false }
+if len(input1.capture_end_bindings) != count { return false }
+if len(input1.capture_end_auth_contexts) != count { return false }
+if len(input1.capture_end_config_revisions) != count { return false }
+if len(input1.capture_end_protocols) != count { return false }
+if len(input1.page_bindings) != pages { return false }
+if len(input1.page_auth_contexts) != pages { return false }
+if len(input1.page_config_revisions) != pages { return false }
+if len(input1.page_protocols) != pages { return false }
+if len(input1.capture_host_ids) != count || len(input1.capture_connection_ids) != count { return false }
+if len(input3.before_row_page_indexes) != len(input0.before_aliases) || len(input3.after_row_page_indexes) != len(input0.after_aliases) { return false }
+for page in input3.before_row_page_indexes {
+ if page < 0 || page >= pages { return false }
+ let capture = input1.page_capture_indexes[page]
+ if capture < 0 || capture >= count { return false }
+ if input1.capture_sides[capture] != "BEFORE" { return false }
+}
+for page in input3.after_row_page_indexes {
+ if page < 0 || page >= pages { return false }
+ let capture = input1.page_capture_indexes[page]
+ if capture < 0 || capture >= count { return false }
+ if input1.capture_sides[capture] != "AFTER" { return false }
+}
+let n = 0
+for state in input3.field_states {
+ if state != "SUPPLIED" && state != "UNOBSERVED" { return false }
+ if len(input3.field_values[n]) > 1024 { return false }
+ if state == "SUPPLIED" && input3.field_values[n] == "" { return false }
+ n = n + 1
+}
+let cursor = 0
+if input3.before_catalog_index != cursor || cursor >= size { return false }
+if input3.field_values[cursor] != input1.before_catalog_authorization_context_id { return false }
+cursor = cursor + 1
+let captureBEFORE = 0
+for side in input1.capture_sides {
+ if side == "BEFORE" {
+  if input3.capture_begin_indexes[captureBEFORE] != cursor || cursor + 4 >= size { return false }
+  if input3.field_values[cursor + 0] != input1.capture_begin_bindings[captureBEFORE] { return false }
+  if input3.field_values[cursor + 1] != input1.capture_begin_auth_contexts[captureBEFORE] { return false }
+  if input3.field_values[cursor + 2] != input1.capture_begin_config_revisions[captureBEFORE] { return false }
+  if input3.field_values[cursor + 3] != input1.capture_begin_protocols[captureBEFORE] { return false }
+  cursor = cursor + 5
+  if input3.capture_end_indexes[captureBEFORE] != cursor || cursor + 4 >= size { return false }
+  if input3.field_values[cursor + 0] != input1.capture_end_bindings[captureBEFORE] { return false }
+  if input3.field_values[cursor + 1] != input1.capture_end_auth_contexts[captureBEFORE] { return false }
+  if input3.field_values[cursor + 2] != input1.capture_end_config_revisions[captureBEFORE] { return false }
+  if input3.field_values[cursor + 3] != input1.capture_end_protocols[captureBEFORE] { return false }
+  cursor = cursor + 5
+  let pageBEFORE = 0
+  for capture in input1.page_capture_indexes {
+   if capture == captureBEFORE {
+    if input3.page_context_indexes[pageBEFORE] != cursor || cursor + 4 >= size { return false }
+    if input3.field_values[cursor + 0] != input1.page_bindings[pageBEFORE] { return false }
+    if input3.field_values[cursor + 1] != input1.page_auth_contexts[pageBEFORE] { return false }
+    if input3.field_values[cursor + 2] != input1.page_config_revisions[pageBEFORE] { return false }
+    if input3.field_values[cursor + 3] != input1.page_protocols[pageBEFORE] { return false }
+    cursor = cursor + 5
+   }
+   pageBEFORE = pageBEFORE + 1
+  }
+ }
+ captureBEFORE = captureBEFORE + 1
+}
+if input3.after_catalog_index != cursor || cursor >= size { return false }
+if input3.field_values[cursor] != input1.after_catalog_authorization_context_id { return false }
+cursor = cursor + 1
+let captureAFTER = 0
+for side in input1.capture_sides {
+ if side == "AFTER" {
+  if input3.capture_begin_indexes[captureAFTER] != cursor || cursor + 4 >= size { return false }
+  if input3.field_values[cursor + 0] != input1.capture_begin_bindings[captureAFTER] { return false }
+  if input3.field_values[cursor + 1] != input1.capture_begin_auth_contexts[captureAFTER] { return false }
+  if input3.field_values[cursor + 2] != input1.capture_begin_config_revisions[captureAFTER] { return false }
+  if input3.field_values[cursor + 3] != input1.capture_begin_protocols[captureAFTER] { return false }
+  cursor = cursor + 5
+  if input3.capture_end_indexes[captureAFTER] != cursor || cursor + 4 >= size { return false }
+  if input3.field_values[cursor + 0] != input1.capture_end_bindings[captureAFTER] { return false }
+  if input3.field_values[cursor + 1] != input1.capture_end_auth_contexts[captureAFTER] { return false }
+  if input3.field_values[cursor + 2] != input1.capture_end_config_revisions[captureAFTER] { return false }
+  if input3.field_values[cursor + 3] != input1.capture_end_protocols[captureAFTER] { return false }
+  cursor = cursor + 5
+  let pageAFTER = 0
+  for capture in input1.page_capture_indexes {
+   if capture == captureAFTER {
+    if input3.page_context_indexes[pageAFTER] != cursor || cursor + 4 >= size { return false }
+    if input3.field_values[cursor + 0] != input1.page_bindings[pageAFTER] { return false }
+    if input3.field_values[cursor + 1] != input1.page_auth_contexts[pageAFTER] { return false }
+    if input3.field_values[cursor + 2] != input1.page_config_revisions[pageAFTER] { return false }
+    if input3.field_values[cursor + 3] != input1.page_protocols[pageAFTER] { return false }
+    cursor = cursor + 5
+   }
+   pageAFTER = pageAFTER + 1
+  }
+ }
+ captureAFTER = captureAFTER + 1
+}
+if input3.before_policy_index != cursor || input3.after_policy_index != cursor + 1 || cursor + 2 != size { return false }
+if input3.field_values[cursor] != input2.before_policy_revision || input3.field_values[cursor + 1] != input2.after_policy_revision { return false }
+return true
+`
+// Alias presence and duplicate-name facts do not depend on backend identity.
+// Compare known tuple components first; unavailable backend text never proves equality/change.
+activity CompareAliasAvailability(origin.OriginInput, recorded.CollectionInput, definition.DefinitionInput, AvailabilityInput) -> origin.OriginResult id "gooo://tool-origin/explicit-availability/v1/compare-origin" computes `
+let core = origin.CompareAliasOrigin(input0)
+let state = core.state
+let reason = core.reason
+if !ValidAvailability(input0, input1, input2, input3) {
+ state = "INVALID_INPUT"; reason = "INVALID_OR_UNBOUND_ORIGIN_AVAILABILITY"
+} else if state == "UNCHANGED" || state == "ORIGIN_CHANGED" {
+ let before = core.before_index
+ let after = core.after_index
+ let beforePage = input3.before_row_page_indexes[before]
+ let afterPage = input3.after_row_page_indexes[after]
+ let beforeCapture = input1.page_capture_indexes[beforePage]
+ let afterCapture = input1.page_capture_indexes[afterPage]
+ let knownDifference = input0.before_names[before] != input0.after_names[after] || input1.capture_host_ids[beforeCapture] != input1.capture_host_ids[afterCapture] || input1.capture_connection_ids[beforeCapture] != input1.capture_connection_ids[afterCapture]
+ if knownDifference { state = "ORIGIN_CHANGED"; reason = "DIFFERENT_SUPPLIED_ORIGIN_COMPONENT" } else {
+  let beforeField = input3.page_context_indexes[beforePage]
+  let afterField = input3.page_context_indexes[afterPage]
+  if input3.field_states[beforeField] != "SUPPLIED" || input3.field_states[afterField] != "SUPPLIED" {
+   state = "ORIGIN_UNOBSERVED"; reason = "BACKEND_BINDING_UNOBSERVED"
+  }
+ }
+}
+return origin.OriginResult{context_id: core.context_id, state: state, reason: reason, before_index: core.before_index, after_index: core.after_index, conflict_catalog: core.conflict_catalog, conflict_first_index: core.conflict_first_index, conflict_second_index: core.conflict_second_index, execution_authorized: false}
+`
+activity CompareAvailability(origin.OriginInput, recorded.CollectionInput, definition.DefinitionInput, AvailabilityInput) -> recorded.RecordedCatalogResult id "gooo://tool-origin/explicit-availability/v1/compare" computes `
+let core = CompareAliasAvailability(input0, input1, input2, input3)
+let count = len(input1.capture_sides)
+let declaredCount = len(input1.declared_sides)
+let pageCount = len(input1.page_capture_indexes)
+let invalid = input1.context_id == "" || input1.alias_context_id == "" || input1.alias_context_id != input0.context_id
+if !ValidAvailability(input0, input1, input2, input3) { invalid = true }
+if count > 16 || declaredCount > 16 || pageCount > 256 { invalid = true }
+if len(input1.declared_host_ids) != declaredCount { invalid = true }
+if len(input1.declared_connection_ids) != declaredCount { invalid = true }
+if len(input1.capture_host_ids) != count { invalid = true }
+if len(input1.capture_connection_ids) != count { invalid = true }
+if len(input1.capture_recording_bases) != count { invalid = true }
+if len(input1.capture_evidence_kinds) != count { invalid = true }
+if len(input1.capture_watch_coverages) != count { invalid = true }
+if len(input1.capture_remote_atomicities) != count { invalid = true }
+if len(input1.capture_begin_bindings) != count { invalid = true }
+if len(input1.capture_end_bindings) != count { invalid = true }
+if len(input1.capture_begin_auth_contexts) != count { invalid = true }
+if len(input1.capture_end_auth_contexts) != count { invalid = true }
+if len(input1.capture_begin_config_revisions) != count { invalid = true }
+if len(input1.capture_end_config_revisions) != count { invalid = true }
+if len(input1.capture_begin_protocols) != count { invalid = true }
+if len(input1.capture_end_protocols) != count { invalid = true }
+if len(input1.capture_relevant_change_observed) != count { invalid = true }
+if len(input1.page_request_cursor_kinds) != pageCount { invalid = true }
+if len(input1.page_request_cursor_values) != pageCount { invalid = true }
+if len(input1.page_next_cursor_kinds) != pageCount { invalid = true }
+if len(input1.page_next_cursor_values) != pageCount { invalid = true }
+if len(input1.page_bindings) != pageCount { invalid = true }
+if len(input1.page_auth_contexts) != pageCount { invalid = true }
+if len(input1.page_config_revisions) != pageCount { invalid = true }
+if len(input1.page_protocols) != pageCount { invalid = true }
+let basisState = "CAPTURE_TIME_ONLY"
+let synthetic = false
+for basis in input1.capture_recording_bases {
+ if basis == "RETROSPECTIVE" && basisState != "UNKNOWN_PRESENT" { basisState = "RETROSPECTIVE_PRESENT" }
+ if basis == "UNKNOWN" { basisState = "UNKNOWN_PRESENT" }
+}
+for kind in input1.capture_evidence_kinds { if kind == "SYNTHETIC_FIXTURE" { synthetic = true } }
+let declaredBefore = 0
+let declaredAfter = 0
+let capturedBefore = 0
+let capturedAfter = 0
+if !invalid {
+ let d = 0
+ for side in input1.declared_sides {
+  if side != "BEFORE" && side != "AFTER" { invalid = true }
+  if input1.declared_host_ids[d] == "" || input1.declared_connection_ids[d] == "" { invalid = true }
+  if side == "BEFORE" { declaredBefore = declaredBefore + 1 } else { declaredAfter = declaredAfter + 1 }
+  let prior = 0
+  for earlier in input1.declared_sides {
+   if prior < d && earlier == side && input1.declared_host_ids[prior] == input1.declared_host_ids[d] && input1.declared_connection_ids[prior] == input1.declared_connection_ids[d] { invalid = true }
+   prior = prior + 1
+  }
+  d = d + 1
+ }
+ let c = 0
+ for side in input1.capture_sides {
+  if side != "BEFORE" && side != "AFTER" { invalid = true }
+  if side == "BEFORE" { capturedBefore = capturedBefore + 1 } else { capturedAfter = capturedAfter + 1 }
+  if input1.capture_host_ids[c] == "" || input1.capture_connection_ids[c] == "" { invalid = true }
+  if input1.capture_recording_bases[c] != "CAPTURE_TIME" && input1.capture_recording_bases[c] != "RETROSPECTIVE" && input1.capture_recording_bases[c] != "UNKNOWN" { invalid = true }
+  if input1.capture_evidence_kinds[c] != "SYNTHETIC_FIXTURE" && input1.capture_evidence_kinds[c] != "RECORDED_OBSERVATION" { invalid = true }
+  if input1.capture_watch_coverages[c] != "CONTINUOUS" && input1.capture_watch_coverages[c] != "ENDPOINTS_ONLY" && input1.capture_watch_coverages[c] != "UNKNOWN" { invalid = true }
+  if input1.capture_remote_atomicities[c] != "UNKNOWN" { invalid = true }
+  let declared = false
+  let declarationIndex = 0
+  for declaredSide in input1.declared_sides {
+   if declaredSide == side && input1.declared_host_ids[declarationIndex] == input1.capture_host_ids[c] && input1.declared_connection_ids[declarationIndex] == input1.capture_connection_ids[c] { declared = true }
+   declarationIndex = declarationIndex + 1
+  }
+  if !declared { invalid = true }
+  let prior = 0
+  for earlier in input1.capture_sides {
+   if prior < c && earlier == side && input1.capture_host_ids[prior] == input1.capture_host_ids[c] && input1.capture_connection_ids[prior] == input1.capture_connection_ids[c] { invalid = true }
+   prior = prior + 1
+  }
+  c = c + 1
+ }
+ if declaredBefore > 8 || declaredAfter > 8 || capturedBefore > 8 || capturedAfter > 8 { invalid = true }
+ let p = 0
+ let previousCapture = -1
+ for capture in input1.page_capture_indexes {
+  if capture < 0 || capture >= count || capture < previousCapture { invalid = true }
+  previousCapture = capture
+  if input1.page_request_cursor_kinds[p] != "ABSENT" && input1.page_request_cursor_kinds[p] != "STRING" { invalid = true }
+  if input1.page_request_cursor_kinds[p] == "ABSENT" && input1.page_request_cursor_values[p] != "" { invalid = true }
+  if input1.page_next_cursor_kinds[p] != "ABSENT" && input1.page_next_cursor_kinds[p] != "NULL" && input1.page_next_cursor_kinds[p] != "STRING" { invalid = true }
+  if input1.page_next_cursor_kinds[p] != "STRING" && input1.page_next_cursor_values[p] != "" { invalid = true }
+  p = p + 1
+ }
+}
+let beforePages = "COMPLETE"
+let afterPages = "COMPLETE"
+let beforeConfig = "RECORDED_STABLE"
+let afterConfig = "RECORDED_STABLE"
+let authorization = "SAME_RECORDED"
+let pageState0 = "INVALID"
+let configState0 = "UNKNOWN"
+let pageState1 = "INVALID"
+let configState1 = "UNKNOWN"
+let pageState2 = "INVALID"
+let configState2 = "UNKNOWN"
+let pageState3 = "INVALID"
+let configState3 = "UNKNOWN"
+let pageState4 = "INVALID"
+let configState4 = "UNKNOWN"
+let pageState5 = "INVALID"
+let configState5 = "UNKNOWN"
+let pageState6 = "INVALID"
+let configState6 = "UNKNOWN"
+let pageState7 = "INVALID"
+let configState7 = "UNKNOWN"
+let pageState8 = "INVALID"
+let configState8 = "UNKNOWN"
+let pageState9 = "INVALID"
+let configState9 = "UNKNOWN"
+let pageState10 = "INVALID"
+let configState10 = "UNKNOWN"
+let pageState11 = "INVALID"
+let configState11 = "UNKNOWN"
+let pageState12 = "INVALID"
+let configState12 = "UNKNOWN"
+let pageState13 = "INVALID"
+let configState13 = "UNKNOWN"
+let pageState14 = "INVALID"
+let configState14 = "UNKNOWN"
+let pageState15 = "INVALID"
+let configState15 = "UNKNOWN"
+let incomplete = false
+let unstable = false
+let unknown = false
+let incompleteSide = ""
+let incompleteCapture = -1
+let incompletePage = -1
+let incompleteDeclared = -1
+let incompleteCode = ""
+let unstableSide = ""
+let unstableCapture = -1
+let unstablePage = -1
+let unknownSide = ""
+let unknownCapture = -1
+let unknownCode = ""
+let authCapture = -1
+let authSide = ""
+if !invalid {
+ if input3.field_states[input3.before_catalog_index] != "SUPPLIED" || input3.field_states[input3.after_catalog_index] != "SUPPLIED" {
+  authorization = "UNKNOWN"; unknown = true; unknownCode = "EXPLICIT_CONTEXT_UNOBSERVED"
+ } else if input1.before_catalog_authorization_context_id != input1.after_catalog_authorization_context_id { authorization = "CHANGED" }
+}
+if !invalid {
+ let d = 0
+ for side in input1.declared_sides {
+  let found = false
+  let c = 0
+  for capturedSide in input1.capture_sides {
+   if capturedSide == side && input1.capture_host_ids[c] == input1.declared_host_ids[d] && input1.capture_connection_ids[c] == input1.declared_connection_ids[d] { found = true }
+   c = c + 1
+  }
+  if !found {
+   if !incomplete { incompleteSide = side; incompleteDeclared = d; incompleteCode = "MISSING_DECLARED_CAPTURE" }
+   incomplete = true
+   if side == "BEFORE" { beforePages = "INCOMPLETE" } else { afterPages = "INCOMPLETE" }
+  }
+  d = d + 1
+ }
+ let c = 0
+ for side in input1.capture_sides {
+  let pageStatus = "COMPLETE"
+  let configStatus = "RECORDED_STABLE"
+  let capturedPages = 0
+  let previousKind = ""
+  let previousCursor = ""
+  let lastPage = -1
+  let badPage = -1
+  let pageCode = ""
+  let changedPage = -1
+  let begin = input3.capture_begin_indexes[c]
+  let end = input3.capture_end_indexes[c]
+  let missing = false
+  let changed = input1.capture_relevant_change_observed[c]
+  if input3.field_states[begin + 0] != "SUPPLIED" || input3.field_states[end + 0] != "SUPPLIED" { missing = true } else {
+   if input3.field_values[begin + 0] != input3.field_values[end + 0] { changed = true }
+  }
+  if input3.field_states[begin + 1] != "SUPPLIED" || input3.field_states[end + 1] != "SUPPLIED" { missing = true } else {
+   if input3.field_values[begin + 1] != input3.field_values[end + 1] { changed = true }
+  }
+  if input3.field_states[begin + 2] != "SUPPLIED" || input3.field_states[end + 2] != "SUPPLIED" { missing = true } else {
+   if input3.field_values[begin + 2] != input3.field_values[end + 2] { changed = true }
+  }
+  if input3.field_states[begin + 3] != "SUPPLIED" || input3.field_states[end + 3] != "SUPPLIED" { missing = true } else {
+   if input3.field_values[begin + 3] != input3.field_values[end + 3] { changed = true }
+  }
+  if (input3.field_states[begin + 1] != "SUPPLIED" || input3.field_states[end + 1] != "SUPPLIED") && authorization != "CHANGED" { authorization = "UNKNOWN" }
+  let p = 0
+  for capture in input1.page_capture_indexes {
+   if capture == c {
+    let broken = false
+    let code = ""
+    if capturedPages == 0 {
+     if input1.page_request_cursor_kinds[p] != "ABSENT" { broken = true; code = "MISSING_INITIAL_PAGE" }
+    } else {
+     if previousKind != "STRING" || input1.page_request_cursor_kinds[p] != "STRING" || input1.page_request_cursor_values[p] != previousCursor { broken = true; code = "CURSOR_LINK_MISMATCH" }
+    }
+    if broken { if pageStatus == "COMPLETE" { badPage = p; pageCode = code }; pageStatus = "INCOMPLETE" }
+    let page = input3.page_context_indexes[p]
+    if input3.field_states[page + 0] != "SUPPLIED" || input3.field_states[begin + 0] != "SUPPLIED" { missing = true } else {
+     if input3.field_values[page + 0] != input3.field_values[begin + 0] {
+      changed = true
+      if changedPage == -1 { changedPage = p }
+     }
+    }
+    if input3.field_states[page + 1] != "SUPPLIED" || input3.field_states[begin + 1] != "SUPPLIED" { missing = true } else {
+     if input3.field_values[page + 1] != input3.field_values[begin + 1] {
+      changed = true
+      if changedPage == -1 { changedPage = p }
+     }
+    }
+    if input3.field_states[page + 2] != "SUPPLIED" || input3.field_states[begin + 2] != "SUPPLIED" { missing = true } else {
+     if input3.field_values[page + 2] != input3.field_values[begin + 2] {
+      changed = true
+      if changedPage == -1 { changedPage = p }
+     }
+    }
+    if input3.field_states[page + 3] != "SUPPLIED" || input3.field_states[begin + 3] != "SUPPLIED" { missing = true } else {
+     if input3.field_values[page + 3] != input3.field_values[begin + 3] {
+      changed = true
+      if changedPage == -1 { changedPage = p }
+     }
+    }
+    previousKind = input1.page_next_cursor_kinds[p]
+    previousCursor = input1.page_next_cursor_values[p]
+    capturedPages = capturedPages + 1
+    lastPage = p
+   }
+   p = p + 1
+  }
+  if capturedPages > 16 { invalid = true }
+  if capturedPages == 0 { pageStatus = "INCOMPLETE"; pageCode = "NO_SAVED_PAGES" }
+  if capturedPages > 0 && previousKind == "STRING" {
+   if pageStatus == "COMPLETE" { badPage = lastPage; pageCode = "MISSING_TERMINAL_PAGE" }
+   pageStatus = "INCOMPLETE"
+  }
+  if changed { configStatus = "CHANGED" } else if missing || input1.capture_watch_coverages[c] != "CONTINUOUS" { configStatus = "UNKNOWN" }
+  if c == 0 { pageState0 = pageStatus; configState0 = configStatus }
+  if c == 1 { pageState1 = pageStatus; configState1 = configStatus }
+  if c == 2 { pageState2 = pageStatus; configState2 = configStatus }
+  if c == 3 { pageState3 = pageStatus; configState3 = configStatus }
+  if c == 4 { pageState4 = pageStatus; configState4 = configStatus }
+  if c == 5 { pageState5 = pageStatus; configState5 = configStatus }
+  if c == 6 { pageState6 = pageStatus; configState6 = configStatus }
+  if c == 7 { pageState7 = pageStatus; configState7 = configStatus }
+  if c == 8 { pageState8 = pageStatus; configState8 = configStatus }
+  if c == 9 { pageState9 = pageStatus; configState9 = configStatus }
+  if c == 10 { pageState10 = pageStatus; configState10 = configStatus }
+  if c == 11 { pageState11 = pageStatus; configState11 = configStatus }
+  if c == 12 { pageState12 = pageStatus; configState12 = configStatus }
+  if c == 13 { pageState13 = pageStatus; configState13 = configStatus }
+  if c == 14 { pageState14 = pageStatus; configState14 = configStatus }
+  if c == 15 { pageState15 = pageStatus; configState15 = configStatus }
+  if pageStatus == "INCOMPLETE" {
+   if !incomplete { incompleteSide = side; incompleteCapture = c; incompletePage = badPage; incompleteCode = pageCode }
+   incomplete = true
+   if side == "BEFORE" { beforePages = "INCOMPLETE" } else { afterPages = "INCOMPLETE" }
+  }
+  if configStatus == "CHANGED" {
+   if !unstable { unstableSide = side; unstableCapture = c; unstablePage = changedPage }
+   unstable = true
+   if side == "BEFORE" { beforeConfig = "CHANGED" } else { afterConfig = "CHANGED" }
+  } else if configStatus == "UNKNOWN" {
+   if !unknown { unknownSide = side; unknownCapture = c; unknownCode = "CONFIGURATION_WATCH_UNKNOWN"; if missing { unknownCode = "EXPLICIT_CONTEXT_UNOBSERVED" } }
+   unknown = true
+   if side == "BEFORE" && beforeConfig != "CHANGED" { beforeConfig = "UNKNOWN" }
+   if side == "AFTER" && afterConfig != "CHANGED" { afterConfig = "UNKNOWN" }
+  }
+  if input1.capture_recording_bases[c] != "CAPTURE_TIME" {
+   if !unknown { unknownSide = side; unknownCapture = c; unknownCode = "CONTEXT_NOT_RECORDED_AT_CAPTURE" }
+   unknown = true
+  }
+  if side == "BEFORE" {
+   let other = 0
+   for otherSide in input1.capture_sides {
+    if otherSide == "AFTER" && input1.capture_host_ids[c] == input1.capture_host_ids[other] && input1.capture_connection_ids[c] == input1.capture_connection_ids[other] && ((input3.field_states[begin + 1] == "SUPPLIED" && input3.field_states[input3.capture_begin_indexes[other] + 1] == "SUPPLIED" && input1.capture_begin_auth_contexts[c] != input1.capture_begin_auth_contexts[other]) || (input3.field_states[end + 1] == "SUPPLIED" && input3.field_states[input3.capture_end_indexes[other] + 1] == "SUPPLIED" && input1.capture_end_auth_contexts[c] != input1.capture_end_auth_contexts[other])) {
+     authorization = "CHANGED"
+     if authCapture == -1 { authCapture = other; authSide = "AFTER" }
+    }
+    other = other + 1
+   }
+  }
+  c = c + 1
+ }
+}
+let state = "RECORDED_CONTEXT_COMPLETE"
+let reason = "RECORDED_SCOPE_PAGES_AND_CONTEXT_SATISFIED"
+let action = "FOLLOW_ALIAS_RESULT"
+let problemSide = ""
+let problemCapture = -1
+let problemPage = -1
+let problemDeclared = -1
+let problemCode = ""
+if invalid {
+ state = "INVALID_CONTEXT"; reason = "INVALID_COLLECTION_COLUMNS"; action = "FIX_CAPTURE_RECORD"; problemCode = reason
+ beforePages = "INCOMPLETE"; afterPages = "INCOMPLETE"; beforeConfig = "UNKNOWN"; afterConfig = "UNKNOWN"; authorization = "UNKNOWN"
+ pageState0 = "INVALID"; configState0 = "UNKNOWN"
+ pageState1 = "INVALID"; configState1 = "UNKNOWN"
+ pageState2 = "INVALID"; configState2 = "UNKNOWN"
+ pageState3 = "INVALID"; configState3 = "UNKNOWN"
+ pageState4 = "INVALID"; configState4 = "UNKNOWN"
+ pageState5 = "INVALID"; configState5 = "UNKNOWN"
+ pageState6 = "INVALID"; configState6 = "UNKNOWN"
+ pageState7 = "INVALID"; configState7 = "UNKNOWN"
+ pageState8 = "INVALID"; configState8 = "UNKNOWN"
+ pageState9 = "INVALID"; configState9 = "UNKNOWN"
+ pageState10 = "INVALID"; configState10 = "UNKNOWN"
+ pageState11 = "INVALID"; configState11 = "UNKNOWN"
+ pageState12 = "INVALID"; configState12 = "UNKNOWN"
+ pageState13 = "INVALID"; configState13 = "UNKNOWN"
+ pageState14 = "INVALID"; configState14 = "UNKNOWN"
+ pageState15 = "INVALID"; configState15 = "UNKNOWN"
+} else if incomplete {
+ state = "INCOMPLETE_COLLECTION"; reason = incompleteCode; action = "RECAPTURE_DECLARED_SCOPE"
+ problemSide = incompleteSide; problemCapture = incompleteCapture; problemPage = incompletePage; problemDeclared = incompleteDeclared; problemCode = reason
+} else if unstable {
+ state = "UNSTABLE_CONFIGURATION"; reason = "RECORDED_CONTEXT_CHANGED_DURING_CAPTURE"; action = "RECAPTURE_STABLE_CONTEXT"
+ problemSide = unstableSide; problemCapture = unstableCapture; problemPage = unstablePage; problemCode = reason
+} else if unknown {
+ state = "COLLECTION_CONTEXT_UNKNOWN"; reason = unknownCode; action = "RECORD_CAPTURE_TIME_CONTEXT"
+ problemSide = unknownSide; problemCapture = unknownCapture; problemCode = reason
+} else if authorization == "CHANGED" {
+ state = "AUTH_CONTEXT_CHANGED"; reason = "DECLARED_AUTHORIZATION_CONTEXT_CHANGED"; action = "RECONCILE_AUTH_SCOPE"
+ problemSide = authSide; problemCapture = authCapture; problemCode = reason
+}
+let resultCount = count
+if resultCount > 16 { resultCount = 0 }
+let paginationStates = []string{pageState0, pageState1, pageState2, pageState3, pageState4, pageState5, pageState6, pageState7, pageState8, pageState9, pageState10, pageState11, pageState12, pageState13, pageState14, pageState15}[:resultCount]
+let configurationStates = []string{configState0, configState1, configState2, configState3, configState4, configState5, configState6, configState7, configState8, configState9, configState10, configState11, configState12, configState13, configState14, configState15}[:resultCount]
+return recorded.RecordedCatalogResult{
+ origin_context_id: core.context_id,
+ origin_state: core.state,
+ origin_reason: core.reason,
+ origin_before_index: core.before_index,
+ origin_after_index: core.after_index,
+ origin_conflict_catalog: core.conflict_catalog,
+ origin_conflict_first_index: core.conflict_first_index,
+ origin_conflict_second_index: core.conflict_second_index,
+ origin_execution_authorized: core.execution_authorized,
+ context_id: input1.context_id,
+ state: state,
+ reason: reason,
+ next_action: action,
+ before_pagination_state: beforePages,
+ after_pagination_state: afterPages,
+ before_configuration_state: beforeConfig,
+ after_configuration_state: afterConfig,
+ authorization_relation: authorization,
+ recording_basis_state: basisState,
+ remote_atomicity: "UNKNOWN",
+ first_problem_side: problemSide,
+ first_problem_code: problemCode,
+ first_problem_capture_index: problemCapture,
+ first_problem_page_index: problemPage,
+ first_problem_declared_index: problemDeclared,
+ contains_synthetic_fixture: synthetic,
+ live_removal_proven: false,
+ execution_authorized: false,
+ capture_pagination_states: paginationStates,
+ capture_configuration_states: configurationStates,
+ capture_recording_bases: input1.capture_recording_bases,
+ capture_evidence_kinds: input1.capture_evidence_kinds,
+}
+`
+activity AssessDefinitionAvailability(origin.OriginInput, recorded.CollectionInput, definition.DefinitionInput, AvailabilityInput) -> definition.DefinitionResult id "gooo://tool-origin/explicit-availability/v1/assess" computes `
+let collection = CompareAvailability(input0, input1, input2, input3)
+let beforeCount = len(input0.before_aliases)
+let afterCount = len(input0.after_aliases)
+let invalid = !ValidAvailability(input0, input1, input2, input3) || input2.context_id == "" || input2.alias_context_id != input0.context_id || input2.collection_context_id != input1.context_id
+if len(input2.before_definition_ids) != beforeCount || len(input2.before_definition_profiles) != beforeCount || len(input2.before_capability_ids) != beforeCount { invalid = true }
+if len(input2.after_definition_ids) != afterCount || len(input2.after_definition_profiles) != afterCount || len(input2.after_capability_ids) != afterCount { invalid = true }
+let beforeDefinition = ""
+let afterDefinition = ""
+let beforeProfile = ""
+let afterProfile = ""
+let beforeCapability = ""
+let afterCapability = ""
+let definitionRelation = "UNASSESSED"
+let profileRelation = "UNASSESSED"
+let capabilityRelation = "UNASSESSED"
+let policyRelation = "UNASSESSED"
+let supportedProfile = "gooo/mcp-tool-definition-json/v1"
+if !invalid && collection.origin_state == "UNCHANGED" {
+ let beforeIndex = collection.origin_before_index
+ let afterIndex = collection.origin_after_index
+ beforeDefinition = input2.before_definition_ids[beforeIndex]
+ afterDefinition = input2.after_definition_ids[afterIndex]
+ beforeProfile = input2.before_definition_profiles[beforeIndex]
+ afterProfile = input2.after_definition_profiles[afterIndex]
+ beforeCapability = input2.before_capability_ids[beforeIndex]
+ afterCapability = input2.after_capability_ids[afterIndex]
+ if beforeProfile != "" && afterProfile != "" {
+  profileRelation = "DIFFERENT_SUPPLIED"
+  if beforeProfile == afterProfile { profileRelation = "SAME_SUPPLIED" }
+ }
+ if beforeProfile == supportedProfile && afterProfile == supportedProfile {
+  if beforeDefinition != "" && !definition.IsSHA256Text(beforeDefinition) { invalid = true }
+  if afterDefinition != "" && !definition.IsSHA256Text(afterDefinition) { invalid = true }
+  if beforeCapability != "" && !definition.IsSHA256Text(beforeCapability) { invalid = true }
+  if afterCapability != "" && !definition.IsSHA256Text(afterCapability) { invalid = true }
+  if !invalid && beforeDefinition != "" && afterDefinition != "" {
+   definitionRelation = "DIFFERENT_SUPPLIED"
+   if beforeDefinition == afterDefinition { definitionRelation = "SAME_SUPPLIED" }
+  }
+  if !invalid && beforeCapability != "" && afterCapability != "" {
+   capabilityRelation = "DIFFERENT_SUPPLIED"
+   if beforeCapability == afterCapability { capabilityRelation = "SAME_SUPPLIED" }
+  }
+ }
+ if input3.field_states[input3.before_policy_index] == "SUPPLIED" && input3.field_states[input3.after_policy_index] == "SUPPLIED" {
+  policyRelation = "DIFFERENT_SUPPLIED"
+  if input2.before_policy_revision == input2.after_policy_revision { policyRelation = "SAME_SUPPLIED" }
+ }
+}
+let state = "UNASSESSED"
+let reason = "SUPPLIED_BINDINGS_NOT_ASSESSED"
+let action = "COMPLETE_BINDING_OBSERVATION"
+let matches = false
+if invalid {
+ state = "INVALID_INPUT"; reason = "INVALID_OR_UNBOUND_DEFINITION_COLUMNS"; action = "FIX_BOUND_INPUT"
+ definitionRelation = "UNASSESSED"; capabilityRelation = "UNASSESSED"; policyRelation = "UNASSESSED"
+} else if collection.origin_state == "ORIGIN_UNOBSERVED" && (collection.state == "RECORDED_CONTEXT_COMPLETE" || collection.state == "COLLECTION_CONTEXT_UNKNOWN") {
+ reason = "ORIGIN_CONTEXT_NOT_OBSERVED"; action = "OBTAIN_ORIGIN_OBSERVATION"
+} else if collection.origin_state != "UNCHANGED" && collection.origin_state != "ORIGIN_UNOBSERVED" {
+ state = "ORIGIN_NOT_UNCHANGED"; reason = "ORIGIN_BINDING_REQUIRES_REEVALUATION"; action = "REEVALUATE_ORIGIN"
+} else if collection.state == "AUTH_CONTEXT_CHANGED" {
+ state = "REEVALUATE_AUTHORIZATION"; reason = "RECORDED_AUTHORIZATION_CONTEXT_CHANGED"; action = "REEVALUATE_POLICY"
+} else if collection.state != "RECORDED_CONTEXT_COMPLETE" {
+ reason = "COLLECTION_CONTEXT_NOT_ESTABLISHED"; action = collection.next_action
+} else if definitionRelation == "DIFFERENT_SUPPLIED" {
+ state = "REEVALUATE_DEFINITION"; reason = "SUPPLIED_TOOL_DEFINITION_CHANGED"; action = "REEVALUATE_POLICY"
+} else if capabilityRelation == "DIFFERENT_SUPPLIED" {
+ state = "REEVALUATE_CAPABILITY"; reason = "SUPPLIED_CAPABILITY_CLAIM_CHANGED"; action = "REEVALUATE_POLICY"
+} else if policyRelation == "DIFFERENT_SUPPLIED" {
+ state = "REEVALUATE_POLICY"; reason = "SUPPLIED_POLICY_REVISION_CHANGED"; action = "REEVALUATE_POLICY"
+} else if beforeProfile != supportedProfile || afterProfile != supportedProfile {
+ reason = "DEFINITION_PROFILE_NOT_COMPARABLE"
+} else if definitionRelation == "UNASSESSED" || capabilityRelation == "UNASSESSED" || policyRelation == "UNASSESSED" {
+ reason = "DEFINITION_CAPABILITY_OR_POLICY_NOT_OBSERVED"
+} else {
+ state = "BINDINGS_MATCH"; reason = "SAME_SUPPLIED_BINDINGS_ONLY"; action = "CONTINUE_HOST_VALIDATION"; matches = true
+}
+return definition.DefinitionResult{
+ context_id: input3.context_id, origin_context_id: collection.origin_context_id, collection_context_id: collection.context_id,
+ origin_state: collection.origin_state, origin_reason: collection.origin_reason,
+ collection_state: collection.state, collection_reason: collection.reason,
+ before_index: collection.origin_before_index, after_index: collection.origin_after_index,
+ collection_first_problem_code: collection.first_problem_code,
+ definition_relation: definitionRelation, definition_profile_relation: profileRelation, capability_relation: capabilityRelation,
+ authorization_relation: collection.authorization_relation, policy_relation: policyRelation,
+ before_definition_id: beforeDefinition, after_definition_id: afterDefinition, before_definition_profile: beforeProfile, after_definition_profile: afterProfile,
+ before_capability_id: beforeCapability, after_capability_id: afterCapability, before_policy_revision: input2.before_policy_revision, after_policy_revision: input2.after_policy_revision,
+ state: state, reason: reason, next_action: action, declared_bindings_match: matches,
+ behavior_equivalence_proven: false, execution_authorized: false, live_effect_performed: false,
+ contains_synthetic_fixture: collection.contains_synthetic_fixture, remote_atomicity: collection.remote_atomicity,
+}
+`

@@ -1,0 +1,221 @@
+{
+  "schema": "gooo/explicit-observation-reference-inputs/v1",
+  "cases": [
+    {
+      "label": "both-UNKNOWN-unobserved",
+      "input": {
+        "context_id": "field:explicit",
+        "field_path": "/after/context",
+        "field_kind": "OPAQUE_CONTEXT_ID",
+        "recording_basis": "RETROSPECTIVE",
+        "value_state": "UNOBSERVED",
+        "value": "UNKNOWN",
+        "comparison_scope": "BETWEEN_CATALOGS",
+        "expected_value_state": "UNOBSERVED",
+        "expected_value": "UNKNOWN",
+        "expected_field_path": "/before/context",
+        "source_document": "RECORDED_INPUT",
+        "expected_source_document": "RECORDED_INPUT"
+      },
+      "anchor_state": "UNASSESSED"
+    },
+    {
+      "label": "both-UNKNOWN-supplied",
+      "input": {
+        "context_id": "field:explicit",
+        "field_path": "/after/context",
+        "field_kind": "OPAQUE_CONTEXT_ID",
+        "recording_basis": "RETROSPECTIVE",
+        "value_state": "SUPPLIED",
+        "value": "UNKNOWN",
+        "comparison_scope": "BETWEEN_CATALOGS",
+        "expected_value_state": "SUPPLIED",
+        "expected_value": "UNKNOWN",
+        "expected_field_path": "/before/context",
+        "source_document": "RECORDED_INPUT",
+        "expected_source_document": "RECORDED_INPUT"
+      },
+      "anchor_state": "SAME_SUPPLIED"
+    },
+    {
+      "label": "unknown-vs-revision-unobserved",
+      "input": {
+        "context_id": "field:explicit",
+        "field_path": "/after/context",
+        "field_kind": "OPAQUE_CONTEXT_ID",
+        "recording_basis": "RETROSPECTIVE",
+        "value_state": "UNOBSERVED",
+        "value": "UNKNOWN",
+        "comparison_scope": "BETWEEN_CATALOGS",
+        "expected_value_state": "SUPPLIED",
+        "expected_value": "revision-v1",
+        "expected_field_path": "/before/context",
+        "source_document": "RECORDED_INPUT",
+        "expected_source_document": "RECORDED_INPUT"
+      },
+      "anchor_state": "UNASSESSED"
+    },
+    {
+      "label": "revision-vs-unknown-unobserved",
+      "input": {
+        "context_id": "field:explicit",
+        "field_path": "/after/context",
+        "field_kind": "OPAQUE_CONTEXT_ID",
+        "recording_basis": "RETROSPECTIVE",
+        "value_state": "SUPPLIED",
+        "value": "revision-v1",
+        "comparison_scope": "BETWEEN_CATALOGS",
+        "expected_value_state": "UNOBSERVED",
+        "expected_value": "UNKNOWN",
+        "expected_field_path": "/before/context",
+        "source_document": "RECORDED_INPUT",
+        "expected_source_document": "RECORDED_INPUT"
+      },
+      "anchor_state": "UNASSESSED"
+    },
+    {
+      "label": "known-change",
+      "input": {
+        "context_id": "field:explicit",
+        "field_path": "/after/context",
+        "field_kind": "OPAQUE_CONTEXT_ID",
+        "recording_basis": "RETROSPECTIVE",
+        "value_state": "SUPPLIED",
+        "value": "revision-v2",
+        "comparison_scope": "BETWEEN_CATALOGS",
+        "expected_value_state": "SUPPLIED",
+        "expected_value": "revision-v1",
+        "expected_field_path": "/before/context",
+        "source_document": "RECORDED_INPUT",
+        "expected_source_document": "RECORDED_INPUT"
+      },
+      "anchor_state": "KNOWN_MISMATCH"
+    },
+    {
+      "label": "arbitrary-unobserved",
+      "input": {
+        "context_id": "field:explicit",
+        "field_path": "/after/context",
+        "field_kind": "OPAQUE_CONTEXT_ID",
+        "recording_basis": "RETROSPECTIVE",
+        "value_state": "UNOBSERVED",
+        "value": "not-a-sentinel",
+        "comparison_scope": "BETWEEN_CATALOGS",
+        "expected_value_state": "SUPPLIED",
+        "expected_value": "revision-v1",
+        "expected_field_path": "/before/context",
+        "source_document": "RECORDED_INPUT",
+        "expected_source_document": "RECORDED_INPUT"
+      },
+      "anchor_state": "UNASSESSED"
+    },
+    {
+      "label": "empty-supplied",
+      "input": {
+        "context_id": "field:explicit",
+        "field_path": "/after/context",
+        "field_kind": "OPAQUE_CONTEXT_ID",
+        "recording_basis": "RETROSPECTIVE",
+        "value_state": "SUPPLIED",
+        "value": "",
+        "comparison_scope": "BETWEEN_CATALOGS",
+        "expected_value_state": "SUPPLIED",
+        "expected_value": "revision-v1",
+        "expected_field_path": "/before/context",
+        "source_document": "RECORDED_INPUT",
+        "expected_source_document": "RECORDED_INPUT"
+      },
+      "anchor_state": "INVALID_DECLARATION"
+    },
+    {
+      "label": "legacy-refused",
+      "input": {
+        "context_id": "field:explicit",
+        "field_path": "/after/context",
+        "field_kind": "OPAQUE_CONTEXT_ID",
+        "recording_basis": "RETROSPECTIVE",
+        "value_state": "LEGACY_TEXT",
+        "value": "UNKNOWN",
+        "comparison_scope": "BETWEEN_CATALOGS",
+        "expected_value_state": "SUPPLIED",
+        "expected_value": "revision-v1",
+        "expected_field_path": "/before/context",
+        "source_document": "RECORDED_INPUT",
+        "expected_source_document": "RECORDED_INPUT"
+      },
+      "anchor_state": "INVALID_DECLARATION"
+    },
+    {
+      "label": "invalid-enum",
+      "input": {
+        "context_id": "field:explicit",
+        "field_path": "/after/context",
+        "field_kind": "OPAQUE_CONTEXT_ID",
+        "recording_basis": "RETROSPECTIVE",
+        "value_state": "MISSING",
+        "value": "UNKNOWN",
+        "comparison_scope": "BETWEEN_CATALOGS",
+        "expected_value_state": "SUPPLIED",
+        "expected_value": "revision-v1",
+        "expected_field_path": "/before/context",
+        "source_document": "RECORDED_INPUT",
+        "expected_source_document": "RECORDED_INPUT"
+      },
+      "anchor_state": "INVALID_DECLARATION"
+    },
+    {
+      "label": "empty-unobserved",
+      "input": {
+        "context_id": "field:explicit",
+        "field_path": "/after/context",
+        "field_kind": "OPAQUE_CONTEXT_ID",
+        "recording_basis": "RETROSPECTIVE",
+        "value_state": "UNOBSERVED",
+        "value": "",
+        "comparison_scope": "BETWEEN_CATALOGS",
+        "expected_value_state": "SUPPLIED",
+        "expected_value": "revision-v1",
+        "expected_field_path": "/before/context",
+        "source_document": "RECORDED_INPUT",
+        "expected_source_document": "RECORDED_INPUT"
+      },
+      "anchor_state": "UNASSESSED"
+    },
+    {
+      "label": "CAPTURE_TIMESTAMP-unobserved",
+      "input": {
+        "context_id": "field:explicit",
+        "field_path": "/after/context",
+        "field_kind": "CAPTURE_TIMESTAMP",
+        "recording_basis": "RETROSPECTIVE",
+        "value_state": "UNOBSERVED",
+        "value": "preserved raw",
+        "comparison_scope": "NONE",
+        "expected_value_state": "NOT_APPLICABLE",
+        "expected_value": "",
+        "expected_field_path": "",
+        "source_document": "RECORDED_INPUT",
+        "expected_source_document": "NOT_APPLICABLE"
+      },
+      "anchor_state": "OPTIONAL_UNOBSERVED"
+    },
+    {
+      "label": "POLICY_REVISION-unobserved",
+      "input": {
+        "context_id": "field:explicit",
+        "field_path": "/after/context",
+        "field_kind": "POLICY_REVISION",
+        "recording_basis": "RETROSPECTIVE",
+        "value_state": "UNOBSERVED",
+        "value": "preserved raw",
+        "comparison_scope": "NONE",
+        "expected_value_state": "NOT_APPLICABLE",
+        "expected_value": "",
+        "expected_field_path": "",
+        "source_document": "SUPPLIED_POLICY",
+        "expected_source_document": "NOT_APPLICABLE"
+      },
+      "anchor_state": "OPTIONAL_UNOBSERVED"
+    }
+  ]
+}

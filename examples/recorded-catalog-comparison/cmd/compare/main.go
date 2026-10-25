@@ -16,6 +16,8 @@ Usage:
   compare < saved-observations.json > report.json
   compare --definitions --before-policy REV --after-policy REV < saved-observations.json
   compare --definitions --diagnostics < saved-observations.json
+  compare --availability-template < saved-observations.json > availability.json
+  compare --definitions --diagnostics --availability availability.json < saved-observations.json
   compare --example > synthetic-observations.json
   compare --version
   compare --help
@@ -29,6 +31,12 @@ Use one display option at a time; unknown arguments are refused before reading s
 Policy revisions are optional supplied text; omitted revisions remain unobserved.
 --diagnostics immediately after --definitions adds field observation diagnostics.
 Keep the original saved input with the report; diagnostics do not repair missing facts.
+--availability-template emits a complete source-bound roster with blank states.
+Choose SUPPLIED or UNOBSERVED for each field using the retained evidence, then
+pass that file with --definitions --diagnostics --availability. This separate
+versioned report uses explicit availability; raw text, including UNKNOWN, stays
+unchanged. Use identical policy arguments for the template and comparison.
+The saved input and availability file together must be at most 1 MiB.
 
 Successful comparison: exit 0, full JSON report on stdout.
 Invalid arguments: exit 2. Input, comparison or I/O failure: exit 1.
@@ -95,25 +103,25 @@ func runCommand(args []string, input io.Reader, out, diagnostics io.Writer) int 
 	if len(args) == 0 {
 		return run(input, out, diagnostics)
 	}
+	if args[0] == "--availability-template" {
+		values, ok := policyAndAvailabilityArguments(args[1:], false)
+		if !ok {
+			return invalidArguments(diagnostics)
+		}
+		return runAvailabilityTemplate(input, out, diagnostics, values["--before-policy"], values["--after-policy"])
+	}
 	if args[0] == "--definitions" {
 		remaining := args[1:]
 		withDiagnostics := len(remaining) > 0 && remaining[0] == "--diagnostics"
 		if withDiagnostics {
 			remaining = remaining[1:]
 		}
-		if len(remaining) > 4 || len(remaining)%2 != 0 {
+		values, ok := policyAndAvailabilityArguments(remaining, withDiagnostics)
+		if !ok {
 			return invalidArguments(diagnostics)
 		}
-		values := map[string]string{}
-		for i := 0; i < len(remaining); i += 2 {
-			key := remaining[i]
-			if key != "--before-policy" && key != "--after-policy" {
-				return invalidArguments(diagnostics)
-			}
-			if _, duplicate := values[key]; duplicate {
-				return invalidArguments(diagnostics)
-			}
-			values[key] = remaining[i+1]
+		if path, explicit := values["--availability"]; explicit {
+			return runExplicitAvailability(input, out, diagnostics, path, values["--before-policy"], values["--after-policy"])
 		}
 		if withDiagnostics {
 			return runDefinitionDiagnostics(input, out, diagnostics, values["--before-policy"], values["--after-policy"])

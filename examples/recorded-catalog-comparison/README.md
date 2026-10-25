@@ -187,3 +187,78 @@ The original comparison remains a separate unchanged member of the new report.
 See [source documents, missing observations and reproducible Gooo verification](../observation-diagnostics/README.md).
 Retain the original saved input and any needed original argv; optional normalized
 policy text does not prove a historical command-line option was present.
+
+### Declare unavailable observations explicitly
+
+This checkout adds an opt-in availability profile. Existing calls keep their v1
+behavior: nonempty legacy text, including the literal `UNKNOWN`, is supplied
+text. The new profile separates the retained value from the caller's declaration
+that it was observed. It does not reserve any opaque ID spelling.
+
+First create a roster bound to your exact saved input and policy arguments:
+
+```sh
+/tmp/gooo-recorded-catalog --availability-template \
+  --before-policy policy-r1 --after-policy policy-r1 \
+  < saved-observations.json > availability.json
+```
+
+The template leaves every `value_state` blank. Using your retained evidence, edit
+each state to `SUPPLIED` or `UNOBSERVED`; do not infer a historical observation
+from the current server settings. Preserve all other fields. Then compare:
+
+```sh
+/tmp/gooo-recorded-catalog --definitions --diagnostics \
+  --availability availability.json \
+  --before-policy policy-r1 --after-policy policy-r1 \
+  < saved-observations.json > explicit-report.json
+```
+
+Omit both policy arguments in both commands when those revisions are unavailable,
+and mark their two roster entries `UNOBSERVED`. The sidecar's schema is
+`gooo/explicit-observation-availability/v1`. `input_sha256` binds the exact input
+bytes, including whitespace. `policy_sha256` binds the UTF-8 JSON encoding of
+`{"before_revision":"…","after_revision":"…"}` produced by Go's `encoding/json`;
+the template computes it for you. Each `fields` row contains `source_document`,
+`field_path` and `value_state`. Paths address either `RECORDED_INPUT` or
+`SUPPLIED_POLICY`; every projected field must appear exactly once. Row order may
+change without reassigning fields, but different sidecar bytes have a different
+availability hash and derived context identity. Unknown fields, missing or
+duplicate paths, incorrect document references and mismatched hashes are refused
+without a partial report. The combined input and sidecar limit is 1 MiB; the
+report limit remains 4 MiB.
+
+The separate `gooo/explicit-definition-observation-report/v1` result contains the
+availability-aware Gooo `decision`, field `observations`, exact source projection
+and generation bindings. It does not present a legacy decision as the new result.
+`SUPPLIED` with raw `UNKNOWN` is a legitimate opaque value; `UNOBSERVED` with raw
+`UNKNOWN` or any other text keeps that text but cannot establish equality or a
+known change. A supplied empty value or invalid state is a domain declaration
+failure, not an automatic conversion to missingness. Blank template states must
+therefore be completed before relying on the result.
+
+For tool origin, each row references its original capture page. A missing backend
+observation cannot establish that the source stayed the same or changed merely
+because the retained backend text is equal or different. With no independent
+host, connection or original-name change, it yields `ORIGIN_UNOBSERVED`, overall
+`UNASSESSED`, and `OBTAIN_ORIGIN_OBSERVATION`. Those independent known differences,
+duplicate aliases and presence checks remain visible. Original row tuples and
+their hashes stay in the source projection; v1 results keep their old meaning.
+When the origin is unobserved but the collection has a known invalid, incomplete,
+unstable or changed-authorization result, its concrete recovery action comes
+first. `OBTAIN_ORIGIN_OBSERVATION` applies to complete or unknown collection context.
+
+Unavailable required context keeps the collection unknown, and an unavailable
+policy keeps its relation unassessed. Optional timestamps do not become a new
+completeness requirement. Structural errors, incomplete pagination and known
+supplied changes retain their precedence; an independent supplied mismatch is
+still visible alongside another unavailable field. Retrospective recording stays
+retrospective. As in [the original collection contract](#read-the-two-decisions-together),
+`authorization_relation` compares catalog scope and begin/end authorization;
+page-only authorization changes affect capture stability, not that relation. These declarations do not authenticate the producer, repair old
+captures, prove live removal, or authorize tool execution.
+
+The Go APIs are `AvailabilityTemplateJSON`,
+`ProjectExplicitObservationInputsJSON` and `CompareExplicitObservationJSON`.
+Save the original input and sidecar with the report. This command still performs
+no collection, tool execution or model calls.
