@@ -14,7 +14,7 @@ are developed separately; this repository supplies ports and runnable examples.
 | Preserve all required services while narrowing a grant | [Ordered-request MCP tool](#preserve-several-required-requests-through-mcp): start with `--many-required`, then call `assess_service_grant_change` | An ordered list, normally 1-256 pairs; twelve decision fields, including the first original counterexample index. Do not replace it with the single-request tool. |
 | Check whether a previously selected tool alias changed origin | [Source-built alias MCP tool](#compare-a-tool-alias-before-reusing-it): start with `--alias-origin-change`, then call `gooo_compare_alias_origin` | Compare supplied catalogs and retain the original row indexes. Requires this source build; unavailable in preview16. |
 | Compare the supplied API policy profiles | [Fixed-policy command](#compare-fixed-api-policies-without-a-compiler) | Compares the documented profiles; does not load an arbitrary edited policy. |
-| Compare saved MCP tool catalogs | [Pinned comparison command](#compare-saved-mcp-catalogs-without-a-checkout) | Separates alias-origin changes from missing pages or unknown collection context; does not collect a live catalog. |
+| Compare saved MCP tool catalogs | [Pinned comparison command](#compare-saved-mcp-catalogs-without-a-checkout) or [missing-observation diagnostic](#diagnose-missing-observations-in-a-development-snapshot) | Separates alias-origin changes from unknown collection context. The development diagnostic names missing fields and next observations; neither command collects a live catalog. |
 | Edit and execute Gooo source | [First-program skill](#run-the-first-program-skill) | An actual source edit plus new execution and replay records; declaration checking alone is insufficient. |
 
 The native MCP routes need no compiler at runtime. The optional
@@ -592,6 +592,49 @@ an empty output into a decision. Missing pages and unknown recording context
 are represented results, not proof that a live tool was removed. This public
 command runs the generated Gooo kernel; editing `.gooo` source still requires
 the compiler and its native execution/replay workflow.
+
+### Diagnose missing observations in a development snapshot
+
+If your saved MCP catalog comparison is `UNASSESSED`, this development command
+identifies missing observation paths and their next collection actions. It uses
+[this saved-input format](https://github.com/kimjooyoon/gooo-go-ports/blob/853d14df61ad50c5b4aaca7065ee2b18168f1f9e/examples/recorded-catalog-comparison/README.md#provide-your-saved-observations).
+The snapshot has a verified public-module installation and internal retained-input
+trial; it is experimental, with whole-source acceptance and release still pending.
+
+With Go **1.27.3**, install it separately from the command above:
+
+```sh
+diagnostic_dir="$(mktemp -d)"
+GOBIN="$diagnostic_dir" go install \
+  github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare@853d14df61ad50c5b4aaca7065ee2b18168f1f9e
+"$diagnostic_dir/compare" --version > diagnostics-version.json
+if "$diagnostic_dir/compare" --definitions --diagnostics \
+  < your-recorded-input.json > diagnostics.json 2> diagnostics.stderr; then
+  printf '0\n' > diagnostics.exit
+else
+  printf '%s\n' "$?" > diagnostics.exit
+fi
+```
+
+The resolved module version is `v0.0.0-20261025050343-853d14df61ad`, with checksum
+`h1:gBzFkDMwXoUk1c/0dueK82hMaQN9KCVXotJM8hdkar4=`. Installation uses the public Go
+module service. The installed command performs no collection, external tool or model call.
+
+Keep the original input, command, version and complete output locally. On exit
+`0`, inspect the unchanged `comparison.decision` and each `observations` entry's
+`source_document`, `field_path`, `state` and `next_action`. `UNASSESSED` can be a
+successful comparison result. On nonzero exit, retain the first stderr diagnostic.
+`OBTAIN_OBSERVATION` means obtain the original observation if available; a new
+capture belongs to a new record. Do not fill historical gaps with invented IDs
+or current values. An unrecoverable gap remains unassessed; the report grants no
+execution authority. See the [diagnostic profile and bounds](https://github.com/kimjooyoon/gooo-go-ports/blob/853d14df61ad50c5b4aaca7065ee2b18168f1f9e/examples/observation-diagnostics/README.md).
+
+For optional feedback, reply to [the existing missing-context issue #224](https://github.com/kimjooyoon/gooo-go-ports/issues/224)
+with whether this was your own input or the unchanged example, the exact version,
+command and exit status, and the first useful field/action or setup diagnostic.
+Say whether it helped you decide what to collect next. Keep private captures local;
+share only public details, and identify any redacted or reduced reproduction.
+A useful result or a first failure is enough.
 
 ## Connect the service-grant MCP tool
 

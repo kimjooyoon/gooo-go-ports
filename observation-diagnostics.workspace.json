@@ -1,0 +1,15 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "gooo/tool-origin/observation-diagnostics",
+    "activity": "AssessObservationField"
+  },
+  "packages": [
+    {
+      "path": "gooo/tool-origin/observation-diagnostics",
+      "sources": [
+        "ports/tool-origin/observation_diagnostics.gooo"
+      ]
+    }
+  ]
+}
