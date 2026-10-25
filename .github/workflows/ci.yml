@@ -95,6 +95,7 @@ jobs:
           python3 -B tools/check-api-policy-public-consumer_test.py -v
           python3 -I -B tools/api_policy_cli_bundle_test.py -v
           python3 -I -B tools/recorded_catalog_cli_bundle_test.py -v
+          python3 -I -B tools/assemble_saved_frames_test.py -v
           python3 -I -B tools/check-header-addition-host_test.py -v
           python3 -I -B tools/native-shard-reference_test.py -v
           python3 -I -B tools/export-header-addition-evidence_test.py -v
