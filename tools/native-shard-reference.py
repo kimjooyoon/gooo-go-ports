@@ -94,6 +94,9 @@ def go_json(value, *, html=False, sorted_map=False):
 
 
 def load(raw, *, metadata=True):
+    # A receipt can contain hundreds of thousands of integer tokens. Keep the
+    # exact grammar check without a module-level regex/cache lookup per token.
+    canonical_integer = re.compile(r'0|-?[1-9][0-9]*').fullmatch
     def pairs(items):
         result={}
         for key,value in items:
@@ -101,7 +104,7 @@ def load(raw, *, metadata=True):
             result[key]=value
         return result
     def number(value):
-        need(re.fullmatch(r'0|-?[1-9][0-9]*',value) is not None,'canonical decimal integer token required')
+        need(canonical_integer(value) is not None,'canonical decimal integer token required')
         parsed=int(value);integer(parsed,-MAX_INT-1)
         return parsed
     def finite(value):

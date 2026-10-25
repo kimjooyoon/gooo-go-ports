@@ -7,16 +7,110 @@ import (
 	origin "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison"
 	"io"
 	"os"
+	"runtime/debug"
 )
+
+const usage = `Compare saved MCP tool catalogs using rules written in Gooo and compiled to Go.
+
+Usage:
+  compare < saved-observations.json > report.json
+  compare --example > synthetic-observations.json
+  compare --version
+  compare --help
+
+With no arguments, read one JSON comparison from stdin (at most 1 MiB).
+--example prints the complete synthetic input; compare it in a separate call.
+--version prints JSON build metadata, not an authenticated source identity.
+--help (-h) prints this text. These options never read stdin or compare inputs.
+Use one option at a time; unknown arguments are refused before reading stdin.
+
+Successful comparison: exit 0, full JSON report on stdout.
+Invalid arguments: exit 2. Input, comparison or I/O failure: exit 1.
+Failures produce a JSON diagnostic on stderr. Preserve the first diagnostic.
+
+The example marks its observations SYNTHETIC_FIXTURE. A collection may be
+incomplete or unknown even when an alias can be compared. Remote atomicity
+remains UNKNOWN; the report does not authorize execution or prove live removal.
+This command does not collect a live catalog, run tools, or call a model.
+
+Input format and bounds:
+https://github.com/kimjooyoon/gooo-go-ports/tree/main/examples/recorded-catalog-comparison
+Gooo language:
+https://github.com/kimjooyoon/meta-ontology-go
+`
+
+type commandVersion struct {
+	Schema             string            `json:"schema"`
+	BuildInfoAvailable bool              `json:"build_info_available"`
+	GoVersion          string            `json:"go_version"`
+	PackagePath        string            `json:"package_path"`
+	MainModule         *debug.Module     `json:"main_module"`
+	VCS                map[string]string `json:"vcs"`
+}
+
+func versionInfo(info *debug.BuildInfo, ok bool) commandVersion {
+	v := commandVersion{Schema: "gooo/recorded-catalog-command-build/v1", VCS: map[string]string{}}
+	if !ok || info == nil {
+		return v
+	}
+	v.BuildInfoAvailable = true
+	v.GoVersion, v.PackagePath = info.GoVersion, info.Path
+	v.MainModule = &info.Main
+	for _, setting := range info.Settings {
+		switch setting.Key {
+		case "vcs.revision", "vcs.time", "vcs.modified":
+			v.VCS[setting.Key] = setting.Value
+		}
+	}
+	return v
+}
+
+func diagnostic(out io.Writer, err error) int {
+	var problem *origin.Problem
+	if !errors.As(err, &problem) {
+		problem = &origin.Problem{State: "UNKNOWN", Stage: "command", Code: "IO_FAILURE"}
+	}
+	_ = json.NewEncoder(out).Encode(problem)
+	return 1
+}
+
+func emit(raw []byte, out, diagnostics io.Writer) int {
+	n, err := out.Write(raw)
+	if err == nil && n != len(raw) {
+		err = io.ErrShortWrite
+	}
+	if err != nil {
+		return diagnostic(diagnostics, err)
+	}
+	return 0
+}
+
+func runCommand(args []string, input io.Reader, out, diagnostics io.Writer) int {
+	if len(args) == 0 {
+		return run(input, out, diagnostics)
+	}
+	if len(args) == 1 {
+		switch args[0] {
+		case "--help", "-h":
+			return emit([]byte(usage), out, diagnostics)
+		case "--example":
+			return emit(origin.ExampleInputJSON(), out, diagnostics)
+		case "--version":
+			info, ok := debug.ReadBuildInfo()
+			raw, err := json.Marshal(versionInfo(info, ok))
+			if err != nil {
+				return diagnostic(diagnostics, err)
+			}
+			return emit(append(raw, '\n'), out, diagnostics)
+		}
+	}
+	diagnostic(diagnostics, &origin.Problem{State: "INVALID_ARGUMENT", Stage: "parse_arguments", Code: "UNSUPPORTED_ARGUMENTS"})
+	return 2
+}
 
 func run(input io.Reader, out, diagnostics io.Writer) int {
 	fail := func(err error) int {
-		var problem *origin.Problem
-		if !errors.As(err, &problem) {
-			problem = &origin.Problem{State: "UNKNOWN", Stage: "command", Code: "IO_FAILURE"}
-		}
-		_ = json.NewEncoder(diagnostics).Encode(problem)
-		return 1
+		return diagnostic(diagnostics, err)
 	}
 	raw, err := io.ReadAll(io.LimitReader(input, origin.MaxInputBytes+1))
 	if err != nil {
@@ -33,9 +127,6 @@ func run(input io.Reader, out, diagnostics io.Writer) int {
 	if len(encoded) > origin.MaxReportBytes {
 		return fail(&origin.Problem{State: "INVALID_TRANSPORT", Stage: "encode_result", Code: "OUTPUT_LIMIT_EXCEEDED"})
 	}
-	if _, err := out.Write(append(encoded, '\n')); err != nil {
-		return fail(err)
-	}
-	return 0
+	return emit(append(encoded, '\n'), out, diagnostics)
 }
-func main() { os.Exit(run(os.Stdin, os.Stdout, os.Stderr)) }
+func main() { os.Exit(runCommand(os.Args[1:], os.Stdin, os.Stdout, os.Stderr)) }

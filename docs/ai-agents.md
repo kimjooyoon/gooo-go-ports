@@ -14,6 +14,7 @@ are developed separately; this repository supplies ports and runnable examples.
 | Preserve all required services while narrowing a grant | [Ordered-request MCP tool](#preserve-several-required-requests-through-mcp): start with `--many-required`, then call `assess_service_grant_change` | An ordered list, normally 1-256 pairs; twelve decision fields, including the first original counterexample index. Do not replace it with the single-request tool. |
 | Check whether a previously selected tool alias changed origin | [Source-built alias MCP tool](#compare-a-tool-alias-before-reusing-it): start with `--alias-origin-change`, then call `gooo_compare_alias_origin` | Compare supplied catalogs and retain the original row indexes. Requires this source build; unavailable in preview16. |
 | Compare the supplied API policy profiles | [Fixed-policy command](#compare-fixed-api-policies-without-a-compiler) | Compares the documented profiles; does not load an arbitrary edited policy. |
+| Compare saved MCP tool catalogs | [Pinned comparison command](#compare-saved-mcp-catalogs-without-a-checkout) | Separates alias-origin changes from missing pages or unknown collection context; does not collect a live catalog. |
 | Edit and execute Gooo source | [First-program skill](#run-the-first-program-skill) | An actual source edit plus new execution and replay records; declaration checking alone is insufficient. |
 
 The native MCP routes need no compiler at runtime. The optional
@@ -552,6 +553,46 @@ is not derived from an earlier one merely because it came later. Compiler
 source provenance does not establish that an external collection occurred.
 This guidance adds no live collector, authentication or execution authority.
 
+## Compare saved MCP catalogs without a checkout
+
+With Go **1.27.3**, install the comparison from an immutable public module version.
+The temporary installation directory keeps its generic `compare` name separate
+from other commands. Installation needs access to the Go module service; the
+installed comparison reads the supplied input without a compiler, model or
+credentials.
+
+```sh
+module=github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison
+version=v0.0.0-20261024173114-228f93790dab
+install_dir="$(mktemp -d)"
+GOBIN="$install_dir" go install -trimpath "$module/cmd/compare@$version"
+go mod download "$module@$version"
+module_dir="$(go list -m -f '{{.Dir}}' "$module@$version")"
+"$install_dir/compare" < "$module_dir/example-input.json" > recorded-catalog-report.json
+```
+
+This is the checked source at
+[`228f9379`](https://github.com/kimjooyoon/gooo-go-ports/tree/228f93790dab8b6f24046df43f76e3cda7d54e5c/examples/recorded-catalog-comparison),
+not a request to resolve the newest development revision. The module checksum is
+`h1:Zly1VYbLdZpngX2okM69nUGBPm10pAoD5FCULaxzBog=`; `go version -m "$install_dir/compare"`
+shows the executable's recorded module version and checksum.
+
+For the bundled synthetic example, keep the complete saved report and inspect
+`alias_decision.state` (`ORIGIN_CHANGED`), its before/after indexes (`0`/`1`), and
+`collection_context.state` (`RECORDED_CONTEXT_COMPLETE`). The report also keeps
+`contains_synthetic_fixture: true`, `remote_atomicity: UNKNOWN`, and false
+`execution_authorized` and `live_removal_proven` fields. These results describe
+the supplied example rather than a running server.
+
+To use your own saved observations, provide an input file in the
+[documented format](../examples/recorded-catalog-comparison/README.md#provide-your-saved-observations):
+`"$install_dir/compare" < your-recorded-input.json > recorded-catalog-report.json`.
+Retain diagnostics and the nonzero exit status on malformed input; do not turn
+an empty output into a decision. Missing pages and unknown recording context
+are represented results, not proof that a live tool was removed. This public
+command runs the generated Gooo kernel; editing `.gooo` source still requires
+the compiler and its native execution/replay workflow.
+
 ## Connect the service-grant MCP tool
 
 If you already use Homebrew on **macOS arm64 or Linux amd64**, install the
@@ -746,10 +787,22 @@ not external adoption.
 
 Use this when an agent previously selected a tool name and you want to compare
 its declared server and original function before and after a catalog update.
-Build the command using the [MCP source instructions](../examples/service-grant-mcp/README.md#optional-tool-alias-origin-comparison)
-and configure your host to run that absolute executable path with
-`args: ["--alias-origin-change"]`. This mode is not in the preview16 executable,
-Homebrew package or container image. It needs no compiler at runtime.
+With Go **1.27.3**, install this immutable source snapshot without a checkout:
+
+```sh
+install_dir="$(mktemp -d)"
+GOBIN="$install_dir" go install -trimpath \
+  github.com/kimjooyoon/gooo-go-ports/examples/service-grant-mcp@v0.0.0-20261024233450-c3f6cdaf7c9f
+go version -m "$install_dir/service-grant-mcp"
+```
+
+Installation uses the public Go module service. The module checksum is
+`h1:GFQHFwo5Z6L1L6B0oFExrEyoYyiPRJkDpNOBNOlX34I=`. Configure your host to run the
+absolute path to that `service-grant-mcp` executable with
+`args: ["--alias-origin-change"]`. The installed executable needs no Go or Gooo
+compiler at runtime. To build a checkout instead, use the
+[MCP source instructions](../examples/service-grant-mcp/README.md#optional-tool-alias-origin-comparison).
+This mode is not in the preview16 executable, Homebrew package or container image.
 
 Discover `gooo_compare_alias_origin` before calling it. A host that filters
 enabled tools must allow this name. If it is absent, keep the executable
@@ -771,6 +824,14 @@ catalog completeness or authority; `execution_authorized` remains `false`.
 Both optional flags may be supplied to expose all three tools. For a real
 attempt, [report the first failure or useful result](#report-a-first-attempt-or-a-real-task)
 with sanitized catalogs and the exact executable version.
+
+A macOS arm64 internal trial installed this exact version from the public
+module service. Its 20 source files matched the accepted source snapshot. Raw
+stdio checks covered two protocol versions and four discovery modes, six normal
+comparison cases and seven refusal cases, including the large-response limits.
+The complete saved wire passed the existing validator, and all owned processes
+closed. This is a synthetic transport observation, not a completed external-agent
+task or external adoption.
 
 ## Optional Claude Code ETag workflow
 
