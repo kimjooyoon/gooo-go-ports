@@ -1796,6 +1796,44 @@ jobs:
           path: ${{ runner.temp }}/observation-diagnostics/
           if-no-files-found: warn
           retention-days: 14
+      - name: Verify explicit recorded observation availability
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/explicit-observation-availability"
+          GOOO_AVAILABILITY_EXPORT="$RUNNER_TEMP/explicit-observation-availability/synthetic-export.json" go -C examples/recorded-catalog-comparison test -count=1 -run '^TestExplicitAvailabilityConsumerExport$' .
+          python3 -I -B examples/explicit-observation-availability/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/explicit-observation-availability/kernel"
+          jq -e '
+            .schema == "gooo/explicit-availability-verification/v1" and .status == "PASS" and
+            .first_failure == null and .finite_native_verified == true and .native_acceptance == false and
+            .compiler_identity.compiler_source_sha == "205896a413e5dea92366309c35ae85e542d055f6" and
+            .generated_comparison == true and .source_unchanged == true and
+            (.profiles | length) == 2 and .profiles[0].profile == "availability" and
+            .profiles[0].cases == 40 and .profiles[0].batches == 5 and
+            .profiles[1].profile == "observation" and .profiles[1].cases == 12 and .profiles[1].batches == 2 and
+            all(.profiles[]; (.generated_assets | length) == 5 and (.negative_controls | length) == 5 and all(.negative_controls[]; .refused == true)) and
+            .all_direct_wait_EOF_PG_ESRCH == true and .remaining_owned_groups == 0 and
+            .model_calls == 0 and .external_adoption == false and .live_effect_performed == false
+          ' "$RUNNER_TEMP/explicit-observation-availability/kernel/summary.json"
+          python3 -I -B examples/explicit-observation-availability/verify_consumer.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --synthetic-export "$RUNNER_TEMP/explicit-observation-availability/synthetic-export.json" --out "$RUNNER_TEMP/explicit-observation-availability/consumer"
+          jq -e '
+            .schema == "gooo/explicit-availability-consumer-verification/v1" and .status == "PASS" and
+            .first_failure == null and .finite_native_verified == true and .native_acceptance == false and
+            .source_unchanged == true and .cli_report_equal == true and (.exports | length) == 1 and
+            (.profiles | length) == 1 and .profiles[0].kind == "synthetic" and
+            .profiles[0].records == 13 and .profiles[0].diagnostics_independently_checked == 442 and
+            .all_direct_wait_EOF_PG_ESRCH == true and .model_calls == 0 and
+            .external_adoption == false and .live_effect_performed == false
+          ' "$RUNNER_TEMP/explicit-observation-availability/consumer/summary.json"
+      - name: Preserve explicit observation availability evidence
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: explicit-observation-availability-evidence
+          path: ${{ runner.temp }}/explicit-observation-availability/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Verify original AutoBot resolver adaptation
         if: steps.change-scope.outputs.docs_only != 'true'
         timeout-minutes: 6

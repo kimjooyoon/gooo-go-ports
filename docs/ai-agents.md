@@ -655,6 +655,28 @@ Say whether it helped you decide what to collect next. Keep private captures loc
 share only public details, and identify any redacted or reduced reproduction.
 A useful result or a first failure is enough.
 
+### Declare unavailable observations in this checkout
+
+An opaque value such as `UNKNOWN` may be a real identifier or text retained for
+an observation that was never made. The opt-in
+[explicit availability profile](../examples/recorded-catalog-comparison/README.md#declare-unavailable-observations-explicitly)
+keeps those cases separate without rewriting the saved input. Build the command
+from this checkout; the frozen diagnostic installation above does not include
+these options.
+
+Run `compare --availability-template` with the saved input and any supplied
+policy revisions to obtain a complete field roster. Its states start blank.
+For each field, use the retained evidence to choose `SUPPLIED` or `UNOBSERVED`,
+then pass the sidecar with `--definitions --diagnostics --availability` and the
+same input and policy arguments. Do not fill every state with `SUPPLIED` merely
+to make the report pass. Missing required observations prevent a complete-context
+decision; independently observed changes and structural failures remain visible.
+
+The template binds the original input and normalized policy; the report also
+binds the exact sidecar bytes. Preserve them together. The report calculates observations and next steps; it
+does not authenticate the collector or authorize a tool call. See the
+[finite Gooo and independent Go verification scope](../examples/explicit-observation-availability/README.md).
+
 ## Connect the service-grant MCP tool
 
 If you already use Homebrew on **macOS arm64 or Linux amd64**, install the

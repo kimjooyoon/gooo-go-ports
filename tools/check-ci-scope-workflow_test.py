@@ -1369,7 +1369,26 @@ OBSERVATION_STEP = '      - name: Verify Gooo recorded observation diagnostics\n
 OBSERVATION_UPLOAD = "      - name: Preserve recorded observation diagnostic evidence\n        if: always() && steps.change-scope.outputs.docs_only != 'true'\n        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7\n        with:\n          name: observation-diagnostics-evidence\n          path: ${{ runner.temp }}/observation-diagnostics/\n          if-no-files-found: warn\n          retention-days: 14\n"
 OBSERVATION_PRIOR_WORKFLOW_SHA = 'cf73d0588f954cc091fd23838f1458443a5aeec493866114ba288d435393949e'
 
+AVAILABILITY_STEP = '      - name: Verify explicit recorded observation availability\n        if: steps.change-scope.outputs.docs_only != \'true\'\n        timeout-minutes: 12\n        run: |\n          set -euo pipefail\n          mkdir -p "$RUNNER_TEMP/explicit-observation-availability"\n          GOOO_AVAILABILITY_EXPORT="$RUNNER_TEMP/explicit-observation-availability/synthetic-export.json" go -C examples/recorded-catalog-comparison test -count=1 -run \'^TestExplicitAvailabilityConsumerExport$\' .\n          python3 -I -B examples/explicit-observation-availability/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/explicit-observation-availability/kernel"\n          jq -e \'\n            .schema == "gooo/explicit-availability-verification/v1" and .status == "PASS" and\n            .first_failure == null and .finite_native_verified == true and .native_acceptance == false and\n            .compiler_identity.compiler_source_sha == "205896a413e5dea92366309c35ae85e542d055f6" and\n            .generated_comparison == true and .source_unchanged == true and\n            (.profiles | length) == 2 and .profiles[0].profile == "availability" and\n            .profiles[0].cases == 40 and .profiles[0].batches == 5 and\n            .profiles[1].profile == "observation" and .profiles[1].cases == 12 and .profiles[1].batches == 2 and\n            all(.profiles[]; (.generated_assets | length) == 5 and (.negative_controls | length) == 5 and all(.negative_controls[]; .refused == true)) and\n            .all_direct_wait_EOF_PG_ESRCH == true and .remaining_owned_groups == 0 and\n            .model_calls == 0 and .external_adoption == false and .live_effect_performed == false\n          \' "$RUNNER_TEMP/explicit-observation-availability/kernel/summary.json"\n          python3 -I -B examples/explicit-observation-availability/verify_consumer.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --synthetic-export "$RUNNER_TEMP/explicit-observation-availability/synthetic-export.json" --out "$RUNNER_TEMP/explicit-observation-availability/consumer"\n          jq -e \'\n            .schema == "gooo/explicit-availability-consumer-verification/v1" and .status == "PASS" and\n            .first_failure == null and .finite_native_verified == true and .native_acceptance == false and\n            .source_unchanged == true and .cli_report_equal == true and (.exports | length) == 1 and\n            (.profiles | length) == 1 and .profiles[0].kind == "synthetic" and\n            .profiles[0].records == 13 and .profiles[0].diagnostics_independently_checked == 442 and\n            .all_direct_wait_EOF_PG_ESRCH == true and .model_calls == 0 and\n            .external_adoption == false and .live_effect_performed == false\n          \' "$RUNNER_TEMP/explicit-observation-availability/consumer/summary.json"\n'
+AVAILABILITY_UPLOAD = "      - name: Preserve explicit observation availability evidence\n        if: always() && steps.change-scope.outputs.docs_only != 'true'\n        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7\n        with:\n          name: explicit-observation-availability-evidence\n          path: ${{ runner.temp }}/explicit-observation-availability/\n          if-no-files-found: warn\n          retention-days: 14\n"
+AVAILABILITY_PRIOR_WORKFLOW_SHA = '6ee14332a924258c56f76a844200c8a3a9db05c835ffa6d3786090c235316b44'
+
+def project_explicit_availability_integration(text):
+    jobs = workflow_jobs(text)
+    require(text.count(AVAILABILITY_STEP) == 1 and AVAILABILITY_STEP in jobs['policy-native-checks'] and
+            text.count(AVAILABILITY_UPLOAD) == 1 and AVAILABILITY_UPLOAD in jobs['policy-native-checks'],
+            'explicit availability requires exact native/oracle/CLI checks and separate failure-safe evidence')
+    require(text.index(OBSERVATION_UPLOAD) + len(OBSERVATION_UPLOAD) == text.index(AVAILABILITY_STEP) and
+            text.index(AVAILABILITY_STEP) + len(AVAILABILITY_STEP) == text.index(AVAILABILITY_UPLOAD) and
+            text.index(AVAILABILITY_UPLOAD) + len(AVAILABILITY_UPLOAD) == text.index('      - name: Verify original AutoBot resolver adaptation\n'),
+            'explicit availability must follow unchanged observation diagnostics')
+    prior = text.replace(AVAILABILITY_STEP, '', 1).replace(AVAILABILITY_UPLOAD, '', 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == AVAILABILITY_PRIOR_WORKFLOW_SHA,
+            'explicit availability changed unrelated workflow bytes')
+    return prior
+
 def project_observation_diagnostics_integration(text):
+    text = project_explicit_availability_integration(text)
     jobs = workflow_jobs(text)
     require(text.count(OBSERVATION_STEP) == 1 and OBSERVATION_STEP in jobs['policy-native-checks'] and
             text.count(OBSERVATION_UPLOAD) == 1 and OBSERVATION_UPLOAD in jobs['policy-native-checks'],
@@ -4505,6 +4524,45 @@ class ObservationDiagnosticsIntegrationTests(unittest.TestCase):
                 project_observation_diagnostics_integration(raw.replace(OBSERVATION_UPLOAD, replacement, 1))
         with self.assertRaises(ValueError):
             project_observation_diagnostics_integration(raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1))
+
+class ExplicitAvailabilityIntegrationTests(unittest.TestCase):
+    def test_exact_addition_preserves_every_previous_workflow_byte(self):
+        raw = WORKFLOW.read_text()
+        prior = project_explicit_availability_integration(raw)
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), AVAILABILITY_PRIOR_WORKFLOW_SHA)
+        self.assertNotIn('examples/explicit-observation-availability/', prior)
+        project_root_go_reference(raw)
+
+    def test_no_skipped_checks_wrong_source_masked_failure_or_weakened_counts(self):
+        raw = WORKFLOW.read_text()
+        for old, new in ((AVAILABILITY_STEP, ''), (AVAILABILITY_STEP, AVAILABILITY_STEP * 2),
+                         ('set -euo pipefail', 'set +e'), ('timeout-minutes: 12', 'timeout-minutes: 120'),
+                         (FULL, DOCS), ('--compiler "$PWD/.gooo"', '--compiler other'),
+                         ('--out "$RUNNER_TEMP/explicit-observation-availability/kernel"', '--out "$RUNNER_TEMP/explicit-observation-availability/kernel" || true'),
+                         ('--synthetic-export "$RUNNER_TEMP/explicit-observation-availability/synthetic-export.json"', '--synthetic-export stale.json')):
+            changed = raw.replace(AVAILABILITY_STEP, AVAILABILITY_STEP.replace(old, new, 1), 1) if old != AVAILABILITY_STEP else raw.replace(old, new, 1)
+            self.assertNotEqual(changed, raw)
+            with self.subTest(old=old[:70]), self.assertRaises(ValueError):
+                project_explicit_availability_integration(changed)
+        for clause in ('.profiles[0].cases == 40', '.profiles[1].cases == 12', '.profiles[0].records == 13',
+                       '.profiles[0].diagnostics_independently_checked == 442', '.generated_comparison == true',
+                       '.source_unchanged == true', '.cli_report_equal == true', '.finite_native_verified == true',
+                       '.native_acceptance == false', '.refused == true', '.all_direct_wait_EOF_PG_ESRCH == true',
+                       '.external_adoption == false', '.model_calls == 0', '.live_effect_performed == false'):
+            self.assertIn(clause, AVAILABILITY_STEP)
+            changed = raw.replace(AVAILABILITY_STEP, AVAILABILITY_STEP.replace(clause, 'true', 1), 1)
+            with self.subTest(clause=clause), self.assertRaises(ValueError):
+                project_explicit_availability_integration(changed)
+
+    def test_separate_original_failure_evidence_and_other_checks_remain_required(self):
+        raw = WORKFLOW.read_text()
+        for replacement in ('', AVAILABILITY_UPLOAD * 2, AVAILABILITY_UPLOAD.replace('always() && ', '', 1),
+                            AVAILABILITY_UPLOAD.replace('${{ runner.temp }}/explicit-observation-availability/', 'out/wrong/', 1)):
+            with self.assertRaises(ValueError):
+                project_explicit_availability_integration(raw.replace(AVAILABILITY_UPLOAD, replacement, 1))
+        with self.assertRaises(ValueError):
+            project_explicit_availability_integration(raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1))
+
 
 if __name__ == "__main__":
     unittest.main()

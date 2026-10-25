@@ -1,0 +1,15 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "gooo/tool-origin/explicit-observation",
+    "activity": "AssessObservationField"
+  },
+  "packages": [
+    {
+      "path": "gooo/tool-origin/explicit-observation",
+      "sources": [
+        "ports/tool-origin/explicit_observation.gooo"
+      ]
+    }
+  ]
+}

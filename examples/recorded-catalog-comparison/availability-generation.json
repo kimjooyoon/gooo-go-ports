@@ -1,0 +1,40 @@
+{
+  "activity_id": "gooo://tool-origin/explicit-availability/v1/assess",
+  "batches": 5,
+  "cases": 40,
+  "cases_sha256": "sha256:603ba22a19a2afd97a5880cd135399837af49ff294cecf068fbf4b1bb1390a29",
+  "compiler_source_sha": "205896a413e5dea92366309c35ae85e542d055f6",
+  "entry": "gooo/tool-origin/explicit-availability:AssessDefinitionAvailability",
+  "generated_assets": {
+    "examples/recorded-catalog-comparison/availability-kernel-cases.json": "sha256:603ba22a19a2afd97a5880cd135399837af49ff294cecf068fbf4b1bb1390a29",
+    "examples/recorded-catalog-comparison/internal/availabilitykernel/bridge_generated.go": "sha256:420a75356acbd48ecd80bbdd6666a2209b956ccbc2e6d4ccad82eddd6028a7ed",
+    "examples/recorded-catalog-comparison/internal/availabilitykernel/projection_generated.go": "sha256:218326da64c6d044a9aade265566c82d449198f11448c3fa0c8cef9e09040b02",
+    "examples/recorded-catalog-comparison/internal/availabilitykernel/types_generated.go": "sha256:1ab76732dcf04d72b8baa82f2bf4d1dee16e8c01c748c9dd316427cf84482905"
+  },
+  "generator_source": {
+    "examples/explicit-observation-availability/evidence.py": "sha256:e228342eda39636888ad9d5f668b1cb24c9307427c63b0bb3319acbef466ef2f",
+    "examples/explicit-observation-availability/generate.py": "sha256:486a2d25ba25945af4a5a9e322c98c9b52043fa090b44f801b656f6d2f5486f9",
+    "examples/recorded-catalog-comparison/generate.py": "sha256:f64b0df498d4816b2cece12eedf14a1e2f85678982cd5d074b1cae62b818d3db",
+    "examples/service-grant-many/verify.py": "sha256:ff3d94c39782619e06f64d5fbcfc3218733013332293f07b14368e5e939d3f0f"
+  },
+  "go_version": "go1.27.3",
+  "projection_transform": "Replace first package token main with availabilitykernel; all other bytes unchanged.",
+  "raw_projection_sha256": "sha256:2bdde52c7189d442dd518eac2fd7e76f4290b8009aeeece276077c7c8c5ab9e0",
+  "reference_source": {
+    "case-labels.json": "sha256:7c7a0122cb0d70739ea5d7329a15d4b81d83134e233f9e0bb326747db9b72b03",
+    "reference-inputs.json": "sha256:4be48cef1cfc31022a74868cb8b9a491a86c7ad18ddb5d38c2340437291130b2",
+    "reference/go.mod": "sha256:e315a626266da6bb7a6124d0e6de35675190a0f3bb89580e7237a6886fd37e14",
+    "reference/main.go": "sha256:fca3fa23273498aeb6e81247fc686e75164c4434971921e7aec9550707e1b52f"
+  },
+  "schema": "gooo/explicit-availability-generation/v1",
+  "scope": "All40 finite synthetic cases and their own saved replay. Matching supplied metadata is not authenticated origin, behavior equivalence, capability truth or effect authorization.",
+  "selected_upstream_pins_sha256": "sha256:20171ad851133bf6627bc72cffbfc440c72a962073d184d8fd349fb635ae5721",
+  "source": {
+    "ports/tool-origin/alias_origin.gooo": "sha256:b45ac1d43674b9edcbdbedd74a253f5891d51b9fbdaf08ec2f056a55112b55d7",
+    "ports/tool-origin/definition_binding.gooo": "sha256:61f3070e2f5a3d7e33fecd858c26be3e813abbadea09b0d879c2b646cbec9c2b",
+    "ports/tool-origin/explicit_availability.gooo": "sha256:ab3bc826abce970651ce4b30e90ef473c3c0dc6774723d09f1f857e54d1b775c",
+    "ports/tool-origin/recorded_catalog.gooo": "sha256:2628fc4ddf000ca789938e0f0e71ce64c892d869a17bdce140dabe7b295a677e"
+  },
+  "typed_plan_sha256": "sha256:66d13fc97fbf62c472d8d7133fc99262b913a2cf93e96f121711dd0cf26e13cb",
+  "workspace_sha256": "sha256:a5a7e82bc906f99638b426bc81fc66dcb7114d736af0e0eae6a942dac49ded36"
+}
