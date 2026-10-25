@@ -45,6 +45,8 @@ jobs:
           test -z "$(git ls-files -z '*.go' ':(exclude)third_party/google-uuid/**' | xargs -0 -r gofmt -l)"
           test -z "$(gofmt -l third_party/google-uuid/source_digest.go)"
           go vet ./...
+          go -C examples/recorded-catalog-comparison vet ./...
+          go -C examples/recorded-catalog-comparison test -race -count=1 ./...
           # Native correctness fixtures run under race checking in this package.
           # Keep a finite package budget above the observed600s default timeout.
           mkdir -p out/observer-tests
@@ -1739,6 +1741,32 @@ jobs:
         with:
           name: recorded-catalog-comparison-evidence
           path: ${{ runner.temp }}/recorded-catalog-comparison/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Verify Gooo tool-definition and policy binding
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          python3 -I -B examples/tool-definition-binding/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/tool-definition-binding"
+          jq -e '
+            .schema == "gooo/definition-binding-verification/v1" and
+            .status == "SOURCE_DEFINITION60_AND_SAVED_FRAME12_NATIVE_REPLAY_PASS" and
+            .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
+            .go_version == "go1.27.3" and .kernel_cases == 60 and .actual_consumer_cases == 12 and
+            .typed_decision_fields == 32 and .receipt_negative_controls == 8 and .generated_assets == 5 and
+            .generated_assets_exact == true and .PROV_O_bindings_verified == true and .source_unchanged == true and
+            .runtime_path_empty == true and .runtime_goroot_absent == true and .syntax_probe_refused == true and
+            .all_direct_wait_EOF_PG_ESRCH == true and .synthetic_consumer_observations_only == true and
+            .model_calls == 0 and .engine_builds == 0 and .external_adoption == false and .live_capture_executed == false and
+            .native_acceptance == false and .execution_authorized == false
+          ' "$RUNNER_TEMP/tool-definition-binding/summary.json"
+      - name: Preserve tool-definition binding evidence
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: tool-definition-binding-evidence
+          path: ${{ runner.temp }}/tool-definition-binding/
           if-no-files-found: warn
           retention-days: 14
       - name: Verify original AutoBot resolver adaptation

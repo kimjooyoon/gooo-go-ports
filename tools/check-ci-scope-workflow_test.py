@@ -1359,6 +1359,29 @@ RECORDED_CATALOG_UPLOAD = "      - name: Preserve recorded-catalog comparison ev
 RECORDED_CATALOG_PRIOR_WORKFLOW_SHA = 'bb6474182e5a97d6b42868ed7debd6eeec04efaa5cb94dbe4108c331938d18d4'
 
 
+DEFINITION_PREFLIGHT = '          go -C examples/recorded-catalog-comparison vet ./...\n          go -C examples/recorded-catalog-comparison test -race -count=1 ./...\n'
+DEFINITION_STEP = '      - name: Verify Gooo tool-definition and policy binding\n        if: steps.change-scope.outputs.docs_only != \'true\'\n        timeout-minutes: 12\n        run: |\n          set -euo pipefail\n          python3 -I -B examples/tool-definition-binding/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/tool-definition-binding"\n          jq -e \'\n            .schema == "gooo/definition-binding-verification/v1" and\n            .status == "SOURCE_DEFINITION60_AND_SAVED_FRAME12_NATIVE_REPLAY_PASS" and\n            .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and\n            .go_version == "go1.27.3" and .kernel_cases == 60 and .actual_consumer_cases == 12 and\n            .typed_decision_fields == 32 and .receipt_negative_controls == 8 and .generated_assets == 5 and\n            .generated_assets_exact == true and .PROV_O_bindings_verified == true and .source_unchanged == true and\n            .runtime_path_empty == true and .runtime_goroot_absent == true and .syntax_probe_refused == true and\n            .all_direct_wait_EOF_PG_ESRCH == true and .synthetic_consumer_observations_only == true and\n            .model_calls == 0 and .engine_builds == 0 and .external_adoption == false and .live_capture_executed == false and\n            .native_acceptance == false and .execution_authorized == false\n          \' "$RUNNER_TEMP/tool-definition-binding/summary.json"\n'
+DEFINITION_UPLOAD = "      - name: Preserve tool-definition binding evidence\n        if: always() && steps.change-scope.outputs.docs_only != 'true'\n        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7\n        with:\n          name: tool-definition-binding-evidence\n          path: ${{ runner.temp }}/tool-definition-binding/\n          if-no-files-found: warn\n          retention-days: 14\n"
+DEFINITION_PRIOR_WORKFLOW_SHA = '2bc8b24e8ae81ecf9a540223819e9c921131c7a2ca49277c0a0a6e8df726cfed'
+
+def project_definition_binding_integration(text):
+    jobs = workflow_jobs(text)
+    _, observer, _ = job_steps(jobs['observer-checks'])
+    require(text.count(DEFINITION_PREFLIGHT) == 1 and
+            '          go vet ./...\n' + DEFINITION_PREFLIGHT in observer['Check the Go observer'],
+            'definition consumers must have one common fast Go preflight')
+    require(text.count(DEFINITION_STEP) == 1 and DEFINITION_STEP in jobs['policy-native-checks'] and
+            text.count(DEFINITION_UPLOAD) == 1 and DEFINITION_UPLOAD in jobs['policy-native-checks'],
+            'definition binding requires one exact full-scope native verifier and failure-safe evidence upload')
+    require(text.index(RECORDED_CATALOG_UPLOAD) + len(RECORDED_CATALOG_UPLOAD) == text.index(DEFINITION_STEP) and
+            text.index(DEFINITION_STEP) + len(DEFINITION_STEP) == text.index(DEFINITION_UPLOAD) and
+            text.index(DEFINITION_UPLOAD) + len(DEFINITION_UPLOAD) == text.index('      - name: Verify original AutoBot resolver adaptation\n'),
+            'definition binding verification must follow recorded collection evidence')
+    prior = text.replace(DEFINITION_PREFLIGHT, '', 1).replace(DEFINITION_STEP, '', 1).replace(DEFINITION_UPLOAD, '', 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == DEFINITION_PRIOR_WORKFLOW_SHA,
+            'definition binding integration changed unrelated workflow bytes')
+    return prior
+
 CONTRIBUTION_EXPORT_UNIT = '          python3 -I -B tools/export-header-addition-evidence_test.py -v\n'
 CONTRIBUTION_EXPORT_ANCHOR = '          python3 -I -B tools/native-shard-reference_test.py -v\n'
 
@@ -1376,7 +1399,7 @@ def project_contribution_export_unit(text):
 def project_recorded_catalog_integration(text):
     # Remove only the exact new common command before applying the unchanged
     # whole-workflow historical hash and all existing native-scope guards.
-    text = project_contribution_export_unit(text)
+    text = project_contribution_export_unit(project_definition_binding_integration(text))
     jobs = workflow_jobs(text)
     require(text.count(RECORDED_CATALOG_STEP) == 1 and
             RECORDED_CATALOG_STEP in jobs['policy-native-checks'],
@@ -4393,6 +4416,40 @@ class RecordedCatalogIntegrationTests(unittest.TestCase):
                 project_recorded_catalog_integration(raw.replace(RECORDED_CATALOG_UPLOAD, replacement, 1))
         with self.assertRaises(ValueError):
             project_recorded_catalog_integration(raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1))
+
+
+class DefinitionBindingIntegrationTests(unittest.TestCase):
+    def test_exact_integration_projects_to_unchanged_previous_workflow(self):
+        raw = WORKFLOW.read_text()
+        prior = project_definition_binding_integration(raw)
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), DEFINITION_PRIOR_WORKFLOW_SHA)
+        self.assertNotIn('tool-definition-binding', prior)
+
+    def test_definition_checks_cannot_be_skipped_or_weakened(self):
+        raw = WORKFLOW.read_text()
+        mutations = [raw.replace(DEFINITION_STEP, '', 1), raw.replace(DEFINITION_PREFLIGHT, '', 1),
+                     raw.replace(DEFINITION_PREFLIGHT, DEFINITION_PREFLIGHT.replace('-race ', '', 1), 1),
+                     raw.replace(DEFINITION_STEP, DEFINITION_STEP.replace("if: steps.change-scope.outputs.docs_only != 'true'", 'if: false', 1), 1),
+                     raw.replace(DEFINITION_STEP, DEFINITION_STEP.replace('--out "$RUNNER_TEMP/tool-definition-binding"', '--out "$RUNNER_TEMP/tool-definition-binding" || true', 1), 1)]
+        for clause in ('.kernel_cases == 60', '.actual_consumer_cases == 12', '.typed_decision_fields == 32',
+                       '.receipt_negative_controls == 8', '.generated_assets == 5', '.generated_assets_exact == true',
+                       '.PROV_O_bindings_verified == true', '.source_unchanged == true', '.syntax_probe_refused == true',
+                       '.all_direct_wait_EOF_PG_ESRCH == true', '.model_calls == 0', '.engine_builds == 0',
+                       '.execution_authorized == false', '.live_capture_executed == false'):
+            self.assertEqual(DEFINITION_STEP.count(clause), 1)
+            mutations.append(raw.replace(DEFINITION_STEP, DEFINITION_STEP.replace(clause, 'true', 1), 1))
+        for mutation in mutations:
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                project_definition_binding_integration(mutation)
+
+    def test_definition_failures_keep_separate_original_evidence(self):
+        raw = WORKFLOW.read_text()
+        for replacement in ('', DEFINITION_UPLOAD * 2, DEFINITION_UPLOAD.replace('always() && ', '', 1),
+                            DEFINITION_UPLOAD.replace('${{ runner.temp }}/tool-definition-binding/', 'out/wrong/', 1)):
+            with self.subTest(replacement=replacement), self.assertRaises(ValueError):
+                project_definition_binding_integration(raw.replace(DEFINITION_UPLOAD, replacement, 1))
+        with self.assertRaises(ValueError):
+            project_definition_binding_integration(raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1))
 
 
 if __name__ == "__main__":

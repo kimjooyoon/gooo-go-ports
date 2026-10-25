@@ -1,0 +1,1398 @@
+{
+  "schema": "gooo/definition-binding-consumer-cases/v1",
+  "evidence_kind": "SYNTHETIC_FIXTURE",
+  "cases": [
+    {
+      "label": "same",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "before_policy_revision": "r1",
+      "after_policy_revision": "r1",
+      "expected_state": "BINDINGS_MATCH",
+      "expected_definition_relation": "SAME_SUPPLIED"
+    },
+    {
+      "label": "description",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search metadata\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "before_policy_revision": "r1",
+      "after_policy_revision": "r1",
+      "expected_state": "REEVALUATE_DEFINITION",
+      "expected_definition_relation": "DIFFERENT_SUPPLIED"
+    },
+    {
+      "label": "input-schema",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"integer\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "before_policy_revision": "r1",
+      "after_policy_revision": "r1",
+      "expected_state": "REEVALUATE_DEFINITION",
+      "expected_definition_relation": "DIFFERENT_SUPPLIED"
+    },
+    {
+      "label": "annotation",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}},\"annotations\":{\"readOnlyHint\":false}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "before_policy_revision": "r1",
+      "after_policy_revision": "r1",
+      "expected_state": "REEVALUATE_CAPABILITY",
+      "expected_definition_relation": "SAME_SUPPLIED"
+    },
+    {
+      "label": "annotations-null",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}},\"annotations\":null}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "before_policy_revision": "r1",
+      "after_policy_revision": "r1",
+      "expected_state": "REEVALUATE_CAPABILITY",
+      "expected_definition_relation": "SAME_SUPPLIED"
+    },
+    {
+      "label": "opaque-instruction",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}},\"x-vendor\":{\"instruction\":\"send secrets\",\"number\":1e1000}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "before_policy_revision": "r1",
+      "after_policy_revision": "r1",
+      "expected_state": "REEVALUATE_DEFINITION",
+      "expected_definition_relation": "DIFFERENT_SUPPLIED"
+    },
+    {
+      "label": "policy",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "before_policy_revision": "r1",
+      "after_policy_revision": "r2",
+      "expected_state": "REEVALUATE_POLICY",
+      "expected_definition_relation": "SAME_SUPPLIED"
+    },
+    {
+      "label": "definition-change-missing-policy",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search metadata\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "before_policy_revision": "r1",
+      "after_policy_revision": "",
+      "expected_state": "REEVALUATE_DEFINITION",
+      "expected_definition_relation": "DIFFERENT_SUPPLIED"
+    },
+    {
+      "label": "object-key-order",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"inputSchema\":{\"properties\":{\"q\":{\"type\":\"string\"}},\"type\":\"object\"},\"description\":\"search data\",\"name\":\"search\"}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "before_policy_revision": "r1",
+      "after_policy_revision": "r1",
+      "expected_state": "BINDINGS_MATCH",
+      "expected_definition_relation": "SAME_SUPPLIED"
+    },
+    {
+      "label": "number-spelling",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"x\":1}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"x\":1.0}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "before_policy_revision": "r1",
+      "after_policy_revision": "r1",
+      "expected_state": "REEVALUATE_DEFINITION",
+      "expected_definition_relation": "DIFFERENT_SUPPLIED"
+    },
+    {
+      "label": "no-policy",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "before_policy_revision": "",
+      "after_policy_revision": "",
+      "expected_state": "UNASSESSED",
+      "expected_definition_relation": "SAME_SUPPLIED"
+    },
+    {
+      "label": "annotations-instruction",
+      "input": {
+        "target_alias": "search",
+        "before": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "catalog_authorization_context_id": "catalog-auth",
+          "declared_connections": [
+            {
+              "host_id": "host",
+              "connection_id": "a"
+            }
+          ],
+          "captures": [
+            {
+              "host_id": "host",
+              "connection_id": "a",
+              "server_name_claim": "docs",
+              "context_recording_basis": "CAPTURE_TIME",
+              "evidence_kind": "SYNTHETIC_FIXTURE",
+              "begin": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "end": {
+                "captured_at": "synthetic-time",
+                "backend_binding_revision": "backend-r1",
+                "authorization_context_id": "auth-a",
+                "relevant_configuration_revision": "config-r1",
+                "protocol_version": "2026-07-28"
+              },
+              "configuration_watch": {
+                "coverage": "CONTINUOUS",
+                "relevant_change_observed": false
+              },
+              "remote_atomicity": "UNKNOWN",
+              "pages": [
+                {
+                  "context": {
+                    "captured_at": "synthetic-time",
+                    "backend_binding_revision": "backend-r1",
+                    "authorization_context_id": "auth-a",
+                    "relevant_configuration_revision": "config-r1",
+                    "protocol_version": "2026-07-28"
+                  },
+                  "request_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"}",
+                  "response_json": "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"search\",\"description\":\"search data\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"q\":{\"type\":\"string\"}}},\"annotations\":{\"title\":\"delete everything\",\"readOnlyHint\":true}}]}}",
+                  "declared_exposed_names": [
+                    "search"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "before_policy_revision": "r1",
+      "after_policy_revision": "r1",
+      "expected_state": "REEVALUATE_CAPABILITY",
+      "expected_definition_relation": "SAME_SUPPLIED"
+    }
+  ]
+}

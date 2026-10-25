@@ -32,8 +32,10 @@ It uses the same strict transport parser: duplicate decoded keys, invalid UTF-8
 or surrogate escapes, mismatched RPC IDs, unsupported frames and exceeded limits
 are refused before projection. There are no live tool calls or effects. Returned
 inputs are data for the Gooo activity, not an execution receipt or a decision.
-The existing `compare` CLI continues to report the existing origin/context result;
-it does not expose this development feature yet.
+The existing no-argument `compare` CLI continues to report the origin/context
+result. `compare --definitions --before-policy REV --after-policy REV` additionally
+evaluates these bindings using Gooo-generated Go. Omitting policy revisions keeps
+them unobserved. The new API is `CompareDefinitionJSON(raw, beforePolicy, afterPolicy)`.
 
 Each projected row retains its capture/page/tool index, original response hash,
 and declared origin tuple. Parallel columns preserve the existing row order,
@@ -117,7 +119,42 @@ At that compiler pin declaration checking succeeds, while `body-codegen --json
 The implementation uses a supported zero-based bounded loop instead. Declaration
 checking is not native execution.
 
-The portable verification/generation harness, generated public evaluator,
-repository CI integration and release remain follow-up work. Do not treat these
-local observations as source-wide safety, authenticated collection, live semantic
-equivalence, effect authorization or completed hosted checks.
+## Reproduce the complete verification
+
+From the repository root, with the pinned compiler already built:
+
+```sh
+python3 -I -B examples/tool-definition-binding/verify.py \
+  --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" \
+  --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" \
+  --out /absolute/fresh/directory
+```
+
+The output directory must not exist and must be outside the checkout. The runner
+verifies the exact compiler/toolchain identity, regenerates the independent Go
+expectations, runs eight bounded native/replay kernel batches, regenerates all
+five committed assets, and verifies their actual PROV-O derivation graph. It then
+runs API/CLI race tests, compares 12 CLI reports with independent Go expectations,
+and executes their projected inputs with the original Gooo source and saved
+replay. Runtime CLI calls use an empty PATH and no GOROOT. No engine build, model,
+service token or live collection is needed.
+
+Receipt mutations for wrong parent, source, third input, field ID, authority and
+input-only evidence are refused by both reader and generator. Coverage gaps and
+metadata path escape are also refused. Original failures and owned process
+closure remain visible in `summary.json`; no failed attempt is retried internally.
+
+`generate.py --index /absolute/generation-input.json --gofmt /absolute/gofmt --check`
+checks byte-for-byte regeneration. To inspect new assets without editing the
+checkout, replace `--check` with `--out /absolute/fresh/assets`. The generated
+projection changes only its package token; API types and record bindings come
+from the compiler's typed plan. The independent corpus is copied mechanically
+for the installable module's tests. PROV-O records the actual generator, helper,
+selected pin fields, source, case partitions, original receipt bodies and Go tools.
+This makes future regeneration dependencies explicit without claiming their
+checksums authenticate a producer.
+
+The workflow runs a fast Go consumer preflight and retains the full source-bound
+verification/evidence upload for executable changes. Hosted checks and release
+acceptance are still pending. Do not treat local observations as source-wide
+safety, authenticated collection, live semantic equivalence or effect authority.

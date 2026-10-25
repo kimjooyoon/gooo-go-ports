@@ -3,9 +3,13 @@ package recordedcatalog
 
 import (
 	"bytes"
+	_ "embed"
 	"encoding/json"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/definitionkernel"
+	"github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/internal/kernel"
 )
 
 // DefinitionProfile names this exact JSON projection, not semantic equivalence.
@@ -14,18 +18,17 @@ import (
 const DefinitionProfile = "gooo/mcp-tool-definition-json/v1"
 const definitionEntry = "gooo/tool-origin/definition-binding:AssessDefinitionBinding"
 
-type DefinitionInput struct {
-	ContextID                string   `json:"context_id"`
-	AliasContextID           string   `json:"alias_context_id"`
-	CollectionContextID      string   `json:"collection_context_id"`
-	BeforeDefinitionIDs      []string `json:"before_definition_ids"`
-	AfterDefinitionIDs       []string `json:"after_definition_ids"`
-	BeforeDefinitionProfiles []string `json:"before_definition_profiles"`
-	AfterDefinitionProfiles  []string `json:"after_definition_profiles"`
-	BeforeCapabilityIDs      []string `json:"before_capability_ids"`
-	AfterCapabilityIDs       []string `json:"after_capability_ids"`
-	BeforePolicyRevision     string   `json:"before_policy_revision"`
-	AfterPolicyRevision      string   `json:"after_policy_revision"`
+// DefinitionInput and DefinitionDecision follow the compiler-owned typed plan.
+type DefinitionInput = definitionkernel.DefinitionInput
+type DefinitionDecision = definitionkernel.Decision
+
+//go:embed definition-generation.json
+var definitionGeneration []byte
+
+type DefinitionReport struct {
+	Projection DefinitionProjection `json:"projection"`
+	Decision   DefinitionDecision   `json:"decision"`
+	Bindings   json.RawMessage      `json:"bindings"`
 }
 
 type DefinitionRow struct {
@@ -164,4 +167,35 @@ func ProjectDefinitionInputsJSON(raw []byte, beforePolicy, afterPolicy string) (
 		return DefinitionProjection{}, invalid("OUTPUT_LIMIT_EXCEEDED")
 	}
 	return result, nil
+}
+
+// CompareDefinitionJSON evaluates the original Gooo policy compiled into this
+// module. The transport performs no model request, shell command or live call.
+func CompareDefinitionJSON(raw []byte, beforePolicy, afterPolicy string) (report DefinitionReport, returned error) {
+	defer func() {
+		if recover() != nil {
+			report = DefinitionReport{}
+			returned = &Problem{State: "UNKNOWN", Stage: "evaluate_definition", Code: "KERNEL_FAILURE"}
+		}
+	}()
+	projected, err := ProjectDefinitionInputsJSON(raw, beforePolicy, afterPolicy)
+	if err != nil {
+		return DefinitionReport{}, err
+	}
+	origin := projected.Inputs[definitionEntry+".input0"].(kernel.OriginInput)
+	collection := projected.Inputs[definitionEntry+".input1"].(kernel.CollectionInput)
+	binding := projected.Inputs[definitionEntry+".input2"].(DefinitionInput)
+	decision := definitionkernel.Evaluate(definitionkernel.OriginInput(origin), definitionkernel.CollectionInput(collection), binding)
+	if decision.ContextID != binding.ContextID || decision.OriginContextID != binding.AliasContextID || decision.CollectionContextID != binding.CollectionContextID || decision.BehaviorEquivalenceProven || decision.ExecutionAuthorized || decision.LiveEffectPerformed || decision.RemoteAtomicity != "UNKNOWN" {
+		return DefinitionReport{}, &Problem{State: "UNKNOWN", Stage: "bind_definition_result", Code: "KERNEL_CONTEXT_OR_AUTHORITY_MISMATCH"}
+	}
+	report = DefinitionReport{Projection: projected, Decision: decision, Bindings: bytes.Clone(definitionGeneration)}
+	encoded, err := json.Marshal(report)
+	if err != nil {
+		return DefinitionReport{}, err
+	}
+	if len(encoded) > MaxReportBytes {
+		return DefinitionReport{}, invalid("OUTPUT_LIMIT_EXCEEDED")
+	}
+	return report, nil
 }
