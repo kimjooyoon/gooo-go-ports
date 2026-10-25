@@ -22,12 +22,18 @@ ENTRY = 'app/diagnostic-header-addition:AssessAddition'
 MAX_INDEX = 16 << 20
 MAX_OUTPUT = 2 << 20
 HOST = '8a89358362d376b265c6ee8f35ad76a342a8deb21d5fec9e2c736f083a60200c'
+# Preserve the original profile and explicitly admit its reviewed progress-only update.
+HOSTS = {
+    HOST,
+    'ef49186682496905de03a55f75f1c490579a8342df191ea137bbb824453d08fc',
+}
 CONTRACT = 'c2a75cfb0a2b1742daf00c000fae7916cc393521f621f58ff74177d134376df1'
 EVIDENCE_VALIDATOR = 'ef059151d72591820105acea251cef963d4af170e887721b2160b72ec34042fc'
 PROVIDERS = {
     'cc05499ac8c03469dc9d44d18dbd2e5b9d5f80ccfff81061e5705f7df437803d',
     'ce9d617a18f7a0ff18ef244b5c4eb6c684819bb144a5350f4ff5bc69db50b14e',
     'a9a7abfc846935d75472dcbadb87b66da6380f52876d1a35e1fa8205871fa174',
+    'ef43e19de431b27b99f21a4195c45835cf1a7b59035ec8288acdce3b420de2ca',
 }
 
 
@@ -86,7 +92,7 @@ def read_checked(source_root, index_path, evidence_roots):
     permitted = {str(path.resolve(strict=True)) for path in evidence_roots}
     need(permitted, 'EVIDENCE_ROOT_REQUIRED')
     code = {
-        'check-header-addition-host.py': {HOST},
+        'check-header-addition-host.py': HOSTS,
         'native_verification_contract.py': {CONTRACT},
         'native-shard-reference.py': PROVIDERS,
     }
@@ -95,6 +101,11 @@ def read_checked(source_root, index_path, evidence_roots):
         raw = bounded(source_root / 'tools' / name, 128 << 10)
         need(digest(raw) in allowed, 'READER_PROFILE_UNSUPPORTED')
         frozen[name] = raw
+    # The pinned local host imports its own sibling contract during loading,
+    # even when the checked producer source_root is a different directory.
+    local_contract_path = HERE / 'native_verification_contract.py'
+    local_contract = bounded(local_contract_path, 128 << 10)
+    need(digest(local_contract) == CONTRACT, 'READER_PROFILE_UNSUPPORTED')
     raw_index = bounded(index_path, MAX_INDEX)
     # A fresh cache prefix avoids loading a producer checkout's stale pyc.
     # The private byte-identical index copy prevents metadata/path-scope races.
@@ -118,8 +129,10 @@ def read_checked(source_root, index_path, evidence_roots):
             private_index = work / 'reference-index.json'
             private_index.write_bytes(raw_index)
             host = load_code(HERE / 'check-header-addition-host.py',
-                             'gooo_contribution_host', {HOST})
+                             'gooo_contribution_host', HOSTS)
             result = host.read_shard_verification(source_root, private_index)
+            need(bounded(local_contract_path, 128 << 10) == local_contract,
+                 'READER_CHANGED')
             for name, raw in frozen.items():
                 need(bounded(source_root / 'tools' / name, 128 << 10) == raw,
                      'READER_CHANGED')

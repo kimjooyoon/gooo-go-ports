@@ -101,9 +101,9 @@ class SyntheticFixture:
         for name,raw in self.source_bytes.items():R.need(reader.read(root/name) == raw,'synthetic original source drift')
         return plan,self.owners,self.source_bytes,self.entries,{'compiler_version':'fixture-version','compiler_revision':H.REV,'go_version':'go1.27.3'}
 
-    def read(self):
+    def read(self,progress=None):
         with mock.patch.object(R,'load_host',return_value=H),mock.patch.object(R,'validate_plan',side_effect=self.validate_fixture_plan):
-            return R.read_reference(self.root,self.index_path)
+            return R.read_reference(self.root,self.index_path,progress=progress)
 
 
 class StrictReaderTests(unittest.TestCase):
@@ -345,6 +345,44 @@ class UnsignedSyntheticReferenceTests(unittest.TestCase):
     def fixture(self):
         directory=tempfile.TemporaryDirectory();self.addCleanup(directory.cleanup)
         return SyntheticFixture(directory.name)
+
+    def test_progress_preserves_full_synthetic_checks_and_numeric_costs(self):
+        fixture=self.fixture();observer=H.PinScanObservations();observer.output=fixture.root/'progress';observer.output.mkdir()
+        result=fixture.read(observer)
+        snapshot=json.loads((observer.output/'host-progress.json').read_text())
+        self.assertEqual(set(result),{'pins','source_set','source_set_sha256','batches','go_version','go_binary','suite_count','receipt_reader'})
+        self.assertEqual(snapshot['cost']['completed_batches'],8);self.assertEqual(snapshot['cost']['completed_cases'],8)
+        self.assertEqual(snapshot['last_completed_batch'],{'shard':0,'suite':7,'batch':0})
+        self.assertGreater(snapshot['cost']['read_calls'],snapshot['cost']['logical_file_calls'])
+        self.assertGreater(snapshot['cost']['stored_bytes'],0);self.assertGreater(snapshot['cost']['logical_bytes'],0)
+        self.assertEqual([(e['stage'],e['state']) for e in snapshot['events']],
+                         [('reference-plan','STARTED'),('reference-plan','COMPLETED'),('reference-batches','STARTED'),
+                          ('reference-batches','CHECKPOINT'),('reference-batches','COMPLETED'),('provider-final','STARTED'),('provider-final','COMPLETED')])
+        self.assertNotIn(str(fixture.root),(observer.output/'host-progress.json').read_text())
+
+    def test_diagnostic_counter_and_stage_callback_failures_leave_validation_unchanged(self):
+        for method in ('record_read','record_logical','batch_completed','checkpoint','observe'):
+            with self.subTest(method=method):
+                fixture=self.fixture();observer=H.PinScanObservations();observer.output=fixture.root/'progress';observer.output.mkdir()
+                with mock.patch.object(observer,method,side_effect=OSError('optional diagnostic')):
+                    result=fixture.read(observer)
+                self.assertEqual(result['suite_count'],8)
+                self.assertEqual(observer.progress_error,'OSError')
+                ref=fixture.index['suites'][0]['batches'][0]['execution'];ref['sha256']='0'*64;fixture.sync()
+                with self.assertRaises(RuntimeError) as original:fixture.read()
+                with mock.patch.object(observer,method,side_effect=OSError('optional diagnostic')),self.assertRaises(RuntimeError) as observed:
+                    fixture.read(observer)
+                self.assertEqual(str(original.exception),str(observed.exception))
+
+    def test_progress_write_failure_does_not_replace_original_raw_refusal(self):
+        fixture=self.fixture();ref=fixture.index['suites'][0]['batches'][0]['execution'];ref['sha256']='0'*64;fixture.sync()
+        with self.assertRaises(RuntimeError) as first:fixture.read()
+        observer=H.PinScanObservations();observer.output=fixture.root/'progress';observer.output.mkdir()
+        with mock.patch.object(H.os,'replace',side_effect=OSError('diagnostic only')),self.assertRaises(RuntimeError) as second:
+            fixture.read(observer)
+        self.assertEqual(str(first.exception),str(second.exception))
+        self.assertEqual(observer.cost['completed_batches'],0)
+        self.assertEqual(observer.progress_error,'OSError')
 
     def test_exact_consumer_api_and_local_producer_path_separation(self):
         fixture=self.fixture();before={p:p.read_bytes() for p in fixture.evidence.rglob('*') if p.is_file()};result=fixture.read()

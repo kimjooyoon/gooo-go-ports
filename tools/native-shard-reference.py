@@ -163,8 +163,8 @@ def batch_namespace(shard, original, batch):
 
 class Reader:
     """Bounded regular files with before/after identity, aliases and final recheck."""
-    def __init__(self):
-        self.pins={};self.files={};self.directories={};self.inodes={}
+    def __init__(self,progress=None):
+        self.pins={};self.files={};self.directories={};self.inodes={};self.progress=progress
 
     @staticmethod
     def identity(info):
@@ -198,6 +198,7 @@ class Reader:
         ref={'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
         need(name not in self.pins or equal(self.pins[name],ref), 'frozen bytes changed: '+name)
         self.files[name]=identity;self.inodes[inode]=name;self.pins[name]=ref
+        if self.progress is not None:self.progress.diagnostic('record_read',len(raw))
         return raw
 
     def file(self,root,ref,expected=None,limit=MAX_FILE):
@@ -230,6 +231,7 @@ class Reader:
             raw=stored
         unambiguous()
         need(len(raw) == ref['bytes'] and digest(raw) == ref['sha256'], 'raw reference bytes/hash differ: '+name)
+        if self.progress is not None:self.progress.diagnostic('record_logical',len(raw))
         return path,raw
 
     def finish(self):
@@ -568,15 +570,16 @@ def inspect_exhaustive(reader,evidence_root,suite,shard,saved,references,generat
     need(equal(load(raw['exhaustive.json']),expected),'actual exhaustive JSON must equal preserved partial report')
 
 
-def read_reference(root,index_path):
+def read_reference(root,index_path,progress=None):
     """Return consumer data and a bounded receipt accessor after full checks."""
-    root,index_path=map(absolute,(root,index_path));reader=Reader();reader.directory(root)
+    root,index_path=map(absolute,(root,index_path));reader=Reader(progress);reader.directory(root)
     H=load_host(root,reader)
     index=load(reader.read(index_path,MAX_JSON))
     shape(index,('schema','state','native_acceptance','raw_receipts_inspected','producer_authenticated','plan','shards','suites','scope'))
     need(index['schema'] == 'gooo/native-shard-reference-index/v2' and index['state'] == 'RAW_REFERENCES_CHECKED_PRODUCER_UNAUTHENTICATED' and index['native_acceptance'] is False and index['raw_receipts_inspected'] is True and index['producer_authenticated'] is False,'experimental unauthenticated reference state only')
     text(index['scope'])
-    plan,owners,source_bytes,entries,lock=validate_plan(root,reader,H,index['plan'])
+    def inspect_plan():return validate_plan(root,reader,H,index['plan'])
+    plan,owners,source_bytes,entries,lock=inspect_plan() if progress is None else progress.measured('reference-plan','reference',inspect_plan)
     need(type(index['shards']) is list and len(index['shards']) == len(plan['shards']) and type(index['suites']) is list and len(index['suites']) == len(plan['suites']),'complete reference shard/suite population')
     compiler_raw=reader.read(root/'.gooo');partials={};tools={};roots={};records={}
     for expected,shard in zip(plan['shards'],index['shards']):
@@ -591,6 +594,7 @@ def read_reference(root,index_path):
         for record in partial['suites']:records[record['original_index']]=(number,record)
     need(set(records) == set(range(len(plan['suites']))),'all original suites exactly once across joined shards')
     addition=None;total_batches=0;total_cases=0;total_exhaustive=0
+    if progress is not None:progress.diagnostic('checkpoint','reference-batches','STARTED')
     for original,reference in enumerate(index['suites']):
         shape(reference,REFERENCE_SUITE_FIELDS);suite=plan['suites'][original];workspace=plan['workspaces'][original];shard,record=records[original]
         need(equal(reference['original_index'],original) and equal(reference['shard_index'],shard) and reference['package'] == suite['package'] and reference['activity'] == suite['activity'],'exact ordered reference original suite')
@@ -630,6 +634,7 @@ def read_reference(root,index_path):
                 logical=base+'/'+key+'.json'
                 receipt_files[str(evidence_root/logical)]=(evidence_root,ref[key],logical)
             total_batches+=1;total_cases+=len(cases['cases'])
+            if progress is not None:progress.diagnostic('batch_completed',shard,original,batch,len(cases['cases']))
         inspect_exhaustive(reader,roots[shard],suite,shard,record['exhaustive'],reference['exhaustive'],record['batches'][0]['generated_sha256'])
         total_exhaustive+=len(reference['exhaustive'])
         if suite['package'] == ADDITION_PACKAGE and suite['activity'] == ADDITION_ACTIVITY:
@@ -638,5 +643,8 @@ def read_reference(root,index_path):
                       'receipt_reader':ConsumerReceiptReader(reader,receipt_files)}
     need(total_cases == plan['cases'] and total_batches == plan['batches'] and total_exhaustive == 7,'all original cases/batches/seven exhaustive reports checked')
     need(addition is not None,'original addition consumer suite required')
-    reader.finish()
+    if progress is None:reader.finish()
+    else:
+        progress.diagnostic('checkpoint','reference-batches','COMPLETED')
+        progress.measured('provider-final','reference',reader.finish,reader.pins)
     return {'pins':reader.pins,**addition,'suite_count':len(plan['suites'])}

@@ -116,18 +116,69 @@ class ProjectionTests(unittest.TestCase):
             with self.assertRaisesRegex(X.Refused, 'EVIDENCE_ROOT_NOT_PERMITTED'):
                 X.read_checked(root, index, [allowed])
 
-    def test_changed_provider_is_refused_before_executing_it(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            (root / 'tools').mkdir()
-            marker = root / 'executed'
-            for name in ('check-header-addition-host.py', 'native_verification_contract.py'):
-                shutil.copyfile(ROOT / name, root / 'tools' / name)
-            (root / 'tools/native-shard-reference.py').write_text(
-                'from pathlib import Path\nPath(' + repr(str(marker)) + ').write_text("bad")\n')
-            with self.assertRaisesRegex(X.Refused, 'READER_PROFILE_UNSUPPORTED'):
-                X.read_checked(root, root / 'index', [root])
-            self.assertFalse(marker.exists())
+    def test_changed_reader_profiles_are_refused_before_executing_them(self):
+        names = ('check-header-addition-host.py', 'native-shard-reference.py',
+                 'native_verification_contract.py')
+        for changed in names:
+            with self.subTest(changed=changed), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / 'tools').mkdir()
+                marker = root / 'executed'
+                for name in names:
+                    shutil.copyfile(ROOT / name, root / 'tools' / name)
+                (root / 'tools' / changed).write_text(
+                    'from pathlib import Path\nPath(' + repr(str(marker)) + ').write_text("bad")\n')
+                with mock.patch.object(X, 'load_code') as load_code:
+                    with self.assertRaisesRegex(X.Refused, 'READER_PROFILE_UNSUPPORTED'):
+                        X.read_checked(root, root / 'index', [root])
+                    load_code.assert_not_called()
+                self.assertFalse(marker.exists())
+
+    def test_separate_local_contract_is_pinned_before_loading_and_rechecked(self):
+        names = ('check-header-addition-host.py', 'native-shard-reference.py',
+                 'native_verification_contract.py')
+        for change_at in ('before-loading', 'during-reading'):
+            with self.subTest(change_at=change_at), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory).resolve()
+                source = root / 'source'
+                local = root / 'local'
+                for location in (source / 'tools', local):
+                    location.mkdir(parents=True)
+                    for name in names:
+                        shutil.copyfile(ROOT / name, location / name)
+                marker = root / 'executed'
+                changed = ('from pathlib import Path\nPath(' + repr(str(marker))
+                           + ').write_text("bad")\n')
+                contract = local / 'native_verification_contract.py'
+                original = contract.read_bytes()
+                index = root / 'index.json'
+                index.write_text(json.dumps({'schema': 'gooo/native-shard-reference-index/v2',
+                                             'shards': [{'evidence_root': str(root)}]}))
+
+                class Host:
+                    @staticmethod
+                    def read_shard_verification(source_root, private_index):
+                        contract.write_text(changed)
+                        return object()
+
+                original_loader = X.load_code
+
+                def load_code(path, name, allowed_hashes):
+                    if name == 'gooo_contribution_host':
+                        return Host
+                    return original_loader(path, name, allowed_hashes)
+
+                expected = 'READER_CHANGED'
+                if change_at == 'before-loading':
+                    contract.write_text(changed)
+                    expected = 'READER_PROFILE_UNSUPPORTED'
+                with mock.patch.object(X, 'HERE', local), mock.patch.object(X, 'load_code', side_effect=load_code) as loader:
+                    with self.assertRaisesRegex(X.Refused, expected):
+                        X.read_checked(source, index, [root])
+                    if change_at == 'before-loading':
+                        loader.assert_not_called()
+                self.assertEqual((source / 'tools/native_verification_contract.py').read_bytes(), original)
+                self.assertFalse(marker.exists())
 
     def test_typed_rows_order_and_unknown_comparison_survive(self):
         data, index = fixture()
