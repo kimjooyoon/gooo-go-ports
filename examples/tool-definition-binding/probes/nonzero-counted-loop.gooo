@@ -1,0 +1,10 @@
+// Minimal unsupported counted-loop shape observed at compiler205896a.
+package nonzero_loop_probe
+namespace gooo_definition_binding_nonzero_loop_probe
+entity Integer id "gooo://std/integer"
+activity Probe(Integer) -> Integer id "gooo://definition-binding/probe/nonzero-loop" computes `
+let result = 0
+let offset = 7
+for offset = 7; offset < 8; offset = offset + 1 { result = result + 1 }
+return result
+`

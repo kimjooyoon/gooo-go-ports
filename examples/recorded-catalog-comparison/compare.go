@@ -122,33 +122,17 @@ func CompareJSON(raw []byte) (report Report, returned error) {
 			returned = &Problem{State: "UNKNOWN", Stage: "evaluate", Code: "KERNEL_FAILURE"}
 		}
 	}()
-	facts, err := decodeFacts(raw)
+	projected, err := projectJSON(raw)
 	if err != nil {
 		return Report{}, err
 	}
-	before, err := projectObservation("BEFORE", facts.Before)
-	if err != nil {
-		return Report{}, err
-	}
-	after, err := projectObservation("AFTER", facts.After)
-	if err != nil {
-		return Report{}, err
-	}
-	encoded, err := json.Marshal(facts)
-	if err != nil {
-		return Report{}, err
-	}
-	factsHash := digest(encoded)
-	origin, context, projection, err := columns(facts, before, after, factsHash)
-	if err != nil {
-		return Report{}, err
-	}
+	facts, origin, context, projection, factsHash := projected.Facts, projected.Origin, projected.Collection, projected.Projection, projected.FactsSHA256
 	decision := kernel.Evaluate(origin, context)
 	if decision.Alias.ContextID != origin.ContextID || decision.Collection.ContextID != context.ContextID || decision.Collection.AliasContextID != origin.ContextID || decision.Alias.ExecutionAuthorized || decision.Collection.ExecutionAuthorized || decision.Collection.LiveRemovalProven || decision.Collection.RemoteAtomicity != "UNKNOWN" {
 		return Report{}, &Problem{State: "UNKNOWN", Stage: "bind_result", Code: "KERNEL_CONTEXT_OR_AUTHORITY_MISMATCH"}
 	}
 	report = Report{Facts: facts, InputSHA256: digest(raw), FactsSHA256: factsHash, Projection: projection, AliasDecision: decision.Alias, CollectionContext: decision.Collection, Bindings: append(json.RawMessage(nil), generation...)}
-	encoded, err = json.Marshal(report)
+	encoded, err := json.Marshal(report)
 	if err != nil {
 		return Report{}, err
 	}
@@ -156,4 +140,39 @@ func CompareJSON(raw []byte) (report Report, returned error) {
 		return Report{}, &Problem{State: "INVALID_TRANSPORT", Stage: "encode_result", Code: "OUTPUT_LIMIT_EXCEEDED"}
 	}
 	return report, nil
+}
+
+// Both public consumers share the same strict transport and ordered projection.
+// This helper does not evaluate a policy or establish any effect authority.
+type projectedInput struct {
+	Facts       Input
+	Origin      kernel.OriginInput
+	Collection  kernel.CollectionInput
+	Projection  Projection
+	FactsSHA256 string
+}
+
+func projectJSON(raw []byte) (projectedInput, error) {
+	facts, err := decodeFacts(raw)
+	if err != nil {
+		return projectedInput{}, err
+	}
+	before, err := projectObservation("BEFORE", facts.Before)
+	if err != nil {
+		return projectedInput{}, err
+	}
+	after, err := projectObservation("AFTER", facts.After)
+	if err != nil {
+		return projectedInput{}, err
+	}
+	encoded, err := json.Marshal(facts)
+	if err != nil {
+		return projectedInput{}, err
+	}
+	factsHash := digest(encoded)
+	origin, context, projection, err := columns(facts, before, after, factsHash)
+	if err != nil {
+		return projectedInput{}, err
+	}
+	return projectedInput{Facts: facts, Origin: origin, Collection: context, Projection: projection, FactsSHA256: factsHash}, nil
 }

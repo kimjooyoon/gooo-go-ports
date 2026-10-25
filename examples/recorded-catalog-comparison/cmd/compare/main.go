@@ -14,6 +14,7 @@ const usage = `Compare saved MCP tool catalogs using rules written in Gooo and c
 
 Usage:
   compare < saved-observations.json > report.json
+  compare --definitions --before-policy REV --after-policy REV < saved-observations.json
   compare --example > synthetic-observations.json
   compare --version
   compare --help
@@ -22,7 +23,9 @@ With no arguments, read one JSON comparison from stdin (at most 1 MiB).
 --example prints the complete synthetic input; compare it in a separate call.
 --version prints JSON build metadata, not an authenticated source identity.
 --help (-h) prints this text. These options never read stdin or compare inputs.
-Use one option at a time; unknown arguments are refused before reading stdin.
+Use one display option at a time; unknown arguments are refused before reading stdin.
+--definitions compares definition and annotation-claim bindings as well as origin.
+Policy revisions are optional supplied text; omitted revisions remain unobserved.
 
 Successful comparison: exit 0, full JSON report on stdout.
 Invalid arguments: exit 2. Input, comparison or I/O failure: exit 1.
@@ -89,6 +92,23 @@ func runCommand(args []string, input io.Reader, out, diagnostics io.Writer) int 
 	if len(args) == 0 {
 		return run(input, out, diagnostics)
 	}
+	if args[0] == "--definitions" {
+		if len(args) > 5 || (len(args)-1)%2 != 0 {
+			return invalidArguments(diagnostics)
+		}
+		values := map[string]string{}
+		for i := 1; i < len(args); i += 2 {
+			key := args[i]
+			if key != "--before-policy" && key != "--after-policy" {
+				return invalidArguments(diagnostics)
+			}
+			if _, duplicate := values[key]; duplicate {
+				return invalidArguments(diagnostics)
+			}
+			values[key] = args[i+1]
+		}
+		return runDefinitions(input, out, diagnostics, values["--before-policy"], values["--after-policy"])
+	}
 	if len(args) == 1 {
 		switch args[0] {
 		case "--help", "-h":
@@ -104,8 +124,31 @@ func runCommand(args []string, input io.Reader, out, diagnostics io.Writer) int 
 			return emit(append(raw, '\n'), out, diagnostics)
 		}
 	}
+	return invalidArguments(diagnostics)
+}
+
+func invalidArguments(diagnostics io.Writer) int {
 	diagnostic(diagnostics, &origin.Problem{State: "INVALID_ARGUMENT", Stage: "parse_arguments", Code: "UNSUPPORTED_ARGUMENTS"})
 	return 2
+}
+
+func runDefinitions(input io.Reader, out, diagnostics io.Writer, beforePolicy, afterPolicy string) int {
+	raw, err := io.ReadAll(io.LimitReader(input, origin.MaxInputBytes+1))
+	if err != nil {
+		return diagnostic(diagnostics, err)
+	}
+	report, err := origin.CompareDefinitionJSON(raw, beforePolicy, afterPolicy)
+	if err != nil {
+		return diagnostic(diagnostics, err)
+	}
+	encoded, err := json.Marshal(report)
+	if err != nil {
+		return diagnostic(diagnostics, err)
+	}
+	if len(encoded) > origin.MaxReportBytes {
+		return diagnostic(diagnostics, &origin.Problem{State: "INVALID_TRANSPORT", Stage: "encode_result", Code: "OUTPUT_LIMIT_EXCEEDED"})
+	}
+	return emit(append(encoded, '\n'), out, diagnostics)
 }
 
 func run(input io.Reader, out, diagnostics io.Writer) int {

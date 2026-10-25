@@ -1,0 +1,39 @@
+{
+  "activity_id": "gooo://tool-origin/definition-binding/v1/assess",
+  "batches": 8,
+  "cases": 60,
+  "cases_sha256": "sha256:7614dee25d38495ae9085486948004b2785ed259b2a7515d3efe503beb4456ab",
+  "compiler_source_sha": "205896a413e5dea92366309c35ae85e542d055f6",
+  "entry": "gooo/tool-origin/definition-binding:AssessDefinitionBinding",
+  "generated_assets": {
+    "examples/recorded-catalog-comparison/definition-kernel-cases.json": "sha256:7614dee25d38495ae9085486948004b2785ed259b2a7515d3efe503beb4456ab",
+    "examples/recorded-catalog-comparison/internal/definitionkernel/bridge_generated.go": "sha256:585c22cb21d9d338bb853b530fde6cf73f836a1244dd4feb5ce96cfc2a2deba4",
+    "examples/recorded-catalog-comparison/internal/definitionkernel/projection_generated.go": "sha256:34b5bfeb9552a705895d9afccbcf4189e67a208b43ee9ca7ac87f731bbe59664",
+    "examples/recorded-catalog-comparison/internal/definitionkernel/types_generated.go": "sha256:33e4529320f0c4a11e9b5b003ad7ef77c9da81e8834640cc03e4b51cfab4d150"
+  },
+  "generator_source": {
+    "examples/recorded-catalog-comparison/generate.py": "sha256:f64b0df498d4816b2cece12eedf14a1e2f85678982cd5d074b1cae62b818d3db",
+    "examples/service-grant-many/verify.py": "sha256:ff3d94c39782619e06f64d5fbcfc3218733013332293f07b14368e5e939d3f0f",
+    "examples/tool-definition-binding/evidence.py": "sha256:22829d04c7d532d0ad7e5f8cdd2a2c57daa2d69d7ebdec77ec6343677e48a65f",
+    "examples/tool-definition-binding/generate.py": "sha256:4315e919ef1d09870d27fd2733f3492d779b91d159d6aa6e58982e88449aad2c"
+  },
+  "go_version": "go1.27.3",
+  "projection_transform": "Replace first package token main with definitionkernel; all other bytes unchanged.",
+  "raw_projection_sha256": "sha256:1fce8216d3048a36ca4116b7af9f39961b7c89fedb4f1659aae9ef70c200a1e4",
+  "reference_source": {
+    "case-labels.json": "sha256:ac3bfc25444e6ca064bfc965488758d8357395f55d40adb6dcb999389ce46426",
+    "reference-inputs.json": "sha256:51c83601587c38eafc220595444fabb092cb66e0adac857de9b42dbb261e7e89",
+    "reference/go.mod": "sha256:c4a0a6661a947b75b2f84465643ed58a2cd3858a673969924361d6a75adbc182",
+    "reference/main.go": "sha256:fe3142e8da2afafbf420d0843dc9a67535ecd7c337208e22dedb9ff69616647e"
+  },
+  "schema": "gooo/definition-binding-generation/v1",
+  "scope": "All60 finite synthetic cases and their own saved replay. Matching supplied metadata is not authenticated origin, behavior equivalence, capability truth or effect authorization.",
+  "selected_upstream_pins_sha256": "sha256:20171ad851133bf6627bc72cffbfc440c72a962073d184d8fd349fb635ae5721",
+  "source": {
+    "ports/tool-origin/alias_origin.gooo": "sha256:b45ac1d43674b9edcbdbedd74a253f5891d51b9fbdaf08ec2f056a55112b55d7",
+    "ports/tool-origin/definition_binding.gooo": "sha256:61f3070e2f5a3d7e33fecd858c26be3e813abbadea09b0d879c2b646cbec9c2b",
+    "ports/tool-origin/recorded_catalog.gooo": "sha256:2628fc4ddf000ca789938e0f0e71ce64c892d869a17bdce140dabe7b295a677e"
+  },
+  "typed_plan_sha256": "sha256:d076c17c316faa5279e88a8841a74f172b62709d6ed50b265781785492e78405",
+  "workspace_sha256": "sha256:83b43fbbbb2caf659529b9ee11ab3c23c6ca7ae1f736a49c0653b4dc327cfcad"
+}

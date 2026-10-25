@@ -162,3 +162,20 @@ occurred earlier.
 The saved format follows the MCP [tools](https://modelcontextprotocol.io/specification/2026-07-28/server/tools)
 and [pagination](https://modelcontextprotocol.io/specification/2026-07-28/server/utilities/pagination)
 specifications. Provenance terminology follows [W3C PROV-O](https://www.w3.org/TR/prov-o/).
+
+
+## Compare definitions behind the same alias
+
+The development option `compare --definitions --before-policy REV --after-policy REV`
+reads the same saved observation on stdin and returns a Gooo definition-binding
+result plus its ordered inputs and original frame references. Description/schema
+changes, annotation-claim changes and supplied policy changes remain distinct.
+Missing policy revisions stay unobserved. A supplied match never grants execution
+permission or proves behavior equivalence.
+
+Go callers use `CompareDefinitionJSON(raw, beforePolicy, afterPolicy)`;
+`ProjectDefinitionInputsJSON` returns only the three inputs for direct Gooo use.
+See [the definition profile, limits and reproducible verification](../tool-definition-binding/README.md).
+The new evaluator is generated from the original Gooo source. The existing
+no-argument comparison keeps its origin/context behavior. This feature is under
+development until its required hosted checks and release are accepted.

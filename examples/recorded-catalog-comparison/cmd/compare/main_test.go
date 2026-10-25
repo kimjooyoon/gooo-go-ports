@@ -122,3 +122,50 @@ func TestInputAndTransportFailuresStillRefuseWithoutReport(t *testing.T) {
 		}
 	}
 }
+
+func TestDefinitionArgumentsAndOutput(t *testing.T) {
+	for _, args := range [][]string{{"--definitions", "--before-policy"}, {"--definitions", "--before-policy", "r1", "--before-policy", "r2"}, {"--definitions", "--unknown", "x"}, {"--definitions", "--help"}, {"--definitions", "--after-policy", "a", "--before-policy", "b", "extra"}} {
+		var out, diagnostics bytes.Buffer
+		if code := runCommand(args, unreadableInput{}, &out, &diagnostics); code != 2 || out.Len() != 0 || diagnostics.Len() == 0 {
+			t.Fatal("invalid definition arguments consumed input or produced result", args)
+		}
+	}
+	raw, err := os.ReadFile("../../definition-consumer-cases.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var corpus struct {
+		Cases []struct {
+			Input  json.RawMessage `json:"input"`
+			Before string          `json:"before_policy_revision"`
+			After  string          `json:"after_policy_revision"`
+			State  string          `json:"expected_state"`
+		} `json:"cases"`
+	}
+	if json.Unmarshal(raw, &corpus) != nil || len(corpus.Cases) != 12 {
+		t.Fatal("consumer fixture")
+	}
+	for _, c := range corpus.Cases {
+		var out, diagnostics bytes.Buffer
+		args := []string{"--definitions", "--before-policy", c.Before, "--after-policy", c.After}
+		if code := runCommand(args, bytes.NewReader(c.Input), &out, &diagnostics); code != 0 || diagnostics.Len() != 0 {
+			t.Fatal("definition CLI", code, diagnostics.String())
+		}
+		var report origin.DefinitionReport
+		if json.Unmarshal(out.Bytes(), &report) != nil || report.Decision.State != c.State || report.Decision.ExecutionAuthorized || report.Decision.LiveEffectPerformed || report.Decision.BehaviorEquivalenceProven {
+			t.Fatal("definition CLI decision")
+		}
+	}
+	for _, input := range []io.Reader{errorInput{}, bytes.NewBufferString(`{"target_alias":"x","target_alias":"y"}`)} {
+		var out, diagnostics bytes.Buffer
+		if runCommand([]string{"--definitions"}, input, &out, &diagnostics) != 1 || out.Len() != 0 || diagnostics.Len() == 0 {
+			t.Fatal("definition input failure lost")
+		}
+	}
+	for _, short := range []bool{false, true} {
+		var diagnostics bytes.Buffer
+		if runCommand([]string{"--definitions"}, bytes.NewReader(corpus.Cases[0].Input), failingOutput{short: short}, &diagnostics) != 1 || diagnostics.Len() == 0 {
+			t.Fatal("definition output failure lost")
+		}
+	}
+}
