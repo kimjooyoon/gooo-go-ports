@@ -563,19 +563,26 @@ credentials.
 
 ```sh
 module=github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison
-version=v0.0.0-20261024173114-228f93790dab
-install_dir="$(mktemp -d)"
-GOBIN="$install_dir" go install -trimpath "$module/cmd/compare@$version"
-go mod download "$module@$version"
-module_dir="$(go list -m -f '{{.Dir}}' "$module@$version")"
-"$install_dir/compare" < "$module_dir/example-input.json" > recorded-catalog-report.json
+version=v0.0.0-20261025044220-4a0c0e681c42
+install_dir="$(mktemp -d "${TMPDIR:-/tmp}/gooo-recorded-catalog.XXXXXX")"
+GOBIN="$install_dir" GOTOOLCHAIN=local GOWORK=off \
+  go install -trimpath "$module/cmd/compare@$version"
+"$install_dir/compare" --help
+"$install_dir/compare" --version > "$install_dir/build.json"
+"$install_dir/compare" --example > "$install_dir/input.json"
+"$install_dir/compare" < "$install_dir/input.json" > "$install_dir/report.json"
 ```
 
 This is the checked source at
-[`228f9379`](https://github.com/kimjooyoon/gooo-go-ports/tree/228f93790dab8b6f24046df43f76e3cda7d54e5c/examples/recorded-catalog-comparison),
+[`4a0c0e68`](https://github.com/kimjooyoon/gooo-go-ports/tree/4a0c0e681c42cec9db2b5ef2dab0931d0a38cf55/examples/recorded-catalog-comparison),
 not a request to resolve the newest development revision. The module checksum is
-`h1:Zly1VYbLdZpngX2okM69nUGBPm10pAoD5FCULaxzBog=`; `go version -m "$install_dir/compare"`
-shows the executable's recorded module version and checksum.
+`h1:2xhb092DURbIsgc0cUS12ZjMN21eyvhvdBub9UOHQHc=`. The saved `build.json`
+records the running binary's Go version and `main_module.Version` and
+`main_module.Sum`; these are build metadata, not authenticated execution evidence.
+The three discovery options return without reading stdin. `--example` only
+exports the embedded input; the final command separately runs its comparison.
+The fresh directory keeps the executable and observations together without
+overwriting existing reports.
 
 For the bundled synthetic example, keep the complete saved report and inspect
 `alias_decision.state` (`ORIGIN_CHANGED`), its before/after indexes (`0`/`1`), and
@@ -585,13 +592,25 @@ For the bundled synthetic example, keep the complete saved report and inspect
 the supplied example rather than a running server.
 
 To use your own saved observations, provide an input file in the
-[documented format](../examples/recorded-catalog-comparison/README.md#provide-your-saved-observations):
-`"$install_dir/compare" < your-recorded-input.json > recorded-catalog-report.json`.
+[documented format](../examples/recorded-catalog-comparison/README.md#provide-your-saved-observations).
+Keep the exported example and write your input to a separate file, then run:
+
+```sh
+"$install_dir/compare" < your-recorded-input.json > "$install_dir/own-report.json"
+```
+
+Preserve the synthetic marker when modifying sample data. For actual recordings,
+retain unknown context instead of filling it with the example's IDs.
 Retain diagnostics and the nonzero exit status on malformed input; do not turn
 an empty output into a decision. Missing pages and unknown recording context
 are represented results, not proof that a live tool was removed. This public
 command runs the generated Gooo kernel; editing `.gooo` source still requires
 the compiler and its native execution/replay workflow.
+
+If you choose to share a [first-use result](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml),
+include the command, version, whether you used the example or your own input,
+the observed decision or first error, and what you were trying to decide. Share
+only public input; a setup failure or unsupported task is useful feedback too.
 
 ### Diagnose missing observations in a development snapshot
 
