@@ -1364,7 +1364,27 @@ DEFINITION_STEP = '      - name: Verify Gooo tool-definition and policy binding\
 DEFINITION_UPLOAD = "      - name: Preserve tool-definition binding evidence\n        if: always() && steps.change-scope.outputs.docs_only != 'true'\n        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7\n        with:\n          name: tool-definition-binding-evidence\n          path: ${{ runner.temp }}/tool-definition-binding/\n          if-no-files-found: warn\n          retention-days: 14\n"
 DEFINITION_PRIOR_WORKFLOW_SHA = '2bc8b24e8ae81ecf9a540223819e9c921131c7a2ca49277c0a0a6e8df726cfed'
 
+
+OBSERVATION_STEP = '      - name: Verify Gooo recorded observation diagnostics\n        if: steps.change-scope.outputs.docs_only != \'true\'\n        timeout-minutes: 12\n        run: |\n          set -euo pipefail\n          python3 -I -B examples/observation-diagnostics/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/observation-diagnostics"\n          jq -e \'\n            .schema == "gooo/observation-diagnostics-verification/v1" and\n            .status == "SOURCE_FIELD51_AND_SAVED_FRAME136_NATIVE_REPLAY_PASS" and\n            .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and\n            .go_version == "go1.27.3" and .kernel_cases == 51 and .consumer_fields == 136 and .consumer_records == 4 and\n            .typed_input_fields == 12 and .typed_output_fields == 21 and .receipt_negative_controls == 8 and\n            .graph_regression_controls == 12 and .generated_assets == 5 and .generated_assets_exact == true and\n            .PROV_O_bindings_verified == true and .source_unchanged == true and .original_comparison_equal == true and\n            .runtime_path_empty == true and .runtime_goroot_absent == true and .repeated_identical_input_equal == true and\n            .all_direct_wait_EOF_PG_ESRCH == true and .synthetic_consumer_observations_only == true and\n            .model_calls == 0 and .engine_builds == 0 and .external_adoption == false and .live_capture_executed == false and\n            .native_acceptance == false and .execution_authorized == false\n          \' "$RUNNER_TEMP/observation-diagnostics/summary.json"\n'
+OBSERVATION_UPLOAD = "      - name: Preserve recorded observation diagnostic evidence\n        if: always() && steps.change-scope.outputs.docs_only != 'true'\n        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7\n        with:\n          name: observation-diagnostics-evidence\n          path: ${{ runner.temp }}/observation-diagnostics/\n          if-no-files-found: warn\n          retention-days: 14\n"
+OBSERVATION_PRIOR_WORKFLOW_SHA = 'cf73d0588f954cc091fd23838f1458443a5aeec493866114ba288d435393949e'
+
+def project_observation_diagnostics_integration(text):
+    jobs = workflow_jobs(text)
+    require(text.count(OBSERVATION_STEP) == 1 and OBSERVATION_STEP in jobs['policy-native-checks'] and
+            text.count(OBSERVATION_UPLOAD) == 1 and OBSERVATION_UPLOAD in jobs['policy-native-checks'],
+            'observation diagnostics require one exact full-scope verifier and failure-safe evidence upload')
+    require(text.index(DEFINITION_UPLOAD) + len(DEFINITION_UPLOAD) == text.index(OBSERVATION_STEP) and
+            text.index(OBSERVATION_STEP) + len(OBSERVATION_STEP) == text.index(OBSERVATION_UPLOAD) and
+            text.index(OBSERVATION_UPLOAD) + len(OBSERVATION_UPLOAD) == text.index('      - name: Verify original AutoBot resolver adaptation\n'),
+            'observation diagnostic evidence must follow definition binding evidence')
+    prior = text.replace(OBSERVATION_STEP, '', 1).replace(OBSERVATION_UPLOAD, '', 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == OBSERVATION_PRIOR_WORKFLOW_SHA,
+            'observation diagnostics changed unrelated workflow bytes')
+    return prior
+
 def project_definition_binding_integration(text):
+    text = project_observation_diagnostics_integration(text)
     jobs = workflow_jobs(text)
     _, observer, _ = job_steps(jobs['observer-checks'])
     require(text.count(DEFINITION_PREFLIGHT) == 1 and
@@ -4451,6 +4471,40 @@ class DefinitionBindingIntegrationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             project_definition_binding_integration(raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1))
 
+
+
+class ObservationDiagnosticsIntegrationTests(unittest.TestCase):
+    def test_exact_integration_preserves_entire_previous_workflow(self):
+        prior = project_observation_diagnostics_integration(WORKFLOW.read_text())
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), OBSERVATION_PRIOR_WORKFLOW_SHA)
+        self.assertNotIn('examples/observation-diagnostics/', prior)
+
+    def test_native_replay_and_safety_boundaries_cannot_be_weakened(self):
+        raw = WORKFLOW.read_text()
+        mutations = [raw.replace(OBSERVATION_STEP, '', 1),
+                     raw.replace(OBSERVATION_STEP, OBSERVATION_STEP.replace("if: steps.change-scope.outputs.docs_only != 'true'", 'if: false', 1), 1),
+                     raw.replace(OBSERVATION_STEP, OBSERVATION_STEP.replace('--out "$RUNNER_TEMP/observation-diagnostics"', '--out "$RUNNER_TEMP/observation-diagnostics" || true', 1), 1)]
+        for clause in ('.kernel_cases == 51', '.consumer_fields == 136', '.consumer_records == 4',
+                       '.typed_input_fields == 12', '.typed_output_fields == 21', '.receipt_negative_controls == 8',
+                       '.graph_regression_controls == 12', '.generated_assets == 5', '.generated_assets_exact == true',
+                       '.PROV_O_bindings_verified == true', '.source_unchanged == true', '.original_comparison_equal == true',
+                       '.runtime_path_empty == true', '.runtime_goroot_absent == true', '.repeated_identical_input_equal == true',
+                       '.all_direct_wait_EOF_PG_ESRCH == true', '.model_calls == 0', '.engine_builds == 0',
+                       '.execution_authorized == false', '.external_adoption == false', '.live_capture_executed == false'):
+            self.assertEqual(OBSERVATION_STEP.count(clause), 1)
+            mutations.append(raw.replace(OBSERVATION_STEP, OBSERVATION_STEP.replace(clause, 'true', 1), 1))
+        for mutation in mutations:
+            with self.assertRaises(ValueError):
+                project_observation_diagnostics_integration(mutation)
+
+    def test_separate_failure_evidence_and_existing_checks_are_required(self):
+        raw = WORKFLOW.read_text()
+        for replacement in ('', OBSERVATION_UPLOAD * 2, OBSERVATION_UPLOAD.replace('always() && ', '', 1),
+                            OBSERVATION_UPLOAD.replace('${{ runner.temp }}/observation-diagnostics/', 'out/wrong/', 1)):
+            with self.assertRaises(ValueError):
+                project_observation_diagnostics_integration(raw.replace(OBSERVATION_UPLOAD, replacement, 1))
+        with self.assertRaises(ValueError):
+            project_observation_diagnostics_integration(raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1))
 
 if __name__ == "__main__":
     unittest.main()

@@ -41,7 +41,7 @@ func TestDiscoveryDoesNotConsumeInput(t *testing.T) {
 }
 
 func TestUnsupportedAndCombinedArgumentsRefuseBeforeInput(t *testing.T) {
-	for _, args := range [][]string{{"unknown"}, {"--input", "file.json"}, {"--help", "--version"}, {"--example", "extra"}, {"--example=false"}, {"--"}} {
+	for _, args := range [][]string{{"unknown"}, {"--input", "file.json"}, {"--help", "--version"}, {"--example", "extra"}, {"--example=false"}, {"--"}, {"--diagnostics"}, {"--definitions", "--diagnostics", "--diagnostics"}, {"--definitions", "--diagnostics", "--before-policy"}, {"--definitions", "--before-policy", "x", "--diagnostics"}} {
 		var out, diagnostics bytes.Buffer
 		if code := runCommand(args, unreadableInput{}, &out, &diagnostics); code != 2 || out.Len() != 0 {
 			t.Fatalf("args %q not refused without stdout: code=%d", args, code)
@@ -96,7 +96,7 @@ func (w failingOutput) Write([]byte) (int, error) {
 }
 
 func TestDiscoveryAndComparisonOutputFailuresAreNotSuccess(t *testing.T) {
-	for _, args := range [][]string{nil, {"--help"}, {"--example"}, {"--version"}} {
+	for _, args := range [][]string{nil, {"--help"}, {"--example"}, {"--version"}, {"--definitions", "--diagnostics"}} {
 		for _, short := range []bool{false, true} {
 			var diagnostics bytes.Buffer
 			if code := runCommand(args, bytes.NewReader(origin.ExampleInputJSON()), failingOutput{short: short}, &diagnostics); code != 1 {
@@ -166,6 +166,41 @@ func TestDefinitionArgumentsAndOutput(t *testing.T) {
 		var diagnostics bytes.Buffer
 		if runCommand([]string{"--definitions"}, bytes.NewReader(corpus.Cases[0].Input), failingOutput{short: short}, &diagnostics) != 1 || diagnostics.Len() == 0 {
 			t.Fatal("definition output failure lost")
+		}
+	}
+}
+
+func TestDefinitionDiagnosticCommandMatchesAPI(t *testing.T) {
+	for _, spec := range []struct {
+		args          []string
+		before, after string
+	}{
+		{[]string{"--definitions", "--diagnostics"}, "", ""},
+		{[]string{"--definitions", "--diagnostics", "--before-policy", "fixture-old", "--after-policy", "fixture-new"}, "fixture-old", "fixture-new"},
+		{[]string{"--definitions", "--diagnostics", "--after-policy", "fixture-new"}, "", "fixture-new"},
+	} {
+		var out, diagnostics bytes.Buffer
+		if code := runCommand(spec.args, bytes.NewReader(origin.ExampleInputJSON()), &out, &diagnostics); code != 0 || diagnostics.Len() != 0 {
+			t.Fatal(code, &diagnostics)
+		}
+		report, err := origin.CompareDefinitionDiagnosticsJSON(origin.ExampleInputJSON(), spec.before, spec.after)
+		if err != nil {
+			t.Fatal(err)
+		}
+		expected, err := json.Marshal(report)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !bytes.Equal(out.Bytes(), append(expected, '\n')) {
+			t.Fatal("command differs from source-owned API report")
+		}
+	}
+}
+func TestDiagnosticTransportFailureHasNoPartialReport(t *testing.T) {
+	for _, input := range []io.Reader{bytes.NewBufferString("{"), errorInput{}} {
+		var out, diagnostics bytes.Buffer
+		if code := runCommand([]string{"--definitions", "--diagnostics"}, input, &out, &diagnostics); code != 1 || out.Len() != 0 || diagnostics.Len() == 0 {
+			t.Fatal(code, &out, &diagnostics)
 		}
 	}
 }

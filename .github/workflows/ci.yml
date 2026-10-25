@@ -1769,6 +1769,33 @@ jobs:
           path: ${{ runner.temp }}/tool-definition-binding/
           if-no-files-found: warn
           retention-days: 14
+      - name: Verify Gooo recorded observation diagnostics
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          python3 -I -B examples/observation-diagnostics/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/observation-diagnostics"
+          jq -e '
+            .schema == "gooo/observation-diagnostics-verification/v1" and
+            .status == "SOURCE_FIELD51_AND_SAVED_FRAME136_NATIVE_REPLAY_PASS" and
+            .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
+            .go_version == "go1.27.3" and .kernel_cases == 51 and .consumer_fields == 136 and .consumer_records == 4 and
+            .typed_input_fields == 12 and .typed_output_fields == 21 and .receipt_negative_controls == 8 and
+            .graph_regression_controls == 12 and .generated_assets == 5 and .generated_assets_exact == true and
+            .PROV_O_bindings_verified == true and .source_unchanged == true and .original_comparison_equal == true and
+            .runtime_path_empty == true and .runtime_goroot_absent == true and .repeated_identical_input_equal == true and
+            .all_direct_wait_EOF_PG_ESRCH == true and .synthetic_consumer_observations_only == true and
+            .model_calls == 0 and .engine_builds == 0 and .external_adoption == false and .live_capture_executed == false and
+            .native_acceptance == false and .execution_authorized == false
+          ' "$RUNNER_TEMP/observation-diagnostics/summary.json"
+      - name: Preserve recorded observation diagnostic evidence
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: observation-diagnostics-evidence
+          path: ${{ runner.temp }}/observation-diagnostics/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Verify original AutoBot resolver adaptation
         if: steps.change-scope.outputs.docs_only != 'true'
         timeout-minutes: 6

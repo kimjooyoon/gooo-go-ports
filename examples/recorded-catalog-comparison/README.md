@@ -179,3 +179,11 @@ See [the definition profile, limits and reproducible verification](../tool-defin
 The new evaluator is generated from the original Gooo source. The existing
 no-argument comparison keeps its origin/context behavior. This feature is under
 development until its required hosted checks and release are accepted.
+
+
+For field-specific missing-observation diagnostics, the development source adds
+`compare --definitions --diagnostics` and `CompareDefinitionDiagnosticsJSON`.
+The original comparison remains a separate unchanged member of the new report.
+See [source documents, missing observations and reproducible Gooo verification](../observation-diagnostics/README.md).
+Retain the original saved input and any needed original argv; optional normalized
+policy text does not prove a historical command-line option was present.
