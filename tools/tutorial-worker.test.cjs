@@ -13,10 +13,31 @@ const metadata = { schema: 'gooo/browser-tutorial/v1', compiler_revision: '20589
   input_entity_ids: ['urn:gooo:type:integer', 'urn:gooo:type:string'], wasm_sha256: hash(bytes), wasm_bytes: bytes.length,
   generated_sha256: 'c'.repeat(64), execution_sha256: 'd'.repeat(64), replay_sha256: 'e'.repeat(64),
   fixture_cases: 20, native_cases: 4, source_zip_sha256: 'f'.repeat(64), source_zip_bytes: 10,
+  sample_source_paths: { ...protocol.sourcePaths },
   sample_sha256: Object.fromEntries(protocol.files.map(file => [file, 'a'.repeat(64)])) };
 const copy = value => JSON.parse(JSON.stringify(value));
 const output = { score: '17', remaining: '83', in_range: false, label: 'returned by a counted test double' };
 const reply = inputs => JSON.stringify({ ok: true, inputs: [inputs[0], protocol.boundText(inputs[1])], output });
+
+test('source bundle metadata binds exactly nine members to their canonical source paths', () => {
+  const expected = ['limits.gooo', 'main.gooo', 'inputs.json', 'gooo.workspace.json', 'NOTICE', 'README.md',
+    'tools/bootstrap.sh', 'tools/bootstrap-check.go', 'upstream.json'];
+  assert.deepEqual(protocol.files, expected);
+  const valid = protocol.validateMetadata(metadata);
+  assert.ok(Object.isFrozen(valid.sample_source_paths));
+  for (const name of expected) {
+    const withoutHash = copy(metadata); delete withoutHash.sample_sha256[name];
+    const withoutSource = copy(metadata); delete withoutSource.sample_source_paths[name];
+    const wrongSource = copy(metadata); wrongSource.sample_source_paths[name] = `replacement/${name}`;
+    const wrongHash = copy(metadata); wrongHash.sample_sha256[name] = 'not-a-checksum';
+    for (const value of [withoutHash, withoutSource, wrongSource, wrongHash]) assert.throws(() => protocol.validateMetadata(value));
+  }
+  const extra = copy(metadata); extra.sample_sha256['unreviewed.sh'] = 'a'.repeat(64);
+  extra.sample_source_paths['unreviewed.sh'] = 'unreviewed.sh';
+  assert.throws(() => protocol.validateMetadata(extra));
+  const legacy = copy(metadata); delete legacy.sample_source_paths;
+  assert.throws(() => protocol.validateMetadata(legacy));
+});
 
 test('whole int64 range and native Text transport preserve exact inputs without calculating the result', () => {
   const labels = ['', ' sensor ', '\0', '\r\n', '"\\\n', '\uFEFFsensor', '\u2028\u2029', 'e\u0301', '😀', '\uD800', '\uDC00', '\uD800A\uDC00'];
