@@ -134,6 +134,10 @@ original program. To return to the original example, change `80` back to `60`.
 From a repository checkout containing `cmd/check-tutorial-change`, capture the
 compiler's build information separately and compare the three saved records:
 
+This comparison accepts records produced with the repository workspace commands
+above. Records produced from the downloaded bundle use different source paths
+and are not supported by this checker.
+
 ```sh
 ./.gooo version --build --json > out/learn-gooo/compiler-build.json
 go run ./cmd/check-tutorial-change \
