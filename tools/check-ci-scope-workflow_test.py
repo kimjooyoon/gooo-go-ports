@@ -1359,7 +1359,24 @@ RECORDED_CATALOG_UPLOAD = "      - name: Preserve recorded-catalog comparison ev
 RECORDED_CATALOG_PRIOR_WORKFLOW_SHA = 'bb6474182e5a97d6b42868ed7debd6eeec04efaa5cb94dbe4108c331938d18d4'
 
 
+CONTRIBUTION_EXPORT_UNIT = '          python3 -I -B tools/export-header-addition-evidence_test.py -v\n'
+CONTRIBUTION_EXPORT_ANCHOR = '          python3 -I -B tools/native-shard-reference_test.py -v\n'
+
+
+def project_contribution_export_unit(text):
+    jobs = workflow_jobs(text)
+    _, named, _ = job_steps(jobs['observer-checks'])
+    require(text.count(CONTRIBUTION_EXPORT_UNIT) == 1 and
+            CONTRIBUTION_EXPORT_UNIT in named['Check the Go observer'] and
+            CONTRIBUTION_EXPORT_ANCHOR + CONTRIBUTION_EXPORT_UNIT in text,
+            'contribution export controls must run once in the common observer after reader controls')
+    return text.replace(CONTRIBUTION_EXPORT_UNIT, '', 1)
+
+
 def project_recorded_catalog_integration(text):
+    # Remove only the exact new common command before applying the unchanged
+    # whole-workflow historical hash and all existing native-scope guards.
+    text = project_contribution_export_unit(text)
     jobs = workflow_jobs(text)
     require(text.count(RECORDED_CATALOG_STEP) == 1 and
             RECORDED_CATALOG_STEP in jobs['policy-native-checks'],
@@ -4315,6 +4332,27 @@ class GrantSelectionIntegrationTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 project_grant_selection_integration(raw.replace(old, new, 1))
 
+
+
+class ContributionExportIntegrationTests(unittest.TestCase):
+    def test_exact_common_addition_preserves_all_historical_guards(self):
+        raw = WORKFLOW.read_text()
+        prior = project_contribution_export_unit(raw)
+        self.assertNotIn(CONTRIBUTION_EXPORT_UNIT, prior)
+        project_root_go_reference(raw)
+
+    def test_missing_duplicate_masked_or_moved_controls_are_refused(self):
+        raw = WORKFLOW.read_text()
+        for replacement in ('', CONTRIBUTION_EXPORT_UNIT * 2,
+                            CONTRIBUTION_EXPORT_UNIT.replace(' -I ', ' '),
+                            CONTRIBUTION_EXPORT_UNIT.rstrip() + ' || true\n'):
+            with self.subTest(replacement=replacement), self.assertRaises(ValueError):
+                project_recorded_catalog_integration(raw.replace(CONTRIBUTION_EXPORT_UNIT, replacement, 1))
+        moved = raw.replace(CONTRIBUTION_EXPORT_UNIT, '', 1).replace(
+            '          python3 -I -B examples/versioned-grant-change/verify_test.py\n',
+            CONTRIBUTION_EXPORT_UNIT + '          python3 -I -B examples/versioned-grant-change/verify_test.py\n', 1)
+        with self.assertRaises(ValueError):
+            project_recorded_catalog_integration(moved)
 
 
 class RecordedCatalogIntegrationTests(unittest.TestCase):

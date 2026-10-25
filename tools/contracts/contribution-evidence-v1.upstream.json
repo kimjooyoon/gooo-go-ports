@@ -1,0 +1,16 @@
+{
+  "repository": "https://github.com/kimjooyoon/gooo-language-bridge",
+  "commit": "6142c05e9aa32b5003dcd77cfbc87669f66ed402",
+  "schema": {
+    "path": "bridges/contribution-response/evidence.schema.json",
+    "sha256": "1b9c4d455554976ff8e1c3ccf3c533bea1de6bf5567e92d979c3f372b2ab9e12"
+  },
+  "validator": {
+    "path": "tools/plan_response.py",
+    "source_file_sha256": "66dce10236a7186df037dedc0c06367e15029bcd4a3c90492dfa5d2392966b81",
+    "copied_function": "validate",
+    "modification": "Reject all $ref resolution; this fixed evidence schema has no references. No role, claim, response or posting planner was copied."
+  },
+  "license": "MIT",
+  "license_file": "tools/licenses/gooo-language-bridge-6142c05-MIT.txt"
+}
