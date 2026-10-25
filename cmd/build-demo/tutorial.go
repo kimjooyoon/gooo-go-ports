@@ -116,6 +116,57 @@ func tutorialInputDocument(rows []tutorialCase) ([]byte, error) {
 	return json.MarshalIndent(map[string]any{"schema": "gooo/body-composition-inputs/v1", "inputs": values}, "", "  ")
 }
 
+type tutorialSourceBundle struct {
+	archive     []byte
+	hashes      map[string]string
+	sourcePaths map[string]string
+}
+
+// Keep the portable setup byte-identical to the repository's checked installer.
+// Nested archive paths matter: bootstrap resolves the root from tools/ and its
+// identity checker reads upstream.json there without requiring a root go.mod.
+func writeTutorialSourceBundle(root, asset string) (tutorialSourceBundle, error) {
+	bundle := tutorialSourceBundle{hashes: map[string]string{}, sourcePaths: map[string]string{}}
+	var archive bytes.Buffer
+	z := zip.NewWriter(&archive)
+	for _, file := range []struct{ name, source string }{
+		{"limits.gooo", "examples/learn-gooo/limits.gooo"},
+		{"main.gooo", "examples/learn-gooo/main.gooo"},
+		{"inputs.json", "examples/learn-gooo/inputs.json"},
+		{"gooo.workspace.json", "examples/learn-gooo/gooo.workspace.json"},
+		{"NOTICE", "examples/learn-gooo/NOTICE"},
+		{"README.md", "examples/learn-gooo/README.md"},
+		{"tools/bootstrap.sh", "tools/bootstrap.sh"},
+		{"tools/bootstrap-check.go", "tools/bootstrap-check.go"},
+		{"upstream.json", "upstream.json"},
+	} {
+		raw, err := os.ReadFile(filepath.Join(root, file.source))
+		if err != nil {
+			return tutorialSourceBundle{}, err
+		}
+		bundle.hashes[file.name] = digest(raw)
+		bundle.sourcePaths[file.name] = file.source
+		if err := write(filepath.Join(asset, "source", file.name), raw); err != nil {
+			return tutorialSourceBundle{}, err
+		}
+		w, err := z.Create(file.name)
+		if err != nil {
+			return tutorialSourceBundle{}, err
+		}
+		if _, err := w.Write(raw); err != nil {
+			return tutorialSourceBundle{}, err
+		}
+	}
+	if err := z.Close(); err != nil {
+		return tutorialSourceBundle{}, err
+	}
+	bundle.archive = archive.Bytes()
+	if err := write(filepath.Join(asset, "source.zip"), bundle.archive); err != nil {
+		return tutorialSourceBundle{}, err
+	}
+	return bundle, nil
+}
+
 func buildTutorialDemo(ctx context.Context, site, dir string, lock lockfile) error {
 	if runtime.Version() != lock.GoVersion {
 		return fmt.Errorf("tutorial requires pinned Go")
@@ -147,30 +198,8 @@ func buildTutorialDemo(ctx context.Context, site, dir string, lock lockfile) err
 			return err
 		}
 	}
-	sampleHashes := map[string]string{}
-	var archive bytes.Buffer
-	z := zip.NewWriter(&archive)
-	for _, name := range []string{"limits.gooo", "main.gooo", "inputs.json", "gooo.workspace.json", "NOTICE", "README.md"} {
-		raw, err := os.ReadFile(filepath.Join("examples/learn-gooo", name))
-		if err != nil {
-			return err
-		}
-		sampleHashes[name] = digest(raw)
-		if err := write(filepath.Join(asset, "source", name), raw); err != nil {
-			return err
-		}
-		w, err := z.Create(name)
-		if err != nil {
-			return err
-		}
-		if _, err = w.Write(raw); err != nil {
-			return err
-		}
-	}
-	if err := z.Close(); err != nil {
-		return err
-	}
-	if err := write(filepath.Join(asset, "source.zip"), archive.Bytes()); err != nil {
+	bundle, err := writeTutorialSourceBundle(".", asset)
+	if err != nil {
 		return err
 	}
 	f := tutorialFixtureSet(lock)
@@ -298,7 +327,7 @@ func buildTutorialDemo(ctx context.Context, site, dir string, lock lockfile) err
 	if err != nil {
 		return err
 	}
-	metadata := map[string]any{"schema": "gooo/browser-tutorial/v1", "entry_id": tutorialActivity, "result_entity_id": tutorialResult, "input_entity_ids": []string{"urn:gooo:type:integer", "urn:gooo:type:string"}, "compiler_revision": lock.CompilerRevision, "compiler_version": lock.CompilerVersion, "go_version": lock.GoVersion, "source_revision": strings.TrimSpace(string(revision)), "source_dirty": len(status) > 0, "source_sha256": sourceHashes, "sample_sha256": sampleHashes, "source_zip_sha256": digest(archive.Bytes()), "source_zip_bytes": archive.Len(), "generated_sha256": digest([]byte(generated)), "wasm_sha256": digest(wasm), "wasm_bytes": len(wasm), "execution_sha256": hashes["execution.json"], "replay_sha256": hashes["replay.json"], "fixtures_sha256": hashes["fixtures.json"], "files_sha256": hashes, "fixture_cases": len(f.Cases), "fixture_rejections": len(f.Rejections), "native_cases": len(f.Cases), "native_rejections": nativeRejected, "scope": "Original tutorial Gooo compiled without edits. Four manual examples, finite build-host reference checks and saved native replay; browser calls are local observations, not native receipts. Text follows native JSON decoding and 1024 UTF-8-byte input/output limits. Hashes establish local consistency, not signatures."}
+	metadata := map[string]any{"schema": "gooo/browser-tutorial/v1", "entry_id": tutorialActivity, "result_entity_id": tutorialResult, "input_entity_ids": []string{"urn:gooo:type:integer", "urn:gooo:type:string"}, "compiler_revision": lock.CompilerRevision, "compiler_version": lock.CompilerVersion, "go_version": lock.GoVersion, "source_revision": strings.TrimSpace(string(revision)), "source_dirty": len(status) > 0, "source_sha256": sourceHashes, "sample_sha256": bundle.hashes, "sample_source_paths": bundle.sourcePaths, "source_zip_sha256": digest(bundle.archive), "source_zip_bytes": len(bundle.archive), "generated_sha256": digest([]byte(generated)), "wasm_sha256": digest(wasm), "wasm_bytes": len(wasm), "execution_sha256": hashes["execution.json"], "replay_sha256": hashes["replay.json"], "fixtures_sha256": hashes["fixtures.json"], "files_sha256": hashes, "fixture_cases": len(f.Cases), "fixture_rejections": len(f.Rejections), "native_cases": len(f.Cases), "native_rejections": nativeRejected, "scope": "Original tutorial Gooo compiled without edits. Four manual examples, finite build-host reference checks and saved native replay; browser calls are local observations, not native receipts. Text follows native JSON decoding and 1024 UTF-8-byte input/output limits. Hashes establish local consistency, not signatures."}
 	raw, err := json.MarshalIndent(metadata, "", "  ")
 	if err != nil {
 		return err

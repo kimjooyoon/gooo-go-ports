@@ -17,6 +17,7 @@ const metadata = { schema: 'gooo/browser-tutorial/v1', compiler_revision: '20589
   input_entity_ids: ['urn:gooo:type:integer', 'urn:gooo:type:string'], wasm_sha256: 'a'.repeat(64), wasm_bytes: 4,
   generated_sha256: 'c'.repeat(64), execution_sha256: 'd'.repeat(64), replay_sha256: 'e'.repeat(64),
   fixture_cases: 20, native_cases: 4, source_zip_sha256: hash(archive), source_zip_bytes: archive.length,
+  sample_source_paths: { ...protocol.sourcePaths },
   sample_sha256: Object.fromEntries(protocol.files.map(file => [file, hash(samples[file])])) };
 const output = { score: '42', remaining: '58', in_range: true, label: 'sensor: low' };
 async function until(predicate) {
@@ -55,7 +56,7 @@ function app(options = {}) {
     fetch: async (url, fetchOptions) => {
       requests.push({ url, options: fetchOptions });
       if (options.fetch) return options.fetch(url, fetchOptions);
-      const bytes = url.endsWith('source.zip') ? archive : samples[url.split('/').at(-1)];
+      const bytes = url.endsWith('source.zip') ? archive : samples[url.replace('./tutorial/source/', '')];
       assert.ok(bytes, `unexpected fetch ${url}`);
       return { ok: true, arrayBuffer: async () => bytes };
     },
@@ -86,12 +87,14 @@ function app(options = {}) {
     pageshow: () => events.get('pageshow')?.({ persisted: true }), get reloaded() { return reloaded; } };
 }
 
-test('no automatic execution; six displayed files and portable ZIP are verified before ready', async () => {
+test('no automatic execution; nine source/setup files and portable ZIP are verified before ready', async () => {
   const a = app(); a.run(); assert.equal(a.current().messages.length, 0);
   await a.ready();
   assert.equal(a.current().messages.length, 0);
-  assert.equal(a.requests.length, 7);
+  assert.equal(a.requests.length, 10);
+  assert.deepEqual(a.requests.map(r => r.url).sort(), [...protocol.files.map(name => `./tutorial/source/${name}`), './tutorial/source.zip'].sort());
   assert.ok(a.requests.every(r => r.options.cache === 'no-store'));
+  assert.match(a.get('tutorial-source-status').textContent, /nine source and setup files/);
   assert.equal(a.get('tutorial-source').textContent, samples['main.gooo'].toString());
   assert.equal(a.get('tutorial-download').hidden, false);
   assert.equal(await a.urls[0].blob.text(), archive.toString());
@@ -174,10 +177,10 @@ test('mismatched output, malformed ready and runtime failure leave no visible su
 });
 
 test('wrong source/ZIP hashes and failed HTTP loads prevent ready and project download', async () => {
-  for (const bad of ['main.gooo', 'source.zip', 'http']) {
+  for (const bad of ['main.gooo', 'tools/bootstrap.sh', 'tools/bootstrap-check.go', 'upstream.json', 'source.zip', 'http']) {
     const a = app({ fetch: async url => {
       if (bad === 'http') return { ok: false, status: 404 };
-      const data = url.endsWith('source.zip') ? archive : samples[url.split('/').at(-1)];
+      const data = url.endsWith('source.zip') ? archive : samples[url.replace('./tutorial/source/', '')];
       return { ok: true, arrayBuffer: async () => url.endsWith(bad) ? Buffer.from('tampered') : data };
     } });
     a.deliverReady(); await a.failed(); a.run();
@@ -215,7 +218,7 @@ test('cached tutorial preserves in-flight source verification and the verified p
   const gate = new Promise(resolve => { release = resolve; });
   const a = app({ fetch: async url => {
     await gate;
-    const bytes = url.endsWith('source.zip') ? archive : samples[url.split('/').at(-1)];
+    const bytes = url.endsWith('source.zip') ? archive : samples[url.replace('./tutorial/source/', '')];
     return { ok: true, arrayBuffer: async () => bytes };
   } });
   a.deliverReady();
@@ -225,7 +228,7 @@ test('cached tutorial preserves in-flight source verification and the verified p
   assert.ok(a.requests.every(request => !request.options.signal.aborted));
   release();
   await until(() => a.get('tutorial-runtime').textContent.startsWith('Ready'));
-  assert.equal(a.requests.length, 7);
+  assert.equal(a.requests.length, 10);
   assert.equal(a.get('tutorial-download').hidden, false);
   assert.equal(await a.urls[0].blob.text(), archive.toString());
   assert.deepEqual(a.revoked, []);

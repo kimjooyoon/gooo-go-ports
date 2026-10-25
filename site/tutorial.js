@@ -110,7 +110,7 @@
     $('tutorial-download').href = archiveURL;
     $('tutorial-download').hidden = false;
     showSource();
-    $('tutorial-source-status').textContent = 'All six source files and the project download match this build’s hashes.';
+    $('tutorial-source-status').textContent = 'All nine source and setup files and the project download match this build’s hashes.';
     $('tutorial-program').textContent = `Source ${metadata.source_revision}${metadata.source_dirty ? ' + local changes' : ''} · compiler ${metadata.compiler_revision} · ${metadata.go_version}`;
     $('tutorial-program-hash').textContent = `WebAssembly SHA-256 ${metadata.wasm_sha256}`;
     ready = true;

@@ -1,8 +1,11 @@
 package main
 
 import (
+	"archive/zip"
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -255,10 +258,78 @@ func TestTutorialSourceDownloadIdentity(t *testing.T) {
 	if !reflect.DeepEqual(a, b) {
 		t.Fatal("portable workspace changed semantics")
 	}
-	for _, name := range []string{"limits.gooo", "main.gooo", "inputs.json", "gooo.workspace.json", "NOTICE", "README.md"} {
-		if _, err := os.Stat(filepath.Join("../../examples/learn-gooo", name)); err != nil {
+	// Inspect the actual ZIP, not just the source list. Installation must work
+	// with only these nine files, including the nested tools/ paths, and may not
+	// substitute a second installer or omit its checker/pin dependencies.
+	want := map[string]string{
+		"limits.gooo": "examples/learn-gooo/limits.gooo", "main.gooo": "examples/learn-gooo/main.gooo",
+		"inputs.json": "examples/learn-gooo/inputs.json", "gooo.workspace.json": "examples/learn-gooo/gooo.workspace.json",
+		"NOTICE": "examples/learn-gooo/NOTICE", "README.md": "examples/learn-gooo/README.md",
+		"tools/bootstrap.sh": "tools/bootstrap.sh", "tools/bootstrap-check.go": "tools/bootstrap-check.go", "upstream.json": "upstream.json",
+	}
+	asset := t.TempDir()
+	bundle, err := writeTutorialSourceBundle("../..", asset)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(bundle.sourcePaths, want) || len(bundle.hashes) != len(want) {
+		t.Fatal("source archive metadata must identify exactly the nine original source paths")
+	}
+	z, err := zip.NewReader(bytes.NewReader(bundle.archive), int64(len(bundle.archive)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(z.File) != len(want) {
+		t.Fatalf("ZIP has %d members, want exactly nine", len(z.File))
+	}
+	seen := map[string]bool{}
+	for _, file := range z.File {
+		source, ok := want[file.Name]
+		if !ok || seen[file.Name] || file.FileInfo().IsDir() {
+			t.Fatalf("unexpected or duplicate ZIP member %q", file.Name)
+		}
+		seen[file.Name] = true
+		reader, err := file.Open()
+		if err != nil {
 			t.Fatal(err)
 		}
+		raw, err := io.ReadAll(reader)
+		closeErr := reader.Close()
+		if err != nil || closeErr != nil {
+			t.Fatal(err, closeErr)
+		}
+		original := cropTestRead(t, source)
+		if !bytes.Equal(raw, original) || bundle.hashes[file.Name] != digest(original) {
+			t.Fatalf("ZIP member %s differs from canonical source %s", file.Name, source)
+		}
+		published, err := os.ReadFile(filepath.Join(asset, "source", file.Name))
+		if err != nil || !bytes.Equal(published, raw) {
+			t.Fatalf("individual download %s differs from ZIP: %v", file.Name, err)
+		}
+	}
+	publishedZIP, err := os.ReadFile(filepath.Join(asset, "source.zip"))
+	if err != nil || !bytes.Equal(publishedZIP, bundle.archive) {
+		t.Fatalf("published ZIP differs: %v", err)
+	}
+
+	for _, missing := range []string{"tools/bootstrap.sh", "tools/bootstrap-check.go", "upstream.json"} {
+		t.Run("missing-"+missing, func(t *testing.T) {
+			root := t.TempDir()
+			for _, source := range want {
+				if source != missing {
+					if err := write(filepath.Join(root, source), cropTestRead(t, source)); err != nil {
+						t.Fatal(err)
+					}
+				}
+			}
+			asset := t.TempDir()
+			if _, err := writeTutorialSourceBundle(root, asset); err == nil {
+				t.Fatal("accepted a source bundle without a canonical setup dependency")
+			}
+			if _, err := os.Stat(filepath.Join(asset, "source.zip")); !os.IsNotExist(err) {
+				t.Fatalf("published incomplete source ZIP: %v", err)
+			}
+		})
 	}
 }
 

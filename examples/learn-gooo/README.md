@@ -37,7 +37,7 @@ Use Git, a POSIX shell and Go toolchain selection, from the repository root:
 ```sh
 export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
-./tools/bootstrap.sh
+sh tools/bootstrap.sh
 ./.gooo package execute --inputs examples/learn-gooo/inputs.json \
   learn-gooo.workspace.json
 mkdir -p out/learn-gooo
@@ -55,36 +55,46 @@ reference outputs or prove correctness for all inputs.
 
 ## Run the downloaded source bundle
 
-Extract the bundle and enter the directory containing `limits.gooo`, `main.gooo`,
-`gooo.workspace.json`, `inputs.json`, `README.md` and `NOTICE`. Keep the files
-together, then fetch a shallow snapshot of the exact compiler used by this
-example and build it. Run the commands in order in the same shell, and stop if
-a command fails. Start without an existing `compiler` directory:
+Extract the bundle into a new directory and enter it. Keep all nine files,
+including the `tools/` directory, together:
+
+```text
+limits.gooo
+main.gooo
+gooo.workspace.json
+inputs.json
+README.md
+NOTICE
+tools/bootstrap.sh
+tools/bootstrap-check.go
+upstream.json
+```
+
+Use Git, a POSIX shell and Go toolchain selection, as for the repository checkout.
+The bundled installer, identity checker and version pins are unchanged copies
+from the repository. The installer fetches the exact compiler with its required
+version-tag history, builds it and checks its build identity before publishing
+`.gooo`. The first setup requires network access for the compiler and any missing
+Go toolchain or dependencies; the source ZIP does not contain a prebuilt compiler.
+Run the commands in order in the same shell, and stop if a command fails:
 
 ```sh
 export GOTOOLCHAIN=go1.27.3
 export GOWORK=off
-mkdir compiler
-git -C compiler init
-git -C compiler remote add origin https://github.com/kimjooyoon/meta-ontology-go.git
-git -C compiler fetch --depth=1 origin 205896a413e5dea92366309c35ae85e542d055f6
-git -C compiler checkout --detach FETCH_HEAD
-cd compiler
-go build -o ../gooo ./cmd/gooo
-cd ..
-./gooo version --build --json
-./gooo check limits.gooo
-./gooo check main.gooo
-./gooo package execute --inputs inputs.json gooo.workspace.json
-./gooo package execute --json --inputs inputs.json gooo.workspace.json \
+sh tools/bootstrap.sh
+./.gooo check limits.gooo
+./.gooo check main.gooo
+./.gooo package execute --inputs inputs.json gooo.workspace.json
+./.gooo package execute --json --inputs inputs.json gooo.workspace.json \
   > execution.json
-./gooo package replay --json --receipt execution.json \
+./.gooo package replay --json --receipt execution.json \
   --inputs inputs.json gooo.workspace.json > replay.json
 ```
 
-The build record should report the pinned compiler revision, Go 1.27.3 and
-`vcs_modified: "false"`. A successful `check` alone validates declarations;
-the `execute` command is what compiles and runs the bodies.
+Bootstrap prints the checked build record, including the pinned compiler
+revision, Go 1.27.3 and `vcs_modified: "false"`. Calling it through `sh` also works
+when ZIP extraction does not preserve executable file permissions. A successful
+`check` alone validates declarations; `execute` compiles and runs the bodies.
 
 ## Make one visible change
 
@@ -107,15 +117,26 @@ mkdir -p out/learn-gooo
   > out/learn-gooo/threshold-80-replay.json
 ```
 
-For the downloaded bundle, use `./gooo`, `inputs.json` and `gooo.workspace.json`
-instead, with new `threshold-80-execution.json` and `threshold-80-replay.json`
-filenames. Replay the newly created record; the original receipt retains the
+From the downloaded bundle's directory, save and replay the edited program with:
+
+```sh
+./.gooo package execute --json --inputs inputs.json gooo.workspace.json \
+  > threshold-80-execution.json
+./.gooo package replay --json --receipt threshold-80-execution.json \
+  --inputs inputs.json gooo.workspace.json > threshold-80-replay.json
+```
+
+Both paths replay the newly created record; the original receipt retains the
 original program. To return to the original example, change `80` back to `60`.
 
 ## Compare the saved change
 
 From a repository checkout containing `cmd/check-tutorial-change`, capture the
 compiler's build information separately and compare the three saved records:
+
+This comparison accepts records produced with the repository workspace commands
+above. Records produced from the downloaded bundle use different source paths
+and are not supported by this checker.
 
 ```sh
 ./.gooo version --build --json > out/learn-gooo/compiler-build.json

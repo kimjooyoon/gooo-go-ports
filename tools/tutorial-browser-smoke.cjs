@@ -35,7 +35,15 @@ async function runSmoke(directory) {
  for (const [name, key] of [['program.wasm','wasm_sha256'], ['generated.go','generated_sha256'], ['execution.json','execution_sha256'], ['replay.json','replay_sha256'], ['fixtures.json','fixtures_sha256'], ['source.zip','source_zip_sha256']]) assert.equal(hash(name), manifest[key], name);
  assert.equal(bytes('program.wasm').length, manifest.wasm_bytes); assert.equal(bytes('source.zip').length, manifest.source_zip_bytes);
  for (const [name, digest] of Object.entries(manifest.files_sha256)) assert.equal(hash(name), digest, name);
- keys(manifest.sample_sha256, ['limits.gooo','main.gooo','inputs.json','gooo.workspace.json','NOTICE','README.md']);
+ const sourcePaths = {
+  'limits.gooo': 'examples/learn-gooo/limits.gooo', 'main.gooo': 'examples/learn-gooo/main.gooo',
+  'inputs.json': 'examples/learn-gooo/inputs.json', 'gooo.workspace.json': 'examples/learn-gooo/gooo.workspace.json',
+  'NOTICE': 'examples/learn-gooo/NOTICE', 'README.md': 'examples/learn-gooo/README.md',
+  'tools/bootstrap.sh': 'tools/bootstrap.sh', 'tools/bootstrap-check.go': 'tools/bootstrap-check.go', 'upstream.json': 'upstream.json'
+ };
+ keys(manifest.sample_sha256, Object.keys(sourcePaths));
+ assert.deepEqual(manifest.sample_source_paths, sourcePaths);
+ assert.equal(hash('source/upstream.json'), hash('upstream.json'));
  for (const [name, digest] of Object.entries(manifest.sample_sha256)) assert.equal(hash(`source/${name}`), digest, name);
  assert.equal(hash('source/inputs.json'), hash('inputs.json'));
  keys(manifest.source_sha256, ['examples/learn-gooo/limits.gooo','examples/learn-gooo/main.gooo']);

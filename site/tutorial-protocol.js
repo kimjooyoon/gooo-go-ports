@@ -5,7 +5,18 @@
   else root.GoooTutorialProtocol = api;
 })(globalThis, () => {
   'use strict';
-  const files = Object.freeze(['limits.gooo', 'main.gooo', 'inputs.json', 'gooo.workspace.json', 'NOTICE', 'README.md']);
+  const sourcePaths = Object.freeze({
+    'limits.gooo': 'examples/learn-gooo/limits.gooo',
+    'main.gooo': 'examples/learn-gooo/main.gooo',
+    'inputs.json': 'examples/learn-gooo/inputs.json',
+    'gooo.workspace.json': 'examples/learn-gooo/gooo.workspace.json',
+    'NOTICE': 'examples/learn-gooo/NOTICE',
+    'README.md': 'examples/learn-gooo/README.md',
+    'tools/bootstrap.sh': 'tools/bootstrap.sh',
+    'tools/bootstrap-check.go': 'tools/bootstrap-check.go',
+    'upstream.json': 'upstream.json'
+  });
+  const files = Object.freeze(Object.keys(sourcePaths));
   const fields = Object.freeze(['score', 'remaining', 'in_range', 'label']);
   const integer = value => typeof value === 'string' && value.length <= 20 && /^(?:0|[1-9][0-9]*|-[1-9][0-9]*)$/.test(value) &&
     BigInt(value) >= -9223372036854775808n && BigInt(value) <= 9223372036854775807n;
@@ -74,10 +85,12 @@
         !Number.isSafeInteger(value.native_cases) || value.native_cases < 4 ||
         !sha(value.source_zip_sha256) || !Number.isSafeInteger(value.source_zip_bytes) ||
         value.source_zip_bytes < 1 || value.source_zip_bytes > 1024 * 1024 ||
-        !exact(value.sample_sha256, files) || !files.every(name => sha(value.sample_sha256[name]))) {
+        !exact(value.sample_sha256, files) || !files.every(name => sha(value.sample_sha256[name])) ||
+        !exact(value.sample_source_paths, files) || !files.every(name => value.sample_source_paths[name] === sourcePaths[name])) {
       throw new Error('Tutorial build metadata is incomplete or has an unsupported format.');
     }
-    return Object.freeze({ ...value, sample_sha256: Object.freeze({ ...value.sample_sha256 }) });
+    return Object.freeze({ ...value, sample_sha256: Object.freeze({ ...value.sample_sha256 }),
+      sample_source_paths: Object.freeze({ ...value.sample_source_paths }) });
   }
   function validateRequest(value) {
     if (!exact(value, ['type', 'id', 'inputs']) || value.type !== 'run' || !Number.isSafeInteger(value.id) || value.id < 1) {
@@ -96,6 +109,6 @@
     return '{\n  "schema": "gooo/body-composition-inputs/v1",\n  "inputs": [\n    {"app/report:Describe.input0": ' + inputs[0] +
       ',\n     "app/report:Describe.input1": ' + JSON.stringify(inputs[1]) + '}\n  ]\n}\n';
   }
-  return Object.freeze({ files, fields, integer, exact, boundText, labelFromEditor, validateInputs, parseReply,
+  return Object.freeze({ files, sourcePaths, fields, integer, exact, boundText, labelFromEditor, validateInputs, parseReply,
     validateMetadata, validateRequest, validateResult, inputDocument });
 });
