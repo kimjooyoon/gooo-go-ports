@@ -32,6 +32,10 @@ The executable uses its generated kernel at runtime. It does not need the Gooo
 compiler, a model, credentials or network access to compare a saved input. This
 example has its own CLI and Go package; released MCP bundles do not expose it.
 
+For the standalone archive workflow and its current publication status, see
+[the native command guide](../../docs/recorded-catalog-cli.md). Packaging reuses
+the already verified executable; it does not rebuild the Gooo compiler.
+
 ### Discover the installed command
 
 After building this checkout's command, help, build identity and complete

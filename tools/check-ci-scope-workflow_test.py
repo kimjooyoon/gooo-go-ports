@@ -1373,7 +1373,32 @@ AVAILABILITY_STEP = '      - name: Verify explicit recorded observation availabi
 AVAILABILITY_UPLOAD = "      - name: Preserve explicit observation availability evidence\n        if: always() && steps.change-scope.outputs.docs_only != 'true'\n        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7\n        with:\n          name: explicit-observation-availability-evidence\n          path: ${{ runner.temp }}/explicit-observation-availability/\n          if-no-files-found: warn\n          retention-days: 14\n"
 AVAILABILITY_PRIOR_WORKFLOW_SHA = '6ee14332a924258c56f76a844200c8a3a9db05c835ffa6d3786090c235316b44'
 
+
+CATALOG_BUNDLE_UNIT = '          python3 -I -B tools/recorded_catalog_cli_bundle_test.py -v\n'
+CATALOG_BUNDLE_STEP = '      - name: Package the verified saved-catalog command\n        if: steps.change-scope.outputs.docs_only != \'true\'\n        timeout-minutes: 2\n        run: |\n          set -euo pipefail\n          python3 -I -B tools/recorded_catalog_cli_bundle.py \\\n            --root "$PWD" \\\n            --consumer-evidence "$RUNNER_TEMP/explicit-observation-availability/consumer" \\\n            --synthetic-export "$RUNNER_TEMP/explicit-observation-availability/synthetic-export.json" \\\n            --source-revision "$GITHUB_SHA" \\\n            --producer-url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \\\n            --out "$RUNNER_TEMP/recorded-catalog-cli-bundle"\n'
+CATALOG_BUNDLE_UPLOAD = "      - name: Preserve the checked saved-catalog distribution\n        if: always() && steps.change-scope.outputs.docs_only != 'true'\n        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7\n        with:\n          name: gooo-recorded-catalog-linux-amd64-${{ github.run_id }}-${{ github.run_attempt }}\n          path: |\n            ${{ runner.temp }}/recorded-catalog-cli-bundle/*.tar.gz\n            ${{ runner.temp }}/recorded-catalog-cli-bundle/*.sha256\n            ${{ runner.temp }}/recorded-catalog-cli-bundle/verification.json\n            ${{ runner.temp }}/recorded-catalog-cli-bundle/first-failure.json\n            ${{ runner.temp }}/recorded-catalog-cli-bundle/controls/\n          if-no-files-found: error\n          retention-days: 14\n"
+CATALOG_BUNDLE_PRIOR_WORKFLOW_SHA = '21b542a89cbc0f715f4050f2c8cbcb78f235600c9489b90f681fb7ac03a9aa35'
+
+def project_catalog_bundle_integration(text):
+    jobs = workflow_jobs(text)
+    _, observer, _ = job_steps(jobs['observer-checks'])
+    require(text.count(CATALOG_BUNDLE_UNIT) == 1 and
+            CATALOG_BUNDLE_UNIT in observer['Check the Go observer'],
+            'saved-catalog packaging refusal tests must remain common checks')
+    for chunk in (CATALOG_BUNDLE_STEP, CATALOG_BUNDLE_UPLOAD):
+        require(text.count(chunk) == 1 and chunk in jobs['policy-native-checks'],
+                'saved-catalog distribution requires exact bounded packaging and failure evidence')
+    require(text.index(AVAILABILITY_UPLOAD) + len(AVAILABILITY_UPLOAD) == text.index(CATALOG_BUNDLE_STEP) and
+            text.index(CATALOG_BUNDLE_STEP) + len(CATALOG_BUNDLE_STEP) == text.index(CATALOG_BUNDLE_UPLOAD) and
+            text.index(CATALOG_BUNDLE_UPLOAD) + len(CATALOG_BUNDLE_UPLOAD) == text.index('      - name: Verify original AutoBot resolver adaptation\n'),
+            'package only after original availability verification and evidence retention')
+    prior = text.replace(CATALOG_BUNDLE_UNIT, '', 1).replace(CATALOG_BUNDLE_STEP, '', 1).replace(CATALOG_BUNDLE_UPLOAD, '', 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == CATALOG_BUNDLE_PRIOR_WORKFLOW_SHA,
+            'saved-catalog packaging changed unrelated workflow checks')
+    return prior
+
 def project_explicit_availability_integration(text):
+    text = project_catalog_bundle_integration(text)
     jobs = workflow_jobs(text)
     require(text.count(AVAILABILITY_STEP) == 1 and AVAILABILITY_STEP in jobs['policy-native-checks'] and
             text.count(AVAILABILITY_UPLOAD) == 1 and AVAILABILITY_UPLOAD in jobs['policy-native-checks'],
@@ -4563,6 +4588,41 @@ class ExplicitAvailabilityIntegrationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             project_explicit_availability_integration(raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1))
 
+
+
+class RecordedCatalogBundleIntegrationTests(unittest.TestCase):
+    def test_reuses_current_consumer_without_changing_previous_checks(self):
+        raw = WORKFLOW.read_text()
+        prior = project_catalog_bundle_integration(raw)
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), CATALOG_BUNDLE_PRIOR_WORKFLOW_SHA)
+        self.assertNotIn('go build', CATALOG_BUNDLE_STEP)
+        project_root_go_reference(raw)
+
+    def test_cannot_package_stale_evidence_or_mask_failure(self):
+        raw = WORKFLOW.read_text()
+        for before, after in ((FULL, DOCS), ('timeout-minutes: 2', 'timeout-minutes: 20'),
+                              ('set -euo pipefail', 'set +e'),
+                              ('--consumer-evidence "$RUNNER_TEMP/explicit-observation-availability/consumer"', '--consumer-evidence stale'),
+                              ('--synthetic-export "$RUNNER_TEMP/explicit-observation-availability/synthetic-export.json"', '--synthetic-export private.json'),
+                              ('--source-revision "$GITHUB_SHA"', '--source-revision HEAD'),
+                              ('--out "$RUNNER_TEMP/recorded-catalog-cli-bundle"', '--out "$RUNNER_TEMP/recorded-catalog-cli-bundle" || true')):
+            changed = raw.replace(CATALOG_BUNDLE_STEP, CATALOG_BUNDLE_STEP.replace(before, after, 1), 1)
+            self.assertNotEqual(changed, raw)
+            with self.subTest(before=before), self.assertRaises(ValueError):
+                project_catalog_bundle_integration(changed)
+
+    def test_unit_checks_failure_records_and_original_guards_remain_required(self):
+        raw = WORKFLOW.read_text()
+        mutations = [raw.replace(CATALOG_BUNDLE_UNIT, '', 1),
+                     raw.replace(CATALOG_BUNDLE_STEP, CATALOG_BUNDLE_STEP * 2, 1),
+                     raw.replace(CATALOG_BUNDLE_STEP, '', 1),
+                     raw.replace(CATALOG_BUNDLE_UPLOAD, '', 1),
+                     raw.replace(CATALOG_BUNDLE_UPLOAD, CATALOG_BUNDLE_UPLOAD.replace('always() && ', '', 1), 1),
+                     raw.replace(CATALOG_BUNDLE_UPLOAD, CATALOG_BUNDLE_UPLOAD.replace('            ${{ runner.temp }}/recorded-catalog-cli-bundle/first-failure.json\n', '', 1), 1),
+                     raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1)]
+        for changed in mutations:
+            with self.assertRaises(ValueError):
+                project_catalog_bundle_integration(changed)
 
 if __name__ == "__main__":
     unittest.main()
