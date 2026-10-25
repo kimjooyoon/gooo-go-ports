@@ -108,6 +108,16 @@ class Contracts(unittest.TestCase):
         self.assertIn("examples/tool-definition-snapshot/provenance_test.py", roster)
         self.assertIn("definition-snapshot.workspace.json", roster)
         self.assertIn("ports/tool-origin/definition_snapshot.gooo", roster)
+        self.assertIn(b.REGRESSION_ROOT + "README.md", roster)
+        self.assertIn(b.REGRESSION_ROOT + "LICENSE", roster)
+        new_tree = dict(tree)
+        new_tree[b.REGRESSION_ROOT + "output-schema-string-to-number/snapshot-input.json"] = ()
+        new_tree["internal/runtimepackagesurface/projection_generated.go"] = ()
+        new_tree["cmd/check-runtime-package-surface/main.go"] = ()
+        expanded = b.source_roster(new_tree)
+        self.assertIn(b.REGRESSION_ROOT + "output-schema-string-to-number/snapshot-input.json", expanded)
+        self.assertNotIn("internal/runtimepackagesurface/projection_generated.go", expanded)
+        self.assertNotIn("cmd/check-runtime-package-surface/main.go", expanded)
 
     def test_exact_generation_roster_refuses_equal_count_substitution(self):
         b.check_generation_roster(dict.fromkeys(b.GENERATION_MANIFESTS))
@@ -163,6 +173,92 @@ class Contracts(unittest.TestCase):
                     b.member(root, name)
 
 
+class SnapshotPackets(unittest.TestCase):
+    def packet(self):
+        root = Path(__file__).resolve().parents[1]
+        names = [p for p in (root / b.REGRESSION_ROOT).rglob("*") if p.is_file()]
+        sources = {str(p.relative_to(root)): b.identity(p.read_bytes()) for p in names}
+        return root, sources, b.check_snapshot_regressions(root, sources, (root / "LICENSE").read_bytes())
+
+    def test_complete_packet_source_and_byte_bindings(self):
+        root, sources, packet = self.packet()
+        self.assertEqual(len(packet["files"]), 27)
+        self.assertEqual(len(packet["rows"]), 3)
+        self.assertEqual(len(b.GENERATION_MANIFESTS), 6)
+        for name in sources:
+            changed = dict(sources)
+            changed.pop(name)
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, "source roster"):
+                b.check_snapshot_regressions(root, changed, (root / "LICENSE").read_bytes())
+        with self.assertRaisesRegex(ValueError, "license differs"):
+            b.check_snapshot_regressions(root, sources, b"wrong license")
+
+    def test_archive_retains_all_packet_bytes_and_labels_historical_results(self):
+        root, sources, packet = self.packet()
+        rows = [{"label": label, "raw_input_json": "{}", "availability_json": "{}",
+                 "before_policy_revision": "p", "after_policy_revision": "p"}
+                for label in ("supplied-unknown", "unobserved-unknown")]
+        checked = {"rows": rows, "binary": b"synthetic-test-binary", "platform": "linux/amd64", "build": build(),
+                   "licenses": {name: (root / path).read_bytes() for name, path in b.LICENSES.items()},
+                   "sources": sources, "public_export": b.identity(b"synthetic-test-export"),
+                   "compiler_source_sha": "b" * 40,
+                   "generations": {name: b.identity(b"synthetic-generation") for name in b.GENERATION_MANIFESTS},
+                   "packaging_sources": {"tools/recorded_catalog_cli_bundle.py": b.identity(b"synthetic-packager")},
+                   "snapshots": packet}
+        files = b.archive_files(checked, "a" * 40, None)
+        self.assertEqual(len(files), 36)
+        for name, raw in packet["files"].items():
+            self.assertEqual(files[b.REGRESSION_ARCHIVE + name], (raw, 0o644))
+        manifest = b.load(files["manifest.json"][0])
+        self.assertEqual(len(manifest["generation_manifests"]), 6)
+        self.assertEqual(manifest["snapshot_regressions"]["original_validation_source_commit"], packet["original_source_commit"])
+        self.assertEqual(manifest["source_revision"], "a" * 40)
+        self.assertNotIn("verification.json", files)
+        guide = files["START-HERE.txt"][0].decode()
+        self.assertIn("outside the archive", guide)
+        for case in b.REGRESSION_CASES:
+            self.assertIn(case, guide)
+
+    def test_packet_corruption_not_masked_by_source_hash_update(self):
+        root, _, packet = self.packet()
+        for name in ("output-schema-string-to-number/before.request.json",
+                     "same-definition-version-context-only/observed-decision.json"):
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as tmp:
+                copied = Path(tmp)
+                sources = {}
+                for relative, original in packet["files"].items():
+                    raw = original + b" " if relative == name else original
+                    path = copied / b.REGRESSION_ROOT / relative
+                    path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(raw)
+                    sources[str(path.relative_to(copied))] = b.identity(raw)
+                with self.assertRaises(ValueError):
+                    b.check_snapshot_regressions(copied, sources, (root / "LICENSE").read_bytes())
+
+    def test_full_decision_original_frames_and_current_generation_are_required(self):
+        _, _, packet = self.packet()
+        for row in packet["rows"]:
+            value = b.load(row["input"])
+            projection = {"input_json": row["input"].decode(), "input_sha256": "sha256:" + b.sha(row["input"]),
+                          "context_id": row["expected"]["context_id"], "target_name": value["target_name"]}
+            for side in ("before", "after"):
+                projection[side] = {"pages": [{"page_index": 0, **{
+                    kind + "_sha256": "sha256:" + b.sha(value[side]["pages"][0][kind + "_json"].encode())
+                    for kind in ("request", "response")}}]}
+            generation = {"source": "current-generated-material"}
+            report = {"schema": "gooo/definition-snapshot-report/v1", "decision": copy.deepcopy(row["expected"]),
+                      "projection": projection, "bindings": generation}
+            b.check_snapshot_report(b.encoded(report), row["input"], row, generation)
+            changes = [lambda r: r["decision"].pop("before_definition_id"),
+                       lambda r: r["decision"].update(execution_authorized=True),
+                       lambda r: r["decision"].update(before_index=False),
+                       lambda r: r.update(bindings={"source": "historical-generated-material"}),
+                       lambda r: r["projection"]["before"]["pages"][0].update(request_sha256="sha256:" + "0" * 64)]
+            for mutate in changes:
+                bad = copy.deepcopy(report); mutate(bad)
+                with self.subTest(case=row["case"]), self.assertRaises((ValueError, KeyError)):
+                    b.check_snapshot_report(b.encoded(bad), row["input"], row, generation)
+
+
 class Archives(unittest.TestCase):
     def test_deterministic_exact_members_and_trailing_refusal(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -179,6 +275,17 @@ class Archives(unittest.TestCase):
             changed = dict(files, run=(b"binary", 0o644))
             with self.assertRaises(ValueError):
                 b.verify_archive(a, changed)
+
+    def test_nested_packet_paths_are_exact_and_traversal_is_refused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            files = {"mcp-upgrade-regressions/case/snapshot-input.json": (b"{}\n", 0o644)}
+            archive = root / "safe.tgz"
+            b.write_archive(archive, files)
+            b.verify_archive(archive, files)
+            for i, name in enumerate(("../escape", "/absolute", "a//b", "a/./b", "a/../b", "a\\b")):
+                with self.subTest(name=name), self.assertRaisesRegex(ValueError, "safe relative"):
+                    b.write_archive(root / (str(i) + ".tgz"), {name: (b"x", 0o644)})
 
     def test_archive_symlink_member_is_refused(self):
         with tempfile.TemporaryDirectory() as tmp:
