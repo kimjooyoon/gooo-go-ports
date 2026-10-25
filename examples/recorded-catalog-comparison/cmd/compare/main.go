@@ -15,6 +15,7 @@ const usage = `Compare saved MCP tool catalogs using rules written in Gooo and c
 Usage:
   compare < saved-observations.json > report.json
   compare --definitions --before-policy REV --after-policy REV < saved-observations.json
+  compare --definitions --diagnostics < saved-observations.json
   compare --example > synthetic-observations.json
   compare --version
   compare --help
@@ -26,6 +27,8 @@ With no arguments, read one JSON comparison from stdin (at most 1 MiB).
 Use one display option at a time; unknown arguments are refused before reading stdin.
 --definitions compares definition and annotation-claim bindings as well as origin.
 Policy revisions are optional supplied text; omitted revisions remain unobserved.
+--diagnostics immediately after --definitions adds field observation diagnostics.
+Keep the original saved input with the report; diagnostics do not repair missing facts.
 
 Successful comparison: exit 0, full JSON report on stdout.
 Invalid arguments: exit 2. Input, comparison or I/O failure: exit 1.
@@ -93,19 +96,27 @@ func runCommand(args []string, input io.Reader, out, diagnostics io.Writer) int 
 		return run(input, out, diagnostics)
 	}
 	if args[0] == "--definitions" {
-		if len(args) > 5 || (len(args)-1)%2 != 0 {
+		remaining := args[1:]
+		withDiagnostics := len(remaining) > 0 && remaining[0] == "--diagnostics"
+		if withDiagnostics {
+			remaining = remaining[1:]
+		}
+		if len(remaining) > 4 || len(remaining)%2 != 0 {
 			return invalidArguments(diagnostics)
 		}
 		values := map[string]string{}
-		for i := 1; i < len(args); i += 2 {
-			key := args[i]
+		for i := 0; i < len(remaining); i += 2 {
+			key := remaining[i]
 			if key != "--before-policy" && key != "--after-policy" {
 				return invalidArguments(diagnostics)
 			}
 			if _, duplicate := values[key]; duplicate {
 				return invalidArguments(diagnostics)
 			}
-			values[key] = args[i+1]
+			values[key] = remaining[i+1]
+		}
+		if withDiagnostics {
+			return runDefinitionDiagnostics(input, out, diagnostics, values["--before-policy"], values["--after-policy"])
 		}
 		return runDefinitions(input, out, diagnostics, values["--before-policy"], values["--after-policy"])
 	}
@@ -130,6 +141,22 @@ func runCommand(args []string, input io.Reader, out, diagnostics io.Writer) int 
 func invalidArguments(diagnostics io.Writer) int {
 	diagnostic(diagnostics, &origin.Problem{State: "INVALID_ARGUMENT", Stage: "parse_arguments", Code: "UNSUPPORTED_ARGUMENTS"})
 	return 2
+}
+
+func runDefinitionDiagnostics(input io.Reader, out, diagnostics io.Writer, beforePolicy, afterPolicy string) int {
+	raw, err := io.ReadAll(io.LimitReader(input, origin.MaxInputBytes+1))
+	if err != nil {
+		return diagnostic(diagnostics, err)
+	}
+	report, err := origin.CompareDefinitionDiagnosticsJSON(raw, beforePolicy, afterPolicy)
+	if err != nil {
+		return diagnostic(diagnostics, err)
+	}
+	encoded, err := json.Marshal(report)
+	if err != nil {
+		return diagnostic(diagnostics, err)
+	}
+	return emit(append(encoded, '\n'), out, diagnostics)
 }
 
 func runDefinitions(input io.Reader, out, diagnostics io.Writer, beforePolicy, afterPolicy string) int {

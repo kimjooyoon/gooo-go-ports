@@ -1,0 +1,131 @@
+// Copyright (c) 2026 Gooo Go Ports contributors. BSD-3-Clause; see ../../LICENSE.
+// Missing observations are distinct from malformed declarations and known changes.
+package observation_diagnostics
+namespace gooo_observation_diagnostics_v1
+entity Text id "gooo://std/text"
+entity Boolean id "gooo://std/boolean"
+entity ObservationField id "gooo://tool-origin/observation-diagnostics/v1/input" fields {
+ field context_id id "gooo://tool-origin/observation-diagnostics/v1/input/context_id" type string required one
+ field field_path id "gooo://tool-origin/observation-diagnostics/v1/input/field_path" type string required one
+ field field_kind id "gooo://tool-origin/observation-diagnostics/v1/input/field_kind" type string required one
+ field recording_basis id "gooo://tool-origin/observation-diagnostics/v1/input/recording_basis" type string required one
+ field value_state id "gooo://tool-origin/observation-diagnostics/v1/input/value_state" type string required one
+ field value id "gooo://tool-origin/observation-diagnostics/v1/input/value" type string required one
+ field comparison_scope id "gooo://tool-origin/observation-diagnostics/v1/input/comparison_scope" type string required one
+ field expected_value_state id "gooo://tool-origin/observation-diagnostics/v1/input/expected_value_state" type string required one
+ field expected_value id "gooo://tool-origin/observation-diagnostics/v1/input/expected_value" type string required one
+ field expected_field_path id "gooo://tool-origin/observation-diagnostics/v1/input/expected_field_path" type string required one
+ field source_document id "gooo://tool-origin/observation-diagnostics/v1/input/source_document" type string required one
+ field expected_source_document id "gooo://tool-origin/observation-diagnostics/v1/input/expected_source_document" type string required one
+}
+entity ObservationResult id "gooo://tool-origin/observation-diagnostics/v1/result" fields {
+ field context_id id "gooo://tool-origin/observation-diagnostics/v1/result/context_id" type string required one
+ field field_path id "gooo://tool-origin/observation-diagnostics/v1/result/field_path" type string required one
+ field field_kind id "gooo://tool-origin/observation-diagnostics/v1/result/field_kind" type string required one
+ field recording_basis id "gooo://tool-origin/observation-diagnostics/v1/result/recording_basis" type string required one
+ field value_state id "gooo://tool-origin/observation-diagnostics/v1/result/value_state" type string required one
+ field value id "gooo://tool-origin/observation-diagnostics/v1/result/value" type string required one
+ field comparison_scope id "gooo://tool-origin/observation-diagnostics/v1/result/comparison_scope" type string required one
+ field expected_value_state id "gooo://tool-origin/observation-diagnostics/v1/result/expected_value_state" type string required one
+ field expected_value id "gooo://tool-origin/observation-diagnostics/v1/result/expected_value" type string required one
+ field expected_field_path id "gooo://tool-origin/observation-diagnostics/v1/result/expected_field_path" type string required one
+ field source_document id "gooo://tool-origin/observation-diagnostics/v1/result/source_document" type string required one
+ field expected_source_document id "gooo://tool-origin/observation-diagnostics/v1/result/expected_source_document" type string required one
+ field state id "gooo://tool-origin/observation-diagnostics/v1/result/state" type string required one
+ field reason id "gooo://tool-origin/observation-diagnostics/v1/result/reason" type string required one
+ field next_action id "gooo://tool-origin/observation-diagnostics/v1/result/next_action" type string required one
+ field required_for_context id "gooo://tool-origin/observation-diagnostics/v1/result/required_for_context" type boolean required one
+ field known_change id "gooo://tool-origin/observation-diagnostics/v1/result/known_change" type boolean required one
+ field producer_authenticated id "gooo://tool-origin/observation-diagnostics/v1/result/producer_authenticated" type boolean required one
+ field behavior_equivalence_proven id "gooo://tool-origin/observation-diagnostics/v1/result/behavior_equivalence_proven" type boolean required one
+ field execution_authorized id "gooo://tool-origin/observation-diagnostics/v1/result/execution_authorized" type boolean required one
+ field live_effect_performed id "gooo://tool-origin/observation-diagnostics/v1/result/live_effect_performed" type boolean required one
+}
+activity IsObservationPointer(Text) -> Boolean id "gooo://tool-origin/observation-diagnostics/v1/is-pointer" computes `
+let size = len(input)
+if size == 0 || size > 512 { return false }
+if input[0] != 47 { return false }
+let valid = true
+let escaped = false
+for let offset = 0; offset < 512; offset = offset + 1 {
+ if offset < size {
+  let code = input[offset]
+  if code == 0 { valid = false }
+  if escaped {
+   if code != 48 && code != 49 { valid = false }
+   escaped = false
+  } else { if code == 126 { escaped = true } }
+ }
+}
+return valid && !escaped
+`
+activity ResolveObservationAvailability(Text, Text) -> Text id "gooo://tool-origin/observation-diagnostics/v1/resolve-availability" computes `
+if input0 == "UNOBSERVED" { if input1 == "" { return "UNOBSERVED" }; return "INVALID" }
+if input0 == "SUPPLIED" { if input1 != "" { return "SUPPLIED" }; return "INVALID" }
+if input0 == "LEGACY_TEXT" { if input1 == "" { return "UNOBSERVED" }; return "SUPPLIED" }
+return "INVALID"
+`
+activity AssessObservationField(ObservationField) -> ObservationResult id "gooo://tool-origin/observation-diagnostics/v1/assess" computes `
+let required = input.field_kind == "OPAQUE_CONTEXT_ID" || input.field_kind == "BACKEND_BINDING_REVISION" || input.field_kind == "CONFIGURATION_REVISION" || input.field_kind == "PROTOCOL_VERSION"
+let optional = input.field_kind == "CAPTURE_TIMESTAMP" || input.field_kind == "POLICY_REVISION"
+let availability = ResolveObservationAvailability(input.value_state, input.value)
+let expected = "NOT_APPLICABLE"
+let invalid = input.context_id == "" || !IsObservationPointer(input.field_path) || (!required && !optional) || availability == "INVALID"
+if input.source_document != "RECORDED_INPUT" && input.source_document != "SUPPLIED_POLICY" { invalid = true }
+if input.field_kind == "POLICY_REVISION" { if input.source_document != "SUPPLIED_POLICY" { invalid = true } } else { if input.source_document != "RECORDED_INPUT" { invalid = true } }
+if len(input.value) > 1024 || len(input.expected_value) > 1024 { invalid = true }
+if input.recording_basis != "CAPTURE_TIME" && input.recording_basis != "RETROSPECTIVE" && input.recording_basis != "UNKNOWN" && input.recording_basis != "HOST_DECLARATION" { invalid = true }
+if input.comparison_scope == "NONE" {
+ if input.expected_source_document != "NOT_APPLICABLE" || input.expected_value_state != "NOT_APPLICABLE" || input.expected_value != "" || input.expected_field_path != "" { invalid = true }
+} else {
+ if input.comparison_scope != "SAME_CAPTURE" && input.comparison_scope != "BETWEEN_CATALOGS" { invalid = true }
+ expected = ResolveObservationAvailability(input.expected_value_state, input.expected_value)
+ if input.expected_source_document != input.source_document || expected == "INVALID" || !IsObservationPointer(input.expected_field_path) || input.expected_field_path == input.field_path { invalid = true }
+}
+let state = "SUPPLIED_ONLY"
+let reason = "SUPPLIED_TEXT_NOT_AUTHENTICATED"
+let action = "CONTINUE_DOMAIN_VALIDATION"
+let changed = false
+if availability == "UNOBSERVED" {
+ state = "UNASSESSED"
+ reason = "REQUIRED_OBSERVATION_UNAVAILABLE"
+ action = "OBTAIN_OBSERVATION"
+ if optional { state = "OPTIONAL_UNOBSERVED"; reason = "OPTIONAL_OBSERVATION_UNAVAILABLE"; action = "PRESERVE_UNOBSERVED" }
+} else {
+ if input.comparison_scope != "NONE" {
+  if expected == "UNOBSERVED" {
+   state = "UNASSESSED"; reason = "COMPARISON_OBSERVATION_UNAVAILABLE"; action = "OBTAIN_COMPARISON_OBSERVATION"
+  } else {
+   state = "SAME_SUPPLIED"; reason = "SAME_SUPPLIED_TEXT_NOT_AUTHENTICATED"
+   if input.value != input.expected_value {
+    state = "KNOWN_MISMATCH"; reason = "DIFFERENT_SUPPLIED_CONTEXT_VALUES"; action = "REEVALUATE_CONTEXT_CHANGE"; changed = true
+    if input.comparison_scope == "SAME_CAPTURE" { action = "RECOLLECT_CONTEXT" }
+   }
+  }
+ }
+}
+if invalid { state = "INVALID_DECLARATION"; reason = "INVALID_OBSERVATION_FIELD_DECLARATION"; action = "FIX_DECLARATION"; changed = false }
+return ObservationResult{
+ context_id: input.context_id,
+ field_path: input.field_path,
+ field_kind: input.field_kind,
+ recording_basis: input.recording_basis,
+ value_state: availability,
+ value: input.value,
+ comparison_scope: input.comparison_scope,
+ expected_value_state: expected,
+ expected_value: input.expected_value,
+ expected_field_path: input.expected_field_path,
+ source_document: input.source_document,
+ expected_source_document: input.expected_source_document,
+ state: state,
+ reason: reason,
+ next_action: action,
+ required_for_context: required,
+ known_change: changed,
+ producer_authenticated: false,
+ behavior_equivalence_proven: false,
+ execution_authorized: false,
+ live_effect_performed: false,
+}
+`
