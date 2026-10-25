@@ -131,6 +131,33 @@ class StrictReaderTests(unittest.TestCase):
             with self.subTest(metadata=metadata),self.assertRaises(RuntimeError):
                 R.load(b'{"x":1,"\\u0078":2}',metadata=metadata)
 
+    def test_standard_C_and_Python_scanners_keep_integer_and_duplicate_boundaries(self):
+        # The optimized callback delegates lexical tokenization to stdlib JSON,
+        # so exercise both scanner implementations instead of timing this test.
+        scanners=[json.scanner.c_make_scanner,json.scanner.py_make_scanner]
+        for scanner in scanners:
+            if scanner is None:
+                continue
+            with self.subTest(scanner=scanner), mock.patch.object(json.scanner,'make_scanner',scanner):
+                for metadata in (True,False):
+                    with self.subTest(metadata=metadata):
+                        observed=R.load(b'{"n":[-9223372036854775808,0,9007199254740993,9223372036854775807],"b":true}',metadata=metadata)
+                        self.assertEqual(observed['n'],[-(1<<63),0,(1<<53)+1,(1<<63)-1])
+                        self.assertTrue(all(type(n) is int for n in observed['n']))
+                        self.assertIs(observed['b'],True)
+                    for token in (b'-0',b'00',b'-01',b'+1',b'1_0',b'0x10',
+                                  b'9223372036854775808',b'-9223372036854775809',
+                                  '1١'.encode('utf-8'),'-1١'.encode('utf-8')):
+                        with self.subTest(metadata=metadata,token=token),self.assertRaises(RuntimeError):
+                            R.load(b'{"n":'+token+b'}',metadata=metadata)
+                    with self.subTest(metadata=metadata),self.assertRaisesRegex(RuntimeError,'duplicate decoded JSON key: x'):
+                        R.load(b'{"x":1,"\\u0078":2}',metadata=metadata)
+                    with self.subTest(metadata=metadata),self.assertRaises(RuntimeError):
+                        R.load(b'{"nested":{"n":NaN}}',metadata=metadata)
+                self.assertEqual(R.load(b'{"n":1.25}',metadata=False),{'n':1.25})
+                with self.assertRaises(RuntimeError):
+                    R.load(b'{"n":1.25}',metadata=True)
+
     def test_duplicate_unknown_truncated_and_nondecimal_json(self):
         for raw in (b'{"x":1,"x":2}',b'{"x":',b'{}{}',b'{"x":NaN}',b'{"x":1e0}',b'{"x":1.5}',b'{"x":-0}',b'{"x":9223372036854775808}'):
             with self.subTest(raw=raw),self.assertRaises(RuntimeError):R.load(raw)
