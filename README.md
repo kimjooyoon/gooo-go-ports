@@ -3,11 +3,28 @@
 [Gooo](https://github.com/kimjooyoon/meta-ontology-go) is an experimental language
 for describing program behavior and retaining how a program was built and run.
 This repository provides independently checked Go ports and original Gooo
-compositions. Start with one source change and an observable result.
+compositions. Start with a concrete task and an observable result.
 
 ## First task for a coding agent
 
-Open this checkout in Codex, Cursor or Claude Code and ask:
+For saved MCP `tools/list` pages from before and after an upgrade or reconnect,
+open this checkout in Codex, Cursor or Claude Code and ask:
+
+> Follow `.agents/skills/gooo-compare-tool-snapshots/SKILL.md` to compare one
+> original tool name in my saved before/after pages. Keep the original files.
+> Show the observed change, any missing coverage, and the first failure or
+> remaining question that affects my upgrade review.
+
+The [own-input guide](docs/ai-agents.md#compare-your-own-saved-pages) starts from
+four saved request/response files. It uses Go **1.27.3** and this checkout's
+included evaluator; no Gooo compiler setup is needed. The published
+`recorded-catalog-cli-preview.1` does not support this mode. If you have no saved
+pages, [try the three synthetic cases](examples/mcp-upgrade-regressions/README.md)
+to see the result format; that does not assess your server.
+
+## Learn Gooo by changing a program
+
+To try the language itself, ask your coding agent:
 
 > Follow `.agents/skills/gooo-first-program/SKILL.md`. Run the Gooo example,
 > change its score threshold from 60 to 80, then save and replay a new execution.

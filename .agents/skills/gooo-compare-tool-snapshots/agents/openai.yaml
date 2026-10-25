@@ -1,0 +1,4 @@
+interface:
+  display_name: "Compare saved MCP tools with Gooo"
+  short_description: "Compare saved MCP definitions before an upgrade"
+  default_prompt: "Use $gooo-compare-tool-snapshots to compare this tool in my saved before/after MCP pages and explain the result or first missing observation."
