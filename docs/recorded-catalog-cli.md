@@ -1,11 +1,18 @@
-# Compare saved MCP catalogs without a toolchain
+# Use recorded-catalog-cli-preview.1
+
+This versioned guide retains the preview.1 download and its alias, collection
+context and observation-availability workflow. That executable does not support
+`--definition-snapshot`. To compare saved tool definitions without host aliases,
+use the [current saved-page guide](ai-agents.md#compare-your-own-saved-pages).
+The [task guide](../README.md#choose-the-next-useful-task) links the available
+routes; follow the instructions for the actual version you use.
 
 `gooo-recorded-catalog` compares saved tool catalogs using rules written in Gooo.
 It helps distinguish a changed tool origin from incomplete pages or observations
 that were never recorded. The standalone executable needs no Go or Gooo
 installation, model, account or network connection to compare local files.
 
-Use the [experimental standalone release](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/recorded-catalog-cli-preview.1)
+Use the [recorded-catalog-cli-preview.1 archive](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/recorded-catalog-cli-preview.1)
 for Linux x86-64 or Apple Silicon macOS. This is a separate command; the
 service-grant CLI and MCP preview bundles do not contain it. The
 [source build](../examples/recorded-catalog-comparison/README.md#try-a-synthetic-example)
