@@ -68,23 +68,31 @@ def provenance(index,gofmt,generated,used):
     paths=[ROOT/'upstream.json',e.MANIFEST,*[ROOT/p for p in e.SOURCES.values()],HERE/'kernel.cases.json',*[HERE/p for p in e.REFERENCE],
            Path(__file__),HERE/'evidence.py',ROOT/'examples/recorded-catalog-comparison/generate.py',ROOT/'examples/service-grant-many/verify.py',index,gofmt,gofmt.parent/'go',*used]
     assert len(set(paths))==len(paths)
+    # A copied file is a new occurrence even when its bytes match an input.
+    # Scope IDs to this generation so separate runs also keep separate events.
+    profile='gooo/definition-binding-file-occurrence/v1'
+    activity='urn:uuid:'+str(uuid.uuid4())
+    def entity_id(role,path,digest):
+        value=json.dumps([profile,activity,role,path,digest],ensure_ascii=True,separators=(',',':')).encode()
+        return 'urn:gooo:definition-binding:entity:'+e.sha(value).removeprefix('sha256:')
     graph=[];parents=[]
     receipt_paths={e.local_member(index.parent,b[k]) for b in e.host.strict(e.read(index))['batches'] for k in ('execution','replay')}
     upstream=None
     for path in paths:
-        raw=e.read(path,64<<20);identity='urn:'+e.sha(raw)
-        node={'@id':identity,'@type':'prov:Entity','path':str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path),'sha256':e.sha(raw)}
+        raw=e.read(path,64<<20)
+        name=str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
+        identity=entity_id('input',name,e.sha(raw))
+        node={'@id':identity,'@type':'prov:Entity','path':name,'role':'input','sha256':e.sha(raw)}
         if path in receipt_paths:node['original_JSON_sha256']=e.sha(e.receipt(path)[0])
         if path==ROOT/'upstream.json':upstream={'@id':identity}
         graph.append(node);parents.append({'@id':identity})
-    selected={'@id':'urn:'+e.sha(PIN_BYTES)}
-    graph.append({'@id':selected['@id'],'@type':'prov:Entity','path':'upstream.json#consumed-definition-pins','sha256':e.sha(PIN_BYTES),'canonicalJSON':PIN_BYTES.decode(),'jsonPointers':['/compiler_revision','/go_version'],'prov:wasDerivedFrom':[upstream]})
-    activity='urn:uuid:'+str(uuid.uuid4())
+    selected={'@id':entity_id('selected-pins','upstream.json#consumed-definition-pins',e.sha(PIN_BYTES))}
+    graph.append({'@id':selected['@id'],'@type':'prov:Entity','path':'upstream.json#consumed-definition-pins','role':'selected-pins','sha256':e.sha(PIN_BYTES),'canonicalJSON':PIN_BYTES.decode(),'jsonPointers':['/compiler_revision','/go_version'],'prov:wasDerivedFrom':[upstream]})
     graph.append({'@id':activity,'@type':'prov:Activity','prov:used':parents+[selected],'prov:endedAtTime':{'@value':datetime.datetime.now(datetime.timezone.utc).isoformat(),'@type':'http://www.w3.org/2001/XMLSchema#dateTime'}})
     dependencies=[selected,*parents[1:]]
     for name,raw in generated.items():
-        graph.append({'@id':'urn:'+e.sha(raw),'@type':'prov:Entity','path':name,'sha256':e.sha(raw),'prov:wasGeneratedBy':{'@id':activity},'prov:wasDerivedFrom':dependencies})
-    return {'@context':{'prov':'http://www.w3.org/ns/prov#','gooo':'https://github.com/kimjooyoon/gooo-go-ports/provenance#','path':'gooo:path','sha256':'gooo:sha256','original_JSON_sha256':'gooo:originalJSONSHA256','canonicalJSON':'gooo:canonicalJSON','jsonPointers':'gooo:jsonPointers'},'@graph':graph,'scope':'Actual local generation dependencies only; no producer authentication, live capture or effect authorization.'}
+        graph.append({'@id':entity_id('output',name,e.sha(raw)),'@type':'prov:Entity','path':name,'role':'output','sha256':e.sha(raw),'prov:wasGeneratedBy':{'@id':activity},'prov:wasDerivedFrom':dependencies})
+    return {'@context':{'prov':'http://www.w3.org/ns/prov#','gooo':'https://github.com/kimjooyoon/gooo-go-ports/provenance#','path':'gooo:path','role':'gooo:role','sha256':'gooo:sha256','original_JSON_sha256':'gooo:originalJSONSHA256','canonicalJSON':'gooo:canonicalJSON','jsonPointers':'gooo:jsonPointers'},'@graph':graph,'entity_identity_profile':profile,'scope':'Actual local generation dependencies only; file occurrence IDs include the generation activity, role, path and content hash. No producer authentication, live capture or effect authorization.'}
 
 
 def main():

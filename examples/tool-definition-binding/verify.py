@@ -38,10 +38,48 @@ def snapshot():
     return result
 
 
+def provenance_graph(graph):
+    """Check this generator's finite graph, not general PROV-O conformance."""
+    assert type(graph) is list and graph
+    by_id={}
+    for node in graph:
+        assert type(node) is dict and type(node.get('@id')) is str and node['@id']
+        assert node['@id'] not in by_id,'duplicate provenance ID'
+        assert node['@type'] in ('prov:Entity','prov:Activity')
+        by_id[node['@id']]=node
+    edges={identity:set() for identity in by_id}
+    for identity,node in by_id.items():
+        for key,target_type,many in [('prov:wasDerivedFrom','prov:Entity',True),('prov:wasGeneratedBy','prov:Activity',False),('prov:used','prov:Entity',True)]:
+            if key not in node:continue
+            assert node['@type']==('prov:Activity' if key=='prov:used' else 'prov:Entity')
+            targets=node[key] if many else [node[key]]
+            assert type(targets) is list
+            for target in targets:
+                assert type(target) is dict and set(target)=={'@id'}
+                reference=target['@id']
+                assert reference in by_id,'unresolved provenance reference'
+                assert reference!=identity,'self-referential provenance edge'
+                assert by_id[reference]['@type']==target_type,'wrong provenance reference type'
+                edges[identity].add(reference)
+    # Dependencies point from outputs to activities/inputs. Remove leaves first.
+    remaining=set(edges)
+    while remaining:
+        leaves={identity for identity in remaining if not edges[identity]&remaining}
+        assert leaves,'cyclic provenance dependencies'
+        remaining-=leaves
+
+
 def provenance(generated,index,gofmt):
-    graph=host.strict(e.read(generated/'generation.provenance.jsonld',2<<20))['@graph']
+    document=host.strict(e.read(generated/'generation.provenance.jsonld',2<<20))
+    profile='gooo/definition-binding-file-occurrence/v1'
+    assert document['entity_identity_profile']==profile
+    graph=document['@graph'];provenance_graph(graph)
     activities=[n for n in graph if n['@type']=='prov:Activity']
     assert len(activities)==1
+    def check_identity(node,role,path,digest):
+        value=json.dumps([profile,activities[0]['@id'],role,path,digest],ensure_ascii=True,separators=(',',':')).encode()
+        assert node['@id']=='urn:gooo:definition-binding:entity:'+e.sha(value).removeprefix('sha256:')
+        assert node['role']==role and node['path']==path and node['sha256']==digest
     nodes={n['path']:n for n in graph if n['@type']=='prov:Entity'}
     assert len(nodes)==len(graph)-1
     used=[ROOT/'upstream.json',e.MANIFEST,*[ROOT/p for p in e.SOURCES.values()],HERE/'kernel.cases.json',*[HERE/p for p in e.REFERENCE],HERE/'generate.py',HERE/'evidence.py',ROOT/'examples/recorded-catalog-comparison/generate.py',ROOT/'examples/service-grant-many/verify.py',index,gofmt,gofmt.parent/'go']
@@ -54,18 +92,19 @@ def provenance(generated,index,gofmt):
     for p in used:
         key=str(p.relative_to(ROOT)) if p.is_relative_to(ROOT) else str(p)
         n=nodes[key];digest='sha256:'+host.ref(p)['sha256']
-        assert n['sha256']==digest and n['@id']=='urn:'+digest
+        check_identity(n,'input',key,digest)
         if p in receipt_paths:assert n['original_JSON_sha256']==e.sha(e.receipt(p)[0])
         dependencies.append({'@id':n['@id']})
     pins=json.dumps({'compiler_revision':e.PIN,'go_version':e.GO_VERSION},sort_keys=True,separators=(',',':')).encode()
     pin=nodes['upstream.json#consumed-definition-pins']
-    assert pin['sha256']==e.sha(pins) and pin['canonicalJSON'].encode()==pins and pin['@id']=='urn:'+e.sha(pins)
+    check_identity(pin,'selected-pins','upstream.json#consumed-definition-pins',e.sha(pins))
+    assert pin['canonicalJSON'].encode()==pins
     same=e.same;same(pin['jsonPointers'],['/compiler_revision','/go_version']);same(pin['prov:wasDerivedFrom'],[dependencies[0]])
     selected={'@id':pin['@id']};same(activities[0]['prov:used'],dependencies+[selected])
     assert len(nodes)==len(used)+1+len(e.ASSETS)
     for name in e.ASSETS:
         n=nodes[name];digest='sha256:'+host.ref(generated/name)['sha256']
-        assert n['sha256']==digest and n['@id']=='urn:'+digest
+        check_identity(n,'output',name,digest)
         same(n['prov:wasGeneratedBy'],{'@id':activities[0]['@id']})
         same(n['prov:wasDerivedFrom'],[selected,*dependencies[1:]])
 
@@ -111,6 +150,7 @@ def main():
         for key,value in {'compiler_source_sha':e.PIN,'vcs_revision':e.PIN,'source_status':'CLEAN_VCS','vcs_modified':'false','go_version':e.GO_VERSION,'native_go_required':e.GO_VERSION,'version':facts['compiler_version'],'build_info_observed':True}.items():e.same(identity[key],value)
         e.same(identity['module'],profile['module']);e.same(identity['decision_runtime'],profile['decision_runtime'])
         summary.update(compiler=host.ref(compiler),compiler_identity=identity,go_identity=go_identity)
+        run('provenance-regression-controls',[sys.executable,'-I','-B',HERE/'provenance_test.py'],30)
         expected=run('independent-Go-reference',[go,'-C',HERE/'reference','run','.', '-input',HERE/'reference-inputs.json'])
         assert expected==e.read(HERE/'kernel.cases.json',2<<20)
         kernel=host.strict(expected);assert len(kernel['cases'])==60

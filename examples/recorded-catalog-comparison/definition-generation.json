@@ -15,7 +15,7 @@
     "examples/recorded-catalog-comparison/generate.py": "sha256:f64b0df498d4816b2cece12eedf14a1e2f85678982cd5d074b1cae62b818d3db",
     "examples/service-grant-many/verify.py": "sha256:ff3d94c39782619e06f64d5fbcfc3218733013332293f07b14368e5e939d3f0f",
     "examples/tool-definition-binding/evidence.py": "sha256:22829d04c7d532d0ad7e5f8cdd2a2c57daa2d69d7ebdec77ec6343677e48a65f",
-    "examples/tool-definition-binding/generate.py": "sha256:5cccf3dba88988ed6a3caab11a0db320669e44ab267a050fcbb273c2feb7bdc1"
+    "examples/tool-definition-binding/generate.py": "sha256:4315e919ef1d09870d27fd2733f3492d779b91d159d6aa6e58982e88449aad2c"
   },
   "go_version": "go1.27.3",
   "projection_transform": "Replace first package token main with definitionkernel; all other bytes unchanged.",

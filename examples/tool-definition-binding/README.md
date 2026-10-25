@@ -151,6 +151,14 @@ projection changes only its package token; API types and record bindings come
 from the compiler's typed plan. The independent corpus is copied mechanically
 for the installable module's tests. PROV-O records the actual generator, helper,
 selected pin fields, source, case partitions, original receipt bodies and Go tools.
+File occurrences have separate IDs bound to the generation activity, input/output
+role, path and content hash (`gooo/definition-binding-file-occurrence/v1`). Equal
+bytes at the corpus input and copied output therefore retain equal `sha256`
+values without becoming the same entity or a self-derivation. Twelve regression
+controls check copied inputs, separate runs, duplicate IDs, unresolved/wrong-type
+references and dependency cycles. This is a check of this generator's finite
+graph, not a general W3C PROV validator. See the
+[PROV derivation ordering constraint](https://www.w3.org/TR/prov-constraints/#derivation-generation-generation-ordering).
 This makes future regeneration dependencies explicit without claiming their
 checksums authenticate a producer.
 
