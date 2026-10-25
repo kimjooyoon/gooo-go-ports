@@ -14,7 +14,7 @@ are developed separately; this repository supplies ports and runnable examples.
 | Preserve all required services while narrowing a grant | [Ordered-request MCP tool](#preserve-several-required-requests-through-mcp): start with `--many-required`, then call `assess_service_grant_change` | An ordered list, normally 1-256 pairs; twelve decision fields, including the first original counterexample index. Do not replace it with the single-request tool. |
 | Check whether a previously selected tool alias changed origin | [Source-built alias MCP tool](#compare-a-tool-alias-before-reusing-it): start with `--alias-origin-change`, then call `gooo_compare_alias_origin` | Compare supplied catalogs and retain the original row indexes. Requires this source build; unavailable in preview16. |
 | Compare the supplied API policy profiles | [Fixed-policy command](#compare-fixed-api-policies-without-a-compiler) | Compares the documented profiles; does not load an arbitrary edited policy. |
-| Compare saved MCP tool catalogs | [Pinned comparison command](#compare-saved-mcp-catalogs-without-a-checkout) or [missing-observation diagnostic](#diagnose-missing-observations-in-a-development-snapshot) | Separates alias-origin changes from unknown collection context. The development diagnostic names missing fields and next observations; neither command collects a live catalog. |
+| Compare saved MCP tool catalogs | [Native CLI without a toolchain](recorded-catalog-cli.md) or [pinned source alternatives](#compare-saved-mcp-catalogs-without-a-checkout) | Separates alias-origin changes from unknown collection context. The native command includes explicit observation availability and missing-field diagnostics; it does not collect a live catalog or authorize a tool call. |
 | Edit and execute Gooo source | [First-program skill](#run-the-first-program-skill) | An actual source edit plus new execution and replay records; declaration checking alone is insufficient. |
 
 The native MCP routes need no compiler at runtime. The optional
@@ -555,6 +555,17 @@ This guidance adds no live collector, authentication or execution authority.
 
 ## Compare saved MCP catalogs without a checkout
 
+For Linux x86-64 or Apple Silicon macOS, start with the
+[standalone CLI guide](recorded-catalog-cli.md). It covers the release archive,
+checksum, fresh-directory installation, and comparison of your own saved input
+without Go, Gooo, Python or a model account. Use an absolute path to your input,
+keep the availability sidecar and report together, and retain stderr and the
+exit status on failure. For feedback, include the release tag, archive name,
+manifest source revision, whether the input was yours or the unchanged example,
+and the decision or first failure. The guide links the existing feedback form.
+The source commands below retain the older pinned profiles and their distinct
+capabilities.
+
 With Go **1.27.3**, install the comparison from an immutable public module version.
 The temporary installation directory keeps its generic `compare` name separate
 from other commands. Installation needs access to the Go module service; the
@@ -656,6 +667,10 @@ share only public details, and identify any redacted or reduced reproduction.
 A useful result or a first failure is enough.
 
 ### Declare unavailable observations in this checkout
+
+For the standalone archive's commands, use the
+[native availability guide](recorded-catalog-cli.md#keep-unavailable-information-explicit).
+This subsection preserves the source-build workflow.
 
 An opaque value such as `UNKNOWN` may be a real identifier or text retained for
 an observation that was never made. The opt-in
