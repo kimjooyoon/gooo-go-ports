@@ -99,9 +99,14 @@ The input-refusal records also bind the launched compiler path and binary
 digest to its observed build identity. These checks concern retained local
 observations; they do not authenticate a remote producer.
 
-Repository-wide CI for this feature is still pending. The retained Context7
-input pair motivated the interface but has not yet completed the new CLI and
-native comparison. It is an internal use case, not external adoption.
+Repository-wide CI for this feature is still pending. Two retained Context7
+comparisons, for `resolve-library-id` and `query-docs`, also passed the CLI,
+independent Go reference, fresh Gooo execution and each execution's own replay.
+Both returned `OBSERVED_DEFINITION_SAME` for the supplied rows while leaving
+origin and authorization unassessed. The requests and extracted response bytes
+were checked against the retained originals. No new server call was made.
+This is an internal use case, not external adoption or evidence that the server's
+behavior stayed unchanged.
 
 The retained Context7 responses are complete matching SSE events within HTTP
 response prefixes, not complete HTTP streams or stdio frames. An extraction
