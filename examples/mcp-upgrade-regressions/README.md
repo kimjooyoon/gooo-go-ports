@@ -10,6 +10,41 @@ a host alias registry.
 | `same-definition-version-context-only` | The descriptor stays the same; fictional server version labels change only in `context.json`. | `OBSERVED_DEFINITION_SAME` |
 | `missing-after-incomplete-page` | The tool is absent from the retained after page, but its `nextCursor` points to a page that was not saved. | `UNASSESSED` |
 
+## Use an extracted native archive
+
+Use this path only with an archive that includes `mcp-upgrade-regressions/` next
+to `gooo-recorded-catalog`. The earlier `recorded-catalog-cli-preview.1` archive
+does not support this mode. From the extracted archive's root, no Go or Gooo
+installation is needed:
+
+```sh
+report_dir="$(mktemp -d)" || exit 1
+for case_id in \
+  output-schema-string-to-number \
+  same-definition-version-context-only \
+  missing-after-incomplete-page
+do
+  if ./gooo-recorded-catalog --definition-snapshot \
+    < "mcp-upgrade-regressions/$case_id/snapshot-input.json" \
+    > "$report_dir/$case_id.json" 2> "$report_dir/$case_id.stderr"; then
+    printf '0\n' > "$report_dir/$case_id.exit"
+    printf '%s: %s\n' "$case_id" "$report_dir/$case_id.json"
+  else
+    status=$?
+    printf '%s\n' "$status" > "$report_dir/$case_id.exit"
+    cat "$report_dir/$case_id.stderr" >&2
+    exit "$status"
+  fi
+done
+```
+
+The packet's `observed-decision.json` files are the frozen original-source
+regression results. The archive manifest identifies the current executable and
+source; the packaging verification separately checks that executable. A matching
+regression does not inherit the original native receipts or prove outside use.
+
+## Use a source checkout
+
 From the repository root, with Go **1.27.3** installed, run this source checkout.
 Older released binaries do not include `--definition-snapshot`.
 
@@ -40,7 +75,7 @@ status for a command failure.
 
 Each case includes the four original, locally authored request/response files
 and the assembled `snapshot-input.json`. Keep their exact text when making your
-own input; [the input guide](../tool-definition-snapshot/README.md#try-the-separate-saved-page-input)
+own input; [the input guide](https://github.com/kimjooyoon/gooo-go-ports/blob/0d44da946c6ae71c9a10c552892f68d6e55b8de7/examples/tool-definition-snapshot/README.md#try-the-separate-saved-page-input)
 explains the page format. `context.json` is explanatory synthetic context and is
 not passed to the comparator. `observed-decision.json` records the original local
 run; [packet.json](packet.json) identifies that source revision and payload hashes.

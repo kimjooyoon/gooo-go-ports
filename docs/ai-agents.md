@@ -1,8 +1,9 @@
 # Use Gooo with a coding agent
 
-This repository provides a small, source-based Gooo workflow for a local coding
-agent. Start with a concrete task: edit a Gooo program, execute the changed
-source, and save a new execution/replay pair.
+Start with a concrete task: compare saved MCP tool definitions, assess a service
+grant change, or edit and execute a Gooo program. For saved before/after pages,
+use the [own-input route](#compare-your-own-saved-pages) or the repository-local
+[snapshot skill](../.agents/skills/gooo-compare-tool-snapshots/SKILL.md).
 The [Gooo language and compiler](https://github.com/kimjooyoon/meta-ontology-go)
 are developed separately; this repository supplies ports and runnable examples.
 
@@ -15,7 +16,7 @@ are developed separately; this repository supplies ports and runnable examples.
 | Check whether a previously selected tool alias changed origin | [Source-built alias MCP tool](#compare-a-tool-alias-before-reusing-it): start with `--alias-origin-change`, then call `gooo_compare_alias_origin` | Compare supplied catalogs and retain the original row indexes. Requires this source build; unavailable in preview16. |
 | Compare the supplied API policy profiles | [Fixed-policy command](#compare-fixed-api-policies-without-a-compiler) | Compares the documented profiles; does not load an arbitrary edited policy. |
 | Compare saved MCP tool catalogs | [Native CLI without a toolchain](recorded-catalog-cli.md) or [pinned source alternatives](#compare-saved-mcp-catalogs-without-a-checkout) | Separates alias-origin changes from unknown collection context. The native command includes explicit observation availability and missing-field diagnostics; it does not collect a live catalog or authorize a tool call. |
-| Compare saved tool definitions when no host alias record exists | [Saved-definition source command](#compare-saved-definitions-without-host-alias-records): `--definition-snapshot` | Select an original tool name from retained JSON-RPC pages. Preserve incomplete coverage and duplicate-name results; do not invent a host mapping. This mode requires the current source checkout. |
+| Compare saved tool definitions when no host alias record exists | [Own-input recipe](#compare-your-own-saved-pages) or [agent task skill](../.agents/skills/gooo-compare-tool-snapshots/SKILL.md): `--definition-snapshot` | Select an original tool name from retained JSON-RPC pages. Preserve incomplete coverage and duplicate-name results; do not invent a host mapping. This mode requires the current source checkout or an archive explicitly containing the snapshot examples; preview.1 does not support it. |
 | Edit and execute Gooo source | [First-program skill](#run-the-first-program-skill) | An actual source edit plus new execution and replay records; declaration checking alone is insufficient. |
 
 The native MCP routes need no compiler at runtime. The optional
@@ -571,18 +572,79 @@ Ask your coding agent:
 > names and source bindings. Do not fill in missing host facts. Keep the full
 > report locally and show the first error if the command fails.
 
+### Compare your own saved pages
+
+Choose the execution route before running the recipe. The source route uses an
+existing checkout and Go **1.27.3**; its generated evaluator is already included,
+so no Gooo compiler bootstrap is needed. With an extracted native archive that
+explicitly includes `mcp-upgrade-regressions/`, replace
+`go -C examples/recorded-catalog-comparison run ./cmd/compare` below with the
+absolute path to its `gooo-recorded-catalog` executable. The public
+`recorded-catalog-cli-preview.1` archive does not support `--definition-snapshot`.
+
+Replace the original tool name and four absolute paths with your retained
+JSON-RPC `tools/list` payloads. Both routes use Python 3 to assemble the input
+without parsing and rewriting the original page text, including CRLF line endings.
+
+```sh
+snapshot_dir="$(mktemp -d "${TMPDIR:-/tmp}/gooo-snapshot.XXXXXX")" || exit 1
+python3 - 'original.tool.name' \
+  '/absolute/before-request.json' '/absolute/before-response.json' \
+  '/absolute/after-request.json' '/absolute/after-response.json' \
+  > "$snapshot_dir/input.json" <<'PY' || exit $?
+import json
+from pathlib import Path
+import sys
+
+def page(request, response):
+    return {"request_json": Path(request).read_bytes().decode("utf-8"),
+            "response_json": Path(response).read_bytes().decode("utf-8")}
+
+target, before_request, before_response, after_request, after_response = sys.argv[1:]
+json.dump({"target_name": target,
+           "before": {"pages": [page(before_request, before_response)]},
+           "after": {"pages": [page(after_request, after_response)]}}, sys.stdout)
+PY
+if GOTOOLCHAIN=local GOWORK=off \
+  go -C examples/recorded-catalog-comparison run ./cmd/compare --definition-snapshot \
+  < "$snapshot_dir/input.json" > "$snapshot_dir/report.json" 2> "$snapshot_dir/stderr"; then
+  snapshot_status=0
+else
+  snapshot_status=$?
+fi
+printf '%s\n' "$snapshot_status" > "$snapshot_dir/exit-status"
+printf 'Saved input, report and command status: %s\n' "$snapshot_dir"
+if [ "$snapshot_status" -ne 0 ]; then
+  cat "$snapshot_dir/stderr" >&2
+  exit "$snapshot_status"
+fi
+```
+
+Run from the repository root. If the command fails, retain its stderr and exit
+status; no comparison result was established. On exit zero, read `decision.state`,
+`decision.reason`, `decision.next_action`, the definition/annotation relations and both page
+coverage fields. `UNASSESSED` is a returned comparison with insufficient facts,
+not a command failure or permission to proceed.
+
+This recipe retains one page per side. If you saved more pages, append their
+original request/response pairs to each `pages` array in observed order. Keep a
+retained `nextCursor` even when its next page is missing: absence from an
+incomplete page set cannot establish that a tool was removed. The command
+collects no new pages and invents no aliases or host metadata.
+
+A useful first-use result is an answer to your own comparison question, a missing
+observation, or the first setup failure. In the [existing feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml),
+choose **Native setup, verification, or replay** and describe the command/source,
+your own versus synthetic input, result or first error, and what decision remains.
+Sharing the original files is optional; keep private catalog contents local.
+
 The [synthetic example](../examples/tool-definition-snapshot/example-input.json)
-changes a schema limit from 10 to 20. Locally, the generated implementation has
-passed the finite native/replay corpus and API tests; full feature CI remains
-required. Older immutable installations and published bundles do not contain
+changes a schema limit from 10 to 20. The [feature's main CI](https://github.com/kimjooyoon/gooo-go-ports/actions/runs/40235109209)
+passed the finite native/replay corpus and API tests at `9bbe157`; new revisions
+retain their own verification. Older immutable installations and published bundles do not contain
 this mode. `SAVED_ROWS_ONLY` compares the supplied rows; it does not establish
 unchanged server behavior or authorize calling a tool. Origin and authorization
 remain `NOT_ASSESSED`.
-
-For feedback, report the exact source revision, whether this answered your
-comparison question, and the first diagnostic or missing capability through
-the [existing feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml).
-Use a synthetic reproduction when sharing; keep private catalog contents local.
 
 For an upgrade or reconnect review, try the [three saved-definition regression examples](../examples/mcp-upgrade-regressions/README.md). They cover an output-schema change, unchanged definitions with separate version context, and a missing tool in an incomplete page set. The inputs are synthetic and use this source checkout.
 

@@ -30,7 +30,13 @@ need, sha, read, encoded, unique = BASE.need, BASE.sha, BASE.read, BASE.encoded,
 COMMAND = "gooo-recorded-catalog"
 MODULE = "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison"
 PROFILE = "examples/recorded-catalog-comparison/"
-SOURCE_DIRS = ("examples/explicit-observation-availability/", "examples/tool-definition-snapshot/", PROFILE)
+REGRESSION_ROOT = "examples/mcp-upgrade-regressions/"
+REGRESSION_ARCHIVE = "mcp-upgrade-regressions/"
+REGRESSION_CASES = ("output-schema-string-to-number", "same-definition-version-context-only", "missing-after-incomplete-page")
+REGRESSION_STATES = ("OBSERVED_DEFINITION_CHANGED", "OBSERVED_DEFINITION_SAME", "UNASSESSED")
+REGRESSION_FILES = ("before.request.json", "before.response.json", "after.request.json", "after.response.json",
+                    "snapshot-input.json", "expected.json", "observed-decision.json", "context.json")
+SOURCE_DIRS = ("examples/explicit-observation-availability/", "examples/tool-definition-snapshot/", REGRESSION_ROOT, PROFILE)
 SOURCE_EXTRAS = {
     "upstream.json", "explicit-availability.workspace.json", "explicit-observation.workspace.json",
     "definition-snapshot.workspace.json", "ports/tool-origin/definition_snapshot.gooo",
@@ -38,6 +44,7 @@ SOURCE_EXTRAS = {
     "ports/tool-origin/explicit_availability.gooo", "ports/tool-origin/explicit_observation.gooo",
     "ports/tool-origin/recorded_catalog.gooo", "examples/service-grant-many/verify.py",
     "examples/tool-definition-binding/evidence.py",
+    REGRESSION_ROOT + "README.md", REGRESSION_ROOT + "LICENSE",
 }
 # Bind the complete runtime generation roster, not just an equal-size subset.
 GENERATION_MANIFESTS = {PROFILE + name for name in (
@@ -330,6 +337,85 @@ def check_sources(root, evidence, revision):
     return public, licenses
 
 
+def check_snapshot_regressions(root, sources, license_raw):
+    """Bind the frozen packet; historical observed decisions are regression baselines."""
+    payload_names = {case + "/" + name for case in REGRESSION_CASES for name in REGRESSION_FILES} | {"LICENSE"}
+    all_names = payload_names | {"README.md", "packet.json"}
+    need({name for name in sources if name.startswith(REGRESSION_ROOT)} ==
+         {REGRESSION_ROOT + name for name in all_names}, "exact snapshot packet source roster required")
+    files = {}
+    for name in sorted(all_names):
+        raw = member(root, REGRESSION_ROOT + name)
+        matches(raw, sources[REGRESSION_ROOT + name])
+        files[name] = raw
+    packet = load(files["packet.json"])
+    need(packet.get("schema") == "gooo/synthetic-upgrade-regression-packet/v1" and
+         packet.get("status") == "SYNTHETIC_FIXTURE_PACKET" and packet.get("license") == "BSD-3-Clause",
+         "synthetic snapshot packet required")
+    need(re.fullmatch(r"[0-9a-f]{40}", packet["source_commit"]) is not None, "original packet revision required")
+    listed = unique((item["path"], item) for item in packet["files"])
+    need(set(listed) == payload_names, "snapshot payload roster differs")
+    for name in payload_names:
+        matches(files[name], listed[name])
+    need(files["LICENSE"] == license_raw, "snapshot packet license differs")
+    need([row["case"] for row in packet["cases"]] == list(REGRESSION_CASES), "three snapshot cases required")
+    rows = []
+    for case, state, declaration in zip(REGRESSION_CASES, REGRESSION_STATES, packet["cases"]):
+        need(declaration["input"] == case + "/snapshot-input.json" and
+             declaration["expectations"] == case + "/expected.json" and
+             declaration["observed_decision"] == case + "/observed-decision.json" and
+             declaration["state"] == state and declaration["evidence_kind"] == "SYNTHETIC_FIXTURE",
+             "snapshot case declaration differs")
+        raw = files[declaration["input"]]; value = load(raw)
+        need(set(value) == {"target_name", "before", "after"}, "snapshot input must exclude explanatory context")
+        expected = load(files[declaration["expectations"]])
+        decision = load(files[declaration["observed_decision"]])
+        context = load(files[case + "/context.json"])
+        need(expected["evidence_kind"] == "SYNTHETIC_FIXTURE" and
+             expected["expectation_kind"] == "MANUALLY_AUTHORED_SEMANTIC_ANCHORS_NOT_EXECUTION" and
+             expected["execution_performed"] is False and context["not_passed_to_comparator"] is True and
+             context["captured_from_server"] is False and context["upstream_reproduction_executed"] is False,
+             "snapshot fixture scope differs")
+        shape = expected["decision_shape"]
+        need(shape["field_count"] == len(shape["exact_fields"]) == len(set(shape["exact_fields"])) == 32 and
+             set(decision) == set(shape["exact_fields"]) and len(expected["anchors"]) == 21,
+             "complete snapshot decision and authored anchors required")
+        for key, anchor in expected["anchors"].items():
+            exact(decision[key], anchor)
+        need(decision["state"] == state and decision["context_id"] == "gooo/definition-snapshot/v1/sha256:" + sha(raw),
+             "snapshot baseline binding differs")
+        for side in ("before", "after"):
+            need(set(value[side]) == {"pages"} and len(value[side]["pages"]) == 1, "one retained snapshot page required")
+            page = value[side]["pages"][0]
+            need(set(page) == {"request_json", "response_json"}, "snapshot raw page shape differs")
+            for kind in ("request", "response"):
+                need(page[kind + "_json"].encode("utf-8") == files[case + "/" + side + "." + kind + ".json"],
+                     "snapshot frame bytes differ")
+        rows.append({"case": case, "input": raw, "expected": decision, "anchors": expected["anchors"]})
+    return {"files": files, "rows": rows, "original_source_commit": packet["source_commit"]}
+
+
+def check_snapshot_report(raw_report, raw_input, row, generation):
+    report = load(raw_report)
+    need(report["schema"] == "gooo/definition-snapshot-report/v1", "snapshot report schema differs")
+    exact(report["decision"], row["expected"])
+    for key, anchor in row["anchors"].items():
+        exact(report["decision"][key], anchor)
+    exact(report["bindings"], generation)
+    projection = report["projection"]
+    need(projection["input_json"].encode("utf-8") == raw_input and
+         projection["input_sha256"] == "sha256:" + sha(raw_input), "snapshot original input binding differs")
+    need(projection["context_id"] == row["expected"]["context_id"] and
+         projection["target_name"] == row["expected"]["target_name"], "snapshot selection binding differs")
+    value = load(raw_input)
+    for side in ("before", "after"):
+        pages = projection[side]["pages"]
+        need(len(pages) == 1 and pages[0]["page_index"] == 0, "snapshot projected page differs")
+        for kind in ("request", "response"):
+            need(pages[0][kind + "_sha256"] == "sha256:" + sha(value[side]["pages"][0][kind + "_json"].encode("utf-8")),
+                 "snapshot original frame binding differs")
+
+
 def check_evidence(root, evidence, synthetic_export, revision):
     summary = load(member(evidence, "summary.json"))
     need(summary.get("schema") == "gooo/explicit-availability-consumer-verification/v1"
@@ -404,9 +490,12 @@ def check_evidence(root, evidence, synthetic_export, revision):
                 check_snapshot_materials(generation, sources)
             generations[name] = identity(raw_generation)
     check_generation_roster(generations)
+    snapshots = check_snapshot_regressions(root, sources, licenses["LICENSE"])
+    snapshot_generation = load(member(root, PROFILE + "snapshot-generation.json"))
     return {"binary": binary, "build": build, "platform": target, "rows": rows, "sources": sources,
             "licenses": licenses, "public_export": identity(raw_export),
-            "compiler_source_sha": pins["compiler_revision"], "generations": generations}
+            "compiler_source_sha": pins["compiler_revision"], "generations": generations,
+            "snapshots": snapshots, "snapshot_generation": snapshot_generation}
 
 
 def write_archive(path, files):
@@ -414,7 +503,9 @@ def write_archive(path, files):
         with gzip.GzipFile(filename="", mode="wb", fileobj=output, mtime=0) as compressed:
             with tarfile.open(fileobj=compressed, mode="w", format=tarfile.USTAR_FORMAT) as archive:
                 for name, (raw, mode) in sorted(files.items()):
-                    need("/" not in name and name not in ("", ".", ".."), "flat archive member required")
+                    need(type(name) is str and name and all(
+                        part not in ("", ".", "..") and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", part)
+                        for part in name.split("/")), "safe relative archive member required")
                     member_info = tarfile.TarInfo(name); member_info.size = len(raw); member_info.mode = mode
                     archive.addfile(member_info, io.BytesIO(raw))
     return verify_archive(path, files)
@@ -445,6 +536,26 @@ Keep the archive checksum, manifest, original input and sidecar with your report
 ./{COMMAND} < synthetic-observations.json > report.json
 ./{COMMAND} --definitions --diagnostics --availability supplied-availability.json --before-policy p --after-policy p < availability-example.json > supplied-report.json
 ./{COMMAND} --definitions --diagnostics --availability unobserved-availability.json --before-policy p --after-policy p < availability-example.json > unobserved-report.json
+
+Compare a saved definition without host aliases using the three included packets:
+for case_id in output-schema-string-to-number same-definition-version-context-only missing-after-incomplete-page; do
+  if ./{COMMAND} --definition-snapshot < "mcp-upgrade-regressions/$case_id/snapshot-input.json" > "$case_id.report.json" 2> "$case_id.stderr"; then
+    printf '0\\n' > "$case_id.exit"
+  else
+    command_status=$?
+    printf '%s\\n' "$command_status" > "$case_id.exit"
+    cat "$case_id.stderr" >&2
+    exit "$command_status"
+  fi
+done
+Expected decision.state: OBSERVED_DEFINITION_CHANGED, OBSERVED_DEFINITION_SAME,
+and UNASSESSED, respectively. All three are synthetic and exit zero on a completed
+comparison. Read mcp-upgrade-regressions/README.md for input format and feedback.
+observed-decision.json and packet.json preserve the original 85d96c7 regression
+baseline. The archive manifest identifies this binary; packaging checks are retained
+separately in the producer's verification.json, outside the archive.
+A definition change does not prove changed behavior; incomplete pages cannot prove
+removal. Origin and authorization stay unassessed, and no tool is called.
 
 The paired example keeps the same text UNKNOWN: supplied observations yield
 BINDINGS_MATCH; unavailable context yields UNASSESSED. Both are synthetic.
@@ -478,6 +589,7 @@ is a producer statement, not an authenticated build or production-safety claim.
              "supplied-availability.json": (supplied["availability_json"].encode(), 0o644),
              "unobserved-availability.json": (unobserved["availability_json"].encode(), 0o644)}
     files.update({name: (raw, 0o644) for name, raw in checked["licenses"].items()})
+    files.update({REGRESSION_ARCHIVE + name: (raw, 0o644) for name, raw in checked["snapshots"]["files"].items()})
     manifest = {"schema": "gooo/recorded-catalog-cli-distribution/v1", "command": COMMAND,
                 "platform": checked["platform"], "source_revision": revision, "build_info": checked["build"],
                 "producer_url": producer_url, "compiler_source_sha": checked["compiler_source_sha"],
@@ -485,8 +597,12 @@ is a producer statement, not an authenticated build or production-safety claim.
                 "packaging_sources": checked["packaging_sources"],
                 "source_files": checked["sources"], "public_consumer_export": checked["public_export"],
                 "public_consumer_records": 13, "public_field_diagnostics": 442,
+                "snapshot_regressions": {"cases": 3, "decision_fields": 32,
+                    "archive_root": REGRESSION_ARCHIVE, "source_root": REGRESSION_ROOT,
+                    "original_validation_source_commit": checked["snapshots"]["original_source_commit"],
+                    "scope": "Historical full decisions are frozen regression baselines, checked with separate authored anchors; original native validation is not inherited."},
                 "members": {name: {**identity(raw), "mode": mode} for name, (raw, mode) in sorted(files.items())},
-                "scope": "Retained producer evidence and exact extracted-binary equality on thirteen public synthetic records. No new independent oracle, Gooo execution/replay, producer authentication, external adoption or execution authorization.",
+                "scope": "Retained producer evidence, thirteen public synthetic availability records, and three synthetic snapshot regressions against full frozen decisions plus authored anchors. No new independent oracle, Gooo execution/replay, producer authentication, external adoption or execution authorization.",
                 "private_observations_included": False, "recompiled": False}
     # This records the packaging relationship and the producer's source binding.
     # Archive/manifest hashes are deliberately absent: including either here
@@ -537,6 +653,12 @@ def smoke(directory, checked, records, controls):
          and collection["contains_synthetic_fixture"] is True and collection["remote_atomicity"] == "UNKNOWN"
          and alias["execution_authorized"] is False and collection["execution_authorized"] is False
          and collection["live_removal_proven"] is False, "default example decisions or uncertainty differ")
+    for row in checked["snapshots"]["rows"]:
+        raw = member(directory, REGRESSION_ARCHIVE + row["case"] + "/snapshot-input.json")
+        need(raw == row["input"], "extracted snapshot input differs")
+        out, err, code = run("snapshot-" + row["case"], ["--definition-snapshot"], raw)
+        need(code == 0 and not err, "snapshot comparison failed")
+        check_snapshot_report(out, raw, row, checked["snapshot_generation"])
     for row in checked["rows"]:
         sidecar = directory / "control-availability.json"; sidecar.write_text(row["availability_json"])
         args = ["--definitions", "--diagnostics", "--availability", sidecar,
@@ -586,7 +708,9 @@ def produce(root, evidence, synthetic_export, revision, out, producer_url=None):
             with tarfile.open(candidate, "r:gz") as archive:
                 for name, (raw, mode) in files.items():
                     content = archive.extractfile(name).read(len(raw) + 1); need(content == raw, "extracted content differs")
-                    path = directory / name; path.write_bytes(content); path.chmod(mode)
+                    path = directory / name
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(content); path.chmod(mode)
             smoke(directory, checked, records, out / "controls")
         # Reject source/binary mutation during the extracted runtime checks.
         again = check_evidence(root, evidence, synthetic_export, revision)
@@ -599,10 +723,11 @@ def produce(root, evidence, synthetic_export, revision, out, producer_url=None):
         report = {"schema": "gooo/recorded-catalog-cli-bundle-check/v1", "status": "EXTRACTED_NATIVE_CATALOG_BUNDLE_PASS",
                   "source_revision": revision, "platform": checked["platform"], "archive": identity(read(final, BASE.MAX_ARCHIVE)),
                   "archive_name": name, "checksum_name": checksum.name, "members": sorted(files),
-                  "public_consumer_reports": 13, "processes": records, "all_process_groups_closed": all(r["process_group_closed"] for r in records),
+                  "public_consumer_reports": 13, "snapshot_regression_cases": 3, "snapshot_decision_fields": 32,
+                  "snapshot_original_source_commit": checked["snapshots"]["original_source_commit"], "processes": records, "all_process_groups_closed": all(r["process_group_closed"] for r in records),
                   "runtime_PATH_empty": True, "runtime_GOROOT_absent": True, "recompiled": False,
                   "new_Gooo_execution_or_replay": False, "external_adoption": False,
-                  "scope": "Packaging checks against retained independently checked public outputs; no additional independent semantic oracle or producer authentication."}
+                  "scope": "Packaging checks against retained independently checked availability outputs and three frozen snapshot regression decisions plus authored anchors; no additional independent semantic oracle or producer authentication."}
         (out / "verification.json").write_bytes(encoded(report))
         return report
     except BaseException as error:
