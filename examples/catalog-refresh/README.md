@@ -12,11 +12,16 @@ evidence of adoption. It makes no network or model calls.
 
 ## Evaluate your saved pages
 
-With Go **1.27.3**, run the own-input command from this repository checkout:
+With Go **1.27.3**, run this pinned preview from any directory:
 
 ```sh
-go -C examples/catalog-refresh run ./cmd/catalog-refresh < saved-refresh.json > report.json
+go run github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh/cmd/catalog-refresh@9c0bf20da69cb4b7084e526f75910d026ca2fbb7 < saved-refresh.json > report.json
 ```
+
+No repository checkout, local replacement or Gooo compiler is needed. The first
+run may download Go modules; evaluating the supplied pages uses no MCP or model
+connection. In a checkout that contains this command, the equivalent development
+command is `go -C examples/catalog-refresh run ./cmd/catalog-refresh`.
 
 The command reads exactly one JSON object from standard input. All three fields
 are required; unknown or duplicate fields are rejected:
