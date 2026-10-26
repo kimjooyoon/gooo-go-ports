@@ -1,0 +1,189 @@
+// Copyright 2026 Gooo Go Ports contributors. BSD-3-Clause; see ../../LICENSE.
+// Whole-candidate local replacement precheck over supplied, bounded evidence.
+// The host owns immutable candidate binding and the final atomic state comparison.
+package catalog_refresh
+namespace gooo_catalog_refresh_v1
+import snapshot "gooo/tool-origin/definition-snapshot"
+entity Boolean id "gooo://std/boolean"
+entity RefreshEvidence id "gooo://tool-origin/catalog-refresh/v1/refresh-evidence" fields {
+ field attempt_id id "gooo://tool-origin/catalog-refresh/v1/refresh-evidence/attempt_id" type string required one
+ field candidate_id id "gooo://tool-origin/catalog-refresh/v1/refresh-evidence/candidate_id" type string required one
+ field collector_state id "gooo://tool-origin/catalog-refresh/v1/refresh-evidence/collector_state" type string required one
+ field binding_state id "gooo://tool-origin/catalog-refresh/v1/refresh-evidence/binding_state" type string required one
+ field validator_profile id "gooo://tool-origin/catalog-refresh/v1/refresh-evidence/validator_profile" type string required one
+ field row_definition_ids id "gooo://tool-origin/catalog-refresh/v1/refresh-evidence/row_definition_ids" type string required many
+ field row_validation_states id "gooo://tool-origin/catalog-refresh/v1/refresh-evidence/row_validation_states" type string required many
+}
+entity RefreshState id "gooo://tool-origin/catalog-refresh/v1/refresh-state" fields {
+ field expected_registry_version id "gooo://tool-origin/catalog-refresh/v1/refresh-state/expected_registry_version" type string required one
+ field current_registry_version id "gooo://tool-origin/catalog-refresh/v1/refresh-state/current_registry_version" type string required one
+ field expected_scope_epoch id "gooo://tool-origin/catalog-refresh/v1/refresh-state/expected_scope_epoch" type string required one
+ field current_scope_epoch id "gooo://tool-origin/catalog-refresh/v1/refresh-state/current_scope_epoch" type string required one
+ field expected_invalidation_epoch id "gooo://tool-origin/catalog-refresh/v1/refresh-state/expected_invalidation_epoch" type string required one
+ field current_invalidation_epoch id "gooo://tool-origin/catalog-refresh/v1/refresh-state/current_invalidation_epoch" type string required one
+ field expected_latest_attempt id "gooo://tool-origin/catalog-refresh/v1/refresh-state/expected_latest_attempt" type string required one
+ field current_latest_attempt id "gooo://tool-origin/catalog-refresh/v1/refresh-state/current_latest_attempt" type string required one
+}
+entity CandidateStatus id "gooo://tool-origin/catalog-refresh/v1/candidate-status" fields {
+ field valid id "gooo://tool-origin/catalog-refresh/v1/candidate-status/valid" type boolean required one
+ field reason id "gooo://tool-origin/catalog-refresh/v1/candidate-status/reason" type string required one
+ field coverage id "gooo://tool-origin/catalog-refresh/v1/candidate-status/coverage" type string required one
+ field coverage_reason id "gooo://tool-origin/catalog-refresh/v1/candidate-status/coverage_reason" type string required one
+ field problem_page_index id "gooo://tool-origin/catalog-refresh/v1/candidate-status/problem_page_index" type integer required one
+ field problem_row_index id "gooo://tool-origin/catalog-refresh/v1/candidate-status/problem_row_index" type integer required one
+ field page_count id "gooo://tool-origin/catalog-refresh/v1/candidate-status/page_count" type integer required one
+ field row_count id "gooo://tool-origin/catalog-refresh/v1/candidate-status/row_count" type integer required one
+}
+entity RefreshDecision id "gooo://tool-origin/catalog-refresh/v1/decision" fields {
+ field state id "gooo://tool-origin/catalog-refresh/v1/decision/state" type string required one
+ field reason id "gooo://tool-origin/catalog-refresh/v1/decision/reason" type string required one
+ field candidate_id id "gooo://tool-origin/catalog-refresh/v1/decision/candidate_id" type string required one
+ field attempt_id id "gooo://tool-origin/catalog-refresh/v1/decision/attempt_id" type string required one
+ field expected_registry_version id "gooo://tool-origin/catalog-refresh/v1/decision/expected_registry_version" type string required one
+ field expected_scope_epoch id "gooo://tool-origin/catalog-refresh/v1/decision/expected_scope_epoch" type string required one
+ field expected_invalidation_epoch id "gooo://tool-origin/catalog-refresh/v1/decision/expected_invalidation_epoch" type string required one
+ field expected_latest_attempt id "gooo://tool-origin/catalog-refresh/v1/decision/expected_latest_attempt" type string required one
+ field candidate_page_count id "gooo://tool-origin/catalog-refresh/v1/decision/candidate_page_count" type integer required one
+ field candidate_row_count id "gooo://tool-origin/catalog-refresh/v1/decision/candidate_row_count" type integer required one
+ field coverage id "gooo://tool-origin/catalog-refresh/v1/decision/coverage" type string required one
+ field coverage_reason id "gooo://tool-origin/catalog-refresh/v1/decision/coverage_reason" type string required one
+ field problem_page_index id "gooo://tool-origin/catalog-refresh/v1/decision/problem_page_index" type integer required one
+ field problem_row_index id "gooo://tool-origin/catalog-refresh/v1/decision/problem_row_index" type integer required one
+ field decision_scope id "gooo://tool-origin/catalog-refresh/v1/decision/decision_scope" type string required one
+ field execution_authorized id "gooo://tool-origin/catalog-refresh/v1/decision/execution_authorized" type boolean required one
+ field live_effect_performed id "gooo://tool-origin/catalog-refresh/v1/decision/live_effect_performed" type boolean required one
+ field remote_atomicity id "gooo://tool-origin/catalog-refresh/v1/decision/remote_atomicity" type string required one
+}
+activity ValidRefreshEvidence(RefreshEvidence) -> Boolean id "gooo://tool-origin/catalog-refresh/v1/valid-evidence" computes `
+if input.attempt_id == "" || !snapshot.IsBoundedSnapshotText(input.attempt_id) { return false }
+if !snapshot.IsSnapshotDigest(input.candidate_id) { return false }
+if input.collector_state != "SUCCESS" && input.collector_state != "ERROR" && input.collector_state != "TIMEOUT" && input.collector_state != "CANCELLED" { return false }
+if input.binding_state != "BOUND" && input.binding_state != "UNBOUND" { return false }
+if input.validator_profile == "" || !snapshot.IsBoundedSnapshotText(input.validator_profile) { return false }
+return true
+`
+activity ValidRefreshState(RefreshState) -> Boolean id "gooo://tool-origin/catalog-refresh/v1/valid-state" computes `
+if input.expected_registry_version == "" || !snapshot.IsBoundedSnapshotText(input.expected_registry_version) { return false }
+if input.current_registry_version == "" || !snapshot.IsBoundedSnapshotText(input.current_registry_version) { return false }
+if input.expected_scope_epoch == "" || !snapshot.IsBoundedSnapshotText(input.expected_scope_epoch) { return false }
+if input.current_scope_epoch == "" || !snapshot.IsBoundedSnapshotText(input.current_scope_epoch) { return false }
+if input.expected_invalidation_epoch == "" || !snapshot.IsBoundedSnapshotText(input.expected_invalidation_epoch) { return false }
+if input.current_invalidation_epoch == "" || !snapshot.IsBoundedSnapshotText(input.current_invalidation_epoch) { return false }
+if input.expected_latest_attempt == "" || !snapshot.IsBoundedSnapshotText(input.expected_latest_attempt) { return false }
+if input.current_latest_attempt == "" || !snapshot.IsBoundedSnapshotText(input.current_latest_attempt) { return false }
+return true
+`
+// Inspect only candidate structure and all-row validation evidence. Metadata, collector
+// completion and the host state tuple are separate preconditions in DecideCatalogRefresh.
+// Empty selection requests no selected tool; selected-name equality is never admission.
+activity InspectRefreshCandidate(snapshot.SnapshotFacts, RefreshEvidence) -> CandidateStatus id "gooo://tool-origin/catalog-refresh/v1/inspect-candidate" computes `
+let selection = snapshot.Selection{context_id: "", target_name: ""}
+let inspected = snapshot.InspectDefinitionSnapshot(input0, selection)
+let pages = len(input0.page_request_cursor_kinds)
+let rows = len(input0.original_names)
+let reason = "COMPLETE_CANDIDATE"
+let problemRow = inspected.problem_row_index
+if input1.validator_profile != "gooo/mcp-tool-shape/v1" {
+ reason = "UNSUPPORTED_VALIDATOR_PROFILE"
+} else if !inspected.valid {
+ reason = "INVALID_SNAPSHOT"
+} else if inspected.coverage != "COMPLETE" {
+ reason = "INCOMPLETE_CATALOG"
+} else if inspected.duplicate_first_index >= 0 {
+ reason = "DUPLICATE_NAME"
+}
+if reason == "COMPLETE_CANDIDATE" {
+ let r = 0
+ for profile in input0.definition_profiles {
+  if profile != "gooo/mcp-tool-definition-json/v1" && reason == "COMPLETE_CANDIDATE" {
+   reason = "UNSUPPORTED_DEFINITION_PROFILE"
+   if problemRow == -1 { problemRow = r }
+  }
+  r = r + 1
+ }
+}
+if reason == "COMPLETE_CANDIDATE" {
+ if len(input1.row_definition_ids) != rows || len(input1.row_validation_states) != rows {
+  reason = "ROW_VALIDATION_LENGTH"
+ }
+}
+// Check every binding before consuming any outcome so an unrelated row cannot be
+// omitted or rejected under an outcome that was actually produced for another row.
+if reason == "COMPLETE_CANDIDATE" {
+ let r = 0
+ for definition in input0.definition_ids {
+  if input1.row_definition_ids[r] != definition && reason == "COMPLETE_CANDIDATE" {
+   reason = "ROW_VALIDATION_BINDING_MISMATCH"
+   if problemRow == -1 { problemRow = r }
+  }
+  r = r + 1
+ }
+}
+if reason == "COMPLETE_CANDIDATE" {
+ let r = 0
+ for outcome in input1.row_validation_states {
+  if outcome != "ACCEPTED" && reason == "COMPLETE_CANDIDATE" {
+   if outcome == "REJECTED" {
+    reason = "ROW_REJECTED"
+   } else if outcome == "UNKNOWN" {
+    reason = "ROW_UNASSESSED"
+   } else {
+    reason = "INVALID_ROW_VALIDATION_STATE"
+   }
+   if problemRow == -1 { problemRow = r }
+  }
+  r = r + 1
+ }
+}
+return CandidateStatus{
+ valid: reason == "COMPLETE_CANDIDATE", reason: reason,
+ coverage: inspected.coverage, coverage_reason: inspected.coverage_reason,
+ problem_page_index: inspected.problem_page_index, problem_row_index: problemRow,
+ page_count: pages, row_count: rows,
+}
+`
+// CANDIDATE_ELIGIBLE permits the host to attempt its atomic comparison; it is not
+// a commit receipt. Retaining stored bytes does not authorize revoked tool calls.
+activity DecideCatalogRefresh(snapshot.SnapshotFacts, RefreshEvidence, RefreshState) -> RefreshDecision id "gooo://tool-origin/catalog-refresh/v1/decide" computes `
+let candidate = InspectRefreshCandidate(input0, input1)
+let reason = "COMPLETE_CANDIDATE"
+if !ValidRefreshEvidence(input1) {
+ reason = "INVALID_REFRESH_EVIDENCE"
+} else if input1.binding_state != "BOUND" {
+ reason = "UNBOUND_CANDIDATE"
+} else if !ValidRefreshState(input2) {
+ reason = "INVALID_REFRESH_STATE"
+} else if input2.expected_latest_attempt != input1.attempt_id {
+ reason = "ATTEMPT_BINDING_MISMATCH"
+} else if input1.collector_state == "ERROR" {
+ reason = "COLLECTOR_ERROR"
+} else if input1.collector_state == "TIMEOUT" {
+ reason = "COLLECTOR_TIMEOUT"
+} else if input1.collector_state == "CANCELLED" {
+ reason = "COLLECTOR_CANCELLED"
+} else if !candidate.valid {
+ reason = candidate.reason
+} else if input2.expected_registry_version != input2.current_registry_version {
+ reason = "REGISTRY_CHANGED"
+} else if input2.expected_scope_epoch != input2.current_scope_epoch {
+ reason = "SCOPE_CHANGED"
+} else if input2.expected_invalidation_epoch != input2.current_invalidation_epoch {
+ reason = "INVALIDATED"
+} else if input2.expected_latest_attempt != input2.current_latest_attempt {
+ reason = "SUPERSEDED_ATTEMPT"
+}
+let state = "RETAIN_STORED_CATALOG"
+if reason == "COMPLETE_CANDIDATE" { state = "CANDIDATE_ELIGIBLE" }
+return RefreshDecision{
+ state: state, reason: reason, candidate_id: input1.candidate_id, attempt_id: input1.attempt_id,
+ expected_registry_version: input2.expected_registry_version,
+ expected_scope_epoch: input2.expected_scope_epoch,
+ expected_invalidation_epoch: input2.expected_invalidation_epoch,
+ expected_latest_attempt: input2.expected_latest_attempt,
+ candidate_page_count: candidate.page_count, candidate_row_count: candidate.row_count,
+ coverage: candidate.coverage, coverage_reason: candidate.coverage_reason,
+ problem_page_index: candidate.problem_page_index, problem_row_index: candidate.problem_row_index,
+ decision_scope: "WHOLE_CANDIDATE_LOCAL_REPLACEMENT_PRECHECK",
+ execution_authorized: false, live_effect_performed: false, remote_atomicity: "UNKNOWN",
+}
+`

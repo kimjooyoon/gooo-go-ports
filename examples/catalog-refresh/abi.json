@@ -1,0 +1,658 @@
+{
+  "schema": "gooo/catalog-refresh-authored-contract/v1",
+  "status": "SOURCE_WIP_NOT_A_GENERATED_PLAN_OR_EXECUTION_RECEIPT",
+  "module": "gooo/tool-origin/catalog-refresh",
+  "entry": "gooo/tool-origin/catalog-refresh:DecideCatalogRefresh",
+  "activity_id": "gooo://tool-origin/catalog-refresh/v1/decide",
+  "source": "ports/tool-origin/catalog_refresh.gooo",
+  "inputs": [
+    {
+      "port": "input0",
+      "entity_id": "gooo://tool-origin/definition-snapshot/v1/facts",
+      "meaning": "snapshot"
+    },
+    {
+      "port": "input1",
+      "entity_id": "gooo://tool-origin/catalog-refresh/v1/refresh-evidence",
+      "meaning": "evidence"
+    },
+    {
+      "port": "input2",
+      "entity_id": "gooo://tool-origin/catalog-refresh/v1/refresh-state",
+      "meaning": "state"
+    }
+  ],
+  "output_entity_id": "gooo://tool-origin/catalog-refresh/v1/decision",
+  "records": {
+    "SnapshotFacts": {
+      "id": "gooo://tool-origin/definition-snapshot/v1/facts",
+      "fields": [
+        {
+          "name": "page_request_cursor_kinds",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/page_request_cursor_kinds",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "page_request_cursor_values",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/page_request_cursor_values",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "page_next_cursor_kinds",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/page_next_cursor_kinds",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "page_next_cursor_values",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/page_next_cursor_values",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "original_names",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/original_names",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "definition_ids",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/definition_ids",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "definition_profiles",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/definition_profiles",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "annotation_ids",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/annotation_ids",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "row_page_indexes",
+          "id": "gooo://tool-origin/definition-snapshot/v1/facts/row_page_indexes",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "many"
+        }
+      ]
+    },
+    "Selection": {
+      "id": "gooo://tool-origin/definition-snapshot/v1/selection",
+      "fields": [
+        {
+          "name": "context_id",
+          "id": "gooo://tool-origin/definition-snapshot/v1/selection/context_id",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "target_name",
+          "id": "gooo://tool-origin/definition-snapshot/v1/selection/target_name",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        }
+      ]
+    },
+    "SnapshotStatus": {
+      "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status",
+      "fields": [
+        {
+          "name": "valid",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/valid",
+          "type_id": "urn:gooo:type:boolean",
+          "cardinality": "one"
+        },
+        {
+          "name": "shape_reason",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/shape_reason",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "coverage",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/coverage",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "coverage_reason",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/coverage_reason",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "problem_page_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/problem_page_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "problem_row_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/problem_row_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "duplicate_first_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/duplicate_first_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "duplicate_second_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/duplicate_second_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "selected_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/snapshot-status/selected_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        }
+      ]
+    },
+    "SnapshotDecision": {
+      "id": "gooo://tool-origin/definition-snapshot/v1/result",
+      "fields": [
+        {
+          "name": "context_id",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/context_id",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "target_name",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/target_name",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "state",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/state",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "reason",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/reason",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "next_action",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/next_action",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "comparison_scope",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/comparison_scope",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "before_page_coverage",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/before_page_coverage",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "after_page_coverage",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/after_page_coverage",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "before_coverage_reason",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/before_coverage_reason",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "after_coverage_reason",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/after_coverage_reason",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "before_problem_page_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/before_problem_page_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "after_problem_page_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/after_problem_page_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "before_problem_row_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/before_problem_row_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "after_problem_row_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/after_problem_row_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "before_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/before_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "after_index",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/after_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "before_definition_id",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/before_definition_id",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "after_definition_id",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/after_definition_id",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "before_definition_profile",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/before_definition_profile",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "after_definition_profile",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/after_definition_profile",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "before_annotation_id",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/before_annotation_id",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "after_annotation_id",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/after_annotation_id",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "observed_presence_relation",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/observed_presence_relation",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "definition_relation",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/definition_relation",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "annotation_relation",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/annotation_relation",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "profile_relation",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/profile_relation",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "origin_relation",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/origin_relation",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "authorization_relation",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/authorization_relation",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "behavior_equivalence_proven",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/behavior_equivalence_proven",
+          "type_id": "urn:gooo:type:boolean",
+          "cardinality": "one"
+        },
+        {
+          "name": "execution_authorized",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/execution_authorized",
+          "type_id": "urn:gooo:type:boolean",
+          "cardinality": "one"
+        },
+        {
+          "name": "live_effect_performed",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/live_effect_performed",
+          "type_id": "urn:gooo:type:boolean",
+          "cardinality": "one"
+        },
+        {
+          "name": "remote_atomicity",
+          "id": "gooo://tool-origin/definition-snapshot/v1/result/remote_atomicity",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        }
+      ]
+    },
+    "RefreshEvidence": {
+      "id": "gooo://tool-origin/catalog-refresh/v1/refresh-evidence",
+      "fields": [
+        {
+          "name": "attempt_id",
+          "id": "gooo://tool-origin/catalog-refresh/v1/refresh-evidence/attempt_id",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "candidate_id",
+          "id": "gooo://tool-origin/catalog-refresh/v1/refresh-evidence/candidate_id",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "collector_state",
+          "id": "gooo://tool-origin/catalog-refresh/v1/refresh-evidence/collector_state",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "binding_state",
+          "id": "gooo://tool-origin/catalog-refresh/v1/refresh-evidence/binding_state",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "validator_profile",
+          "id": "gooo://tool-origin/catalog-refresh/v1/refresh-evidence/validator_profile",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "row_definition_ids",
+          "id": "gooo://tool-origin/catalog-refresh/v1/refresh-evidence/row_definition_ids",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        },
+        {
+          "name": "row_validation_states",
+          "id": "gooo://tool-origin/catalog-refresh/v1/refresh-evidence/row_validation_states",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "many"
+        }
+      ]
+    },
+    "RefreshState": {
+      "id": "gooo://tool-origin/catalog-refresh/v1/refresh-state",
+      "fields": [
+        {
+          "name": "expected_registry_version",
+          "id": "gooo://tool-origin/catalog-refresh/v1/refresh-state/expected_registry_version",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "current_registry_version",
+          "id": "gooo://tool-origin/catalog-refresh/v1/refresh-state/current_registry_version",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "expected_scope_epoch",
+          "id": "gooo://tool-origin/catalog-refresh/v1/refresh-state/expected_scope_epoch",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "current_scope_epoch",
+          "id": "gooo://tool-origin/catalog-refresh/v1/refresh-state/current_scope_epoch",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "expected_invalidation_epoch",
+          "id": "gooo://tool-origin/catalog-refresh/v1/refresh-state/expected_invalidation_epoch",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "current_invalidation_epoch",
+          "id": "gooo://tool-origin/catalog-refresh/v1/refresh-state/current_invalidation_epoch",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "expected_latest_attempt",
+          "id": "gooo://tool-origin/catalog-refresh/v1/refresh-state/expected_latest_attempt",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "current_latest_attempt",
+          "id": "gooo://tool-origin/catalog-refresh/v1/refresh-state/current_latest_attempt",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        }
+      ]
+    },
+    "CandidateStatus": {
+      "id": "gooo://tool-origin/catalog-refresh/v1/candidate-status",
+      "fields": [
+        {
+          "name": "valid",
+          "id": "gooo://tool-origin/catalog-refresh/v1/candidate-status/valid",
+          "type_id": "urn:gooo:type:boolean",
+          "cardinality": "one"
+        },
+        {
+          "name": "reason",
+          "id": "gooo://tool-origin/catalog-refresh/v1/candidate-status/reason",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "coverage",
+          "id": "gooo://tool-origin/catalog-refresh/v1/candidate-status/coverage",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "coverage_reason",
+          "id": "gooo://tool-origin/catalog-refresh/v1/candidate-status/coverage_reason",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "problem_page_index",
+          "id": "gooo://tool-origin/catalog-refresh/v1/candidate-status/problem_page_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "problem_row_index",
+          "id": "gooo://tool-origin/catalog-refresh/v1/candidate-status/problem_row_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "page_count",
+          "id": "gooo://tool-origin/catalog-refresh/v1/candidate-status/page_count",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "row_count",
+          "id": "gooo://tool-origin/catalog-refresh/v1/candidate-status/row_count",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        }
+      ]
+    },
+    "RefreshDecision": {
+      "id": "gooo://tool-origin/catalog-refresh/v1/decision",
+      "fields": [
+        {
+          "name": "state",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/state",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "reason",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/reason",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "candidate_id",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/candidate_id",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "attempt_id",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/attempt_id",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "expected_registry_version",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/expected_registry_version",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "expected_scope_epoch",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/expected_scope_epoch",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "expected_invalidation_epoch",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/expected_invalidation_epoch",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "expected_latest_attempt",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/expected_latest_attempt",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "candidate_page_count",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/candidate_page_count",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "candidate_row_count",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/candidate_row_count",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "coverage",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/coverage",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "coverage_reason",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/coverage_reason",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "problem_page_index",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/problem_page_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "problem_row_index",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/problem_row_index",
+          "type_id": "urn:gooo:type:integer",
+          "cardinality": "one"
+        },
+        {
+          "name": "decision_scope",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/decision_scope",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        },
+        {
+          "name": "execution_authorized",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/execution_authorized",
+          "type_id": "urn:gooo:type:boolean",
+          "cardinality": "one"
+        },
+        {
+          "name": "live_effect_performed",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/live_effect_performed",
+          "type_id": "urn:gooo:type:boolean",
+          "cardinality": "one"
+        },
+        {
+          "name": "remote_atomicity",
+          "id": "gooo://tool-origin/catalog-refresh/v1/decision/remote_atomicity",
+          "type_id": "urn:gooo:type:string",
+          "cardinality": "one"
+        }
+      ]
+    }
+  },
+  "limits": {
+    "text_bytes": 1024,
+    "pages": 16,
+    "rows": 256
+  },
+  "reason_precedence": [
+    "INVALID_REFRESH_EVIDENCE",
+    "UNBOUND_CANDIDATE",
+    "INVALID_REFRESH_STATE",
+    "ATTEMPT_BINDING_MISMATCH",
+    "COLLECTOR_ERROR|COLLECTOR_TIMEOUT|COLLECTOR_CANCELLED",
+    "UNSUPPORTED_VALIDATOR_PROFILE",
+    "INVALID_SNAPSHOT",
+    "INCOMPLETE_CATALOG",
+    "DUPLICATE_NAME",
+    "UNSUPPORTED_DEFINITION_PROFILE",
+    "ROW_VALIDATION_LENGTH",
+    "ROW_VALIDATION_BINDING_MISMATCH",
+    "ROW_REJECTED|ROW_UNASSESSED|INVALID_ROW_VALIDATION_STATE",
+    "REGISTRY_CHANGED",
+    "SCOPE_CHANGED",
+    "INVALIDATED",
+    "SUPERSEDED_ATTEMPT",
+    "COMPLETE_CANDIDATE"
+  ],
+  "constant_outputs": {
+    "decision_scope": "WHOLE_CANDIDATE_LOCAL_REPLACEMENT_PRECHECK",
+    "execution_authorized": false,
+    "live_effect_performed": false,
+    "remote_atomicity": "UNKNOWN"
+  },
+  "scope": "Whole-candidate local replacement precheck from supplied evidence; no atomic commit, authenticated binding or invocation authority."
+}
