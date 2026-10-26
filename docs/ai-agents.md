@@ -17,6 +17,7 @@ are developed separately; this repository supplies ports and runnable examples.
 | Compare the supplied API policy profiles | [Fixed-policy command](#compare-fixed-api-policies-without-a-compiler) | Compares the documented profiles; does not load an arbitrary edited policy. |
 | Compare saved MCP tool catalogs | [Native CLI without a toolchain](recorded-catalog-cli.md) or [pinned source alternatives](#compare-saved-mcp-catalogs-without-a-checkout) | Separates alias-origin changes from unknown collection context. The native command includes explicit observation availability and missing-field diagnostics; it does not collect a live catalog or authorize a tool call. |
 | Compare saved tool definitions when no host alias record exists | [Native preview.2 installation](#install-the-native-snapshot-command), [own-input recipe](#compare-your-own-saved-pages) or [agent task skill](../.agents/skills/gooo-compare-tool-snapshots/SKILL.md): `--definition-snapshot` | Select an original tool name from retained JSON-RPC pages. Preserve incomplete coverage and duplicate-name results; do not invent a host mapping. Native preview.2 includes this mode and three synthetic examples; the source route remains available. Preview.1 does not support it. |
+| Preserve a stored catalog during failed or racing refreshes | [Pinned Go preview](#replace-a-catalog-after-refresh) | Gooo admits the complete candidate; the Go host rechecks state under a lock before local replacement. Separate from snapshot preview.2; no live collection or tool-call authority. |
 | Edit and execute Gooo source | [First-program skill](#run-the-first-program-skill) | An actual source edit plus new execution and replay records; declaration checking alone is insufficient. |
 
 The native MCP routes need no compiler at runtime. The optional
@@ -1190,11 +1191,33 @@ independent adoption requires a separate user's actual use.
 ## Replace a catalog after refresh
 
 For agent clients that must preserve the previous catalog on a partial or failed
-refresh, start with the [whole-catalog refresh example](../examples/catalog-refresh/README.md).
-Its Gooo activity checks every candidate row and the complete saved page chain.
-The Go consumer stages immutable input and rechecks the captured state under a
-lock before replacing local storage. Try its three-case JSON demo with
-`go -C examples/catalog-refresh run ./cmd/catalog-refresh-demo` (Go 1.27.3).
-This source-based example makes no live calls and is separate from the released
-snapshot comparison archive. Report both the Gooo decision and actual commit
-result; `CANDIDATE_ELIGIBLE` alone is not a commit.
+refresh, try this pinned preview from a new empty directory with Go **1.27.3**
+already selected:
+
+```sh
+go run github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh/cmd/catalog-refresh-demo@5699ab44a9a355a579bc08904e198eb6cf5554dd
+```
+
+It needs no repository checkout, local module replacement or Gooo compiler.
+The first run may download Go modules through your configured proxy and checksum
+service; the demo itself makes no live MCP or model calls. It emits three JSON
+lines with these separate commit results:
+
+| `scenario` | `receipt.state` | Stored result |
+| --- | --- | --- |
+| `partial-retains-existing` | `RETAINED` | Previous bytes and version retained |
+| `complete-replaces-existing` | `APPLIED` | Complete page bundle stored with a new version |
+| `terminal-empty-replaces-with-empty` | `APPLIED` | Complete empty catalog stored with a new version |
+
+Gooo checks page coverage and every row's bound validation facts; the Go host
+then rechecks captured state under a lock before replacing its in-memory storage.
+Report both the Gooo decision and actual commit result:
+`CANDIDATE_ELIGIBLE` alone is not a commit, and retained bytes do not authorize
+calling a revoked tool. The example provides no durable or distributed transaction.
+
+Use the [pinned module recipe](../examples/catalog-refresh/README.md#embed-the-transaction)
+to embed the transaction in your own app. This preview is separate from the
+released `recorded-catalog-cli-preview.2` snapshot comparison command.
+For an actual trial, [report the useful result or first failure](#report-a-first-attempt-or-a-real-task),
+the pinned module version, and whether you used your own public pages or the
+unchanged demo. Keep private captures local.
