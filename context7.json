@@ -96,8 +96,12 @@
     "For saved tools/list pages without host alias records, use --definition-snapshot in recorded-catalog-cli-preview.2; follow docs/ai-agents.md#install-the-native-snapshot-command. Preview.1 lacks this mode.",
     "For a source build of that comparison, use examples/recorded-catalog-comparison with the input guide in examples/tool-definition-snapshot.",
     "Try the synthetic upgrade cases in examples/mcp-upgrade-regressions. If a selected tool is missing from incomplete pages, keep UNASSESSED; do not infer removal. Definition changes do not prove behavior changes or authorize a call.",
+    "With Go 1.27.3, evaluate your saved refresh JSON: go run github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh/cmd/catalog-refresh@9c0bf20da69cb4b7084e526f75910d026ca2fbb7 < saved-refresh.json. No checkout or Gooo compiler is needed.",
+    "The catalog-refresh stdin command requires previous_catalog_base64, collector_state (SUCCESS/ERROR/TIMEOUT/CANCELLED), and ordered pages of original request_json/response_json strings. Follow docs/ai-agents.md#replace-a-catalog-after-refresh.",
+    "The catalog-refresh command returns receipt and stored_catalog.bytes (base64) in a fresh in-memory registry. APPLIED/RETAINED describe that local result; it neither writes your catalog nor authorizes tools. Collector state is caller-supplied.",
+    "For versioned grant changes, use the complete examples/versioned-grant-change/main.gooo with versioned-grant-change.workspace.json and its README verifier. Activity excerpts are not complete programs; ELIGIBLE does not apply a grant.",
     "For a whole-catalog refresh demo, start with docs/ai-agents.md#replace-a-catalog-after-refresh. The demo makes no live MCP or model calls; initial Go module downloads may require network access.",
-    "For whole-catalog refresh, use examples/catalog-refresh: the pinned Go preview at source 5699ab44a9a355a579bc08904e198eb6cf5554dd with Go 1.27.3 needs no Gooo compiler or checkout.",
+    "For the fixed demo or Go library, use examples/catalog-refresh at source 5699ab44a9a355a579bc08904e198eb6cf5554dd with Go 1.27.3. The demo needs no Gooo compiler or checkout; use the stdin command for your own saved pages.",
     "Preserve the Gooo decision and separate APPLIED/RETAINED commit receipt. The Go host rechecks state under a lock before replacing local stored pages; a CANDIDATE_ELIGIBLE decision alone is not a commit.",
     "This refresh example has no live collector, durable or distributed transaction, or tool-call authority. Native snapshot preview.2 does not contain the transaction."
   ]
