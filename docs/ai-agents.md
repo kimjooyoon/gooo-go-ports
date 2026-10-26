@@ -17,7 +17,7 @@ are developed separately; this repository supplies ports and runnable examples.
 | Compare the supplied API policy profiles | [Fixed-policy command](#compare-fixed-api-policies-without-a-compiler) | Compares the documented profiles; does not load an arbitrary edited policy. |
 | Compare saved MCP tool catalogs | [Native CLI without a toolchain](recorded-catalog-cli.md) or [pinned source alternatives](#compare-saved-mcp-catalogs-without-a-checkout) | Separates alias-origin changes from unknown collection context. The native command includes explicit observation availability and missing-field diagnostics; it does not collect a live catalog or authorize a tool call. |
 | Compare saved tool definitions when no host alias record exists | [Native preview.2 installation](#install-the-native-snapshot-command), [own-input recipe](#compare-your-own-saved-pages) or [agent task skill](../.agents/skills/gooo-compare-tool-snapshots/SKILL.md): `--definition-snapshot` | Select an original tool name from retained JSON-RPC pages. Preserve incomplete coverage and duplicate-name results; do not invent a host mapping. Native preview.2 includes this mode and three synthetic examples; the source route remains available. Preview.1 does not support it. |
-| Preserve a stored catalog during failed or racing refreshes | [Pinned Go preview](#replace-a-catalog-after-refresh) | Gooo admits the complete candidate; the Go host rechecks state under a lock before local replacement. Separate from snapshot preview.2; no live collection or tool-call authority. |
+| Evaluate a whole-catalog refresh from saved pages | [Pinned own-input command or Go library](#replace-a-catalog-after-refresh) | Returns an in-process receipt and resulting bytes. Caller supplies collection outcome; no live collection, durable write or tool-call authority. Embed the library for host invalidation and racing attempts. |
 | Edit and execute Gooo source | [First-program skill](#run-the-first-program-skill) | An actual source edit plus new execution and replay records; declaration checking alone is insufficient. |
 
 The native MCP routes need no compiler at runtime. The optional
@@ -1190,9 +1190,33 @@ independent adoption requires a separate user's actual use.
 
 ## Replace a catalog after refresh
 
-For agent clients that must preserve the previous catalog on a partial or failed
-refresh, try this pinned preview from a new empty directory with Go **1.27.3**
-already selected:
+For your own saved `tools/list` pages, use Go **1.27.3** and the
+[pinned input guide](https://github.com/kimjooyoon/gooo-go-ports/blob/c433db4b3a635ac41ab524c6af4b6c17068fa494/examples/catalog-refresh/README.md#evaluate-your-saved-pages)
+to prepare `saved-refresh.json`. It requires `previous_catalog_base64`, ordered
+`pages`, and an explicit `collector_state`: `SUCCESS`, `ERROR`, `TIMEOUT` or
+`CANCELLED`. Preserve the original request/response strings and the actual
+collection outcome; the command treats that outcome as a caller assertion.
+
+```sh
+if go run github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh/cmd/catalog-refresh@9c0bf20da69cb4b7084e526f75910d026ca2fbb7 \
+  < saved-refresh.json > report.json 2> report.stderr; then
+  printf '%s\n' 0 > report.exit
+else
+  printf '%s\n' "$?" > report.exit
+fi
+```
+
+Inspect `report.exit` and keep the input, report and diagnostics together.
+A valid but incomplete or failed collection returns `RETAINED` with exit zero;
+malformed input fails without a result. `stored_catalog.bytes` is base64 for the
+actual retained bytes or replacement page bundle. Each invocation uses a new
+in-memory registry: its tokens are not durable versions, and it does not save a
+catalog or authorize tool calls. No checkout, local replacement or Gooo compiler
+is needed; the first run may download modules. This is a pinned experimental
+command, separate from the native snapshot comparison release.
+
+To inspect three fixed synthetic scenarios without supplying input, run the
+original demo from a new empty directory with Go **1.27.3** already selected:
 
 ```sh
 go run github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh/cmd/catalog-refresh-demo@5699ab44a9a355a579bc08904e198eb6cf5554dd
@@ -1215,7 +1239,7 @@ Report both the Gooo decision and actual commit result:
 `CANDIDATE_ELIGIBLE` alone is not a commit, and retained bytes do not authorize
 calling a revoked tool. The example provides no durable or distributed transaction.
 
-Use the [pinned module recipe](../examples/catalog-refresh/README.md#embed-the-transaction)
+Use the [pinned module recipe](https://github.com/kimjooyoon/gooo-go-ports/blob/c433db4b3a635ac41ab524c6af4b6c17068fa494/examples/catalog-refresh/README.md#embed-the-transaction)
 to embed the transaction in your own app. This preview is separate from the
 released `recorded-catalog-cli-preview.2` snapshot comparison command.
 For an actual trial, use the [feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml)
