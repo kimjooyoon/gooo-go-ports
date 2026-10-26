@@ -23,8 +23,12 @@ replacement. Each includes the pure Gooo decision and a separate actual commit
 receipt. A decision of `CANDIDATE_ELIGIBLE` may still result in `RETAINED` if the
 transaction state changes before the final locked comparison.
 
-The generated kernel is committed, so this consumer does not need a compiler at
-runtime. To change the policy, edit
+The released `recorded-catalog-cli-preview.2` command compares selected saved
+tool definitions; it does not contain this whole-catalog transaction. Use the
+Go module below to embed the transaction.
+
+The generated kernel is committed, so this consumer does not need a Gooo
+compiler. To change the policy, edit
 [`ports/tool-origin/catalog_refresh.gooo`](../../ports/tool-origin/catalog_refresh.gooo)
 and run the source-bound native verifier described below.
 
@@ -39,12 +43,32 @@ receipt := registry.Refresh(attempt, savedPages, "SUCCESS")
 // Inspect receipt.State: APPLIED or RETAINED.
 ```
 
-Import `github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh`. In a
-separate consumer module, configure **both** local replacements: a dependency's
-`replace` directives are not inherited by its caller. Keep the two example
-directories together in the checkout.
+Import `github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh` using
+Go 1.27.3. This pinned preview revision works in a separate app without a
+repository checkout or local replacements. For a new app without a `go.mod`,
+first run `go mod init example.com/my-catalog-client`. After adding your source
+with that import, run:
 
-For a new app without a `go.mod`, first run `go mod init example.com/my-catalog-client`.
+```sh
+go get github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh@5699ab44a9a355a579bc08904e198eb6cf5554dd
+go mod tidy
+go run .
+```
+
+That commit resolves to `v0.0.0-20261026144904-5699ab44a9a3`; it is a pinned
+preview, not a stable release. The [complete demo program](cmd/catalog-refresh-demo/main.go)
+provides a runnable consumer with partial, complete and complete-empty catalogs.
+When switching from the earlier local recipe, remove both example-module
+replacements from your app first; otherwise Go continues using those local files.
+
+### Work with local Gooo rules
+
+For source development, use a matching checkout and replace only the `catalog-refresh`
+module in your separate consumer. Its `go.mod` pins the shared saved-page
+projector to the public module version
+`v0.0.0-20261026003237-fd614f475ba1`; Go downloads and verifies that dependency
+through the configured module proxy and checksum service.
+
 After adding your Go source with the import above, run these commands from that
 app's directory (set `GOOO_PORTS` to the absolute path of your checkout):
 
@@ -52,16 +76,16 @@ app's directory (set `GOOO_PORTS` to the absolute path of your checkout):
 GOOO_PORTS="/absolute/path/to/gooo-go-ports"
 go mod edit -require=github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh@v0.0.0
 go mod edit -replace="github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh=$GOOO_PORTS/examples/catalog-refresh"
-go mod edit -replace="github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison=$GOOO_PORTS/examples/recorded-catalog-comparison"
 go mod tidy
 go run .
 ```
 
-`v0.0.0` is a placeholder for these local replacements, not a published release.
-Use Go 1.27.3. `go mod tidy` records the indirect shared-projector requirement;
-run it after adding the consuming source so that the import is present.
-The [complete demo program](cmd/catalog-refresh-demo/main.go) shows the imports
-and control flow for a runnable consumer.
+`v0.0.0` is a placeholder for the local `catalog-refresh` replacement, not a
+published release of this module. Use Go 1.27.3. `go mod tidy` records the pinned
+shared-projector requirement; run it after adding the consuming source so that
+the import is present. If migrating from the earlier two-replacement recipe,
+remove its `recorded-catalog-comparison` replacement first so this route uses
+the pinned public dependency.
 
 `savedPages` is a slice of `SnapshotPage`, whose `RequestJSON` and `ResponseJSON`
 fields contain the original JSON-RPC page strings. Collection errors are explicit
