@@ -10,6 +10,58 @@ The use case comes from the partial-refresh concern in
 This is an independent synthetic example, not an integration with Gemini CLI or
 evidence of adoption. It makes no network or model calls.
 
+## Evaluate your saved pages
+
+With Go **1.27.3**, run the own-input command from this repository checkout:
+
+```sh
+go -C examples/catalog-refresh run ./cmd/catalog-refresh < saved-refresh.json > report.json
+```
+
+The command reads exactly one JSON object from standard input. All three fields
+are required; unknown or duplicate fields are rejected:
+
+```json
+{
+  "previous_catalog_base64": "b2xkIGNhdGFsb2c=",
+  "collector_state": "SUCCESS",
+  "pages": [
+    {
+      "request_json": "{\"jsonrpc\":\"2.0\",\"id\":73,\"method\":\"tools/list\",\"params\":{}}",
+      "response_json": "{\"jsonrpc\":\"2.0\",\"id\":73,\"result\":{\"tools\":[]}}"
+    }
+  ]
+}
+```
+
+This synthetic input deliberately replaces the previous bytes `old catalog`
+with a complete empty catalog. For your task, supply your own original ordered
+request/response strings and the collection outcome: `SUCCESS`, `ERROR`,
+`TIMEOUT`, or `CANCELLED`. Do not label missing or failed collection successful.
+An empty `pages` array means no observed pages, not a successful empty catalog.
+Use canonical padded base64 for the previous bytes (`""` for empty bytes); they
+may be opaque or contain non-UTF-8 data. The complete input is limited to 1 MiB,
+including base64, and the existing page, row and frame limits still apply.
+
+The JSON report contains the actual `receipt` and `stored_catalog`. Its `bytes`
+field is base64: decode it to recover exactly the retained bytes, or the original
+page-string bundle after replacement. The report binds the exact command input
+with `input_sha256` and labels `collector_state_basis` as `CALLER_SUPPLIED`.
+The command cannot verify that a collector's outcome describes real events.
+
+A valid request with incomplete pages or failed collection returns `RETAINED`
+and exits zero; a complete candidate may return `APPLIED`. Malformed envelopes
+**or malformed saved JSON-RPC frames** are rejected before registry creation:
+exit 1, a JSON diagnostic on stderr and no result on stdout. No `RETAINED`
+receipt is emitted for those parsing failures. Invalid arguments exit 2. Keep
+input, stderr, exit status and output together; exit zero is not authorization.
+
+Every invocation creates a new in-memory registry. Its tokens and versions are
+local to that invocation, not durable versions or reproducible replay IDs. The
+command does not change input files, save a catalog, collect live pages or
+invoke tools. Applications embedding the library retain responsibility for
+notifications, connection/authentication changes and their actual storage.
+
 ## Try the local consumer
 
 From the repository root, with Go **1.27.3**:
