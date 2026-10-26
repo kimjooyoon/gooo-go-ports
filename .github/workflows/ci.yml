@@ -51,6 +51,11 @@ jobs:
           go -C examples/tool-definition-snapshot/reference test -race -count=1 ./...
           python3 -I -B examples/tool-definition-snapshot/reference/make_inputs.py --check
           python3 -I -B examples/tool-definition-snapshot/provenance_test.py
+          go -C examples/catalog-refresh/reference vet ./...
+          go -C examples/catalog-refresh/reference test -race -count=1 ./...
+          python3 -I -B examples/catalog-refresh/reference/make_inputs.py --check
+          go -C examples/catalog-refresh vet ./...
+          go -C examples/catalog-refresh test -race -count=1 ./...
           # Native correctness fixtures run under race checking in this package.
           # Keep a finite package budget above the observed600s default timeout.
           mkdir -p out/observer-tests
@@ -296,6 +301,9 @@ jobs:
           ./.gooo check ports/tool-origin/definition_snapshot.gooo
           ./.gooo check ports/runtime-package-surface/contract.gooo
           ./.gooo check ports/runtime-package-surface/inspect.gooo
+          ./.gooo check ports/tool-origin/catalog_refresh.gooo
+          ./.gooo package interface --json catalog-refresh.workspace.json > "$RUNNER_TEMP/catalog-refresh-interface.json"
+          jq -e '.schema == "gooo/package-workspace-interface-receipt/v1" and .decision == "PASS" and .interface.entry.package_path == "gooo/tool-origin/catalog-refresh" and .interface.entry.activity == "DecideCatalogRefresh"' "$RUNNER_TEMP/catalog-refresh-interface.json"
           ./.gooo check ports/image/color.gooo
           ./.gooo check ports/image/nrgba.gooo
           ./.gooo check examples/alpha-matte/main.gooo
@@ -1833,6 +1841,35 @@ jobs:
         with:
           name: runtime-package-surface-evidence
           path: ${{ runner.temp }}/runtime-package-surface/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Verify Gooo whole-catalog refresh admission
+        if: steps.change-scope.outputs.docs_only != 'true'
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          python3 -I -B examples/catalog-refresh/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/catalog-refresh"
+          jq -e '
+            .schema == "gooo/catalog-refresh-verification/v1" and
+            .status == "FINITE_CATALOG_REFRESH_NATIVE_OWN_REPLAY_PASS" and
+            has("first_failure") and .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and
+            .go_version == "go1.27.3" and .reference_cases == 115 and .kernel_cases == 106 and
+            .native_cases == 106 and .replay_cases == 106 and .native_own_replay_verified == true and
+            .input_rejection_cases == 9 and .input_rejections_verified == true and .reference_cases_accounted == 115 and
+            .reference_cases == (.kernel_cases + .input_rejection_cases) and .typed_decision_fields == 18 and
+            .receipt_negative_controls == 8 and .generated_assets == 5 and .generated_assets_exact == true and
+            .initial_bootstrap == false and .generated_assets_written == false and .generated_assets_written_count == 0 and
+            .PROV_O_bindings_verified == true and .source_unchanged == true and
+            .all_direct_wait_EOF_PG_ESRCH == true and .synthetic_domain_observations_only == true and
+            .model_calls == 0 and .engine_builds == 0 and .network_calls == 0 and .external_adoption == false and
+            .native_acceptance == true and .execution_authorized == false and .live_effect_performed == false
+          ' "$RUNNER_TEMP/catalog-refresh/summary.json"
+      - name: Preserve whole-catalog refresh evidence
+        if: always() && steps.change-scope.outputs.docs_only != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: catalog-refresh-evidence
+          path: ${{ runner.temp }}/catalog-refresh/
           if-no-files-found: warn
           retention-days: 14
       - name: Verify Gooo recorded observation diagnostics

@@ -1186,3 +1186,15 @@ list/wildcard handling or an atomic write.
 Report the compiler identity, source change, actual result, saved record paths
 and any unsupported behavior. An agent's own trial is tooling verification;
 independent adoption requires a separate user's actual use.
+
+## Replace a catalog after refresh
+
+For agent clients that must preserve the previous catalog on a partial or failed
+refresh, start with the [whole-catalog refresh example](../examples/catalog-refresh/README.md).
+Its Gooo activity checks every candidate row and the complete saved page chain.
+The Go consumer stages immutable input and rechecks the captured state under a
+lock before replacing local storage. Try its three-case JSON demo with
+`go -C examples/catalog-refresh run ./cmd/catalog-refresh-demo` (Go 1.27.3).
+This source-based example makes no live calls and is separate from the released
+snapshot comparison archive. Report both the Gooo decision and actual commit
+result; `CANDIDATE_ELIGIBLE` alone is not a commit.

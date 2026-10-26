@@ -1,0 +1,17 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "gooo/tool-origin/catalog-refresh",
+    "activity": "DecideCatalogRefresh"
+  },
+  "packages": [
+    {
+      "path": "gooo/tool-origin/definition-snapshot",
+      "sources": ["ports/tool-origin/definition_snapshot.gooo"]
+    },
+    {
+      "path": "gooo/tool-origin/catalog-refresh",
+      "sources": ["ports/tool-origin/catalog_refresh.gooo"]
+    }
+  ]
+}

@@ -1404,7 +1404,44 @@ RUNTIME_SURFACE_UPLOAD = "      - name: Preserve runtime package surface evidenc
 RUNTIME_SURFACE_PRIOR_WORKFLOW_SHA = '2e05299931a15acfa3f248e6b643c07abc39dd3017b90aa69c49326622415526'
 
 
+# Whole-catalog admission adds common checks and one full-scope native sidecar.
+# Its exact removal recovers the complete d80cb863 workflow. Historical layers,
+# compiler pins, deployment dependencies and documentation scope stay unchanged.
+CATALOG_REFRESH_COMMON = '          go -C examples/catalog-refresh/reference vet ./...\n          go -C examples/catalog-refresh/reference test -race -count=1 ./...\n          python3 -I -B examples/catalog-refresh/reference/make_inputs.py --check\n          go -C examples/catalog-refresh vet ./...\n          go -C examples/catalog-refresh test -race -count=1 ./...\n'
+CATALOG_REFRESH_DECL = '          ./.gooo check ports/tool-origin/catalog_refresh.gooo\n          ./.gooo package interface --json catalog-refresh.workspace.json > "$RUNNER_TEMP/catalog-refresh-interface.json"\n          jq -e \'.schema == "gooo/package-workspace-interface-receipt/v1" and .decision == "PASS" and .interface.entry.package_path == "gooo/tool-origin/catalog-refresh" and .interface.entry.activity == "DecideCatalogRefresh"\' "$RUNNER_TEMP/catalog-refresh-interface.json"\n'
+CATALOG_REFRESH_STEP = '      - name: Verify Gooo whole-catalog refresh admission\n        if: steps.change-scope.outputs.docs_only != \'true\'\n        timeout-minutes: 12\n        run: |\n          set -euo pipefail\n          python3 -I -B examples/catalog-refresh/verify.py --compiler "$PWD/.gooo" --go "$(go env GOROOT)/bin/go" --go-cache "$(go env GOCACHE)" --module-cache "$(go env GOMODCACHE)" --out "$RUNNER_TEMP/catalog-refresh"\n          jq -e \'\n            .schema == "gooo/catalog-refresh-verification/v1" and\n            .status == "FINITE_CATALOG_REFRESH_NATIVE_OWN_REPLAY_PASS" and\n            has("first_failure") and .first_failure == null and .compiler_revision == "205896a413e5dea92366309c35ae85e542d055f6" and\n            .go_version == "go1.27.3" and .reference_cases == 115 and .kernel_cases == 106 and\n            .native_cases == 106 and .replay_cases == 106 and .native_own_replay_verified == true and\n            .input_rejection_cases == 9 and .input_rejections_verified == true and .reference_cases_accounted == 115 and\n            .reference_cases == (.kernel_cases + .input_rejection_cases) and .typed_decision_fields == 18 and\n            .receipt_negative_controls == 8 and .generated_assets == 5 and .generated_assets_exact == true and\n            .initial_bootstrap == false and .generated_assets_written == false and .generated_assets_written_count == 0 and\n            .PROV_O_bindings_verified == true and .source_unchanged == true and\n            .all_direct_wait_EOF_PG_ESRCH == true and .synthetic_domain_observations_only == true and\n            .model_calls == 0 and .engine_builds == 0 and .network_calls == 0 and .external_adoption == false and\n            .native_acceptance == true and .execution_authorized == false and .live_effect_performed == false\n          \' "$RUNNER_TEMP/catalog-refresh/summary.json"\n'
+CATALOG_REFRESH_UPLOAD = "      - name: Preserve whole-catalog refresh evidence\n        if: always() && steps.change-scope.outputs.docs_only != 'true'\n        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7\n        with:\n          name: catalog-refresh-evidence\n          path: ${{ runner.temp }}/catalog-refresh/\n          if-no-files-found: warn\n          retention-days: 14\n"
+CATALOG_REFRESH_PRIOR_WORKFLOW_SHA = 'f14fcae9bca5b1f0644247495d1ec0f21ba81beeed6fab992395dcda4103093a'
+
+
+def project_catalog_refresh_integration(text):
+    jobs = workflow_jobs(text)
+    _, observer, _ = job_steps(jobs['observer-checks'])
+    _, native, _ = job_steps(jobs['native-execution'])
+    require(text.count(CATALOG_REFRESH_COMMON) == 1 and
+            all(text.count(line) == 1 for line in CATALOG_REFRESH_COMMON.splitlines(keepends=True)) and
+            SNAPSHOT_COMMON + CATALOG_REFRESH_COMMON in observer['Check the Go observer'],
+            'catalog refresh fixture, reference and host checks must remain adjacent unconditional common checks')
+    require(text.count(CATALOG_REFRESH_DECL) == 1 and
+            all(text.count(line) == 1 for line in CATALOG_REFRESH_DECL.splitlines(keepends=True)) and
+            RUNTIME_SURFACE_DECL + CATALOG_REFRESH_DECL + '          ./.gooo check ports/image/color.gooo\n'
+            in native['Check Gooo declarations'],
+            'catalog refresh source and package interface must remain adjacent unconditional common declarations')
+    for chunk in (CATALOG_REFRESH_STEP, CATALOG_REFRESH_UPLOAD):
+        require(text.count(chunk) == 1 and chunk in jobs['policy-native-checks'],
+                'catalog refresh requires exact full-scope native verification and failure-safe separate evidence')
+    require(text.index(RUNTIME_SURFACE_UPLOAD) + len(RUNTIME_SURFACE_UPLOAD) == text.index(CATALOG_REFRESH_STEP) and
+            text.index(CATALOG_REFRESH_STEP) + len(CATALOG_REFRESH_STEP) == text.index(CATALOG_REFRESH_UPLOAD) and
+            text.index(CATALOG_REFRESH_UPLOAD) + len(CATALOG_REFRESH_UPLOAD) == text.index(OBSERVATION_STEP),
+            'catalog refresh verification must remain between runtime surface and observation checks')
+    prior = text.replace(CATALOG_REFRESH_COMMON, '', 1).replace(CATALOG_REFRESH_DECL, '', 1).replace(CATALOG_REFRESH_STEP, '', 1).replace(CATALOG_REFRESH_UPLOAD, '', 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == CATALOG_REFRESH_PRIOR_WORKFLOW_SHA,
+            'catalog refresh integration changed unrelated workflow bytes')
+    return prior
+
+
 def project_runtime_package_surface_integration(text):
+    text = project_catalog_refresh_integration(text)
     jobs = workflow_jobs(text)
     _, observer, _ = job_steps(jobs['observer-checks'])
     _, native, _ = job_steps(jobs['native-execution'])
@@ -4571,12 +4608,119 @@ class RecordedCatalogIntegrationTests(unittest.TestCase):
             project_recorded_catalog_integration(raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1))
 
 
+
+class CatalogRefreshIntegrationTests(unittest.TestCase):
+    def test_exact_projection_preserves_every_previous_workflow_byte(self):
+        raw = WORKFLOW.read_text()
+        prior = project_catalog_refresh_integration(raw)
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), CATALOG_REFRESH_PRIOR_WORKFLOW_SHA)
+        self.assertEqual(prior, raw.replace(CATALOG_REFRESH_COMMON, '', 1).replace(CATALOG_REFRESH_DECL, '', 1).replace(CATALOG_REFRESH_STEP, '', 1).replace(CATALOG_REFRESH_UPLOAD, '', 1))
+        self.assertNotIn('catalog-refresh', prior)
+        self.assertNotIn('catalog_refresh', prior)
+        project_root_go_reference(raw)
+
+    def test_common_reference_host_and_declaration_checks_cannot_be_skipped(self):
+        raw = WORKFLOW.read_text()
+        mutations = {}
+        for chunk_name, chunk in [('common', CATALOG_REFRESH_COMMON), ('declaration', CATALOG_REFRESH_DECL)]:
+            mutations[chunk_name + '-omitted'] = raw.replace(chunk, '', 1)
+            mutations[chunk_name + '-duplicate'] = raw.replace(chunk, chunk * 2, 1)
+            # Moving intact commands to a full-only producer would silently
+            # remove the docs-PR guarantees even if execution later succeeded.
+            removed = raw.replace(chunk, '', 1)
+            mutations[chunk_name + '-full-only'] = removed.replace(
+                CATALOG_REFRESH_STEP, CATALOG_REFRESH_STEP.replace('          set -euo pipefail\n', '          set -euo pipefail\n' + chunk, 1), 1)
+        for old, new in [('reference/make_inputs.py --check', 'reference/make_inputs.py'),
+                         ('examples/catalog-refresh test -race -count=1', 'examples/catalog-refresh test -count=1'),
+                         ('examples/catalog-refresh/reference vet ./...', 'examples/catalog-refresh/reference vet ./... || true'),
+                         ('package interface --json catalog-refresh.workspace.json', 'package interface --json other.workspace.json')]:
+            mutations[old] = raw.replace(old, new, 1)
+        for name, changed in mutations.items():
+            self.assertNotEqual(changed, raw)
+            with self.subTest(mutation=name), self.assertRaises(ValueError):
+                project_catalog_refresh_integration(changed)
+
+    def test_native_stage_keeps_pinned_shared_cache_and_no_bootstrap(self):
+        raw = WORKFLOW.read_text()
+        edits = [(FULL, DOCS), ('set -euo pipefail', 'set +e'),
+                 ('timeout-minutes: 12', 'timeout-minutes: 120'),
+                 ('--compiler "$PWD/.gooo"', '--compiler "$PWD/stale-compiler"'),
+                 ('--go-cache "$(go env GOCACHE)"', '--go-cache "$RUNNER_TEMP/private-cache"'),
+                 ('--module-cache "$(go env GOMODCACHE)"', ''),
+                 ('--out "$RUNNER_TEMP/catalog-refresh"', '--write-generated --out "$RUNNER_TEMP/catalog-refresh"'),
+                 ('--out "$RUNNER_TEMP/catalog-refresh"', '--out "$RUNNER_TEMP/catalog-refresh" || true'),
+                 ('jq -e', 'jq')]
+        for old, new in edits:
+            self.assertIn(old, CATALOG_REFRESH_STEP)
+            changed = raw.replace(CATALOG_REFRESH_STEP, CATALOG_REFRESH_STEP.replace(old, new, 1), 1)
+            with self.subTest(mutation=old), self.assertRaises(ValueError):
+                project_catalog_refresh_integration(changed)
+
+    def test_summary_gate_executes_and_refuses_incomplete_or_forged_success(self):
+        # Exercise the actual jq predicate, not just a mirror of its text.
+        predicate = CATALOG_REFRESH_STEP.split("          jq -e '\n", 1)[1].split("\n          ' ", 1)[0]
+        summary = dict(schema='gooo/catalog-refresh-verification/v1', status='FINITE_CATALOG_REFRESH_NATIVE_OWN_REPLAY_PASS',
+                       first_failure=None, compiler_revision='205896a413e5dea92366309c35ae85e542d055f6',
+                       go_version='go1.27.3', reference_cases=115, kernel_cases=106, native_cases=106, replay_cases=106,
+                       native_own_replay_verified=True, input_rejection_cases=9, input_rejections_verified=True,
+                       reference_cases_accounted=115, typed_decision_fields=18, receipt_negative_controls=8,
+                       generated_assets=5, generated_assets_exact=True, initial_bootstrap=False,
+                       generated_assets_written=False, generated_assets_written_count=0, PROV_O_bindings_verified=True,
+                       source_unchanged=True, all_direct_wait_EOF_PG_ESRCH=True, synthetic_domain_observations_only=True,
+                       model_calls=0, engine_builds=0, network_calls=0, external_adoption=False,
+                       native_acceptance=True, execution_authorized=False, live_effect_performed=False)
+        def jq_status(value):
+            return subprocess.run(['jq', '-e', predicate], input=json.dumps(value), text=True, capture_output=True, check=False).returncode
+        self.assertEqual(jq_status(summary), 0)
+        for field, bad in [('schema', 'other/v1'), ('first_failure', {'message': 'failed'}),
+                           ('compiler_revision', 'stale'), ('go_version', 'go1.27.2'),
+                           ('reference_cases', 114), ('kernel_cases', 105), ('native_cases', 0), ('replay_cases', 0),
+                           ('native_own_replay_verified', False), ('input_rejection_cases', 0),
+                           ('input_rejections_verified', False), ('reference_cases_accounted', 106),
+                           ('typed_decision_fields', 17), ('receipt_negative_controls', 0),
+                           ('generated_assets_exact', False), ('initial_bootstrap', True),
+                           ('generated_assets_written', True), ('generated_assets_written_count', 5),
+                           ('PROV_O_bindings_verified', False),
+                           ('source_unchanged', False), ('all_direct_wait_EOF_PG_ESRCH', False),
+                           ('network_calls', 1), ('execution_authorized', True), ('live_effect_performed', True)]:
+            with self.subTest(field=field):
+                self.assertNotEqual(jq_status({**summary, field: bad}), 0)
+                missing = dict(summary)
+                del missing[field]
+                self.assertNotEqual(jq_status(missing), 0)
+
+    def test_failure_evidence_cannot_disappear_or_mix_with_another_suite(self):
+        raw = WORKFLOW.read_text()
+        replacements = ['', CATALOG_REFRESH_UPLOAD * 2,
+                        CATALOG_REFRESH_UPLOAD.replace('always() && ', '', 1),
+                        CATALOG_REFRESH_UPLOAD.replace(FULL, DOCS, 1),
+                        CATALOG_REFRESH_UPLOAD.replace('${{ runner.temp }}/catalog-refresh/', 'out/reused/', 1),
+                        CATALOG_REFRESH_UPLOAD.replace('name: catalog-refresh-evidence', 'name: runtime-package-surface-evidence', 1),
+                        CATALOG_REFRESH_UPLOAD.replace('cf430e030ddbb5b0abf93d22962f4752f3646cd9', 'main', 1)]
+        for replacement in replacements:
+            with self.subTest(replacement=replacement), self.assertRaises(ValueError):
+                project_catalog_refresh_integration(raw.replace(CATALOG_REFRESH_UPLOAD, replacement, 1))
+
+    def test_new_layer_cannot_hide_job_graph_scope_or_unrelated_native_changes(self):
+        raw = WORKFLOW.read_text()
+        block = CATALOG_REFRESH_STEP + CATALOG_REFRESH_UPLOAD
+        moved = raw.replace(block, '', 1).replace(RUNTIME_SURFACE_STEP, block + RUNTIME_SURFACE_STEP, 1)
+        alterations = [moved, raw.replace(CATALOG_REFRESH_STEP, '', 1),
+                       raw.replace('go test -race -timeout=15m', 'go test -timeout=15m', 1),
+                       raw.replace("needs.policy-native-checks.result == 'success'", "needs.policy-native-checks.result != 'failure'", 1),
+                       raw.replace("github.ref == 'refs/heads/main'", "github.ref != 'refs/heads/main'", 1)]
+        for changed in alterations:
+            self.assertNotEqual(changed, raw)
+            with self.subTest(mutation=changed[-120:]), self.assertRaises(ValueError):
+                project_catalog_refresh_integration(changed)
+
+
 class RuntimePackageSurfaceIntegrationTests(unittest.TestCase):
     def test_exact_additions_recover_complete_original_workflow(self):
         raw = WORKFLOW.read_text()
         prior = project_runtime_package_surface_integration(raw)
         self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), RUNTIME_SURFACE_PRIOR_WORKFLOW_SHA)
-        self.assertEqual(prior, raw.replace(RUNTIME_SURFACE_UNIT, '', 1).replace(RUNTIME_SURFACE_DECL, '', 1).replace(RUNTIME_SURFACE_STEP, '', 1).replace(RUNTIME_SURFACE_UPLOAD, '', 1))
+        self.assertEqual(prior, project_catalog_refresh_integration(raw).replace(RUNTIME_SURFACE_UNIT, '', 1).replace(RUNTIME_SURFACE_DECL, '', 1).replace(RUNTIME_SURFACE_STEP, '', 1).replace(RUNTIME_SURFACE_UPLOAD, '', 1))
         self.assertNotIn('runtime-package-surface', prior)
         self.assertNotIn('runtime_package_surface', prior)
         # Continue through every unchanged historical layer, including snapshot.

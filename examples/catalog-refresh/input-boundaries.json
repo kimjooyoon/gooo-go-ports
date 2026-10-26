@@ -1,0 +1,163 @@
+{
+  "schema": "gooo/catalog-refresh-input-boundaries/v1",
+  "compiler_revision": "205896a413e5dea92366309c35ae85e542d055f6",
+  "pinned_validation_sources": [
+    {
+      "path": "internal/bodyexecution/composition_cases.go",
+      "sha256": "sha256:aef6187afcd541db68891c52f0795c3cd8cde3e50e0a5887f9195c9486c4533a",
+      "url": "https://github.com/kimjooyoon/meta-ontology-go/blob/205896a413e5dea92366309c35ae85e542d055f6/internal/bodyexecution/composition_cases.go"
+    },
+    {
+      "path": "internal/bodyexecution/composition_records.go",
+      "sha256": "sha256:575768130c0ec3b103a8c861a6ade2f7bea8487d2a62de67a24463f20cda10e2",
+      "url": "https://github.com/kimjooyoon/meta-ontology-go/blob/205896a413e5dea92366309c35ae85e542d055f6/internal/bodyexecution/composition_records.go"
+    },
+    {
+      "path": "internal/bodyexecution/composition_collections.go",
+      "sha256": "sha256:90d72a6592e420de286d10100edf4002cefdd4da96b62d15af7b3d0fb63e05f1",
+      "url": "https://github.com/kimjooyoon/meta-ontology-go/blob/205896a413e5dea92366309c35ae85e542d055f6/internal/bodyexecution/composition_collections.go"
+    },
+    {
+      "path": "internal/bodyexecution/composition_capacity.go",
+      "sha256": "sha256:8146e93f42d733a888f6c12a0bf4ac7b902cb25563815ad791b0a5d4d86b0b46",
+      "url": "https://github.com/kimjooyoon/meta-ontology-go/blob/205896a413e5dea92366309c35ae85e542d055f6/internal/bodyexecution/composition_capacity.go"
+    },
+    {
+      "path": "internal/bodyexecution/text_json.go",
+      "sha256": "sha256:ec2ae0f7d97fc402e8fd646fb4d526bd81f415b3f95e79646ba2d8721d39749b",
+      "url": "https://github.com/kimjooyoon/meta-ontology-go/blob/205896a413e5dea92366309c35ae85e542d055f6/internal/bodyexecution/text_json.go"
+    },
+    {
+      "path": "internal/valuejson/text.go",
+      "sha256": "sha256:2b366a79dc6266f50de6a49b4de552cae52729bff7e4a1dc8e09868cc0535b74",
+      "url": "https://github.com/kimjooyoon/meta-ontology-go/blob/205896a413e5dea92366309c35ae85e542d055f6/internal/valuejson/text.go"
+    },
+    {
+      "path": "internal/syntax/entity_fields_support.go",
+      "sha256": "sha256:6e1e90d20587d0ccd884670704c6ad8ce9a5198af3bf1200925accd1f52512fe",
+      "url": "https://github.com/kimjooyoon/meta-ontology-go/blob/205896a413e5dea92366309c35ae85e542d055f6/internal/syntax/entity_fields_support.go"
+    }
+  ],
+  "reference_cases": 115,
+  "native_cases": 106,
+  "rejections": [
+    {
+      "reference_case_index": 95,
+      "label": "typed-original_names-1025",
+      "input_port": "input0",
+      "record": "SnapshotFacts",
+      "field": "original_names",
+      "element_index": 0,
+      "boundary": "text_utf8_bytes",
+      "observed_size": 1025,
+      "limit": 1024,
+      "stage": "INPUT_VALIDATION",
+      "code": "INVALID_INPUT_VALUE"
+    },
+    {
+      "reference_case_index": 96,
+      "label": "typed-definition_profiles-1025",
+      "input_port": "input0",
+      "record": "SnapshotFacts",
+      "field": "definition_profiles",
+      "element_index": 0,
+      "boundary": "text_utf8_bytes",
+      "observed_size": 1025,
+      "limit": 1024,
+      "stage": "INPUT_VALIDATION",
+      "code": "INVALID_INPUT_VALUE"
+    },
+    {
+      "reference_case_index": 97,
+      "label": "typed-page_next_cursor_values-1025",
+      "input_port": "input0",
+      "record": "SnapshotFacts",
+      "field": "page_next_cursor_values",
+      "element_index": 0,
+      "boundary": "text_utf8_bytes",
+      "observed_size": 1025,
+      "limit": 1024,
+      "stage": "INPUT_VALIDATION",
+      "code": "INVALID_INPUT_VALUE"
+    },
+    {
+      "reference_case_index": 98,
+      "label": "typed-257-rows",
+      "input_port": "input0",
+      "record": "SnapshotFacts",
+      "field": "original_names",
+      "element_index": null,
+      "boundary": "collection_elements",
+      "observed_size": 257,
+      "limit": 256,
+      "stage": "INPUT_VALIDATION",
+      "code": "INVALID_INPUT_VALUE"
+    },
+    {
+      "reference_case_index": 99,
+      "label": "typed-evidence-attempt_id-1025",
+      "input_port": "input1",
+      "record": "RefreshEvidence",
+      "field": "attempt_id",
+      "element_index": null,
+      "boundary": "text_utf8_bytes",
+      "observed_size": 1025,
+      "limit": 1024,
+      "stage": "INPUT_VALIDATION",
+      "code": "INVALID_INPUT_VALUE"
+    },
+    {
+      "reference_case_index": 100,
+      "label": "typed-evidence-validator_profile-1025",
+      "input_port": "input1",
+      "record": "RefreshEvidence",
+      "field": "validator_profile",
+      "element_index": null,
+      "boundary": "text_utf8_bytes",
+      "observed_size": 1025,
+      "limit": 1024,
+      "stage": "INPUT_VALIDATION",
+      "code": "INVALID_INPUT_VALUE"
+    },
+    {
+      "reference_case_index": 101,
+      "label": "typed-row-outcome-1025",
+      "input_port": "input1",
+      "record": "RefreshEvidence",
+      "field": "row_validation_states",
+      "element_index": 0,
+      "boundary": "text_utf8_bytes",
+      "observed_size": 1025,
+      "limit": 1024,
+      "stage": "INPUT_VALIDATION",
+      "code": "INVALID_INPUT_VALUE"
+    },
+    {
+      "reference_case_index": 102,
+      "label": "typed-257-row-outcomes",
+      "input_port": "input1",
+      "record": "RefreshEvidence",
+      "field": "row_validation_states",
+      "element_index": null,
+      "boundary": "collection_elements",
+      "observed_size": 257,
+      "limit": 256,
+      "stage": "INPUT_VALIDATION",
+      "code": "INVALID_INPUT_VALUE"
+    },
+    {
+      "reference_case_index": 103,
+      "label": "typed-state-token-1025",
+      "input_port": "input2",
+      "record": "RefreshState",
+      "field": "current_scope_epoch",
+      "element_index": null,
+      "boundary": "text_utf8_bytes",
+      "observed_size": 1025,
+      "limit": 1024,
+      "stage": "INPUT_VALIDATION",
+      "code": "INVALID_INPUT_VALUE"
+    }
+  ],
+  "scope": "Exact typed-input admission probes. All remain in reference-inputs and kernel.cases with independent domain expectations. Exclusions from native cases are explicit; no body-level decision or native execution is claimed for them."
+}
