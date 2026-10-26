@@ -1,7 +1,7 @@
 {
   "$schema": "https://context7.com/schema/context7.json",
   "projectTitle": "Gooo Go Ports",
-  "description": "Selected Go APIs and original bounded policies implemented in experimental Gooo, with runnable examples, independent Go references and saved replay. Includes ETag/header facts, version eligibility, fixed API policy comparison and service-grant narrowing assessment over MCP for one or multiple required requests. Language engine: kimjooyoon/meta-ontology-go.",
+  "description": "Selected Go APIs and original bounded policies implemented in experimental Gooo, with runnable examples, independent Go references and saved replay. Includes saved MCP tool comparison, bounded catalog refresh, ETag/header facts, version eligibility, fixed API policy comparison and service-grant narrowing assessment over MCP for one or multiple required requests. Language engine: kimjooyoon/meta-ontology-go.",
   "folders": [
     "examples/learn-gooo",
     "docs",
@@ -27,6 +27,7 @@
     "examples/agentmesh-service-policy",
     "examples/recorded-catalog-comparison",
     "examples/tool-definition-snapshot",
+    "examples/catalog-refresh",
     "examples/mcp-upgrade-regressions"
   ],
   "excludeFolders": [
@@ -92,7 +93,12 @@
     "For multiple required requests, use assess_service_grant_change and preserve order and duplicate positions. Its Gooo policy admits 1-256 pairs; an excess list is represented INVALID_INPUT, not a transport error.",
     "Use canonical service identifiers, not URL paths or individual tool names. Pattern and component strings are ASCII, at most 128 bytes. Preserve unsupported text; do not trim, repair or substitute a single-request assessment.",
     "ELIGIBLE, REFUSED and represented INVALID_INPUT are calculations, not live grants. Retain facts, every decision field and full bindings. MCP isError or a missing tool is a setup, input, transport or execution failure; do not invent a decision.",
-    "For saved tools/list pages without host alias records, use --definition-snapshot in examples/recorded-catalog-comparison with the input guide in examples/tool-definition-snapshot. This mode requires the current source; older binaries do not include it.",
-    "Try the synthetic upgrade cases in examples/mcp-upgrade-regressions. If a selected tool is missing from incomplete pages, keep UNASSESSED; do not infer removal. Definition changes do not prove behavior changes or authorize a call."
+    "For saved tools/list pages without host alias records, use --definition-snapshot in recorded-catalog-cli-preview.2; follow docs/ai-agents.md#install-the-native-snapshot-command. Preview.1 lacks this mode.",
+    "For a source build of that comparison, use examples/recorded-catalog-comparison with the input guide in examples/tool-definition-snapshot.",
+    "Try the synthetic upgrade cases in examples/mcp-upgrade-regressions. If a selected tool is missing from incomplete pages, keep UNASSESSED; do not infer removal. Definition changes do not prove behavior changes or authorize a call.",
+    "For a whole-catalog refresh demo, start with docs/ai-agents.md#replace-a-catalog-after-refresh. The demo makes no live MCP or model calls; initial Go module downloads may require network access.",
+    "For whole-catalog refresh, use examples/catalog-refresh: the pinned Go preview at source 5699ab44a9a355a579bc08904e198eb6cf5554dd with Go 1.27.3 needs no Gooo compiler or checkout.",
+    "Preserve the Gooo decision and separate APPLIED/RETAINED commit receipt. The Go host rechecks state under a lock before replacing local stored pages; a CANDIDATE_ELIGIBLE decision alone is not a commit.",
+    "This refresh example has no live collector, durable or distributed transaction, or tool-call authority. Native snapshot preview.2 does not contain the transaction."
   ]
 }
