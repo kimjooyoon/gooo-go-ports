@@ -1218,6 +1218,7 @@ calling a revoked tool. The example provides no durable or distributed transacti
 Use the [pinned module recipe](../examples/catalog-refresh/README.md#embed-the-transaction)
 to embed the transaction in your own app. This preview is separate from the
 released `recorded-catalog-cli-preview.2` snapshot comparison command.
-For an actual trial, [report the useful result or first failure](#report-a-first-attempt-or-a-real-task),
-the pinned module version, and whether you used your own public pages or the
-unchanged demo. Keep private captures local.
+For an actual trial, use the [feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml)
+and select **Native setup, verification, or replay**. Report the useful result or
+first failure, the pinned module version, and whether you used your own public
+pages or the unchanged demo. Keep private captures local.
