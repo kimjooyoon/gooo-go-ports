@@ -16,7 +16,7 @@ are developed separately; this repository supplies ports and runnable examples.
 | Check whether a previously selected tool alias changed origin | [Source-built alias MCP tool](#compare-a-tool-alias-before-reusing-it): start with `--alias-origin-change`, then call `gooo_compare_alias_origin` | Compare supplied catalogs and retain the original row indexes. Requires this source build; unavailable in preview16. |
 | Compare the supplied API policy profiles | [Fixed-policy command](#compare-fixed-api-policies-without-a-compiler) | Compares the documented profiles; does not load an arbitrary edited policy. |
 | Compare saved MCP tool catalogs | [Native CLI without a toolchain](recorded-catalog-cli.md) or [pinned source alternatives](#compare-saved-mcp-catalogs-without-a-checkout) | Separates alias-origin changes from unknown collection context. The native command includes explicit observation availability and missing-field diagnostics; it does not collect a live catalog or authorize a tool call. |
-| Compare saved tool definitions when no host alias record exists | [Own-input recipe](#compare-your-own-saved-pages) or [agent task skill](../.agents/skills/gooo-compare-tool-snapshots/SKILL.md): `--definition-snapshot` | Select an original tool name from retained JSON-RPC pages. Preserve incomplete coverage and duplicate-name results; do not invent a host mapping. This mode requires the current source checkout or an archive explicitly containing the snapshot examples; preview.1 does not support it. |
+| Compare saved tool definitions when no host alias record exists | [Native preview.2 installation](#install-the-native-snapshot-command), [own-input recipe](#compare-your-own-saved-pages) or [agent task skill](../.agents/skills/gooo-compare-tool-snapshots/SKILL.md): `--definition-snapshot` | Select an original tool name from retained JSON-RPC pages. Preserve incomplete coverage and duplicate-name results; do not invent a host mapping. Native preview.2 includes this mode and three synthetic examples; the source route remains available. Preview.1 does not support it. |
 | Edit and execute Gooo source | [First-program skill](#run-the-first-program-skill) | An actual source edit plus new execution and replay records; declaration checking alone is insufficient. |
 
 The native MCP routes need no compiler at runtime. The optional
@@ -566,21 +566,55 @@ extraction record separately; the command does not extract or collect them.
 
 Ask your coding agent:
 
-> Use this checkout's `--definition-snapshot` command to compare the original
+> Use the native preview.2 or this checkout's `--definition-snapshot` command to compare the original
 > tool name in my two saved page sets. Preserve the original bytes and report
 > the selected definition and annotation relations, page coverage, duplicate
 > names and source bindings. Do not fill in missing host facts. Keep the full
 > report locally and show the first error if the command fails.
 
+### Install the native snapshot command
+
+[recorded-catalog-cli-preview.2](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/recorded-catalog-cli-preview.2)
+contains `--definition-snapshot` and the three synthetic upgrade examples for
+Apple Silicon macOS and Linux x86-64. Use this fixed version; GitHub's
+`releases/latest` endpoint does not select prereleases. Download and verify the
+archive, then keep `START-HERE.txt` and `manifest.json` with your reports:
+
+```sh
+case "$(uname -s)-$(uname -m)" in
+  Linux-x86_64) platform=linux-amd64 ;;
+  Darwin-arm64) platform=darwin-arm64 ;;
+  *) printf '%s\n' 'No archive is provided for this platform.' >&2; exit 1 ;;
+esac
+release=https://github.com/kimjooyoon/gooo-go-ports/releases/download/recorded-catalog-cli-preview.2
+asset="gooo-recorded-catalog-$platform.tar.gz"
+native_dir="$(mktemp -d)" && cd "$native_dir" || exit 1
+curl --fail --location --proto '=https' --tlsv1.2 --output "$asset" "$release/$asset" || exit 1
+curl --fail --location --proto '=https' --tlsv1.2 --output "$asset.sha256" "$release/$asset.sha256" || exit 1
+case "$platform" in
+  linux-amd64) sha256sum -c "$asset.sha256" || exit 1 ;;
+  darwin-arm64) shasum -a 256 -c "$asset.sha256" || exit 1 ;;
+esac
+tar -xzf "$asset" || exit 1
+snapshot_cli="$PWD/gooo-recorded-catalog"
+"$snapshot_cli" --version
+```
+
+Read the extracted `START-HERE.txt` for all three example commands. Comparisons
+run locally without an account, model call or Go/Gooo installation. Downloads
+need network access; the own-input assembler below uses Python 3. The archive
+compares stored observations; it does not collect live pages or call tools.
+To change the Gooo rules themselves, use the [source-edit workflow](#run-the-first-program-skill)
+and preserve new execution and replay evidence. Running the archive does not edit Gooo.
+
 ### Compare your own saved pages
 
 Choose the execution route before running the recipe. The source route uses an
 existing checkout and Go **1.27.3**; its generated evaluator is already included,
-so no Gooo compiler bootstrap is needed. With an extracted native archive that
-explicitly includes `mcp-upgrade-regressions/`, replace
-`go -C examples/recorded-catalog-comparison run ./cmd/compare` below with the
-absolute path to its `gooo-recorded-catalog` executable. The public
-`recorded-catalog-cli-preview.1` archive does not support `--definition-snapshot`.
+so no Gooo compiler bootstrap is needed. For the [native preview.2 route](#install-the-native-snapshot-command),
+replace `go -C examples/recorded-catalog-comparison run ./cmd/compare` below with
+`"$snapshot_cli"` from the installation block, or the absolute path to that
+executable in a new shell. Preview.1 does not support `--definition-snapshot`.
 
 Replace the original tool name and four absolute paths with your retained
 JSON-RPC `tools/list` payloads. Both routes use Python 3 to assemble the input
@@ -588,10 +622,10 @@ without parsing and rewriting the original page text, including CRLF line ending
 
 ```sh
 snapshot_dir="$(mktemp -d "${TMPDIR:-/tmp}/gooo-snapshot.XXXXXX")" || exit 1
-python3 - 'original.tool.name' \
+if python3 - 'original.tool.name' \
   '/absolute/before-request.json' '/absolute/before-response.json' \
   '/absolute/after-request.json' '/absolute/after-response.json' \
-  > "$snapshot_dir/input.json" <<'PY' || exit $?
+  > "$snapshot_dir/input.json" 2> "$snapshot_dir/assembly.stderr" <<'PY'
 import json
 from pathlib import Path
 import sys
@@ -605,6 +639,17 @@ json.dump({"target_name": target,
            "before": {"pages": [page(before_request, before_response)]},
            "after": {"pages": [page(after_request, after_response)]}}, sys.stdout)
 PY
+then
+  assembly_status=0
+else
+  assembly_status=$?
+fi
+printf '%s\n' "$assembly_status" > "$snapshot_dir/assembly.exit"
+if [ "$assembly_status" -ne 0 ]; then
+  printf 'Input assembly failed; files retained at: %s\n' "$snapshot_dir" >&2
+  cat "$snapshot_dir/assembly.stderr" >&2
+  exit "$assembly_status"
+fi
 if GOTOOLCHAIN=local GOWORK=off \
   go -C examples/recorded-catalog-comparison run ./cmd/compare --definition-snapshot \
   < "$snapshot_dir/input.json" > "$snapshot_dir/report.json" 2> "$snapshot_dir/stderr"; then
@@ -620,7 +665,8 @@ if [ "$snapshot_status" -ne 0 ]; then
 fi
 ```
 
-Run from the repository root. If the command fails, retain its stderr and exit
+Run the source route from the repository root; the native route needs no checkout.
+If the command fails, retain its stderr and exit
 status; no comparison result was established. On exit zero, read `decision.state`,
 `decision.reason`, `decision.next_action`, the definition/annotation relations and both page
 coverage fields. `UNASSESSED` is a returned comparison with insufficient facts,
@@ -641,12 +687,12 @@ Sharing the original files is optional; keep private catalog contents local.
 The [synthetic example](../examples/tool-definition-snapshot/example-input.json)
 changes a schema limit from 10 to 20. The [feature's main CI](https://github.com/kimjooyoon/gooo-go-ports/actions/runs/40235109209)
 passed the finite native/replay corpus and API tests at `9bbe157`; new revisions
-retain their own verification. Older immutable installations and published bundles do not contain
-this mode. `SAVED_ROWS_ONLY` compares the supplied rows; it does not establish
+retain their own verification. The earlier preview.1 archive and the immutable
+Go installation recipes below do not contain this mode. `SAVED_ROWS_ONLY` compares the supplied rows; it does not establish
 unchanged server behavior or authorize calling a tool. Origin and authorization
 remain `NOT_ASSESSED`.
 
-For an upgrade or reconnect review, try the [three saved-definition regression examples](../examples/mcp-upgrade-regressions/README.md). They cover an output-schema change, unchanged definitions with separate version context, and a missing tool in an incomplete page set. The inputs are synthetic and use this source checkout.
+For an upgrade or reconnect review, try the [three saved-definition regression examples](../examples/mcp-upgrade-regressions/README.md). They cover an output-schema change, unchanged definitions with separate version context, and a missing tool in an incomplete page set. The inputs are synthetic and are also included in native preview.2.
 
 ## Compare saved MCP catalogs without a checkout
 
