@@ -36,10 +36,11 @@ or the first failure. This skill routes to the
   point. Offer the guide's existing feedback form using public details or a
   synthetic reproduction; keep private captures local. Do not submit automatically.
 
-For a request to replace an entire catalog after refresh, use the source-based
+For a request to replace an entire catalog after refresh, use the Go module in the
 [catalog refresh example](https://github.com/kimjooyoon/gooo-go-ports/blob/main/examples/catalog-refresh/README.md).
-Read the guide from the matching source checkout before setup; native preview.2
-does not contain this transaction.
+Follow its pinned public-module recipe for consumption; a matching source
+checkout is needed when editing the Gooo rules. Native preview.2 does not
+contain this transaction.
 The selected-row comparison cannot authorize whole-catalog replacement. That
 example uses a separate Gooo decision and local commit receipt; it does not
 collect live pages or grant permission to invoke retained tools.
