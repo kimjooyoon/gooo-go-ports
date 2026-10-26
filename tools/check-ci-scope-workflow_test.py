@@ -6,6 +6,7 @@ layout. Unrecognized YAML layout fails rather than silently missing a guard.
 It needs no YAML package on the CI runner.
 """
 
+import ast
 import hashlib
 import json
 import re
@@ -1825,6 +1826,156 @@ def project_manual_consumer_preflight(text):
     return prior
 
 
+SERVICE_BUNDLE_PRIOR_PATHS = "    paths:\n      - '.github/workflows/service-grant-cli-bundle.yml'\n      - 'tools/service_policy_cli_bundle.py'\n      - 'tools/api_policy_cli_bundle.py'\n      - 'tools/api_policy_cli_bundle_test.py'\n      - 'tools/licenses/gooo-83928fa-MIT.txt'\n      - 'examples/agentmesh-service-policy/**'\n      - 'LICENSE'\n      - 'docs/service-grant-cli.md'\n      - 'README.md'\n"
+SERVICE_BUNDLE_CURRENT_PATHS = "    paths:\n      - '.github/workflows/service-grant-cli-bundle.yml'\n      - 'go.mod'\n      - 'tools/service_policy_cli_bundle.py'\n      - 'tools/api_policy_cli_bundle.py'\n      - 'tools/api_policy_cli_bundle_test.py'\n      - 'tools/licenses/gooo-83928fa-MIT.txt'\n      - 'examples/agentmesh-service-policy/**'\n      - 'agentmesh-matcher-raw.workspace.json'\n      - 'agentmesh-matcher.workspace.json'\n      - 'ports/agentmesh/LICENSE-APACHE-2.0'\n      - 'ports/agentmesh/service_pattern.gooo'\n      - 'service-grant-apply.workspace.json'\n      - 'service-grant-impact-raw.workspace.json'\n      - 'service-grant-impact.workspace.json'\n      - 'service-grant-refinement-raw.workspace.json'\n      - 'service-grant-refinement.workspace.json'\n      - 'LICENSE'\n      - 'docs/service-grant-cli.md'\n"
+SERVICE_BUNDLE_PRIOR_REFERENCE_SHA = 'd0d628feb9cc308b605848c343a95671c41b2083c11c60c5b390e785cf083621'
+
+
+def service_bundle_trigger_paths(text):
+    matches = re.findall(
+        r"(?m)^  pull_request:\n    paths:\n((?:      - '[A-Za-z0-9_./*-]+'\n)+)  workflow_dispatch:\n",
+        text)
+    require(len(matches) == 1, 'one plain service bundle path filter required')
+    paths = tuple(line[9:-1] for line in matches[0].splitlines())
+    require(len(paths) == len(set(paths)), 'duplicate bundle path trigger')
+    require(all('*' not in path or path.endswith('/**') and '*' not in path[:-3]
+                for path in paths), 'only literal paths and whole subtrees are reviewed')
+    return paths
+
+
+def service_bundle_path_matches(path, patterns):
+    return any(path == pattern or pattern.endswith('/**') and path.startswith(pattern[:-2])
+               for pattern in patterns)
+
+
+def service_bundle_required_paths(root, public_sources=None, licenses=None):
+    # Derive bound source and notice paths from what the producer actually reads,
+    # rather than copying the workflow's path list as its own expected answer.
+    generation_path = 'examples/agentmesh-service-policy/generation.json'
+    if public_sources is None:
+        public_sources = json.loads((root / generation_path).read_text())['public_sources']
+    if licenses is None:
+        source = ast.parse((root / 'tools/service_policy_cli_bundle.py').read_text())
+        assignments = [node for node in source.body if isinstance(node, ast.Assign)
+                       and any(isinstance(name, ast.Name) and name.id == 'LICENSES'
+                               for name in node.targets)]
+        require(len(assignments) == 1, 'one literal bundle license manifest required')
+        licenses = ast.literal_eval(assignments[0].value)
+    require(type(public_sources) is dict and type(licenses) is dict,
+            'source and license mappings required')
+    required = {
+        '.github/workflows/service-grant-cli-bundle.yml', 'go.mod', generation_path,
+        'tools/service_policy_cli_bundle.py', 'tools/api_policy_cli_bundle.py',
+        'tools/api_policy_cli_bundle_test.py', *public_sources,
+        *(value[0] for value in licenses.values()),
+    }
+    require(all(type(path) is str and not path.startswith('/') and
+                all(part not in ('', '.', '..') for part in path.split('/'))
+                for path in required), 'repository-relative bundle inputs required')
+    return required
+
+
+def check_service_bundle_input_coverage(patterns, required):
+    missing = sorted(path for path in required if not service_bundle_path_matches(path, patterns))
+    require(not missing, 'bundle triggers omit consumed inputs: ' + ', '.join(missing))
+
+
+def project_service_bundle_trigger_scope(text):
+    require(text.count(SERVICE_BUNDLE_CURRENT_PATHS) == 1,
+            'exact reviewed service bundle path transition required')
+    root = WORKFLOW.parent.parent.parent
+    check_service_bundle_input_coverage(service_bundle_trigger_paths(text),
+                                        service_bundle_required_paths(root))
+    prior = text.replace(SERVICE_BUNDLE_CURRENT_PATHS, SERVICE_BUNDLE_PRIOR_PATHS, 1)
+    require(hashlib.sha256(prior.encode()).hexdigest() == SERVICE_BUNDLE_PRIOR_REFERENCE_SHA,
+            'bundle trigger transition changed executable workflow bytes')
+    return prior
+
+
+class ServiceBundleTriggerScopeTests(unittest.TestCase):
+    path = '.github/workflows/service-grant-cli-bundle.yml'
+
+    def raw(self):
+        return (WORKFLOW.parent.parent.parent / self.path).read_text()
+
+    def test_consumed_sources_licenses_and_toolchain_are_covered(self):
+        root = WORKFLOW.parent.parent.parent
+        required = service_bundle_required_paths(root)
+        self.assertIn('go.mod', required)
+        self.assertIn('ports/agentmesh/service_pattern.gooo', required)
+        check_service_bundle_input_coverage(service_bundle_trigger_paths(self.raw()), required)
+
+    def test_each_previously_uncovered_input_is_necessary(self):
+        root = WORKFLOW.parent.parent.parent
+        required = service_bundle_required_paths(root)
+        current = service_bundle_trigger_paths(self.raw())
+        prior = service_bundle_trigger_paths(project_service_bundle_trigger_scope(self.raw()))
+        formerly_missing = {path for path in required if not service_bundle_path_matches(path, prior)}
+        self.assertEqual(len(formerly_missing), 10)
+        for path in formerly_missing:
+            with self.subTest(path=path), self.assertRaisesRegex(ValueError, 'omit consumed inputs'):
+                check_service_bundle_input_coverage(tuple(item for item in current if item != path), required)
+
+    def test_new_source_or_notice_binding_cannot_silently_escape_trigger_coverage(self):
+        root = WORKFLOW.parent.parent.parent
+        patterns = service_bundle_trigger_paths(self.raw())
+        public_sources = json.loads((root / 'examples/agentmesh-service-policy/generation.json').read_text())['public_sources']
+        for required in (
+                service_bundle_required_paths(root, public_sources={**public_sources, 'ports/new-rule/main.gooo': 'sha256:' + 'a' * 64}),
+                service_bundle_required_paths(root, licenses={'New': ('third_party/new-rule/NOTICE', None)})):
+            with self.assertRaisesRegex(ValueError, 'omit consumed inputs'):
+                check_service_bundle_input_coverage(patterns, required)
+
+    def test_catalog_docs_only_do_not_trigger_but_mixed_real_inputs_do(self):
+        patterns = service_bundle_trigger_paths(self.raw())
+        docs = ['README.md', 'context7.json', 'docs/ai-agents.md']
+        self.assertFalse(any(service_bundle_path_matches(path, patterns) for path in docs))
+        for path in ('go.mod', 'ports/agentmesh/service_pattern.gooo',
+                     'service-grant-impact.workspace.json', 'docs/service-grant-cli.md',
+                     'examples/agentmesh-service-policy/reference/main.go'):
+            with self.subTest(path=path):
+                self.assertTrue(any(service_bundle_path_matches(item, patterns) for item in [*docs, path]))
+        self.assertFalse(service_bundle_path_matches('examples/agentmesh-service-policy-other/main.go', patterns))
+
+    def test_restores_unchanged_historical_workflow_and_go_selector_preimage(self):
+        raw = self.raw()
+        prior = project_service_bundle_trigger_scope(raw)
+        self.assertEqual(prior, raw.replace(SERVICE_BUNDLE_CURRENT_PATHS, SERVICE_BUNDLE_PRIOR_PATHS, 1))
+        literal = project_root_go_reference(raw, path=self.path)
+        self.assertEqual(hashlib.sha256(literal.encode()).hexdigest(), ROOT_GO_REFERENCES[self.path][1])
+        with self.assertRaises(ValueError):
+            project_root_go_reference(prior, path=self.path)
+
+    def test_trigger_transition_cannot_be_omitted_duplicated_or_widened(self):
+        raw = self.raw()
+        for old, new in (
+                ("      - 'go.mod'\n", ''),
+                ("      - 'go.mod'\n", "      - 'go.mod'\n" * 2),
+                ("      - 'go.mod'\n", "      - 'go.mod'\n      - '**'\n"),
+                ("      - 'go.mod'\n", "      - 'go.mod'\n      - 'README.md'\n"),
+                ('    paths:\n', '    paths-ignore:\n'),
+                ('  workflow_dispatch:\n', '  workflow_dispatch: {}\n')):
+            with self.subTest(change=old), self.assertRaises(ValueError):
+                project_root_go_reference(raw.replace(old, new, 1), path=self.path)
+
+    def test_trigger_projection_does_not_mask_execution_or_permission_changes(self):
+        raw = self.raw()
+        for old, new in (
+                ('timeout-minutes: 8', 'timeout-minutes: 80'),
+                ('contents: read', 'contents: write'),
+                ('cache: false', 'cache: true'),
+                ('CGO_ENABLED: \'0\'', 'CGO_ENABLED: \'1\''),
+                ('api_policy_cli_bundle_test.py -v', 'api_policy_cli_bundle_test.py -v || true'),
+                ('timeout 180s go install', 'go install'),
+                ('version=v0.0.0-20261020182808-7180a4a0f36a', 'version=latest'),
+                ('actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e', 'actions/setup-go@main'),
+                ('if: always()', 'if: success()'),
+                ('            out/service-grant-cli-bundle/verification.json\n', '')):
+            self.assertIn(old, raw)
+            with self.subTest(change=old), self.assertRaises(ValueError):
+                project_root_go_reference(raw.replace(old, new, 1), path=self.path)
+
+
 def project_root_go_reference(text, module_text=None, path='.github/workflows/ci.yml'):
     if path == '.github/workflows/ci.yml':
         text = project_current_doc_fact_check(text)
@@ -1832,6 +1983,8 @@ def project_root_go_reference(text, module_text=None, path='.github/workflows/ci
         text = project_service_grant_alias_integration(text)
     elif path == '.github/workflows/manual-native-shards.yml':
         text = project_manual_consumer_preflight(text)
+    elif path == '.github/workflows/service-grant-cli-bundle.yml':
+        text = project_service_bundle_trigger_scope(text)
     if module_text is None:
         module_text = (WORKFLOW.parent.parent.parent / 'go.mod').read_text()
     require(re.findall(r'^go ([^\s]+)[ \t]*$', module_text, re.M) == ['1.27.3'],
