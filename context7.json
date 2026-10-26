@@ -101,7 +101,7 @@
     "The catalog-refresh command returns receipt and stored_catalog.bytes (base64) in a fresh in-memory registry. APPLIED/RETAINED describe that local result; it neither writes your catalog nor authorizes tools. Collector state is caller-supplied.",
     "For versioned grant changes, use the complete examples/versioned-grant-change/main.gooo with versioned-grant-change.workspace.json and its README verifier. Activity excerpts are not complete programs; ELIGIBLE does not apply a grant.",
     "For a whole-catalog refresh demo, start with docs/ai-agents.md#replace-a-catalog-after-refresh. The demo makes no live MCP or model calls; initial Go module downloads may require network access.",
-    "For whole-catalog refresh, use examples/catalog-refresh: the pinned Go preview at source 5699ab44a9a355a579bc08904e198eb6cf5554dd with Go 1.27.3 needs no Gooo compiler or checkout.",
+    "For the fixed demo or Go library, use examples/catalog-refresh at source 5699ab44a9a355a579bc08904e198eb6cf5554dd with Go 1.27.3. The demo needs no Gooo compiler or checkout; use the stdin command for your own saved pages.",
     "Preserve the Gooo decision and separate APPLIED/RETAINED commit receipt. The Go host rechecks state under a lock before replacing local stored pages; a CANDIDATE_ELIGIBLE decision alone is not a commit.",
     "This refresh example has no live collector, durable or distributed transaction, or tool-call authority. Native snapshot preview.2 does not contain the transaction."
   ]
