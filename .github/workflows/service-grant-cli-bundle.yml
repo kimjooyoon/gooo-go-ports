@@ -4,14 +4,23 @@ on:
   pull_request:
     paths:
       - '.github/workflows/service-grant-cli-bundle.yml'
+      - 'go.mod'
       - 'tools/service_policy_cli_bundle.py'
       - 'tools/api_policy_cli_bundle.py'
       - 'tools/api_policy_cli_bundle_test.py'
       - 'tools/licenses/gooo-83928fa-MIT.txt'
       - 'examples/agentmesh-service-policy/**'
+      - 'agentmesh-matcher-raw.workspace.json'
+      - 'agentmesh-matcher.workspace.json'
+      - 'ports/agentmesh/LICENSE-APACHE-2.0'
+      - 'ports/agentmesh/service_pattern.gooo'
+      - 'service-grant-apply.workspace.json'
+      - 'service-grant-impact-raw.workspace.json'
+      - 'service-grant-impact.workspace.json'
+      - 'service-grant-refinement-raw.workspace.json'
+      - 'service-grant-refinement.workspace.json'
       - 'LICENSE'
       - 'docs/service-grant-cli.md'
-      - 'README.md'
   workflow_dispatch:
 
 permissions:
