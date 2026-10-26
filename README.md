@@ -16,10 +16,10 @@ open this checkout in Codex, Cursor or Claude Code and ask:
 > remaining question that affects my upgrade review.
 
 The [own-input guide](docs/ai-agents.md#compare-your-own-saved-pages) starts from
-four saved request/response files. Its source route uses Go **1.27.3** and this checkout's
-included evaluator; no Gooo compiler setup is needed. The published
-`recorded-catalog-cli-preview.1` does not support this mode. If you have no saved
-pages, [try the three synthetic cases](examples/mcp-upgrade-regressions/README.md)
+four saved request/response files. Use the [native preview.2 archive](docs/ai-agents.md#install-the-native-snapshot-command)
+without a checkout or Go/Gooo installation, or use this checkout's included evaluator
+with Go **1.27.3**. The earlier `recorded-catalog-cli-preview.1` lacks this mode.
+If you have no saved pages, [try the three synthetic cases](examples/mcp-upgrade-regressions/README.md)
 to see the result format; that does not assess your server.
 
 ## Learn Gooo by changing a program
@@ -59,7 +59,7 @@ Use the output you already have and share only public details; omit secrets, pri
 | Choose among supplied grant-change proposals | [Native first use](docs/ai-agents.md#choose-among-grant-change-proposals-without-a-checkout) or [Gooo candidate selection](examples/grant-candidate-selection/README.md) | Evaluate every candidate against the same ordered requirements, then select by supplied preference with original proofs; no execution is authorized. This Go module is separate from released MCP bundles. |
 | Detect a tool alias changing its declared origin | [Source-built MCP tool](docs/ai-agents.md#compare-a-tool-alias-before-reusing-it) or [Gooo comparison module](examples/alias-origin-change/README.md) | Compare supplied before/after catalogs, detect duplicate exposed names, and preserve original row indexes and source bindings. This optional MCP mode requires a build of this source; preview16 does not contain it. |
 | Compare saved MCP catalogs with collection context | [Native CLI without a toolchain](docs/recorded-catalog-cli.md), [source comparison](examples/recorded-catalog-comparison/README.md), [missing-field diagnostics](docs/ai-agents.md#diagnose-missing-observations-in-a-development-snapshot), or [explicit observation availability](docs/ai-agents.md#declare-unavailable-observations-in-this-checkout) | Import saved pages and host-declared aliases; distinguish origin changes from missing pages, configuration changes and retrospective metadata. The opt-in availability profile distinguishes unavailable observations from supplied opaque values without changing the original input. Experimental offline CLI; no live removal or execution authority is inferred. |
-| Compare one tool definition when no host alias record was saved | [Saved-definition source command](docs/ai-agents.md#compare-saved-definitions-without-host-alias-records) | Compare an original tool name in two sets of saved JSON-RPC pages. Gooo reports definition changes, page coverage and duplicate names while leaving origin and authorization unassessed. Requires this source checkout; older published bundles do not include this mode. |
+| Compare one tool definition when no host alias record was saved | [Native snapshot command](docs/ai-agents.md#install-the-native-snapshot-command) or [source route](docs/ai-agents.md#compare-saved-definitions-without-host-alias-records) | Compare an original tool name in two sets of saved JSON-RPC pages. Gooo reports definition changes, page coverage and duplicate names while leaving origin and authorization unassessed. Use recorded-catalog-cli-preview.2 or this source checkout; preview.1 does not include this mode. |
 | Review tool exposure across a source upgrade | [Gooo catalog-change example](examples/tool-catalog-change/README.md) | Inspect added and removed selected tools under the same supplied flags and selectors, with independent Go results and saved replay. |
 | Explain an unmatched deny rule | [Scoped deny-rule diagnostic](examples/deny-rule-scope/README.md) | Distinguish incomplete inventories, backend limits and earlier denials from zero matches in a declared complete surface. |
 | Install the MCP tool without a compiler | [Homebrew or verified native archive](docs/ai-agents.md#connect-the-service-grant-mcp-tool) | Install the preview16 executable on macOS arm64 or Linux amd64, then assess supplied grant-change facts. |
