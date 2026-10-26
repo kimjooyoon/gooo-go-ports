@@ -39,12 +39,43 @@ receipt := registry.Refresh(attempt, savedPages, "SUCCESS")
 // Inspect receipt.State: APPLIED or RETAINED.
 ```
 
-Import `github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh`. The example
-module uses a local `replace` for the shared saved-page projector; keep the two
-example directories together when trying it from a checkout. `savedPages` is a
-slice of `SnapshotPage`, whose `RequestJSON` and `ResponseJSON` fields contain the
-original JSON-RPC page strings. Collection errors are explicit `ERROR`, `TIMEOUT`
-or `CANCELLED` outcomes, including when some pages were saved successfully.
+Import `github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh`. In a
+separate consumer module, configure **both** local replacements: a dependency's
+`replace` directives are not inherited by its caller. Keep the two example
+directories together in the checkout.
+
+For a new app without a `go.mod`, first run `go mod init example.com/my-catalog-client`.
+After adding your Go source with the import above, run these commands from that
+app's directory (set `GOOO_PORTS` to the absolute path of your checkout):
+
+```sh
+GOOO_PORTS="/absolute/path/to/gooo-go-ports"
+go mod edit -require=github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh@v0.0.0
+go mod edit -replace="github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh=$GOOO_PORTS/examples/catalog-refresh"
+go mod edit -replace="github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison=$GOOO_PORTS/examples/recorded-catalog-comparison"
+go mod tidy
+go run .
+```
+
+`v0.0.0` is a placeholder for these local replacements, not a published release.
+Use Go 1.27.3. `go mod tidy` records the indirect shared-projector requirement;
+run it after adding the consuming source so that the import is present.
+The [complete demo program](cmd/catalog-refresh-demo/main.go) shows the imports
+and control flow for a runnable consumer.
+
+`savedPages` is a slice of `SnapshotPage`, whose `RequestJSON` and `ResponseJSON`
+fields contain the original JSON-RPC page strings. Collection errors are explicit
+`ERROR`, `TIMEOUT` or `CANCELLED` outcomes, including when some pages were saved
+successfully.
+
+Read stored state with `stored := registry.Snapshot()`. After a successful
+replacement, `stored.Bytes` is a JSON page bundle of the form
+`{"pages":[{"request_json":"...","response_json":"..."}]}`, with the original frame
+strings preserved. It is not a flattened tool array or an executable tool
+registry. `stored.SHA256` and `stored.RegistryVersion` identify that stored value.
+A refusal preserves the previous bytes and version, including opaque initial
+bytes supplied to `NewRegistry`. Deriving an agent's usable tools and enforcing
+current authorization remain responsibilities of the consuming application.
 
 Call `Invalidate()` when a relevant catalog notification arrives and
 `ChangeScope()` when connection, authorization or configuration scope changes.
