@@ -297,7 +297,18 @@ func TestNativeCaseProfileCompactLFInclusiveBudgetAnd128RowCeiling(t *testing.T)
 	}
 }
 
+// Bound concurrent heavy test bodies; each body owns its corpus and catalog.
+var fullCorpusTestSlots = make(chan struct{}, 2)
+
+func parallelFullCorpusTest(t *testing.T) {
+	t.Helper()
+	t.Parallel()
+	fullCorpusTestSlots <- struct{}{}
+	t.Cleanup(func() { <-fullCorpusTestSlots })
+}
+
 func TestNativeCaseProfileUUIDCompactFull66PartitionObservation(t *testing.T) {
+	parallelFullCorpusTest(t)
 	suites := allNativeSuites(t)
 	catalog, err := freezeVerificationCatalog("../../verification-catalog.json")
 	if err != nil || len(suites) != 66 {
