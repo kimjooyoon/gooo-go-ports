@@ -221,9 +221,9 @@ GO_NOTICES = {'LICENSE': {'scope': 'toolchain root text; runtime distribution re
 SUPPORT_HASHES = {'api_policy_cli_bundle.py': '2efcaa9a75148cd189748468e50d25e8abe4db5c46637253ad66ac5ac1a0f9ad',
  'service_policy_cli_bundle.py': '3431cdcdacb194fad52e5efe77c5a188ab6a41bce0fc28fe781d075f148c2c20'}
 SNAPSHOT_SUPPORT_HASHES = {
-    'mcp_snapshot_profile.py':'5614488332ceea48eaf5bee876c371b5557c9abf53637f17d86d98221242b6f8',
+    'mcp_snapshot_profile.py':'6f2c22c91a7bef28de3d1e348edb67e1c90a82d299b8ad78ab4545d618f486f4',
     'render_mcp_record_schema.py':'d312eb166bc6594254a3c60b97e59316f5ce1521ca667c561e88ee0134dd75e9',
-    'profiles/mcp-definition-snapshot-v4.json':'3bdf202c12ad6a80ddbbe3e6afaf7bbf5e3e2cb34f2b7f9591c29bb29a303125',
+    'profiles/mcp-definition-snapshot-v4.json':'d945c3ab791083c87f2c5d66ebde20317b437ba8dd19debb44135592ebe2fc0e',
 }
 
 SCHEMAS = {'input_schema': {'additionalProperties': False,

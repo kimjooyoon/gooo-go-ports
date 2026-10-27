@@ -4,7 +4,7 @@
   },
   "files": {
     "examples/service-grant-mcp/LICENSE": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2FLICENSE",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2FLICENSE",
       "@type": "prov:Entity",
       "bytes": 1496,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -13,7 +13,7 @@
       "sha256": "099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48"
     },
     "examples/service-grant-mcp/README.md": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2FREADME.md",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2FREADME.md",
       "@type": "prov:Entity",
       "bytes": 16387,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -22,7 +22,7 @@
       "sha256": "53741681e6978f7253b560005d63e9e9d719381fcd011ca569dd45fcd99a279c"
     },
     "examples/service-grant-mcp/alias_test.go": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Falias_test.go",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Falias_test.go",
       "@type": "prov:Entity",
       "bytes": 11895,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -31,7 +31,7 @@
       "sha256": "f0d3788686aea8b00d69c68771e91a64024d6fbc336a8eee7dcf589ebd3e6293"
     },
     "examples/service-grant-mcp/fixtures/control-1.input": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-1.input",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-1.input",
       "@type": "prov:Entity",
       "bytes": 83,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -40,7 +40,7 @@
       "sha256": "eaa120445bed9038ab6d9a4e71949344f6d92c44bad73fc7d713b8fc17c0dcb4"
     },
     "examples/service-grant-mcp/fixtures/control-1.stdout": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-1.stdout",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-1.stdout",
       "@type": "prov:Entity",
       "bytes": 9695,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -49,7 +49,7 @@
       "sha256": "d16eee837f400c55fa49f6bbdef280d4747976efa8e4a00e1eb8b71a8a8e95c3"
     },
     "examples/service-grant-mcp/fixtures/control-2.input": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-2.input",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-2.input",
       "@type": "prov:Entity",
       "bytes": 84,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -58,7 +58,7 @@
       "sha256": "947f10f40652f17eb97c9f7d7a372a493a9eca5e24976ab7dbbe9c1863bac34e"
     },
     "examples/service-grant-mcp/fixtures/control-2.stdout": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-2.stdout",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-2.stdout",
       "@type": "prov:Entity",
       "bytes": 9683,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -67,7 +67,7 @@
       "sha256": "351f9f89715a05e8a9f2b3374c2a581c01aa2dfcdc0274f44f1870003a48fb5c"
     },
     "examples/service-grant-mcp/fixtures/control-3.input": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-3.input",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-3.input",
       "@type": "prov:Entity",
       "bytes": 92,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -76,7 +76,7 @@
       "sha256": "a9f4c61b9e64f46c6c81b94610ed3d5181b735d3532eb10417b6e52da01c2bbc"
     },
     "examples/service-grant-mcp/fixtures/control-3.stdout": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-3.stdout",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-3.stdout",
       "@type": "prov:Entity",
       "bytes": 9701,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -85,7 +85,7 @@
       "sha256": "0b26cef07c173b573b3423720840b762ab6a35480029f716b55de56bb27bfb40"
     },
     "examples/service-grant-mcp/fixtures/control-4.input": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-4.input",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-4.input",
       "@type": "prov:Entity",
       "bytes": 96,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -94,7 +94,7 @@
       "sha256": "d744fc59eceac73a8cc68430047424c5b065137f4807daea9a411318a220cc0a"
     },
     "examples/service-grant-mcp/fixtures/control-4.stdout": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-4.stdout",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-4.stdout",
       "@type": "prov:Entity",
       "bytes": 0,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -103,7 +103,7 @@
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "examples/service-grant-mcp/fixtures/origin.json": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Forigin.json",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Forigin.json",
       "@type": "prov:Entity",
       "bytes": 2551,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -112,7 +112,7 @@
       "sha256": "40915248a7743baaaf307bdf620fa2386d46790b255b1e90a58cc17d6142423c"
     },
     "examples/service-grant-mcp/fixtures/snapshot.input.json": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fsnapshot.input.json",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fsnapshot.input.json",
       "@type": "prov:Entity",
       "bytes": 674,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -121,7 +121,7 @@
       "sha256": "1013565afac23fae5f8d9ce1be74dbf54d59077d6127f3af089d5612b508a22b"
     },
     "examples/service-grant-mcp/go.mod": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fgo.mod",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fgo.mod",
       "@type": "prov:Entity",
       "bytes": 929,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -130,7 +130,7 @@
       "sha256": "50ceebacfce19292e35d990a5f1ab76a50040be0a055d017df90c2d621070165"
     },
     "examples/service-grant-mcp/go.sum": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fgo.sum",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fgo.sum",
       "@type": "prov:Entity",
       "bytes": 3264,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -139,7 +139,7 @@
       "sha256": "3874fe9f0cee89e5b5ce3374afdf2b96f95fd88b2ce63f61899a0fac9e71b0b0"
     },
     "examples/service-grant-mcp/main.go": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fmain.go",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fmain.go",
       "@type": "prov:Entity",
       "bytes": 36536,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -148,7 +148,7 @@
       "sha256": "2af10d181dcce8f9074f6994cc324f933f52937918b9c9785eecd3f7ad0c5eff"
     },
     "examples/service-grant-mcp/main_test.go": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fmain_test.go",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fmain_test.go",
       "@type": "prov:Entity",
       "bytes": 13210,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -157,7 +157,7 @@
       "sha256": "e32bfa721127f821ba2d61fa4502ae2e1877c5c5228d4113129489deb9287686"
     },
     "examples/service-grant-mcp/schemas/snapshot-output.origin.json": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fschemas%2Fsnapshot-output.origin.json",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fschemas%2Fsnapshot-output.origin.json",
       "@type": "prov:Entity",
       "bytes": 9408,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -166,7 +166,7 @@
       "sha256": "022ad077e742d377c288311571fb6aaa2a4cdba2ce9b83f9c983f0674cef102b"
     },
     "examples/service-grant-mcp/schemas/snapshot-output.schema.json": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fschemas%2Fsnapshot-output.schema.json",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fschemas%2Fsnapshot-output.schema.json",
       "@type": "prov:Entity",
       "bytes": 7338,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -175,7 +175,7 @@
       "sha256": "59883a9c78539a5ae92f32a7348999afd28630288a3ea35ddb3ec20b1375a50c"
     },
     "examples/service-grant-mcp/snapshot.go": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fsnapshot.go",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fsnapshot.go",
       "@type": "prov:Entity",
       "bytes": 5139,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -184,7 +184,7 @@
       "sha256": "86c67af6fabbfc26324b1aaeedd321d8f6fae11aab447c9811d91c192a0b9bd1"
     },
     "examples/service-grant-mcp/snapshot_test.go": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fsnapshot_test.go",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fsnapshot_test.go",
       "@type": "prov:Entity",
       "bytes": 10529,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -193,16 +193,16 @@
       "sha256": "2fe0b0ed61ddbb010d425d9035a748b34a19c20e8d65730c035f137ddd62ec33"
     },
     "examples/service-grant-mcp/verify.py": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fverify.py",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fverify.py",
       "@type": "prov:Entity",
-      "bytes": 16960,
+      "bytes": 17208,
       "digest_encoding": "RAW_FILE_BYTES",
-      "git_blob_sha1": "d53723c3df53abfdd9a3f97c889066fbb0bd3bd3",
+      "git_blob_sha1": "e165679d28f3474519c111526d032aeb2e1a837e",
       "mode": "100644",
-      "sha256": "2dbb3139205f76c915d26de733f8c0ecacd2928ac034e13721f0db5e2df3fa06"
+      "sha256": "2a6b25c3adfba03d2aff0ad58d21d2af484f9bae77218826677e40f96bfff838"
     },
     "examples/service-grant-mcp/verify_alias.py": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fverify_alias.py",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fverify_alias.py",
       "@type": "prov:Entity",
       "bytes": 42285,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -211,7 +211,7 @@
       "sha256": "81fce83be47917fcc8c31ed511222c212e56ead3ec8a64543b4e1fbecf8e8ea7"
     },
     "examples/service-grant-mcp/verify_close_test.py": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fverify_close_test.py",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fverify_close_test.py",
       "@type": "prov:Entity",
       "bytes": 7745,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -220,7 +220,7 @@
       "sha256": "63076fe685edbed02e8d6ebb821b1660f6c6504ca110ac44dcf5a01e5b523375"
     },
     "examples/service-grant-mcp/verify_many.py": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fverify_many.py",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fverify_many.py",
       "@type": "prov:Entity",
       "bytes": 19287,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -229,7 +229,7 @@
       "sha256": "2fb1602cc76f17b0c9ed8e8e3187560e9673d5db33bbc600b503ed905ded56cf"
     },
     "examples/service-grant-mcp/verify_snapshot.py": {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fverify_snapshot.py",
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fverify_snapshot.py",
       "@type": "prov:Entity",
       "bytes": 24199,
       "digest_encoding": "RAW_FILE_BYTES",
@@ -241,85 +241,85 @@
   "module": "github.com/kimjooyoon/gooo-go-ports/examples/service-grant-mcp",
   "prov:wasDerivedFrom": [
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2FLICENSE"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2FLICENSE"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2FREADME.md"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2FREADME.md"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Falias_test.go"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Falias_test.go"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-1.input"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-1.input"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-1.stdout"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-1.stdout"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-2.input"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-2.input"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-2.stdout"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-2.stdout"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-3.input"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-3.input"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-3.stdout"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-3.stdout"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-4.input"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-4.input"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-4.stdout"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fcontrol-4.stdout"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Forigin.json"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Forigin.json"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Ffixtures%2Fsnapshot.input.json"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Ffixtures%2Fsnapshot.input.json"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fgo.mod"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fgo.mod"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fgo.sum"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fgo.sum"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fmain.go"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fmain.go"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fmain_test.go"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fmain_test.go"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fschemas%2Fsnapshot-output.origin.json"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fschemas%2Fsnapshot-output.origin.json"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fschemas%2Fsnapshot-output.schema.json"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fschemas%2Fsnapshot-output.schema.json"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fsnapshot.go"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fsnapshot.go"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fsnapshot_test.go"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fsnapshot_test.go"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fverify.py"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fverify.py"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fverify_alias.py"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fverify_alias.py"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fverify_close_test.py"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fverify_close_test.py"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fverify_many.py"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fverify_many.py"
     },
     {
-      "@id": "urn:gooo:git-file:f563cfb594def60844aaecce06be9b6a063b9247:examples%2Fservice-grant-mcp%2Fverify_snapshot.py"
+      "@id": "urn:gooo:git-file:9e47f69024466affeb503cafa5e75708c29ecbed:examples%2Fservice-grant-mcp%2Fverify_snapshot.py"
     }
   ],
-  "reference_source": "f563cfb594def60844aaecce06be9b6a063b9247",
+  "reference_source": "9e47f69024466affeb503cafa5e75708c29ecbed",
   "schema": "gooo/mcp-transport-source-profile/v1",
   "scope": "Complete tracked regular file roster in the selected MCP module. Working-tree/untracked files are not read. No compiler execution or authentication asserted.",
   "source_prefix": "examples/service-grant-mcp"
