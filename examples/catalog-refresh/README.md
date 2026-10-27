@@ -69,12 +69,15 @@ notifications, connection/authentication changes and their actual storage.
 
 ### Read original saved files
 
-In a checkout containing the file-plan command, use Go **1.27.3** to evaluate
-saved files without manually escaping their contents or encoding previous bytes:
+With Go **1.27.3**, evaluate saved files without manually escaping their
+contents or encoding previous bytes. This pinned preview works from any directory:
 
 ```sh
-go -C examples/catalog-refresh run ./cmd/catalog-refresh --plan /absolute/path/to/refresh-plan.json > report.json
+go run github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh/cmd/catalog-refresh@7edebfce6db4694af12145701582ba326041301e --plan /absolute/path/to/refresh-plan.json > report.json
 ```
+
+No checkout or Gooo compiler is required. In a matching source checkout, the
+development equivalent is `go -C examples/catalog-refresh run ./cmd/catalog-refresh --plan /absolute/path/to/refresh-plan.json`.
 
 The pinned `9c0bf20d` preview above predates `--plan`; it continues to accept the
 stdin format. A file plan has exactly these fields:
