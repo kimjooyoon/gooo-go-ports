@@ -16,7 +16,7 @@ are developed separately; this repository supplies ports and runnable examples.
 | Check whether a previously selected tool alias changed origin | [Source-built alias MCP tool](#compare-a-tool-alias-before-reusing-it): start with `--alias-origin-change`, then call `gooo_compare_alias_origin` | Compare supplied catalogs and retain the original row indexes. Requires this source build; unavailable in preview16. |
 | Compare the supplied API policy profiles | [Fixed-policy command](#compare-fixed-api-policies-without-a-compiler) | Compares the documented profiles; does not load an arbitrary edited policy. |
 | Compare saved MCP tool catalogs | [Native CLI without a toolchain](recorded-catalog-cli.md) or [pinned source alternatives](#compare-saved-mcp-catalogs-without-a-checkout) | Separates alias-origin changes from unknown collection context. The native command includes explicit observation availability and missing-field diagnostics; it does not collect a live catalog or authorize a tool call. |
-| Compare saved tool definitions when no host alias record exists | [Native preview.2 installation](#install-the-native-snapshot-command), [own-input recipe](#compare-your-own-saved-pages) or [agent task skill](../.agents/skills/gooo-compare-tool-snapshots/SKILL.md): `--definition-snapshot` | Select an original tool name from retained JSON-RPC pages. Preserve incomplete coverage and duplicate-name results; do not invent a host mapping. Native preview.2 includes this mode and three synthetic examples; the source route remains available. Preview.1 does not support it. |
+| Compare saved tool definitions when no host alias record exists | [Native preview.2 installation](#install-the-native-snapshot-command), [fixed Go module](#install-the-snapshot-command-with-go), [own-input recipe](#compare-your-own-saved-pages) or [agent task skill](../.agents/skills/gooo-compare-tool-snapshots/SKILL.md): `--definition-snapshot` | Select an original tool name from retained JSON-RPC pages. Preserve incomplete coverage and duplicate-name results; do not invent a host mapping. Native preview.2 includes this mode and three synthetic examples; the source route remains available. Preview.1 does not support it. |
 | Evaluate a whole-catalog refresh from saved files | [Pinned file-plan command or Go library](#replace-a-catalog-after-refresh) | Reads the previous catalog and ordered request/response files without manually encoding their contents. Returns an in-process receipt and resulting bytes. Caller supplies collection outcome; embed the library for host invalidation and racing attempts. |
 | Collect original MCP pages through the Go SDK | [SDK consumer example](../examples/sdk-catalog-refresh/README.md) | Real SDK IO, original payload bytes, ordered-row Gooo checks and whole-catalog replacement. The local demo exercises complete, filtered and complete-empty responses without an external server or model. |
 | Edit and execute Gooo source | [First-program skill](#run-the-first-program-skill) | An actual source edit plus new execution and replay records; declaration checking alone is insufficient. |
@@ -609,6 +609,57 @@ compares stored observations; it does not collect live pages or call tools.
 To change the Gooo rules themselves, use the [source-edit workflow](#run-the-first-program-skill)
 and preserve new execution and replay evidence. Running the archive does not edit Gooo.
 
+### Install the snapshot command with Go
+
+With Go **1.27.3** already available, install this fixed public module in a new
+directory. No repository checkout or Gooo compiler is needed. These commands use
+a POSIX shell; keep the executable's absolute path when changing directories:
+
+```sh
+mkdir -p bin || exit 1
+GOBIN="$PWD/bin" GOWORK=off GOTOOLCHAIN=local \
+  go install -p 1 -trimpath -buildvcs=false \
+  github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare@v0.0.0-20261027155614-e4d44fd856ee || exit 1
+snapshot_cli="$PWD/bin/compare"
+"$snapshot_cli" --version || exit 1
+```
+
+Installation can query Go module metadata and download source, even with a warm
+cache. After installation, the executable compares local files without network
+access, a model account or a Gooo compiler build. `--version` preserves the
+running binary's Go/module identity; it is not an authenticated attestation.
+
+To try saved observations before supplying your own, download this fixed public
+input. It contains two previously captured `tools/list` pages from the same
+endpoint. Downloading the input does not collect another live catalog:
+
+```sh
+curl --fail --location --proto '=https' --tlsv1.2 \
+  'https://gist.githubusercontent.com/kimjooyoon/63e2d94704607057e395647e26e2a4fd/raw/481d1e480219118f38ab1235754ccd02b22480ae/drift_feed_status.input.json' \
+  --output saved-input.json || exit 1
+if "$snapshot_cli" --definition-snapshot < saved-input.json > report.json 2> stderr; then
+  comparison_status=0
+else
+  comparison_status=$?
+fi
+printf '%s\n' "$comparison_status" > exit-status
+if [ "$comparison_status" -ne 0 ]; then
+  cat stderr >&2
+  exit "$comparison_status"
+fi
+```
+
+The expected `decision.state` is `OBSERVED_DEFINITION_SAME`. Keep the full report,
+input, stderr and exit status. Origin and authorization remain `NOT_ASSESSED`;
+unchanged saved definitions do not establish unchanged behavior or permission to
+call a tool. The [complete observation and expected reports](https://gist.github.com/kimjooyoon/63e2d94704607057e395647e26e2a4fd/f3dc4f0aaf61f2ec3b93beaac5dd5dc6bd81500d)
+retain the original capture and collector. A [separate agent's replay and local scope controls](https://gist.github.com/kimjooyoon/5d9903b26becd577e5f4d07e28ba506d/806df70ba5569b09b02721c96b1e33acc3706457)
+also show changed descriptors and missing pages; that review used the same
+machine and account, and does not establish external adoption.
+
+For your own question, use the input assembler below with this `snapshot_cli`.
+Keep your private captures local; sharing a public reproduction is optional.
+
 ### Compare your own saved pages
 
 Choose the execution route before running the recipe. The source route uses an
@@ -667,7 +718,8 @@ if [ "$snapshot_status" -ne 0 ]; then
 fi
 ```
 
-Run the source route from the repository root; the native route needs no checkout.
+Run the source route from the repository root; the native archive and installed
+Go command need no checkout.
 If the command fails, retain its stderr and exit
 status; no comparison result was established. On exit zero, read `decision.state`,
 `decision.reason`, `decision.next_action`, the definition/annotation relations and both page
