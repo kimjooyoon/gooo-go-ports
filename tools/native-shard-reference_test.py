@@ -107,6 +107,17 @@ class SyntheticFixture:
 
 
 class StrictReaderTests(unittest.TestCase):
+    def test_integer_bounds_are_recomputed_for_each_load(self):
+        for metadata in (True,False):
+            with self.subTest(metadata=metadata):
+                for maximum in (1,3,(1<<63)-1,1):
+                    with mock.patch.object(R,'MAX_INT',maximum):
+                        self.assertEqual(R.load(str(-maximum-1).encode(),metadata=metadata),-maximum-1)
+                        self.assertEqual(R.load(str(maximum).encode(),metadata=metadata),maximum)
+                        for value in (-maximum-2,maximum+1):
+                            with self.assertRaisesRegex(RuntimeError,'bounded exact integer required'):
+                                R.load(str(value).encode(),metadata=metadata)
+
     def test_many_nested_integer_tokens_keep_exact_types_and_signed64_boundaries(self):
         values=[-(1<<63),-(1<<53)-1,-1,0,1,(1<<53)+1,(1<<63)-1]*1024
         expected={'values':values,'nested':{'zero':0,'minimum':-(1<<63)},
