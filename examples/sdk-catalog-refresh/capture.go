@@ -1,4 +1,5 @@
 // Copyright 2026 Gooo Go Ports contributors. BSD-3-Clause.
+
 package sdkcatalogrefresh
 
 import (

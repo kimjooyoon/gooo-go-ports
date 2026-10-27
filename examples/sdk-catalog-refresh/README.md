@@ -12,7 +12,14 @@ each refresh, and no tool is invoked.
 
 ## Try the local demo
 
-From a matching source checkout, with Go **1.27.3**:
+With Go **1.27.3**, run the published, pinned example from any directory:
+
+~~~sh
+go run github.com/kimjooyoon/gooo-go-ports/examples/sdk-catalog-refresh/cmd/sdk-catalog-refresh-demo@e4d44fd856ee95ae30f336714501bc083838202c
+~~~
+
+Go downloads public modules on the first run. No repository checkout or local
+module replacement is needed. From a matching source checkout, you can instead run:
 
 ~~~sh
 go -C examples/sdk-catalog-refresh run ./cmd/sdk-catalog-refresh-demo
@@ -21,6 +28,11 @@ go -C examples/sdk-catalog-refresh run ./cmd/sdk-catalog-refresh-demo
 The real SDK talks to a synthetic in-memory peer. Three JSON lines show complete
 replacement, retention after SDK filtering, and actual empty replacement.
 No external server, model or Gooo compiler is needed.
+
+[Package reference](https://pkg.go.dev/github.com/kimjooyoon/gooo-go-ports/examples/sdk-catalog-refresh@v0.0.0-20261027155614-e4d44fd856ee)
+documents the public API at the pinned example revision. The rules are written in
+the [Gooo language](https://github.com/kimjooyoon/meta-ontology-go) and compiled to
+the Go libraries included here.
 
 ## Embed it in an agent host
 

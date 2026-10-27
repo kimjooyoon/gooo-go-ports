@@ -1,6 +1,22 @@
 // Copyright 2026 Gooo Go Ports contributors. BSD-3-Clause.
-// Package sdkcatalogrefresh collects original IO tool pages with a private MCP
-// SDK client, then uses two Gooo decisions before a local catalog replacement.
+
+// Package sdkcatalogrefresh collects MCP tool catalogs with Gooo rules that retain
+// the previous catalog after incomplete collection or SDK tool filtering.
+//
+// Connect owns a newline-delimited JSON-RPC connection and a private Go MCP SDK
+// v1.8.0 session. This experimental profile requires negotiated protocol
+// 2025-11-25. It does not support HTTP/SSE or cached-list protocols.
+//
+// Refresh captures original IO pages before SDK parsing, compares their ordered
+// names with the SDK-visible names, and asks the Gooo catalog rule whether to
+// replace local storage. Inspect both the returned Report and error. Retained
+// bytes preserve previous storage; they grant no permission to expose or invoke
+// tools. No method invokes tools or writes durable storage.
+//
+// The rules are written in the Gooo language and compiled to the committed Go
+// libraries. Importing this package requires no runtime Gooo compiler.
+// See https://github.com/kimjooyoon/meta-ontology-go for the language and
+// https://github.com/kimjooyoon/gooo-go-ports for rule sources and finite evidence.
 package sdkcatalogrefresh
 
 import (
