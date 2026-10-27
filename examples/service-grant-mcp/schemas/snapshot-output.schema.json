@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "bindings": {
+      "type": "object"
+    },
+    "decision": {
+      "$comment": "Shape of Gooo record gooo://tool-origin/definition-snapshot/v1/result. Value/UTF-8 facets remain in the source contract.",
+      "additionalProperties": false,
+      "properties": {
+        "after_annotation_id": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/after_annotation_id",
+          "type": "string"
+        },
+        "after_coverage_reason": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/after_coverage_reason",
+          "type": "string"
+        },
+        "after_definition_id": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/after_definition_id",
+          "type": "string"
+        },
+        "after_definition_profile": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/after_definition_profile",
+          "type": "string"
+        },
+        "after_index": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/after_index",
+          "type": "integer"
+        },
+        "after_page_coverage": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/after_page_coverage",
+          "type": "string"
+        },
+        "after_problem_page_index": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/after_problem_page_index",
+          "type": "integer"
+        },
+        "after_problem_row_index": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/after_problem_row_index",
+          "type": "integer"
+        },
+        "annotation_relation": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/annotation_relation",
+          "type": "string"
+        },
+        "authorization_relation": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/authorization_relation",
+          "type": "string"
+        },
+        "before_annotation_id": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/before_annotation_id",
+          "type": "string"
+        },
+        "before_coverage_reason": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/before_coverage_reason",
+          "type": "string"
+        },
+        "before_definition_id": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/before_definition_id",
+          "type": "string"
+        },
+        "before_definition_profile": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/before_definition_profile",
+          "type": "string"
+        },
+        "before_index": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/before_index",
+          "type": "integer"
+        },
+        "before_page_coverage": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/before_page_coverage",
+          "type": "string"
+        },
+        "before_problem_page_index": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/before_problem_page_index",
+          "type": "integer"
+        },
+        "before_problem_row_index": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/before_problem_row_index",
+          "type": "integer"
+        },
+        "behavior_equivalence_proven": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/behavior_equivalence_proven",
+          "type": "boolean"
+        },
+        "comparison_scope": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/comparison_scope",
+          "type": "string"
+        },
+        "context_id": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/context_id",
+          "type": "string"
+        },
+        "definition_relation": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/definition_relation",
+          "type": "string"
+        },
+        "execution_authorized": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/execution_authorized",
+          "type": "boolean"
+        },
+        "live_effect_performed": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/live_effect_performed",
+          "type": "boolean"
+        },
+        "next_action": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/next_action",
+          "type": "string"
+        },
+        "observed_presence_relation": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/observed_presence_relation",
+          "type": "string"
+        },
+        "origin_relation": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/origin_relation",
+          "type": "string"
+        },
+        "profile_relation": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/profile_relation",
+          "type": "string"
+        },
+        "reason": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/reason",
+          "type": "string"
+        },
+        "remote_atomicity": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/remote_atomicity",
+          "type": "string"
+        },
+        "state": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/state",
+          "type": "string"
+        },
+        "target_name": {
+          "$comment": "Gooo field gooo://tool-origin/definition-snapshot/v1/result/target_name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "context_id",
+        "target_name",
+        "state",
+        "reason",
+        "next_action",
+        "comparison_scope",
+        "before_page_coverage",
+        "after_page_coverage",
+        "before_coverage_reason",
+        "after_coverage_reason",
+        "before_problem_page_index",
+        "after_problem_page_index",
+        "before_problem_row_index",
+        "after_problem_row_index",
+        "before_index",
+        "after_index",
+        "before_definition_id",
+        "after_definition_id",
+        "before_definition_profile",
+        "after_definition_profile",
+        "before_annotation_id",
+        "after_annotation_id",
+        "observed_presence_relation",
+        "definition_relation",
+        "annotation_relation",
+        "profile_relation",
+        "origin_relation",
+        "authorization_relation",
+        "behavior_equivalence_proven",
+        "execution_authorized",
+        "live_effect_performed",
+        "remote_atomicity"
+      ],
+      "type": "object"
+    },
+    "inputs": {
+      "type": "object"
+    },
+    "projection": {
+      "type": "object"
+    },
+    "schema": {
+      "const": "gooo/definition-snapshot-report/v1",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "projection",
+    "inputs",
+    "decision",
+    "bindings"
+  ],
+  "type": "object"
+}

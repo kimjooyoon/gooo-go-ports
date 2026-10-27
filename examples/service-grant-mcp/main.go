@@ -258,16 +258,20 @@ func compareAlias(ctx context.Context, request *mcp.CallToolRequest) (*mcp.CallT
 // The SDK sends a complete serialized JSON-RPC frame in each Write. Keeping
 // this check at its writer boundary includes both result representations, all
 // escaping, metadata and batch framing. Existing profiles use StdioTransport
-// directly; only the explicit alias profile installs this writer.
+// directly; explicit alias or saved-definition profiles install a bounded writer.
 type aliasWireWriter struct {
 	out io.Writer
 }
 
 func (w *aliasWireWriter) Write(data []byte) (int, error) {
+	return boundedToolWireWrite(w.out, data, aliasWireFailure)
+}
+
+func boundedToolWireWrite(out io.Writer, data []byte, failure func([]byte) ([]byte, error)) (int, error) {
 	encoded := data
 	if len(data) > aliasWireMax {
 		var err error
-		encoded, err = aliasWireFailure(data)
+		encoded, err = failure(data)
 		if err != nil {
 			return 0, err
 		}
@@ -275,7 +279,7 @@ func (w *aliasWireWriter) Write(data []byte) (int, error) {
 			return 0, fmt.Errorf("MCP_WIRE_LIMIT_EXCEEDED: diagnostic frame also exceeds limit")
 		}
 	}
-	n, err := w.out.Write(encoded)
+	n, err := out.Write(encoded)
 	if err == nil && n != len(encoded) {
 		err = io.ErrShortWrite
 	}
@@ -290,6 +294,22 @@ func (w *aliasWireWriter) Write(data []byte) (int, error) {
 func (w *aliasWireWriter) Close() error { return nil }
 
 func aliasWireFailure(data []byte) ([]byte, error) {
+	return replaceToolWireResults(data, "alias", aliasWireResultFailure)
+}
+
+func aliasWireResultFailure(raw json.RawMessage) (*mcp.CallToolResult, error) {
+	var proof struct {
+		Bindings struct {
+			Schema string `json:"schema"`
+		} `json:"bindings"`
+	}
+	if json.Unmarshal(raw, &proof) != nil || proof.Bindings.Schema != "gooo/alias-origin-generation/v1" {
+		return nil, nil
+	}
+	return aliasError(&aliasorigin.Problem{State: "INVALID_TRANSPORT", Stage: "encode_result", Code: "MCP_WIRE_LIMIT_EXCEEDED"})
+}
+
+func replaceToolWireResults(data []byte, profile string, failure func(json.RawMessage) (*mcp.CallToolResult, error)) ([]byte, error) {
 	trimmed := bytes.TrimSpace(data)
 	var frames []json.RawMessage
 	batch := len(trimmed) > 0 && trimmed[0] == '['
@@ -310,15 +330,13 @@ func aliasWireFailure(data []byte) ([]byte, error) {
 		if json.Unmarshal(envelope["result"], &result) != nil {
 			continue // Preserve existing protocol errors and notifications.
 		}
-		var proof struct {
-			Bindings struct {
-				Schema string `json:"schema"`
-			} `json:"bindings"`
+		replacement, err := failure(result["structuredContent"])
+		if err != nil {
+			return nil, err
 		}
-		if json.Unmarshal(result["structuredContent"], &proof) != nil || proof.Bindings.Schema != "gooo/alias-origin-generation/v1" {
-			continue // Never rewrite another tool's proof in a mixed batch.
-		}
-		replacement, _ := aliasError(&aliasorigin.Problem{State: "INVALID_TRANSPORT", Stage: "encode_result", Code: "MCP_WIRE_LIMIT_EXCEEDED"})
+		if replacement == nil {
+			continue
+		} // Preserve other tools in mixed batches.
 		replacementJSON, err := json.Marshal(replacement)
 		if err != nil {
 			return nil, err
@@ -343,7 +361,7 @@ func aliasWireFailure(data []byte) ([]byte, error) {
 		changed = true
 	}
 	if !changed {
-		return nil, fmt.Errorf("MCP_WIRE_LIMIT_EXCEEDED: no alias result can be replaced")
+		return nil, fmt.Errorf("MCP_WIRE_LIMIT_EXCEEDED: no %s result can be replaced", profile)
 	}
 	if !batch {
 		return append(frames[0], '\n'), nil
@@ -356,8 +374,9 @@ func aliasWireFailure(data []byte) ([]byte, error) {
 }
 
 type serverMode struct {
-	manyRequired      bool
-	aliasOriginChange bool
+	manyRequired       bool
+	aliasOriginChange  bool
+	definitionSnapshot bool
 }
 
 func parseMode(args []string) (serverMode, error) {
@@ -368,15 +387,17 @@ func parseMode(args []string) (serverMode, error) {
 			mode.manyRequired = true
 		case arg == "--alias-origin-change" && !mode.aliasOriginChange:
 			mode.aliasOriginChange = true
+		case arg == "--definition-snapshot" && !mode.definitionSnapshot:
+			mode.definitionSnapshot = true
 		default:
-			return serverMode{}, fmt.Errorf("usage: gooo-service-grant-mcp [--many-required] [--alias-origin-change]")
+			return serverMode{}, fmt.Errorf("usage: gooo-service-grant-mcp [--many-required] [--alias-origin-change] [--definition-snapshot]")
 		}
 	}
 	return mode, nil
 }
 
 func frameMax(mode serverMode) int {
-	if mode.aliasOriginChange {
+	if mode.aliasOriginChange || mode.definitionSnapshot {
 		return aliasFrameMax
 	}
 	if mode.manyRequired {
@@ -392,6 +413,9 @@ func newServer(mode serverMode) *mcp.Server {
 	}
 	if mode.aliasOriginChange {
 		instructions += " Use gooo_compare_alias_origin to compare one alias across supplied before/after tool catalogs. Inspect decision.state and the original row indexes; for ORIGIN_CHANGED review the changed origin, and for AMBIGUOUS repair the duplicate exposed names before comparing fresh facts. The result proves neither live server identity nor host routing or authority. execution_authorized is always false; retain the complete report."
+	}
+	if mode.definitionSnapshot {
+		instructions += " Use gooo_compare_saved_tool_definitions for one original tool name in saved before/after tools/list pages. Preserve request_json and response_json text and page order. Read decision.state together with both page coverage fields. Missing pages do not prove removal; origin and authorization remain NOT_ASSESSED and no tool is invoked."
 	}
 	server := mcp.NewServer(&mcp.Implementation{Name: "gooo-service-grant", Version: "0.1.0-dev"},
 		&mcp.ServerOptions{Capabilities: &mcp.ServerCapabilities{},
@@ -421,6 +445,14 @@ func newServer(mode serverMode) *mcp.Server {
 			Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true, IdempotentHint: true, OpenWorldHint: &closed},
 		}, compareAlias)
 	}
+	if mode.definitionSnapshot {
+		server.AddTool(&mcp.Tool{
+			Name:        snapshotToolName,
+			Description: "Compare one original MCP tool definition in saved before/after tools/list request/response pages with Gooo. Use during an upgrade or reconnect review when no host alias history exists. Returns definition and annotation relations, coverage, source rows and the complete report. Keep pages in observed order and missing pages missing. No live collection, tool execution, behavior equivalence or authorization is established. Malformed input is a tool error; UNASSESSED is a successful comparison with insufficient observations.",
+			InputSchema: snapshotInputSchema(), OutputSchema: snapshotOutputSchema(),
+			Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true, IdempotentHint: true, OpenWorldHint: &closed},
+		}, compareSnapshot)
+	}
 	return server
 }
 
@@ -436,6 +468,9 @@ func main() {
 	var transport mcp.Transport = &mcp.StdioTransport{MaxLineLength: frameMax(mode)}
 	if mode.aliasOriginChange {
 		transport = &mcp.IOTransport{Reader: os.Stdin, Writer: &aliasWireWriter{out: os.Stdout}, MaxLineLength: frameMax(mode)}
+	}
+	if mode.definitionSnapshot {
+		transport = &mcp.IOTransport{Reader: os.Stdin, Writer: &snapshotWireWriter{out: os.Stdout, alias: mode.aliasOriginChange}, MaxLineLength: frameMax(mode)}
 	}
 	if err := server.Run(ctx, transport); err != nil && ctx.Err() == nil {
 		fmt.Fprintln(os.Stderr, err)

@@ -36,14 +36,15 @@ def exact(a, b):
 
 
 class Session:
-    def __init__(self, label, protocol):
+    def __init__(self, label, protocol, arguments=(), stream_limit=2 << 20):
         self.label, self.protocol = label, protocol
         self.env = os.environ.copy()
         self.env.update(PATH='', GOPROXY='off', GOSUMDB='off', GOTELEMETRY='off', MCPGODEBUG='')
         self.env.pop('GOROOT', None)
         self.work = OUTPUT/label
         self.work.mkdir(mode=0o700)
-        self.process = subprocess.Popen([str(BINARY)],
+        self.stream_limit = stream_limit
+        self.process = subprocess.Popen([str(BINARY), *arguments],
                                         cwd=self.work, env=self.env, stdin=subprocess.PIPE,
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                         start_new_session=True)
@@ -67,7 +68,7 @@ class Session:
                 self.selector.unregister(key.fileobj)
             else:
                 self.buffers[key.data].extend(raw)
-                assert len(self.buffers[key.data]) <= 2 << 20, 'session stream limit'
+                assert len(self.buffers[key.data]) <= self.stream_limit, 'session stream limit'
                 if key.data == 'stdout':
                     self.linebuf.extend(raw)
 
