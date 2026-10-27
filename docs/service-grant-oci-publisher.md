@@ -1,9 +1,11 @@
 # Fixed preview16 OCI publisher
 
-This workflow is a proposed delivery path for the existing native Linux amd64
-preview16 bundle. It does not rebuild Go or Gooo. No image has been published or
-verified by preparing this workflow. The existing local-image instructions remain
-in [service-grant-container.md](service-grant-container.md).
+This page records the fixed delivery workflow and original publication of the
+native Linux amd64 preview16 bundle. The public image is available through the
+[digest-pinned installation guide](service-grant-container.md#use-the-public-immutable-image).
+The workflow does not rebuild Go or Gooo; preparing it alone did not publish or
+verify an image. Its original push and proof recovery have separate identities
+from the later [MCP Registry publication](service-grant-registry-oci.md).
 
 The fixed input is the public
 [v0.1.0-preview.16 release](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.16):
@@ -52,8 +54,9 @@ still runs with `--network=none` and needs no key, login or runtime download.
 
 The fixed binary is built with Go1.27.3. The official
 [Go release history](https://go.dev/doc/devel/release) reports Go1.27.3 with a
-crypto/x509 security fix. This candidate has no actual scanner/reachability
-result and does not claim that fix affects or cannot affect this MCP path.
+crypto/x509 security fix. Workflow preparation alone establishes no actual
+scanner or reachability result. The retained original scan is a point-in-time
+assessment and does not establish whether that fix affects this MCP path.
 There is no silent source/toolchain replacement or networkless-runtime waiver.
 A failed HIGH/CRITICAL gate requires a separately reviewed input-release decision.
 
