@@ -4,6 +4,7 @@ The result describes raw-file identities and their derivation. It does not claim
 compiler execution, a trusted producer, or permission to publish a package.
 """
 import argparse
+import ast
 import hashlib
 import json
 import os
@@ -29,6 +30,9 @@ def export(repo, revision):
         if size>2<<20:raise ValueError('source exceeds finite export bound')
         raw=git('cat-file','blob',oid)
         if len(raw)!=size or hashlib.sha1(b'blob '+str(size).encode()+b'\0'+raw).hexdigest()!=oid:raise ValueError('Git blob identity')
+        if path.endswith('.py'):
+            try:ast.parse(raw,filename=path)
+            except (SyntaxError,UnicodeError) as error:raise ValueError('invalid Python source in immutable profile: '+path) from error
         identity='urn:gooo:git-file:'+revision+':'+quote(path,safe='')
         files[path]={'@id':identity,'@type':'prov:Entity','git_blob_sha1':oid,'mode':mode,'bytes':size,
                      'sha256':hashlib.sha256(raw).hexdigest(),'digest_encoding':'RAW_FILE_BYTES'}

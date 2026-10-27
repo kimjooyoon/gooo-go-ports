@@ -40,5 +40,8 @@ class FrozenSource(unittest.TestCase):
         self.assertEqual(outside.read_text(),'retain private outside bytes\n')
     def test_mutable_revision_name_refused(self):
         with self.assertRaises(ValueError):M.export(self.root,'HEAD')
+    def test_invalid_python_source_refused_before_export(self):
+        (self.module/'verify.py').write_text('def broken(:\n');self.commit()
+        with self.assertRaisesRegex(ValueError,'invalid Python source'):M.export(self.root,self.revision)
 
 if __name__=='__main__':unittest.main(verbosity=2)

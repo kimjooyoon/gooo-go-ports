@@ -68,10 +68,10 @@ class Session:
                 self.selector.unregister(key.fileobj)
             else:
                 self.buffers[key.data].extend(raw)
-            # Older specialized clients initialize their own session state.
-            # Preserve their original 2 MiB default while the saved-definition
-            # client explicitly requests its larger bounded capture budget.
-            assert len(self.buffers[key.data]) <= getattr(self, 'stream_limit', 2 << 20), 'session stream limit'
+                # Older specialized clients initialize their own session state.
+                # Preserve their original 2 MiB default while the saved-definition
+                # client explicitly requests its larger bounded capture budget.
+                assert len(self.buffers[key.data]) <= getattr(self, 'stream_limit', 2 << 20), 'session stream limit'
                 if key.data == 'stdout':
                     self.linebuf.extend(raw)
 
