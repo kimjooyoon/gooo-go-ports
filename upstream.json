@@ -856,6 +856,29 @@
       ],
       "mapping": "Original deterministic Gooo policy composes current header and payload diagnostics. Three bounded Text inputs plus twelve trusted typed observations produce sixteen exact fields, including original candidate strings, header byte witnesses, payload refusal and request revision. No per-request human approval or effect is required to compute. Host authority, current bindings and atomic final application remain separate. Fresh public source/native/saved replay and host generation are required; private pilot PASS is not inherited.",
       "license": "LICENSE"
+    },
+    {
+      "source": "ports/tool-origin/sdk_row_visibility.gooo",
+      "source_sha256": "d62b071aef8b03b7e9652809d4478f9849951fdc0d6847f4d67fdd1147d5c79b",
+      "package": "gooo/sdk-catalog/row-visibility",
+      "activity": "CompareSDKRows",
+      "activity_id": "gooo://sdk-catalog/row-visibility/v1/compare",
+      "workspace": "sdk-catalog-row-visibility.workspace.json",
+      "input_corpus": "examples/sdk-catalog-refresh/row-cases.json",
+      "reference_cases": 8,
+      "required_fields": [
+        "state",
+        "reason",
+        "wire_count",
+        "sdk_count",
+        "first_difference_index",
+        "wire_name",
+        "sdk_name",
+        "mapping_equal",
+        "scope"
+      ],
+      "mapping": "Original ordered-name correspondence over two RowNames records. input0 retains admitted wire names and input1 retains SDK-visible names. Bounds256rows/1024UTF8bytes; first mismatch witness and9fields. Real SDK host invalidates its lease on mismatch, then existing Gooo whole-catalog policy controls local replacement. No per-request human approval,tool invocation,authorization,schema-equality,remote-atomicity or adoption claim. Independent1afb library origin; catalog kernel205896 remains separate.",
+      "license": "LICENSE"
     }
   ],
   "original_diagnostic_compositions": [
@@ -1034,6 +1057,30 @@
       "compiler_version": "0.6.37-dev",
       "decision_runtime_version": "v0.2.51-experimental",
       "go_version": "go1.27.3"
+    },
+    "sdk_row_visibility038": {
+      "compiler_revision": "1afb98b955fd8dea74650d3b24e693d0dab9eb5d",
+      "compiler_version": "0.6.38-dev",
+      "go_version": "go1.27.3",
+      "profile": "examples/sdk-catalog-refresh/profile.json",
+      "scope": "Independent finite generation profile; stable compiler pin205896 unchanged."
     }
-  }
+  },
+  "SDK_consumer_sources": [
+    {
+      "module": "github.com/modelcontextprotocol/go-sdk",
+      "version": "v1.8.0",
+      "repository": "https://github.com/modelcontextprotocol/go-sdk",
+      "revision": "3f3b699b2b67e1ed033a63d6651671dab53c2d32",
+      "module_h1": "h1:KIvahhYqwtbeniWVPs3TcXEA7b8jEtwfBpOTAI+Urx4=",
+      "source_sha256": {
+        "mcp/client.go": "3002b9126558416d9f2a64cd6f6750cd612122707fd8789895286ed5c094e59c",
+        "mcp/streamable_headers.go": "1f8d1304e7bf80f55f578879cb5d447edc9be08ee5c6db5e61a92e377abb0569",
+        "mcp/transport.go": "54d98d90abe55d25802ca442746be954c47b9306c2a910682879389362904505",
+        "LICENSE": "af679003d933f045393a6a029f43da113f9ae364eac651d9ae268392985580f5"
+      },
+      "scope": "Imports actual SDK. Source inspection references only; no SDK implementation code copied or whole-SDK port claimed. Original Gooo correspondence is separate.",
+      "license_note": "Pinned upstream LICENSE records its MIT-to-Apache2.0 transition; original upstream licenses apply."
+    }
+  ]
 }

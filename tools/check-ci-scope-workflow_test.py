@@ -1425,6 +1425,12 @@ READER_PROFILE_PREFLIGHT_PRIOR_SHA = 'cb27a6614685971799255733c69bc8b06041bbe9f5
 
 
 def project_reader_profile_preflight(text):
+    # Strip the exact additive SDK layer before checking every historical guard.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("sdk_catalog_workflow", WORKFLOW.parent.parent.parent / "tools/sdk_catalog_workflow.py")
+    sdk = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(sdk)
+    text = sdk.project(text)
     # Project only the three exact early controls before all historical guards.
     # No Go work, native gate, source pin or prior common command is removed.
     jobs = workflow_jobs(text)

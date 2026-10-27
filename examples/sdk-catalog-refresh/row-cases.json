@@ -1,0 +1,215 @@
+{
+  "schema": "gooo/body-composition-cases/v1",
+  "cases": [
+    {
+      "inputs": {
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows.input0": {
+          "names": []
+        },
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows.input1": {
+          "names": []
+        }
+      },
+      "expected": {
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows": {
+          "state": "MAPPED",
+          "reason": "SAME_ORDERED_NAMES",
+          "wire_count": 0,
+          "sdk_count": 0,
+          "first_difference_index": -1,
+          "wire_name": "",
+          "sdk_name": "",
+          "mapping_equal": true,
+          "scope": "ORDERED_NAME_CORRESPONDENCE"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows.input0": {
+          "names": [
+            "alpha"
+          ]
+        },
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows.input1": {
+          "names": [
+            "alpha"
+          ]
+        }
+      },
+      "expected": {
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows": {
+          "state": "MAPPED",
+          "reason": "SAME_ORDERED_NAMES",
+          "wire_count": 1,
+          "sdk_count": 1,
+          "first_difference_index": -1,
+          "wire_name": "",
+          "sdk_name": "",
+          "mapping_equal": true,
+          "scope": "ORDERED_NAME_CORRESPONDENCE"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows.input0": {
+          "names": [
+            "alpha"
+          ]
+        },
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows.input1": {
+          "names": []
+        }
+      },
+      "expected": {
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows": {
+          "state": "MISMATCH",
+          "reason": "SDK_ROW_MISSING",
+          "wire_count": 1,
+          "sdk_count": 0,
+          "first_difference_index": 0,
+          "wire_name": "alpha",
+          "sdk_name": "",
+          "mapping_equal": false,
+          "scope": "ORDERED_NAME_CORRESPONDENCE"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows.input0": {
+          "names": []
+        },
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows.input1": {
+          "names": [
+            "alpha"
+          ]
+        }
+      },
+      "expected": {
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows": {
+          "state": "MISMATCH",
+          "reason": "SDK_ROW_UNEXPECTED",
+          "wire_count": 0,
+          "sdk_count": 1,
+          "first_difference_index": 0,
+          "wire_name": "",
+          "sdk_name": "alpha",
+          "mapping_equal": false,
+          "scope": "ORDERED_NAME_CORRESPONDENCE"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows.input0": {
+          "names": [
+            "alpha"
+          ]
+        },
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows.input1": {
+          "names": [
+            "beta"
+          ]
+        }
+      },
+      "expected": {
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows": {
+          "state": "MISMATCH",
+          "reason": "NAME_DIFFERENCE",
+          "wire_count": 1,
+          "sdk_count": 1,
+          "first_difference_index": 0,
+          "wire_name": "alpha",
+          "sdk_name": "beta",
+          "mapping_equal": false,
+          "scope": "ORDERED_NAME_CORRESPONDENCE"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows.input0": {
+          "names": [
+            "beta",
+            "alpha"
+          ]
+        },
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows.input1": {
+          "names": [
+            "alpha",
+            "beta"
+          ]
+        }
+      },
+      "expected": {
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows": {
+          "state": "MISMATCH",
+          "reason": "NAME_DIFFERENCE",
+          "wire_count": 2,
+          "sdk_count": 2,
+          "first_difference_index": 0,
+          "wire_name": "beta",
+          "sdk_name": "alpha",
+          "mapping_equal": false,
+          "scope": "ORDERED_NAME_CORRESPONDENCE"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows.input0": {
+          "names": [
+            ""
+          ]
+        },
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows.input1": {
+          "names": [
+            ""
+          ]
+        }
+      },
+      "expected": {
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows": {
+          "state": "INVALID_INPUT",
+          "reason": "INVALID_WIRE_NAME",
+          "wire_count": 1,
+          "sdk_count": 1,
+          "first_difference_index": 0,
+          "wire_name": "",
+          "sdk_name": "",
+          "mapping_equal": false,
+          "scope": "ORDERED_NAME_CORRESPONDENCE"
+        }
+      }
+    },
+    {
+      "inputs": {
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows.input0": {
+          "names": [
+            "alpha"
+          ]
+        },
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows.input1": {
+          "names": [
+            ""
+          ]
+        }
+      },
+      "expected": {
+        "gooo/sdk-catalog/row-visibility:CompareSDKRows": {
+          "state": "INVALID_INPUT",
+          "reason": "INVALID_SDK_NAME",
+          "wire_count": 1,
+          "sdk_count": 1,
+          "first_difference_index": 0,
+          "wire_name": "",
+          "sdk_name": "",
+          "mapping_equal": false,
+          "scope": "ORDERED_NAME_CORRESPONDENCE"
+        }
+      }
+    }
+  ]
+}

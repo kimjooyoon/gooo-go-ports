@@ -1,0 +1,15 @@
+{
+  "schema": "gooo/package-workspace-manifest/v1",
+  "entry": {
+    "package_path": "gooo/sdk-catalog/row-visibility",
+    "activity": "CompareSDKRows"
+  },
+  "packages": [
+    {
+      "path": "gooo/sdk-catalog/row-visibility",
+      "sources": [
+        "ports/tool-origin/sdk_row_visibility.gooo"
+      ]
+    }
+  ]
+}
