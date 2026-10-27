@@ -12,9 +12,9 @@ import stat
 
 SCHEMA='gooo/service-grant-mcp-native-bundle/v4'
 CONTEXT_SCHEMA='gooo/service-grant-mcp-container-context/v3'
-SOURCE='9e47f69024466affeb503cafa5e75708c29ecbed'
+SOURCE='a4999615a229b13e9fb644e3ebed499bb3452e1f'
 PROFILE='tools/profiles/mcp-definition-snapshot-v4.json'
-PROFILE_SHA256='d945c3ab791083c87f2c5d66ebde20317b437ba8dd19debb44135592ebe2fc0e'
+PROFILE_SHA256='6eb28269df80e081d182fe38fdd2c4b52c668b43550d7b50d415738eb839296e'
 PREFIX='examples/service-grant-mcp'
 MODULE='github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison'
 VERSION='v0.0.0-20261027155614-e4d44fd856ee'

@@ -26,7 +26,7 @@ BINARY = "gooo-service-grant-mcp"
 SCHEMA = "gooo/service-grant-mcp-native-bundle/v2"
 ALIAS_SCHEMA = "gooo/service-grant-mcp-native-bundle/v3"
 SPEC = importlib.util.spec_from_file_location('snapshot_context_profile', Path(__file__).with_name('mcp_snapshot_profile.py'))
-if hashlib.sha256(Path(SPEC.origin).read_bytes()).hexdigest() != '6f2c22c91a7bef28de3d1e348edb67e1c90a82d299b8ad78ab4545d618f486f4':
+if hashlib.sha256(Path(SPEC.origin).read_bytes()).hexdigest() != 'a421d1ea56ca54eb005322eb180d06348b59f6dacf3deb1c7f7748bda766255a':
     raise ValueError('snapshot context support source differs')
 SNAPSHOT = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(SNAPSHOT)
