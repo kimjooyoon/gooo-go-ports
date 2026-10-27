@@ -34,6 +34,8 @@ PROVIDERS = {
     'ce9d617a18f7a0ff18ef244b5c4eb6c684819bb144a5350f4ff5bc69db50b14e',
     'a9a7abfc846935d75472dcbadb87b66da6380f52876d1a35e1fa8205871fa174',
     'ef43e19de431b27b99f21a4195c45835cf1a7b59035ec8288acdce3b420de2ca',
+    # Signed-64 lower bound hoisted per load; existing strict checks retained.
+    '1f00327d87e9019bcaa5b34c6271298cffda890141be69f4469e6e0cdef3f0ab',
 }
 
 
