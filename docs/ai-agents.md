@@ -17,7 +17,7 @@ are developed separately; this repository supplies ports and runnable examples.
 | Compare the supplied API policy profiles | [Fixed-policy command](#compare-fixed-api-policies-without-a-compiler) | Compares the documented profiles; does not load an arbitrary edited policy. |
 | Compare saved MCP tool catalogs | [Native CLI without a toolchain](recorded-catalog-cli.md) or [pinned source alternatives](#compare-saved-mcp-catalogs-without-a-checkout) | Separates alias-origin changes from unknown collection context. The native command includes explicit observation availability and missing-field diagnostics; it does not collect a live catalog or authorize a tool call. |
 | Compare saved tool definitions when no host alias record exists | [Native preview.2 installation](#install-the-native-snapshot-command), [own-input recipe](#compare-your-own-saved-pages) or [agent task skill](../.agents/skills/gooo-compare-tool-snapshots/SKILL.md): `--definition-snapshot` | Select an original tool name from retained JSON-RPC pages. Preserve incomplete coverage and duplicate-name results; do not invent a host mapping. Native preview.2 includes this mode and three synthetic examples; the source route remains available. Preview.1 does not support it. |
-| Evaluate a whole-catalog refresh from saved pages | [Pinned own-input command or Go library](#replace-a-catalog-after-refresh) | Returns an in-process receipt and resulting bytes. Caller supplies collection outcome; no live collection, durable write or tool-call authority. Embed the library for host invalidation and racing attempts. |
+| Evaluate a whole-catalog refresh from saved files | [Pinned file-plan command or Go library](#replace-a-catalog-after-refresh) | Reads the previous catalog and ordered request/response files without manually encoding their contents. Returns an in-process receipt and resulting bytes. Caller supplies collection outcome; embed the library for host invalidation and racing attempts. |
 | Edit and execute Gooo source | [First-program skill](#run-the-first-program-skill) | An actual source edit plus new execution and replay records; declaration checking alone is insufficient. |
 
 The native MCP routes need no compiler at runtime. The optional
@@ -1190,23 +1190,54 @@ independent adoption requires a separate user's actual use.
 
 ## Replace a catalog after refresh
 
-For your own saved `tools/list` pages, use Go **1.27.3** and the
-[pinned input guide](https://github.com/kimjooyoon/gooo-go-ports/blob/c433db4b3a635ac41ab524c6af4b6c17068fa494/examples/catalog-refresh/README.md#evaluate-your-saved-pages)
-to prepare `saved-refresh.json`. It requires `previous_catalog_base64`, ordered
-`pages`, and an explicit `collector_state`: `SUCCESS`, `ERROR`, `TIMEOUT` or
-`CANCELLED`. Preserve the original request/response strings and the actual
-collection outcome; the command treats that outcome as a caller assertion.
+For your own saved `tools/list` files, use Go **1.27.3** and the
+[pinned file-plan guide](https://github.com/kimjooyoon/gooo-go-ports/blob/32981914a795026f6d9c8c6bdc749a8f432919b0/examples/catalog-refresh/README.md#read-original-saved-files).
+Keep the original files and create a new `refresh-plan.json` that names them:
 
-```sh
-if go run github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh/cmd/catalog-refresh@9c0bf20da69cb4b7084e526f75910d026ca2fbb7 \
-  < saved-refresh.json > report.json 2> report.stderr; then
-  printf '%s\n' 0 > report.exit
-else
-  printf '%s\n' "$?" > report.exit
-fi
+```json
+{
+  "previous_catalog_file": "previous-catalog.bin",
+  "collector_state": "TIMEOUT",
+  "pages": [
+    {
+      "request_file": "frames/page-01.request.json",
+      "response_file": "frames/page-01.response.json"
+    }
+  ]
+}
 ```
 
-Inspect `report.exit` and keep the input, report and diagnostics together.
+Replace the example paths and `TIMEOUT` with the actual collection outcome:
+`SUCCESS`, `ERROR`, `TIMEOUT` or `CANCELLED`. Do not infer success from an empty
+page list or a missing response. Paths are relative to the plan file, regardless
+of your working directory; explicit absolute paths are also accepted. Previous
+catalog bytes may be binary. Frames must be original UTF-8 JSON-RPC messages,
+not HTTP or SSE carriers. The command preserves their strings and page order.
+It accepts at most 16 page pairs and 64 KiB per frame, with 1 MiB limits for the
+plan and assembled input. Preserve the first refusal instead of trimming or
+repairing input to fit.
+
+Run from any directory, using the absolute path to your plan. This shell block
+creates a fresh private output directory so existing reports are kept:
+
+```sh
+report_dir="$(mktemp -d)" || exit 1
+if go run github.com/kimjooyoon/gooo-go-ports/examples/catalog-refresh/cmd/catalog-refresh@7edebfce6db4694af12145701582ba326041301e \
+  --plan /absolute/path/to/refresh-plan.json \
+  > "$report_dir/report.json" 2> "$report_dir/report.stderr"; then
+  printf '%s\n' 0 > "$report_dir/report.exit"
+else
+  printf '%s\n' "$?" > "$report_dir/report.exit"
+fi
+printf '%s\n' "$report_dir"
+```
+
+Inspect `report.exit` in the printed directory. Keep the plan, referenced files,
+report and diagnostics together. `file_plan_sha256` identifies the exact plan
+bytes; `input_sha256` identifies the assembled JSON envelope. They identify
+different bytes and are not interchangeable. The collection outcome is a caller
+assertion, not a verified observation of collection.
+
 A valid but incomplete or failed collection returns `RETAINED` with exit zero;
 malformed input fails without a result. `stored_catalog.bytes` is base64 for the
 actual retained bytes or replacement page bundle. Each invocation uses a new
@@ -1214,6 +1245,10 @@ in-memory registry: its tokens are not durable versions, and it does not save a
 catalog or authorize tool calls. No checkout, local replacement or Gooo compiler
 is needed; the first run may download modules. This is a pinned experimental
 command, separate from the native snapshot comparison release.
+
+If your caller already supplies the JSON envelope, keep using the
+[stdin route](https://github.com/kimjooyoon/gooo-go-ports/blob/32981914a795026f6d9c8c6bdc749a8f432919b0/examples/catalog-refresh/README.md#evaluate-your-saved-pages).
+The older `9c0bf20d` command accepts that format but predates `--plan`.
 
 To inspect three fixed synthetic scenarios without supplying input, run the
 original demo from a new empty directory with Go **1.27.3** already selected:
