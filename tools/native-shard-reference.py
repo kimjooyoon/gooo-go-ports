@@ -108,7 +108,7 @@ def load(raw, *, metadata=True):
         if value == '-0' or not value.isascii():
             raise RuntimeError('canonical decimal integer token required')
         parsed=int(value)
-        if parsed < -MAX_INT-1 or parsed > MAX_INT:
+        if parsed < minimum or parsed > MAX_INT:
             raise RuntimeError('bounded exact integer required')
         return parsed
     def finite(value):
@@ -118,6 +118,7 @@ def load(raw, *, metadata=True):
         raise RuntimeError('nondecimal or nonfinite JSON number: '+value)
     need(type(raw) is bytes and 0 < len(raw) <= (MAX_JSON if metadata else MAX_FILE), 'bounded nonempty JSON required')
     try:
+        minimum = -MAX_INT - 1
         return json.loads(raw.decode('utf-8', errors='strict'),object_pairs_hook=pairs,
                           parse_int=number,parse_float=reject if metadata else finite,parse_constant=reject)
     except (ValueError,UnicodeError,RecursionError) as error:

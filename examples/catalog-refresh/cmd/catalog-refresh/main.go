@@ -22,6 +22,7 @@ import (
 const usage = `Evaluate one whole-catalog refresh using generated Gooo rules.
 
 Usage: catalog-refresh < saved-refresh.json > report.json
+       catalog-refresh --plan refresh-plan.json > report.json
        catalog-refresh --help
 
 Input is exactly one JSON object, at most 1 MiB, with these required fields:
@@ -42,6 +43,12 @@ old tools. Preserve input, stderr, exit status and the report together.
 
 Each invocation creates a new in-process registry; tokens do not persist across
 invocations. Collector state is a caller assertion, not verified collection.
+--plan reads local regular files instead of stdin. Its exact fields are
+previous_catalog_file, collector_state, and ordered pages containing request_file
+and response_file. Relative paths use the plan directory; absolute paths are
+allowed. Previous bytes may be binary; frames must be UTF-8. The assembled input
+passes the same validation and bounds as stdin. file_plan_sha256 binds the exact
+plan bytes; input_sha256 binds the assembled JSON. Files are never written.
 This command does not write catalog files, connect to MCP servers, collect pages,
 call tools or models, establish current authorization, or perform a durable swap.
 `
@@ -60,6 +67,7 @@ type report struct {
 	CollectorStateBasis string             `json:"collector_state_basis"`
 	Receipt             refresh.Receipt    `json:"receipt"`
 	StoredCatalog       host.StoredCatalog `json:"stored_catalog"`
+	FilePlanSHA256      string             `json:"file_plan_sha256,omitempty"`
 }
 
 type problem struct {
@@ -157,14 +165,21 @@ func emit(raw []byte, out, diagnostics io.Writer) int {
 }
 
 func runCommand(args []string, input io.Reader, out, diagnostics io.Writer) int {
+	var raw []byte
+	var planHash string
+	var err error
 	if len(args) != 0 {
 		if len(args) == 1 && (args[0] == "--help" || args[0] == "-h") {
 			return emit([]byte(usage), out, diagnostics)
 		}
-		diagnostic(diagnostics, &problem{"INVALID_ARGUMENT", "parse_arguments", "UNSUPPORTED_ARGUMENTS"})
-		return 2
+		if len(args) != 2 || args[0] != "--plan" || args[1] == "" {
+			diagnostic(diagnostics, &problem{"INVALID_ARGUMENT", "parse_arguments", "UNSUPPORTED_ARGUMENTS"})
+			return 2
+		}
+		raw, planHash, err = assembleFilePlan(args[1])
+	} else {
+		raw, err = io.ReadAll(io.LimitReader(input, recorded.MaxInputBytes+1))
 	}
-	raw, err := io.ReadAll(io.LimitReader(input, recorded.MaxInputBytes+1))
 	if err != nil {
 		return diagnostic(diagnostics, err)
 	}
@@ -182,7 +197,7 @@ func runCommand(args []string, input io.Reader, out, diagnostics io.Writer) int 
 	}
 	receipt := registry.Refresh(attempt, parsed.pages, parsed.collector)
 	sum := sha256.Sum256(raw)
-	result := report{"gooo/local-catalog-refresh-report/v1", "SINGLE_IN_PROCESS_REFRESH", "sha256:" + hex.EncodeToString(sum[:]), parsed.collector, "CALLER_SUPPLIED", receipt, registry.Snapshot()}
+	result := report{"gooo/local-catalog-refresh-report/v1", "SINGLE_IN_PROCESS_REFRESH", "sha256:" + hex.EncodeToString(sum[:]), parsed.collector, "CALLER_SUPPLIED", receipt, registry.Snapshot(), planHash}
 	encoded, err := json.Marshal(result)
 	if err != nil {
 		return diagnostic(diagnostics, err)

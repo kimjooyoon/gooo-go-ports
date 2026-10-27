@@ -1415,7 +1415,38 @@ CATALOG_REFRESH_UPLOAD = "      - name: Preserve whole-catalog refresh evidence\
 CATALOG_REFRESH_PRIOR_WORKFLOW_SHA = 'f14fcae9bca5b1f0644247495d1ec0f21ba81beeed6fab992395dcda4103093a'
 
 
+READER_PROFILE_PREFLIGHT = """      - name: Check frozen reader profiles before builds
+        timeout-minutes: 1
+        run: |
+          python3 -I -B tools/export-header-addition-evidence_test.py -v
+"""
+READER_PROFILE_PREFLIGHT_JOBS = ('observer-checks', 'native-execution', 'policy-native-checks')
+READER_PROFILE_PREFLIGHT_PRIOR_SHA = 'cb27a6614685971799255733c69bc8b06041bbe9f5e06069f35423546379d3bd'
+
+
+def project_reader_profile_preflight(text):
+    # Project only the three exact early controls before all historical guards.
+    # No Go work, native gate, source pin or prior common command is removed.
+    jobs = workflow_jobs(text)
+    require(text.count(READER_PROFILE_PREFLIGHT) == len(READER_PROFILE_PREFLIGHT_JOBS),
+            'reader profiles require three exact unconditional pre-build checks')
+    for job in READER_PROFILE_PREFLIGHT_JOBS:
+        chunk = jobs[job]
+        _, named, unnamed = job_steps(chunk)
+        require(named.get('Check frozen reader profiles before builds') == READER_PROFILE_PREFLIGHT and
+                len(unnamed) == 2 and
+                chunk.index(unnamed[0]) < chunk.index(named['Classify the exact checked PR tree']) <
+                chunk.index(READER_PROFILE_PREFLIGHT) < chunk.index(unnamed[1]) and
+                'uses: actions/setup-go@' in unnamed[1],
+                'reader profile checks must follow exact checkout classification and precede Go setup: ' + job)
+    prior = text.replace(READER_PROFILE_PREFLIGHT, '', len(READER_PROFILE_PREFLIGHT_JOBS))
+    require(hashlib.sha256(prior.encode()).hexdigest() == READER_PROFILE_PREFLIGHT_PRIOR_SHA,
+            'reader preflight changed unrelated workflow bytes')
+    return prior
+
+
 def project_catalog_refresh_integration(text):
+    text = project_reader_profile_preflight(text)
     jobs = workflow_jobs(text)
     _, observer, _ = job_steps(jobs['observer-checks'])
     _, native, _ = job_steps(jobs['native-execution'])
@@ -4703,7 +4734,7 @@ class GrantSelectionIntegrationTests(unittest.TestCase):
 class ContributionExportIntegrationTests(unittest.TestCase):
     def test_exact_common_addition_preserves_all_historical_guards(self):
         raw = WORKFLOW.read_text()
-        prior = project_contribution_export_unit(raw)
+        prior = project_contribution_export_unit(project_reader_profile_preflight(raw))
         self.assertNotIn(CONTRIBUTION_EXPORT_UNIT, prior)
         project_root_go_reference(raw)
 
@@ -4767,7 +4798,7 @@ class CatalogRefreshIntegrationTests(unittest.TestCase):
         raw = WORKFLOW.read_text()
         prior = project_catalog_refresh_integration(raw)
         self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), CATALOG_REFRESH_PRIOR_WORKFLOW_SHA)
-        self.assertEqual(prior, raw.replace(CATALOG_REFRESH_COMMON, '', 1).replace(CATALOG_REFRESH_DECL, '', 1).replace(CATALOG_REFRESH_STEP, '', 1).replace(CATALOG_REFRESH_UPLOAD, '', 1))
+        self.assertEqual(prior, project_reader_profile_preflight(raw).replace(CATALOG_REFRESH_COMMON, '', 1).replace(CATALOG_REFRESH_DECL, '', 1).replace(CATALOG_REFRESH_STEP, '', 1).replace(CATALOG_REFRESH_UPLOAD, '', 1))
         self.assertNotIn('catalog-refresh', prior)
         self.assertNotIn('catalog_refresh', prior)
         project_root_go_reference(raw)
@@ -5174,6 +5205,48 @@ class RecordedCatalogBundleIntegrationTests(unittest.TestCase):
         for changed in mutations:
             with self.assertRaises(ValueError):
                 project_catalog_bundle_integration(changed)
+
+class ReaderProfilePreflightTests(unittest.TestCase):
+    def test_exact_preflight_recovers_every_prior_workflow_byte(self):
+        raw = WORKFLOW.read_text()
+        prior = project_reader_profile_preflight(raw)
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), READER_PROFILE_PREFLIGHT_PRIOR_SHA)
+        self.assertEqual(prior.count(CONTRIBUTION_EXPORT_UNIT), 1)
+        project_root_go_reference(raw)
+
+    def test_missing_duplicate_conditional_masked_or_changed_preflight_is_refused(self):
+        raw = WORKFLOW.read_text()
+        for replacement in ('', READER_PROFILE_PREFLIGHT * 2,
+                            READER_PROFILE_PREFLIGHT.replace('        timeout-minutes: 1', '        if: ' + FULL + '\n        timeout-minutes: 1'),
+                            READER_PROFILE_PREFLIGHT.replace('        run: |', '        continue-on-error: true\n        run: |'),
+                            READER_PROFILE_PREFLIGHT.replace(' -I ', ' '),
+                            READER_PROFILE_PREFLIGHT.replace(' -v\n', ' -v || true\n'),
+                            READER_PROFILE_PREFLIGHT.replace('timeout-minutes: 1', 'timeout-minutes: 10')):
+            for job in READER_PROFILE_PREFLIGHT_JOBS:
+                original = workflow_jobs(raw)[job]
+                changed = raw.replace(original, original.replace(READER_PROFILE_PREFLIGHT, replacement, 1), 1)
+                with self.subTest(job=job, replacement=replacement), self.assertRaises(ValueError):
+                    project_root_go_reference(changed)
+
+    def test_preflight_after_go_setup_is_refused_in_each_job(self):
+        raw = WORKFLOW.read_text()
+        for job in READER_PROFILE_PREFLIGHT_JOBS:
+            original = workflow_jobs(raw)[job]
+            _, _, unnamed = job_steps(original)
+            changed_job = original.replace(READER_PROFILE_PREFLIGHT, '', 1).replace(
+                unnamed[1], unnamed[1] + READER_PROFILE_PREFLIGHT, 1)
+            with self.subTest(job=job), self.assertRaises(ValueError):
+                project_root_go_reference(raw.replace(original, changed_job, 1))
+
+    def test_native_gates_and_original_common_controls_cannot_be_removed(self):
+        raw = WORKFLOW.read_text()
+        for before, after in ((CONTRIBUTION_EXPORT_ANCHOR + CONTRIBUTION_EXPORT_UNIT, CONTRIBUTION_EXPORT_ANCHOR),
+                              ('go test -race -timeout=15m', 'go test -timeout=15m'),
+                              ('      - name: Compare the ports with Go and replay every batch\n', '      - name: Skip native work\n')):
+            self.assertIn(before, raw)
+            with self.subTest(before=before), self.assertRaises(ValueError):
+                project_root_go_reference(raw.replace(before, after, 1))
+
 
 if __name__ == "__main__":
     unittest.main()
