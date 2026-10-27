@@ -145,12 +145,18 @@ def alias_proofs(session, reference):
             "after_error_repeat_equal": True}
 
 
-def load_snapshot_reference(context, report_path, module, cli, go):
+def load_snapshot_reference(context, report_path, module, cli, go, source_binary):
     """Read a source-bound native trial; no compiler/Go/CLI is executed here."""
-    assert all(isinstance(p,Path) and p.is_absolute() for p in (context,report_path,module,cli,go))
+    assert all(isinstance(p,Path) and p.is_absolute() for p in (context,report_path,module,cli,go,source_binary))
     assert report_path.name=='acceptance.json'
-    report=SNAPSHOT.validate_saved(report_path.parent,context/'runtime/gooo-service-grant-mcp',
+    runtime=context/'runtime/gooo-service-grant-mcp'
+    assert SNAPSHOT.descriptor(source_binary)==SNAPSHOT.descriptor(runtime), \
+        'snapshot runtime/source executable bytes differ'
+    # Keep the original argv/path binding. A copied runtime has the same bytes
+    # but was not the executable pathname observed by the native producer.
+    report=SNAPSHOT.validate_saved(report_path.parent,source_binary,
         cli,module,go,ROOT/'examples/service-grant-mcp/verify.py')
+    assert report['binary']==SNAPSHOT.descriptor(runtime)
     normal,malformed=SNAPSHOT.cases(WIRE.encoded)
     records={row['label']:row['record'] for row in report['reference_processes']}
     def capture(name,channel):
@@ -620,6 +626,8 @@ def main():
     parser.add_argument('--snapshot-wire-report',type=Path,help='v4: existing complete native snapshot acceptance.json')
     parser.add_argument('--snapshot-module',type=Path,help='v4: fixed public recorded-catalog module')
     parser.add_argument('--snapshot-cli',type=Path,help='v4: reference CLI bytes; never executed here')
+    parser.add_argument('--snapshot-source-binary',type=Path,
+        help='v4: original native executable path from the saved trial; bytes must match the copied runtime')
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--label", default="io.gooo.container-smoke=local")
     args = parser.parse_args()
@@ -636,9 +644,10 @@ def main():
         reference = load_alias_reference(context, *alias_inputs)
     else:
         assert all(value is None for value in alias_inputs), "alias reference inputs require a v3 bundle"
-    snapshot_inputs=(args.snapshot_wire_report,args.snapshot_module,args.snapshot_cli)
+    snapshot_inputs=(args.snapshot_wire_report,args.snapshot_module,args.snapshot_cli,args.snapshot_source_binary)
     if schema==V4_SCHEMA:
-        snapshot_reference=load_snapshot_reference(context,*snapshot_inputs,args.go)
+        snapshot_reference=load_snapshot_reference(context,args.snapshot_wire_report,args.snapshot_module,
+            args.snapshot_cli,args.go,args.snapshot_source_binary)
     else:assert all(v is None for v in snapshot_inputs), 'snapshot inputs require a v4 bundle'
     args.out.mkdir(parents=True, exist_ok=False)
     trial = Trial(docker, args.image, context, args.out, args.label, package)

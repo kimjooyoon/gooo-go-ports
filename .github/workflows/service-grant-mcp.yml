@@ -205,6 +205,7 @@ jobs:
             --snapshot-wire-report "$PWD/out/service-grant-mcp/snapshot-wire/acceptance.json" \
             --snapshot-module "$(go -C examples/service-grant-mcp list -m -f '{{.Dir}}' github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison)" \
             --snapshot-cli "$RUNNER_TEMP/snapshot-cli-bin/compare" \
+            --snapshot-source-binary "$RUNNER_TEMP/gooo-service-grant-mcp" \
             --label "io.gooo.ci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
       - name: Remove only this job's container test resources
         if: always() && runner.os == 'Linux'

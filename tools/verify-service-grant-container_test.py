@@ -523,11 +523,15 @@ class SnapshotSavedCaptureTests(unittest.TestCase):
         self.no_children=mock.patch('subprocess.Popen',side_effect=AssertionError('real subprocess forbidden'))
         self.no_children.start();self.addCleanup(self.no_children.stop)
         self.context=self.root/'context';self.context.mkdir()
+        runtime=self.context/'runtime';runtime.mkdir()
+        self.source_binary=self.root/'source-executable'
+        self.source_binary.write_bytes(b'synthetic-not-executed-executable')
+        (runtime/'gooo-service-grant-mcp').write_bytes(self.source_binary.read_bytes())
         self.report_path=self.root/'acceptance.json';self.report_path.write_text('{}')
         self.raw=b'{"synthetic":"capture-reader-only"}'
         self.normal=[('same',self.raw,'OBSERVED_DEFINITION_SAME')]
         self.malformed=[('bad',b'null')]
-        self.report={'schemas':{'input':{},'output':{}},'binary':{'sha256':'0'*64},
+        self.report={'schemas':{'input':{},'output':{}},'binary':self.subject.SNAPSHOT.descriptor(self.source_binary),
                      'snapshot_cli':{'sha256':'1'*64},'reference_processes':[]}
         for name,stdin,stdout,stderr in [
                 ('same',self.raw,b'{"decision":{"state":"OBSERVED_DEFINITION_SAME"}}',b''),
@@ -543,7 +547,7 @@ class SnapshotSavedCaptureTests(unittest.TestCase):
 
     def read(self):
         return self.subject.load_snapshot_reference(self.context,self.report_path,
-            self.root/'module',self.root/'compare',self.root/'go')
+            self.root/'module',self.root/'compare',self.root/'go',self.source_binary)
 
     def test_saved_capture_reader_uses_original_bytes_without_producer(self):
         with mock.patch.object(self.subject.SNAPSHOT,'validate_saved',return_value=self.report):
@@ -563,7 +567,12 @@ class SnapshotSavedCaptureTests(unittest.TestCase):
     def test_v4_reference_paths_must_be_absolute(self):
         with self.assertRaises(AssertionError):
             self.subject.load_snapshot_reference(self.context,Path('relative/acceptance.json'),
-                self.root/'module',self.root/'compare',self.root/'go')
+                self.root/'module',self.root/'compare',self.root/'go',self.source_binary)
+
+    def test_copied_runtime_cannot_differ_from_the_original_observed_executable(self):
+        (self.context/'runtime/gooo-service-grant-mcp').write_bytes(b'changed runtime')
+        with mock.patch.object(self.subject.SNAPSHOT,'validate_saved',side_effect=AssertionError('must not read producer proof')):
+            with self.assertRaisesRegex(AssertionError,'executable bytes differ'):self.read()
 
 
 if __name__ == "__main__":
