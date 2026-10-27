@@ -8,6 +8,17 @@ on:
       - 'examples/service-grant-mcp/**'
       - 'tools/service_grant_mcp_bundle.py'
       - 'tools/service_grant_mcp_bundle_test.py'
+      - 'tools/mcp_snapshot_profile*'
+      - 'tools/profiles/mcp-definition-snapshot-v4.json'
+      - 'tools/freeze_mcp_source_profile*'
+      - 'tools/render_mcp_record_schema*'
+      - 'go.mod'
+      - 'upstream.json'
+      - 'definition-snapshot.workspace.json'
+      - 'ports/tool-origin/definition_snapshot.gooo'
+      - 'examples/recorded-catalog-comparison/**'
+      - 'examples/tool-definition-snapshot/**'
+      - 'examples/service-grant-many/verify.py'
       - 'tools/api_policy_cli_bundle.py'
       - 'tools/service_policy_cli_bundle.py'
       - 'tools/service_grant_mcp_container*'
@@ -20,6 +31,17 @@ on:
       - 'examples/service-grant-mcp/**'
       - 'tools/service_grant_mcp_bundle.py'
       - 'tools/service_grant_mcp_bundle_test.py'
+      - 'tools/mcp_snapshot_profile*'
+      - 'tools/profiles/mcp-definition-snapshot-v4.json'
+      - 'tools/freeze_mcp_source_profile*'
+      - 'tools/render_mcp_record_schema*'
+      - 'go.mod'
+      - 'upstream.json'
+      - 'definition-snapshot.workspace.json'
+      - 'ports/tool-origin/definition_snapshot.gooo'
+      - 'examples/recorded-catalog-comparison/**'
+      - 'examples/tool-definition-snapshot/**'
+      - 'examples/service-grant-many/verify.py'
       - 'tools/api_policy_cli_bundle.py'
       - 'tools/service_policy_cli_bundle.py'
       - 'tools/service_grant_mcp_container*'
@@ -113,11 +135,30 @@ jobs:
             --alias-module "$alias_module" --go "$(command -v go)" \
             --legacy-verifier "$PWD/examples/service-grant-mcp/verify.py" \
             --scope full --out "$PWD/out/service-grant-mcp/alias-wire"
+      - name: Verify saved tool definitions through all opt-in profiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          snapshot_version="v0.0.0-20261027155614-e4d44fd856ee"
+          snapshot_module="$(go -C examples/service-grant-mcp list -m -f '{{if eq .Version "v0.0.0-20261027155614-e4d44fd856ee"}}{{.Dir}}{{end}}' github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison)"
+          test -n "$snapshot_module"
+          mkdir -p "$RUNNER_TEMP/snapshot-cli-bin"
+          GOBIN="$RUNNER_TEMP/snapshot-cli-bin" go install -trimpath \
+            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare@$snapshot_version"
+          python3 -I -B examples/service-grant-mcp/verify_snapshot.py \
+            --binary "$RUNNER_TEMP/gooo-service-grant-mcp" \
+            --snapshot-cli "$RUNNER_TEMP/snapshot-cli-bin/compare" \
+            --snapshot-module "$snapshot_module" --go "$(command -v go)" \
+            --legacy-verifier "$PWD/examples/service-grant-mcp/verify.py" \
+            --out "$PWD/out/service-grant-mcp/snapshot-wire"
       - name: Check native MCP packaging refusal controls
         shell: bash
         run: |
           set -euo pipefail
           python3 -I -B tools/service_grant_mcp_bundle_test.py
+          python3 -I -B tools/mcp_snapshot_profile_test.py
+          python3 -I -B tools/freeze_mcp_source_profile_test.py
+          python3 -I -B tools/render_mcp_record_schema_test.py
           python3 -I -B tools/service_grant_mcp_container_test.py
           python3 -I -B tools/verify-service-grant-container_test.py
       - name: Package and verify the extracted native MCP transport
@@ -131,6 +172,8 @@ jobs:
             --many-wire-report "$PWD/out/service-grant-mcp/many-wire/acceptance.json" \
             --alias-wire-report "$PWD/out/service-grant-mcp/alias-wire/acceptance.json" \
             --alias-cli "$RUNNER_TEMP/alias-cli-bin/compare" \
+            --snapshot-wire-report "$PWD/out/service-grant-mcp/snapshot-wire/acceptance.json" \
+            --snapshot-cli "$RUNNER_TEMP/snapshot-cli-bin/compare" \
             --module-cache "$(go env GOMODCACHE)" \
             --go-root "$(go env GOROOT)" --root "$PWD" \
             --out "$PWD/out/service-grant-mcp-bundle" \
@@ -159,6 +202,9 @@ jobs:
             --alias-wire-report "$PWD/out/service-grant-mcp/alias-wire/acceptance.json" \
             --alias-module "$(go -C examples/service-grant-mcp list -m -f '{{.Dir}}' github.com/kimjooyoon/gooo-go-ports/examples/alias-origin-change)" \
             --alias-cli "$RUNNER_TEMP/alias-cli-bin/compare" --go "$(command -v go)" \
+            --snapshot-wire-report "$PWD/out/service-grant-mcp/snapshot-wire/acceptance.json" \
+            --snapshot-module "$(go -C examples/service-grant-mcp list -m -f '{{.Dir}}' github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison)" \
+            --snapshot-cli "$RUNNER_TEMP/snapshot-cli-bin/compare" \
             --label "io.gooo.ci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
       - name: Remove only this job's container test resources
         if: always() && runner.os == 'Linux'
@@ -206,6 +252,7 @@ jobs:
             out/service-grant-mcp-bundle/native-verification/
             out/service-grant-mcp-bundle/many-native-verification/
             out/service-grant-mcp-bundle/alias-native-verification/
+            out/service-grant-mcp-bundle/snapshot-native-verification/
       - name: Retain the bounded original wire observations
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

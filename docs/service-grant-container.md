@@ -112,3 +112,38 @@ Docker's [exec entrypoint](https://docs.docker.com/reference/dockerfile/#entrypo
 and [interactive stdin](https://docs.docker.com/reference/cli/docker/container/run/)
 provide the stdio transport. Please report a real first-run failure or task result
 in the [feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml).
+
+## Saved-definition source profile
+
+The current source adds an explicit `--definition-snapshot` profile and the
+`gooo_compare_saved_tool_definitions` tool. It accepts exact saved `tools/list`
+pages; it does not collect a catalog or invoke a remote tool. Compare the
+decision with both page-coverage fields before using a result. Missing pages
+are not evidence that a tool disappeared, and a matching definition does not
+prove origin, authorization or behavioral equivalence.
+
+This profile uses native bundle **v4**: 68 flat runtime files, including 62
+license/notice texts and `snapshot-example.json`. The fixed preview16 download
+and registry descriptor above retain their original v2 behavior and do not
+include the new flag. Use a separately verified current-source v4 candidate
+when testing it; do not relabel an earlier archive or its observations.
+
+The MCP workflow checks the fixed public comparison CLI against the source
+executable and the freshly extracted candidate, including all eight flag
+combinations under both protocol versions. The v4 Linux container check repeats
+the saved comparison corpus in 16 real stdio sessions, with the network disabled
+and a read-only filesystem. It reads the existing native reference evidence;
+it does not rerun Go or a compiler inside the container. The legacy service,
+ordered-request and alias tools remain available according to their own flags.
+These finite checks are internal transport checks, not an external-adoption or
+general client-conformance claim.
+
+[The source profile](../tools/profiles/mcp-definition-snapshot-v4.json) binds all
+26 MCP source files to an immutable commit with raw-file and Git-blob identities
+and PROV-O derivation entities. For the next source revision,
+`tools/freeze_mcp_source_profile.py` exports a complete roster in one operation
+to a new file outside the MCP module. Reviewing/promoting that new profile is
+still explicit; working-tree edits and newly tracked files cannot silently pass
+the old profile. The declaration-derived output shape also records its separate
+inspection compiler, stable field IDs and source/workspace hashes. It does not
+change the generated kernel's compiler pin or imply another Gooo execution.

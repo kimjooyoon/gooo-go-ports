@@ -1,10 +1,13 @@
 """Unsupported declarations must never become plausible MCP output contracts."""
 import copy
+import importlib.util
 import json
 from pathlib import Path
 import unittest
 
-import render_mcp_record_schema as renderer
+SPEC=importlib.util.spec_from_file_location('record_schema',Path(__file__).with_name('render_mcp_record_schema.py'))
+renderer=importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(renderer)
 
 
 class RecordSchemaTests(unittest.TestCase):

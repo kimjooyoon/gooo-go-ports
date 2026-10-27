@@ -513,5 +513,58 @@ class AliasProofTests(unittest.TestCase):
                 self.assertEqual(session.trial.alias_stdout_bytes, prior_total + 1)
 
 
+class SnapshotSavedCaptureTests(unittest.TestCase):
+    """Isolate retained-byte reads; the policy validator is deliberately mocked."""
+    def setUp(self):
+        self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
+        self.root=Path(self.temp.name)
+        spec=importlib.util.spec_from_file_location('snapshot_container_test',SUBJECT)
+        self.subject=importlib.util.module_from_spec(spec);spec.loader.exec_module(self.subject)
+        self.no_children=mock.patch('subprocess.Popen',side_effect=AssertionError('real subprocess forbidden'))
+        self.no_children.start();self.addCleanup(self.no_children.stop)
+        self.context=self.root/'context';self.context.mkdir()
+        self.report_path=self.root/'acceptance.json';self.report_path.write_text('{}')
+        self.raw=b'{"synthetic":"capture-reader-only"}'
+        self.normal=[('same',self.raw,'OBSERVED_DEFINITION_SAME')]
+        self.malformed=[('bad',b'null')]
+        self.report={'schemas':{'input':{},'output':{}},'binary':{'sha256':'0'*64},
+                     'snapshot_cli':{'sha256':'1'*64},'reference_processes':[]}
+        for name,stdin,stdout,stderr in [
+                ('same',self.raw,b'{"decision":{"state":"OBSERVED_DEFINITION_SAME"}}',b''),
+                ('bad',b'null',b'',b'{"code":"INVALID_JSON_FACTS"}')]:
+            folder=self.root/('reference-'+name);folder.mkdir()
+            record={}
+            for channel,raw in [('stdin',stdin),('stdout',stdout),('stderr',stderr)]:
+                (folder/channel).write_bytes(raw)
+                record[channel]={'bytes':len(raw),'sha256':self.subject.sha(raw)}
+            self.report['reference_processes'].append({'label':'reference-'+name,'record':record})
+        self.cases=mock.patch.object(self.subject.SNAPSHOT,'cases',return_value=(self.normal,self.malformed))
+        self.cases.start();self.addCleanup(self.cases.stop)
+
+    def read(self):
+        return self.subject.load_snapshot_reference(self.context,self.report_path,
+            self.root/'module',self.root/'compare',self.root/'go')
+
+    def test_saved_capture_reader_uses_original_bytes_without_producer(self):
+        with mock.patch.object(self.subject.SNAPSHOT,'validate_saved',return_value=self.report):
+            result=self.read()
+        self.assertEqual(result['cases'][0][1],self.raw)
+        self.assertEqual(len(result['malformed']),1)
+
+    def test_capture_change_after_validation_cannot_become_new_reference(self):
+        def validate(*args):
+            (self.root/'reference-same/stdout').write_bytes(
+                b'{"decision":{"state":"OBSERVED_DEFINITION_SAME","extra":"late change"}}')
+            return self.report
+        with mock.patch.object(self.subject.SNAPSHOT,'validate_saved',side_effect=validate):
+            with self.assertRaisesRegex(AssertionError,'capture changed'):
+                self.read()
+
+    def test_v4_reference_paths_must_be_absolute(self):
+        with self.assertRaises(AssertionError):
+            self.subject.load_snapshot_reference(self.context,Path('relative/acceptance.json'),
+                self.root/'module',self.root/'compare',self.root/'go')
+
+
 if __name__ == "__main__":
     unittest.main()
