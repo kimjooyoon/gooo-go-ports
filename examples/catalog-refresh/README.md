@@ -67,6 +67,55 @@ command does not change input files, save a catalog, collect live pages or
 invoke tools. Applications embedding the library retain responsibility for
 notifications, connection/authentication changes and their actual storage.
 
+### Read original saved files
+
+In a checkout containing the file-plan command, use Go **1.27.3** to evaluate
+saved files without manually escaping their contents or encoding previous bytes:
+
+```sh
+go -C examples/catalog-refresh run ./cmd/catalog-refresh --plan /absolute/path/to/refresh-plan.json > report.json
+```
+
+The pinned `9c0bf20d` preview above predates `--plan`; it continues to accept the
+stdin format. A file plan has exactly these fields:
+
+```json
+{
+  "previous_catalog_file": "previous-catalog.bin",
+  "collector_state": "TIMEOUT",
+  "pages": [
+    {
+      "request_file": "frames/page-01.request.json",
+      "response_file": "frames/page-01.response.json"
+    }
+  ]
+}
+```
+
+Paths are relative to the supplied plan file's directory; explicit absolute
+paths and symlinks to regular files are also accepted. The previous catalog may
+contain arbitrary binary bytes, including an empty file. Request and response
+files must be UTF-8; their complete strings, whitespace, escapes and order are
+preserved. They must contain saved JSON-RPC frames, not HTTP or SSE carriers.
+Keep transport extraction records separately. The command neither extracts nor
+repairs frames and does not infer whether collection succeeded.
+
+The plan must explicitly supply `SUCCESS`, `ERROR`, `TIMEOUT` or `CANCELLED`.
+Unknown, duplicate, missing, incorrectly cased or incorrectly typed fields fail.
+At most 16 page pairs are accepted, with 64 KiB per frame, 1 MiB for the plan and
+1 MiB for the assembled input including base64. Only regular files are read;
+missing files, nonregular files, observed file changes and exceeded bounds fail
+before evaluation. File reads are local snapshots, not an atomic collection or
+an attestation of the collector outcome. Keep source files unchanged during use.
+
+`--plan` does not read stdin or write files. It assembles the ordinary input and
+applies the same validator and Gooo evaluation as the stdin route. The optional
+report field `file_plan_sha256` hashes the exact original plan bytes;
+`input_sha256` hashes the assembled JSON envelope, not the plan. Decode
+`stored_catalog.bytes` as above and retain the plan, referenced files, report,
+stderr and exit status together. Shell output redirection can create a partial
+file if writing fails; successful assembly does not imply a durable catalog swap.
+
 ## Try the local consumer
 
 From the repository root, with Go **1.27.3**:
