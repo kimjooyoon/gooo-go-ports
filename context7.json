@@ -28,7 +28,8 @@
     "examples/recorded-catalog-comparison",
     "examples/tool-definition-snapshot",
     "examples/catalog-refresh",
-    "examples/mcp-upgrade-regressions"
+    "examples/mcp-upgrade-regressions",
+    "examples/sdk-catalog-refresh"
   ],
   "excludeFolders": [
     "**/evidence",
@@ -103,6 +104,7 @@
     "For a whole-catalog refresh demo, start with docs/ai-agents.md#replace-a-catalog-after-refresh. The demo makes no live MCP or model calls; initial Go module downloads may require network access.",
     "For the fixed demo or Go library, use examples/catalog-refresh at source 5699ab44a9a355a579bc08904e198eb6cf5554dd with Go 1.27.3. The demo needs no Gooo compiler or checkout; use the stdin command for your own saved pages.",
     "Preserve the Gooo decision and separate APPLIED/RETAINED commit receipt. The Go host rechecks state under a lock before replacing local stored pages; a CANDIDATE_ELIGIBLE decision alone is not a commit.",
-    "This refresh example has no live collector, durable or distributed transaction, or tool-call authority. Native snapshot preview.2 does not contain the transaction."
+    "This refresh example has no live collector, durable or distributed transaction, or tool-call authority. Native snapshot preview.2 does not contain the transaction.",
+    "For an agent host collecting tool pages through the Go MCP SDK, use examples/sdk-catalog-refresh. It preserves original newline IO payloads separately from SDK-filtered names and uses an original Gooo ordered-row rule plus the existing whole-catalog transaction. Fixed negotiated2025-11-25 IO profile; local synthetic demo, no tool invocation. Independent generation producer1afb, catalog kernel205896 and the unchanged global pin remain separate; follow the module README."
   ]
 }

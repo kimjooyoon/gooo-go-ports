@@ -1,0 +1,88 @@
+// Copyright 2026 Gooo Go Ports contributors. BSD-3-Clause.
+// Ordered row visibility only; schema validation and capture binding are separate.
+package sdk_row_visibility
+namespace gooo_sdk_row_visibility_v1
+
+entity RowNames id "gooo://sdk-catalog/row-visibility/v1/names" fields {
+ field names id "gooo://sdk-catalog/row-visibility/v1/names/values" type string required many
+}
+
+entity RowVisibility id "gooo://sdk-catalog/row-visibility/v1/result" fields {
+ field state id "gooo://sdk-catalog/row-visibility/v1/result/state" type string required one
+ field reason id "gooo://sdk-catalog/row-visibility/v1/result/reason" type string required one
+ field wire_count id "gooo://sdk-catalog/row-visibility/v1/result/wire_count" type integer required one
+ field sdk_count id "gooo://sdk-catalog/row-visibility/v1/result/sdk_count" type integer required one
+ field first_difference_index id "gooo://sdk-catalog/row-visibility/v1/result/first_difference_index" type integer required one
+ field wire_name id "gooo://sdk-catalog/row-visibility/v1/result/wire_name" type string required one
+ field sdk_name id "gooo://sdk-catalog/row-visibility/v1/result/sdk_name" type string required one
+ field mapping_equal id "gooo://sdk-catalog/row-visibility/v1/result/mapping_equal" type boolean required one
+ field scope id "gooo://sdk-catalog/row-visibility/v1/result/scope" type string required one
+}
+
+activity CompareSDKRows(RowNames, RowNames) -> RowVisibility id "gooo://sdk-catalog/row-visibility/v1/compare" computes `
+let wireCount = len(input0.names)
+let sdkCount = len(input1.names)
+let reason = "SAME_ORDERED_NAMES"
+let state = "MAPPED"
+let first = -1
+let wireName = ""
+let sdkName = ""
+if wireCount > 256 || sdkCount > 256 {
+ reason = "ROW_LIMIT"
+ state = "INVALID_INPUT"
+}
+if reason == "SAME_ORDERED_NAMES" {
+ let i = 0
+ for name in input0.names {
+  if (len(name) == 0 || len(name) > 1024) && reason == "SAME_ORDERED_NAMES" {
+   reason = "INVALID_WIRE_NAME"
+   state = "INVALID_INPUT"
+   first = i
+  }
+  i = i + 1
+ }
+}
+if reason == "SAME_ORDERED_NAMES" {
+ let i = 0
+ for name in input1.names {
+  if (len(name) == 0 || len(name) > 1024) && reason == "SAME_ORDERED_NAMES" {
+   reason = "INVALID_SDK_NAME"
+   state = "INVALID_INPUT"
+   first = i
+  }
+  i = i + 1
+ }
+}
+if reason == "SAME_ORDERED_NAMES" {
+ let i = 0
+ for name in input0.names {
+  if i < sdkCount && reason == "SAME_ORDERED_NAMES" {
+   if name != input1.names[i] {
+    reason = "NAME_DIFFERENCE"
+    state = "MISMATCH"
+    first = i
+    wireName = name
+    sdkName = input1.names[i]
+   }
+  }
+  i = i + 1
+ }
+}
+if reason == "SAME_ORDERED_NAMES" && wireCount != sdkCount {
+ state = "MISMATCH"
+ if wireCount > sdkCount {
+  reason = "SDK_ROW_MISSING"
+  first = sdkCount
+  wireName = input0.names[sdkCount]
+ } else {
+  reason = "SDK_ROW_UNEXPECTED"
+  first = wireCount
+  sdkName = input1.names[wireCount]
+ }
+}
+return RowVisibility{
+ state: state, reason: reason, wire_count: wireCount, sdk_count: sdkCount,
+ first_difference_index: first, wire_name: wireName, sdk_name: sdkName,
+ mapping_equal: reason == "SAME_ORDERED_NAMES", scope: "ORDERED_NAME_CORRESPONDENCE",
+}
+`
