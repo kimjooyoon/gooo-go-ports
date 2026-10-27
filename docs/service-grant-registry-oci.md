@@ -1,13 +1,23 @@
-# Installable OCI Registry candidate
+# Published OCI Registry entry and retained candidate checks
+
+The official MCP Registry publishes `io.github.kimjooyoon/gooo-service-grant`
+version `0.1.0-preview.16` with a digest-pinned Linux amd64 Docker/stdio package.
+Read the [exact Registry entry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.kimjooyoon%2Fgooo-service-grant/versions/0.1.0-preview.16)
+and use the [public image installation guide](service-grant-container.md#use-the-public-immutable-image)
+to connect a host. Registry publication establishes discovery metadata; client
+installation and a completed task require their own observations.
+
+The remaining sections retain the earlier candidate checks and publication
+guards, with their original source and execution identities.
 
 The preview16 descriptor declares one public, digest-pinned Linux amd64 OCI
 package with stdio transport. It adds Docker arguments for network isolation,
 a read-only root filesystem and the explicit platform. It does not add an API
 key, host mount, shell command, mutable tag, or a remote MCP endpoint.
 
-This development branch is not a Registry publication. Preview13–15 metadata
-and the original preview16 native release assets remain unchanged. The original
-native input is `fceb89f8b53eabd6687d16258d7cee89853c2cfe`; Registry metadata and
+The candidate validation described below did not publish a Registry version.
+Preview13–15 metadata and the original preview16 native release assets remain
+unchanged. The original native input is `fceb89f8b53eabd6687d16258d7cee89853c2cfe`; Registry metadata and
 proof recovery have their own source identities.
 
 ## Validation and execution are separate
@@ -58,8 +68,8 @@ proof to the original image digest, and separately signed the retained SBOM.
 The original failed assembly workflow remains failed; the image was not rebuilt
 or pushed again. Recovery success does not constitute a current vulnerability
 scan or final-source native CI acceptance. The descriptor cannot itself grant
-permission to publish. This source change still requires full native CI before
-it can enter main.
+permission to publish. The candidate source change required full native CI before
+entering main; recovery acceptance did not replace that check.
 
 After those prerequisites, publication retains one official CLI publish call,
 no automatic retry, and anonymous exact-version readback. Readback must include

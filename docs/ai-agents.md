@@ -859,6 +859,14 @@ needs Docker with a Linux amd64 runtime; its connection settings include the
 image reference and runtime arguments rather than a native executable path.
 Neither route edits Gooo source; use the first-program workflow for that.
 
+For clients that discover servers through the official MCP Registry, the
+[exact `io.github.kimjooyoon/gooo-service-grant` preview.16 entry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.kimjooyoon%2Fgooo-service-grant/versions/0.1.0-preview.16)
+declares the same immutable Linux amd64 Docker/stdio package. Use the public
+image instructions above for host connection settings. The
+[publication and retained candidate checks](service-grant-registry-oci.md)
+keep discovery metadata, installation observations and original publication
+evidence distinct.
+
 For a manual native installation, download the [native MCP preview.16](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.16)
 archive and matching `.sha256` file for **Linux amd64** or **macOS arm64**.
 In the download directory, verify the checksum with `sha256sum -c FILE.sha256`
