@@ -1011,7 +1011,7 @@ printf '%s/bin/gooo-service-grant-mcp\n' "$(brew --prefix kimjooyoon/gooo/gooo-s
 ```
 
 Use the absolute executable path printed by the second command in the host
-settings below. This installs the existing preview16 native executable and its
+settings below. This installs the existing preview17 native executable and its
 license texts, without building Go or Gooo. The tap is project-maintained and
 is not part of Homebrew core. If you prefer a container, the
 [immutable public Docker image](service-grant-container.md#use-the-public-immutable-image)
@@ -1138,7 +1138,7 @@ Do not include private policies or credentials.
 
 For reusable agent instructions, use the [service-grant review skill](../.agents/skills/gooo-review-service-grants/SKILL.md). It preserves the required-request list and complete results while comparing the user's proposals.
 
-Use the same [preview.16 native executable](#connect-the-service-grant-mcp-tool)
+Use the same [preview.17 native executable](#connect-the-service-grant-mcp-tool)
 with the [optional ordered-request mode](../examples/service-grant-mcp/README.md#optional-ordered-required-requests).
 For a source-build fallback, use a reviewed checkout containing that mode and
 [build the server with Go 1.27.3](../examples/service-grant-mcp/README.md#build-and-connect).
