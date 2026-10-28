@@ -20,6 +20,9 @@ RELEASES = MappingProxyType({
     "v0.1.0-preview.16": (
         "mcp-public-preview16-linux-amd64.json",
         "b7717b80abd8df232ecc0d6f1a0886c4d9e6650c236d5c296f483dab3a9e26f4"),
+    "v0.1.0-preview.17": (
+        "mcp-public-preview17-linux-amd64.json",
+        "1f46485482df1f5b6d923af06dfcfd62be6d172d6a2ec72d504c3e29671ff94c"),
 })
 
 

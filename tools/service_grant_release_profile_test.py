@@ -42,6 +42,21 @@ class ReleaseProfiles(unittest.TestCase):
         self.assertEqual(P.load_release()["archive"]["bytes"], 7217754)
         self.assertEqual(P.load_release()["bundle"]["runtime_members"], 63)
 
+    def test_public_preview17_keeps_native_and_reference_roles_separate(self):
+        p = P.load_release("v0.1.0-preview.17")
+        self.assertEqual(p["native_source"], "7d801a6e78680f868db4da85f0c5f646def40151")
+        self.assertEqual(p["archive"]["bytes"], 7323043)
+        self.assertEqual(p["archive"]["sha256"], "47d4e96170ae3b6e54eae4ff128f8589a59c59cf64681d8a94d3f3eaa53c51f0")
+        self.assertEqual(p["binary"]["sha256"], "6c0a8cb0edbdabd0c41827b3d6920270bf4e0541ab79f2b29f52166904d89116")
+        self.assertEqual(p["reference_packet"]["bytes"], 5928230)
+        self.assertEqual(p["reference_packet"]["sha256"], "436cb1fbbf251047539191c7e9628f903d5016b8298e29dd60119a290453ee6a")
+        self.assertEqual(p["bundle"], {"schema": "gooo/service-grant-mcp-native-bundle/v4",
+                                      "runtime_members": 68, "notice_texts": 62})
+        self.assertEqual(P.environment(p)["HAS_NATIVE_REFERENCES"], "true")
+        self.assertEqual(p["provenance"]["prov:wasDerivedFrom"][2]["@id"],
+                         "urn:sha256:" + p["reference_packet"]["sha256"])
+        self.assertEqual(P.load_release()["version"], "v0.1.0-preview.16")
+
     def test_unknown_versions_paths_and_urls_refused_before_filesystem(self):
         for version in ("v0.1.0-preview.999999", "../../private", "https://example.test/profile",
                         "v0.1.0-preview.16\nARCHIVE_URL=bad", "", True, None):

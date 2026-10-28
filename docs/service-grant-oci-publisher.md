@@ -31,11 +31,14 @@ The image uses the existing `scratch` Dockerfile and absolute executable entrypo
 
 The current workflow reads the archive URL, byte limit, archive/executable hashes,
 source commit and runtime/notice counts from one checksum-pinned repository
-profile. Preview16 remains the only registered version and the default. Inspect
-it without downloading or executing anything:
+profile. Preview16 remains the default. Public native preview17 is also registered
+for explicit selection; its source, executable and saved reference packet have
+separate immutable identities. Inspect either profile without downloading or
+executing anything:
 
 ```sh
 python3 -I -B tools/service_grant_mcp_oci.py profile --version v0.1.0-preview.16
+python3 -I -B tools/service_grant_mcp_oci.py profile --version v0.1.0-preview.17
 ```
 
 `native_version` on manual dispatch selects only a reviewed version from the
