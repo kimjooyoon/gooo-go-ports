@@ -25,8 +25,13 @@ SPEC.loader.exec_module(WIRE)
 ALIAS_SPEC = importlib.util.spec_from_file_location("alias_wire", ROOT / "examples/service-grant-mcp/verify_alias.py")
 ALIAS = importlib.util.module_from_spec(ALIAS_SPEC)
 ALIAS_SPEC.loader.exec_module(ALIAS)
+SNAPSHOT_SPEC = importlib.util.spec_from_file_location('snapshot_wire', ROOT/'examples/service-grant-mcp/verify_snapshot.py')
+SNAPSHOT = importlib.util.module_from_spec(SNAPSHOT_SPEC)
+SNAPSHOT_SPEC.loader.exec_module(SNAPSHOT)
 V2_SCHEMA = "gooo/service-grant-mcp-native-bundle/v2"
 V3_SCHEMA = "gooo/service-grant-mcp-native-bundle/v3"
+V4_SCHEMA = 'gooo/service-grant-mcp-native-bundle/v4'
+SNAPSHOT_MODES = ('snapshot','many_snapshot','alias_snapshot','all_optional')
 ALIAS_STDOUT_LIMIT = 512 << 10
 ALIAS_TOTAL_STDOUT_LIMIT = 1 << 20
 PENDING_SIGNAL = None
@@ -54,7 +59,7 @@ def bundle_schema(context):
     path = context / "runtime/BUNDLE.json"
     assert path.is_file() and not path.is_symlink() and path.stat().st_size <= 512 << 10
     bundle = ALIAS.lossless_json(path.read_bytes())
-    assert bundle["schema"] in (V2_SCHEMA, V3_SCHEMA), "unknown native bundle schema"
+    assert bundle["schema"] in (V2_SCHEMA, V3_SCHEMA, V4_SCHEMA), "unknown native bundle schema"
     return bundle["schema"]
 
 
@@ -103,10 +108,11 @@ def load_alias_reference(context, report_path, alias_module, alias_cli, go):
 
 def alias_proofs(session, reference):
     """Compare actual small MCP replies with the complete saved CLI reports."""
-    assert session.mode in ("alias", "both") and session.protocol in ALIAS.PROTOCOLS
+    assert session.mode in ("alias", "both",'alias_snapshot','all_optional') and session.protocol in ALIAS.PROTOCOLS
     names = {WIRE.TOOL, ALIAS.TOOL}
-    if session.mode == "both":
+    if session.mode in ('both','all_optional'):
         names.add("assess_service_grant_change")
+    if session.mode in SNAPSHOT_MODES:names.add(SNAPSHOT.TOOL)
     listed = session.request("tools/list")["result"]["tools"]
     assert len(listed) == len(names) and {tool["name"] for tool in listed} == names
     tool = next(tool for tool in listed if tool["name"] == ALIAS.TOOL)
@@ -137,6 +143,76 @@ def alias_proofs(session, reference):
     ALIAS.check_proof(reply(raw), wanted, raw, WIRE.exact)
     return {"complete_report_comparisons": results, "transport_failures_no_partial_report": refusals,
             "after_error_repeat_equal": True}
+
+
+def load_snapshot_reference(context, report_path, module, cli, go, source_binary):
+    """Read a source-bound native trial; no compiler/Go/CLI is executed here."""
+    assert all(isinstance(p,Path) and p.is_absolute() for p in (context,report_path,module,cli,go,source_binary))
+    assert report_path.name=='acceptance.json'
+    runtime=context/'runtime/gooo-service-grant-mcp'
+    assert SNAPSHOT.descriptor(source_binary)==SNAPSHOT.descriptor(runtime), \
+        'snapshot runtime/source executable bytes differ'
+    # Keep the original argv/path binding. A copied runtime has the same bytes
+    # but was not the executable pathname observed by the native producer.
+    report=SNAPSHOT.validate_saved(report_path.parent,source_binary,
+        cli,module,go,ROOT/'examples/service-grant-mcp/verify.py')
+    assert report['binary']==SNAPSHOT.descriptor(runtime)
+    normal,malformed=SNAPSHOT.cases(WIRE.encoded)
+    records={row['label']:row['record'] for row in report['reference_processes']}
+    def capture(name,channel):
+        p=report_path.parent/('reference-'+name)/channel
+        assert p.is_file() and not p.is_symlink() and p.stat().st_size<=(4<<20)+(64<<10)
+        raw=p.read_bytes();expected=records['reference-'+name][channel]
+        assert expected=={'bytes':len(raw),'sha256':sha(raw)}, 'snapshot capture changed after source validation'
+        return raw
+    cases=[];rejected=[]
+    for name,raw,state in normal:
+        assert capture(name,'stdin')==raw and capture(name,'stderr')==b''
+        result=SNAPSHOT.strict(capture(name,'stdout'));assert result['decision']['state']==state
+        cases.append((name,raw,result))
+    for name,raw in malformed:
+        assert capture(name,'stdin')==raw and capture(name,'stdout')==b''
+        rejected.append((name,raw,SNAPSHOT.strict(capture(name,'stderr'))))
+    return {'cases':cases,'malformed':rejected,'schemas':report['schemas'],
+        'evidence':{'native_report_sha256':sha(report_path.read_bytes()),'binary_sha256':report['binary']['sha256'],
+            'snapshot_cli_sha256':report['snapshot_cli']['sha256'],'module':SNAPSHOT.MODULE,
+            'version':SNAPSHOT.VERSION,'generation_sha256':SNAPSHOT.GENERATION,
+            'scope':'full saved native corpus; exact 1MiB and rejected 1MiB+1/4MiB-output boundaries'}}
+
+
+def snapshot_proofs(session, reference):
+    assert session.mode in SNAPSHOT_MODES
+    names={WIRE.TOOL,SNAPSHOT.TOOL}
+    if session.mode in ('many_snapshot','all_optional'):names.add('assess_service_grant_change')
+    if session.mode in ('alias_snapshot','all_optional'):names.add(ALIAS.TOOL)
+    listed=session.request('tools/list')['result']['tools']
+    assert len(listed)==len(names) and {t['name'] for t in listed}==names
+    tool=next(t for t in listed if t['name']==SNAPSHOT.TOOL)
+    WIRE.exact(tool['inputSchema'],reference['schemas']['input'])
+    WIRE.exact(tool['outputSchema'],reference['schemas']['output'])
+    assert tool['annotations']['readOnlyHint'] is True and tool['annotations']['openWorldHint'] is False
+    result=[];refused=[]
+    for name,raw,wanted in reference['cases']:
+        checkpoint()
+        response=session.request('tools/call',{'name':SNAPSHOT.TOOL},raw)
+        SNAPSHOT.check_report(response['result'],wanted,raw,WIRE.exact)
+        if session.protocol=='2026-07-28':
+            assert response['result']['resultType']=='complete'
+            WIRE.exact(response['result']['_meta'],{'io.modelcontextprotocol/serverInfo':{'name':'gooo-service-grant','version':'0.1.0-dev'}})
+        result.append({'case':name,'state':wanted['decision']['state'],'input_sha256':sha(raw),
+                       'whole_report_sha256':sha(WIRE.encoded(wanted))})
+    for name,raw,wanted in reference['malformed']:
+        checkpoint()
+        response=session.request('tools/call',{'name':SNAPSHOT.TOOL},raw)
+        if 'error' in response:assert response['error']['code']==-32602 and 'result' not in response
+        else:
+            value=response['result'];assert value.get('isError') is True and 'structuredContent' not in value
+            WIRE.exact(SNAPSHOT.strict(value['content'][0]['text']),wanted)
+        refused.append({'case':name,'input_sha256':sha(raw),'partial_report':False})
+    name,raw,wanted=reference['cases'][0]
+    SNAPSHOT.check_report(session.request('tools/call',{'name':SNAPSHOT.TOOL},raw)['result'],wanted,raw,WIRE.exact)
+    return {'complete_report_comparisons':result,'transport_failures_no_partial_report':refused,
+            'after_error_repeat_equal':True}
 
 
 def registry_package(path):
@@ -171,6 +247,7 @@ class Trial:
         self.docker, self.image, self.context, self.out, self.label = docker, image, context, out, label
         self.registry_package = registry_package
         self.alias_stdout_bytes = 0
+        self.snapshot_stdout_bytes = 0
         self.sequence = 0
         self.cleaning = False
         self.commands = out / "commands"
@@ -314,10 +391,14 @@ class AliasContainerInput:
 class ContainerSession(WIRE.Session):
     def __init__(self, trial, mode, protocol="2025-11-25"):
         flags = {"default": [], "many": ["--many-required"],
-            "alias": ["--alias-origin-change"], "both": ["--many-required", "--alias-origin-change"]}[mode]
+            "alias": ["--alias-origin-change"], "both": ["--many-required", "--alias-origin-change"],
+            'snapshot':['--definition-snapshot'],
+            'many_snapshot':['--many-required','--definition-snapshot'],
+            'alias_snapshot':['--alias-origin-change','--definition-snapshot'],
+            'all_optional':['--many-required','--alias-origin-change','--definition-snapshot']}[mode]
         assert protocol in ALIAS.PROTOCOLS
         self.trial, self.mode, self.protocol = trial, mode, protocol
-        self.label = mode + "-" + protocol if mode in ("alias", "both") else mode
+        self.label = mode + "-" + protocol if mode in ("alias", "both") or getattr(trial,'snapshot_v4',False) else mode
         self.work = trial.out / self.label
         self.work.mkdir()
         self.name = "gooo-wire-" + uuid.uuid4().hex
@@ -327,6 +408,7 @@ class ContainerSession(WIRE.Session):
         self.buffers = {"stdout": bytearray(), "stderr": bytearray()}
         self.linebuf, self.sent, self.frames = bytearray(), bytearray(), []
         self.next_id, self.started = 1, time.monotonic()
+        self.stream_limit = 2 << 20
         # Persist a unique recovery name before create, including if its reply is lost.
         save(self.work / "intent.json", {"container_name": self.name, "image": trial.image})
         try:
@@ -365,7 +447,7 @@ class ContainerSession(WIRE.Session):
             shutil.rmtree(copied)  # Only our fresh copy; the canonical bundle remains.
             self.process = subprocess.Popen([trial.docker, "container", "start", "--attach", "--interactive", self.name],
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
-            if mode in ("alias", "both"):
+            if mode in ("alias", "both", *SNAPSHOT_MODES):
                 self.process.stdin = AliasContainerInput(self, self.process.stdin)
             save(self.work / "started.json", {"CLI_PID": self.process.pid, "container_id": self.cid})
             for name in self.buffers:
@@ -383,6 +465,19 @@ class ContainerSession(WIRE.Session):
     def read(self):
         if not self.cleaning:
             checkpoint()
+        if self.mode in SNAPSHOT_MODES:
+            assert time.monotonic()-self.started<30, 'snapshot session deadline'
+            for key,_ in self.selector.select(0.05):
+                remaining=(32<<20)-len(self.buffers[key.data])
+                if key.data=='stdout':remaining=min(remaining,(128<<20)-self.trial.snapshot_stdout_bytes)
+                assert remaining>=0, 'snapshot container stream limit'
+                raw=os.read(key.fd,min(65536,remaining+1))
+                if not raw:self.selector.unregister(key.fileobj);continue
+                self.buffers[key.data].extend(raw)
+                if key.data=='stdout':
+                    self.trial.snapshot_stdout_bytes+=len(raw);self.linebuf.extend(raw)
+                assert len(self.buffers[key.data])<=32<<20 and self.trial.snapshot_stdout_bytes<=128<<20
+            return
         if self.mode not in ("alias", "both"):
             return super().read()
         assert time.monotonic() - self.started < 30, "session deadline"
@@ -468,7 +563,7 @@ class ContainerSession(WIRE.Session):
             raise AssertionError(cleanup_failure)
 
 
-def many_proofs(session, include_alias=False):
+def many_proofs(session, include_alias=False, include_snapshot=False):
     folder = ROOT / "examples/service-grant-many"
     raw = (folder / "generation.json").read_bytes()
     assert sha(raw) == "86d714e4793f04d7d45d53e824cd7066ddee5f7d1e987697f26f4216a6b4e164"
@@ -482,6 +577,7 @@ def many_proofs(session, include_alias=False):
     names = {WIRE.TOOL, "assess_service_grant_change"}
     if include_alias:
         names.add(ALIAS.TOOL)
+    if include_snapshot:names.add(SNAPSHOT.TOOL)
     assert len(tools) == len(names) and {t["name"] for t in tools} == names
     tool = next(t for t in tools if t["name"] == "assess_service_grant_change")
     schema = tool["inputSchema"]
@@ -527,6 +623,11 @@ def main():
     parser.add_argument("--alias-module", type=Path, help="v3 only: pinned public module directory")
     parser.add_argument("--alias-cli", type=Path, help="v3 only: reference CLI bytes; never executed here")
     parser.add_argument("--go", type=Path, help="v3 only: identity-reader bytes; never executed here")
+    parser.add_argument('--snapshot-wire-report',type=Path,help='v4: existing complete native snapshot acceptance.json')
+    parser.add_argument('--snapshot-module',type=Path,help='v4: fixed public recorded-catalog module')
+    parser.add_argument('--snapshot-cli',type=Path,help='v4: reference CLI bytes; never executed here')
+    parser.add_argument('--snapshot-source-binary',type=Path,
+        help='v4: original native executable path from the saved trial; bytes must match the copied runtime')
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--label", default="io.gooo.container-smoke=local")
     args = parser.parse_args()
@@ -537,13 +638,20 @@ def main():
     package = registry_package(args.registry_metadata) if args.registry_metadata else None
     alias_inputs = (args.alias_wire_report, args.alias_module, args.alias_cli, args.go)
     reference = None
-    if schema == V3_SCHEMA:
-        assert package is None, "preview16 registry descriptor cannot select a v3 trial"
+    snapshot_reference = None
+    if schema in (V3_SCHEMA,V4_SCHEMA):
+        assert package is None, "preview16 registry descriptor cannot select a v3/v4 trial"
         reference = load_alias_reference(context, *alias_inputs)
     else:
         assert all(value is None for value in alias_inputs), "alias reference inputs require a v3 bundle"
+    snapshot_inputs=(args.snapshot_wire_report,args.snapshot_module,args.snapshot_cli,args.snapshot_source_binary)
+    if schema==V4_SCHEMA:
+        snapshot_reference=load_snapshot_reference(context,args.snapshot_wire_report,args.snapshot_module,
+            args.snapshot_cli,args.go,args.snapshot_source_binary)
+    else:assert all(v is None for v in snapshot_inputs), 'snapshot inputs require a v4 bundle'
     args.out.mkdir(parents=True, exist_ok=False)
     trial = Trial(docker, args.image, context, args.out, args.label, package)
+    trial.snapshot_v4 = snapshot_reference is not None
     if package:
         _, raw, _ = trial.command(['image', 'inspect', package['identifier']])
         images = json.loads(raw)
@@ -557,6 +665,9 @@ def main():
         sessions = [("default", "2025-11-25"), ("many", "2025-11-25")]
         if reference is not None:
             sessions += [(mode, protocol) for protocol in ALIAS.PROTOCOLS for mode in ("alias", "both")]
+        if snapshot_reference is not None:
+            sessions=[(mode,protocol) for protocol in ALIAS.PROTOCOLS
+                      for mode in ('default','many','alias','both',*SNAPSHOT_MODES)]
         for mode, protocol in sessions:
             checkpoint()
             session, failure = ContainerSession(trial, mode, protocol), None
@@ -579,11 +690,18 @@ def main():
                     assert result["isError"] is True and "structuredContent" not in result
                 elif mode == "many":
                     cases = many_proofs(session)
-                else:
+                elif mode in ('alias','both'):
                     cases = alias_proofs(session, reference)
                     cases["legacy_service_proof"] = WIRE.proof(session, 1)
                     if mode == "both":
                         cases["many_service_proofs"] = many_proofs(session, include_alias=True)
+                else:
+                    cases=snapshot_proofs(session,snapshot_reference)
+                    cases['legacy_service_proof']=WIRE.proof(session,1)
+                    if mode in ('alias_snapshot','all_optional'):
+                        cases['alias_proofs']=alias_proofs(session,reference)
+                    if mode in ('many_snapshot','all_optional'):
+                        cases['many_service_proofs']=many_proofs(session,include_alias=mode=='all_optional',include_snapshot=True)
                 observation = {"mode": mode, "proofs": cases}
                 if reference is not None:
                     observation["protocol"] = protocol
@@ -594,7 +712,7 @@ def main():
             finally:
                 # The original protocol failure stays primary if cleanup also fails.
                 session.close(failure)
-            if mode in ("alias", "both"):
+            if mode in ("alias", "both", *SNAPSHOT_MODES):
                 # Reparse the actual captured frame bytes losslessly after EOF;
                 # the inherited client otherwise uses permissive json.loads.
                 strict_frames = [ALIAS.lossless_json(raw) for raw in session.buffers["stdout"].splitlines()]
@@ -613,6 +731,10 @@ def main():
             report.update(status="CONTAINER_STDIO_ALIAS_SMALL_SMOKE_PASS", bundle_schema=schema,
                 alias_reference=reference["evidence"], alias_protocol_sessions=4,
                 alias_stdout_bytes=trial.alias_stdout_bytes, large_container_responses_exercised=False)
+        if snapshot_reference is not None:
+            report.update(status='CONTAINER_STDIO_SNAPSHOT_FULL_CORPUS_PASS',snapshot_reference=snapshot_reference['evidence'],
+                protocol_sessions=16,snapshot_enabled_sessions=8,snapshot_stdout_bytes=trial.snapshot_stdout_bytes,
+                snapshot_argument_and_report_boundaries_exercised=True,new_native_Gooo_receipts=False)
         save(args.out / "verification.json", report)
         print(json.dumps(report))
     except BaseException as error:

@@ -5,6 +5,7 @@ Original-CI equivalence mode is restricted to uncommitted private prototypes.
 """
 import argparse
 import contextlib
+from contextvars import ContextVar
 import hashlib
 import importlib.util
 import io
@@ -219,6 +220,11 @@ GO_NOTICES = {'LICENSE': {'scope': 'toolchain root text; runtime distribution re
 
 SUPPORT_HASHES = {'api_policy_cli_bundle.py': '2efcaa9a75148cd189748468e50d25e8abe4db5c46637253ad66ac5ac1a0f9ad',
  'service_policy_cli_bundle.py': '3431cdcdacb194fad52e5efe77c5a188ab6a41bce0fc28fe781d075f148c2c20'}
+SNAPSHOT_SUPPORT_HASHES = {
+    'mcp_snapshot_profile.py':'a421d1ea56ca54eb005322eb180d06348b59f6dacf3deb1c7f7748bda766255a',
+    'render_mcp_record_schema.py':'d312eb166bc6594254a3c60b97e59316f5ce1521ca667c561e88ee0134dd75e9',
+    'profiles/mcp-definition-snapshot-v4.json':'6eb28269df80e081d182fe38fdd2c4b52c668b43550d7b50d415738eb839296e',
+}
 
 SCHEMAS = {'input_schema': {'additionalProperties': False,
                   'properties': {'after': {'type': 'string'},
@@ -366,6 +372,17 @@ PROFILES = {
 DEPENDENCIES.append({'dependency': {'Path': ALIAS_MODULE, 'Version': ALIAS_VERSION, 'Sum': ALIAS_SUM},
                      'notices': {name: ALIAS_FILES[name] for name in ('LICENSE', 'NOTICE.md')}})
 DEPENDENCIES.sort(key=lambda row: row['dependency']['Path'])
+CURRENT_PROFILE = ContextVar('mcp_bundle_profile', default=None)
+
+
+def source_files():
+    profile = CURRENT_PROFILE.get()
+    return profile['source_files'] if profile is not None else SOURCE_FILES
+
+
+def dependencies():
+    profile = CURRENT_PROFILE.get()
+    return profile['dependencies'] if profile is not None else DEPENDENCIES
 
 
 def imported(name, path):
@@ -480,7 +497,7 @@ def build_identity(build, target, commit):
     need(type(build["Main"]) is dict and set(build["Main"]) == {"Path", "Version"}
          and build["Main"]["Path"] == MODULE
          and re.fullmatch(r"v0\.0\.0-\d{14}-"+commit[:12], build["Main"]["Version"]), "main version/replacement differs")
-    exact(build["Deps"], [row["dependency"] for row in DEPENDENCIES])
+    exact(build["Deps"], [row["dependency"] for row in dependencies()])
     settings = unique((row["Key"], row["Value"]) for row in build["Settings"])
     goos, arch = target.split("/")
     archkey, archvalue = ("GOARM64", "v8.0") if arch == "arm64" else ("GOAMD64", "v1")
@@ -493,7 +510,7 @@ def build_identity(build, target, commit):
 
 
 def source_contract(root, modcache):
-    for name, digest in SOURCE_FILES.items():
+    for name, digest in source_files().items():
         need(sha(member(root, name)) == digest, "MCP source/fixture differs: " + name)
     module = root/"examples/service-grant-mcp"
     actual = set()
@@ -503,7 +520,7 @@ def source_contract(root, modcache):
             path = Path(current)/name
             need(stat.S_ISREG(path.lstat().st_mode), "MCP nonregular source")
             actual.add(path.relative_to(root).as_posix())
-    need(actual == set(SOURCE_FILES), "complete MCP source roster differs")
+    need(actual == set(source_files()), "complete MCP source roster differs")
     runtime = modcache/(SERVICE.MODULE+"@"+SERVICE.VERSION)
     archive = modcache/"cache/download"/SERVICE.MODULE/"@v"/(SERVICE.VERSION+".zip")
     generation, _ = SERVICE.module_source(runtime, archive, root)
@@ -895,7 +912,7 @@ def checked_alias_report(report_path, binary, alias_cli, root, modcache, go_root
     report_raw = read(report_path, MAX_SOURCE)
     script = "examples/service-grant-mcp/verify_alias.py"
     raw = member(root, script)
-    need(sha(raw) == SOURCE_FILES[script], "alias saved verifier source differs")
+    need(sha(raw) == source_files()[script], "alias saved verifier source differs")
     verifier = types.ModuleType("mcp_bundle_alias_saved_verifier")
     verifier.__file__ = str(root/script)
     exec(compile(raw, verifier.__file__, "exec"), verifier.__dict__)
@@ -915,6 +932,96 @@ def checked_alias_report(report_path, binary, alias_cli, root, modcache, go_root
         reported["Deps"] = []
     exact(reported, cli_build)
     return report
+
+
+def snapshot_module_source(modcache, root, profile):
+    """Verify the whole public module ZIP/h1 and the consumed Gooo source image."""
+    directory = modcache/(profile.MODULE+'@'+profile.VERSION)
+    archive_path = modcache/'cache/download'/profile.MODULE/'@v'/(profile.VERSION+'.zip')
+    prefix = profile.MODULE+'@'+profile.VERSION+'/'
+    files = {}
+    with zipfile.ZipFile(io.BytesIO(read(archive_path, 1 << 20))) as archive:
+        rows = archive.infolist()
+        need(len(rows) == 64 and sum(row.file_size for row in rows) == 2133496,
+             'complete snapshot module roster/size differs')
+        for row in rows:
+            name = row.filename
+            relative = name.removeprefix(prefix)
+            need(name.startswith(prefix) and name not in files and
+                 all(part not in ('', '.', '..') for part in relative.split('/')) and
+                 not any(c in relative for c in ('\\', '\n', '\r')) and not row.is_dir() and
+                 row.file_size <= MAX_SOURCE and
+                 (row.external_attr >> 16) & 0o170000 in (0, stat.S_IFREG),
+                 'unsafe/duplicate snapshot module member')
+            content = archive.read(row)
+            need(member(directory, relative) == content, 'snapshot installed module differs from ZIP')
+            files[name] = content
+    need(SERVICE.dirhash(files) == profile.SUM, 'snapshot public module h1 differs')
+    relative_files = {name[len(prefix):]: raw for name, raw in files.items()}
+    need(SERVICE.dirhash({'go.mod': relative_files['go.mod']}) ==
+         'h1:UQwZHbb1IhIjnroLrUWri7l5BM1NwZIj/WG3cVl5iZA=', 'snapshot go.mod h1 differs')
+    actual = set()
+    need(stat.S_ISDIR(directory.lstat().st_mode), 'regular snapshot module root required')
+    for current, dirs, names in os.walk(directory, followlinks=False):
+        need(all(not (Path(current)/x).is_symlink() for x in dirs), 'snapshot module directory symlink')
+        for name in names:
+            path = Path(current)/name
+            need(stat.S_ISREG(path.lstat().st_mode), 'snapshot nonregular module file')
+            actual.add(path.relative_to(directory).as_posix())
+    need(actual == set(relative_files), 'complete installed snapshot source roster differs')
+    generation_raw = relative_files['snapshot-generation.json']
+    need(sha(generation_raw) == profile.GENERATION and
+         member(root, 'examples/recorded-catalog-comparison/snapshot-generation.json') == generation_raw,
+         'snapshot generation differs')
+    generation = load(generation_raw)
+    need(generation['schema'] == 'gooo/definition-snapshot-generation/v1' and
+         generation['compiler_source_sha'] == profile.PIN and generation['go_version'] == 'go1.27.3',
+         'snapshot generation compiler/Go profile differs')
+    for field in ('source', 'generated_assets', 'generator_source'):
+        for name, expected in generation[field].items():
+            raw = member(root, name)
+            need('sha256:'+sha(raw) == expected, 'snapshot source/generated asset differs: '+name)
+            if name.startswith('examples/recorded-catalog-comparison/'):
+                need(relative_files[name.removeprefix('examples/recorded-catalog-comparison/')] == raw,
+                     'snapshot consumed module asset differs from source checkout')
+    need('sha256:'+sha(member(root, 'definition-snapshot.workspace.json')) == generation['workspace_sha256'],
+         'snapshot workspace differs')
+    pins = load(member(root, 'upstream.json'))
+    selected = json.dumps({k:pins[k] for k in ('compiler_revision','go_version')},
+                          sort_keys=True, separators=(',', ':')).encode()
+    need('sha256:'+sha(selected) == generation['selected_upstream_pins_sha256'],
+         'snapshot selected source pins differ')
+    return generation, directory
+
+
+def checked_snapshot_report(report_path, binary, cli, root, modcache, go_root, profile):
+    need(report_path.is_absolute() and report_path.name == 'acceptance.json',
+         'exact snapshot acceptance path required')
+    script = 'examples/service-grant-mcp/verify_snapshot.py'
+    need(sha(member(root, script)) == source_files()[script], 'snapshot saved verifier source differs')
+    verifier = imported('mcp_snapshot_saved_verifier', root/script)
+    report = verifier.validate_saved(report_path.parent, binary, cli,
+        modcache/(profile.MODULE+'@'+profile.VERSION), go_root/'bin/go',
+        root/'examples/service-grant-mcp/verify.py')
+    exact(report, load(read(report_path, MAX_SOURCE)))
+    cli_raw = read(cli, BASE.MAX_BINARY)
+    need(binary_platform(cli_raw) == binary_platform(read(binary, BASE.MAX_BINARY)),
+         'snapshot CLI platform differs')
+    identity = embedded_info(cli_raw)
+    need(identity['GoVersion'] == 'go1.27.3' and identity['Path'] == profile.MODULE+'/cmd/compare',
+         'snapshot CLI Go/package differs')
+    exact(identity['Main'], profile.DEPENDENCY)
+    exact(identity['Deps'], [])
+    need(not any(row['Key'].startswith('vcs.') for row in identity['Settings']),
+         'snapshot reference CLI must use the immutable public module')
+    return report
+
+
+def native_snapshot_verify(root, binary, cli, modcache, go_root, output, profile):
+    return native_optional_verify(root/'examples/service-grant-mcp/verify_snapshot.py',
+        ['--binary',str(binary),'--snapshot-cli',str(cli),'--snapshot-module',
+         str(modcache/(profile.MODULE+'@'+profile.VERSION)),'--go',str(go_root/'bin/go'),
+         '--legacy-verifier',str(root/'examples/service-grant-mcp/verify.py')], output)
 
 
 def native_many_verify(root, binary, modcache, output):
@@ -938,6 +1045,16 @@ def native_optional_verify(script, arguments, output):
     verifier = imported("mcp_bundle_optional_wire_verifier", script)
     verifier.subprocess = types.SimpleNamespace(Popen=tracker.spawn, PIPE=subprocess.PIPE,
                                                TimeoutExpired=subprocess.TimeoutExpired)
+    if hasattr(verifier, 'load_module'):
+        # Snapshot sessions import the legacy client rather than subclassing
+        # it locally. Keep constructor failures in that client under this same
+        # owned-child join, without changing the global subprocess module.
+        load_verifier_module = verifier.load_module
+        def tracked_module(path):
+            module = load_verifier_module(path)
+            module.subprocess = verifier.subprocess
+            return module
+        verifier.load_module = tracked_module
     stdout, stderr, failure = BoundedText(), BoundedText(), None
     previous_argv = sys.argv
     old_handlers, pending = {}, []
@@ -998,7 +1115,7 @@ def native_optional_verify(script, arguments, output):
 
 def notice_files(modcache, go_root, root):
     files, inventory = {}, []
-    for index, row in enumerate(DEPENDENCIES, 1):
+    for index, row in enumerate(dependencies(), 1):
         dep = row["dependency"]
         base = modcache/(dep["Path"]+"@"+dep["Version"])
         for relative, digest in row["notices"].items():
@@ -1022,7 +1139,8 @@ def notice_files(modcache, go_root, root):
         files[name] = (raw, 0o644)
         inventory.append({"file": name, "source_relative_path": relative, "sha256": digest,
                           "scope": "Generation tool attribution only; no Gooo compiler is included" if "Gooo" in name else "transport license"})
-    need(len(files) == 60, "exact 60 notice texts required")
+    expected = 62 if CURRENT_PROFILE.get() is not None else 60
+    need(len(files) == expected, "exact profile notice population required")
     return files, inventory
 
 
@@ -1194,7 +1312,30 @@ def native_verify(root, binary, build_path, output):
 
 def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
             packager_commit=None, verify_native=False, many_wire_path=None,
-            alias_wire_path=None, alias_cli=None):
+            alias_wire_path=None, alias_cli=None, snapshot_wire_path=None, snapshot_cli=None):
+    token = None
+    if snapshot_wire_path is not None or snapshot_cli is not None:
+        need(isinstance(snapshot_wire_path, Path) and isinstance(snapshot_cli, Path),
+             'v4 requires both snapshot wire evidence and the pinned reference CLI')
+        for name, expected in SNAPSHOT_SUPPORT_HASHES.items():
+            need(sha(member(HERE,name)) == expected, 'snapshot packaging support source differs: '+name)
+        profile = imported('mcp_snapshot_profile', HERE/'mcp_snapshot_profile.py')
+        frozen = profile.read_profile(root, member, load)
+        deps = sorted([*DEPENDENCIES, {'dependency':profile.DEPENDENCY,'notices':profile.NOTICES}],
+                      key=lambda row:row['dependency']['Path'])
+        token = CURRENT_PROFILE.set({'source_files':{k:v['sha256'] for k,v in frozen['files'].items()},
+                                     'dependencies':deps,'contract':profile,'frozen':frozen})
+    try:
+        return _produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
+                        packager_commit, verify_native, many_wire_path, alias_wire_path, alias_cli,
+                        snapshot_wire_path, snapshot_cli)
+    finally:
+        if token is not None:CURRENT_PROFILE.reset(token)
+
+
+def _produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
+             packager_commit, verify_native, many_wire_path, alias_wire_path, alias_cli,
+             snapshot_wire_path, snapshot_cli):
     need(out.is_dir() and not out.is_symlink() and not any(out.iterdir()), "fresh owned output directory required")
     need(verify_native or packager_commit is None, "committed packaging requires fresh extracted-native verification")
     need(packager_commit is None or re.fullmatch(r"[0-9a-f]{40}", packager_commit), "packager commit differs")
@@ -1218,6 +1359,15 @@ def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
         alias_cli_raw = read(alias_cli, BASE.MAX_BINARY)
         alias_report = checked_alias_report(alias_wire_path, binary, alias_cli, root,
                                             modcache, go_root, build, "full")
+        current = CURRENT_PROFILE.get()
+        profile = current['contract'] if current is not None else None
+        snapshot_report = None
+        if profile is not None:
+            snapshot_generation, _ = snapshot_module_source(modcache, root, profile)
+            snapshot_schema, snapshot_origin = profile.output_shape(root, member, load)
+            snapshot_cli_raw = read(snapshot_cli, BASE.MAX_BINARY)
+            snapshot_report = checked_snapshot_report(snapshot_wire_path, binary, snapshot_cli,
+                root, modcache, go_root, profile)
         files, notices = notice_files(modcache, go_root, root)
         files[COMMAND] = (raw, 0o755)
         files["BUILD-INFO.json"] = (encoded(build), 0o644)
@@ -1241,7 +1391,7 @@ def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
                  "Some included Go toolchain notices concern compiler/test components; inventory scope is explicit.\n")
         files["START-HERE.txt"] = (guide.encode(), 0o644)
         manifest = {"schema": "gooo/service-grant-mcp-native-bundle/v3", "platform": target,
-                    "source_commit": commit, "legacy_transport_reference": REFERENCE_SOURCE, "source_files": SOURCE_FILES,
+                    "source_commit": commit, "legacy_transport_reference": REFERENCE_SOURCE, "source_files": source_files(),
                     "packager": {"commit": packager_commit, "kind": "uncommitted-private-prototype" if packager_commit is None else "committed-CI-candidate",
                                  "source_sha256": sha(read(Path(__file__), MAX_SOURCE)), "support_sources": SUPPORT_HASHES},
                     "compiler_source_sha": PIN, "generation_sha256": "sha256:"+GENERATION,
@@ -1271,14 +1421,40 @@ def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
                                       "grant_applied": False, "producer_authenticated": False, "external_adoption": False},
                     "members": {name: {"bytes": len(content), "sha256": sha(content), "mode": mode}
                                 for name, (content, mode) in sorted(files.items())}}
+        if profile is not None:
+            sample = member(root, 'examples/service-grant-mcp/fixtures/snapshot.input.json')
+            files[profile.SAMPLE] = (sample, 0o644)
+            files['START-HERE.txt'] = ((guide+
+                'Optional: args [--definition-snapshot] exposes gooo_compare_saved_tool_definitions.\n'
+                'All three flags may be combined; default behavior is unchanged.\n'
+                'Use snapshot-example.json as an arguments OBJECT with target_name and exact saved before/after pages.\n'
+                'No live catalog collection or tool invocation occurs. Inspect the decision AND both page-coverage fields.\n'
+                'Missing pages, duplicate names and malformed input remain explicit; no inferred authority or effects.\n'
+                'The Gooo-derived decision shape and its separate declaration-only inspection are retained in BUNDLE.json.\n'
+                'Argument/report/final-frame byte bounds are tested in source AND freshly extracted native profiles.\n').encode(), 0o644)
+            manifest.update(schema=profile.SCHEMA, transport_source_profile=current['frozen'],
+                profiles=profile.profiles(PROFILES), notice_texts=profile.NOTICE_COUNT)
+            manifest['optional_profiles']['definition_snapshot'] = profile.optional(
+                snapshot_generation, snapshot_schema, snapshot_origin)
+            manifest['finite_checks'].update(snapshot_original_report_binary_SHA_equal=True,
+                snapshot_protocol_sessions=16, snapshot_enabled_sessions=8,
+                snapshot_normal_reference_cases=len(snapshot_report['executed_cases']['normal']),
+                snapshot_malformed_reference_cases=len(snapshot_report['executed_cases']['malformed']),
+                snapshot_full_report_sha256=sha(read(snapshot_wire_path, MAX_SOURCE)),
+                snapshot_reference_cli_sha256=sha(snapshot_cli_raw),
+                snapshot_extracted_full_scope_requested=verify_native, new_native_Gooo_receipts=False)
+            manifest['packager']['support_sources'] = {**SUPPORT_HASHES, **SNAPSHOT_SUPPORT_HASHES}
+            manifest['members'] = {name:{'bytes':len(content),'sha256':sha(content),'mode':mode}
+                                   for name,(content,mode) in sorted(files.items())}
         files["BUNDLE.json"] = (encoded(manifest), 0o644)
-        need(len(files) == 65, "exact sixty-five archive members required")
+        need(len(files) == (profile.MEMBER_COUNT if profile is not None else 65),
+             "exact profile archive population required")
         name = COMMAND+"-"+target.replace("/", "-")+".tar.gz"
         candidate = work/name
         SERVICE.write_archive(candidate, files)
         extracted = work/"extracted"
         extract_checked(candidate, files, extracted)
-        new_report, new_many_report, new_alias_report = None, None, None
+        new_report, new_many_report, new_alias_report, new_snapshot_report = None, None, None, None
         if verify_native:
             need(SERVICE.native_platform() == target, "native runtime platform differs")
             new_report = native_verify(root, extracted/COMMAND, extracted/"BUILD-INFO.json", out/"native-verification")
@@ -1289,8 +1465,15 @@ def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
                                                    modcache, go_root, out/"alias-native-verification")
             new_alias_report = checked_alias_report(native_alias_path, extracted/COMMAND,
                 alias_cli, root, modcache, go_root, build, "bundle-small")
+            if profile is not None:
+                native_snapshot_path = native_snapshot_verify(root, extracted/COMMAND, snapshot_cli,
+                    modcache, go_root, out/'snapshot-native-verification', profile)
+                new_snapshot_report = checked_snapshot_report(native_snapshot_path, extracted/COMMAND,
+                    snapshot_cli, root, modcache, go_root, profile)
         need(read(extracted/COMMAND, BASE.MAX_BINARY) == raw == read(binary, BASE.MAX_BINARY), "binary changed during checks")
         need(read(alias_cli, BASE.MAX_BINARY) == alias_cli_raw, "alias reference CLI changed during checks")
+        if profile is not None:
+            need(read(snapshot_cli, BASE.MAX_BINARY) == snapshot_cli_raw, 'snapshot reference CLI changed')
         final_raw = read(candidate, BASE.MAX_ARCHIVE)
         shutil.rmtree(work)
         need(not work.exists(), "owned work cleanup incomplete")
@@ -1311,6 +1494,7 @@ def produce(binary, build_path, wire_path, modcache, go_root, root, out, commit,
                   "extracted_binary_SHA_equal": True, "new_extracted_native_wire": new_report is not None,
                   "new_extracted_many_wire": new_many_report is not None,
                   "new_extracted_alias_wire": new_alias_report is not None,
+                  "new_extracted_snapshot_wire": new_snapshot_report is not None,
                   "alias_original_scope": alias_report["scope"],
                   "alias_extracted_scope": new_alias_report["scope"] if new_alias_report is not None else None,
                   "alias_large_extracted_test_performed": False,
@@ -1354,6 +1538,8 @@ def main():
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--packager-commit")
     parser.add_argument("--verify-native", action="store_true")
+    parser.add_argument('--snapshot-wire-report', type=Path)
+    parser.add_argument('--snapshot-cli', type=Path)
     args = parser.parse_args()
     def interrupted(number, _frame):
         raise RuntimeError("packager interrupted by signal "+str(number))
@@ -1366,7 +1552,9 @@ def main():
                          args.module_cache.absolute(), args.go_root.absolute(), args.root.absolute(),
                          args.out.absolute(), args.source_commit, args.packager_commit, args.verify_native,
                          args.many_wire_report.absolute(), args.alias_wire_report.absolute(),
-                         args.alias_cli.absolute())
+                         args.alias_cli.absolute(),
+                         args.snapshot_wire_report.absolute() if args.snapshot_wire_report else None,
+                         args.snapshot_cli.absolute() if args.snapshot_cli else None)
         print(json.dumps({"status": result["status"], "platform": result["platform"],
                           "archive_sha256": result["archive"]["sha256"], "new_native_wire": result["new_extracted_native_wire"]}))
     finally:

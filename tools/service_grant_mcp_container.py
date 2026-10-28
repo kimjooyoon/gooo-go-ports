@@ -5,12 +5,13 @@ execution occurs here. The caller supplies independently reviewed expected pins.
 SHA256 is the trust anchor: these internal consistency checks do not independently
 parse the executable build info or authenticate its producer. A caller-selected
 untrusted checksum cannot establish authenticity.
-The format checks support exact flat Linux/amd64 v2 and alias-enabled v3 layouts.
+The format checks support exact flat Linux/amd64 v2, v3 and saved-definition v4 layouts.
 """
 
 import gzip
 import hashlib
 import io
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -24,7 +25,12 @@ DOCKERFILE_LIMIT = 64 * 1024
 BINARY = "gooo-service-grant-mcp"
 SCHEMA = "gooo/service-grant-mcp-native-bundle/v2"
 ALIAS_SCHEMA = "gooo/service-grant-mcp-native-bundle/v3"
-LAYOUTS = {SCHEMA: (63, 58), ALIAS_SCHEMA: (65, 60)}
+SPEC = importlib.util.spec_from_file_location('snapshot_context_profile', Path(__file__).with_name('mcp_snapshot_profile.py'))
+if hashlib.sha256(Path(SPEC.origin).read_bytes()).hexdigest() != 'a421d1ea56ca54eb005322eb180d06348b59f6dacf3deb1c7f7748bda766255a':
+    raise ValueError('snapshot context support source differs')
+SNAPSHOT = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(SNAPSHOT)
+LAYOUTS = {SCHEMA: (63, 58), ALIAS_SCHEMA: (65, 60), SNAPSHOT.SCHEMA: (68, 62)}
 ALIAS_DEPENDENCY = {
     "Path": "github.com/kimjooyoon/gooo-go-ports/examples/alias-origin-change",
     "Version": "v0.0.0-20261024154510-16d1e7864dc8",
@@ -115,7 +121,7 @@ def unpack_checked(raw):
             require(offset + 1024 <= len(expanded), "missing tar end records")
             require(not any(expanded[offset:]), "nonzero data after tar end")
             break
-        require(len(files) < 65, "archive member count exceeds known layouts")
+        require(len(files) < 68, "archive member count exceeds known layouts")
         try:
             info = tarfile.TarInfo.frombuf(block, "utf-8", "strict")
         except (tarfile.HeaderError, UnicodeError, ValueError) as error:
@@ -136,7 +142,7 @@ def unpack_checked(raw):
         offset = padded_end
     else:
         raise Refusal("missing tar end records")
-    require(len(files) in (63, 65), "archive must match an exact known regular-file layout")
+    require(len(files) in (63, 65, 68), "archive must match an exact known regular-file layout")
     return files, modes, len(expanded)
 
 
@@ -187,6 +193,8 @@ def validate_manifest(files, modes, source_commit):
         require(type(meta["mode"]) is int and meta["mode"] == expected_mode and
                 modes[name] == expected_mode, "manifest member mode mismatch")
     base = {"BUILD-INFO.json", "NOTICE-INVENTORY.json", "START-HERE.txt", BINARY}
+    if bundle['schema'] == SNAPSHOT.SCHEMA:
+        base.add(SNAPSHOT.SAMPLE)
     require(base <= set(members), "missing required runtime member")
     inventory = strict_json(files["NOTICE-INVENTORY.json"], "notice inventory")
     require(type(bundle.get("notice_texts")) is int and
@@ -214,15 +222,20 @@ def validate_manifest(files, modes, source_commit):
     require(bundle.get("binary_sha256") == digest(files[BINARY]),
             "binary hash differs from manifest")
     validate_build_info(build, source_commit)
-    if bundle["schema"] == ALIAS_SCHEMA:
+    if bundle["schema"] in (ALIAS_SCHEMA, SNAPSHOT.SCHEMA):
         validate_alias_profile(bundle, build, inventory, files)
+    if bundle['schema'] == SNAPSHOT.SCHEMA:
+        validate_snapshot_profile(bundle, build, inventory, files)
     return bundle
 
 
 def validate_alias_profile(bundle, build, inventory, files):
-    require(bundle.get("profiles") == PROFILES, "exact default/many/alias/combined profiles required")
+    snapshot = bundle['schema'] == SNAPSHOT.SCHEMA
+    expected_profiles = SNAPSHOT.profiles(PROFILES) if snapshot else PROFILES
+    require(bundle.get("profiles") == expected_profiles, "exact default/many/alias/combined profiles required")
     optional = bundle.get("optional_profiles")
-    require(isinstance(optional, dict) and set(optional) == {"many_required", "alias_origin_change"},
+    expected_optional = {'many_required','alias_origin_change'} | ({'definition_snapshot'} if snapshot else set())
+    require(isinstance(optional, dict) and set(optional) == expected_optional,
             "exact optional profile roster required")
     require(digest(json.dumps(optional["many_required"], sort_keys=True,
                               separators=(",", ":")).encode()) == MANY_PROFILE_SHA256,
@@ -239,7 +252,7 @@ def validate_alias_profile(bundle, build, inventory, files):
     binding_bytes = (json.dumps(alias["bindings"], sort_keys=True, indent=2) + "\n").encode()
     require(digest(binding_bytes) == ALIAS_GENERATION, "alias generation binding bytes differ")
     dependencies = build.get("Deps")
-    require(isinstance(dependencies, list) and len(dependencies) == 12 and
+    require(isinstance(dependencies, list) and len(dependencies) == (13 if snapshot else 12) and
             [dep for dep in dependencies if isinstance(dep, dict) and
              dep.get("Path") == ALIAS_DEPENDENCY["Path"]] == [ALIAS_DEPENDENCY],
             "alias executable dependency pin differs")
@@ -251,6 +264,47 @@ def validate_alias_profile(bundle, build, inventory, files):
         name = row["source_relative_path"]
         require(row.get("module") == ALIAS_DEPENDENCY and row.get("sha256") == ALIAS_NOTICES[name] and
                 digest(files[row["file"]]) == ALIAS_NOTICES[name], "alias notice source pin differs")
+
+
+def validate_snapshot_profile(bundle, build, inventory, files):
+    optional = bundle['optional_profiles']['definition_snapshot']
+    require(isinstance(optional,dict) and set(optional) == {'argv','additional_tool','module',
+        'compiler_source_sha','generation_sha256','bindings','output_schema','schema_origin',
+        'transport_source_profile_sha256','example_member'}, 'snapshot profile fields differ')
+    require(optional['argv']==[SNAPSHOT.FLAG] and optional['additional_tool']==SNAPSHOT.TOOL and
+            optional['module']==SNAPSHOT.DEPENDENCY and optional['compiler_source_sha']==SNAPSHOT.PIN and
+            optional['generation_sha256']=='sha256:'+SNAPSHOT.GENERATION and
+            optional['transport_source_profile_sha256']==SNAPSHOT.PROFILE_SHA256 and
+            optional['example_member']==SNAPSHOT.SAMPLE,'snapshot immutable profile differs')
+    canonical=lambda value:(json.dumps(value,sort_keys=True,indent=2)+'\n').encode()
+    require(digest(canonical(optional['bindings']))==SNAPSHOT.GENERATION,
+            'snapshot generation binding bytes differ')
+    frozen=bundle.get('transport_source_profile')
+    require(isinstance(frozen,dict) and digest(canonical(frozen))==SNAPSHOT.PROFILE_SHA256 and
+            frozen.get('reference_source')==SNAPSHOT.SOURCE,
+            'complete immutable snapshot transport source profile differs')
+    expected_sources={name:row['sha256'] for name,row in frozen['files'].items()}
+    require(bundle.get('source_files')==expected_sources,'snapshot transport file bindings differ')
+    require(digest(files[SNAPSHOT.SAMPLE])==expected_sources[SNAPSHOT.PREFIX+'/fixtures/snapshot.input.json'],
+            'saved-definition example differs from source')
+    shape,origin=optional['output_schema'],optional['schema_origin']
+    require(digest(canonical(shape))==expected_sources[SNAPSHOT.PREFIX+'/schemas/snapshot-output.schema.json'] and
+            digest(canonical(origin))==expected_sources[SNAPSHOT.PREFIX+'/schemas/snapshot-output.origin.json'] and
+            origin.get('program_execution') is False and origin.get('inspection_kind')=='DECLARATION_INTERFACE_ONLY' and
+            origin.get('kernel_generation_compiler_source_sha')==SNAPSHOT.PIN,
+            'Gooo declaration-derived output shape/source profile differs')
+    deps=build.get('Deps')
+    require(isinstance(deps,list) and len(deps)==13 and
+            [d for d in deps if isinstance(d,dict) and d.get('Path')==SNAPSHOT.MODULE]==[SNAPSHOT.DEPENDENCY] and
+            all(isinstance(d,dict) and 'Replace' not in d for d in deps),
+            'snapshot executable dependency pin/replacement differs')
+    rows=[row for row in inventory if isinstance(row.get('module'),dict) and row['module'].get('Path')==SNAPSHOT.MODULE]
+    require(len(rows)==2 and {row.get('source_relative_path') for row in rows}==set(SNAPSHOT.NOTICES),
+            'snapshot license/notice inventory differs')
+    for row in rows:
+        expected=SNAPSHOT.NOTICES[row['source_relative_path']]
+        require(row['module']==SNAPSHOT.DEPENDENCY and row['sha256']==expected and
+                digest(files[row['file']])==expected,'snapshot notice source pin differs')
 
 
 def write_new(path, raw, mode):
@@ -278,7 +332,8 @@ def prepare(bundle: Path, sha256: str, source_commit: str,
     except UnicodeError as error:
         raise Refusal("Dockerfile is not UTF-8") from error
     context = {
-        "schema": ("gooo/service-grant-mcp-container-context/v2" if manifest["schema"] == ALIAS_SCHEMA
+        "schema": (SNAPSHOT.CONTEXT_SCHEMA if manifest['schema']==SNAPSHOT.SCHEMA else
+                   "gooo/service-grant-mcp-container-context/v2" if manifest["schema"] == ALIAS_SCHEMA
                    else "gooo/preview14-container-context/v1"),
         "archive_sha256": sha256,
         "archive_bytes": len(raw),

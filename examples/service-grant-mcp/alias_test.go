@@ -54,8 +54,8 @@ func TestAliasProfileIsExplicitAndComposable(t *testing.T) {
 		{nil, serverMode{}, defaultFrameMax},
 		{[]string{"--many-required"}, serverMode{manyRequired: true}, manyFrameMax},
 		{[]string{"--alias-origin-change"}, serverMode{aliasOriginChange: true}, aliasFrameMax},
-		{[]string{"--many-required", "--alias-origin-change"}, serverMode{true, true}, aliasFrameMax},
-		{[]string{"--alias-origin-change", "--many-required"}, serverMode{true, true}, aliasFrameMax},
+		{[]string{"--many-required", "--alias-origin-change"}, serverMode{manyRequired: true, aliasOriginChange: true}, aliasFrameMax},
+		{[]string{"--alias-origin-change", "--many-required"}, serverMode{manyRequired: true, aliasOriginChange: true}, aliasFrameMax},
 	} {
 		mode, err := parseMode(tc.args)
 		if err != nil || mode != tc.mode || frameMax(mode) != tc.frame {

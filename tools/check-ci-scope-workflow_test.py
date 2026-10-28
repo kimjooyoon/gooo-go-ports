@@ -1806,7 +1806,22 @@ SERVICE_GRANT_ALIAS_INSERTIONS = (
 SERVICE_GRANT_ALIAS_PRIOR_WORKFLOW_SHA = '75a0a00fdcb2521479f92e42c77fd4dbfe98b95c04f9d641b0ac8c0bf26daf01'
 
 
+SERVICE_GRANT_SNAPSHOT_PRIOR_SHA = 'db5d55a1ffefd059f2ea1bf7b24a0690b3a70f89135fefc7706355cbee7f3993'
+SERVICE_GRANT_SNAPSHOT_INSERTIONS = (("      - 'tools/mcp_snapshot_profile*'\n      - 'tools/profiles/mcp-definition-snapshot-v4.json'\n      - 'tools/freeze_mcp_source_profile*'\n      - 'tools/render_mcp_record_schema*'\n      - 'go.mod'\n      - 'upstream.json'\n      - 'definition-snapshot.workspace.json'\n      - 'ports/tool-origin/definition_snapshot.gooo'\n      - 'examples/recorded-catalog-comparison/**'\n      - 'examples/tool-definition-snapshot/**'\n      - 'examples/service-grant-many/verify.py'\n", "      - 'tools/api_policy_cli_bundle.py'\n", 2), ('      - name: Verify saved tool definitions through all opt-in profiles\n        shell: bash\n        run: |\n          set -euo pipefail\n          snapshot_version="v0.0.0-20261027155614-e4d44fd856ee"\n          snapshot_module="$(go -C examples/service-grant-mcp list -m -f \'{{if eq .Version "v0.0.0-20261027155614-e4d44fd856ee"}}{{.Dir}}{{end}}\' github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison)"\n          test -n "$snapshot_module"\n          mkdir -p "$RUNNER_TEMP/snapshot-cli-bin"\n          GOBIN="$RUNNER_TEMP/snapshot-cli-bin" go install -trimpath \\\n            "github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison/cmd/compare@$snapshot_version"\n          python3 -I -B examples/service-grant-mcp/verify_snapshot.py \\\n            --binary "$RUNNER_TEMP/gooo-service-grant-mcp" \\\n            --snapshot-cli "$RUNNER_TEMP/snapshot-cli-bin/compare" \\\n            --snapshot-module "$snapshot_module" --go "$(command -v go)" \\\n            --legacy-verifier "$PWD/examples/service-grant-mcp/verify.py" \\\n            --out "$PWD/out/service-grant-mcp/snapshot-wire"\n', '      - name: Check native MCP packaging refusal controls\n', 1), ('          python3 -I -B tools/mcp_snapshot_profile_test.py\n          python3 -I -B tools/freeze_mcp_source_profile_test.py\n          python3 -I -B tools/render_mcp_record_schema_test.py\n', '          python3 -I -B tools/service_grant_mcp_container_test.py\n', 1), ('            --snapshot-wire-report "$PWD/out/service-grant-mcp/snapshot-wire/acceptance.json" \\\n            --snapshot-cli "$RUNNER_TEMP/snapshot-cli-bin/compare" \\\n', '            --module-cache "$(go env GOMODCACHE)" \\\n', 1), ('            --snapshot-wire-report "$PWD/out/service-grant-mcp/snapshot-wire/acceptance.json" \\\n            --snapshot-module "$(go -C examples/service-grant-mcp list -m -f \'{{.Dir}}\' github.com/kimjooyoon/gooo-go-ports/examples/recorded-catalog-comparison)" \\\n            --snapshot-cli "$RUNNER_TEMP/snapshot-cli-bin/compare" \\\n            --snapshot-source-binary "$RUNNER_TEMP/gooo-service-grant-mcp" \\\n', '            --label "io.gooo.ci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"\n', 1), ('            out/service-grant-mcp-bundle/snapshot-native-verification/\n', '      - name: Retain the bounded original wire observations\n', 1))
+
+
+def project_service_grant_snapshot_integration(text):
+    for addition,anchor,count in SERVICE_GRANT_SNAPSHOT_INSERTIONS:
+        require(text.count(addition)==count and text.count(addition+anchor)==count,
+                'snapshot MCP source checks must appear exactly at their reviewed consumers')
+        text=text.replace(addition+anchor,anchor,count)
+    require(hashlib.sha256(text.encode()).hexdigest()==SERVICE_GRANT_SNAPSHOT_PRIOR_SHA,
+            'snapshot MCP integration changed unrelated legacy workflow bytes')
+    return text
+
+
 def project_service_grant_alias_integration(text):
+    text = project_service_grant_snapshot_integration(text)
     # Only the four reviewed additions are new. Anchors also bind their order
     # and consumers: deleting unanchored additions would hide moved checks.
     for addition, anchor in SERVICE_GRANT_ALIAS_INSERTIONS:
@@ -4421,6 +4436,44 @@ class CurrentDocFactCheckTests(unittest.TestCase):
             project_current_doc_fact_check(changed)
 
 
+class ServiceGrantSnapshotProjectionTests(unittest.TestCase):
+    path = '.github/workflows/service-grant-mcp.yml'
+
+    def raw(self):
+        return (WORKFLOW.parent.parent.parent/self.path).read_text()
+
+    def test_snapshot_gates_restore_exact_prior_then_legacy_preimages(self):
+        raw=self.raw();prior=project_service_grant_snapshot_integration(raw)
+        self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(),SERVICE_GRANT_SNAPSHOT_PRIOR_SHA)
+        self.assertIn('--snapshot-wire-report',raw)
+        self.assertNotIn('--snapshot-wire-report',prior)
+        projected=project_root_go_reference(raw,path=self.path)
+        self.assertEqual(hashlib.sha256(projected.encode()).hexdigest(),ROOT_GO_REFERENCES[self.path][1])
+
+    def test_missing_duplicate_or_moved_new_consumers_refused(self):
+        raw=self.raw()
+        for addition,anchor,count in SERVICE_GRANT_SNAPSHOT_INSERTIONS:
+            for replacement in ['',addition*2]:
+                changed=raw.replace(addition,replacement,1)
+                with self.subTest(anchor=anchor,change=replacement[:30]),self.assertRaises(ValueError):
+                    project_root_go_reference(changed,path=self.path)
+            moved=raw.replace(addition+anchor,anchor+addition,1)
+            with self.assertRaises(ValueError):project_root_go_reference(moved,path=self.path)
+
+    def test_pins_full_native_scope_and_failure_gates_remain_required(self):
+        raw=self.raw()
+        mutations=[('v0.0.0-20261027155614-e4d44fd856ee','latest'),
+                   ('--snapshot-cli "$RUNNER_TEMP/snapshot-cli-bin/compare"','--snapshot-cli /other/compare'),
+                   ('--verify-native','--verify-native || true'),
+                   ('test -race -count=1 ./...','test -count=1 ./...'),
+                   ('      - name: Verify saved tool definitions through all opt-in profiles\n',
+                    '      - name: Verify saved tool definitions through all opt-in profiles\n        if: false\n')]
+        for before,after in mutations:
+            self.assertIn(before,raw)
+            with self.subTest(mutation=before),self.assertRaises(ValueError):
+                project_root_go_reference(raw.replace(before,after,1),path=self.path)
+
+
 class ServiceGrantAliasProjectionTests(unittest.TestCase):
     path = '.github/workflows/service-grant-mcp.yml'
 
@@ -4430,7 +4483,7 @@ class ServiceGrantAliasProjectionTests(unittest.TestCase):
     def test_exact_additions_preserve_both_historical_preimages(self):
         raw = self.raw()
         prior = project_service_grant_alias_integration(raw)
-        expected = raw
+        expected = project_service_grant_snapshot_integration(raw)
         for addition, _ in SERVICE_GRANT_ALIAS_INSERTIONS:
             expected = expected.replace(addition, '', 1)
         self.assertEqual(prior, expected)
