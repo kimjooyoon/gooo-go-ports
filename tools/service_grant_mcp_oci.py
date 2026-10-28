@@ -22,6 +22,11 @@ SPEC = importlib.util.spec_from_file_location(
 RELEASE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(RELEASE)
 
+SPEC = importlib.util.spec_from_file_location(
+    "service_grant_saved_references", Path(__file__).with_name("service_grant_mcp_reference_packet.py"))
+REFERENCES = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(REFERENCES)
+
 
 def release_profile(version):
     try:
@@ -51,6 +56,18 @@ ARCHIVE_URL = DEFAULT["archive_url"]
 DOCKERFILE = Path(__file__).resolve().parents[1] / "containers/service-grant-mcp/Dockerfile"
 
 
+def reviewed_inputs(bundle, sha256, source_commit, version):
+    profile = release_profile(version)
+    archive = profile["archive"]
+    CONTEXT.require(source_commit == profile["native_source"], "public release source commit differs")
+    CONTEXT.require(sha256 == archive["sha256"], "public release expected archive SHA256 differs")
+    bundle = Path(bundle)
+    info = bundle.lstat()
+    CONTEXT.require(stat.S_ISREG(info.st_mode), "public archive must be a regular non-symlink file")
+    CONTEXT.require(info.st_size == archive["bytes"], "public release archive byte count differs")
+    return profile, bundle
+
+
 def prepare_public(bundle, sha256, source_commit, version, out):
     """Require the reviewed public release before using the existing preparer.
 
@@ -58,14 +75,8 @@ def prepare_public(bundle, sha256, source_commit, version, out):
     fixed whole-archive SHA, not a caller's arbitrary replacement checksum.
     A failed or incomplete context is retained; the output must be fresh.
     """
-    profile = release_profile(version)
+    profile, bundle = reviewed_inputs(bundle, sha256, source_commit, version)
     archive, layout = profile["archive"], profile["bundle"]
-    CONTEXT.require(source_commit == profile["native_source"], "public release source commit differs")
-    CONTEXT.require(sha256 == archive["sha256"], "public release expected archive SHA256 differs")
-    bundle = Path(bundle)
-    info = bundle.lstat()
-    CONTEXT.require(stat.S_ISREG(info.st_mode), "public archive must be a regular non-symlink file")
-    CONTEXT.require(info.st_size == archive["bytes"], "public release archive byte count differs")
     context = CONTEXT.prepare(bundle, archive["sha256"], profile["native_source"], Path(out), DOCKERFILE)
     CONTEXT.require(context["archive_bytes"] == archive["bytes"] and
                     context["archive_sha256"] == archive["sha256"] and
@@ -91,6 +102,15 @@ def prepare_public(bundle, sha256, source_commit, version, out):
         "runtime_or_client_verification_performed": False,
         "external_adoption_established": False,
     }
+
+
+def prepare_references(bundle, sha256, source_commit, version, packet, out):
+    profile, bundle = reviewed_inputs(bundle, sha256, source_commit, version)
+    reference = profile.get("reference_packet")
+    CONTEXT.require(reference is not None and profile["bundle"]["schema"] == CONTEXT.SNAPSHOT.SCHEMA,
+                    "this reviewed release has no v4 native reference packet")
+    return REFERENCES.prepare(Path(packet), reference["sha256"], reference["bytes"], bundle,
+                              profile["archive"]["sha256"], profile["native_source"], Path(out))
 
 
 
@@ -173,7 +193,7 @@ def main(argv=None):
     metadata = commands.add_parser("profile")
     metadata.add_argument("--version", default=VERSION)
     metadata.add_argument("--format", choices=("json", "github-env"), default="json")
-    for name in ("prepare", "verify-runtime"):
+    for name in ("prepare", "verify-runtime", "prepare-references"):
         command = commands.add_parser(name)
         command.add_argument("--bundle", type=Path, required=True)
         command.add_argument("--sha256", required=True)
@@ -182,6 +202,8 @@ def main(argv=None):
         command.add_argument("--out", type=Path, required=True)
         if name == "verify-runtime":
             command.add_argument("--runtime", type=Path, required=True)
+        elif name == "prepare-references":
+            command.add_argument("--packet", type=Path, required=True)
     args = parser.parse_args(argv)
     if args.command == "profile":
         profile = release_profile(args.version or VERSION)
@@ -190,7 +212,9 @@ def main(argv=None):
         else:
             print(json.dumps(profile, sort_keys=True))
         return
-    if args.command == "verify-runtime":
+    if args.command == "prepare-references":
+        result = prepare_references(args.bundle, args.sha256, args.source_commit, args.version, args.packet, args.out)
+    elif args.command == "verify-runtime":
         result = verify_runtime(args.bundle, args.sha256, args.source_commit, args.version, args.runtime, args.out)
     else:
         result = prepare_public(args.bundle, args.sha256, args.source_commit, args.version, args.out)

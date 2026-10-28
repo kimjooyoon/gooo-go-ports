@@ -6,6 +6,7 @@ on:
       - '.github/workflows/service-grant-mcp-oci.yml'
       - 'tools/service_grant_mcp_oci*'
       - 'tools/service_grant_release_profile*'
+      - 'tools/service_grant_mcp_reference*'
       - 'tools/profiles/mcp-public-*.json'
       - 'tools/registry_action_auth*'
       - 'tools/oci_action_contract*'
@@ -73,6 +74,8 @@ jobs:
           timeout -k 5s 30s python3 -I -B tools/verify-service-grant-container_test.py
           timeout -k 5s 30s python3 -I -B tools/service_grant_mcp_oci_test.py
           timeout -k 5s 30s python3 -I -B tools/service_grant_release_profile_test.py
+          timeout -k 5s 30s python3 -I -B tools/service_grant_mcp_reference_packet_test.py
+          timeout -k 5s 30s python3 -I -B tools/service_grant_mcp_reference_runtime_test.py
           timeout -k 5s 30s python3 -I -B -m unittest discover -s tools -p oci_action_contract_test.py -v
           python3 -I -B tools/oci_action_contract.py
       - name: Acquire and prepare only the fixed public native bundle
@@ -88,6 +91,29 @@ jobs:
             --bundle out/oci/native.tar.gz --sha256 "$ARCHIVE_SHA256" \
             --source-commit "$NATIVE_SOURCE" --version "$NATIVE_VERSION" \
             --out out/oci/context > out/oci/evidence/preparation.json
+      - name: Set up the original Go identity reader for saved v4 references
+        if: env.HAS_NATIVE_REFERENCES == 'true'
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version: ${{ env.NATIVE_GO_SEMVER }}
+          cache: false
+      - name: Acquire and materialize only the reviewed original reference packet
+        if: env.HAS_NATIVE_REFERENCES == 'true'
+        timeout-minutes: 3
+        run: |
+          set -euo pipefail
+          curl --fail --location --proto '=https' --proto-redir '=https' \
+            --connect-timeout 15 --max-time 90 --max-filesize "$REFERENCE_PACKET_BYTES" \
+            --output out/oci/reference.tar.gz "$REFERENCE_PACKET_URL"
+          python3 -I -B tools/service_grant_mcp_oci.py prepare-references \
+            --bundle out/oci/native.tar.gz --sha256 "$ARCHIVE_SHA256" \
+            --source-commit "$NATIVE_SOURCE" --version "$NATIVE_VERSION" \
+            --packet out/oci/reference.tar.gz --out "$PWD/out/service-grant-mcp" \
+            > out/oci/prepared-references.stdout
+          python3 -I -B tools/service_grant_mcp_reference_runtime.py prepare \
+            --references "$PWD/out/service-grant-mcp" --context "$PWD/out/oci/context" \
+            --go "$(command -v go)" --runner-temp "$RUNNER_TEMP" \
+            > out/oci/reference-runtime.stdout
       - name: Build once and verify the actual image with default and optional tools
         timeout-minutes: 4
         run: |
@@ -101,10 +127,16 @@ jobs:
             --label "io.gooo.native.archive.sha256=$ARCHIVE_SHA256" \
             --iidfile out/oci/image.id out/oci/context \
             > out/oci/evidence/build.stdout 2> out/oci/evidence/build.stderr
+          reference_args=()
+          if test "$HAS_NATIVE_REFERENCES" = true; then
+            python3 -I -B tools/service_grant_mcp_reference_runtime.py arguments \
+              --references "$PWD/out/service-grant-mcp" > out/reference-arguments.bin
+            mapfile -d '' -t reference_args < out/reference-arguments.bin
+          fi
           timeout -k 10s 75s python3 -I -B tools/verify-service-grant-container.py \
             --docker "$(command -v docker)" --image "$(cat out/oci/image.id)" \
             --context "$PWD/out/oci/context" --out "$PWD/out/oci/evidence/wire" \
-            --label "io.gooo.oci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-verify"
+            --label "io.gooo.oci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-verify" "${reference_args[@]}"
           timeout -k 10s 60s docker image save --output out/oci/delivery/image.tar "$(cat out/oci/image.id)"
           test "$(stat -c %s out/oci/delivery/image.tar)" -le 67108864
       - name: Acquire the checksum-pinned Trivy CLI
@@ -223,6 +255,13 @@ jobs:
           ids="$(timeout -k 5s 15s docker container ls --all --quiet --no-trunc --filter "label=io.gooo.oci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-verify")"
           if test -n "$ids"; then timeout -k 5s 15s docker container rm --force $ids; fi
           if test -f out/oci/image.id; then timeout -k 5s 15s docker image rm "$(cat out/oci/image.id)"; fi
+      - name: Remove only byte-verified owned original reference locations
+        if: always() && env.HAS_NATIVE_REFERENCES == 'true'
+        run: |
+          set -euo pipefail
+          python3 -I -B tools/service_grant_mcp_reference_runtime.py cleanup \
+            --references "$PWD/out/service-grant-mcp" --runner-temp "$RUNNER_TEMP" \
+            > out/reference-cleanup.json
       - name: Preserve bounded preparation, wire, scan and closure diagnostics on failure
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
@@ -234,6 +273,10 @@ jobs:
             out/oci/context/context.json
             out/oci/image.id
             out/oci/delivery/*.json
+            out/service-grant-mcp/prepared-references.json
+            out/service-grant-mcp/runtime-state.json
+            out/service-grant-mcp/*-module.*
+            out/reference-cleanup.json
 
   publish:
     needs: verify
@@ -497,14 +540,43 @@ jobs:
           timeout -k 5s 15s docker container ls --all --quiet --no-trunc --filter "name=^/$name$" > out/readback/copy-remaining.txt
           test ! -s out/readback/copy-remaining.txt
           trap - EXIT
+      - name: Set up the original Go identity reader for saved v4 references
+        if: env.HAS_NATIVE_REFERENCES == 'true'
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version: ${{ env.NATIVE_GO_SEMVER }}
+          cache: false
+      - name: Acquire and materialize only the reviewed original reference packet
+        if: env.HAS_NATIVE_REFERENCES == 'true'
+        timeout-minutes: 3
+        run: |
+          set -euo pipefail
+          curl --fail --location --proto '=https' --proto-redir '=https' \
+            --connect-timeout 15 --max-time 90 --max-filesize "$REFERENCE_PACKET_BYTES" \
+            --output out/readback/reference.tar.gz "$REFERENCE_PACKET_URL"
+          python3 -I -B tools/service_grant_mcp_oci.py prepare-references \
+            --bundle out/readback/native.tar.gz --sha256 "$ARCHIVE_SHA256" \
+            --source-commit "$NATIVE_SOURCE" --version "$NATIVE_VERSION" \
+            --packet out/readback/reference.tar.gz --out "$PWD/out/service-grant-mcp" \
+            > out/readback/prepared-references.stdout
+          python3 -I -B tools/service_grant_mcp_reference_runtime.py prepare \
+            --references "$PWD/out/service-grant-mcp" --context "$PWD/out/readback/identity" \
+            --go "$(command -v go)" --runner-temp "$RUNNER_TEMP" \
+            > out/readback/reference-runtime.stdout
       - name: Run the existing full-proof and refusal smoke on that pulled image
         timeout-minutes: 2
         run: |
           set -euo pipefail
+          reference_args=()
+          if test "$HAS_NATIVE_REFERENCES" = true; then
+            python3 -I -B tools/service_grant_mcp_reference_runtime.py arguments \
+              --references "$PWD/out/service-grant-mcp" > out/reference-arguments.bin
+            mapfile -d '' -t reference_args < out/reference-arguments.bin
+          fi
           timeout -k 10s 75s python3 -I -B tools/verify-service-grant-container.py \
             --docker "$(command -v docker)" --image "$(cat out/readback/image.id)" \
             --context "$PWD/out/readback/identity" --out "$PWD/out/readback/wire" \
-            --label "io.gooo.oci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-readback"
+            --label "io.gooo.oci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-readback" "${reference_args[@]}"
           printf 'ANONYMOUS_EXACT_DIGEST_RUNTIME%s_AND_FINITE_WIRE_ACCEPTED_CLEANUP_PENDING\n' "$RUNTIME_MEMBERS" > out/readback/status.txt
       - name: Remove only this readback's containers and image
         if: always()
@@ -517,6 +589,13 @@ jobs:
           test ! -s out/readback/remaining-containers.txt
           if test -f out/readback/image.id; then timeout -k 5s 15s docker image rm "$(cat out/readback/image.id)"; fi
           rm -rf -- "$RUNNER_TEMP/gooo-anonymous-config"
+      - name: Remove only byte-verified owned original reference locations
+        if: always() && env.HAS_NATIVE_REFERENCES == 'true'
+        run: |
+          set -euo pipefail
+          python3 -I -B tools/service_grant_mcp_reference_runtime.py cleanup \
+            --references "$PWD/out/service-grant-mcp" --runner-temp "$RUNNER_TEMP" \
+            > out/reference-cleanup.json
       - name: Record finite public readback acceptance only after cleanup succeeds
         run: |
           set -euo pipefail
@@ -535,6 +614,10 @@ jobs:
             out/readback/identity/context.json
             out/readback/identity/runtime-identity.json
             out/readback/wire/
+            out/service-grant-mcp/prepared-references.json
+            out/service-grant-mcp/runtime-state.json
+            out/service-grant-mcp/*-module.*
+            out/reference-cleanup.json
 
   registry-install-candidate:
     needs: verify

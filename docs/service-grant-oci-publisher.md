@@ -47,8 +47,18 @@ PROV-O links distinguish archive-byte identity from native-source identity. They
 do not authenticate a producer or establish execution, authorization or adoption.
 
 Adding release data does not provide verification for a new tool capability.
-In particular, a future saved-definition v4 image also needs its original native
-alias/snapshot references and the complete sixteen-session image checks. No v4
+The saved-definition v4 path additionally requires a checksum-pinned reference
+packet containing the original saved alias/snapshot captures and byte-identical
+reference CLIs. Its reader checks the native BUNDLE's original report/CLI hashes,
+source, complete notices, archive roster, paths and expansion bounds before
+materializing unchanged captures. It does not execute a comparison case.
+
+The workflow acquires the original Go identity reader and fixed module sources,
+checks their identities, and restores only fresh owned original Linux runner
+locations. Existing argv/cwd records are not edited. The complete sixteen-session
+image client then runs against the actual image. Both new image verification
+and anonymous digest readback use these same references, with separate owned
+file cleanup. Reference preparation alone is not image verification. No v4
 public image or Registry update is implied here. The Registry install smoke stays
 bound to its existing preview16 descriptor, and the historical recovery workflow
 below keeps its original immutable inputs.

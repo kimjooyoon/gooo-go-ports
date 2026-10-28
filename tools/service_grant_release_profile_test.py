@@ -43,7 +43,7 @@ class ReleaseProfiles(unittest.TestCase):
         self.assertEqual(P.load_release()["bundle"]["runtime_members"], 63)
 
     def test_unknown_versions_paths_and_urls_refused_before_filesystem(self):
-        for version in ("v0.1.0-preview.17", "../../private", "https://example.test/profile",
+        for version in ("v0.1.0-preview.999999", "../../private", "https://example.test/profile",
                         "v0.1.0-preview.16\nARCHIVE_URL=bad", "", True, None):
             with self.subTest(version=version), mock.patch.object(P.Path, "lstat") as lstat:
                 with self.assertRaisesRegex(P.ProfileRefusal, "unreviewed"):
@@ -124,6 +124,41 @@ class ReleaseProfiles(unittest.TestCase):
         with self.assertRaisesRegex(P.ProfileRefusal, "newline"):
             P.environment(self.profile)
 
+    def v4_document(self):
+        document = copy.deepcopy(self.document)
+        document["bundle"] = {"schema": "gooo/service-grant-mcp-native-bundle/v4",
+                              "runtime_members": 68, "notice_texts": 62}
+        document["reference_packet"] = {"name": "gooo-mcp-saved-reference-linux-amd64.tar.gz",
+                                        "bytes": 100, "sha256": "a" * 64}
+        document["provenance"]["prov:wasDerivedFrom"].append({"@id": "urn:sha256:" + "a" * 64})
+        return document
+
+    def test_v4_reference_role_is_required_bounded_and_source_linked(self):
+        document = self.v4_document()
+        self.assertEqual(P._validate(document, self.version), document)
+        for key, value in [("name", "../other"), ("bytes", True), ("bytes", (16 << 20) + 1),
+                           ("sha256", "0" * 63)]:
+            invalid = copy.deepcopy(document)
+            invalid["reference_packet"][key] = value
+            with self.subTest(key=key), self.assertRaises(P.ProfileRefusal):
+                P._validate(invalid, self.version)
+        del document["reference_packet"]
+        with self.assertRaisesRegex(P.ProfileRefusal, "requires"):
+            P._validate(document, self.version)
+
+    def test_legacy_profile_cannot_gain_unreviewed_reference_material(self):
+        document = self.v4_document()
+        document["bundle"] = copy.deepcopy(self.document["bundle"])
+        with self.assertRaisesRegex(P.ProfileRefusal, "legacy"):
+            P._validate(document, self.version)
+
+    def test_legacy_environment_does_not_activate_reference_downloads(self):
+        env = P.environment(self.profile)
+        self.assertEqual(env["HAS_NATIVE_REFERENCES"], "false")
+        self.assertEqual(env["REFERENCE_PACKET_URL"], "")
+        self.assertEqual(env["REFERENCE_PACKET_BYTES"], "")
+        self.assertEqual(env["NATIVE_GO_SEMVER"], "1.27.3")
+
 
 class PublicOCIConsumer(unittest.TestCase):
     @classmethod
@@ -173,6 +208,38 @@ class PublicOCIConsumer(unittest.TestCase):
         job = workflow.split("  registry-install-candidate:\n", 1)[1]
         self.assertIn("    needs: verify\n", job)
         self.assertIn("needs.verify.outputs.native-version == 'v0.1.0-preview.16'", job)
+
+    def test_legacy_release_refuses_reference_preparation_without_opening_packet(self):
+        with mock.patch.object(self.oci, "reviewed_inputs", return_value=(self.oci.DEFAULT, Path("native"))):
+            with mock.patch.object(self.oci.REFERENCES, "prepare") as materialize:
+                with self.assertRaisesRegex(self.oci.CONTEXT.Refusal, "no v4"):
+                    self.oci.prepare_references("native", "ignored", "ignored", "v0.1.0-preview.16", "packet", "out")
+                materialize.assert_not_called()
+
+    def test_reference_preparer_uses_reviewed_packet_anchor(self):
+        profile = copy.deepcopy(self.oci.DEFAULT)
+        profile["bundle"]["schema"] = self.oci.CONTEXT.SNAPSHOT.SCHEMA
+        profile["reference_packet"] = {"name": "gooo-mcp-saved-reference-linux-amd64.tar.gz",
+                                       "sha256": "a" * 64, "bytes": 100}
+        with mock.patch.object(self.oci, "reviewed_inputs", return_value=(profile, Path("native"))):
+            with mock.patch.object(self.oci.REFERENCES, "prepare", return_value={"synthetic": True}) as materialize:
+                result = self.oci.prepare_references("native", "ignored", "ignored", "test", "packet", "out")
+                self.assertEqual(result, {"synthetic": True})
+                materialize.assert_called_once_with(Path("packet"), "a" * 64, 100, Path("native"),
+                    profile["archive"]["sha256"], profile["native_source"], Path("out"))
+
+    def test_workflow_reuses_original_locations_and_full_client_in_both_image_paths(self):
+        workflow = (Path(__file__).resolve().parents[1] /
+                    ".github/workflows/service-grant-mcp-oci.yml").read_text()
+        self.assertEqual(workflow.count("name: Acquire and materialize only the reviewed original reference packet"), 2)
+        self.assertEqual(workflow.count("--out \"$PWD/out/service-grant-mcp\""), 2)
+        self.assertEqual(workflow.count("--format github-env >> \"$GITHUB_ENV\""), 3)
+        self.assertEqual(workflow.count("--max-filesize \"$REFERENCE_PACKET_BYTES\""), 2)
+        self.assertEqual(workflow.count("mapfile -d '' -t reference_args"), 2)
+        self.assertEqual(workflow.count('"${reference_args[@]}"'), 2)
+        self.assertEqual(workflow.count("name: Remove only byte-verified owned original reference locations"), 2)
+        self.assertIn("always() && env.HAS_NATIVE_REFERENCES == 'true'", workflow)
+        self.assertNotIn("eval ", workflow)
 
 
 if __name__ == "__main__":

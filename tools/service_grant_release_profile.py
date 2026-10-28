@@ -41,9 +41,11 @@ def pairs(items):
 
 
 def _validate(document, version):
-    require(type(document) is dict and set(document) == {
+    fields = {
         "schema", "version", "native_source", "go_version", "platform",
-        "archive", "binary", "bundle", "provenance"}, "release profile fields differ")
+        "archive", "binary", "bundle", "provenance"}
+    require(type(document) is dict and set(document) in (fields, fields | {"reference_packet"}),
+            "release profile fields differ")
     require(document["schema"] == "gooo/public-native-release-profile/v1" and
             document["version"] == version and
             re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+-preview\.[0-9]+", version),
@@ -75,12 +77,24 @@ def _validate(document, version):
         require(type(bundle[key]) is int and 0 < bundle[key] <= 128,
                 "bundle count must be a bounded integer")
     require(bundle["notice_texts"] < bundle["runtime_members"], "bundle notice/member roles differ")
+    reference = document.get("reference_packet")
+    if bundle["schema"] == "gooo/service-grant-mcp-native-bundle/v4":
+        require(type(reference) is dict and set(reference) == {"name", "bytes", "sha256"},
+                "v4 requires a reviewed reference packet")
+        require(reference["name"] == "gooo-mcp-saved-reference-linux-amd64.tar.gz" and
+                type(reference["bytes"]) is int and 0 < reference["bytes"] <= 16 << 20 and
+                type(reference["sha256"]) is str and re.fullmatch(r"[0-9a-f]{64}", reference["sha256"]),
+                "reference packet role differs")
+    else:
+        require("reference_packet" not in document, "legacy release cannot acquire new reference material")
     release_url = REPOSITORY + "/releases/tag/" + version
+    origins = [{"@id": "urn:sha256:" + archive["sha256"]},
+               {"@id": REPOSITORY + "/tree/" + source}]
+    if reference is not None:
+        origins.append({"@id": "urn:sha256:" + reference["sha256"]})
     require(document["provenance"] == {
         "@context": {"prov": "http://www.w3.org/ns/prov#"}, "@id": release_url,
-        "prov:wasDerivedFrom": [
-            {"@id": "urn:sha256:" + archive["sha256"]},
-            {"@id": REPOSITORY + "/tree/" + source}]},
+        "prov:wasDerivedFrom": origins},
         "release provenance does not bind the archive and source roles")
     return document
 
@@ -111,6 +125,8 @@ def load_release(version=DEFAULT_VERSION):
     document["profile_file"] = "tools/profiles/" + name
     document["release_url"] = REPOSITORY + "/releases/tag/" + version
     document["archive_url"] = REPOSITORY + "/releases/download/" + version + "/" + document["archive"]["name"]
+    if "reference_packet" in document:
+        document["reference_packet_url"] = REPOSITORY + "/releases/download/" + version + "/" + document["reference_packet"]["name"]
     return document
 
 
@@ -123,6 +139,11 @@ def environment(profile):
         "RUNTIME_MEMBERS": str(profile["bundle"]["runtime_members"]),
         "NOTICE_TEXTS": str(profile["bundle"]["notice_texts"]),
         "RELEASE_PROFILE_SHA256": profile["profile_sha256"],
+        "NATIVE_GO_SEMVER": profile["go_version"].removeprefix("go"),
+        "HAS_NATIVE_REFERENCES": "true" if "reference_packet" in profile else "false",
+        "REFERENCE_PACKET_URL": profile.get("reference_packet_url", ""),
+        "REFERENCE_PACKET_BYTES": str(profile["reference_packet"]["bytes"]) if "reference_packet" in profile else "",
+        "REFERENCE_PACKET_SHA256": profile.get("reference_packet", {}).get("sha256", ""),
     }
     require(all(type(v) is str and "\n" not in v and "\r" not in v for v in result.values()),
             "release environment value contains a newline")
