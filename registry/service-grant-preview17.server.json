@@ -1,0 +1,70 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.kimjooyoon/gooo-service-grant",
+  "title": "Gooo saved tool definitions",
+  "description": "Compare recorded MCP tool definitions before reusing a saved tool selection.",
+  "repository": {
+    "url": "https://github.com/kimjooyoon/gooo-go-ports",
+    "source": "github",
+    "subfolder": "examples/service-grant-mcp"
+  },
+  "version": "0.1.0-preview.17",
+  "websiteUrl": "https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.17",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/kimjooyoon/gooo-service-grant-mcp@sha256:a015a049318235eed7429347aef232c71703ab4bb9931277f99e2c6e3218a82e",
+      "runtimeHint": "docker",
+      "transport": {
+        "type": "stdio"
+      },
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "--network",
+          "value": "none"
+        },
+        {
+          "type": "named",
+          "name": "--read-only"
+        },
+        {
+          "type": "named",
+          "name": "--platform",
+          "value": "linux/amd64"
+        },
+        {
+          "type": "named",
+          "name": "--user",
+          "value": "65532:65532"
+        },
+        {
+          "type": "named",
+          "name": "--cap-drop",
+          "value": "ALL"
+        },
+        {
+          "type": "named",
+          "name": "--security-opt",
+          "value": "no-new-privileges"
+        },
+        {
+          "type": "named",
+          "name": "--pids-limit",
+          "value": "32"
+        },
+        {
+          "type": "named",
+          "name": "--memory",
+          "value": "128m"
+        }
+      ],
+      "packageArguments": [
+        {
+          "type": "named",
+          "name": "--definition-snapshot"
+        }
+      ]
+    }
+  ]
+}

@@ -1347,6 +1347,39 @@ RELEASE_GO_STEP = """      - name: Set up the original Go identity reader for sa
 """
 
 
+REGISTRY_GO_REFERENCE_PATH = '.github/workflows/registry-install-smoke.yml'
+
+
+def validate_registry_go_reader(text):
+    """The Registry consumer reads the original native Go identity, not root Go."""
+    require(text.count('jobs:\n') == 1, 'Registry reader jobs map differs')
+    body = text.split('jobs:\n', 1)[1]
+    require(re.findall(r'^  ([a-z][a-z0-9-]*):\n', body, re.M) == ['install'],
+            'Registry reader must belong only to installation')
+    require(text.count(RELEASE_GO_STEP) == 1 and
+            len(re.findall(r'uses:[ \t]+actions/setup-go@', text)) == 1 and
+            len(re.findall(r'^\s*go-version(?:-file)?:', text, re.M)) == 1 and
+            text.count('NATIVE_GO_SEMVER') == 1,
+            'Registry original Go selector family differs')
+    _, named, unnamed = job_steps(body)
+    require(len(unnamed) == 1 and 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' in unnamed[0]
+            and text.count('      REQUESTED_NATIVE_VERSION: ${{ inputs.release_version }}\n') == 1
+            and '        default: v0.1.0-preview.16\n' in text,
+            'Registry reader profile selection or legacy default changed')
+    loader = named['Load the reviewed native release profile']
+    require(literal_commands(loader) == [
+            'python3 -I -B tools/service_grant_mcp_oci.py profile '
+            '--version "$REQUESTED_NATIVE_VERSION" --format github-env >> "$GITHUB_ENV"']
+            and field(loader, 'run') == '|' and field(loader, 'if') is None
+            and field(loader, 'continue-on-error') is None
+            and '          set -euo pipefail\n' in loader,
+            'Registry reader must use the reviewed native profile loader')
+    require(body.index(loader) < body.index(RELEASE_GO_STEP) <
+            body.index(named['Acquire and materialize only the reviewed original reference packet']),
+            'Registry original Go reader must follow its profile and precede reference use')
+    return text
+
+
 def validate_release_go_readers(text):
     require(text.count('jobs:\n') == 1, 'release reader jobs map differs')
     raw = text.split('jobs:\n', 1)[1]
@@ -4691,8 +4724,9 @@ class RootGoReferenceTests(unittest.TestCase):
         observed = {str(path.relative_to(root)) for path in WORKFLOW.parent.iterdir()
                     if path.suffix in ('.yml', '.yaml') and
                     re.search(r'uses:[ \t]+actions/setup-go@', path.read_text())}
-        self.assertEqual(observed, set(ROOT_GO_REFERENCES) | {RELEASE_GO_REFERENCE_PATH})
+        self.assertEqual(observed, set(ROOT_GO_REFERENCES) | {RELEASE_GO_REFERENCE_PATH, REGISTRY_GO_REFERENCE_PATH})
         validate_release_go_readers((root / RELEASE_GO_REFERENCE_PATH).read_text())
+        validate_registry_go_reader((root / REGISTRY_GO_REFERENCE_PATH).read_text())
         for path, (count, digest) in ROOT_GO_REFERENCES.items():
             with self.subTest(path=path):
                 prior = project_root_go_reference((root / path).read_text(), path=path)
@@ -4719,6 +4753,27 @@ class RootGoReferenceTests(unittest.TestCase):
         moved = moved.replace('  publish:\n', '  publish:\n' + RELEASE_GO_STEP, 1)
         with self.assertRaises(ValueError):
             validate_release_go_readers(moved)
+
+    def test_registry_original_reader_cannot_be_removed_rebound_or_moved(self):
+        root = WORKFLOW.parent.parent.parent
+        raw = (root / REGISTRY_GO_REFERENCE_PATH).read_text()
+        self.assertEqual(validate_registry_go_reader(raw), raw)
+        for old, new in [(RELEASE_GO_STEP, ''), (RELEASE_GO_STEP, RELEASE_GO_STEP * 2),
+                ('go-version: ${{ env.NATIVE_GO_SEMVER }}', 'go-version-file: go.mod'),
+                ('go-version: ${{ env.NATIVE_GO_SEMVER }}', "go-version: '1.27.3'"),
+                ('go-version: ${{ env.NATIVE_GO_SEMVER }}', 'go-version: ${{ matrix.go }}'),
+                ('setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e', 'setup-go@main'),
+                (RELEASE_GO_STEP, RELEASE_GO_STEP.replace('cache: false', 'cache: true')),
+                (RELEASE_GO_STEP, RELEASE_GO_STEP.replace("env.HAS_NATIVE_REFERENCES == 'true'", 'false')),
+                ('--version "$REQUESTED_NATIVE_VERSION"', '--version latest'),
+                ('--format github-env >> "$GITHUB_ENV"', '--format json')]:
+            with self.subTest(change=old), self.assertRaises(ValueError):
+                validate_registry_go_reader(raw.replace(old, new, 1))
+        moved = raw.replace(RELEASE_GO_STEP, '', 1)
+        moved = moved.replace('      - name: Retain finite descriptor, protocol, runtime and cleanup observations\n',
+                              RELEASE_GO_STEP + '      - name: Retain finite descriptor, protocol, runtime and cleanup observations\n', 1)
+        with self.assertRaises(ValueError):
+            validate_registry_go_reader(moved)
 
     def test_mixed_wrong_missing_and_duplicate_selectors_are_refused(self):
         raw = WORKFLOW.read_bytes().decode()

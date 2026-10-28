@@ -2,22 +2,29 @@ name: Publish Gooo service-grant metadata to the MCP Registry
 
 on:
   workflow_dispatch:
+    inputs:
+      release_version:
+        type: choice
+        options: [v0.1.0-preview.16, v0.1.0-preview.17]
+        default: v0.1.0-preview.16
+        required: true
 
 permissions: {}
 
 concurrency:
-  group: gooo-mcp-registry-preview16
+  group: gooo-mcp-registry-publication
   cancel-in-progress: false
 
 jobs:
   publish:
-    if: github.repository == 'kimjooyoon/gooo-go-ports' && github.ref == 'refs/heads/main'
+    if: github.repository == 'kimjooyoon/gooo-go-ports' && github.ref == 'refs/heads/main' && github.run_attempt == '1'
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     permissions:
       contents: read
       id-token: write
     env:
+      REQUESTED_RELEASE_VERSION: ${{ inputs.release_version }}
       GOTOOLCHAIN: local
       GOENV: 'off'
       GOWORK: 'off'
@@ -29,17 +36,19 @@ jobs:
         with:
           persist-credentials: false
       - name: Check publication safety without authentication
-        run: python3 -I -B tools/publish-service-grant-registry_test.py -v
+        run: |
+          python3 -I -B tools/publish-service-grant-registry_test.py -v
+          python3 -I -B tools/registry_publication_profile_test.py -v
       - name: Verify the public preview, then publish its fixed metadata once
         run: >-
           python3 -I -B tools/publish-service-grant-registry.py
           --out "$RUNNER_TEMP/gooo-registry-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          --allow-publish
+          --allow-publish --release-version "$REQUESTED_RELEASE_VERSION"
       - name: Retain public checks and credential-free process summaries
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          name: gooo-registry-preview16-${{ github.run_id }}-${{ github.run_attempt }}
+          name: gooo-registry-${{ inputs.release_version }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/gooo-registry-${{ github.run_id }}-${{ github.run_attempt }}/proof
           if-no-files-found: error
           retention-days: 7

@@ -149,6 +149,19 @@ class RegistryLaunchInputTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, 'descriptor bytes changed'):
                     module.registry_package(path)
 
+    def test_snapshot_descriptor_passes_one_binary_flag_after_immutable_image(self):
+        module = self.subject()
+        package = module.registry_package(SUBJECT.parents[1] / 'registry/service-grant-preview17.server.json')
+        trial = types.SimpleNamespace(image='sha256:' + 'a' * 64, label='io.gooo.test=registry17', registry_package=package)
+        argv = module.create_arguments(trial, 'owned-snapshot')
+        self.assertEqual(argv[-2:], [package['identifier'], '--definition-snapshot'])
+        self.assertEqual(argv.count('--definition-snapshot'), 1)
+        self.assertEqual(argv.count('--memory'), 1)
+        self.assertEqual(argv[argv.index('--memory') + 1], '128m')
+        self.assertNotIn('--memory=128m', argv)
+        self.assertIn('@sha256:a015a049318235eed7429347aef232c71703ab4bb9931277f99e2c6e3218a82e', argv[-2])
+        self.assertNotIn(trial.image, argv)
+
 
 class AliasProofTests(unittest.TestCase):
     """Exercise the real proof checker without any Docker or native child.

@@ -16,6 +16,14 @@ on:
       - 'registry/service-grant-preview14.server.json'
       - 'registry/service-grant-preview15.server.json'
       - 'registry/service-grant-preview16.server.json'
+      - 'registry/service-grant-preview17.server.json'
+      - 'tools/profiles/mcp-registry-preview17.json'
+      - 'tools/profiles/mcp-public-*.json'
+      - 'tools/service_grant_release_profile*'
+      - 'tools/service_grant_mcp_reference*'
+      - 'tools/registry_publication_profile_test.py'
+      - 'tools/check-ci-scope-workflow_test.py'
+      - 'examples/service-grant-mcp/**'
 
 permissions:
   contents: read
@@ -23,11 +31,15 @@ permissions:
 jobs:
   validate:
     if: github.repository == 'kimjooyoon/gooo-go-ports' && github.event_name == 'pull_request'
+    strategy:
+      matrix:
+        release_version: [v0.1.0-preview.16, v0.1.0-preview.17]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: read
     env:
+      REQUESTED_RELEASE_VERSION: ${{ matrix.release_version }}
       GOTOOLCHAIN: local
       GOENV: 'off'
       GOWORK: 'off'
@@ -39,23 +51,30 @@ jobs:
         with:
           persist-credentials: false
       - name: Check no-auth mode and publication safety
-        run: python3 -I -B tools/publish-service-grant-registry_test.py -v
+        run: |
+          python3 -I -B tools/publish-service-grant-registry_test.py -v
+          python3 -I -B tools/registry_publication_profile_test.py -v
       - name: Validate pinned public metadata without authentication or publication
         run: >-
           python3 -I -B tools/publish-service-grant-registry.py
           --out "$RUNNER_TEMP/gooo-registry-check-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          --validate-only
+          --validate-only --release-version "$REQUESTED_RELEASE_VERSION"
       - name: Retain anonymous checks and credential-free process summaries
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          name: gooo-registry-check-preview16-${{ github.run_id }}-${{ github.run_attempt }}
+          name: gooo-registry-check-${{ matrix.release_version }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/gooo-registry-check-${{ github.run_id }}-${{ github.run_attempt }}/proof
           if-no-files-found: error
           retention-days: 7
 
   install-candidate:
     needs: validate
+    strategy:
+      matrix:
+        release_version: [v0.1.0-preview.16, v0.1.0-preview.17]
     permissions:
       contents: read
     uses: ./.github/workflows/registry-install-smoke.yml
+    with:
+      release_version: ${{ matrix.release_version }}

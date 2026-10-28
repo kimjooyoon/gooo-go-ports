@@ -7,6 +7,39 @@ and use the [public image installation guide](service-grant-container.md#use-the
 to connect a host. Registry publication establishes discovery metadata; client
 installation and a completed task require their own observations.
 
+## Preview17 saved-definition candidate
+
+The checked-in preview17 descriptor selects `gooo_compare_saved_tool_definitions`
+with the binary argument `--definition-snapshot`. It is a Registry candidate;
+the public container and a successful local validation do not register it.
+Until registration is confirmed, use the [preview17 exact-image instructions](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.17#container-for-mcp-clients-linux-amd64).
+
+The publisher accepts `--release-version v0.1.0-preview.17`; its default remains
+preview16. The corresponding manual Actions input selects the same version.
+The byte-pinned [publication profile](../tools/profiles/mcp-registry-preview17.json)
+keeps three identities separate: the original native release, the successful
+[OCI assembly and anonymous readback](https://github.com/kimjooyoon/gooo-go-ports/actions/runs/40632109714),
+and the source revision containing Registry metadata. Preview17 uses that normal
+publication run; preview16 retains the proof-recovery prerequisite below.
+
+PR checks validate both descriptors through the pinned official publisher.
+The shared installation job consumes each actual descriptor. Preview17 runs the
+selected snapshot task on both supported protocols, compares complete reports
+with the saved original references, checks malformed-input refusal and a repeat
+after errors, and verifies copied runtime bytes and cleanup. Its task option is
+passed after the image; Docker resource options remain before it. The optional
+alias and ordered-request modes have separate container verification records.
+
+The original reference packet supplies saved observations and byte-identical
+CLIs. Its original Go identity reader is selected by the native profile, with
+root Go kept separate. The installation check does not rerun those reference
+programs or rewrite their inputs, outputs or source bindings.
+
+After final-source checks, publication requires the owned manual main context,
+attempt one, version absence, one official publish call and exact anonymous
+version readback. A later preview needs a reviewed profile, descriptor and
+selection update; arbitrary versions or asset URLs are refused.
+
 The remaining sections retain the earlier candidate checks and publication
 guards, with their original source and execution identities.
 
@@ -54,7 +87,7 @@ applies grants or authenticates live authority.
 
 ## Publication prerequisites
 
-`publish-service-grant-registry.py` checks the whole descriptor hash, its exact
+For preview16, `publish-service-grant-registry.py` checks the whole descriptor hash, its exact
 package shape, the original public native assets and version absence before any
 publication. A reviewed successful original-proof recovery run is required
 before the publisher is bootstrapped or authenticated. It checks the exact run,
