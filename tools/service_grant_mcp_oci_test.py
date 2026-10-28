@@ -71,8 +71,12 @@ class PublicReleaseIdentity(unittest.TestCase):
     def synthetic_pins(self, raw, binary_hash):
         # Tests replace the reviewed whole-byte anchors only inside this mock
         # scope; production CLI has no alternate pin or generic URL option.
+        profile = P.RELEASE.load_release(P.VERSION)
+        profile["archive"].update(bytes=len(raw), sha256=P.CONTEXT.digest(raw))
+        profile["binary"]["sha256"] = binary_hash
         return mock.patch.multiple(P, ARCHIVE_BYTES=len(raw),
-                                   ARCHIVE_SHA256=P.CONTEXT.digest(raw), BINARY_SHA256=binary_hash)
+                                   ARCHIVE_SHA256=P.CONTEXT.digest(raw), BINARY_SHA256=binary_hash,
+                                   release_profile=mock.Mock(return_value=profile))
 
     def test_fixed_release_metadata(self):
         self.assertEqual(P.VERSION, "v0.1.0-preview.16")

@@ -27,6 +27,32 @@ expected context from that same fixed archive and checks a copied image runtime'
 63 names, file bytes and modes. Neither command runs Docker or proves execution.
 The image uses the existing `scratch` Dockerfile and absolute executable entrypoint.
 
+## Reviewed release profiles
+
+The current workflow reads the archive URL, byte limit, archive/executable hashes,
+source commit and runtime/notice counts from one checksum-pinned repository
+profile. Preview16 remains the only registered version and the default. Inspect
+it without downloading or executing anything:
+
+```sh
+python3 -I -B tools/service_grant_mcp_oci.py profile --version v0.1.0-preview.16
+```
+
+`native_version` on manual dispatch selects only a reviewed version from the
+loader's allowlist. It accepts no path, arbitrary URL or replacement checksum.
+Preparation, publication and anonymous readback each load the same selected
+profile. Publication also binds the profile SHA256 in its current-run manifest;
+copied runtime checks still compare every actual file byte and mode. The profile's
+PROV-O links distinguish archive-byte identity from native-source identity. They
+do not authenticate a producer or establish execution, authorization or adoption.
+
+Adding release data does not provide verification for a new tool capability.
+In particular, a future saved-definition v4 image also needs its original native
+alias/snapshot references and the complete sixteen-session image checks. No v4
+public image or Registry update is implied here. The Registry install smoke stays
+bound to its existing preview16 descriptor, and the historical recovery workflow
+below keeps its original immutable inputs.
+
 ## Verification and publication
 
 Pull requests run the read-only `verify` job on a GitHub-hosted Linux runner. They

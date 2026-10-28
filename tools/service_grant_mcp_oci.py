@@ -1,8 +1,8 @@
-"""Prepare an OCI build context from the fixed public preview16 Linux bundle.
+"""Prepare an OCI build context from a reviewed public Linux native release.
 
 This command only reads a local archive and writes one fresh build context.
 It never fetches a URL, rebuilds a binary, invokes Docker or publishes an image.
-The release pins below come from the reviewed whole public GitHub asset; the
+The version-selected pins come from reviewed whole public GitHub assets; the
 existing container preparer owns all archive/member/notice validation.
 """
 
@@ -17,15 +17,37 @@ SPEC = importlib.util.spec_from_file_location(
 CONTEXT = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(CONTEXT)
 
-VERSION = "v0.1.0-preview.16"
-SOURCE_COMMIT = "fceb89f8b53eabd6687d16258d7cee89853c2cfe"
-PLATFORM = "linux/amd64"
-ARCHIVE_NAME = "gooo-service-grant-mcp-linux-amd64.tar.gz"
-ARCHIVE_BYTES = 7217754
-ARCHIVE_SHA256 = "0ae9bc25eef2ad73535642a66b8b7602e9f64a148b3e60696e36048a3b4a0524"
-BINARY_SHA256 = "a848a8747669e46e9afef6c0f1ed8b2014df4838cc370416f60ab9c6acccfc0a"
-RELEASE_URL = "https://github.com/kimjooyoon/gooo-go-ports/releases/tag/" + VERSION
-ARCHIVE_URL = "https://github.com/kimjooyoon/gooo-go-ports/releases/download/" + VERSION + "/" + ARCHIVE_NAME
+SPEC = importlib.util.spec_from_file_location(
+    "service_grant_public_release", Path(__file__).with_name("service_grant_release_profile.py"))
+RELEASE = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(RELEASE)
+
+
+def release_profile(version):
+    try:
+        profile = RELEASE.load_release(version)
+    except RELEASE.ProfileRefusal as error:
+        raise CONTEXT.Refusal(str(error)) from error
+    layout = profile["bundle"]
+    CONTEXT.require(CONTEXT.LAYOUTS.get(layout["schema"]) ==
+                    (layout["runtime_members"], layout["notice_texts"]),
+                    "release layout differs from the known archive contract")
+    CONTEXT.require(profile["go_version"] == CONTEXT.GO_VERSION,
+                    "release toolchain differs from the archive contract")
+    return profile
+
+
+# Keep the existing default-release Python API; checks below use selected data.
+DEFAULT = release_profile(RELEASE.DEFAULT_VERSION)
+VERSION = DEFAULT["version"]
+SOURCE_COMMIT = DEFAULT["native_source"]
+PLATFORM = DEFAULT["platform"]
+ARCHIVE_NAME = DEFAULT["archive"]["name"]
+ARCHIVE_BYTES = DEFAULT["archive"]["bytes"]
+ARCHIVE_SHA256 = DEFAULT["archive"]["sha256"]
+BINARY_SHA256 = DEFAULT["binary"]["sha256"]
+RELEASE_URL = DEFAULT["release_url"]
+ARCHIVE_URL = DEFAULT["archive_url"]
 DOCKERFILE = Path(__file__).resolve().parents[1] / "containers/service-grant-mcp/Dockerfile"
 
 
@@ -36,26 +58,32 @@ def prepare_public(bundle, sha256, source_commit, version, out):
     fixed whole-archive SHA, not a caller's arbitrary replacement checksum.
     A failed or incomplete context is retained; the output must be fresh.
     """
-    CONTEXT.require(version == VERSION, "only the fixed public preview16 version is supported")
-    CONTEXT.require(source_commit == SOURCE_COMMIT, "public preview16 source commit differs")
-    CONTEXT.require(sha256 == ARCHIVE_SHA256, "public preview16 expected archive SHA256 differs")
+    profile = release_profile(version)
+    archive, layout = profile["archive"], profile["bundle"]
+    CONTEXT.require(source_commit == profile["native_source"], "public release source commit differs")
+    CONTEXT.require(sha256 == archive["sha256"], "public release expected archive SHA256 differs")
     bundle = Path(bundle)
     info = bundle.lstat()
     CONTEXT.require(stat.S_ISREG(info.st_mode), "public archive must be a regular non-symlink file")
-    CONTEXT.require(info.st_size == ARCHIVE_BYTES, "public preview16 archive byte count differs")
-    context = CONTEXT.prepare(bundle, ARCHIVE_SHA256, SOURCE_COMMIT, Path(out), DOCKERFILE)
-    CONTEXT.require(context["archive_bytes"] == ARCHIVE_BYTES and
-                    context["archive_sha256"] == ARCHIVE_SHA256 and
-                    context["binary_sha256"] == BINARY_SHA256 and
-                    context["source_commit"] == SOURCE_COMMIT and
-                    context["platform"] == PLATFORM and
-                    context["runtime_members"] == 63 and context["notice_texts"] == 58,
+    CONTEXT.require(info.st_size == archive["bytes"], "public release archive byte count differs")
+    context = CONTEXT.prepare(bundle, archive["sha256"], profile["native_source"], Path(out), DOCKERFILE)
+    CONTEXT.require(context["archive_bytes"] == archive["bytes"] and
+                    context["archive_sha256"] == archive["sha256"] and
+                    context["binary_sha256"] == profile["binary"]["sha256"] and
+                    context["source_commit"] == profile["native_source"] and
+                    context["platform"] == profile["platform"] and
+                    context["runtime_members"] == layout["runtime_members"] and
+                    context["notice_texts"] == layout["notice_texts"],
                     "prepared public release context identity differs")
     return {
-        "schema": "gooo/public-preview16-oci-context/v1",
-        "release": {"version": VERSION, "source_commit": SOURCE_COMMIT,
-                    "platform": PLATFORM, "url": RELEASE_URL,
-                    "archive": ARCHIVE_NAME, "archive_url": ARCHIVE_URL},
+        "schema": ("gooo/public-preview16-oci-context/v1" if version == "v0.1.0-preview.16"
+                   else "gooo/public-native-oci-context/v1"),
+        "release": {"version": profile["version"], "source_commit": profile["native_source"],
+                    "platform": profile["platform"], "url": profile["release_url"],
+                    "archive": archive["name"], "archive_url": profile["archive_url"],
+                    "profile_sha256": profile["profile_sha256"], "profile_file": profile["profile_file"],
+                    "bundle_schema": layout["schema"], "runtime_members": layout["runtime_members"],
+                    "notice_texts": layout["notice_texts"]},
         "context": context,
         "binary_rebuilt": False,
         "network_requests": 0,
@@ -79,7 +107,8 @@ def verify_runtime(bundle, sha256, source_commit, version, runtime, out):
     expected = out / "runtime"
     names = {path.name for path in expected.iterdir()}
     actual = {path.name for path in runtime.iterdir()}
-    CONTEXT.require(len(names) == 63 and actual == names, "runtime file roster differs")
+    CONTEXT.require(len(names) == prepared["release"]["runtime_members"] and actual == names,
+                    "runtime file roster differs")
     checked = []
     for name in sorted(names):
         wanted = CONTEXT.read_regular(expected / name, CONTEXT.EXPANDED_LIMIT)
@@ -101,7 +130,8 @@ def verify_runtime(bundle, sha256, source_commit, version, runtime, out):
                     {path.name for path in runtime.iterdir()} == names,
                     "runtime directory changed during comparison")
     report = {
-        "schema": "gooo/public-preview16-oci-runtime-identity/v1",
+        "schema": ("gooo/public-preview16-oci-runtime-identity/v1" if version == "v0.1.0-preview.16"
+                   else "gooo/public-native-oci-runtime-identity/v1"),
         "status": "EXACT_FIXED_PUBLIC_RUNTIME_BYTES_AND_MODES_MATCH",
         "release": prepared["release"], "context": prepared["context"],
         "runtime": str(real_runtime), "expected_context": str(out.resolve()),
@@ -140,6 +170,9 @@ def verify_embedded_go_inventory(embedded_go, components, packages):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+    metadata = commands.add_parser("profile")
+    metadata.add_argument("--version", default=VERSION)
+    metadata.add_argument("--format", choices=("json", "github-env"), default="json")
     for name in ("prepare", "verify-runtime"):
         command = commands.add_parser(name)
         command.add_argument("--bundle", type=Path, required=True)
@@ -150,6 +183,13 @@ def main(argv=None):
         if name == "verify-runtime":
             command.add_argument("--runtime", type=Path, required=True)
     args = parser.parse_args(argv)
+    if args.command == "profile":
+        profile = release_profile(args.version or VERSION)
+        if args.format == "github-env":
+            print("\n".join(key + "=" + value for key, value in RELEASE.environment(profile).items()))
+        else:
+            print(json.dumps(profile, sort_keys=True))
+        return
     if args.command == "verify-runtime":
         result = verify_runtime(args.bundle, args.sha256, args.source_commit, args.version, args.runtime, args.out)
     else:
