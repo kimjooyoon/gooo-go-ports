@@ -77,8 +77,10 @@ builds one image with build networking disabled, and reuses the existing
 The client checks real default and optional sessions, full proof fields, the
 malformed-input refusal, actual runtime files, read-only rootfs, network mode,
 nonroot user and separate Docker CLI/container termination and removal. It uses
-protocol `2025-11-25`. Earlier native tests cover other documented protocol
-versions, but are not new results from this workflow.
+protocol `2025-11-25` for the default legacy path. When the reviewed release
+requires saved references, it exercises the optional combinations with both
+`2025-11-25` and `2026-07-28`; the v4 path includes sixteen sessions. These are
+finite observations of that image and supplied inputs.
 
 Trivy `0.76.0` is downloaded directly from its fixed public release and checked
 against its fixed 52,253,735-byte SHA256
@@ -104,7 +106,7 @@ the package-write/OIDC job. It downloads the current verification job's exact
 artifact ID, verifies its run/attempt/checkout identity and every declared file
 hash, and loads the saved image. It checks the loaded image ID rather than
 rebuilding. It pushes once under
-`v0.1.0-preview.16-RUN_ID-a1`; no preview16 alias or `latest` tag is overwritten.
+`NATIVE_VERSION-RUN_ID-a1`; no release alias or `latest` tag is overwritten.
 A timeout or a later failure does not authorize another publisher dispatch.
 Inspect the original push receipt first.
 
@@ -117,7 +119,7 @@ binary, context and scanner artifacts to the image assembly workflow/checkout.
 Default SLSA build provenance establishes this wrapper image's assembly workflow;
 it does not retroactively authenticate the original native release producer or
 turn an unsigned BUNDLE into a native-build attestation. The SBOM must retain
-all eleven embedded Go module identities and the embedded Go version even though
+all embedded Go module identities declared by that bundle and its embedded Go version even though
 `scratch` has no operating-system packages. Notices with tooling-only scope do
 not imply that all those tools are present in the executable.
 
