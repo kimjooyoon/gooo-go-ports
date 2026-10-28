@@ -1,0 +1,127 @@
+{
+  "schema": "gooo/mcp-registry-publication-profile/v1",
+  "SOURCE": "7d801a6e78680f868db4da85f0c5f646def40151",
+  "TREE": "6f14de6ba95a601d142621ad22ac845325aef013",
+  "TAG": "v0.1.0-preview.17",
+  "TAG_OBJECT": "5b75b300011af680a5ba3ca4f980a9fdd13d15f6",
+  "RELEASE_ID": 426155603,
+  "NAME": "io.github.kimjooyoon/gooo-service-grant",
+  "VERSION": "0.1.0-preview.17",
+  "METADATA_BYTES": 1856,
+  "METADATA_SHA": "dab32bdde15505dcbab5eb0a293bf1d81a398a676e566b774c9eba96fb6ebf19",
+  "OCI_IMAGE": "ghcr.io/kimjooyoon/gooo-service-grant-mcp",
+  "OCI_DIGEST": "sha256:a015a049318235eed7429347aef232c71703ab4bb9931277f99e2c6e3218a82e",
+  "ASSETS": {
+    "gooo-mcp-saved-reference-linux-amd64.tar.gz": [
+      5928230,
+      "436cb1fbbf251047539191c7e9628f903d5016b8298e29dd60119a290453ee6a"
+    ],
+    "gooo-mcp-saved-reference-linux-amd64.tar.gz.sha256": [
+      110,
+      "7084a6097a8b9af09635124f583c8fad2355e76148a3758b097c3a55ec66bdb0"
+    ],
+    "gooo-service-grant-mcp-darwin-arm64.tar.gz": [
+      7076071,
+      "599dddf83fbfc09a7767166245326d19aba41b2e1a101dc2bd86f2c387d4447e"
+    ],
+    "gooo-service-grant-mcp-darwin-arm64.tar.gz.sha256": [
+      109,
+      "cd4384c004dcf7952e69e5c7d2c1f2fdc3e21a20f2ff45b74d11d7ede531032a"
+    ],
+    "gooo-service-grant-mcp-linux-amd64.tar.gz": [
+      7323043,
+      "47d4e96170ae3b6e54eae4ff128f8589a59c59cf64681d8a94d3f3eaa53c51f0"
+    ],
+    "gooo-service-grant-mcp-linux-amd64.tar.gz.sha256": [
+      108,
+      "4149a5e7b33d0119c8da4840544d700718b224fc800c9009d0b2f2d77616dea6"
+    ]
+  },
+  "ASSET_IDS": {
+    "gooo-mcp-saved-reference-linux-amd64.tar.gz": 683394293,
+    "gooo-mcp-saved-reference-linux-amd64.tar.gz.sha256": 683394299,
+    "gooo-service-grant-mcp-darwin-arm64.tar.gz": 683394296,
+    "gooo-service-grant-mcp-darwin-arm64.tar.gz.sha256": 683394298,
+    "gooo-service-grant-mcp-linux-amd64.tar.gz": 683394295,
+    "gooo-service-grant-mcp-linux-amd64.tar.gz.sha256": 683394316
+  },
+  "BUNDLE_IDENTITIES": {
+    "gooo-service-grant-mcp-linux-amd64.tar.gz": [
+      80841,
+      "ee5a376d47c2f0dc1c8aa6eec3ea97e5f33671de079b029c6bac4a65c6f42617"
+    ],
+    "gooo-service-grant-mcp-darwin-arm64.tar.gz": [
+      80846,
+      "b53e48af87ca1f95dd6db10bbcabedbd22285c87dd76397770b7b019031ebe84"
+    ]
+  },
+  "PACKAGE": {
+    "registryType": "oci",
+    "identifier": "ghcr.io/kimjooyoon/gooo-service-grant-mcp@sha256:a015a049318235eed7429347aef232c71703ab4bb9931277f99e2c6e3218a82e",
+    "runtimeHint": "docker",
+    "transport": {
+      "type": "stdio"
+    },
+    "runtimeArguments": [
+      {
+        "type": "named",
+        "name": "--network",
+        "value": "none"
+      },
+      {
+        "type": "named",
+        "name": "--read-only"
+      },
+      {
+        "type": "named",
+        "name": "--platform",
+        "value": "linux/amd64"
+      },
+      {
+        "type": "named",
+        "name": "--user",
+        "value": "65532:65532"
+      },
+      {
+        "type": "named",
+        "name": "--cap-drop",
+        "value": "ALL"
+      },
+      {
+        "type": "named",
+        "name": "--security-opt",
+        "value": "no-new-privileges"
+      },
+      {
+        "type": "named",
+        "name": "--pids-limit",
+        "value": "32"
+      },
+      {
+        "type": "named",
+        "name": "--memory",
+        "value": "128m"
+      }
+    ],
+    "packageArguments": [
+      {
+        "type": "named",
+        "name": "--definition-snapshot"
+      }
+    ]
+  },
+  "PUBLICATION": {
+    "run_id": 40632109714,
+    "source": "e821c7967fdcf5bd01ec0c921a6e74b3971b19fc",
+    "attempt": 1,
+    "workflow": ".github/workflows/service-grant-mcp-oci.yml",
+    "successful_jobs": [
+      "verify",
+      "publish",
+      "public-readback"
+    ],
+    "skipped_jobs": [
+      "registry-install-candidate"
+    ]
+  }
+}

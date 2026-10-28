@@ -220,26 +220,40 @@ def registry_package(path):
     publisher = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(publisher)
     raw = path.read_bytes()
-    publisher.require(len(raw) == publisher.METADATA_BYTES and sha(raw) == publisher.METADATA_SHA,
-                      'registry descriptor bytes changed')
+    publisher.require(len(raw) <= 4096, 'registry descriptor byte cap')
     doc = publisher.load(raw)
-    publisher.check_metadata(doc)
+    version = doc.get('version')
+    publisher.require(type(version) is str and version in ('0.1.0-preview.16', '0.1.0-preview.17'),
+                      'unknown registry descriptor version')
+    profile = publisher.publication_profile('v' + version)
+    fixed = publisher.configuration(profile)
+    publisher.require(len(raw) == fixed['METADATA_BYTES'] and sha(raw) == fixed['METADATA_SHA'],
+                      'registry descriptor bytes changed')
+    publisher.check_metadata(doc, profile)
     package = doc['packages'][0]
     flags = []
     for argument in package['runtimeArguments']:
         flags.append(argument['name'])
         if 'value' in argument:
             flags.append(argument['value'])
-    return {'identifier': package['identifier'], 'runtime_argv': flags, 'descriptor_sha256': sha(raw)}
+    result = {'identifier': package['identifier'], 'runtime_argv': flags, 'descriptor_sha256': sha(raw)}
+    if profile is not None:
+        result['package_argv'] = [argument['name'] for argument in package['packageArguments']]
+        result['version'] = version
+    return result
 
 
 def create_arguments(trial, name):
     package = getattr(trial, 'registry_package', None)
     flags = package['runtime_argv'] if package else ['--platform=linux/amd64', '--network=none', '--read-only']
     image = package['identifier'] if package else trial.image
+    # Preview17's reviewed descriptor already fixes these same resource guards.
+    guards = ([] if package and package.get('package_argv') else
+              ['--cap-drop=ALL', '--security-opt=no-new-privileges', '--pids-limit=32',
+               '--memory=128m', '--user=65532:65532'])
     return ['container', 'create', '--name', name, '--pull=never', '--interactive', *flags,
-            '--cap-drop=ALL', '--security-opt=no-new-privileges', '--pids-limit=32',
-            '--memory=128m', '--user=65532:65532', '--label', trial.label, image]
+            *guards, '--label', trial.label, image,
+            *(package.get('package_argv', []) if package else [])]
 
 
 class Trial:
@@ -413,7 +427,11 @@ class ContainerSession(WIRE.Session):
         save(self.work / "intent.json", {"container_name": self.name, "image": trial.image})
         try:
             args = create_arguments(trial, self.name)
-            args.extend(flags)
+            descriptor_flags = (getattr(trial, 'registry_package', None) or {}).get('package_argv', [])
+            if descriptor_flags:
+                assert mode == 'snapshot' and flags == descriptor_flags, 'descriptor task cannot be overridden'
+            else:
+                args.extend(flags)
             _, raw, _ = trial.command(args)
             self.cid = raw.decode().strip()
             assert re.fullmatch(r"[0-9a-f]{64}", self.cid)
@@ -618,7 +636,7 @@ def main():
     parser.add_argument("--docker", required=True)
     parser.add_argument("--image", required=True, help="Exact local sha256 image ID, never a mutable tag")
     parser.add_argument("--context", type=Path, required=True)
-    parser.add_argument("--registry-metadata", type=Path, help="Optional byte-pinned preview16 OCI descriptor; not generic untrusted metadata")
+    parser.add_argument("--registry-metadata", type=Path, help="Optional reviewed preview16/17 OCI descriptor; not generic untrusted metadata")
     parser.add_argument("--alias-wire-report", type=Path, help="v3 only: existing full native alias acceptance.json")
     parser.add_argument("--alias-module", type=Path, help="v3 only: pinned public module directory")
     parser.add_argument("--alias-cli", type=Path, help="v3 only: reference CLI bytes; never executed here")
@@ -640,7 +658,8 @@ def main():
     reference = None
     snapshot_reference = None
     if schema in (V3_SCHEMA,V4_SCHEMA):
-        assert package is None, "preview16 registry descriptor cannot select a v3/v4 trial"
+        assert package is None or (schema == V4_SCHEMA and package.get('version') == '0.1.0-preview.17'), \
+            "registry descriptor and native schema differ"
         reference = load_alias_reference(context, *alias_inputs)
     else:
         assert all(value is None for value in alias_inputs), "alias reference inputs require a v3 bundle"
@@ -668,6 +687,9 @@ def main():
         if snapshot_reference is not None:
             sessions=[(mode,protocol) for protocol in ALIAS.PROTOCOLS
                       for mode in ('default','many','alias','both',*SNAPSHOT_MODES)]
+        if package and package.get('package_argv'):
+            assert snapshot_reference is not None
+            sessions = [('snapshot', protocol) for protocol in ALIAS.PROTOCOLS]
         for mode, protocol in sessions:
             checkpoint()
             session, failure = ContainerSession(trial, mode, protocol), None
@@ -727,13 +749,13 @@ def main():
             "binary_sha256": sha((context / "runtime/gooo-service-grant-mcp").read_bytes()),
             "observations": observations, "model_calls": 0, "network": "none", "rootfs": "read-only",
             "external_adoption": False, "Glama_approval_or_all_client_conformance": False}
-        if reference is not None:
+        if reference is not None and any(o['mode'] in ('alias', 'both') for o in observations):
             report.update(status="CONTAINER_STDIO_ALIAS_SMALL_SMOKE_PASS", bundle_schema=schema,
                 alias_reference=reference["evidence"], alias_protocol_sessions=4,
                 alias_stdout_bytes=trial.alias_stdout_bytes, large_container_responses_exercised=False)
         if snapshot_reference is not None:
-            report.update(status='CONTAINER_STDIO_SNAPSHOT_FULL_CORPUS_PASS',snapshot_reference=snapshot_reference['evidence'],
-                protocol_sessions=16,snapshot_enabled_sessions=8,snapshot_stdout_bytes=trial.snapshot_stdout_bytes,
+            report.update(status=('CONTAINER_STDIO_REGISTRY_SNAPSHOT_TASK_PASS' if package else 'CONTAINER_STDIO_SNAPSHOT_FULL_CORPUS_PASS'),bundle_schema=schema,snapshot_reference=snapshot_reference['evidence'],
+                protocol_sessions=len(observations),snapshot_enabled_sessions=sum(o['mode'] in SNAPSHOT_MODES for o in observations),snapshot_stdout_bytes=trial.snapshot_stdout_bytes,
                 snapshot_argument_and_report_boundaries_exercised=True,new_native_Gooo_receipts=False)
         save(args.out / "verification.json", report)
         print(json.dumps(report))

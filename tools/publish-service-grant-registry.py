@@ -90,11 +90,40 @@ STREAM_CAP = 65536
 BINARY_CAP = 64 * 1024 * 1024
 
 
-def read_timeout(url):
+PROFILE17_SHA256 = '56e3718be5d4415779e2d6577435e101d8717034addaac06a89b212fa4c908f8'
+PROFILE_FIELDS = ('SOURCE', 'TREE', 'TAG', 'TAG_OBJECT', 'RELEASE_ID', 'NAME',
+                  'VERSION', 'METADATA_BYTES', 'METADATA_SHA', 'OCI_IMAGE',
+                  'OCI_DIGEST', 'ASSETS', 'ASSET_IDS', 'BUNDLE_IDENTITIES')
+
+
+def publication_profile(version):
+    """Select a reviewed data file, never an arbitrary metadata URL or path."""
+    if version == 'v0.1.0-preview.16':
+        return None
+    require(version == 'v0.1.0-preview.17', 'unknown Registry release profile')
+    path = Path(__file__).parent / 'profiles/mcp-registry-preview17.json'
+    require(stat.S_ISREG(path.lstat().st_mode), 'profile must be a regular file')
+    raw = path.read_bytes()
+    require(len(raw) == 3783 and sha(raw) == PROFILE17_SHA256,
+            'Registry release profile bytes changed')
+    value = load(raw)
+    require(value['schema'] == 'gooo/mcp-registry-publication-profile/v1'
+            and value['VERSION'] == '0.1.0-preview.17'
+            and set(value) == set(PROFILE_FIELDS) | {'schema', 'PACKAGE', 'PUBLICATION'},
+            'Registry release profile shape changed')
+    return value
+
+
+def configuration(profile):
+    # Legacy defaults retain their original values and testable failure gates.
+    return profile if profile is not None else {key: globals()[key] for key in PROFILE_FIELDS}
+
+
+def read_timeout(url, version=VERSION):
     """Allow only the fixed official Registry version read a longer socket wait."""
     parsed = urllib.parse.urlsplit(url)
     version_path = ('/v0.1/servers/' + urllib.parse.quote(NAME, safe='')
-                    + '/versions/' + urllib.parse.quote(VERSION, safe=''))
+                    + '/versions/' + urllib.parse.quote(version, safe=''))
     if (parsed.scheme == 'https' and parsed.hostname == 'registry.modelcontextprotocol.io'
             and parsed.port in (None, 443) and parsed.username is None and parsed.password is None
             and parsed.path == version_path and parsed.query in ('', 'include_deleted=true')
@@ -104,9 +133,12 @@ def read_timeout(url):
 
 
 class OriginReadTimeout(urllib.request.BaseHandler):
+    def __init__(self, version=VERSION):
+        self.version = version
+
     def https_request(self, request):
         # urllib also processes redirected requests: public asset hops keep20s.
-        request.timeout = read_timeout(request.full_url)
+        request.timeout = read_timeout(request.full_url, self.version)
         return request
 
 
@@ -159,21 +191,76 @@ def typed_subset(actual, expected):
         require(actual == expected, 'public metadata value changed')
 
 
-def fixed_oci_package():
-    return {'registryType': 'oci', 'identifier': OCI_IMAGE + '@' + OCI_DIGEST,
+def fixed_oci_package(profile=None):
+    p = configuration(profile)
+    if profile is not None:
+        return load(json.dumps(profile['PACKAGE']))
+    return {'registryType': 'oci', 'identifier': p['OCI_IMAGE'] + '@' + p['OCI_DIGEST'],
             'runtimeHint': 'docker', 'transport': {'type': 'stdio'},
             'runtimeArguments': [{'type': 'named', 'name': '--network', 'value': 'none'},
                                  {'type': 'named', 'name': '--read-only'},
                                  {'type': 'named', 'name': '--platform', 'value': 'linux/amd64'}]}
 
 
-def check_metadata(metadata):
-    require(metadata.get('name') == NAME and metadata.get('version') == VERSION
+def check_metadata(metadata, profile=None):
+    p = configuration(profile)
+    require(metadata.get('name') == p['NAME'] and metadata.get('version') == p['VERSION']
             and type(metadata.get('packages')) is list and len(metadata['packages']) == 1
             and 'remotes' not in metadata, 'fixed OCI-install metadata changed')
-    expected = fixed_oci_package()
+    expected = fixed_oci_package(profile)
     typed_subset(metadata['packages'][0], expected)
     require(metadata['packages'][0] == expected, 'fixed OCI package arguments changed')
+
+
+def require_publication(runtime, profile):
+    """Confirm the reviewed ordinary publisher, separately from legacy recovery."""
+    publication = profile['PUBLICATION']
+    identity, source = publication['run_id'], publication['source']
+    require(type(identity) is int and identity > 0 and type(source) is str
+            and re.fullmatch('[0-9a-f]{40}', source) is not None
+            and type(publication['attempt']) is int and publication['attempt'] == 1,
+            'invalid reviewed OCI publication')
+    api = ('https://api.github.com/repos/' + REPOSITORY + '/actions/runs/'
+           + str(identity) + '/attempts/1')
+    run = runtime.public_json('reviewed-OCI-publication-run', api)
+    typed_subset(run, {'id': identity, 'head_sha': source, 'run_attempt': 1,
+                      'event': 'workflow_dispatch', 'head_branch': 'main',
+                      'status': 'completed', 'conclusion': 'success',
+                      'path': publication['workflow']})
+    response = runtime.public_json('reviewed-OCI-publication-jobs', api + '/jobs?per_page=100')
+    rows = response['jobs']
+    successful = set(publication['successful_jobs'])
+    skipped = set(publication['skipped_jobs'])
+    require(type(rows) is list and type(response['total_count']) is int
+            and response['total_count'] == len(rows) == len(successful | skipped)
+            and len({job['name'] for job in rows}) == len(rows)
+            and {job['name'] for job in rows} == successful | skipped,
+            'reviewed OCI publication job coverage changed')
+    jobs = {job['name']: job for job in rows}
+    for name, job in jobs.items():
+        expected = 'success' if name in successful else 'skipped'
+        require(job['status'] == 'completed' and job['conclusion'] == expected,
+                'reviewed OCI publication job outcome changed')
+        if name in successful:
+            require(type(job['steps']) is list and bool(job['steps'])
+                    and all(step['status'] == 'completed' and step['conclusion'] == 'success'
+                            for step in job['steps']), 'reviewed OCI publication step failed')
+    required_steps = {
+        'publish': {'Push exactly once under a unique run tag and capture the manifest digest',
+                    'Attest the actual pushed image provenance',
+                    "Attest the same digest's retained CycloneDX SBOM"},
+        'public-readback': {'Run the existing full-proof and refusal smoke on that pulled image',
+                            'Record finite public readback acceptance only after cleanup succeeds'},
+    }
+    for name, expected in required_steps.items():
+        require(expected <= {step['name'] for step in jobs[name]['steps']},
+                'reviewed OCI publication evidence steps missing')
+    dump(runtime.proof / 'reviewed-OCI-publication.json', {
+        'status': 'REVIEWED_ORIGINAL_OCI_PUBLICATION_AND_READBACK_CONFIRMED',
+        'run_id': identity, 'attempt': 1, 'assembly_source': source,
+        'native_source': profile['SOURCE'], 'image': profile['OCI_IMAGE'],
+        'digest': profile['OCI_DIGEST'], 'public_provenance_and_SBOM_steps': True,
+        'scope': 'Reviewed historical source-bound publication; not this job\'s install or a new vulnerability scan.'})
 
 
 def require_oci_recovery(runtime):
@@ -205,28 +292,29 @@ def require_oci_recovery(runtime):
         'scope': 'Exact reviewed recovery workflow run; not a new client install or current vulnerability scan.'})
 
 
-def release_assets(release):
-    require(type(release['id']) is int and release['id'] == RELEASE_ID,
+def release_assets(release, profile=None):
+    p = configuration(profile)
+    require(type(release['id']) is int and release['id'] == p['RELEASE_ID'],
             'wrong public preview release ID')
     require(release['draft'] is False and release['prerelease'] is True
             and bool(release['published_at']), 'preview is not a public prerelease')
-    require(release['tag_name'] == TAG and release['target_commitish'] == SOURCE,
+    require(release['tag_name'] == p['TAG'] and release['target_commitish'] == p['SOURCE'],
             'preview source or tag changed')
-    require(release['html_url'] == f'https://github.com/{REPOSITORY}/releases/tag/{TAG}',
+    require(release['html_url'] == f'https://github.com/{REPOSITORY}/releases/tag/' + p['TAG'],
             'wrong public release page')
     rows = release['assets']
-    require(type(rows) is list and len(rows) == len(ASSETS), 'wrong preview asset count')
+    require(type(rows) is list and len(rows) == len(p['ASSETS']), 'wrong preview asset count')
     require(len({r['name'] for r in rows}) == len(rows), 'duplicate preview asset name')
-    require({r['name'] for r in rows} == set(ASSETS), 'preview asset names changed')
+    require({r['name'] for r in rows} == set(p['ASSETS']), 'preview asset names changed')
     for row in rows:
-        require(type(row['id']) is int and row['id'] == ASSET_IDS[row['name']],
+        require(type(row['id']) is int and row['id'] == p['ASSET_IDS'][row['name']],
                 'preview asset ID changed')
-        size, digest = ASSETS[row['name']]
+        size, digest = p['ASSETS'][row['name']]
         require(row['state'] == 'uploaded' and type(row['size']) is int
                 and row['size'] == size and row['digest'] == 'sha256:' + digest,
                 'preview asset size, state or digest changed')
         require(row['browser_download_url'] ==
-                f'https://github.com/{REPOSITORY}/releases/download/{TAG}/{row["name"]}',
+                f'https://github.com/{REPOSITORY}/releases/download/' + p['TAG'] + '/' + row['name'],
                 'preview asset download URL changed')
     return rows
 
@@ -294,9 +382,11 @@ def execution_mode(validate_only, allow_publish, environ):
 class Runtime:
     pending_signal = None
 
-    def __init__(self, out, validate_only=False):
+    def __init__(self, out, validate_only=False, profile=None):
         require(type(validate_only) is bool, 'execution mode must be explicit')
         self.validate_only = validate_only
+        self.profile = profile
+        self.release_version = configuration(profile)['VERSION']
         require(out.is_absolute() and out.resolve() == out and not out.exists(),
                 'output must be a new canonical directory')
         self.out = out
@@ -359,7 +449,7 @@ class Runtime:
                 return super().redirect_request(req, fp, code, msg, headers, newurl)
 
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), Redirect(),
-                                             OriginReadTimeout())
+                                             OriginReadTimeout(self.release_version))
         request = urllib.request.Request(url, headers={
             'User-Agent': 'Gooo-fixed-preview14-registry-publisher',
             'Accept': 'application/json' if '/api.' in url or
@@ -367,7 +457,7 @@ class Runtime:
         raw = bytearray()
         try:
             try:
-                response = opener.open(request, timeout=read_timeout(url))
+                response = opener.open(request, timeout=read_timeout(url, self.release_version))
             except urllib.error.HTTPError as error:
                 if error.code not in accepted_statuses:
                     raise
@@ -560,7 +650,7 @@ class Runtime:
 
     def registry_version(self, label, allow_missing=False):
         url = (REGISTRY + '/v0.1/servers/' + urllib.parse.quote(NAME, safe='')
-               + '/versions/' + urllib.parse.quote(VERSION, safe=''))
+               + '/versions/' + urllib.parse.quote(self.release_version, safe=''))
         # Deleted versions also block republication of the same immutable version.
         if allow_missing:
             url += '?include_deleted=true'
@@ -570,14 +660,15 @@ class Runtime:
             return None
         response = load(raw)
         require(type(response.get('server')) is dict, 'registry response format')
-        require(response['server']['name'] == NAME and response['server']['version'] == VERSION,
+        require(response['server']['name'] == NAME and response['server']['version'] == self.release_version,
                 'registry returned a different server version')
         return response['server']
 
 
-def preview_bundle_identity(raw, name):
+def preview_bundle_identity(raw, name, profile=None):
     """Read only BUNDLE metadata after the caller's fixed whole-archive SHA gate."""
-    size, digest = BUNDLE_IDENTITIES[name]
+    p = configuration(profile)
+    size, digest = p['BUNDLE_IDENTITIES'][name]
     with gzip.GzipFile(fileobj=io.BytesIO(raw)) as stream:
         unpacked = stream.read(BINARY_CAP + 1)
         require(len(unpacked) <= BINARY_CAP and stream.read(1) == b'',
@@ -592,40 +683,46 @@ def preview_bundle_identity(raw, name):
         with archive.extractfile(member) as stream:
             body = stream.read(size + 1)
         require(len(body) == size and sha(body) == digest, 'preview BUNDLE bytes changed')
-    require(load(body)['source_commit'] == SOURCE, 'preview BUNDLE source changed')
-    return {'bytes': size, 'sha256': digest, 'source_commit': SOURCE}
+    require(load(body)['source_commit'] == p['SOURCE'], 'preview BUNDLE source changed')
+    return {'bytes': size, 'sha256': digest, 'source_commit': p['SOURCE']}
 
 
-def public_preview(runtime):
+def public_preview(runtime, profile=None):
+    p = configuration(profile)
     api = 'https://api.github.com/repos/' + REPOSITORY
-    release = runtime.public_json('public-release16', api + '/releases/' + str(RELEASE_ID))
-    rows = release_assets(release)  # A draft/404 stops before download or OIDC.
-    tag = runtime.public_json('tag-ref', api + '/git/ref/tags/' + TAG)
-    require(tag['object']['type'] == 'tag' and tag['object']['sha'] == TAG_OBJECT,
+    release = runtime.public_json('public-release' + p['VERSION'].rsplit('.', 1)[1], api + '/releases/' + str(p['RELEASE_ID']))
+    rows = release_assets(release, profile)  # A draft/404 stops before download or OIDC.
+    tag = runtime.public_json('tag-ref', api + '/git/ref/tags/' + p['TAG'])
+    require(tag['object']['type'] == 'tag' and tag['object']['sha'] == p['TAG_OBJECT'],
             'annotated tag object changed')
-    tag = runtime.public_json('tag-object', api + '/git/tags/' + TAG_OBJECT)
-    require(tag['tag'] == TAG and tag['object']['type'] == 'commit'
-            and tag['object']['sha'] == SOURCE, 'tag no longer points to fixed source')
-    commit = runtime.public_json('release-source', api + '/git/commits/' + SOURCE)
-    require(commit['sha'] == SOURCE and commit['tree']['sha'] == TREE, 'source tree changed')
+    tag = runtime.public_json('tag-object', api + '/git/tags/' + p['TAG_OBJECT'])
+    require(tag['tag'] == p['TAG'] and tag['object']['type'] == 'commit'
+            and tag['object']['sha'] == p['SOURCE'], 'tag no longer points to fixed source')
+    commit = runtime.public_json('release-source', api + '/git/commits/' + p['SOURCE'])
+    require(commit['sha'] == p['SOURCE'] and commit['tree']['sha'] == p['TREE'], 'source tree changed')
     checksum_lines = {}
     bundles = {}
     for row in rows:
-        size, digest = ASSETS[row['name']]
+        size, digest = p['ASSETS'][row['name']]
         body = runtime.fetch('asset-' + row['name'], row['browser_download_url'], size)
         require(len(body) == size and sha(body) == digest, 'public preview asset bytes changed')
         if row['name'].endswith('.sha256'):
             checksum_lines[row['name']] = body
+        elif row['name'] in p['BUNDLE_IDENTITIES']:
+            bundles[row['name']] = preview_bundle_identity(body, row['name'], profile)
         else:
-            bundles[row['name']] = preview_bundle_identity(body, row['name'])
-    for name, (_, digest) in ASSETS.items():
+            require(profile is not None and row['name'] == 'gooo-mcp-saved-reference-linux-amd64.tar.gz',
+                    'unexpected non-native verification archive')
+            bundles[row['name']] = {'bytes': len(body), 'sha256': sha(body),
+                                    'role': 'saved-reference-packet-whole-byte-identity'}
+    for name, (_, digest) in p['ASSETS'].items():
         if not name.endswith('.sha256'):
             require(checksum_lines[name + '.sha256'] == (digest + '  ' + name + '\n').encode(),
                     'public checksum file disagrees')
     dump(runtime.proof / 'public-release-byte-gate.json', {
-        'status': 'FOUR_PUBLIC_ASSET_BYTES_MATCH', 'release_id': RELEASE_ID,
-        'source': SOURCE, 'tree': TREE, 'tag': TAG, 'assets': ASSETS,
-        'asset_ids': ASSET_IDS, 'BUNDLE_identities': bundles,
+        'status': ('FOUR_PUBLIC_ASSET_BYTES_MATCH' if profile is None else 'SIX_PUBLIC_ASSET_BYTES_MATCH'), 'release_id': p['RELEASE_ID'],
+        'source': p['SOURCE'], 'tree': p['TREE'], 'tag': p['TAG'], 'assets': p['ASSETS'],
+        'asset_ids': p['ASSET_IDS'], 'BUNDLE_identities': bundles,
         'new_MCP_or_Gooo_binary_execution': False})
 
 
@@ -664,38 +761,53 @@ def bootstrap(runtime):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out', required=True, type=Path)
+    parser.add_argument('--release-version', choices=('v0.1.0-preview.16', 'v0.1.0-preview.17'),
+                        default='v0.1.0-preview.16')
     modes = parser.add_mutually_exclusive_group(required=True)
     modes.add_argument('--allow-publish', action='store_true')
     modes.add_argument('--validate-only', action='store_true')
     args = parser.parse_args()
+    profile = publication_profile(args.release_version)
+    p = configuration(profile)
     mode = execution_mode(args.validate_only, args.allow_publish, os.environ)
     require(platform.system() == 'Linux' and platform.machine() == 'x86_64',
             'publisher requires Linux amd64')
     require(threading.current_thread() is threading.main_thread()
             and threading.active_count() == 1, 'single main thread required')
-    metadata_path = Path(__file__).resolve().parent.parent / 'registry/service-grant-preview16.server.json'
+    metadata_path = Path(__file__).resolve().parent.parent / ('registry/service-grant-preview'
+                    + p['VERSION'].rsplit('.', 1)[1] + '.server.json')
     require(stat.S_ISREG(metadata_path.lstat().st_mode), 'metadata must be a regular file')
     metadata_raw = metadata_path.read_bytes()
-    require(len(metadata_raw) == METADATA_BYTES and sha(metadata_raw) == METADATA_SHA, 'metadata bytes changed')
+    require(len(metadata_raw) == p['METADATA_BYTES'] and sha(metadata_raw) == p['METADATA_SHA'], 'metadata bytes changed')
     metadata = load(metadata_raw)
-    check_metadata(metadata)
-    runtime = Runtime(args.out, validate_only=args.validate_only)
+    check_metadata(metadata, profile)
+    if profile is not None and not args.validate_only:
+        require(os.environ.get('GITHUB_RUN_ATTEMPT') == '1', 'Registry publication requires attempt one')
+    runtime = (Runtime(args.out, validate_only=args.validate_only) if profile is None
+               else Runtime(args.out, validate_only=args.validate_only, profile=profile))
     failure = None
     try:
         for number in (signal.SIGTERM, signal.SIGINT):
             runtime.handlers[number] = signal.signal(number, runtime.interrupted)
         with (runtime.out / 'EXECUTION-STARTED.json').open('x') as output:
-            json.dump({'fixed_name': NAME, 'version': VERSION, 'source': SOURCE,
-                       'mode': mode, 'native_source': SOURCE,
+            json.dump({'fixed_name': p['NAME'], 'version': p['VERSION'], 'source': p['SOURCE'],
+                       'mode': mode, 'native_source': p['SOURCE'],
                        'registry_metadata_source': os.environ.get('GITHUB_SHA')}, output)
         runtime.stage = 'public-preview-byte-gate'
-        public_preview(runtime)
+        if profile is None:
+            public_preview(runtime)
+        else:
+            public_preview(runtime, profile)
+        if profile is not None:
+            runtime.stage = 'reviewed-OCI-publication'
+            require_publication(runtime, profile)
         if not args.validate_only:
             runtime.stage = 'registry-version-absence'
             require(runtime.registry_version('registry-before', allow_missing=True) is None,
                     'this version is already registered')
-            runtime.stage = 'reviewed-OCI-proof-recovery'
-            require_oci_recovery(runtime)
+            if profile is None:
+                runtime.stage = 'reviewed-OCI-proof-recovery'
+                require_oci_recovery(runtime)
         runtime.stage = 'official-publisher-bootstrap'
         executable = bootstrap(runtime)
         server_file = runtime.home / 'server.json'
@@ -719,11 +831,12 @@ def main():
                     'registry returned different installation endpoints')
             dump(runtime.proof / 'registration.json', {
                 'status': 'OFFICIAL_REGISTRY_EXACT_VERSION_ANONYMOUSLY_READ_BACK',
-                'name': NAME, 'version': VERSION, 'metadata_sha256': METADATA_SHA,
-                'source': SOURCE, 'native_source': SOURCE,
+                'name': p['NAME'], 'version': p['VERSION'], 'metadata_sha256': p['METADATA_SHA'],
+                'source': p['SOURCE'], 'native_source': p['SOURCE'],
                 'registry_metadata_source': os.environ.get('GITHUB_SHA'),
-                'release_id': RELEASE_ID, 'custom_install_only': False,
-                'OCI_image': OCI_IMAGE, 'OCI_digest': OCI_DIGEST, 'OCI_recovery': OCI_RECOVERY,
+                'release_id': p['RELEASE_ID'], 'custom_install_only': False,
+                'OCI_image': p['OCI_IMAGE'], 'OCI_digest': p['OCI_DIGEST'], 'OCI_recovery': OCI_RECOVERY if profile is None else None,
+                'OCI_publication': p.get('PUBLICATION'),
                 'automatic_client_installation_proven': False, 'external_adoption': False})
     except BaseException as error:
         failure = runtime.first_failure or error
@@ -764,14 +877,15 @@ def main():
                 'validation-only closure or private-home cleanup incomplete')
         dump(runtime.proof / 'validation-only.json', {
             'status': 'OFFICIAL_CLI_VALIDATED_FIXED_PUBLIC_METADATA_WITHOUT_AUTH_OR_PUBLISH',
-            'mode': mode, 'name': NAME, 'version': VERSION,
-            'metadata_sha256': METADATA_SHA, 'source': SOURCE, 'native_source': SOURCE,
-            'registry_metadata_source': os.environ.get('GITHUB_SHA'), 'release_id': RELEASE_ID,
+            'mode': mode, 'name': p['NAME'], 'version': p['VERSION'],
+            'metadata_sha256': p['METADATA_SHA'], 'source': p['SOURCE'], 'native_source': p['SOURCE'],
+            'registry_metadata_source': os.environ.get('GITHUB_SHA'), 'release_id': p['RELEASE_ID'],
             'registry_version_absence_required': False, 'publisher_commands': 2,
             'authentication_commands': 0, 'publish_commands': 0,
             'actual_registry_registration': False, 'automatic_client_installation_proven': False,
             'external_adoption': False, 'private_home_removed': True,
             'all_direct_wait_EOF_PG_ESRCH': True})
+
 
 
 if __name__ == '__main__':

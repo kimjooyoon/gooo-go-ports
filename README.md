@@ -23,6 +23,7 @@ Choose the entry that fits your setup:
 | --- | --- |
 | Local command, with no Go/Gooo installation | [Native CLI preview.2](docs/ai-agents.md#install-the-native-snapshot-command), then the [own-page guide](docs/ai-agents.md#compare-your-own-saved-pages). |
 | Existing MCP host | [Native MCP preview17](docs/ai-agents.md#compare-saved-definitions-through-mcp). Use the executable's absolute path, `args: ["--definition-snapshot"]`, and discover `gooo_compare_saved_tool_definitions`. |
+| MCP host with Docker | [Preview17 container instructions](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.17#container-for-mcp-clients-linux-amd64). Use the published image digest and enable `--definition-snapshot` after the image argument. |
 | Go 1.27.3 already installed | [Fixed public Go module](docs/ai-agents.md#install-the-snapshot-command-with-go); no checkout or Gooo compiler needed. |
 
 The native archives support Apple Silicon macOS and Linux x86-64. Download the
@@ -40,6 +41,8 @@ bind the actual arguments received; a CLI file's outer whitespace can differ
 from an MCP arguments object. Preserve each original record and its input
 identity. Results describe supplied observations; live behavior, origin and
 authority remain unassessed, and no remote tool is called.
+
+<a id="run-and-edit-locally"></a>
 
 ## Change and run a Gooo program
 
@@ -61,9 +64,21 @@ check. [Tessl](docs/ai-agents.md#install-the-skill-with-tessl) and
 [Gemini CLI](docs/ai-agents.md#use-the-instructions-with-gemini-cli) have separate
 installation instructions for the same task.
 
+Port examples use the same checkout setup; follow each example's workspace and
+input instructions. The [detailed setup at this source snapshot](https://github.com/kimjooyoon/gooo-go-ports/blob/e821c7967fdcf5bd01ec0c921a6e74b3971b19fc/README.md#run-and-edit-locally)
+retains the longer command reference.
+
+<a id="bootstrap-recovery"></a>
+
+If compiler setup fails, use the [bootstrap recovery reference](https://github.com/kimjooyoon/gooo-go-ports/blob/e821c7967fdcf5bd01ec0c921a6e74b3971b19fc/README.md#bootstrap-recovery)
+for the pinned compiler. Keep an existing working compiler until its identity and
+any replacement have been checked.
+
 An input-only `OBSERVED` result is a finite execution observation. A source edit
 needs a new execution and replay record. The [browser tutorial](https://kimjooyoon.github.io/gooo-go-ports/tutorial.html)
 runs a fixed compiled program; use the native workflow for an edit.
+
+<a id="choose-the-next-useful-task"></a>
 
 ## Other useful tasks
 
@@ -81,6 +96,8 @@ cases. These tools calculate assessments without per-request human approval;
 they do not authenticate supplied facts or apply live API changes. Native,
 Homebrew, container and Registry packages have their own versioned capabilities;
 follow the selected route's instructions.
+
+<a id="검증-범위"></a>
 
 ## Sources, verification and contribution
 

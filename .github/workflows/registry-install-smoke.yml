@@ -2,6 +2,11 @@ name: Headless fixed Registry OCI installation
 
 on:
   workflow_call:
+    inputs:
+      release_version:
+        type: string
+        required: false
+        default: v0.1.0-preview.16
 
 permissions:
   contents: read
@@ -13,15 +18,21 @@ defaults:
 jobs:
   install:
     runs-on: ubuntu-24.04
-    timeout-minutes: 6
+    timeout-minutes: 10
     permissions:
       contents: read
     env:
+      REQUESTED_NATIVE_VERSION: ${{ inputs.release_version }}
       DOCKER_CONFIG: ${{ github.workspace }}/out/registry-anonymous-client-config
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+      - name: Load the reviewed native release profile
+        run: |
+          set -euo pipefail
+          python3 -I -B tools/service_grant_mcp_oci.py profile \
+            --version "$REQUESTED_NATIVE_VERSION" --format github-env >> "$GITHUB_ENV"
       - name: Check descriptor consumption and lifecycle refusal paths
         run: python3 -I -B tools/verify-service-grant-container_test.py
       - name: Prepare the byte-pinned original public native input
@@ -31,22 +42,48 @@ jobs:
           mkdir -p out/registry-install "$DOCKER_CONFIG"
           printf '%s\n' '{"auths":{}}' > "$DOCKER_CONFIG/config.json"
           curl --fail --location --proto '=https' --proto-redir '=https' \
-            --connect-timeout 15 --max-time 120 --max-filesize 7217754 \
+            --connect-timeout 15 --max-time 120 --max-filesize "$ARCHIVE_BYTES" \
             --output out/registry-install/native.tar.gz \
-            https://github.com/kimjooyoon/gooo-go-ports/releases/download/v0.1.0-preview.16/gooo-service-grant-mcp-linux-amd64.tar.gz
+            "$ARCHIVE_URL"
           python3 -I -B tools/service_grant_mcp_oci.py prepare \
             --bundle out/registry-install/native.tar.gz \
-            --sha256 0ae9bc25eef2ad73535642a66b8b7602e9f64a148b3e60696e36048a3b4a0524 \
-            --source-commit fceb89f8b53eabd6687d16258d7cee89853c2cfe \
-            --version v0.1.0-preview.16 --out out/registry-install/context
+            --sha256 "$ARCHIVE_SHA256" \
+            --source-commit "$NATIVE_SOURCE" \
+            --version "$NATIVE_VERSION" --out out/registry-install/context
           python3 -I -B - <<'PYTHON'
-          import importlib.util, pathlib
+          import importlib.util, pathlib, os
           spec = importlib.util.spec_from_file_location('registry_container', 'tools/verify-service-grant-container.py')
           client = importlib.util.module_from_spec(spec)
           spec.loader.exec_module(client)
-          package = client.registry_package(pathlib.Path('registry/service-grant-preview16.server.json'))
+          version = os.environ['NATIVE_VERSION'].rsplit('.', 1)[1]
+          metadata = pathlib.Path('registry/service-grant-preview' + version + '.server.json')
+          package = client.registry_package(metadata)
+          pathlib.Path('out/registry-install/metadata.path').write_text(str(metadata) + '\n')
           pathlib.Path('out/registry-install/image.ref').write_text(package['identifier'] + '\n')
           PYTHON
+      - name: Set up the original Go identity reader for saved v4 references
+        if: env.HAS_NATIVE_REFERENCES == 'true'
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version: ${{ env.NATIVE_GO_SEMVER }}
+          cache: false
+      - name: Acquire and materialize only the reviewed original reference packet
+        if: env.HAS_NATIVE_REFERENCES == 'true'
+        timeout-minutes: 3
+        run: |
+          set -euo pipefail
+          curl --fail --location --proto '=https' --proto-redir '=https' \
+            --connect-timeout 15 --max-time 90 --max-filesize "$REFERENCE_PACKET_BYTES" \
+            --output out/registry-install/reference.tar.gz "$REFERENCE_PACKET_URL"
+          python3 -I -B tools/service_grant_mcp_oci.py prepare-references \
+            --bundle out/registry-install/native.tar.gz --sha256 "$ARCHIVE_SHA256" \
+            --source-commit "$NATIVE_SOURCE" --version "$NATIVE_VERSION" \
+            --packet out/registry-install/reference.tar.gz --out "$PWD/out/service-grant-mcp" \
+            > out/registry-install/prepared-references.stdout
+          python3 -I -B tools/service_grant_mcp_reference_runtime.py prepare \
+            --references "$PWD/out/service-grant-mcp" --context "$PWD/out/registry-install/context" \
+            --go "$(command -v go)" --runner-temp "$RUNNER_TEMP" \
+            > out/registry-install/reference-runtime.stdout
       - name: Pull the actual descriptor's immutable image anonymously
         run: |
           set -euo pipefail
@@ -65,11 +102,17 @@ jobs:
       - name: Execute descriptor-derived sessions and check complete proofs and runtime bytes
         run: |
           set -euo pipefail
+          reference_args=()
+          if test "$HAS_NATIVE_REFERENCES" = true; then
+            python3 -I -B tools/service_grant_mcp_reference_runtime.py arguments \
+              --references "$PWD/out/service-grant-mcp" > out/reference-arguments.bin
+            mapfile -d '' -t reference_args < out/reference-arguments.bin
+          fi
           timeout -k 10s 90s python3 -I -B tools/verify-service-grant-container.py \
             --docker "$(command -v docker)" --image "$(cat out/registry-install/image.id)" \
-            --registry-metadata registry/service-grant-preview16.server.json \
+            --registry-metadata "$(cat out/registry-install/metadata.path)" \
             --context "$PWD/out/registry-install/context" --out "$PWD/out/registry-install/wire" \
-            --label "io.gooo.registry.install=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+            --label "io.gooo.registry.install=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" "${reference_args[@]}"
       - name: Remove only the image pulled by this job and its anonymous config
         if: always()
         run: |
@@ -78,11 +121,18 @@ jobs:
             timeout -k 5s 20s docker --config "$DOCKER_CONFIG" image rm --force "$(cat out/registry-install/image.id)"
           fi
           rm -rf -- "$DOCKER_CONFIG"
+      - name: Remove only byte-verified owned original reference locations
+        if: always() && env.HAS_NATIVE_REFERENCES == 'true'
+        run: |
+          set -euo pipefail
+          python3 -I -B tools/service_grant_mcp_reference_runtime.py cleanup \
+            --references "$PWD/out/service-grant-mcp" --runner-temp "$RUNNER_TEMP" \
+            > out/reference-cleanup.json
       - name: Retain finite descriptor, protocol, runtime and cleanup observations
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: gooo-registry-install-preview16-${{ github.run_id }}-${{ github.run_attempt }}
+          name: gooo-registry-install-${{ inputs.release_version }}-${{ github.run_id }}-${{ github.run_attempt }}
           if-no-files-found: error
           path: |
             out/registry-install/wire/
@@ -91,3 +141,9 @@ jobs:
             out/registry-install/image-inspect.json
             out/registry-install/pull.*
             out/registry-install/context/context.json
+            out/registry-install/metadata.path
+            out/registry-install/*-references.stdout
+            out/registry-install/reference-runtime.stdout
+            out/service-grant-mcp/prepared-references.json
+            out/service-grant-mcp/runtime-state.json
+            out/reference-cleanup.json

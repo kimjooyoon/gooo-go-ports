@@ -475,7 +475,10 @@ class ValidationOnlySafety(unittest.TestCase):
                           'workflow_dispatch:', '--allow-publish', 'docker image push', 'docker login'):
             self.assertNotIn(forbidden, raw)
         self.assertIn('  contents: read\n', raw)
-        self.assertIn('--registry-metadata registry/service-grant-preview16.server.json', raw)
+        self.assertIn('        default: v0.1.0-preview.16\n', raw)
+        self.assertIn('--registry-metadata "$(cat out/registry-install/metadata.path)"', raw)
+        self.assertIn("version = os.environ['NATIVE_VERSION'].rsplit('.', 1)[1]", raw)
+        self.assertIn("client.registry_package(metadata)", raw)
 
     def test_PR_workflow_has_no_oidc_secrets_or_publish_trigger(self):
         path = SOURCE.parent.parent / '.github/workflows/check-service-grant-registry.yml'
@@ -503,6 +506,14 @@ class ValidationOnlySafety(unittest.TestCase):
             'registry/service-grant-preview14.server.json',
             'registry/service-grant-preview15.server.json',
             'registry/service-grant-preview16.server.json',
+            'registry/service-grant-preview17.server.json',
+            'tools/profiles/mcp-registry-preview17.json',
+            'tools/profiles/mcp-public-*.json',
+            'tools/service_grant_release_profile*',
+            'tools/service_grant_mcp_reference*',
+            'tools/registry_publication_profile_test.py',
+            'tools/check-ci-scope-workflow_test.py',
+            'examples/service-grant-mcp/**',
         ])
         self.assertIn("      - 'registry/service-grant-preview13.server.json'\n", raw)
         self.assertIn("      - 'registry/service-grant-preview14.server.json'\n", raw)
