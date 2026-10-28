@@ -24,6 +24,7 @@ Choose the entry that fits your setup:
 | Local command, with no Go/Gooo installation | [Native CLI preview.2](docs/ai-agents.md#install-the-native-snapshot-command), then the [own-page guide](docs/ai-agents.md#compare-your-own-saved-pages). |
 | Existing MCP host | [Native MCP preview17](docs/ai-agents.md#compare-saved-definitions-through-mcp). Use the executable's absolute path, `args: ["--definition-snapshot"]`, and discover `gooo_compare_saved_tool_definitions`. |
 | MCP host with Docker | [Preview17 container instructions](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.17#container-for-mcp-clients-linux-amd64). Use the published image digest and enable `--definition-snapshot` after the image argument. |
+| APM with Docker, targeting Codex | [Explicit stdio connection](docs/ai-agents.md#install-the-snapshot-mcp-connection-with-apm), with a pinned image and project target. |
 | Go 1.27.3 already installed | [Fixed public Go module](docs/ai-agents.md#install-the-snapshot-command-with-go); no checkout or Gooo compiler needed. |
 
 The native archives support Apple Silicon macOS and Linux x86-64. Download the
