@@ -596,8 +596,10 @@ enabled_tools = ["gooo_compare_saved_tool_definitions"]
 Other stdio hosts use the same command and argument. If the host filters tools,
 allow `gooo_compare_saved_tool_definitions`. Discover it before calling it; an
 absent tool is a setup failure, not an unchanged definition. The existing
-preview16 Homebrew package, public container and Registry descriptor retain
-their own capabilities and do not contain this mode.
+preview16 Homebrew package, preview16 container and preview16 Registry descriptor
+do not contain this mode. The published preview17 container supports it; use the
+[exact-image instructions](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.17#container-for-mcp-clients-linux-amd64)
+or the [APM stdio route below](#install-the-snapshot-mcp-connection-with-apm).
 
 Ask the agent to read the extracted `snapshot-example.json` and pass the whole
 object as the tool's arguments, then inspect `decision.state`, both page coverage
@@ -617,6 +619,68 @@ entry point. For example, a CLI input file's final newline is outside the JSON
 object passed through MCP. Its input/context/report hashes can differ while the
 saved page strings and observed definition stay the same. Keep each original
 record and its actual input identity when comparing results across entry points.
+
+### Install the snapshot MCP connection with APM
+
+With [Microsoft APM](https://microsoft.github.io/apm/consumer/install-mcp-servers/)
+and a Docker daemon supporting Linux amd64, add this entry to your project's
+existing `dependencies.mcp` list in `apm.yml`. Preserve other dependencies:
+
+```yaml
+dependencies:
+  mcp:
+    - name: gooo_saved_tool_definitions
+      registry: false
+      transport: stdio
+      command: docker
+      args:
+        - run
+        - --rm
+        - -i
+        - --network
+        - none
+        - --read-only
+        - --platform
+        - linux/amd64
+        - --user
+        - 65532:65532
+        - --cap-drop
+        - ALL
+        - --security-opt
+        - no-new-privileges
+        - --pids-limit
+        - "32"
+        - --memory
+        - 128m
+        - ghcr.io/kimjooyoon/gooo-service-grant-mcp@sha256:a015a049318235eed7429347aef232c71703ab4bb9931277f99e2c6e3218a82e
+        - --definition-snapshot
+```
+
+Select the project target explicitly:
+
+```sh
+apm install --only mcp --target codex
+```
+
+APM configures this project's `.codex/config.toml` and maintains its own APM
+state; installation does not start the MCP server. Codex loads project settings
+for trusted projects. When the host starts it, an uncached image needs a network
+download; `--network none` isolates the running container.
+
+This explicit stdio form avoids the current
+[APM options-only OCI Registry launcher issue](https://github.com/microsoft/apm/issues/3404).
+The Registry descriptor remains separate. A configuration-only test with APM
+source `2920043258932f0f67e6f01df7b9047eb42f358c` created the expected project
+configuration in an isolated user-directory fixture. It did not run a model or
+start a server through Codex. The
+[public image check](https://github.com/kimjooyoon/gooo-go-ports/actions/runs/40632109714)
+separately exercised the published image's stdio sessions.
+
+In the host, discover `gooo_compare_saved_tool_definitions`, then use the
+[example and own-page instructions above](#compare-saved-definitions-through-mcp).
+Keep the original input and full result. Configuration success alone is not
+a completed comparison.
+
 
 ### Install the native snapshot command
 
