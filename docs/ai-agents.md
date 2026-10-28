@@ -595,9 +595,11 @@ enabled_tools = ["gooo_compare_saved_tool_definitions"]
 
 Other stdio hosts use the same command and argument. If the host filters tools,
 allow `gooo_compare_saved_tool_definitions`. Discover it before calling it; an
-absent tool is a setup failure, not an unchanged definition. The existing
-preview16 Homebrew package, preview16 container and preview16 Registry descriptor
-do not contain this mode. The published preview17 container supports it; use the
+absent tool is a setup failure, not an unchanged definition. The preview16
+Homebrew package, preview16 container and preview16 Registry descriptor do not
+contain this mode. The current [project Homebrew tap](#connect-the-service-grant-mcp-tool)
+installs preview17; start its executable with `args: ["--definition-snapshot"]`
+as shown above. The published preview17 container also supports this mode; use the
 [exact-image instructions](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.17#container-for-mcp-clients-linux-amd64)
 or the [APM stdio route below](#install-the-snapshot-mcp-connection-with-apm).
 
