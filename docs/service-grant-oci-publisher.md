@@ -27,6 +27,45 @@ expected context from that same fixed archive and checks a copied image runtime'
 63 names, file bytes and modes. Neither command runs Docker or proves execution.
 The image uses the existing `scratch` Dockerfile and absolute executable entrypoint.
 
+## Reviewed release profiles
+
+The current workflow reads the archive URL, byte limit, archive/executable hashes,
+source commit and runtime/notice counts from one checksum-pinned repository
+profile. Preview16 remains the default. Public native preview17 is also registered
+for explicit selection; its source, executable and saved reference packet have
+separate immutable identities. Inspect either profile without downloading or
+executing anything:
+
+```sh
+python3 -I -B tools/service_grant_mcp_oci.py profile --version v0.1.0-preview.16
+python3 -I -B tools/service_grant_mcp_oci.py profile --version v0.1.0-preview.17
+```
+
+`native_version` on manual dispatch selects only a reviewed version from the
+loader's allowlist. It accepts no path, arbitrary URL or replacement checksum.
+Preparation, publication and anonymous readback each load the same selected
+profile. Publication also binds the profile SHA256 in its current-run manifest;
+copied runtime checks still compare every actual file byte and mode. The profile's
+PROV-O links distinguish archive-byte identity from native-source identity. They
+do not authenticate a producer or establish execution, authorization or adoption.
+
+Adding release data does not provide verification for a new tool capability.
+The saved-definition v4 path additionally requires a checksum-pinned reference
+packet containing the original saved alias/snapshot captures and byte-identical
+reference CLIs. Its reader checks the native BUNDLE's original report/CLI hashes,
+source, complete notices, archive roster, paths and expansion bounds before
+materializing unchanged captures. It does not execute a comparison case.
+
+The workflow acquires the original Go identity reader and fixed module sources,
+checks their identities, and restores only fresh owned original Linux runner
+locations. Existing argv/cwd records are not edited. The complete sixteen-session
+image client then runs against the actual image. Both new image verification
+and anonymous digest readback use these same references, with separate owned
+file cleanup. Reference preparation alone is not image verification. No v4
+public image or Registry update is implied here. The Registry install smoke stays
+bound to its existing preview16 descriptor, and the historical recovery workflow
+below keeps its original immutable inputs.
+
 ## Verification and publication
 
 Pull requests run the read-only `verify` job on a GitHub-hosted Linux runner. They
@@ -38,8 +77,10 @@ builds one image with build networking disabled, and reuses the existing
 The client checks real default and optional sessions, full proof fields, the
 malformed-input refusal, actual runtime files, read-only rootfs, network mode,
 nonroot user and separate Docker CLI/container termination and removal. It uses
-protocol `2025-11-25`. Earlier native tests cover other documented protocol
-versions, but are not new results from this workflow.
+protocol `2025-11-25` for the default legacy path. When the reviewed release
+requires saved references, it exercises the optional combinations with both
+`2025-11-25` and `2026-07-28`; the v4 path includes sixteen sessions. These are
+finite observations of that image and supplied inputs.
 
 Trivy `0.76.0` is downloaded directly from its fixed public release and checked
 against its fixed 52,253,735-byte SHA256
@@ -65,7 +106,7 @@ the package-write/OIDC job. It downloads the current verification job's exact
 artifact ID, verifies its run/attempt/checkout identity and every declared file
 hash, and loads the saved image. It checks the loaded image ID rather than
 rebuilding. It pushes once under
-`v0.1.0-preview.16-RUN_ID-a1`; no preview16 alias or `latest` tag is overwritten.
+`NATIVE_VERSION-RUN_ID-a1`; no release alias or `latest` tag is overwritten.
 A timeout or a later failure does not authorize another publisher dispatch.
 Inspect the original push receipt first.
 
@@ -78,7 +119,7 @@ binary, context and scanner artifacts to the image assembly workflow/checkout.
 Default SLSA build provenance establishes this wrapper image's assembly workflow;
 it does not retroactively authenticate the original native release producer or
 turn an unsigned BUNDLE into a native-build attestation. The SBOM must retain
-all eleven embedded Go module identities and the embedded Go version even though
+all embedded Go module identities declared by that bundle and its embedded Go version even though
 `scratch` has no operating-system packages. Notices with tooling-only scope do
 not imply that all those tools are present in the executable.
 

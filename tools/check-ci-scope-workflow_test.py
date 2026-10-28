@@ -1334,6 +1334,53 @@ ROOT_GO_REFERENCES = {'.github/workflows/api-policy-action.yml': (1, 'ed61e1af45
 ROOT_GO_REFERENCE_LINE = '          go-version-file: go.mod\n'
 ROOT_GO_LITERAL_LINE = "          go-version: '1.27.3'\n"
 
+# These readers verify a previously published native artifact's original Go
+# identity. Their version belongs to that selected release, independently of
+# the root module's current build toolchain.
+RELEASE_GO_REFERENCE_PATH = '.github/workflows/service-grant-mcp-oci.yml'
+RELEASE_GO_STEP = """      - name: Set up the original Go identity reader for saved v4 references
+        if: env.HAS_NATIVE_REFERENCES == 'true'
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version: ${{ env.NATIVE_GO_SEMVER }}
+          cache: false
+"""
+
+
+def validate_release_go_readers(text):
+    require(text.count('jobs:\n') == 1, 'release reader jobs map differs')
+    raw = text.split('jobs:\n', 1)[1]
+    starts = list(re.finditer(r'^  ([a-z][a-z0-9-]*):\n', raw, re.M))
+    names = tuple(match[1] for match in starts)
+    require(names == ('verify', 'publish', 'public-readback', 'registry-install-candidate'),
+            'release reader job ownership differs')
+    jobs = {match[1]: raw[match.start():starts[i + 1].start() if i + 1 < len(starts) else len(raw)]
+            for i, match in enumerate(starts)}
+    require(text.count(RELEASE_GO_STEP) == 2 and
+            len(re.findall(r'uses:[ \t]+actions/setup-go@', text)) == 2 and
+            len(re.findall(r'^\s*go-version(?:-file)?:', text, re.M)) == 2 and
+            text.count('NATIVE_GO_SEMVER') == 2,
+            'release Go reader selector family differs')
+    for name, chunk in jobs.items():
+        if name not in ('verify', 'public-readback'):
+            require(RELEASE_GO_STEP not in chunk, 'Go reader moved outside verification')
+            continue
+        _, named, _ = job_steps(chunk)
+        require(chunk.count(RELEASE_GO_STEP) == 1 and
+                chunk.index('      - name: Load the reviewed native release profile\n') <
+                chunk.index(RELEASE_GO_STEP) <
+                chunk.index('      - name: Acquire and materialize only the reviewed original reference packet\n'),
+                'release Go identity must follow the selected profile and precede reference use')
+        loader = named['Load the reviewed native release profile']
+        require(literal_commands(loader) == [
+                'python3 -I -B tools/service_grant_mcp_oci.py profile '
+                '--version "$REQUESTED_NATIVE_VERSION" --format github-env >> "$GITHUB_ENV"'] and
+                field(loader, 'run') == '|' and field(loader, 'if') is None and
+                field(loader, 'continue-on-error') is None and
+                '          set -euo pipefail\n' in loader,
+                'release reader must use the reviewed profile loader')
+    return text
+
 
 DENY_SCOPE_BLOCK = """      - name: Verify the original scoped deny-rule diagnostic
         if: steps.change-scope.outputs.docs_only != 'true'
@@ -4644,12 +4691,34 @@ class RootGoReferenceTests(unittest.TestCase):
         observed = {str(path.relative_to(root)) for path in WORKFLOW.parent.iterdir()
                     if path.suffix in ('.yml', '.yaml') and
                     re.search(r'uses:[ \t]+actions/setup-go@', path.read_text())}
-        self.assertEqual(observed, set(ROOT_GO_REFERENCES))
+        self.assertEqual(observed, set(ROOT_GO_REFERENCES) | {RELEASE_GO_REFERENCE_PATH})
+        validate_release_go_readers((root / RELEASE_GO_REFERENCE_PATH).read_text())
         for path, (count, digest) in ROOT_GO_REFERENCES.items():
             with self.subTest(path=path):
                 prior = project_root_go_reference((root / path).read_text(), path=path)
                 self.assertEqual(prior.count(ROOT_GO_LITERAL_LINE), count)
                 self.assertEqual(hashlib.sha256(prior.encode()).hexdigest(), digest)
+
+    def test_release_readers_keep_published_identity_separate_from_root_go(self):
+        root = WORKFLOW.parent.parent.parent
+        raw = (root / RELEASE_GO_REFERENCE_PATH).read_text()
+        self.assertEqual(validate_release_go_readers(raw), raw)
+        for old, new in [
+                (RELEASE_GO_STEP, ''), (RELEASE_GO_STEP, RELEASE_GO_STEP * 2),
+                ('go-version: ${{ env.NATIVE_GO_SEMVER }}', 'go-version-file: go.mod'),
+                ('go-version: ${{ env.NATIVE_GO_SEMVER }}', "go-version: '1.27.3'"),
+                ('go-version: ${{ env.NATIVE_GO_SEMVER }}', 'go-version: ${{ matrix.go }}'),
+                ("if: env.HAS_NATIVE_REFERENCES == 'true'", 'if: false'),
+                ('setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e', 'setup-go@main'),
+                (RELEASE_GO_STEP, RELEASE_GO_STEP.replace('cache: false', 'cache: true')),
+                ('--format github-env >> "$GITHUB_ENV"', '--format json'),
+                ('--version "$REQUESTED_NATIVE_VERSION"', '--version latest')]:
+            with self.subTest(change=old), self.assertRaises(ValueError):
+                validate_release_go_readers(raw.replace(old, new, 1))
+        moved = raw.replace(RELEASE_GO_STEP, '', 1)
+        moved = moved.replace('  publish:\n', '  publish:\n' + RELEASE_GO_STEP, 1)
+        with self.assertRaises(ValueError):
+            validate_release_go_readers(moved)
 
     def test_mixed_wrong_missing_and_duplicate_selectors_are_refused(self):
         raw = WORKFLOW.read_bytes().decode()

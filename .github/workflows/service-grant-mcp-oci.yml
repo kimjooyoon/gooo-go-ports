@@ -1,10 +1,13 @@
-name: Fixed public preview16 MCP OCI delivery
+name: Reviewed public native MCP OCI delivery
 
 on:
   pull_request:
     paths:
       - '.github/workflows/service-grant-mcp-oci.yml'
       - 'tools/service_grant_mcp_oci*'
+      - 'tools/service_grant_release_profile*'
+      - 'tools/service_grant_mcp_reference*'
+      - 'tools/profiles/mcp-public-*.json'
       - 'tools/registry_action_auth*'
       - 'tools/oci_action_contract*'
       - 'tools/oci-proof-transport/**'
@@ -29,21 +32,22 @@ on:
         description: Existing exact sha256 digest for verify-public only; never a tag
         type: string
         default: ''
+      native_version:
+        description: Reviewed native release version; empty uses the repository profile default
+        type: string
+        default: ''
 
 permissions:
   contents: read
 concurrency:
-  group: gooo-preview16-oci-${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'publish' && 'publisher' || github.ref }}
+  group: gooo-public-native-oci-${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'publish' && 'publisher' || github.ref }}
   cancel-in-progress: false
 defaults:
   run:
     shell: bash
 env:
   IMAGE: ghcr.io/kimjooyoon/gooo-service-grant-mcp
-  NATIVE_VERSION: v0.1.0-preview.16
-  NATIVE_SOURCE: fceb89f8b53eabd6687d16258d7cee89853c2cfe
-  ARCHIVE_SHA256: 0ae9bc25eef2ad73535642a66b8b7602e9f64a148b3e60696e36048a3b4a0524
-  BINARY_SHA256: a848a8747669e46e9afef6c0f1ed8b2014df4838cc370416f60ab9c6acccfc0a
+  REQUESTED_NATIVE_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.native_version || '' }}
 
 jobs:
   verify:
@@ -53,16 +57,25 @@ jobs:
     outputs:
       artifact-id: ${{ steps.delivery.outputs.artifact-id }}
       source-sha: ${{ steps.identity.outputs.source-sha }}
+      native-version: ${{ steps.identity.outputs.native-version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+      - name: Load the reviewed native release profile
+        run: |
+          set -euo pipefail
+          python3 -I -B tools/service_grant_mcp_oci.py profile \
+            --version "$REQUESTED_NATIVE_VERSION" --format github-env >> "$GITHUB_ENV"
       - name: Check the existing refusal and lifecycle controls
         run: |
           set -euo pipefail
           timeout -k 5s 30s python3 -I -B tools/service_grant_mcp_container_test.py
           timeout -k 5s 30s python3 -I -B tools/verify-service-grant-container_test.py
           timeout -k 5s 30s python3 -I -B tools/service_grant_mcp_oci_test.py
+          timeout -k 5s 30s python3 -I -B tools/service_grant_release_profile_test.py
+          timeout -k 5s 30s python3 -I -B tools/service_grant_mcp_reference_packet_test.py
+          timeout -k 5s 30s python3 -I -B tools/service_grant_mcp_reference_runtime_test.py
           timeout -k 5s 30s python3 -I -B -m unittest discover -s tools -p oci_action_contract_test.py -v
           python3 -I -B tools/oci_action_contract.py
       - name: Acquire and prepare only the fixed public native bundle
@@ -71,13 +84,36 @@ jobs:
           umask 077
           mkdir -p out/oci/evidence out/oci/delivery
           curl --fail --location --proto '=https' --proto-redir '=https' \
-            --connect-timeout 15 --max-time 120 --max-filesize 7217754 \
+            --connect-timeout 15 --max-time 120 --max-filesize "$ARCHIVE_BYTES" \
             --output out/oci/native.tar.gz \
-            https://github.com/kimjooyoon/gooo-go-ports/releases/download/v0.1.0-preview.16/gooo-service-grant-mcp-linux-amd64.tar.gz
+            "$ARCHIVE_URL"
           python3 -I -B tools/service_grant_mcp_oci.py prepare \
             --bundle out/oci/native.tar.gz --sha256 "$ARCHIVE_SHA256" \
             --source-commit "$NATIVE_SOURCE" --version "$NATIVE_VERSION" \
             --out out/oci/context > out/oci/evidence/preparation.json
+      - name: Set up the original Go identity reader for saved v4 references
+        if: env.HAS_NATIVE_REFERENCES == 'true'
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version: ${{ env.NATIVE_GO_SEMVER }}
+          cache: false
+      - name: Acquire and materialize only the reviewed original reference packet
+        if: env.HAS_NATIVE_REFERENCES == 'true'
+        timeout-minutes: 3
+        run: |
+          set -euo pipefail
+          curl --fail --location --proto '=https' --proto-redir '=https' \
+            --connect-timeout 15 --max-time 90 --max-filesize "$REFERENCE_PACKET_BYTES" \
+            --output out/oci/reference.tar.gz "$REFERENCE_PACKET_URL"
+          python3 -I -B tools/service_grant_mcp_oci.py prepare-references \
+            --bundle out/oci/native.tar.gz --sha256 "$ARCHIVE_SHA256" \
+            --source-commit "$NATIVE_SOURCE" --version "$NATIVE_VERSION" \
+            --packet out/oci/reference.tar.gz --out "$PWD/out/service-grant-mcp" \
+            > out/oci/prepared-references.stdout
+          python3 -I -B tools/service_grant_mcp_reference_runtime.py prepare \
+            --references "$PWD/out/service-grant-mcp" --context "$PWD/out/oci/context" \
+            --go "$(command -v go)" --runner-temp "$RUNNER_TEMP" \
+            > out/oci/reference-runtime.stdout
       - name: Build once and verify the actual image with default and optional tools
         timeout-minutes: 4
         run: |
@@ -91,10 +127,16 @@ jobs:
             --label "io.gooo.native.archive.sha256=$ARCHIVE_SHA256" \
             --iidfile out/oci/image.id out/oci/context \
             > out/oci/evidence/build.stdout 2> out/oci/evidence/build.stderr
+          reference_args=()
+          if test "$HAS_NATIVE_REFERENCES" = true; then
+            python3 -I -B tools/service_grant_mcp_reference_runtime.py arguments \
+              --references "$PWD/out/service-grant-mcp" > out/reference-arguments.bin
+            mapfile -d '' -t reference_args < out/reference-arguments.bin
+          fi
           timeout -k 10s 75s python3 -I -B tools/verify-service-grant-container.py \
             --docker "$(command -v docker)" --image "$(cat out/oci/image.id)" \
             --context "$PWD/out/oci/context" --out "$PWD/out/oci/evidence/wire" \
-            --label "io.gooo.oci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-verify"
+            --label "io.gooo.oci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-verify" "${reference_args[@]}"
           timeout -k 10s 60s docker image save --output out/oci/delivery/image.tar "$(cat out/oci/image.id)"
           test "$(stat -c %s out/oci/delivery/image.tar)" -le 67108864
       - name: Acquire the checksum-pinned Trivy CLI
@@ -182,17 +224,21 @@ jobs:
           for name in ('image.tar', 'sbom.cdx.json', 'scan.json', 'trivy-db-version.json'):
               data = (root / 'delivery' / name).read_bytes()
               files[name] = {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()}
-          manifest = {'schema': 'gooo/fixed-preview16-oci-delivery/v1',
+          manifest = {'schema': ('gooo/fixed-preview16-oci-delivery/v1'
+                                if os.environ['NATIVE_VERSION'] == 'v0.1.0-preview.16'
+                                else 'gooo/public-native-oci-delivery/v1'),
               'repository': os.environ['GITHUB_REPOSITORY'], 'workflow_commit': os.environ['GITHUB_SHA'],
               'run_id': os.environ['GITHUB_RUN_ID'], 'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'],
               'native_version': os.environ['NATIVE_VERSION'], 'native_source': os.environ['NATIVE_SOURCE'],
               'archive_sha256': os.environ['ARCHIVE_SHA256'], 'binary_sha256': os.environ['BINARY_SHA256'],
+              'release_profile_sha256': os.environ['RELEASE_PROFILE_SHA256'],
               'platform': 'linux/amd64', 'local_image_id': image, 'files': files,
               'security_gate': 'TRIVY_0_76_0_NO_HIGH_OR_CRITICAL_WITHOUT_EXCLUSIONS',
               'published': False, 'external_adoption': False}
           (root / 'delivery/build-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
           with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
               stream.write('source-sha=' + os.environ['GITHUB_SHA'] + '\n')
+              stream.write('native-version=' + os.environ['NATIVE_VERSION'] + '\n')
           PY
       - name: Save this exact verified image for the publisher; no later rebuild
         id: delivery
@@ -209,6 +255,13 @@ jobs:
           ids="$(timeout -k 5s 15s docker container ls --all --quiet --no-trunc --filter "label=io.gooo.oci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-verify")"
           if test -n "$ids"; then timeout -k 5s 15s docker container rm --force $ids; fi
           if test -f out/oci/image.id; then timeout -k 5s 15s docker image rm "$(cat out/oci/image.id)"; fi
+      - name: Remove only byte-verified owned original reference locations
+        if: always() && env.HAS_NATIVE_REFERENCES == 'true'
+        run: |
+          set -euo pipefail
+          python3 -I -B tools/service_grant_mcp_reference_runtime.py cleanup \
+            --references "$PWD/out/service-grant-mcp" --runner-temp "$RUNNER_TEMP" \
+            > out/reference-cleanup.json
       - name: Preserve bounded preparation, wire, scan and closure diagnostics on failure
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
@@ -220,6 +273,10 @@ jobs:
             out/oci/context/context.json
             out/oci/image.id
             out/oci/delivery/*.json
+            out/service-grant-mcp/prepared-references.json
+            out/service-grant-mcp/runtime-state.json
+            out/service-grant-mcp/*-module.*
+            out/reference-cleanup.json
 
   publish:
     needs: verify
@@ -241,6 +298,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+      - name: Load the reviewed native release profile
+        run: |
+          set -euo pipefail
+          python3 -I -B tools/service_grant_mcp_oci.py profile \
+            --version "$REQUESTED_NATIVE_VERSION" --format github-env >> "$GITHUB_ENV"
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           artifact-ids: ${{ needs.verify.outputs.artifact-id }}
@@ -263,6 +325,7 @@ jobs:
           assert m['run_id'] == os.environ['GITHUB_RUN_ID'] and m['run_attempt'] == '1'
           assert m['native_version'] == os.environ['NATIVE_VERSION'] and m['native_source'] == os.environ['NATIVE_SOURCE']
           assert m['archive_sha256'] == os.environ['ARCHIVE_SHA256'] and m['binary_sha256'] == os.environ['BINARY_SHA256']
+          assert m['release_profile_sha256'] == os.environ['RELEASE_PROFILE_SHA256']
           assert m['platform'] == 'linux/amd64' and m['published'] is False
           assert m['security_gate'] == 'TRIVY_0_76_0_NO_HIGH_OR_CRITICAL_WITHOUT_EXCLUSIONS'
           assert re.fullmatch(r'sha256:[0-9a-f]{64}', m['local_image_id'])
@@ -394,6 +457,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+      - name: Load the reviewed native release profile
+        run: |
+          set -euo pipefail
+          python3 -I -B tools/service_grant_mcp_oci.py profile \
+            --version "$REQUESTED_NATIVE_VERSION" --format github-env >> "$GITHUB_ENV"
       - name: Validate the exact digest and use a fresh anonymous Docker configuration
         env:
           EXPECTED_DIGEST: ${{ inputs.mode == 'verify-public' && inputs.public_digest || needs.publish.outputs.digest }}
@@ -424,9 +492,9 @@ jobs:
         run: |
           set -euo pipefail
           curl --fail --location --proto '=https' --proto-redir '=https' \
-            --connect-timeout 15 --max-time 120 --max-filesize 7217754 \
+            --connect-timeout 15 --max-time 120 --max-filesize "$ARCHIVE_BYTES" \
             --output out/readback/native.tar.gz \
-            https://github.com/kimjooyoon/gooo-go-ports/releases/download/v0.1.0-preview.16/gooo-service-grant-mcp-linux-amd64.tar.gz
+            "$ARCHIVE_URL"
           name="gooo-oci-readback-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           printf '%s\n' "$name" > out/readback/copy-container-name.txt
           cleanup_copy() {
@@ -457,27 +525,59 @@ jobs:
           import json, os, pathlib
           p = pathlib.Path('out/readback/identity')
           report = json.loads((p / 'runtime-identity.json').read_bytes())
-          assert report['schema'] == 'gooo/public-preview16-oci-runtime-identity/v1'
+          assert report['schema'] == ('gooo/public-preview16-oci-runtime-identity/v1'
+                                      if os.environ['NATIVE_VERSION'] == 'v0.1.0-preview.16'
+                                      else 'gooo/public-native-oci-runtime-identity/v1')
           assert report['status'] == 'EXACT_FIXED_PUBLIC_RUNTIME_BYTES_AND_MODES_MATCH'
-          assert report['checked_members'] == len(report['checked_files']) == 63
+          assert report['checked_members'] == len(report['checked_files']) == int(os.environ['RUNTIME_MEMBERS'])
+          assert report['release']['profile_sha256'] == os.environ['RELEASE_PROFILE_SHA256']
           assert report['context']['archive_sha256'] == os.environ['ARCHIVE_SHA256']
           assert report['context']['binary_sha256'] == os.environ['BINARY_SHA256']
           assert report['context']['source_commit'] == os.environ['NATIVE_SOURCE']
-          assert report['context']['notice_texts'] == 58
+          assert report['context']['notice_texts'] == int(os.environ['NOTICE_TEXTS'])
           PY
           timeout -k 5s 20s docker container rm "$name" > out/readback/copy-removal.stdout
           timeout -k 5s 15s docker container ls --all --quiet --no-trunc --filter "name=^/$name$" > out/readback/copy-remaining.txt
           test ! -s out/readback/copy-remaining.txt
           trap - EXIT
+      - name: Set up the original Go identity reader for saved v4 references
+        if: env.HAS_NATIVE_REFERENCES == 'true'
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version: ${{ env.NATIVE_GO_SEMVER }}
+          cache: false
+      - name: Acquire and materialize only the reviewed original reference packet
+        if: env.HAS_NATIVE_REFERENCES == 'true'
+        timeout-minutes: 3
+        run: |
+          set -euo pipefail
+          curl --fail --location --proto '=https' --proto-redir '=https' \
+            --connect-timeout 15 --max-time 90 --max-filesize "$REFERENCE_PACKET_BYTES" \
+            --output out/readback/reference.tar.gz "$REFERENCE_PACKET_URL"
+          python3 -I -B tools/service_grant_mcp_oci.py prepare-references \
+            --bundle out/readback/native.tar.gz --sha256 "$ARCHIVE_SHA256" \
+            --source-commit "$NATIVE_SOURCE" --version "$NATIVE_VERSION" \
+            --packet out/readback/reference.tar.gz --out "$PWD/out/service-grant-mcp" \
+            > out/readback/prepared-references.stdout
+          python3 -I -B tools/service_grant_mcp_reference_runtime.py prepare \
+            --references "$PWD/out/service-grant-mcp" --context "$PWD/out/readback/identity" \
+            --go "$(command -v go)" --runner-temp "$RUNNER_TEMP" \
+            > out/readback/reference-runtime.stdout
       - name: Run the existing full-proof and refusal smoke on that pulled image
         timeout-minutes: 2
         run: |
           set -euo pipefail
+          reference_args=()
+          if test "$HAS_NATIVE_REFERENCES" = true; then
+            python3 -I -B tools/service_grant_mcp_reference_runtime.py arguments \
+              --references "$PWD/out/service-grant-mcp" > out/reference-arguments.bin
+            mapfile -d '' -t reference_args < out/reference-arguments.bin
+          fi
           timeout -k 10s 75s python3 -I -B tools/verify-service-grant-container.py \
             --docker "$(command -v docker)" --image "$(cat out/readback/image.id)" \
             --context "$PWD/out/readback/identity" --out "$PWD/out/readback/wire" \
-            --label "io.gooo.oci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-readback"
-          printf '%s\n' 'ANONYMOUS_EXACT_DIGEST_RUNTIME63_AND_FINITE_WIRE_ACCEPTED_CLEANUP_PENDING' > out/readback/status.txt
+            --label "io.gooo.oci.run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-readback" "${reference_args[@]}"
+          printf 'ANONYMOUS_EXACT_DIGEST_RUNTIME%s_AND_FINITE_WIRE_ACCEPTED_CLEANUP_PENDING\n' "$RUNTIME_MEMBERS" > out/readback/status.txt
       - name: Remove only this readback's containers and image
         if: always()
         timeout-minutes: 1
@@ -489,10 +589,17 @@ jobs:
           test ! -s out/readback/remaining-containers.txt
           if test -f out/readback/image.id; then timeout -k 5s 15s docker image rm "$(cat out/readback/image.id)"; fi
           rm -rf -- "$RUNNER_TEMP/gooo-anonymous-config"
+      - name: Remove only byte-verified owned original reference locations
+        if: always() && env.HAS_NATIVE_REFERENCES == 'true'
+        run: |
+          set -euo pipefail
+          python3 -I -B tools/service_grant_mcp_reference_runtime.py cleanup \
+            --references "$PWD/out/service-grant-mcp" --runner-temp "$RUNNER_TEMP" \
+            > out/reference-cleanup.json
       - name: Record finite public readback acceptance only after cleanup succeeds
         run: |
           set -euo pipefail
-          printf '%s\n' 'ANONYMOUS_EXACT_DIGEST_RUNTIME63_AND_FINITE_WIRE_ACCEPTED' > out/readback/status.txt
+          printf 'ANONYMOUS_EXACT_DIGEST_RUNTIME%s_AND_FINITE_WIRE_ACCEPTED\n' "$RUNTIME_MEMBERS" > out/readback/status.txt
       - name: Retain public readback identity, raw wire and separate closure records
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
@@ -507,9 +614,16 @@ jobs:
             out/readback/identity/context.json
             out/readback/identity/runtime-identity.json
             out/readback/wire/
+            out/service-grant-mcp/prepared-references.json
+            out/service-grant-mcp/runtime-state.json
+            out/service-grant-mcp/*-module.*
+            out/reference-cleanup.json
 
   registry-install-candidate:
-    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'verify'
+    needs: verify
+    if: >-
+      github.event_name == 'workflow_dispatch' && inputs.mode == 'verify' &&
+      needs.verify.outputs.native-version == 'v0.1.0-preview.16'
     permissions:
       contents: read
     uses: ./.github/workflows/registry-install-smoke.yml

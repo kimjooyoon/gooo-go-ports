@@ -13,10 +13,10 @@ are developed separately; this repository supplies ports and runnable examples.
 | --- | --- | --- |
 | Assess a grant change for one required service | [Single-request MCP tool](#connect-the-service-grant-mcp-tool): `assess_service_grant` | One supplied type/name pair; seven decision fields and full bindings. |
 | Preserve all required services while narrowing a grant | [Ordered-request MCP tool](#preserve-several-required-requests-through-mcp): start with `--many-required`, then call `assess_service_grant_change` | An ordered list, normally 1-256 pairs; twelve decision fields, including the first original counterexample index. Do not replace it with the single-request tool. |
-| Check whether a previously selected tool alias changed origin | [Source-built alias MCP tool](#compare-a-tool-alias-before-reusing-it): start with `--alias-origin-change`, then call `gooo_compare_alias_origin` | Compare supplied catalogs and retain the original row indexes. Requires this source build; unavailable in preview16. |
+| Check whether a previously selected tool alias changed origin | [Native preview17 or source-built alias MCP tool](#compare-a-tool-alias-before-reusing-it): start with `--alias-origin-change`, then call `gooo_compare_alias_origin` | Compare supplied catalogs and retain the original row indexes. Preview17 includes this optional mode; preview16 does not. |
 | Compare the supplied API policy profiles | [Fixed-policy command](#compare-fixed-api-policies-without-a-compiler) | Compares the documented profiles; does not load an arbitrary edited policy. |
 | Compare saved MCP tool catalogs | [Native CLI without a toolchain](recorded-catalog-cli.md) or [pinned source alternatives](#compare-saved-mcp-catalogs-without-a-checkout) | Separates alias-origin changes from unknown collection context. The native command includes explicit observation availability and missing-field diagnostics; it does not collect a live catalog or authorize a tool call. |
-| Compare saved tool definitions when no host alias record exists | [Native preview.2 installation](#install-the-native-snapshot-command), [fixed Go module](#install-the-snapshot-command-with-go), [own-input recipe](#compare-your-own-saved-pages) or [agent task skill](../.agents/skills/gooo-compare-tool-snapshots/SKILL.md): `--definition-snapshot` | Select an original tool name from retained JSON-RPC pages. Preserve incomplete coverage and duplicate-name results; do not invent a host mapping. Native preview.2 includes this mode and three synthetic examples; the source route remains available. Preview.1 does not support it. |
+| Compare saved tool definitions when no host alias record exists | [Native MCP preview17](#compare-saved-definitions-through-mcp), [native CLI preview.2](#install-the-native-snapshot-command), [fixed Go module](#install-the-snapshot-command-with-go), [own-input recipe](#compare-your-own-saved-pages) or [agent task skill](../.agents/skills/gooo-compare-tool-snapshots/SKILL.md): `--definition-snapshot` | Select an original tool name from retained JSON-RPC pages. Preserve incomplete coverage and duplicate-name results; do not invent a host mapping. Native CLI preview.2 includes three synthetic examples; the source route remains available. CLI preview.1 and MCP preview16 do not support this mode. |
 | Evaluate a whole-catalog refresh from saved files | [Pinned file-plan command or Go library](#replace-a-catalog-after-refresh) | Reads the previous catalog and ordered request/response files without manually encoding their contents. Returns an in-process receipt and resulting bytes. Caller supplies collection outcome; embed the library for host invalidation and racing attempts. |
 | Collect original MCP pages through the Go SDK | [SDK consumer example](../examples/sdk-catalog-refresh/README.md) | Real SDK IO, original payload bytes, ordered-row Gooo checks and whole-catalog replacement. The local demo exercises complete, filtered and complete-empty responses without an external server or model. |
 | Edit and execute Gooo source | [First-program skill](#run-the-first-program-skill) | An actual source edit plus new execution and replay records; declaration checking alone is insufficient. |
@@ -574,6 +574,50 @@ Ask your coding agent:
 > names and source bindings. Do not fill in missing host facts. Keep the full
 > report locally and show the first error if the command fails.
 
+### Compare saved definitions through MCP
+
+Use [native MCP preview17](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.17)
+when you want a coding agent to call the comparison through its existing MCP
+host. Follow the [manual native installation](#connect-the-service-grant-mcp-tool)
+for macOS arm64 or Linux amd64. Keep the verified executable's absolute path and
+start it with `args: ["--definition-snapshot"]`. The server needs no Go/Gooo
+installation, model account or provider connection at runtime.
+
+For [Codex configuration](https://learn.chatgpt.com/docs/extend/mcp), merge a
+separate entry into your chosen configuration scope, preserving existing entries:
+
+```toml
+[mcp_servers.gooo_tool_snapshots]
+command = "/ABSOLUTE/PATH/gooo-service-grant-mcp"
+args = ["--definition-snapshot"]
+enabled_tools = ["gooo_compare_saved_tool_definitions"]
+```
+
+Other stdio hosts use the same command and argument. If the host filters tools,
+allow `gooo_compare_saved_tool_definitions`. Discover it before calling it; an
+absent tool is a setup failure, not an unchanged definition. The existing
+preview16 Homebrew package, public container and Registry descriptor retain
+their own capabilities and do not contain this mode.
+
+Ask the agent to read the extracted `snapshot-example.json` and pass the whole
+object as the tool's arguments, then inspect `decision.state`, both page coverage
+fields and the complete source bindings. This included example is synthetic.
+For your own retained data, use the [own-page guide](#compare-your-own-saved-pages)
+to construct the same arguments object from the exact request/response strings;
+keep page order and unavailable observations unchanged.
+
+Retain the full result and first failure. `UNASSESSED` is a successful comparison
+with insufficient observations. An unchanged supplied definition does not prove
+unchanged server behavior; origin and authorization remain unassessed, and no
+remote tool is called. Reports from an actual use or its first failure belong in
+the [existing feedback form](#report-a-first-attempt-or-a-real-task).
+
+The input hash and context ID bind the actual arguments received by the selected
+entry point. For example, a CLI input file's final newline is outside the JSON
+object passed through MCP. Its input/context/report hashes can differ while the
+saved page strings and observed definition stay the same. Keep each original
+record and its actual input identity when comparing results across entry points.
+
 ### Install the native snapshot command
 
 [recorded-catalog-cli-preview.2](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/recorded-catalog-cli-preview.2)
@@ -919,11 +963,12 @@ image instructions above for host connection settings. The
 keep discovery metadata, installation observations and original publication
 evidence distinct.
 
-For a manual native installation, download the [native MCP preview.16](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.16)
+For a manual native installation, download the [native MCP preview17](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.17)
 archive and matching `.sha256` file for **Linux amd64** or **macOS arm64**.
 In the download directory, verify the checksum with `sha256sum -c FILE.sha256`
 (Linux) or `shasum -a 256 -c FILE.sha256` (macOS), then extract the verified
-archive. It contains `gooo-service-grant-mcp` and 58 license/attribution texts.
+archive. It contains `gooo-service-grant-mcp`, `snapshot-example.json` and 62
+license/attribution texts.
 Running this executable needs no Go, Gooo compiler or Python installation.
 Replace `/ABSOLUTE/PATH/gooo-service-grant-mcp` below with its absolute path;
 pass no command arguments.
@@ -1094,7 +1139,12 @@ not external adoption.
 
 Use this when an agent previously selected a tool name and you want to compare
 its declared server and original function before and after a catalog update.
-With Go **1.27.3**, install this immutable source snapshot without a checkout:
+The [manual native preview17 archive](#connect-the-service-grant-mcp-tool) supports
+this mode without installing Go or Gooo: configure its absolute executable path
+with `args: ["--alias-origin-change"]`.
+
+For the older source-install route, with Go **1.27.3**, install this immutable
+snapshot without a checkout:
 
 ```sh
 install_dir="$(mktemp -d)"

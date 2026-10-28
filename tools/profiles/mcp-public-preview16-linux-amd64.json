@@ -1,0 +1,29 @@
+{
+  "schema": "gooo/public-native-release-profile/v1",
+  "version": "v0.1.0-preview.16",
+  "native_source": "fceb89f8b53eabd6687d16258d7cee89853c2cfe",
+  "go_version": "go1.27.3",
+  "platform": "linux/amd64",
+  "archive": {
+    "name": "gooo-service-grant-mcp-linux-amd64.tar.gz",
+    "bytes": 7217754,
+    "sha256": "0ae9bc25eef2ad73535642a66b8b7602e9f64a148b3e60696e36048a3b4a0524"
+  },
+  "binary": {
+    "name": "gooo-service-grant-mcp",
+    "sha256": "a848a8747669e46e9afef6c0f1ed8b2014df4838cc370416f60ab9c6acccfc0a"
+  },
+  "bundle": {
+    "schema": "gooo/service-grant-mcp-native-bundle/v2",
+    "runtime_members": 63,
+    "notice_texts": 58
+  },
+  "provenance": {
+    "@context": {"prov": "http://www.w3.org/ns/prov#"},
+    "@id": "https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.16",
+    "prov:wasDerivedFrom": [
+      {"@id": "urn:sha256:0ae9bc25eef2ad73535642a66b8b7602e9f64a148b3e60696e36048a3b4a0524"},
+      {"@id": "https://github.com/kimjooyoon/gooo-go-ports/tree/fceb89f8b53eabd6687d16258d7cee89853c2cfe"}
+    ]
+  }
+}
