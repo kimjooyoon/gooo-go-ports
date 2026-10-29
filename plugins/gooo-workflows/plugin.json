@@ -1,0 +1,43 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "gooo-workflows",
+  "version": "0.1.0",
+  "description": "Instructions for a small Gooo source edit and for comparing a selected MCP tool definition in saved before/after pages. Uses local native tools prepared separately.",
+  "author": {
+    "name": "asketeddy",
+    "email": "asketeddy@gmail.com"
+  },
+  "homepage": "https://github.com/kimjooyoon/gooo-go-ports/blob/e8d4c554a77b5ea90e58ef63927915b97725933c/docs/ai-agents.md",
+  "repository": "https://github.com/kimjooyoon/gooo-go-ports",
+  "license": "BSD-3-Clause",
+  "keywords": [
+    "Gooo",
+    "MCP",
+    "source editing",
+    "snapshot comparison"
+  ],
+  "extensions": {
+    "com.openai": {
+      "requires_local_executor": true,
+      "interface": {
+        "displayName": "Gooo source workflows",
+        "shortDescription": "Compare MCP tools; try Gooo",
+        "longDescription": "Use two existing workflows: edit a small .gooo program and retain its execution/replay observations, or compare a selected MCP tool definition in saved before/after tools/list pages. The snapshot workflow reports observed changes and page coverage; it does not prove compatibility or authorize tool calls.\n\nGooo language and compiler: https://github.com/kimjooyoon/meta-ontology-go\n\nRequires a local desktop thread on macOS or Linux. Native setup follows the included skills and is separate from this instructions-only package. No compiler, Go toolchain, native executable, MCP server, or account connection is bundled.",
+        "developerName": "asketeddy",
+        "category": "Developer Tools",
+        "capabilities": [
+          "Gooo source edits",
+          "Saved MCP definition comparison"
+        ],
+        "websiteURL": "https://github.com/kimjooyoon/meta-ontology-go",
+        "supportURL": "https://github.com/kimjooyoon/gooo-go-ports/issues",
+        "defaultPrompt": [
+          "Use gooo-first-program to edit the tutorial and show its new execution and replay.",
+          "Use gooo-compare-tool-snapshots to compare my saved before/after MCP pages."
+        ],
+        "composerIcon": "./assets/gooo.svg",
+        "logo": "./assets/gooo.svg"
+      }
+    }
+  }
+}

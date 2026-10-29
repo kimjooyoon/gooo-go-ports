@@ -320,6 +320,14 @@ unverified. See the [official CLI](https://github.com/vercel-labs/skills)
 for installation scope and the
 [telemetry opt-out](https://www.skills.sh/docs/cli#telemetry).
 
+### Experimental portable plugin source
+
+The [portable Gooo workflows guide](portable-gooo-workflows.md) groups the
+first-program and saved-snapshot instructions in one fixed source package. Its
+version 0.1.0 is pinned to `e8d4c554`; local name/version/path discovery is
+observed, while portable installation, skill loading, activation and task
+completion remain unverified. Native setup still follows the included skills.
+
 ### Report a first attempt or a real task
 
 Use the [first-run feedback form](https://github.com/kimjooyoon/gooo-go-ports/issues/new?template=problem.yml)
