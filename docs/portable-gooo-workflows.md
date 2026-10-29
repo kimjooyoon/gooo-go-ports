@@ -75,3 +75,9 @@ and `--version NEW_VERSION` with a different new output directory. Review its
 source record and changes before replacing a checked-in version; generated
 provenance is not execution evidence. The helper is optional and adds no CI
 exception: this package's new/nested files require the repository's full checks.
+
+The exporter retains each skill's three base files and any lowercase Markdown
+files under its `references/` directory from that exact source commit. It rejects
+other resources and symlinks rather than silently omitting them. Version 0.1.0
+keeps its original ten-file snapshot; exporting a future candidate does not
+update that checked-in package.

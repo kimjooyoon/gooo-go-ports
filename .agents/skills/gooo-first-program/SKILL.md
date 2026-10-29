@@ -6,21 +6,20 @@ license: BSD-3-Clause; see LICENSE.
 
 # Gooo first program
 
-Produce an actual Gooo source edit and its execution/replay records. The compiler
+Produce a Gooo source edit and its execution/replay records. The compiler
 generates Go to execute supported bodies. Use a local shell, Git and Go toolchain
-selection on macOS or Linux; keep the user's existing files, changes and branch.
+selection on macOS or Linux; preserve the user's files, changes and branch.
 
 ## Run the current tutorial
 
-Run each command from the repository root in the same shell. Stop on a failed
-command and retain its diagnostic before changing the source or setup.
+Run commands from the repository root in the same shell. Stop at the first
+failure and retain its diagnostic before changing the source or setup.
 
 1. **Read the selected checkout.** Reuse an existing `kimjooyoon/gooo-go-ports`
    checkout, or obtain a reviewed revision in a new task directory. Read its
    `AGENTS.md`, `examples/learn-gooo/README.md`, both `.gooo` files in that
-   directory and `learn-gooo.workspace.json`. Follow that checkout's pins.
-   The example imports `Clamp` and `InRange` from `limits.gooo` into
-   `main.gooo`.
+   directory and `learn-gooo.workspace.json`. Follow that checkout's pins; the
+   example imports `Clamp` and `InRange` from `limits.gooo` into `main.gooo`.
 
 2. **Set up the matching compiler.** This current-source workflow targets Go
    **1.27.3**. Bootstrap may download Go and the pinned compiler source, then
@@ -35,8 +34,8 @@ command and retain its diagnostic before changing the source or setup.
    If a matching compiler is already available, validate its
    `version --build --json` record using this checkout's
    `tools/bootstrap-check.go` before skipping bootstrap. Substitute that
-   executable's absolute path for `./.gooo` below. Selecting Go alone does not
-   establish a matching compiler. Keep the user's global agent settings unchanged.
+   executable's absolute path for `./.gooo` below. Go selection alone does not
+   establish a matching compiler. Keep global agent settings unchanged.
 
 3. **Save the original execution in a fresh directory.**
 
@@ -47,10 +46,9 @@ command and retain its diagnostic before changing the source or setup.
      learn-gooo.workspace.json > "$gooo_trial_dir/before.json"
    ```
 
-   Inspect `result.runtime.traces[].deliveries[].actual`. The supplied score
-   `75` returns `score: 75`, `remaining: 25`, `in_range: true` and
-   `label: "sensor: high"`. A declaration `check` or saved generated Go is not
-   an execution.
+   Inspect `result.runtime.traces[].deliveries[].actual`: supplied score `75`
+   returns `score: 75`, `remaining: 25`, `in_range: true` and
+   `label: "sensor: high"`. Declaration `check` or saved generated Go is not execution.
 
 4. **Make the requested source change.** For the first tutorial edit, replace
    the single `if score >= 60` condition in
@@ -84,12 +82,11 @@ command and retain its diagnostic before changing the source or setup.
      > "$gooo_trial_dir/comparison.json"
    ```
 
-   The comparison checks typed fields, source digests, compiler identity and the
-   edited replay's parent. It does not capture Git revision or support other
-   source edits/input sets; for those, inspect the actual records directly.
-   Report what ran, the source change, observed four-field results, compiler
-   identity and paths of the retained records. Preserve the first failure
-   instead of calling an incomplete attempt successful.
+   This checks typed fields, source digests, compiler identity and the edited
+   replay's parent. It does not capture Git revision or support other edits/input
+   sets; inspect those records directly. Report what ran, the source change,
+   observed four-field results, compiler identity and retained record paths.
+   Preserve the first failure; an incomplete attempt is not success.
 
 ## Interpretation and limits
 
@@ -108,22 +105,13 @@ and porting guides before promising support. The fixed API-policy Action cannot
 load this edited tutorial or arbitrary policies. These records authorize no
 live API effects.
 
-## Other starting points
+## Conditional guidance
 
-Read only the guidance needed for the actual task:
+Read only the reference needed for the requested task; neither is part of the
+current tutorial:
 
-- **Reproduce the older snapshot:** use the
-  [archived installation procedure](https://github.com/kimjooyoon/gooo-go-ports/blob/c3f6cdaf7c9f2f84bcb0f9e0076ade2d72eb3ec2/.agents/skills/gooo-first-program/SKILL.md#find-the-example)
-  for `e1e279a`, compiler `83928fa`, Go **1.27.2** and the matching
-  **v0.6.32-dev** archive. Verify its checksum and build identity using that
-  snapshot's validator. It is a separate reproduction, not a Go 1.27.3 compiler.
-- **Diagnose an already configured optional ADK failure:** if
-  `gooo_discover_capability` reports `SOURCE_LOWER_FAILED` without a useful
-  location, follow the
-  [single diagnostic-only check](https://github.com/kimjooyoon/gooo-go-ports/blob/c3f6cdaf7c9f2f84bcb0f9e0076ade2d72eb3ec2/docs/ai-agents.md#choose-a-task-that-matches-the-current-capability).
-  Preserve the original failure and source; this does not resume execution or
-  change the checkout's pin.
-- **Try API automation after the tutorial:** the
-  [cooldown-facts trial](https://github.com/kimjooyoon/gooo-go-ports/blob/f8eae4204ef0aef6b8c3801cf6a1cf46da7a4f5a/docs/ai-agents.md#choose-a-task-that-matches-the-current-capability)
-  has its own pinned setup. Keep this tutorial and its receipts; cooldown facts
-  do not authorize retries.
+- To reproduce the frozen Go 1.27.2 tutorial archive, read
+  [legacy snapshot](references/legacy-snapshot.md).
+- For an already configured ADK source diagnostic or a requested cooldown-facts
+  follow-on, read the relevant section of
+  [optional integrations](references/optional-integrations.md).
