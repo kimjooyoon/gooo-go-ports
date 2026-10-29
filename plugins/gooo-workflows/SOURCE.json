@@ -1,0 +1,59 @@
+{
+  "repository": "https://github.com/kimjooyoon/gooo-go-ports",
+  "source_commit": "e8d4c554a77b5ea90e58ef63927915b97725933c",
+  "language_repository": "https://github.com/kimjooyoon/meta-ontology-go",
+  "skills_copied_without_content_changes": [
+    {
+      "source_path": ".agents/skills/gooo-first-program/SKILL.md",
+      "package_path": "skills/gooo-first-program/SKILL.md",
+      "source_git_blob": "67a9df9e5ab33a75c90d6040c02e9d7cfea44f3f",
+      "sha256": "f6c2641a8386219e805a5136f170395b843e4c5d99f42bb226c0ca057270f3af",
+      "bytes": 6437
+    },
+    {
+      "source_path": ".agents/skills/gooo-first-program/LICENSE",
+      "package_path": "skills/gooo-first-program/LICENSE",
+      "source_git_blob": "07d23fa53bf91014ad48dbefed45ec692e88663f",
+      "sha256": "099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48",
+      "bytes": 1496
+    },
+    {
+      "source_path": ".agents/skills/gooo-first-program/agents/openai.yaml",
+      "package_path": "skills/gooo-first-program/agents/openai.yaml",
+      "source_git_blob": "d4a7d4e024c586575685d08ec981f52a045adf48",
+      "sha256": "cd7881e679339308d51cd5e912c09a0c11a70fbab44c4bc16476eeece214868e",
+      "bytes": 239
+    },
+    {
+      "source_path": ".agents/skills/gooo-compare-tool-snapshots/SKILL.md",
+      "package_path": "skills/gooo-compare-tool-snapshots/SKILL.md",
+      "source_git_blob": "34c4172d9570e173d2e67d350ed1f0aa2d238e68",
+      "sha256": "6e306cef689939ef2cbb76573cf32d06ccf790441917994061f54a00fd3591ef",
+      "bytes": 3385
+    },
+    {
+      "source_path": ".agents/skills/gooo-compare-tool-snapshots/LICENSE",
+      "package_path": "skills/gooo-compare-tool-snapshots/LICENSE",
+      "source_git_blob": "07d23fa53bf91014ad48dbefed45ec692e88663f",
+      "sha256": "099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48",
+      "bytes": 1496
+    },
+    {
+      "source_path": ".agents/skills/gooo-compare-tool-snapshots/agents/openai.yaml",
+      "package_path": "skills/gooo-compare-tool-snapshots/agents/openai.yaml",
+      "source_git_blob": "4da00fad9f05282b28f64acbfebd38d524fba45d",
+      "sha256": "553f511f38d6849f8abae5c4b833b9bd5145bdac058107469dd36786833fb3ea",
+      "bytes": 296
+    }
+  ],
+  "root_license": {
+    "source_path": "LICENSE",
+    "sha256": "099e1adf9145f6fe45357f004f503231a21b58244fdf105a34117d1a33b4bd48"
+  },
+  "asset": {
+    "package_path": "assets/gooo.svg",
+    "kind": "Existing original Gooo project SVG prepared for the Compiler Explorer adapter, reused without edits.",
+    "sha256": "50710c30dd4c55c55ac14bbb197b24de1e1df8b11421cf7a7e85e767f6b29d9f"
+  },
+  "scope": "Instruction-only packaging; no runtime installation, model trial, activation, directory approval or public submission is established by this source record."
+}

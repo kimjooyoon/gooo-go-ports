@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gooo First Program"
+  short_description: "Edit Gooo source, execute it and save a replay"
+  default_prompt: "Use $gooo-first-program to run a small Gooo program, change its source and replay the new execution."

@@ -1,0 +1,20 @@
+{
+  "name": "gooo-go-ports",
+  "interface": {
+    "displayName": "Gooo Go Ports experimental workflows"
+  },
+  "plugins": [
+    {
+      "name": "gooo-workflows",
+      "source": {
+        "source": "local",
+        "path": "./plugins/gooo-workflows"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}
