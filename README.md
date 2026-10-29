@@ -1,5 +1,8 @@
 # Gooo Go Ports
 
+
+[![M8ven Score](https://m8ven.ai/badge/mcp/kimjooyoon-gooo-go-ports-5tjh5l?v=817edc3621e8254bda91c8d8df7e474b)](https://m8ven.ai/mcp/kimjooyoon-gooo-go-ports-5tjh5l?s=readme)
+
 [Gooo (meta-ontology-go)](https://github.com/kimjooyoon/meta-ontology-go) is an
 experimental programming language with a Go backend. This repository contains
 selected Go ports checked against Go reference results, and original Gooo
