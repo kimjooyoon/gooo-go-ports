@@ -1,5 +1,7 @@
 """An exact additive CI layer; removing it must recover the reviewed workflow."""
 import hashlib
+import importlib.util
+from pathlib import Path
 
 PRIOR_SHA256 = '6b0728d9410ddae590cb76d652b5a320234771a1caf79ab8b4288b3dfb5e6855'
 COMMON = """          go -C examples/sdk-catalog-refresh vet ./...
@@ -56,6 +58,12 @@ STEP_ANCHOR = '      - name: Verify Gooo recorded observation diagnostics\n'
 
 
 def project(text):
+    path = Path(__file__).with_name('portable_workflow_snapshot_workflow.py')
+    spec = importlib.util.spec_from_file_location('portable_workflow_snapshot_workflow', path)
+    portable = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(portable)
+    if portable.STEP in text:
+        text = portable.project(text)
     for chunk in [COMMON, DECLARATION, BUILD_VERIFY, UPLOAD]:
         if text.count(chunk) != 1:
             raise ValueError('SDK catalog CI block missing, duplicated or changed')
