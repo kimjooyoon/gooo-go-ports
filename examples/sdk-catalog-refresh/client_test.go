@@ -15,6 +15,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/modelcontextprotocol/go-sdk/jsonrpc"
 )
 
 type peerRequest struct {
@@ -45,8 +47,8 @@ func (p *peer) respond(req peerRequest, result string) error {
 	return nil
 }
 
-func (p *peer) rpcError(req peerRequest) error {
-	raw := []byte(`{"jsonrpc":"2.0","id":` + string(req.ID) + `,"error":{"code":-32001,"message":"synthetic later-page failure"}}`)
+func (p *peer) rpcError(req peerRequest, code int64) error {
+	raw := []byte(fmt.Sprintf(`{"jsonrpc":"2.0","id":%s,"error":{"code":%d,"message":"synthetic tools/list failure"}}`, req.ID, code))
 	if _, err := p.conn.Write(append(bytes.Clone(raw), '\n')); err != nil {
 		return err
 	}
@@ -204,22 +206,64 @@ func TestActualSDKWholeCatalogAndRowVisibility(t *testing.T) {
 	}
 }
 
-func TestLaterPageFailureRetainsCompleteOldCatalog(t *testing.T) {
-	c, p := newPeer(t, func(p *peer, index int, req peerRequest) error {
-		if index == 0 {
-			return p.respond(req, `{"tools":[`+tool("partial")+`],"nextCursor":"more"}`)
-		}
-		return p.rpcError(req)
-	})
-	report, err := c.Refresh(context.Background())
-	if err == nil {
-		t.Fatal("SDK error disappeared")
+func TestRPCPageFailureRetainsCompleteOldCatalog(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		code        int64
+		failurePage int
+	}{
+		{"generic-later-page", -32001, 1},
+		{"method-not-found-first-page", -32601, 0},
+		{"method-not-found-later-page", -32601, 1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c, p := newPeer(t, func(p *peer, index int, req peerRequest) error {
+				if index < tc.failurePage {
+					return p.respond(req, `{"tools":[`+tool("partial")+`],"nextCursor":"more"}`)
+				}
+				return p.rpcError(req, tc.code)
+			})
+			before := c.Snapshot()
+			report, err := c.Refresh(context.Background())
+			var rpcErr *jsonrpc.Error
+			if !errors.As(err, &rpcErr) || rpcErr.Code != tc.code {
+				t.Fatalf("SDK RPC error changed: got %v, want code %d", err, tc.code)
+			}
+			requirePreserved(t, c, report)
+			if report.CollectorState != "ERROR" || report.Receipt.Reason != "STAGING_FAILED" || len(report.Exchanges) != tc.failurePage+1 {
+				t.Fatalf("failed collection became complete: %+v", report)
+			}
+			if report.Stored.RegistryVersion != before.RegistryVersion || report.Stored.SHA256 != before.SHA256 || !bytes.Equal(report.Stored.Bytes, before.Bytes) {
+				t.Fatalf("prior catalog changed: before %+v, after %+v", before, report.Stored)
+			}
+			for range report.Exchanges {
+				select {
+				case <-p.written:
+				case <-p.ctx.Done():
+					t.Fatal("peer write not completed")
+				}
+			}
+			p.mu.Lock()
+			defer p.mu.Unlock()
+			for index, pair := range report.Exchanges {
+				if !pair.RequestWritten || !pair.ResponsePresent || !bytes.Equal(pair.Request, p.requests[index]) || !bytes.Equal(pair.Response, p.responses[index]) {
+					t.Fatalf("exact original pair not bound: %+v", pair)
+				}
+			}
+			failed := report.Exchanges[tc.failurePage]
+			var request peerRequest
+			if err := json.Unmarshal(failed.Request, &request); err != nil {
+				t.Fatal(err)
+			}
+			wantCursor := ""
+			if tc.failurePage > 0 {
+				wantCursor = "more"
+			}
+			if request.Params.Cursor != wantCursor || !bytes.Contains(failed.Response, []byte(fmt.Sprintf(`"code":%d`, tc.code))) {
+				t.Fatalf("failed page cursor or RPC response lost: %+v", failed)
+			}
+		})
 	}
-	requirePreserved(t, c, report)
-	if report.CollectorState != "ERROR" || len(report.Exchanges) != 2 || !report.Exchanges[1].ResponsePresent || !bytes.Contains(report.Exchanges[1].Response, []byte(`"code":-32001`)) {
-		t.Fatalf("failed original response lost: %+v", report)
-	}
-	_ = p
 }
 
 func TestMalformedListResultNeverReplacesOrPanics(t *testing.T) {
