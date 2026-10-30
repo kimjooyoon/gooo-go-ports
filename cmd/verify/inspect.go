@@ -192,6 +192,17 @@ func inspect(raw []byte, s suite, replay bool, identity expectedIdentity) (check
 }
 
 func inspectWithRuntime(raw []byte, s suite, replay bool, identity expectedIdentity, reported *nativeReportedRuntime) (checked, error) {
+	return inspectWithRuntimeProfile(raw, s, replay, identity, reported, "gooo/body-composition-runtime/v1", nil)
+}
+
+// Profiles share every semantic/source/oracle check. A profile validator runs
+// only after those checks and before diagnostics can escape to the caller.
+func inspectWithRuntimeProfile(raw []byte, s suite, replay bool, identity expectedIdentity, reported *nativeReportedRuntime, runtimeSchema string, validateProfile func([]byte) error) (checked, error) {
+	return inspectWithRuntimeProfileAndHTTPABI(raw, s, replay, identity, reported, runtimeSchema, validateProfile, inspectETagABI)
+}
+
+// The selected caller supplies its HTTP process ABI; receipt fields cannot choose it.
+func inspectWithRuntimeProfileAndHTTPABI(raw []byte, s suite, replay bool, identity expectedIdentity, reported *nativeReportedRuntime, runtimeSchema string, validateProfile func([]byte) error, inspectHTTPABI func([]byte, suite, expectedIdentity) error) (checked, error) {
 	contract, err := contractFor(s)
 	if err != nil {
 		return checked{}, err
@@ -210,7 +221,7 @@ func inspectWithRuntime(raw []byte, s suite, replay bool, identity expectedIdent
 	if e.ManifestDigest != identity.ManifestDigest || e.CasesDigest != identity.CasesDigest {
 		return fail("workspace or case file binding")
 	}
-	if r.Schema != "gooo/body-composition-runtime/v1" || r.Stage != "COMPLETE" || (len(r.Failure) > 0 && string(r.Failure) != "null") || r.Producer != identity.CompilerRevision || len(version) != 4 || version[0] != "go" || version[1] != "version" || version[2] != identity.GoVersion || r.Generated != c.SHA {
+	if r.Schema != runtimeSchema || r.Stage != "COMPLETE" || (len(r.Failure) > 0 && string(r.Failure) != "null") || r.Producer != identity.CompilerRevision || len(version) != 4 || version[0] != "go" || version[1] != "version" || version[2] != identity.GoVersion || r.Generated != c.SHA {
 		return fail("runtime producer, toolchain or generated program")
 	}
 	if e.Schema != "gooo/workspace-body-execution-receipt/v1" || e.Decision != "PASS" || e.Error != "" {
@@ -223,7 +234,10 @@ func inspectWithRuntime(raw []byte, s suite, replay bool, identity expectedIdent
 		return fail(err.Error())
 	}
 	if isHTTPConditionalSuite(s) {
-		if err := inspectETagABI(raw, s, identity); err != nil {
+		if inspectHTTPABI == nil {
+			return fail("explicit HTTP conditional ABI validator required")
+		}
+		if err := inspectHTTPABI(raw, s, identity); err != nil {
 			return fail(err.Error())
 		}
 	}
@@ -315,6 +329,11 @@ func inspectWithRuntime(raw []byte, s suite, replay bool, identity expectedIdent
 			return fail(fmt.Sprintf("Go oracle mismatch at row %d: got %s; want %v", i, d.Actual, row.Expected))
 		}
 		if err := inspectWhitespaceFields(s, d.ActualFields, row.Expected); err != nil {
+			return fail(err.Error())
+		}
+	}
+	if validateProfile != nil {
+		if err := validateProfile(raw); err != nil {
 			return fail(err.Error())
 		}
 	}

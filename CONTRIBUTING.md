@@ -239,6 +239,10 @@ go run ./cmd/verify --out out/contribution
 ./tools/probe.sh --out out/contribution-probes
 ```
 
+For an explicit compiler276 run of the full legacy corpus, see
+[experimental native sessions](docs/experimental-native-sessions.md). Keep its
+result separate from the pinned validation above.
+
 The Python receipt tests above may skip checks that require actual example
 receipts. The [CI workflow](.github/workflows/ci.yml) also executes the importing
 examples and supplies their saved execution/replay files to those checks; a

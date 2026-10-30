@@ -6,10 +6,12 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -51,6 +53,8 @@ func run() error {
 	timingOut := flag.String("timing-out", "", "optional new timing JSONL directly under --out (observation only)")
 	caseProfileFlag := flag.String("case-profile", "", "optional case wire profile: legacy, uuid-compact-v1 or uuid-and-literal-report-compact-v1")
 	workspaceProfileFlag := flag.String("workspace-profile", "", "optional workspace source profile: legacy or dependency-closure-v1")
+	executionProfileFlag := flag.String("execution-profile", "", "native execution: stateless (default), experimental-session-276-v1 or experimental-session-276-gzip-v1 (legacy corpus only)")
+	executionProfileRequested := false
 	var shard ciShardOptions
 	var nativeShard ciShardNativeOptions
 	flag.StringVar(&shard.PlanOut, "ci-shard-plan-out", "", "write an optional CI shard metadata plan; no native execution")
@@ -70,6 +74,9 @@ func run() error {
 		return err
 	}
 	flag.Visit(func(f *flag.Flag) {
+		if f.Name == "execution-profile" {
+			executionProfileRequested = true
+		}
 		if f.Name == "fail-fast" || f.Name == "timeout" {
 			nativeExecutionRequested = true
 		}
@@ -87,11 +94,18 @@ func run() error {
 	if err := validateNativeSuiteTimeout(*nativeTimeout); err != nil {
 		return err
 	}
+	executionProfile, err := parseNativeExecutionProfile(*executionProfileFlag)
+	if err != nil {
+		return err
+	}
+	if executionProfile != "" && shard.enabled() {
+		return fmt.Errorf("experimental session cannot be used with CI shard mode")
+	}
 	if shard.enabled() {
 		if flag.NArg() != 0 {
 			return fmt.Errorf("CI shard metadata mode does not accept positional arguments")
 		}
-		conflicts := *compiler != "./.gooo" || *out != "" || *browser != "" || *workers != 1 || *suiteOrderFlag != "catalog" || *timingOut != "" || *caseProfileFlag != "" || *workspaceProfileFlag != "" || nativeExecutionRequested
+		conflicts := *compiler != "./.gooo" || *out != "" || *browser != "" || *workers != 1 || *suiteOrderFlag != "catalog" || *timingOut != "" || *caseProfileFlag != "" || *workspaceProfileFlag != "" || nativeExecutionRequested || executionProfileRequested
 		if nativeShard.Requested {
 			if err := nativeShard.validate(shard, conflicts); err != nil {
 				return err
@@ -112,6 +126,9 @@ func run() error {
 	}
 	workspaceProfile, err := parseNativeWorkspaceProfile(*workspaceProfileFlag, *browser != "")
 	if err != nil {
+		return err
+	}
+	if err := executionProfile.validate(*compiler, *out, *browser, *timingOut, caseProfile, workspaceProfile, shard.Requested); err != nil {
 		return err
 	}
 	if err := validateNativeSuiteWorkers(*workers); err != nil {
@@ -329,9 +346,22 @@ func run() error {
 			return err
 		}
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), *nativeTimeout)
+	parent := context.Background()
+	if executionProfile != "" {
+		// An explicit experiment can be interrupted without abandoning its
+		// owned session processes or bypassing Close/Wait evidence collection.
+		var stop context.CancelFunc
+		parent, stop = signal.NotifyContext(parent, os.Interrupt)
+		defer stop()
+	}
+	ctx, cancel := context.WithTimeout(parent, *nativeTimeout)
 	defer cancel()
-	raw, err := execute(ctx, *compiler, filepath.Join(root, "compiler.json"), "version", "--build", "--json")
+	var raw []byte
+	if executionProfile != "" {
+		raw, err = readNativeSessionCLICompilerIdentity(ctx, *compiler, root)
+	} else {
+		raw, err = execute(ctx, *compiler, filepath.Join(root, "compiler.json"), "version", "--build", "--json")
+	}
 	if err != nil {
 		return err
 	}
@@ -345,7 +375,7 @@ func run() error {
 	if err = json.Unmarshal(raw, &build); err != nil {
 		return err
 	}
-	if build.Revision != lock.CompilerRevision || build.Version != lock.CompilerVersion || build.Modified != "false" || build.Go != lock.GoVersion || build.Native != lock.GoVersion {
+	if executionProfile == "" && (build.Revision != lock.CompilerRevision || build.Version != lock.CompilerVersion || build.Modified != "false" || build.Go != lock.GoVersion || build.Native != lock.GoVersion) {
 		return fmt.Errorf("compiler identity differs from upstream.json: %s", raw)
 	}
 	catalog, err := freezeVerificationCatalog("verification-catalog.json")
@@ -404,9 +434,36 @@ func run() error {
 	verifier := newNativeSuiteVerifier(ctx, *compiler, root, lock, cache)
 	verifier.timing = timing
 	verifier.caseProfile = caseProfile
+	var sessionRunner *nativeSessionSuiteRunner
+	var sessionSources nativeTimingSnapshot
+	sessionSourceConfig := nativeTimingConfig{RepositoryRoot: ".", Compiler: *compiler, Lock: lock, Catalog: catalog}
+	if executionProfile != "" {
+		sessionSources, err = nativeSessionCLISourceIdentity(sessionSourceConfig)
+		if err != nil {
+			return err
+		}
+		if err := save(filepath.Join(root, "session-source.json"), map[string]any{"schema": "gooo/session-source-identity/v1", "identity": sessionSources, "historical_293_roster_extended": false, "source_binary_correspondence_authenticated": false}); err != nil {
+			return err
+		}
+		sessionRunner, err = newNativeSessionSuiteRunner(ctx, *compiler, etagGoToolPath(), root, lock, cache)
+		if err != nil {
+			return err
+		}
+		if executionProfile == nativeExecutionSession276Gzip {
+			if err := sessionRunner.EnableCompressedEvidence(); err != nil {
+				return err
+			}
+		}
+	}
 	results, err := runNativeSuitesOrderedPolicy(ctx, suites, *workers, dispatchOrder, *failFast, func(ctx context.Context, index int, s suite) (nativeSuiteResult, error) {
 		suiteTiming := timing.beginSuite(index, s)
-		result, err := verifier.verify(ctx, s, workspaces[index])
+		var result nativeSuiteResult
+		var err error
+		if sessionRunner != nil {
+			result, err = sessionRunner.Verify(ctx, s, workspaces[index])
+		} else {
+			result, err = verifier.verify(ctx, s, workspaces[index])
+		}
 		suiteTiming.finish(result, err, ctx.Err())
 		if err == nil {
 			r := result.Observation
@@ -414,6 +471,12 @@ func run() error {
 		}
 		return result, err
 	})
+	if sessionRunner != nil {
+		// Every owner has closed and joined before the scheduler returns, even
+		// on failure. Preserve that evidence before propagating a failed suite.
+		err = errors.Join(err, sessionRunner.WriteSummary(filepath.Join(root, "session-observations.json")))
+		err = errors.Join(err, checkNativeSessionCLISourceIdentity(sessionSourceConfig, sessionSources, filepath.Join(root, "session-source-final.json")))
+	}
 	if err != nil {
 		// Preserve the selected verification error as the primary result.
 		if timingErr := timing.close(err, ctx.Err()); timingErr != nil {
@@ -572,6 +635,7 @@ func run() error {
 	addNativeExecutionSummary(summaryDocument, nativeExecutionRequested, *failFast, *nativeTimeout)
 	caseProfile.decorateSummary(summaryDocument)
 	workspaceProfile.decorateSummary(summaryDocument)
+	executionProfile.decorateSummary(summaryDocument, lock)
 	summaryErr := save(filepath.Join(root, "summary.json"), summaryDocument)
 	// Timing never substitutes for the original summary or its required CI predicates.
 	timingErr := timing.close(summaryErr, ctx.Err())
