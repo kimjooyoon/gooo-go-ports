@@ -17,9 +17,6 @@ import (
 	"time"
 )
 
-const nativeSessionProfileGoVersion = "go1.27.3"
-const nativeSessionProfileProbeLimit = 64 << 10
-
 // This constructor is an explicit experimental profile, never a replacement
 // for upstream.json. Each suite callback owns the returned client and must
 // Close it before returning. Its caller selects the original legacy workspace;
@@ -63,31 +60,6 @@ func newExperimentalNativeSessionVerifier(ctx context.Context, compiler, goTool,
 	v.inspectExecution = inspectSessionWithRuntime
 	v.execute = client.Execute
 	return v, client, nil
-}
-
-func validateNativeSessionCompilerIdentity(raw []byte) error {
-	if len(raw) == 0 || len(raw) > nativeSessionProfileProbeLimit {
-		return fmt.Errorf("bounded session compiler build identity required")
-	}
-	value, err := decode(raw)
-	if err != nil {
-		return fmt.Errorf("session compiler build identity: %w", err)
-	}
-	build, ok := value.(map[string]any)
-	if !ok {
-		return fmt.Errorf("session compiler build identity must be an object")
-	}
-	for key, expected := range map[string]string{
-		"schema": "gooo/build-identity/v1", "compiler_source_sha": nativeSessionCompilerRevision,
-		"vcs_revision": nativeSessionCompilerRevision, "source_status": "CLEAN_VCS", "vcs_modified": "false",
-		"go_version": nativeSessionProfileGoVersion, "native_go_required": nativeSessionProfileGoVersion,
-	} {
-		if build[key] != expected {
-			return fmt.Errorf("session compiler build identity differs: %s", key)
-		}
-	}
-	// Module version/tag context is descriptive; immutable source is the gate.
-	return nil
 }
 
 type nativeSessionProfileProbeBuffer struct {

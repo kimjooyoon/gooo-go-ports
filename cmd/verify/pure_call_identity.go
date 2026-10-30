@@ -2,9 +2,11 @@ package main
 
 import "fmt"
 
-// These two profiles are bound to the independently selected compiler source,
+// These profiles are bound to the independently selected compiler source,
 // never to IDs or a producer claim read from a receipt. Source839 derived both
 // names; source205 preserves these ports' independently validated authored IDs.
+// Explicit session276 keeps exactly the same body_calls.go identity producer
+// as205 (raw SHA256 e4d5e38b7c591c8c3ffdbddc6da33fa4791dd122528c5e2ed23977b73422ed50).
 type pureCallIdentityProfile bool
 
 const legacyPureCallIdentityProfile pureCallIdentityProfile = false
@@ -13,7 +15,7 @@ const legacyPureCallCompilerRevision = "83928fa4538245abe33b08549da47f8cbdc50ed2
 
 func selectPureCallIdentityProfile(revision string) (pureCallIdentityProfile, error) {
 	switch revision {
-	case authoredPureCallCompilerRevision:
+	case authoredPureCallCompilerRevision, nativeSessionCompilerRevision:
 		return true, nil
 	case legacyPureCallCompilerRevision:
 		return legacyPureCallIdentityProfile, nil
