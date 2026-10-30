@@ -1353,6 +1353,8 @@ REGISTRY_GO_REFERENCE_PATH = '.github/workflows/registry-install-smoke.yml'
 # not another root-module selector or a published-artifact identity reader.
 ASSESSMENT_SESSION_PROFILE_PATH = '.github/workflows/assessment-session.yml'
 ASSESSMENT_SESSION_PROFILE_SHA256 = '6060b22e983d76baf5c498019a43fa581326f260336f1b3ea455eb0170bc9d1b'
+MANUAL_SESSION_PROFILE_PATH = '.github/workflows/manual-session-native.yml'
+MANUAL_SESSION_PROFILE_SHA256 = 'e094efe2dd23d5831e0d63a4278213b73e780589805ae512e6974fca82e3aa26'
 
 
 def validate_assessment_session_go_profile(text, path=ASSESSMENT_SESSION_PROFILE_PATH):
@@ -1366,6 +1368,20 @@ def validate_assessment_session_go_profile(text, path=ASSESSMENT_SESSION_PROFILE
             'experimental assessment compiler profile differs')
     require(hashlib.sha256(text.encode()).hexdigest() == ASSESSMENT_SESSION_PROFILE_SHA256,
             'experimental assessment workflow bytes differ')
+    return text
+
+
+def validate_manual_session_go_profile(text, path=MANUAL_SESSION_PROFILE_PATH):
+    require(path == MANUAL_SESSION_PROFILE_PATH, 'manual session workflow path differs')
+    require(text.splitlines(keepends=True).count(ROOT_GO_LITERAL_LINE) == 1 and
+            ROOT_GO_REFERENCE_LINE not in text and
+            len(re.findall(r'uses:[ \t]+actions/setup-go@', text)) == 1 and
+            len(re.findall(r'^\s*go-version(?:-file)?:', text, re.M)) == 1,
+            'manual session Go selector differs')
+    require("  ENGINE_REVISION: '276734167edc7f5fef18cbb79004ea9592553317'\n" in text,
+            'manual session compiler profile differs')
+    require(hashlib.sha256(text.encode()).hexdigest() == MANUAL_SESSION_PROFILE_SHA256,
+            'manual session workflow bytes differ')
     return text
 
 
@@ -4744,8 +4760,10 @@ class RootGoReferenceTests(unittest.TestCase):
                     if path.suffix in ('.yml', '.yaml') and
                     re.search(r'uses:[ \t]+actions/setup-go@', path.read_text())}
         self.assertEqual(observed, set(ROOT_GO_REFERENCES) |
-                         {RELEASE_GO_REFERENCE_PATH, REGISTRY_GO_REFERENCE_PATH, ASSESSMENT_SESSION_PROFILE_PATH})
+                         {RELEASE_GO_REFERENCE_PATH, REGISTRY_GO_REFERENCE_PATH,
+                          ASSESSMENT_SESSION_PROFILE_PATH, MANUAL_SESSION_PROFILE_PATH})
         validate_assessment_session_go_profile((root / ASSESSMENT_SESSION_PROFILE_PATH).read_text())
+        validate_manual_session_go_profile((root / MANUAL_SESSION_PROFILE_PATH).read_text())
         validate_release_go_readers((root / RELEASE_GO_REFERENCE_PATH).read_text())
         validate_registry_go_reader((root / REGISTRY_GO_REFERENCE_PATH).read_text())
         for path, (count, digest) in ROOT_GO_REFERENCES.items():
@@ -4775,6 +4793,28 @@ class RootGoReferenceTests(unittest.TestCase):
                 validate_assessment_session_go_profile(raw.replace(old, new, 1))
         with self.assertRaises(ValueError):
             validate_assessment_session_go_profile(raw, path='.github/workflows/ci.yml')
+
+    def test_manual_session_profile_cannot_rebind_or_weaken_qualification(self):
+        root = WORKFLOW.parent.parent.parent
+        raw = (root / MANUAL_SESSION_PROFILE_PATH).read_text()
+        self.assertEqual(validate_manual_session_go_profile(raw), raw)
+        for old, new in [
+                (ROOT_GO_LITERAL_LINE, ROOT_GO_REFERENCE_LINE),
+                (ROOT_GO_LITERAL_LINE, ROOT_GO_LITERAL_LINE * 2),
+                ("go-version: '1.27.3'", "go-version: '1.27.4'"),
+                ('276734167edc7f5fef18cbb79004ea9592553317', '205896a413e5dea92366309c35ae85e542d055f6'),
+                ('  workflow_dispatch:\n', '  push:\n'),
+                ('contents: read', 'contents: write'),
+                ('setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e', 'setup-go@main'),
+                ('EXPECTED_SOURCE_SHA: ${{ inputs.expected_source_sha }}', 'EXPECTED_SOURCE_SHA: ${{ github.sha }}'),
+                ('tools/manual-session-native.py native', 'true # tools/manual-session-native.py native'),
+                ('path: ${{ env.SESSION_WORK }}/upload/', 'path: ${{ env.SESSION_WORK }}/diagnostics/'),
+                ('          retention-days: 1\n', '          retention-days: 90\n')]:
+            self.assertIn(old, raw)
+            with self.subTest(change=old), self.assertRaises(ValueError):
+                validate_manual_session_go_profile(raw.replace(old, new, 1))
+        with self.assertRaises(ValueError):
+            validate_manual_session_go_profile(raw, path='.github/workflows/ci.yml')
 
     def test_release_readers_keep_published_identity_separate_from_root_go(self):
         root = WORKFLOW.parent.parent.parent

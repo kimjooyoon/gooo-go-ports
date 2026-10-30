@@ -90,3 +90,27 @@ suites and 175,649 cases verified, with per-suite legacy batches totaling 2,579.
 Check the matching source identities and all owner cleanup outcomes as well.
 A saved partial prefix, another platform’s result or successful Go unit tests
 does not establish this complete native result.
+
+## Optional Linux workflow
+
+`Manual full82 experimental native session` is a separate manual workflow on
+Ubuntu 24.04, Linux amd64. Select a reviewed repository ref and supply its full
+40-character commit as `expected_source_sha`. The workflow, checked-out source
+and input must identify the same commit. It builds the pinned compiler276 and
+consumer verifier with Go 1.27.3, then runs the original legacy corpus once with
+four workers. It does not replace required CI or change the default compiler pin.
+
+The controller requests an orderly session close on cancellation or failure,
+then checks recorded process identities before stopping remaining owned groups.
+It records the original exit status and bounded cleanup outcome. Storage samples
+can cancel a run; they are observations rather than filesystem quotas. A hard
+runner termination can still prevent cleanup or artifact upload.
+
+The one-day diagnostic artifact contains bounded logs, source/tool identities,
+summaries and owner lifecycle records. Each command stream retains at most a
+1 MiB prefix, and the upload is capped at 64 MiB. Exceeding a bound fails the
+check and records truncation; a retained prefix is not a complete log. Raw batch
+receipts and transport frames are excluded, so this artifact cannot support a
+later independent audit of every original receipt. Read its inventory and
+failure records before interpreting a successful summary. This route makes no
+speed comparison or per-request OS resource claim.
