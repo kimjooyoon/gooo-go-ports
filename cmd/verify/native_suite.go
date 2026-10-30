@@ -149,6 +149,10 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 		if err != nil {
 			return result, fmt.Errorf("%s: %w", receipt, err)
 		}
+		var originalProfileReceipt []byte
+		if v.compilerRevisionOverride != "" {
+			originalProfileReceipt = raw
+		}
 		pendingTiming.recordReportedRuntime("execute", executeReported)
 		replayPath := filepath.Join(dir, "replay.json")
 		pendingTiming.phase("replay")
@@ -178,6 +182,11 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 		}
 		if err := inspectReplayBinding(original, replay, "sha256:"+h); err != nil {
 			return result, err
+		}
+		if v.compilerRevisionOverride != "" {
+			if err := inspectNativeSessionReplaySuite(originalProfileReceipt, raw); err != nil {
+				return result, err
+			}
 		}
 		pendingTiming.bind(identity, "sha256:"+h)
 		if s.Package == "go/unicode" && s.Activity == "SimpleFold" && r.Batches == 0 {

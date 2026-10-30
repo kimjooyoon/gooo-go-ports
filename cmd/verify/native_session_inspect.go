@@ -67,10 +67,14 @@ func inspectNativeSessionOwnership(raw []byte) error {
 	if json.Unmarshal(raw, &root) != nil || json.Unmarshal(root["result"], &result) != nil || json.Unmarshal(result["runtime"], &runtime) != nil {
 		return fmt.Errorf("session runtime object is missing")
 	}
-	for _, key := range []string{"artifact", "executable_sha256", "build", "runs"} {
+	for _, key := range []string{"artifact", "executable_sha256", "build", "runs", "runtime_suite_sha256"} {
 		if value, ok := runtime[key]; !ok || bytes.Equal(bytes.TrimSpace(value), []byte("null")) {
 			return fmt.Errorf("session runtime lacks %s", key)
 		}
+	}
+	var suiteID string
+	if json.Unmarshal(runtime["runtime_suite_sha256"], &suiteID) != nil || !validDigest(suiteID) {
+		return fmt.Errorf("session current runtime suite identity is missing or malformed")
 	}
 	var artifact nativeSessionArtifact
 	fields, err := nativeSessionObject(runtime["artifact"], &artifact,
@@ -128,6 +132,40 @@ func inspectNativeSessionOwnership(raw []byte) error {
 		if err != nil {
 			return fmt.Errorf("session current native run%d: %w", index+1, err)
 		}
+	}
+	return nil
+}
+
+// Accepted276 hashes the current translated CompositionCases, not a request
+// nonce or executable artifact. An unchanged batch's execute and own-parent
+// replay must retain that content identity. Each receipt is semantically
+// inspected separately; this check neither rederives the full suite digest nor
+// substitutes an artifact key for the current suite identity.
+func inspectNativeSessionReplaySuite(original, replay []byte) error {
+	readID := func(raw []byte) (string, error) {
+		value, err := decode(raw)
+		if err != nil {
+			return "", err
+		}
+		root, _ := value.(map[string]any)
+		result, _ := root["result"].(map[string]any)
+		runtime, _ := result["runtime"].(map[string]any)
+		id, _ := runtime["runtime_suite_sha256"].(string)
+		if runtime["schema"] != "gooo/body-composition-runtime/v2" || !validDigest(id) {
+			return "", fmt.Errorf("session current runtime suite identity is missing or malformed")
+		}
+		return id, nil
+	}
+	before, err := readID(original)
+	if err != nil {
+		return fmt.Errorf("session execute suite: %w", err)
+	}
+	after, err := readID(replay)
+	if err != nil {
+		return fmt.Errorf("session replay suite: %w", err)
+	}
+	if before != after {
+		return fmt.Errorf("session replay current runtime suite identity differs from its unchanged batch execution")
 	}
 	return nil
 }

@@ -3,6 +3,9 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -24,6 +27,7 @@ func nativeSessionInspectFixture(t *testing.T, reused bool) ([]byte, suite, expe
 		t.Fatal(err)
 	}
 	runtime := document["result"].(map[string]any)["runtime"].(map[string]any)
+	runtime["runtime_suite_sha256"] = contentDigest([]byte("synthetic current suite"))
 	zero := 0
 	process := nativeSessionProcess{Started: true, Completed: true, ExitCode: &zero, WallNS: 10,
 		StdoutSHA256: contentDigest([]byte("synthetic output")), StderrSHA256: contentDigest(nil),
@@ -119,6 +123,10 @@ func TestNativeSessionInspectRejectsOwnershipAndCurrentRunRewrites(t *testing.T)
 	}{
 		{"missing_artifact", false, func(r map[string]any) { delete(r, "artifact") }},
 		{"null_artifact", false, func(r map[string]any) { r["artifact"] = nil }},
+		{"missing_current_suite", false, func(r map[string]any) { delete(r, "runtime_suite_sha256") }},
+		{"null_current_suite", false, func(r map[string]any) { r["runtime_suite_sha256"] = nil }},
+		{"malformed_current_suite", false, func(r map[string]any) { r["runtime_suite_sha256"] = "not-a-digest" }},
+		{"nonstring_current_suite", false, func(r map[string]any) { r["runtime_suite_sha256"] = 1 }},
 		{"wrong_artifact_schema", false, func(r map[string]any) { r["artifact"].(map[string]any)["schema"] = "other" }},
 		{"missing_verified", false, func(r map[string]any) { delete(r["artifact"].(map[string]any), "executable_verified") }},
 		{"unverified_executable", false, func(r map[string]any) { r["artifact"].(map[string]any)["executable_verified"] = false }},
@@ -246,5 +254,124 @@ func TestNativeSessionSourceBuildEncodingMatchesAccepted276Capture(t *testing.T)
 	bound := mustJSON(t, []any{"sha256:f36ac8b6bcb6441414f4d720c997bbfe934ed9d95aa8af6389b5fefbdb6811fd", "sha256:748ac0cb2275f45dbe815d4fd8ec2df403f7118958fbb67dd915d76d95f6c9d8", p})
 	if contentDigest(bound) != "sha256:98a763dd2be84845be9e5266a088a0d6a24f8451f5dc25719de47ca7f29cc6e8" {
 		t.Fatal("accepted276 process field order/encoding changed", string(bound))
+	}
+}
+
+func TestNativeSessionReplaySuiteRequiresUnchangedCurrentContent(t *testing.T) {
+	original, s, identity := nativeSessionInspectFixture(t, false)
+	replay := nativeSessionInspectMutation(t, original, func(document, _ map[string]any) {
+		document["replayed_from_sha256"] = contentDigest(original)
+		document["result"].(map[string]any)["replay"] = map[string]any{"model_calls": 0}
+	})
+	if _, err := inspectSessionWithRuntime(replay, s, true, identity, nil); err != nil {
+		t.Fatal("valid replay fixture", err)
+	}
+	if err := inspectNativeSessionReplaySuite(original, replay); err != nil {
+		t.Fatal("unchanged current suite refused", err)
+	}
+	changed := nativeSessionInspectMutation(t, replay, func(_ map[string]any, runtime map[string]any) {
+		runtime["runtime_suite_sha256"] = contentDigest([]byte("another current suite"))
+	})
+	// Each has a well-formed content ID. The pair check owns equality; the
+	// inspector does not claim an independently rederived generic suite digest.
+	if _, err := inspectSessionWithRuntime(changed, s, true, identity, nil); err != nil {
+		t.Fatal("well-formed individual suite identity refused", err)
+	}
+	if err := inspectNativeSessionReplaySuite(original, changed); err == nil {
+		t.Fatal("unchanged replay batch accepted a different current suite ID")
+	}
+	for _, field := range []string{"missing", "malformed"} {
+		for _, phase := range []string{"execute", "replay"} {
+			t.Run(field+"_"+phase, func(t *testing.T) {
+				mutate := func(raw []byte) []byte {
+					return nativeSessionInspectMutation(t, raw, func(_ map[string]any, runtime map[string]any) {
+						if field == "missing" {
+							delete(runtime, "runtime_suite_sha256")
+						} else {
+							runtime["runtime_suite_sha256"] = "not-a-digest"
+						}
+					})
+				}
+				before, after := original, replay
+				if phase == "execute" {
+					before = mutate(before)
+				} else {
+					after = mutate(after)
+				}
+				if err := inspectNativeSessionReplaySuite(before, after); err == nil {
+					t.Fatal("pair accepted a missing/malformed current suite ID")
+				}
+			})
+		}
+	}
+}
+
+// This optional check only reads four receipts from the caller's already
+// completed pilot. It never starts a compiler, Go oracle command or session.
+func TestNativeSessionRecordedPilotReceipts(t *testing.T) {
+	records := os.Getenv("GOOO_NATIVE_SESSION_REVIEW_RECORDS")
+	if records == "" {
+		t.Skip("set GOOO_NATIVE_SESSION_REVIEW_RECORDS for offline inspection of an existing RuneStart pilot")
+	}
+	if !filepath.IsAbs(records) {
+		t.Fatal("recorded pilot directory must be absolute")
+	}
+	frozen, err := freezeVerificationCatalog("../../verification-catalog.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	suites, err := corpus()
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := suites[3]
+	if s.Package != "go/unicode/utf8" || s.Activity != "RuneStart" || len(s.Cases) != 256 {
+		t.Fatal("original RuneStart suite differs")
+	}
+	selected, err := nativeWorkspaceProfile("").workspaceForSuite(frozen, s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for batch := 0; batch < 2; batch++ {
+		t.Run(fmt.Sprintf("batch%03d", batch), func(t *testing.T) {
+			directory := filepath.Join(records, "go-unicode-utf8-RuneStart", fmt.Sprintf("%03d", batch))
+			read := func(path string) []byte {
+				t.Helper()
+				raw, err := os.ReadFile(path)
+				if err != nil {
+					t.Fatal(err)
+				}
+				return raw
+			}
+			identity := expectedIdentity{CompilerRevision: nativeSessionCompilerRevision, GoVersion: "go1.27.3",
+				ManifestDigest: contentDigest(read(filepath.Join(directory, "gooo.workspace.json"))),
+				CasesDigest:    contentDigest(read(filepath.Join(directory, "cases.json"))),
+				Sources:        selected.Identities, SourceBytes: selected.Sources}
+			current := s
+			current.Cases = s.Cases[batch*128 : (batch+1)*128]
+			var receipts [2][]byte
+			var inspected [2]checked
+			for phase, name := range []string{"execution", "replay"} {
+				t.Run(name, func(t *testing.T) {
+					receipts[phase] = read(filepath.Join(directory, name+".json"))
+					var err error
+					inspected[phase], err = inspectSessionWithRuntime(receipts[phase], current, phase == 1, identity, nil)
+					if err != nil {
+						t.Fatal("saved current receipt refused", err)
+					}
+					frame := read(filepath.Join(records, "session-transport", "frames", fmt.Sprintf("%06d.jsonl", batch*2+phase+1)))
+					var fields map[string]json.RawMessage
+					if err := json.Unmarshal(frame, &fields); err != nil || !bytes.Equal(receipts[phase], append(fields["receipt"], '\n')) {
+						t.Fatal("saved inner receipt bytes differ from original raw frame", err)
+					}
+				})
+			}
+			if err := inspectReplayBinding(inspected[0], inspected[1], contentDigest(receipts[0])); err != nil {
+				t.Fatal(err)
+			}
+			if err := inspectNativeSessionReplaySuite(receipts[0], receipts[1]); err != nil {
+				t.Fatal(err)
+			}
+		})
 	}
 }
