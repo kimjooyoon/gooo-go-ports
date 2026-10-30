@@ -107,11 +107,12 @@ live API effects.
 
 ## Conditional guidance
 
-Read only the reference needed for the requested task; neither is part of the
-current tutorial:
+Read only the reference needed for the requested task:
 
 - To reproduce the frozen Go 1.27.2 tutorial archive, read
   [legacy snapshot](references/legacy-snapshot.md).
 - For an already configured ADK source diagnostic or a requested cooldown-facts
   follow-on, read the relevant section of
   [optional integrations](references/optional-integrations.md).
+- To inspect a Gooo assessment over saved test outcomes, read
+  [captured test assessment](references/captured-test-assessment.md).
