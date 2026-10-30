@@ -6,9 +6,16 @@ license: BSD-3-Clause; see LICENSE.
 
 # Gooo first program
 
-Produce a Gooo source edit and its execution/replay records. The compiler
+Produce a [Gooo](https://github.com/kimjooyoon/meta-ontology-go) source edit and its execution/replay records. The compiler
 generates Go to execute supported bodies. Use a local shell, Git and Go toolchain
 selection on macOS or Linux; preserve the user's files, changes and branch.
+
+For API-policy work with your own named facts, select the checkout's
+`examples/editable-api-policy/README.md` and its
+[own-facts route](https://github.com/kimjooyoon/gooo-go-ports/tree/main/examples/editable-api-policy#supply-your-own-named-facts).
+Use the matching compiler setup below, declare expected decisions, edit
+`after.gooo` and retain both policies' execution and own replay. The fixed score
+comparison command below applies only to the tutorial inputs.
 
 ## Run the current tutorial
 
