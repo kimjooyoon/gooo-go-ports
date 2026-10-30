@@ -1,0 +1,96 @@
+{
+  "engine_source": "276734167edc7f5fef18cbb79004ea9592553317",
+  "engine_tree": "b40b00e8b4f417a7d2642f38a15cda0121ca3a78",
+  "Go": "go1.27.3",
+  "purpose": "Compare captured test outcomes against declared intent.",
+  "rows": [
+    {
+      "id": "red-correct",
+      "operation": "execute",
+      "expected_program_value": {
+        "argv_captured": false,
+        "declared": 4,
+        "expectation_observed": false,
+        "failure_observed": true,
+        "matched": 1,
+        "observation_source_revision": "capture-source:sha256:0043af921aaa26a1259013a3ddf581d7470c3cc7c87555fe071b8067f9df2689",
+        "observation_trial_id": "red-correct",
+        "observed": 4,
+        "process_outcome": "MISMATCH",
+        "source_revision": "capture-source:sha256:0043af921aaa26a1259013a3ddf581d7470c3cc7c87555fe071b8067f9df2689",
+        "state": "TEST_SET_MISMATCH",
+        "trial_id": "red-correct"
+      },
+      "expected_finite_passed": 1,
+      "expected_finite_total": 1,
+      "expected_outer_decision": "PASS",
+      "original_capture": "red"
+    },
+    {
+      "id": "red-intentional",
+      "operation": "replay",
+      "expected_program_value": {
+        "argv_captured": false,
+        "declared": 4,
+        "expectation_observed": true,
+        "failure_observed": true,
+        "matched": 4,
+        "observation_source_revision": "capture-source:sha256:0043af921aaa26a1259013a3ddf581d7470c3cc7c87555fe071b8067f9df2689",
+        "observation_trial_id": "red-intentional",
+        "observed": 4,
+        "process_outcome": "MATCH",
+        "source_revision": "capture-source:sha256:0043af921aaa26a1259013a3ddf581d7470c3cc7c87555fe071b8067f9df2689",
+        "state": "MATCHED_EXPECTATION",
+        "trial_id": "red-intentional"
+      },
+      "expected_finite_passed": 1,
+      "expected_finite_total": 1,
+      "expected_outer_decision": "PASS",
+      "original_capture": "red"
+    },
+    {
+      "id": "green-correct",
+      "operation": "replay",
+      "expected_program_value": {
+        "argv_captured": false,
+        "declared": 4,
+        "expectation_observed": true,
+        "failure_observed": false,
+        "matched": 4,
+        "observation_source_revision": "capture-source:sha256:f71753766f0b447752b0888ce1cc82a9f4bd3fdd2d06de3a8c9b72869543233e",
+        "observation_trial_id": "green-correct",
+        "observed": 4,
+        "process_outcome": "MATCH",
+        "source_revision": "capture-source:sha256:f71753766f0b447752b0888ce1cc82a9f4bd3fdd2d06de3a8c9b72869543233e",
+        "state": "MATCHED_EXPECTATION",
+        "trial_id": "green-correct"
+      },
+      "expected_finite_passed": 1,
+      "expected_finite_total": 1,
+      "expected_outer_decision": "PASS",
+      "original_capture": "green"
+    },
+    {
+      "id": "wrong-expected",
+      "operation": "replay",
+      "expected_program_value": {
+        "argv_captured": false,
+        "declared": 4,
+        "expectation_observed": true,
+        "failure_observed": false,
+        "matched": 4,
+        "observation_source_revision": "capture-source:sha256:f71753766f0b447752b0888ce1cc82a9f4bd3fdd2d06de3a8c9b72869543233e",
+        "observation_trial_id": "green-correct",
+        "observed": 4,
+        "process_outcome": "MATCH",
+        "source_revision": "capture-source:sha256:f71753766f0b447752b0888ce1cc82a9f4bd3fdd2d06de3a8c9b72869543233e",
+        "state": "MATCHED_EXPECTATION",
+        "trial_id": "green-correct"
+      },
+      "expected_finite_passed": 0,
+      "expected_finite_total": 1,
+      "expected_outer_decision": "PROGRESS",
+      "original_capture": "green"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "source_base": "44054f542f64e9b9589dd26a595081b3d2cfd942",
+  "source_tree": "a777144c9e694cb18d6935b8cf091e75437afed7",
+  "changed_paths": [
+    "internal/condition/condition.go",
+    "internal/condition/condition_test.go"
+  ],
+  "production_sha256": "c1e7c6d94e259bb146bce25b16c8aadf0a1d6537d05b7e6214f55dc6b3c2ed9f",
+  "test_sha256": "a84c71a5a88023a75d4ad7e6eea635fe5bf6bb30ba546c225105c17b671eaf2c",
+  "patch_sha256": "af4637b933cea05893cced3e44d8223c6181c19ed0e68c496958668869252a27",
+  "RED_completed_before_production_change": {
+    "phase": "red",
+    "pid": 23943,
+    "exit_code": 1,
+    "timed_out": false,
+    "elapsed_seconds": 11.961921625,
+    "remaining_total_budget_seconds": 150.55387783050537,
+    "stdout_sha256": "86cdf0c748836fb880e6681e4428b5362cbfb56e00c1cf0105e4ef6ecac3102e",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

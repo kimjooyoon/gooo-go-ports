@@ -1,0 +1,1 @@
+{"schema":"gooo/package-workspace-manifest/v1","entry":{"package_path":"openfga/declaredtests","activity":"Assess"},"packages":[{"path":"openfga/declaredtests","name":"declaredtests","imports":[],"sources":["core.source.gooo"]}]}

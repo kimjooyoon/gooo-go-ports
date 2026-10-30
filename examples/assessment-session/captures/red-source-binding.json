@@ -1,0 +1,12 @@
+{
+  "production_sha256": "389cc7045fd876b19a4a572751324adea4fd8e96f466afebdc529d1c25a47a93",
+  "production_unchanged": true,
+  "changed_paths": [
+    "internal/condition/condition_test.go"
+  ],
+  "test_sha256": "a84c71a5a88023a75d4ad7e6eea635fe5bf6bb30ba546c225105c17b671eaf2c",
+  "module_hashes": {
+    "go.mod": "f0f9d5129a8bfedba0cf7fec6a46b02eb23e859e44178df2f150201415f5b5b9",
+    "go.sum": "27307c091b67b5b0cb26cdb3a7710c9b6bd784bdbc1073e5bd30b534553c0ce2"
+  }
+}
