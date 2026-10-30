@@ -1,0 +1,104 @@
+package declaredtests
+namespace declaredtests
+
+entity ExpectedTest id "urn:declared-tests:expected" fields {
+ field test_id id "urn:declared-tests:expected/id" type string required one
+ field outcome id "urn:declared-tests:expected/outcome" type string required one
+}
+entity ObservedTest id "urn:declared-tests:observed" fields {
+ field test_id id "urn:declared-tests:observed/id" type string required one
+ field outcome id "urn:declared-tests:observed/outcome" type string required one
+}
+entity Plan id "urn:declared-tests:plan" fields {
+ field trial_id id "urn:declared-tests:plan/trial" type string required one
+ field source_revision id "urn:declared-tests:plan/source" type string required one
+ field process_exit id "urn:declared-tests:plan/exit" type integer required one
+ field tests id "urn:declared-tests:plan/tests" type ExpectedTest required many
+}
+entity Observation id "urn:declared-tests:observation" fields {
+ field trial_id id "urn:declared-tests:observation/trial" type string required one
+ field source_revision id "urn:declared-tests:observation/source" type string required one
+ field process_exit id "urn:declared-tests:observation/exit" type integer required one
+ field completed id "urn:declared-tests:observation/completed" type boolean required one
+ field stream_complete id "urn:declared-tests:observation/stream-complete" type boolean required one
+ field argv_captured id "urn:declared-tests:observation/argv-captured" type boolean required one
+ field tests id "urn:declared-tests:observation/tests" type ObservedTest required many
+}
+entity Trial id "urn:declared-tests:trial" fields {
+ field plan id "urn:declared-tests:trial/plan" type Plan required one
+ field observation id "urn:declared-tests:trial/observation" type Observation required one
+}
+entity Assessment id "urn:declared-tests:assessment" fields {
+ field trial_id id "urn:declared-tests:assessment/trial" type string required one
+ field source_revision id "urn:declared-tests:assessment/source" type string required one
+ field state id "urn:declared-tests:assessment/state" type string required one
+ field declared id "urn:declared-tests:assessment/declared" type integer required one
+ field observed id "urn:declared-tests:assessment/observed" type integer required one
+ field matched id "urn:declared-tests:assessment/matched" type integer required one
+ field process_outcome id "urn:declared-tests:assessment/process-outcome" type string required one
+ field argv_captured id "urn:declared-tests:assessment/argv-captured" type boolean required one
+ field observation_trial_id id "urn:declared-tests:assessment/observation-trial" type string required one
+ field observation_source_revision id "urn:declared-tests:assessment/observation-source" type string required one
+ field failure_observed id "urn:declared-tests:assessment/failure-observed" type boolean required one
+ field expectation_observed id "urn:declared-tests:assessment/expectation-observed" type boolean required one
+}
+
+entity Text id "urn:gooo:type:string"
+entity Boolean id "urn:gooo:type:boolean"
+
+activity KnownOutcome(value Text) -> Boolean id "urn:declared-tests:known-outcome" computes `
+ return value == "pass" || value == "fail" || value == "skip"
+`
+
+# The plan, process result and named test observations are separate inputs.
+# argv_captured describes observation scope; it is never invented from exit 0.
+activity Assess(Trial) -> Assessment id "urn:declared-tests:assess" computes `
+ let result = Assessment{trial_id: input.plan.trial_id, source_revision: input.plan.source_revision, state: "INVALID_PLAN",
+  declared: len(input.plan.tests), observed: len(input.observation.tests), matched: 0,
+  process_outcome: "UNASSESSED", argv_captured: input.observation.argv_captured,
+  observation_trial_id: input.observation.trial_id, observation_source_revision: input.observation.source_revision,
+  failure_observed: false, expectation_observed: false}
+ for observed in input.observation.tests {
+  if observed.outcome == "fail" { result.failure_observed = true }
+ }
+ if input.plan.trial_id == "" || input.plan.source_revision == "" || input.plan.process_exit < 0 || input.plan.process_exit > 255 || result.declared == 0 {
+  return result
+ }
+ for expected in input.plan.tests {
+  if expected.test_id == "" || !KnownOutcome(expected.outcome) { return result }
+  let copies = 0
+  for other in input.plan.tests { if other.test_id == expected.test_id { copies = copies + 1 } }
+  if copies != 1 { return result }
+ }
+ result.state = "INCOMPLETE_OBSERVATION"
+ if !input.observation.completed { return result }
+ result.state = "INVALID_OBSERVATION"
+ if input.observation.trial_id != input.plan.trial_id || input.observation.source_revision != input.plan.source_revision || input.observation.process_exit < 0 || input.observation.process_exit > 255 {
+  return result
+ }
+ result.process_outcome = "MISMATCH"
+ if input.observation.process_exit == input.plan.process_exit { result.process_outcome = "MATCH" }
+ result.state = "INCOMPLETE_OBSERVATION"
+ if !input.observation.stream_complete { return result }
+ result.state = "INVALID_OBSERVATION"
+ for observed in input.observation.tests {
+  if observed.test_id == "" || !KnownOutcome(observed.outcome) { return result }
+  let copies = 0
+  for other in input.observation.tests { if other.test_id == observed.test_id { copies = copies + 1 } }
+  if copies != 1 { return result }
+ }
+ result.state = "NO_TESTS_OBSERVED"
+ if result.observed == 0 { return result }
+ for expected in input.plan.tests {
+  for observed in input.observation.tests {
+   if observed.test_id == expected.test_id && observed.outcome == expected.outcome { result.matched = result.matched + 1 }
+  }
+ }
+ result.state = "TEST_SET_MISMATCH"
+ if result.declared != result.observed || result.matched != result.declared { return result }
+ result.state = "PROCESS_MISMATCH"
+ if result.process_outcome != "MATCH" { return result }
+ result.state = "MATCHED_EXPECTATION"
+ result.expectation_observed = true
+ return result
+`

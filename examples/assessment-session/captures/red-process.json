@@ -1,0 +1,10 @@
+{
+  "phase": "red",
+  "pid": 23943,
+  "exit_code": 1,
+  "timed_out": false,
+  "elapsed_seconds": 11.961921625,
+  "remaining_total_budget_seconds": 150.55387783050537,
+  "stdout_sha256": "86cdf0c748836fb880e6681e4428b5362cbfb56e00c1cf0105e4ef6ecac3102e",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

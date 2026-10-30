@@ -1,0 +1,76 @@
+{
+  "schema": "gooo/body-composition-cases/v1",
+  "cases": [
+    {
+      "inputs": {
+        "openfga/declaredtests:Assess": {
+          "plan": {
+            "trial_id": "green-correct",
+            "source_revision": "capture-source:sha256:f71753766f0b447752b0888ce1cc82a9f4bd3fdd2d06de3a8c9b72869543233e",
+            "process_exit": 0,
+            "tests": [
+              {
+                "test_id": "TestCompileResultPersistence/invalid_sequential",
+                "outcome": "pass"
+              },
+              {
+                "test_id": "TestCompileResultPersistence/invalid_concurrent",
+                "outcome": "pass"
+              },
+              {
+                "test_id": "TestCompileResultPersistence/valid",
+                "outcome": "pass"
+              },
+              {
+                "test_id": "TestCompileResultPersistence",
+                "outcome": "pass"
+              }
+            ]
+          },
+          "observation": {
+            "trial_id": "green-correct",
+            "source_revision": "capture-source:sha256:f71753766f0b447752b0888ce1cc82a9f4bd3fdd2d06de3a8c9b72869543233e",
+            "process_exit": 0,
+            "completed": true,
+            "stream_complete": true,
+            "argv_captured": false,
+            "tests": [
+              {
+                "test_id": "TestCompileResultPersistence/invalid_sequential",
+                "outcome": "pass"
+              },
+              {
+                "test_id": "TestCompileResultPersistence/invalid_concurrent",
+                "outcome": "pass"
+              },
+              {
+                "test_id": "TestCompileResultPersistence/valid",
+                "outcome": "pass"
+              },
+              {
+                "test_id": "TestCompileResultPersistence",
+                "outcome": "pass"
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "openfga/declaredtests:Assess": {
+          "trial_id": "green-correct",
+          "source_revision": "capture-source:sha256:f71753766f0b447752b0888ce1cc82a9f4bd3fdd2d06de3a8c9b72869543233e",
+          "state": "TEST_SET_MISMATCH",
+          "declared": 4,
+          "observed": 4,
+          "matched": 4,
+          "process_outcome": "MATCH",
+          "argv_captured": false,
+          "observation_trial_id": "green-correct",
+          "observation_source_revision": "capture-source:sha256:f71753766f0b447752b0888ce1cc82a9f4bd3fdd2d06de3a8c9b72869543233e",
+          "failure_observed": false,
+          "expectation_observed": true
+        }
+      }
+    }
+  ]
+}

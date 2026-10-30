@@ -88,6 +88,7 @@ runs a fixed compiled program; use the native workflow for an edit.
 
 | Task | Example and scope |
 | --- | --- |
+| Compare captured test outcomes with declared intent | [Gooo assessment session](examples/assessment-session/README.md). Inspect the actual program value separately from its test expectation, and retain the original records. Uses the example's explicit development compiler profile. |
 | Preserve a stored catalog during an incomplete refresh | [File-plan command and host integration](docs/ai-agents.md#replace-a-catalog-after-refresh). Keep original pages, collection outcome and stored bytes. |
 | Preserve required requests when narrowing a service grant | [Ordered-request assessment](examples/service-grant-many/README.md). Retain order, duplicate requests and the first counterexample. No grant is applied. |
 | Select among supplied grant-change candidates | [Gooo candidate selection](examples/grant-candidate-selection/README.md). Compare the same requirements and retain the original decisions. |

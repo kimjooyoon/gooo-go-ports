@@ -1,0 +1,112 @@
+{
+  "purpose": "Compare captured test outcomes against declared intent.",
+  "Gooo_source": {
+    "repository": "https://github.com/kimjooyoon/meta-ontology-go",
+    "commit": "276734167edc7f5fef18cbb79004ea9592553317",
+    "path": "examples/ci-strategy/declared-test-observation/main.gooo",
+    "copied_as": "core.source.gooo",
+    "bytes": 5977,
+    "sha256": "a4ceee554b2e6473fb8bb40f2a97cf56babc276e37c086413d6033fea76da764",
+    "license": "MIT; LICENSE-MIT",
+    "stable_activity_ids": [
+      "urn:declared-tests:assess",
+      "urn:declared-tests:known-outcome"
+    ]
+  },
+  "historical_OpenFGA_data": {
+    "repository": "https://github.com/openfga/openfga",
+    "source_base": "44054f542f64e9b9589dd26a595081b3d2cfd942",
+    "source_file": "internal/condition/condition.go",
+    "regression_test_file": "internal/condition/condition_test.go",
+    "fixture_manifest": {
+      "path": "captures/manifest.json",
+      "bytes": 2558,
+      "sha256": "78a7e137230b26ad35d2a6b64c77b51e8dd10bb272d6a9ebd35a475f77c3babc"
+    },
+    "license": "Apache-2.0; LICENSE-OpenFGA",
+    "scope": "Two historical local captures with authored regression tests and one local production patch, not an upstream clean run. No current OpenFGA execution or adoption claim."
+  },
+  "profile_files": [
+    {
+      "path": "LICENSE-MIT",
+      "bytes": 1069,
+      "sha256": "5177457bc30b96eae6f786d0fbe3d1fda382edef61ecef25eb6f446a8b35b4f3"
+    },
+    {
+      "path": "LICENSE-OpenFGA",
+      "bytes": 10176,
+      "sha256": "1c46d7b2bed94d457d745f28cabeb31f8d6c81dd9035bc5d24039989ee1e1bff"
+    },
+    {
+      "path": "captures/green-process.json",
+      "bytes": 341,
+      "sha256": "741936b0ac3ef0eb44dc408c9140a07f1e7c1787ac79399928bb68518389d153"
+    },
+    {
+      "path": "captures/green-source-binding.json",
+      "bytes": 900,
+      "sha256": "f71753766f0b447752b0888ce1cc82a9f4bd3fdd2d06de3a8c9b72869543233e"
+    },
+    {
+      "path": "captures/green.stdout",
+      "bytes": 60876,
+      "sha256": "eb7a02e0d05a98efb9453fd3ba182a7074df785e000672f59d218c8f1e1a58a1"
+    },
+    {
+      "path": "captures/manifest.json",
+      "bytes": 2558,
+      "sha256": "78a7e137230b26ad35d2a6b64c77b51e8dd10bb272d6a9ebd35a475f77c3babc"
+    },
+    {
+      "path": "captures/red-process.json",
+      "bytes": 342,
+      "sha256": "874c3672bc93de9700d10eef5bcece7ab5777c27364f9782fce98c540c9d0a15"
+    },
+    {
+      "path": "captures/red-source-binding.json",
+      "bytes": 469,
+      "sha256": "0043af921aaa26a1259013a3ddf581d7470c3cc7c87555fe071b8067f9df2689"
+    },
+    {
+      "path": "captures/red.stdout",
+      "bytes": 8400,
+      "sha256": "86cdf0c748836fb880e6681e4428b5362cbfb56e00c1cf0105e4ef6ecac3102e"
+    },
+    {
+      "path": "cases-green-correct.json",
+      "bytes": 1584,
+      "sha256": "e4f00a6ad6d01942e40ddd2c1eaf378c409dc73e166168fb44a748506b77083b"
+    },
+    {
+      "path": "cases-red-correct.json",
+      "bytes": 1577,
+      "sha256": "26f408f8b3c29f21c7e788f0340a7c5d6e844ba52c1c775b899004cd5807b36b"
+    },
+    {
+      "path": "cases-red-intentional.json",
+      "bytes": 1591,
+      "sha256": "4d6bc42d4bbab6d75151f5de450a4af01ec87143cab8b9a53a02a011494ec604"
+    },
+    {
+      "path": "cases-wrong-expected.json",
+      "bytes": 2570,
+      "sha256": "89580e60bf07c630754c0bcd6469e67fa33ab009df290b794ab0d48287e315d8"
+    },
+    {
+      "path": "core.source.gooo",
+      "bytes": 5977,
+      "sha256": "a4ceee554b2e6473fb8bb40f2a97cf56babc276e37c086413d6033fea76da764"
+    },
+    {
+      "path": "gooo.workspace.json",
+      "bytes": 230,
+      "sha256": "fde7ad610179d86a12d94ded8dec9ddebb628ebf296c6d1115a5e2367861eefc"
+    },
+    {
+      "path": "profile.json",
+      "bytes": 3589,
+      "sha256": "4248732d81c94499fdd406208d44a7c0219dc61d9cc54608240c0cadfad4c1ab"
+    }
+  ],
+  "adapter_license": "Repository BSD-3-Clause for new stdlib Go host; unchanged Gooo retains MIT attribution, historical OpenFGA data retains Apache-2.0 attribution."
+}

@@ -1,0 +1,198 @@
+name: Experimental captured assessment session
+
+on:
+  pull_request:
+    paths:
+      - 'examples/assessment-session/**'
+      - '.github/workflows/assessment-session.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'examples/assessment-session/**'
+      - '.github/workflows/assessment-session.yml'
+
+permissions:
+  contents: read
+
+# This separate consumer profile does not promote the compiler205/native17 pins.
+jobs:
+  assessment-session-linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      ENGINE_REVISION: '276734167edc7f5fef18cbb79004ea9592553317'
+      GOTOOLCHAIN: local
+      GOWORK: 'off'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version: '1.27.3'
+          cache: false
+      - name: Bind the exact consumer source and isolated temporary work
+        id: prepare
+        timeout-minutes: 1
+        run: |
+          set -euo pipefail
+          umask 077
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain=v1)"
+          test -z "$(find examples/assessment-session -type l -print -quit)"
+          work=$(mktemp -d "$RUNNER_TEMP/assessment-session.XXXXXX")
+          mkdir "$work/diagnostics" "$work/output" "$work/go-cache" "$work/module-cache" "$work/go-tmp"
+          printf 'ASSESSMENT_WORK=%s\nGOCACHE=%s/go-cache\nGOMODCACHE=%s/module-cache\nGOTMPDIR=%s/go-tmp\n' "$work" "$work" "$work" "$work" >> "$GITHUB_ENV"
+          git ls-files -z .github/workflows/assessment-session.yml examples/assessment-session/ \
+            | xargs -0 sha256sum > "$work/diagnostics/consumer-source.sha256"
+          jq -n --arg head "$GITHUB_SHA" --arg tree "$(git rev-parse HEAD^{tree})" \
+            --arg event "$GITHUB_EVENT_NAME" --arg run "$GITHUB_RUN_ID" --arg attempt "$GITHUB_RUN_ATTEMPT" \
+            --arg engine "$ENGINE_REVISION" \
+            '{schema: "gooo/assessment-session-CI-source/v1", consumer_head: $head, consumer_tree: $tree,
+              event: $event, run_id: $run, run_attempt: $attempt, engine_revision: $engine,
+              scope: "Explicit experimental engine276 consumer fixture; no global pin promotion."}' \
+            > "$work/diagnostics/source.json"
+      - name: Build the clean pinned experimental engine outside the consumer checkout
+        id: build
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          test "$(go env GOVERSION)" = go1.27.3
+          engine="$ASSESSMENT_WORK/engine-source"
+          git init "$engine"
+          git -C "$engine" remote add origin https://github.com/kimjooyoon/meta-ontology-go.git
+          timeout --signal=TERM --kill-after=5s 90s \
+            git -C "$engine" fetch --depth=1 --no-tags origin "$ENGINE_REVISION" \
+            > "$ASSESSMENT_WORK/diagnostics/engine-fetch.stdout" \
+            2> "$ASSESSMENT_WORK/diagnostics/engine-fetch.stderr"
+          git -C "$engine" checkout --detach "$ENGINE_REVISION"
+          test "$(git -C "$engine" rev-parse HEAD)" = "$ENGINE_REVISION"
+          test -z "$(git -C "$engine" status --porcelain=v1 --untracked-files=all --ignored)"
+          timeout --signal=TERM --kill-after=10s 8m \
+            go -C "$engine" build -trimpath -mod=readonly -o "$ASSESSMENT_WORK/gooo" ./cmd/gooo \
+            > "$ASSESSMENT_WORK/diagnostics/engine-build.stdout" \
+            2> "$ASSESSMENT_WORK/diagnostics/engine-build.stderr"
+          "$ASSESSMENT_WORK/gooo" version --build --json > "$ASSESSMENT_WORK/diagnostics/compiler-build.json"
+          jq -e --arg revision "$ENGINE_REVISION" '
+            .compiler_source_sha == $revision and .go_version == "go1.27.3" and
+            .native_go_required == "go1.27.3" and .source_status == "CLEAN_VCS" and .vcs_modified == "false"
+          ' "$ASSESSMENT_WORK/diagnostics/compiler-build.json"
+          test "$(git -C "$engine" rev-parse HEAD)" = "$ENGINE_REVISION"
+          test -z "$(git -C "$engine" status --porcelain=v1 --untracked-files=all --ignored)"
+      - name: Execute the four captured assessments in one fresh native session
+        id: produce
+        timeout-minutes: 3
+        env:
+          GOPROXY: 'off'
+          GOSUMDB: 'off'
+        run: |
+          set -euo pipefail
+          timeout --signal=TERM --kill-after=15s 150s \
+            go run ./examples/assessment-session \
+              --compiler "$ASSESSMENT_WORK/gooo" \
+              --go "$(go env GOROOT)/bin/go" \
+              --out "$ASSESSMENT_WORK/output" \
+            > "$ASSESSMENT_WORK/diagnostics/run.stdout" \
+            2> "$ASSESSMENT_WORK/diagnostics/run.stderr"
+      - name: Check the saved display controls without another native session
+        id: offline-check
+        timeout-minutes: 2
+        env:
+          GOPROXY: 'off'
+          GOSUMDB: 'off'
+          GOOO_ASSESSMENT_RECORDS: ${{ env.ASSESSMENT_WORK }}/output
+        run: |
+          set -euo pipefail
+          timeout --signal=TERM --kill-after=5s 60s \
+            go test -json -count=1 ./examples/assessment-session \
+            > "$ASSESSMENT_WORK/diagnostics/check-events.jsonl" \
+            2> "$ASSESSMENT_WORK/diagnostics/check.stderr"
+          jq -s -e '
+            ([.[] | select(.Action == "fail")] | length) == 0 and
+            ([.[] | select(.Action == "pass" and ((.Test // "") | contains("/")))] | length) == 27
+          ' "$ASSESSMENT_WORK/diagnostics/check-events.jsonl"
+          jq -e --arg revision "$ENGINE_REVISION" '
+            .status == "FOUR_CAPTURED_ASSESSMENTS_CHECKED" and .engine_source == $revision and
+            .result_cases == 4 and .fresh_native_runs == 8 and .original_host_captures == 2 and
+            .native_artifact_builds == 1 and .artifact_reuses == 3 and
+            .host_test_reruns == 0 and .model_calls == 0 and .session_waited == true and
+            .owned_entries_after_close == [] and .session_process_group_remaining == false
+          ' "$ASSESSMENT_WORK/output/summary.json"
+          test "$(find "$ASSESSMENT_WORK/output/views" -maxdepth 1 -type f -name '*.json' | wc -l)" -eq 4
+          test ! -d "$ASSESSMENT_WORK/output/native-work" \
+            || test -z "$(find "$ASSESSMENT_WORK/output/native-work" -mindepth 1 -print -quit)"
+          sha256sum --check --status "$ASSESSMENT_WORK/diagnostics/consumer-source.sha256"
+          test -z "$(git status --porcelain=v1)"
+          test -z "$(git -C "$ASSESSMENT_WORK/engine-source" status --porcelain=v1 --untracked-files=all --ignored)"
+      - name: Retain bounded diagnostics without build artifacts or caches
+        id: collect
+        if: always() && steps.prepare.outcome == 'success'
+        timeout-minutes: 1
+        env:
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          PRODUCE_OUTCOME: ${{ steps.produce.outcome }}
+          CHECK_OUTCOME: ${{ steps.offline-check.outcome }}
+        run: |
+          set -euo pipefail
+          out="$ASSESSMENT_WORK/output"
+          diagnostics="$ASSESSMENT_WORK/diagnostics"
+          : > "$diagnostics/kept.jsonl"
+          : > "$diagnostics/rejected.jsonl"
+          : > "$diagnostics/clipped.jsonl"
+          count=0
+          total=0
+          # Exclude the session's owned native scratch and all engine/build/cache trees.
+          while IFS= read -r -d '' source; do
+            relative="${source#"$out"/}"
+            if [ ! -f "$source" ] || [ -L "$source" ]; then
+              jq -nc --arg path "$relative" '{path: $path, reason: "nonregular output"}' >> "$diagnostics/rejected.jsonl"
+              continue
+            fi
+            size=$(stat -c '%s' "$source")
+            if [ "$count" -ge 96 ] || [ "$size" -gt 8388608 ] || [ "$((total + size))" -gt 16777216 ]; then
+              jq -nc --arg path "$relative" --argjson bytes "$size" '{path: $path, bytes: $bytes, reason: "diagnostic bound"}' >> "$diagnostics/rejected.jsonl"
+              continue
+            fi
+            target="$diagnostics/records/$relative"
+            mkdir -p "$(dirname "$target")"
+            head -c 8388609 -- "$source" > "$target"
+            copied=$(stat -c '%s' "$target")
+            if [ "$copied" -ne "$size" ]; then
+              rm -- "$target"
+              jq -nc --arg path "$relative" '{path: $path, reason: "changed during capture"}' >> "$diagnostics/rejected.jsonl"
+              continue
+            fi
+            count=$((count + 1))
+            total=$((total + size))
+            digest=$(sha256sum "$target" | cut -d ' ' -f 1)
+            jq -nc --arg path "$relative" --argjson bytes "$size" --arg sha256 "$digest" \
+              '{path: $path, bytes: $bytes, sha256: $sha256}' >> "$diagnostics/kept.jsonl"
+          done < <(find "$out" -path "$out/native-work" -prune -o ! -type d -print0)
+          while IFS= read -r -d '' log; do
+            size=$(stat -c '%s' "$log")
+            head -c 1048576 -- "$log" > "$log.prefix"
+            mv -- "$log.prefix" "$log"
+            jq -nc --arg path "$(basename "$log")" --argjson bytes "$size" \
+              '{path: $path, original_bytes: $bytes, retained_prefix_bytes: 1048576}' >> "$diagnostics/clipped.jsonl"
+          done < <(find "$diagnostics" -maxdepth 1 -type f -size +1048576c -print0)
+          jq -n --slurpfile kept "$diagnostics/kept.jsonl" --slurpfile rejected "$diagnostics/rejected.jsonl" \
+            --slurpfile clipped "$diagnostics/clipped.jsonl" --arg build "$BUILD_OUTCOME" \
+            --arg produce "$PRODUCE_OUTCOME" --arg check "$CHECK_OUTCOME" \
+            '{schema: "gooo/assessment-session-CI-diagnostics/v1", kept: $kept, rejected: $rejected,
+              clipped_logs: $clipped, outcomes: {build: $build, produce: $produce, check: $check},
+              scope: "Bounded public-fixture diagnostics only; no pin promotion, release or outside adoption."}' \
+            > "$diagnostics/inventory.json"
+          test ! -s "$diagnostics/rejected.jsonl"
+          test ! -s "$diagnostics/clipped.jsonl"
+      - name: Preserve source-bound assessment diagnostics
+        if: always() && steps.prepare.outcome == 'success'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: assessment-session-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.ASSESSMENT_WORK }}/diagnostics/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7

@@ -1,0 +1,59 @@
+{
+  "qualification": "Immutable historical local Go JSON capture fixtures; no current OpenFGA test reproduction or adoption claim.",
+  "source_base": "44054f542f64e9b9589dd26a595081b3d2cfd942",
+  "red_executed_tree": "ed00456c84213a9dd01d853ea51d3713084cf9f7",
+  "green_executed_tree": "f65e9a0ee60526fc82c7f593758426533b5554fa",
+  "captures": {
+    "red": {
+      "stdout": {
+        "path": "red.stdout",
+        "bytes": 8400,
+        "sha256": "86cdf0c748836fb880e6681e4428b5362cbfb56e00c1cf0105e4ef6ecac3102e"
+      },
+      "process": {
+        "path": "red-process.json",
+        "bytes": 342,
+        "sha256": "874c3672bc93de9700d10eef5bcece7ab5777c27364f9782fce98c540c9d0a15"
+      },
+      "source_binding": {
+        "path": "red-source-binding.json",
+        "bytes": 469,
+        "sha256": "0043af921aaa26a1259013a3ddf581d7470c3cc7c87555fe071b8067f9df2689"
+      },
+      "source_id": "capture-source:sha256:0043af921aaa26a1259013a3ddf581d7470c3cc7c87555fe071b8067f9df2689",
+      "historical_exit": 1
+    },
+    "green": {
+      "stdout": {
+        "path": "green.stdout",
+        "bytes": 60876,
+        "sha256": "eb7a02e0d05a98efb9453fd3ba182a7074df785e000672f59d218c8f1e1a58a1"
+      },
+      "process": {
+        "path": "green-process.json",
+        "bytes": 341,
+        "sha256": "741936b0ac3ef0eb44dc408c9140a07f1e7c1787ac79399928bb68518389d153"
+      },
+      "source_binding": {
+        "path": "green-source-binding.json",
+        "bytes": 900,
+        "sha256": "f71753766f0b447752b0888ce1cc82a9f4bd3fdd2d06de3a8c9b72869543233e"
+      },
+      "source_id": "capture-source:sha256:f71753766f0b447752b0888ce1cc82a9f4bd3fdd2d06de3a8c9b72869543233e",
+      "historical_exit": 0
+    }
+  },
+  "selection": {
+    "package": "github.com/openfga/openfga/internal/condition",
+    "root": "TestCompileResultPersistence",
+    "names": [
+      "TestCompileResultPersistence/invalid_sequential",
+      "TestCompileResultPersistence/invalid_concurrent",
+      "TestCompileResultPersistence/valid",
+      "TestCompileResultPersistence"
+    ],
+    "rule": "Exact whole subtree including parent; canonical display order only. Full streams retained. Green65named/58leaf; input only same4named/3leaf. No inferred tests/outside failure deletion.",
+    "intent": "Three regression leaf names authored in candidate.patch/native-plan.json; not inferred source-complete inventory."
+  },
+  "path_note": "Component paths resolve relative to this captures directory. Original file bytes, including any historical paths/identities, are retained unchanged."
+}
