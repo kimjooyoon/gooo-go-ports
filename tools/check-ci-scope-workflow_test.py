@@ -1354,7 +1354,7 @@ REGISTRY_GO_REFERENCE_PATH = '.github/workflows/registry-install-smoke.yml'
 ASSESSMENT_SESSION_PROFILE_PATH = '.github/workflows/assessment-session.yml'
 ASSESSMENT_SESSION_PROFILE_SHA256 = '6060b22e983d76baf5c498019a43fa581326f260336f1b3ea455eb0170bc9d1b'
 MANUAL_SESSION_PROFILE_PATH = '.github/workflows/manual-session-native.yml'
-MANUAL_SESSION_PROFILE_SHA256 = 'e094efe2dd23d5831e0d63a4278213b73e780589805ae512e6974fca82e3aa26'
+MANUAL_SESSION_PROFILE_SHA256 = 'a85c011190cbfc316f0dc4d88022f2cb02fd8c267cf9065718023f937e935af9'
 
 
 def validate_assessment_session_go_profile(text, path=ASSESSMENT_SESSION_PROFILE_PATH):

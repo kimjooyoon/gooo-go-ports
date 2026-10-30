@@ -60,11 +60,20 @@ jobs:
               scope:"Manual experimental276 full legacy verifier; default205/native17 and required CI unchanged."}' \
             > "$work/diagnostics/source.json"
       - name: Check bounded controller and cleanup fault controls
+        id: controller_controls
         timeout-minutes: 2
         run: |
           python3 -I -B tools/manual-session-native.py capture --work "$SESSION_WORK" \
+            --label python-version --timeout 10 -- python3 -I -B --version
+          python3 -I -B tools/manual-session-native.py capture --work "$SESSION_WORK" \
             --label controller-controls --timeout 90 -- \
             python3 -I -B tools/manual-session-native_test.py -v
+      - name: Record consumer Git status after controls
+        if: always() && steps.prepare.outcome == 'success' && steps.controller_controls.outcome != 'skipped'
+        run: |
+          python3 -I -B tools/manual-session-native.py capture --work "$SESSION_WORK" \
+            --label source-after-controls --timeout 10 -- \
+            git status --porcelain=v1 -z --untracked-files=all
       - name: Build and identify the existing pinned experimental compiler
         timeout-minutes: 10
         run: |
@@ -90,12 +99,26 @@ jobs:
           ' "$SESSION_WORK/diagnostics/logs/compiler-identity.stdout"
           test -z "$(git -C "$engine" status --porcelain=v1 --untracked-files=all --ignored)"
       - name: Build the source-bound consumer verifier
+        id: consumer_build
         timeout-minutes: 3
         run: |
           set -euo pipefail
           python3 -I -B tools/manual-session-native.py capture --work "$SESSION_WORK" \
+            --label source-before-build --timeout 10 -- \
+            git status --porcelain=v1 -z --untracked-files=all
+          python3 -I -B tools/manual-session-native.py capture --work "$SESSION_WORK" \
             --label verifier-build --timeout 150 -- \
             go build -mod=readonly -o "$SESSION_WORK/verify-session" ./cmd/verify
+      - name: Record consumer Git status after verifier build
+        if: always() && steps.prepare.outcome == 'success' && steps.consumer_build.outcome != 'skipped'
+        run: |
+          python3 -I -B tools/manual-session-native.py capture --work "$SESSION_WORK" \
+            --label source-after-build --timeout 10 -- \
+            git status --porcelain=v1 -z --untracked-files=all
+      - name: Identify and check the source-bound consumer verifier
+        timeout-minutes: 1
+        run: |
+          set -euo pipefail
           python3 -I -B tools/manual-session-native.py capture --work "$SESSION_WORK" \
             --label verifier-build-info --timeout 15 -- go version -m "$SESSION_WORK/verify-session"
           grep -F "vcs.revision=$EXPECTED_SOURCE_SHA" "$SESSION_WORK/diagnostics/logs/verifier-build-info.stdout"
