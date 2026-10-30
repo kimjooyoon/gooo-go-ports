@@ -34,6 +34,8 @@ jobs:
         run: |
           python3 -I -B tools/current-toolchain-docs_test.py -v
           python3 -I -B tools/current-toolchain-docs.py --check
+      - name: Test portable workflow source snapshots
+        run: python3 -I -B tools/package-gooo-workflows_test.py -v
       - name: Check frozen reader profiles before builds
         timeout-minutes: 1
         run: |

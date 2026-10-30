@@ -15,10 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = ROOT / "plugins/gooo-workflows"
 SKILLS = ("gooo-first-program", "gooo-compare-tool-snapshots")
 TAILS = ("SKILL.md", "LICENSE", "agents/openai.yaml")
-MAPPING = tuple((f".agents/skills/{name}/{tail}", f"skills/{name}/{tail}")
-                for name in SKILLS for tail in TAILS)
-FILES = {target for _, target in MAPPING} | {
-    "plugin.json", "SOURCE.json", "LICENSE", "assets/gooo.svg"}
+METADATA_FILES = {"plugin.json", "SOURCE.json", "LICENSE", "assets/gooo.svg"}
 
 
 def need(condition, message):
@@ -53,26 +50,53 @@ def commit(ref):
 
 def source_records(ref):
     payload, records = {}, []
-    for source, target in MAPPING:
-        raw = git("show", f"{ref}:{source}")
-        payload[target] = raw
-        records.append({"source_path": source, "package_path": target,
-                        "source_git_blob": git("rev-parse", f"{ref}:{source}").decode().strip(),
-                        "sha256": sha(raw), "bytes": len(raw)})
+    for name in SKILLS:
+        prefix = f".agents/skills/{name}/"
+        sources = {}
+        for entry in git("ls-tree", "-r", "-z", ref, "--", prefix).split(b"\0"):
+            if not entry:
+                continue
+            header, path = entry.split(b"\t", 1)
+            mode, kind, blob = header.decode("ascii").split()
+            source = path.decode("utf-8")
+            need(source.startswith(prefix), "source outside the selected skill")
+            tail = source[len(prefix):]
+            reference = re.fullmatch(
+                r"references/(?:[a-z0-9][a-z0-9._-]*/)*[a-z0-9][a-z0-9._-]*\.md", tail)
+            need(mode == "100644" and kind == "blob", "regular Git source file required")
+            need(tail in TAILS or reference is not None,
+                 "only skill base files and lowercase Markdown references are supported")
+            sources[tail] = (source, blob)
+        need(set(TAILS).issubset(sources), "all three skill base files are required")
+        # Preserve the frozen six-record order; new references follow their skill's base files.
+        for tail in (*TAILS, *sorted(set(sources) - set(TAILS))):
+            source, blob = sources[tail]
+            target = f"skills/{name}/{tail}"
+            raw = git("show", f"{ref}:{source}")
+            need(len(raw) <= 1024 * 1024, "source file too large")
+            payload[target] = raw
+            records.append({"source_path": source, "package_path": target,
+                            "source_git_blob": blob, "sha256": sha(raw), "bytes": len(raw)})
+    license_entry = git("ls-tree", ref, "--", "LICENSE").split(b"\t", 1)[0].split()
+    need(len(license_entry) == 3 and license_entry[:2] == [b"100644", b"blob"],
+         "regular Git root license required")
     payload["LICENSE"] = git("show", ref + ":LICENSE")
     return payload, records
 
 
 def checked_package():
+    need(PACKAGE.is_dir() and not PACKAGE.is_symlink(), "regular package directory required")
     paths = list(PACKAGE.rglob("*"))
     need(not any(path.is_symlink() for path in paths), "package symlinks are unsupported")
-    found = {path.relative_to(PACKAGE).as_posix() for path in paths if path.is_file()}
-    need(found == FILES, "exact ten-file package roster required")
-    payload = {path: read(PACKAGE / path) for path in FILES}
-    provenance = json.loads(payload["SOURCE.json"])
-    manifest = json.loads(payload["plugin.json"])
+    source_raw = read(PACKAGE / "SOURCE.json")
+    provenance = json.loads(source_raw)
     ref = commit(provenance["source_commit"])
     expected, records = source_records(ref)
+    found = {path.relative_to(PACKAGE).as_posix() for path in paths if path.is_file()}
+    need(found == set(expected) | METADATA_FILES, "exact source-derived package roster required")
+    payload = {path: read(PACKAGE / path) for path in found}
+    need(payload["SOURCE.json"] == source_raw, "source record changed during checking")
+    manifest = json.loads(payload["plugin.json"])
     need(provenance["skills_copied_without_content_changes"] == records,
          "source mapping or recorded Git/hash identity differs")
     for path, raw in expected.items():
@@ -110,6 +134,7 @@ def main():
     if ref != provenance["source_commit"] or version != manifest["version"]:
         provenance, manifest = copy.deepcopy(provenance), copy.deepcopy(manifest)
         new_payload, records = source_records(ref)
+        payload = {path: raw for path, raw in payload.items() if path in METADATA_FILES}
         payload.update(new_payload)
         provenance["source_commit"] = ref
         provenance["skills_copied_without_content_changes"] = records
