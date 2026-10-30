@@ -68,6 +68,12 @@ check. [Tessl](docs/ai-agents.md#install-the-skill-with-tessl) and
 [Gemini CLI](docs/ai-agents.md#use-the-instructions-with-gemini-cli) have separate
 installation instructions for the same task.
 
+Bootstrap retains the pinned compiler source in `.compiler` for later builds,
+alongside the `.gooo` executable. Allow space for that checkout, temporary build
+files and Go's separate shared caches. Inspect your local sizes with
+`du -sh .compiler .gooo`. For a disposable trial, keep it in its own directory
+and preserve the source edits and result records before removing that directory.
+
 Port examples use the same checkout setup; follow each example's workspace and
 input instructions. The [detailed setup at this source snapshot](https://github.com/kimjooyoon/gooo-go-ports/blob/e821c7967fdcf5bd01ec0c921a6e74b3971b19fc/README.md#run-and-edit-locally)
 retains the longer command reference.
