@@ -198,6 +198,11 @@ func inspectWithRuntime(raw []byte, s suite, replay bool, identity expectedIdent
 // Profiles share every semantic/source/oracle check. A profile validator runs
 // only after those checks and before diagnostics can escape to the caller.
 func inspectWithRuntimeProfile(raw []byte, s suite, replay bool, identity expectedIdentity, reported *nativeReportedRuntime, runtimeSchema string, validateProfile func([]byte) error) (checked, error) {
+	return inspectWithRuntimeProfileAndHTTPABI(raw, s, replay, identity, reported, runtimeSchema, validateProfile, inspectETagABI)
+}
+
+// The selected caller supplies its HTTP process ABI; receipt fields cannot choose it.
+func inspectWithRuntimeProfileAndHTTPABI(raw []byte, s suite, replay bool, identity expectedIdentity, reported *nativeReportedRuntime, runtimeSchema string, validateProfile func([]byte) error, inspectHTTPABI func([]byte, suite, expectedIdentity) error) (checked, error) {
 	contract, err := contractFor(s)
 	if err != nil {
 		return checked{}, err
@@ -229,7 +234,10 @@ func inspectWithRuntimeProfile(raw []byte, s suite, replay bool, identity expect
 		return fail(err.Error())
 	}
 	if isHTTPConditionalSuite(s) {
-		if err := inspectETagABI(raw, s, identity); err != nil {
+		if inspectHTTPABI == nil {
+			return fail("explicit HTTP conditional ABI validator required")
+		}
+		if err := inspectHTTPABI(raw, s, identity); err != nil {
 			return fail(err.Error())
 		}
 	}

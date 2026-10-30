@@ -56,7 +56,7 @@ func inspectSessionWithRuntime(raw []byte, s suite, replay bool, identity expect
 	if identity.CompilerRevision != nativeSessionCompilerRevision || identity.GoVersion != "go1.27.3" {
 		return checked{}, fmt.Errorf("invalid evidence: session inspection requires explicit accepted compiler276 and Go1.27.3")
 	}
-	return inspectWithRuntimeProfile(raw, s, replay, identity, reported, "gooo/body-composition-runtime/v2", inspectNativeSessionOwnership)
+	return inspectWithRuntimeProfileAndHTTPABI(raw, s, replay, identity, reported, "gooo/body-composition-runtime/v2", inspectNativeSessionOwnership, inspectNativeSessionETagABI)
 }
 
 // The shared inspector already rejected duplicate keys and checked current

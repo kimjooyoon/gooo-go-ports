@@ -565,6 +565,12 @@ func etagExpectedStdout(s suite) ([]byte, error) {
 // Complements generic finite value/source/parent checks. Inner canonical plan,
 // semantic and saved-result digests are cross-bound only, never reimplemented.
 func inspectETagABI(raw []byte, s suite, identity expectedIdentity) error {
+	return inspectETagABIWithProcesses(raw, s, identity, nil)
+}
+
+// nil retains the original stateless process contract verbatim. Only the
+// explicitly selected session ABI supplies a cached-process validator.
+func inspectETagABIWithProcesses(raw []byte, s suite, identity expectedIdentity, validateProcesses func([]byte) error) error {
 	all, err := etagDefinitions(s, identity)
 	if err != nil {
 		return err
@@ -787,12 +793,16 @@ func inspectETagABI(raw []byte, s suite, identity expectedIdentity) error {
 	if !ok || len(runs) != 2 {
 		return fmt.Errorf("etag two fresh native runs")
 	}
-	processes := append([]any{rt["toolchain"], rt["build"]}, runs...)
-	for _, v := range processes {
-		x, ok := v.(map[string]any)
-		if !ok || x["started"] != true || x["completed"] != true || x["canceled"] != false || x["timed_out"] != false || x["output_truncated"] != false || !decimalPayloadSame(x["exit_code"], 0) {
-			return fmt.Errorf("etag internal native process completion")
+	if validateProcesses == nil {
+		processes := append([]any{rt["toolchain"], rt["build"]}, runs...)
+		for _, v := range processes {
+			x, ok := v.(map[string]any)
+			if !ok || x["started"] != true || x["completed"] != true || x["canceled"] != false || x["timed_out"] != false || x["output_truncated"] != false || !decimalPayloadSame(x["exit_code"], 0) {
+				return fmt.Errorf("etag internal native process completion")
+			}
 		}
+	} else if err := validateProcesses(raw); err != nil {
+		return err
 	}
 	for _, v := range runs {
 		if v.(map[string]any)["stdout_sha256"] != contentDigest(stdout) {
