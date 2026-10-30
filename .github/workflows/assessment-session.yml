@@ -193,5 +193,6 @@ jobs:
         with:
           name: assessment-session-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ env.ASSESSMENT_WORK }}/diagnostics/
+          include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7

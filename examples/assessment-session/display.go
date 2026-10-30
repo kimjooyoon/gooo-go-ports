@@ -1,3 +1,5 @@
+//go:build linux || darwin
+
 // Copyright 2026 Gooo Go Ports contributors. BSD-style terms: ../../LICENSE.
 package main
 
