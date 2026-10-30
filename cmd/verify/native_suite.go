@@ -30,9 +30,13 @@ type nativeSuiteVerifier struct {
 	// the original full timing path and its context exactly.
 	commandObserver func(int, string, nativeCommandResources)
 	execute         func(context.Context, string, string, ...string) ([]byte, error)
-	simpleFold      func(context.Context, string, []byte, string, *nativeBuildCache) (simpleFoldExhaustiveReport, error)
-	ycbcr           func(context.Context, string, []byte, string, string, *nativeBuildCache) (ycbcrExhaustiveReport, error)
-	caseMapping     func(context.Context, string, []byte, string, string, *nativeBuildCache) (caseMappingExhaustiveReport, error)
+	// Explicit experimental transport/inspection profile; the zero value keeps
+	// the immutable upstream producer and stateless runtime/v1 inspection.
+	compilerRevisionOverride string
+	inspectExecution         func([]byte, suite, bool, expectedIdentity, *nativeReportedRuntime) (checked, error)
+	simpleFold               func(context.Context, string, []byte, string, *nativeBuildCache) (simpleFoldExhaustiveReport, error)
+	ycbcr                    func(context.Context, string, []byte, string, string, *nativeBuildCache) (ycbcrExhaustiveReport, error)
+	caseMapping              func(context.Context, string, []byte, string, string, *nativeBuildCache) (caseMappingExhaustiveReport, error)
 }
 
 func newNativeSuiteVerifier(commands context.Context, compiler, root string, lock upstream, cache *nativeBuildCache) nativeSuiteVerifier {
@@ -56,6 +60,12 @@ func (v nativeSuiteVerifier) commandContext(parent context.Context, timing *nati
 }
 
 func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suiteWorkspace) (result nativeSuiteResult, returnedErr error) {
+	if (v.compilerRevisionOverride != "") != (v.inspectExecution != nil) {
+		return result, fmt.Errorf("experimental native transport requires an explicit producer and receipt inspector")
+	}
+	if v.compilerRevisionOverride != "" && (v.caseProfile != "" || v.timing != nil || v.commandObserver != nil) {
+		return result, fmt.Errorf("experimental session requires legacy cases and separately scoped lifecycle diagnostics")
+	}
 	var pendingTiming *nativeBatchTiming
 	defer func() {
 		if pendingTiming != nil {
@@ -114,7 +124,11 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 		if err != nil {
 			return result, err
 		}
-		identity := expectedIdentity{CompilerRevision: v.lock.CompilerRevision, GoVersion: v.lock.GoVersion, ManifestDigest: "sha256:" + manifestSHA, CasesDigest: "sha256:" + casesSHA, Sources: selected.Identities, SourceBytes: selected.Sources}
+		producerRevision := v.lock.CompilerRevision
+		if v.compilerRevisionOverride != "" {
+			producerRevision = v.compilerRevisionOverride
+		}
+		identity := expectedIdentity{CompilerRevision: producerRevision, GoVersion: v.lock.GoVersion, ManifestDigest: "sha256:" + manifestSHA, CasesDigest: "sha256:" + casesSHA, Sources: selected.Identities, SourceBytes: selected.Sources}
 		receipt := filepath.Join(dir, "execution.json")
 		pendingTiming.phase("execute")
 		executeArgs := []string{"package", "execute", "--json", "--cases", cases}
@@ -131,7 +145,7 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 		if pendingTiming != nil {
 			executeReported = &nativeReportedRuntime{}
 		}
-		original, err := inspectWithRuntime(raw, batch, false, identity, executeReported)
+		original, err := v.inspectReceipt(raw, batch, false, identity, executeReported)
 		if err != nil {
 			return result, fmt.Errorf("%s: %w", receipt, err)
 		}
@@ -152,7 +166,7 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 		if pendingTiming != nil {
 			replayReported = &nativeReportedRuntime{}
 		}
-		replay, err := inspectWithRuntime(raw, batch, true, identity, replayReported)
+		replay, err := v.inspectReceipt(raw, batch, true, identity, replayReported)
 		if err != nil {
 			return result, fmt.Errorf("%s: %w", replayPath, err)
 		}
@@ -207,4 +221,11 @@ func (v nativeSuiteVerifier) verify(ctx context.Context, s suite, selected suite
 	}
 	result.Observation = r
 	return result, nil
+}
+
+func (v nativeSuiteVerifier) inspectReceipt(raw []byte, s suite, replay bool, identity expectedIdentity, reported *nativeReportedRuntime) (checked, error) {
+	if v.inspectExecution != nil {
+		return v.inspectExecution(raw, s, replay, identity, reported)
+	}
+	return inspectWithRuntime(raw, s, replay, identity, reported)
 }
