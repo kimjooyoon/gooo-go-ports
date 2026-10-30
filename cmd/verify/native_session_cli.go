@@ -17,6 +17,7 @@ import (
 const nativeSessionProfileGoVersion = "go1.27.3"
 const nativeSessionProfileProbeLimit = 64 << 10
 const nativeSessionCLIExecutionProfile = "experimental-session-276-v1"
+const nativeSessionCLIGzipExecutionProfile = "experimental-session-276-gzip-v1"
 
 func validateNativeSessionCompilerIdentity(raw []byte) error {
 	if len(raw) == 0 || len(raw) > nativeSessionProfileProbeLimit {
@@ -76,6 +77,7 @@ type nativeSessionSuiteRunner struct {
 	lock                   upstream
 	cache                  *nativeBuildCache
 	newProfile             nativeSessionCLIFactory
+	executionProfile       string
 	mu                     sync.Mutex
 	active                 int
 	sealed                 bool
@@ -121,7 +123,23 @@ func newNativeSessionSuiteRunner(ctx context.Context, compiler, goTool, runRoot 
 		allowed[s.Package+":"+s.Activity] = true
 	}
 	return &nativeSessionSuiteRunner{commands: ctx, compiler: compiler, goTool: goTool, root: runRoot, lock: lock, cache: cache,
-		newProfile: newNativeSessionCLIProfile, allowed: allowed, records: map[string]nativeSessionCLISuiteRecord{}}, nil
+		newProfile: newNativeSessionCLIProfile, executionProfile: nativeSessionCLIExecutionProfile, allowed: allowed, records: map[string]nativeSessionCLISuiteRecord{}}, nil
+}
+
+// Select storage before dispatch. This operation launches no process and
+// cannot alter any owner that is active, failed, completed or summarized.
+func (r *nativeSessionSuiteRunner) EnableCompressedEvidence() error {
+	if r == nil || r.commands == nil || !nativeSessionPlatformSupported() {
+		return fmt.Errorf("initialized Unix native session runner required")
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.sealed || r.active != 0 || len(r.records) != 0 {
+		return fmt.Errorf("session storage profile is immutable after any owner starts or summary seals")
+	}
+	r.newProfile = newNativeSessionCLIGzipProfile
+	r.executionProfile = nativeSessionCLIGzipExecutionProfile
+	return nil
 }
 
 func (r *nativeSessionSuiteRunner) Verify(ctx context.Context, s suite, workspace suiteWorkspace) (result nativeSuiteResult, returnedErr error) {
@@ -247,7 +265,7 @@ func (r *nativeSessionSuiteRunner) WriteSummary(path string) error {
 			verified++
 		}
 	}
-	document := map[string]any{"schema": "gooo/native-session-cli-summary/v1", "execution_profile": nativeSessionCLIExecutionProfile,
+	document := map[string]any{"schema": "gooo/native-session-cli-summary/v1", "execution_profile": r.executionProfile,
 		"compiler_revision": nativeSessionCompilerRevision, "oracle_lock_compiler_revision": r.lock.CompilerRevision,
 		"go_version": r.lock.GoVersion, "attempted_suites": len(records), "verified_suites": verified, "failed_suites": len(records) - verified,
 		"owners": records, "full82_accepted": false, "producer_authenticated": false,

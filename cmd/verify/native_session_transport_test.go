@@ -122,6 +122,10 @@ func nativeSessionTransportStub() int {
 }
 func nativeSessionShellQuote(s string) string { return "'" + strings.ReplaceAll(s, "'", "'\\''") + "'" }
 func nativeSessionFixture(t *testing.T, mode string) (*nativeSessionClient, string, string, string) {
+	return nativeSessionFixtureWithStorage(t, mode, nativeSessionEvidencePlain)
+}
+
+func nativeSessionFixtureWithStorage(t *testing.T, mode string, storage nativeSessionEvidenceStorage) (*nativeSessionClient, string, string, string) {
 	t.Helper()
 	root := t.TempDir()
 	binary, err := os.Executable()
@@ -146,7 +150,12 @@ func nativeSessionFixture(t *testing.T, mode string) (*nativeSessionClient, stri
 			t.Fatal(err)
 		}
 	}
-	c, err := newNativeSessionClient(context.Background(), compiler, binary, root)
+	var c *nativeSessionClient
+	if storage == nativeSessionEvidencePlain {
+		c, err = newNativeSessionClient(context.Background(), compiler, binary, root)
+	} else {
+		c, err = newNativeSessionClientWithStorage(context.Background(), compiler, binary, root, storage)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}

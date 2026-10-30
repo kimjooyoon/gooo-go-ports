@@ -22,7 +22,14 @@ import (
 // Close it before returning. Its caller selects the original legacy workspace;
 // the verifier also refuses compact cases and per-request wait accounting.
 func newExperimentalNativeSessionVerifier(ctx context.Context, compiler, goTool, root string, lock upstream, cache *nativeBuildCache) (nativeSuiteVerifier, *nativeSessionClient, error) {
+	return newExperimentalNativeSessionVerifierWithStorage(ctx, compiler, goTool, root, lock, cache, nativeSessionEvidencePlain)
+}
+
+func newExperimentalNativeSessionVerifierWithStorage(ctx context.Context, compiler, goTool, root string, lock upstream, cache *nativeBuildCache, storage nativeSessionEvidenceStorage) (nativeSuiteVerifier, *nativeSessionClient, error) {
 	var empty nativeSuiteVerifier
+	if err := storage.validate(); err != nil {
+		return empty, nil, err
+	}
 	if ctx == nil || !filepath.IsAbs(compiler) || !filepath.IsAbs(goTool) || !filepath.IsAbs(root) {
 		return empty, nil, fmt.Errorf("session profile requires context and explicit absolute compiler, Go and evidence paths")
 	}
@@ -51,7 +58,7 @@ func newExperimentalNativeSessionVerifier(ctx context.Context, compiler, goTool,
 	if !bytes.HasPrefix(raw, []byte("go version "+nativeSessionProfileGoVersion+" ")) || bytes.Count(bytes.TrimSpace(raw), []byte{'\n'}) != 0 {
 		return empty, nil, fmt.Errorf("session profile requires the explicit Go1.27.3 tool")
 	}
-	client, err := newNativeSessionClient(ctx, compiler, goTool, root)
+	client, err := newNativeSessionClientWithStorage(ctx, compiler, goTool, root, storage)
 	if err != nil {
 		return empty, nil, err
 	}
@@ -59,6 +66,9 @@ func newExperimentalNativeSessionVerifier(ctx context.Context, compiler, goTool,
 	v.compilerRevisionOverride = nativeSessionCompilerRevision
 	v.inspectExecution = inspectSessionWithRuntime
 	v.execute = client.Execute
+	if storage == nativeSessionEvidenceGzip {
+		v.compactBatch = client.compactBatch
+	}
 	return v, client, nil
 }
 

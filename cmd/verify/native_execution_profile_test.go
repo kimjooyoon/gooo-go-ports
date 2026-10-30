@@ -32,6 +32,8 @@ func TestNativeSessionCLIRejectsMixedModesBeforeIO(t *testing.T) {
 		{"dependency_closure", append(append([]string{}, base...), "--workspace-profile", "dependency-closure-v1"), "session requires --out"},
 		{"shard", append(append([]string{}, base...), "--ci-shard-plan-out", "plan.json"), "cannot be used with CI shard"},
 		{"shard_explicit_stateless", []string{"--execution-profile", "stateless", "--ci-shard-plan-out", "plan.json"}, "cannot"},
+		{"gzip_shard", []string{"--execution-profile", string(nativeExecutionSession276Gzip), "--ci-shard-plan-out", "plan.json"}, "cannot be used with CI shard"},
+		{"gzip_compact", []string{"--execution-profile", string(nativeExecutionSession276Gzip), "--compiler", filepath.Join(root, "absent-compiler"), "--out", target, "--case-profile", "uuid-compact-v1"}, "session requires --out"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

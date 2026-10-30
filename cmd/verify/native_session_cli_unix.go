@@ -19,6 +19,14 @@ func newNativeSessionCLIProfile(ctx context.Context, compiler, goTool, root stri
 	return verifier, client, nil
 }
 
+func newNativeSessionCLIGzipProfile(ctx context.Context, compiler, goTool, root string, lock upstream, cache *nativeBuildCache) (nativeSuiteVerifier, nativeSessionCLIOwner, error) {
+	verifier, client, err := newExperimentalNativeSessionVerifierWithStorage(ctx, compiler, goTool, root, lock, cache, nativeSessionEvidenceGzip)
+	if err != nil {
+		return nativeSuiteVerifier{}, nil, err
+	}
+	return verifier, client, nil
+}
+
 // The top-level build identity retains the same raw compiler.json role as the
 // default CLI. Probe process metadata is separate, and is saved before checks.
 func readNativeSessionCLICompilerIdentity(ctx context.Context, compiler, evidenceRoot string) ([]byte, error) {

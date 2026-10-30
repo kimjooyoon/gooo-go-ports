@@ -6,8 +6,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -39,12 +37,6 @@ const (
 	nativeSessionJoinLimit = 2 * time.Second
 )
 
-type nativeSessionFileReference struct {
-	Path   string `json:"path"`
-	Bytes  int    `json:"bytes"`
-	SHA256 string `json:"sha256"`
-}
-
 type nativeSessionRequestObservation struct {
 	ID               string                      `json:"id"`
 	Operation        string                      `json:"operation"`
@@ -66,6 +58,7 @@ type nativeSessionFrame struct {
 
 type nativeSessionClient struct {
 	compiler, goTool, root, evidence, nativeRoot string
+	storage                                      nativeSessionEvidenceStorage
 	cmd                                          *exec.Cmd
 	stdin                                        io.WriteCloser
 	stdout, stderr                               io.ReadCloser
@@ -94,6 +87,14 @@ type nativeSessionClient struct {
 // caller's evidenceRoot may already contain identity probes or batch files.
 // Profile/producer identity and receipt semantic inspection remain caller-owned.
 func newNativeSessionClient(ctx context.Context, compiler, goTool, evidenceRoot string) (*nativeSessionClient, error) {
+	return newNativeSessionClientWithStorage(ctx, compiler, goTool, evidenceRoot, nativeSessionEvidencePlain)
+}
+
+// Storage is fixed before creating an evidence directory or starting readers.
+func newNativeSessionClientWithStorage(ctx context.Context, compiler, goTool, evidenceRoot string, storage nativeSessionEvidenceStorage) (*nativeSessionClient, error) {
+	if err := storage.validate(); err != nil {
+		return nil, err
+	}
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -112,7 +113,7 @@ func newNativeSessionClient(ctx context.Context, compiler, goTool, evidenceRoot 
 			return nil, fmt.Errorf("session executable is not a regular file: %s", path)
 		}
 	}
-	c := &nativeSessionClient{compiler: compiler, goTool: goTool, root: evidenceRoot, evidence: filepath.Join(evidenceRoot, "session-transport"),
+	c := &nativeSessionClient{compiler: compiler, goTool: goTool, root: evidenceRoot, storage: storage, evidence: filepath.Join(evidenceRoot, "session-transport"),
 		gate: make(chan struct{}, 1), frames: make(chan nativeSessionFrame, 1), readerDone: make(chan struct{}), stderrDone: make(chan struct{}), waitDone: make(chan struct{}), done: make(chan struct{})}
 	c.nativeRoot = filepath.Join(c.evidence, "native-work")
 	if err = os.Mkdir(c.evidence, 0700); err != nil {
@@ -187,10 +188,6 @@ func newNativeSessionClient(ctx context.Context, compiler, goTool, evidenceRoot 
 	return c, nil
 }
 
-func nativeSessionReference(path string, raw []byte) nativeSessionFileReference {
-	sum := sha256.Sum256(raw)
-	return nativeSessionFileReference{path, len(raw), hex.EncodeToString(sum[:])}
-}
 func nativeSessionWrite(path string, raw []byte) error {
 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
 	if err != nil {
@@ -250,10 +247,20 @@ func (c *nativeSessionClient) readFrames() {
 		if len(raw) > 0 {
 			number++
 			path := filepath.Join(c.evidence, "frames", fmt.Sprintf("%06d.jsonl", number))
-			if e := nativeSessionWrite(path, raw); e != nil {
+			ref, e := writeNativeSessionStoredEvidence(path, raw, c.storage)
+			if e != nil {
 				frame.err = errors.Join(err, e)
-			} else {
-				ref := nativeSessionReference(path, raw)
+				// A failed storage operation must not erase the bounded original
+				// response. Retain plain bytes, but still fail this request.
+				if c.storage == nativeSessionEvidenceGzip {
+					if fallback := nativeSessionWrite(path, raw); fallback == nil {
+						ref = nativeSessionReference(path, raw)
+					} else {
+						frame.err = errors.Join(frame.err, fallback)
+					}
+				}
+			}
+			if ref.Path != "" {
 				frame.reference = &ref
 				c.mu.Lock()
 				c.frameReferences = append(c.frameReferences, ref)

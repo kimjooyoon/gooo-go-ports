@@ -9,6 +9,7 @@ import (
 type nativeExecutionProfile string
 
 const nativeExecutionSession276 nativeExecutionProfile = "experimental-session-276-v1"
+const nativeExecutionSession276Gzip nativeExecutionProfile = "experimental-session-276-gzip-v1"
 
 func parseNativeExecutionProfile(value string) (nativeExecutionProfile, error) {
 	switch value {
@@ -16,6 +17,8 @@ func parseNativeExecutionProfile(value string) (nativeExecutionProfile, error) {
 		return "", nil
 	case string(nativeExecutionSession276):
 		return nativeExecutionSession276, nil
+	case string(nativeExecutionSession276Gzip):
+		return nativeExecutionSession276Gzip, nil
 	default:
 		return "", fmt.Errorf("unknown --execution-profile %q", value)
 	}
@@ -49,6 +52,9 @@ func (p nativeExecutionProfile) decorateSummary(summary map[string]any, lock ups
 	summary["oracle_lock_compiler_revision"] = lock.CompilerRevision
 	summary["session_observations"] = "session-observations.json"
 	summary["session_source_identity"] = "session-source.json"
+	if p == nativeExecutionSession276Gzip {
+		summary["receipt_storage"] = map[string]any{"encoding": "gzip", "logical_identity": "exact decoded original JSON bytes including LF", "stored_identity": "actual gzip blob bytes; separate stored_sha256 and stored_bytes"}
+	}
 	summary["scope"] = "Finite original legacy-corpus differential observations with the explicitly selected compiler276 session producer. Original Go oracle sources, inputs, batch boundaries, fresh execute and own-parent saved replay remain required. Runtime/v2 metadata is unsigned consistency evidence; per-request process wait resources are not observed. This does not qualify default205, compact/dependency profiles, CI shard readers, general compatibility, performance or production safety."
 }
 

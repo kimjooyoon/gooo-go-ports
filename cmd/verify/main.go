@@ -53,7 +53,7 @@ func run() error {
 	timingOut := flag.String("timing-out", "", "optional new timing JSONL directly under --out (observation only)")
 	caseProfileFlag := flag.String("case-profile", "", "optional case wire profile: legacy, uuid-compact-v1 or uuid-and-literal-report-compact-v1")
 	workspaceProfileFlag := flag.String("workspace-profile", "", "optional workspace source profile: legacy or dependency-closure-v1")
-	executionProfileFlag := flag.String("execution-profile", "", "native execution: stateless (default) or experimental-session-276-v1 (legacy corpus only)")
+	executionProfileFlag := flag.String("execution-profile", "", "native execution: stateless (default), experimental-session-276-v1 or experimental-session-276-gzip-v1 (legacy corpus only)")
 	executionProfileRequested := false
 	var shard ciShardOptions
 	var nativeShard ciShardNativeOptions
@@ -448,6 +448,11 @@ func run() error {
 		sessionRunner, err = newNativeSessionSuiteRunner(ctx, *compiler, etagGoToolPath(), root, lock, cache)
 		if err != nil {
 			return err
+		}
+		if executionProfile == nativeExecutionSession276Gzip {
+			if err := sessionRunner.EnableCompressedEvidence(); err != nil {
+				return err
+			}
 		}
 	}
 	results, err := runNativeSuitesOrderedPolicy(ctx, suites, *workers, dispatchOrder, *failFast, func(ctx context.Context, index int, s suite) (nativeSuiteResult, error) {
