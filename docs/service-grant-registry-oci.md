@@ -1,18 +1,32 @@
-# Published OCI Registry entry and retained candidate checks
+# Published preview17 OCI Registry entry and retained history
 
 The official MCP Registry publishes `io.github.kimjooyoon/gooo-service-grant`
-version `0.1.0-preview.16` with a digest-pinned Linux amd64 Docker/stdio package.
-Read the [exact Registry entry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.kimjooyoon%2Fgooo-service-grant/versions/0.1.0-preview.16)
+version `0.1.0-preview.17` with a digest-pinned Linux amd64 Docker/stdio package.
+Read the [exact Registry entry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.kimjooyoon%2Fgooo-service-grant/versions/0.1.0-preview.17)
 and use the [public image installation guide](service-grant-container.md#use-the-public-immutable-image)
 to connect a host. Registry publication establishes discovery metadata; client
 installation and a completed task require their own observations.
 
-## Preview17 saved-definition candidate
+## Published preview17 saved-definition entry
 
-The checked-in preview17 descriptor selects `gooo_compare_saved_tool_definitions`
-with the binary argument `--definition-snapshot`. It is a Registry candidate;
-the public container and a successful local validation do not register it.
-Until registration is confirmed, use the [preview17 exact-image instructions](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.17#container-for-mcp-clients-linux-amd64).
+The published preview17 descriptor selects `--definition-snapshot`. This adds
+`gooo_compare_saved_tool_definitions` alongside the default
+`assess_service_grant` tool. Starting the native binary without arguments exposes
+only `assess_service_grant`; the ordered-request and alias tools require their
+separate optional flags. The Registry descriptor does not select all four tools.
+Use the [preview17 exact-image instructions](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.17#container-for-mcp-clients-linux-amd64)
+for the selected snapshot mode.
+
+The original [Registry publication run 40650121951, attempt 1](https://github.com/kimjooyoon/gooo-go-ports/actions/runs/40650121951/attempts/1)
+published this version and retained exact anonymous readback. A separate
+[public runtime readback run 40651313266, attempt 1](https://github.com/kimjooyoon/gooo-go-ports/actions/runs/40651313266/attempts/1)
+checked the same immutable image's runtime bytes and finite protocol sessions;
+it did not publish another version. Both workflows used source
+`f56b8e60141cbb2390f63433920392129af754b2`. A later exact-version Registry GET
+on 2026-10-30 returned HTTP 200 with a server record matching the checked-in
+descriptor. Preview17 is already registered; installation does not require
+publishing it again. These observations do not establish every client's
+installation or external adoption.
 
 The publisher accepts `--release-version v0.1.0-preview.17`; its default remains
 preview16. The corresponding manual Actions input selects the same version.

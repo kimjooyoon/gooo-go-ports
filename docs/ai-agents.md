@@ -19,6 +19,7 @@ are developed separately; this repository supplies ports and runnable examples.
 | Compare saved tool definitions when no host alias record exists | [Native MCP preview17](#compare-saved-definitions-through-mcp), [native CLI preview.2](#install-the-native-snapshot-command), [fixed Go module](#install-the-snapshot-command-with-go), [own-input recipe](#compare-your-own-saved-pages) or [agent task skill](../.agents/skills/gooo-compare-tool-snapshots/SKILL.md): `--definition-snapshot` | Select an original tool name from retained JSON-RPC pages. Preserve incomplete coverage and duplicate-name results; do not invent a host mapping. Native CLI preview.2 includes three synthetic examples; the source route remains available. CLI preview.1 and MCP preview16 do not support this mode. |
 | Evaluate a whole-catalog refresh from saved files | [Pinned file-plan command or Go library](#replace-a-catalog-after-refresh) | Reads the previous catalog and ordered request/response files without manually encoding their contents. Returns an in-process receipt and resulting bytes. Caller supplies collection outcome; embed the library for host invalidation and racing attempts. |
 | Collect original MCP pages through the Go SDK | [SDK consumer example](../examples/sdk-catalog-refresh/README.md) | Real SDK IO, original payload bytes, ordered-row Gooo checks and whole-catalog replacement. The local demo exercises complete, filtered and complete-empty responses without an external server or model. |
+| Edit an API policy using your own named facts | [Editable API policy](../examples/editable-api-policy/README.md#supply-your-own-named-facts) | One to three nine-field fact objects, a Gooo rule edit, complete before/after decisions and each version's saved replay. |
 | Edit and execute Gooo source | [First-program skill](#run-the-first-program-skill) | An actual source edit plus new execution and replay records; declaration checking alone is insufficient. |
 
 The native MCP routes need no compiler at runtime. The optional
@@ -162,6 +163,19 @@ every changed and unchanged field, and the edited replay parent in one JSON
 summary. Run it after saving all three records. It checks the tutorial's bounded
 record profile; it does not execute an agent or authorize effects. The older
 immutable installation snapshots below retain their original manual workflow.
+
+### Supply API facts and choose output paths
+
+Follow the [named-facts guide](../examples/editable-api-policy/README.md#supply-your-own-named-facts)
+for an API-policy task. Declare expected allowed/denied cases, edit `after.gooo`
+and compare both versions with the same supplied facts. Omit `--check-demo`
+when intentionally changing the facts or rule.
+
+The runner requires canonical absolute tool/output paths and a fresh output
+directory whose parent exists. An absolute path such as `/project/../trial` is
+still noncanonical. Resolve the existing parent (for example with `pwd -P`
+after entering it), then append a new directory name. A path refusal is a setup
+failure; retain its diagnostic before correcting the path.
 
 ### Read source identities after a policy edit
 
@@ -1030,12 +1044,16 @@ image reference and runtime arguments rather than a native executable path.
 Neither route edits Gooo source; use the first-program workflow for that.
 
 For clients that discover servers through the official MCP Registry, the
-[exact `io.github.kimjooyoon/gooo-service-grant` preview.16 entry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.kimjooyoon%2Fgooo-service-grant/versions/0.1.0-preview.16)
-declares the same immutable Linux amd64 Docker/stdio package. Use the public
-image instructions above for host connection settings. The
-[publication and retained candidate checks](service-grant-registry-oci.md)
-keep discovery metadata, installation observations and original publication
-evidence distinct.
+[exact `io.github.kimjooyoon/gooo-service-grant` preview.17 entry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.kimjooyoon%2Fgooo-service-grant/versions/0.1.0-preview.17)
+declares the immutable Linux amd64 Docker/stdio package with
+`--definition-snapshot`. That selection exposes `assess_service_grant` plus
+`gooo_compare_saved_tool_definitions`; the no-argument native configuration
+below exposes only `assess_service_grant`. The ordered-request and alias tools
+require their separate optional modes. Use the public image instructions above
+for host connection settings. The
+[publication and retained history](service-grant-registry-oci.md)
+separate the accepted original publication from runtime checks and client
+installation observations.
 
 For a manual native installation, download the [native MCP preview17](https://github.com/kimjooyoon/gooo-go-ports/releases/tag/v0.1.0-preview.17)
 archive and matching `.sha256` file for **Linux amd64** or **macOS arm64**.
