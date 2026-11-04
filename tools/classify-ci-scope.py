@@ -14,6 +14,7 @@ DOC_PATHS = frozenset((
     b".agents/skills/gooo-first-program/SKILL.md",
     b".agents/skills/gooo-first-program/agents/openai.yaml",
     b"docs/ai-agents.md", b"context7.json",
+    b"docs/service-grant-registry-oci.md",
 ))
 SHA = re.compile(r"[0-9a-f]{40}\Z")
 RAW_HEADER = re.compile(

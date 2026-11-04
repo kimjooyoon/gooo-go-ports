@@ -22,12 +22,15 @@ AGENT_DOCUMENTS = (
     ".agents/skills/gooo-first-program/SKILL.md",
     ".agents/skills/gooo-first-program/agents/openai.yaml",
     "docs/ai-agents.md", "context7.json",
+    "docs/service-grant-registry-oci.md",
 )
 OTHER_DOCUMENTS = (
     ".agents/skills/another/SKILL.md",
     ".agents/skills/gooo-first-program/agents/openai.yml",
     ".agents/skills/gooo-first-program/references/README.md",
     "docs/ai-agents.md.bak", "context7.local.json",
+    "docs/service-grant-registry-oci.md.bak",
+    "docs/service-grant-oci-publisher.md",
 )
 
 
@@ -77,6 +80,15 @@ class GitScopeTests(unittest.TestCase):
     def result(self, event_name="pull_request", expected=None):
         return scope.classify(self.repo, event_name, self.event, expected or self.tested)
 
+    def test_allowlist_is_exactly_the_reviewed_seven_paths(self):
+        self.assertEqual(scope.DOC_PATHS, frozenset((
+            b"README.md", b"CONTRIBUTING.md",
+            b".agents/skills/gooo-first-program/SKILL.md",
+            b".agents/skills/gooo-first-program/agents/openai.yaml",
+            b"docs/ai-agents.md", b"context7.json",
+            b"docs/service-grant-registry-oci.md",
+        )))
+
     def test_each_allowed_document_and_mixed_delta(self):
         cases = (["README.md"], ["CONTRIBUTING.md"],
                  *([name] for name in AGENT_DOCUMENTS),
@@ -103,7 +115,7 @@ class GitScopeTests(unittest.TestCase):
 
     def test_static_agent_paths_still_require_existing_regular_content_only(self):
         baseline = self.base
-        for name in (AGENT_DOCUMENTS[0], "context7.json"):
+        for name in (AGENT_DOCUMENTS[0], "context7.json", "docs/service-grant-registry-oci.md"):
             for mutation in ("add", "delete", "executable", "symlink"):
                 with self.subTest(path=name, mutation=mutation):
                     self.git("checkout", "-q", "--detach", baseline)
@@ -130,16 +142,22 @@ class GitScopeTests(unittest.TestCase):
         self.base = baseline
 
     def test_rename_between_allowed_agent_paths_requires_full(self):
-        self.git("rm", "-q", "context7.json")
-        self.base = self.commit("base without allowed rename target")
-        self.git("mv", AGENT_DOCUMENTS[0], "context7.json")
-        self.merge()
-        result = self.result()
-        self.assertFalse(result["docs_only"])
-        self.assertEqual(result["status"], "FULL_REQUIRED")
-        self.assertEqual(result["reason"], "not_existing_regular_document_content_only")
-        self.assertEqual({c["status"] for c in result["changes"]}, {"A", "D"})
-        self.assertTrue(all(c["allowed_path"] for c in result["changes"]))
+        baseline = self.base
+        for source, target in ((AGENT_DOCUMENTS[0], "context7.json"),
+                               ("docs/service-grant-registry-oci.md", "docs/ai-agents.md")):
+            with self.subTest(source=source, target=target):
+                self.git("checkout", "-q", "--detach", baseline)
+                self.git("rm", "-q", target)
+                self.base = self.commit("base without allowed rename target")
+                self.git("mv", source, target)
+                self.merge()
+                result = self.result()
+                self.assertFalse(result["docs_only"])
+                self.assertEqual(result["status"], "FULL_REQUIRED")
+                self.assertEqual(result["reason"], "not_existing_regular_document_content_only")
+                self.assertEqual({c["status"] for c in result["changes"]}, {"A", "D"})
+                self.assertTrue(all(c["allowed_path"] for c in result["changes"]))
+        self.base = baseline
 
     def test_added_document_requires_full(self):
         (self.repo / "new.md").write_text("new\n")

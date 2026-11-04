@@ -170,7 +170,7 @@ workflow source alone does not establish the current remote configuration.
 기존 Pages 조건은 병합 후 배포를 제한하며, 남은 병합 수락 경계는 #212에서 추적합니다.
 실제 보호 상태는 현재 원격 설정으로 확인해야 하며, 워크플로 파일만으로 증명하지 않습니다.
 
-Documentation CI is limited to content-only changes in these six exact paths:
+Documentation CI is limited to content-only changes in these seven exact paths:
 
 - `README.md`
 - `CONTRIBUTING.md`
@@ -178,6 +178,7 @@ Documentation CI is limited to content-only changes in these six exact paths:
 - `.agents/skills/gooo-first-program/agents/openai.yaml`
 - `docs/ai-agents.md`
 - `context7.json`
+- `docs/service-grant-registry-oci.md`
 
 Every changed file must already exist with mode `100644` in both compared trees.
 The classifier checks the clean tested checkout and exact PR merge parents.
@@ -193,7 +194,7 @@ summary explicitly records omitted checks. Neither is a new native port executio
 receipt. The commands below remain the full validation checklist for port and
 executable changes.
 
-위 여섯 경로의 기존 일반 파일 내용만 바꾸는 PR이 문서 CI 대상입니다.
+위 일곱 경로의 기존 일반 파일 내용만 바꾸는 PR이 문서 CI 대상입니다.
 깨끗한 실제 checkout과 정확한 PR merge 부모를 검사하며, 비교하는 두 tree에서
 각 파일의 mode가 모두 `100644`여야 합니다. 추가·삭제·이름 변경·mode 변경과
 그 밖의 경로는 전체 native 검증이 필요합니다. 기본 Go·Python·생성기·컴파일러 식별자·선언 검사와 전체
